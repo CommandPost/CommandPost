@@ -1,4 +1,8 @@
 #!/bin/sh
+
+### This script will erase the existing ~/.hammerspoon directory and 
+### copy in the contents of the src/ directory, thus updating it with the latest code.
+
 if [ ! -d "$HOME/.hammerspoon/" ]; then
   echo "Please install Hammerspoon: http://www.hammerspoon.org/"
 	exit 1
