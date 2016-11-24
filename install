@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ ! -d "$HOME/.hammerspoon/" ]; then
+  echo "Please install Hammerspoon: http://www.hammerspoon.org/"
+	exit 1
+fi
+
+rm -Rf "$HOME/.hammerspoon/*"
+
+cp -R src/ "$HOME/.hammerspoon/"
+
+echo "FCPX Hacks has been installed successfully."
