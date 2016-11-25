@@ -54,6 +54,7 @@
 --
 --  > http://www.hammerspoon.org/go/
 --  > https://github.com/asmagill/hs._asm.axuielement
+--  > https://github.com/asmagill/hammerspoon_asm/tree/master/touchbar
 --  > https://github.com/Hammerspoon/hammerspoon/issues/272
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1021#issuecomment-251827969
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1027#issuecomment-252024969
@@ -65,6 +66,7 @@
 --  > Aaron Magill (https://github.com/asmagill)
 --  > Chris Jones (https://github.com/cmsj)
 --  > Bill Cheeseman (http://pfiddlesoft.com)
+--  > David Peterson (https://github.com/randomeizer)
 --  > Yvan Koenig (http://macscripter.net/viewtopic.php?id=45148)
 --  > Tim Webb (https://twitter.com/_timwebb_)
 --
@@ -80,6 +82,8 @@
 --  > Scott Simmons (http://www.scottsimmons.tv)
 --  > Isaac J. Terronez (https://twitter.com/ijterronez)
 --  > Shahin Shokoui, Ilyas Akhmedov & Tim Webb
+--
+--  Latest credits at: https://latenitefilms.com/blog/final-cut-pro-hacks/
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
