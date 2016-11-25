@@ -3625,7 +3625,7 @@ end
 --------------------------------------------------------------------------------
 function updateMenubarIcon()
 
-	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/assets/fcpxhacks.png")
+	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/latenite/fcpx/hacks/assets/fcpxhacks.png")
 	local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
 	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
 	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
@@ -11782,7 +11782,7 @@ function sharedXMLFileWatcher(files)
 				if not string.find(file, "(" .. hostname ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 					sharedXMLNotification = hs.notify.new()
-					sharedXMLNotification:setIdImage(hs.image.imageFromPath("~/.hammerspoon/hs/assets/fcpxhacks.icns"))
+					sharedXMLNotification:setIdImage(hs.image.imageFromPath("~/.hammerspoon/latenite/fcpx/hacks/assets/fcpxhacks.icns"))
 					sharedXMLNotification:title("New XML Recieved")
 					sharedXMLNotification:subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
 					sharedXMLNotification:informativeText("FCPX Hacks has recieved a new XML file.")
