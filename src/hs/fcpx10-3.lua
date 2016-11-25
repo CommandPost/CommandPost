@@ -48,7 +48,7 @@
 --
 --  > Cancel All Background Tasks
 --  > Move Storyline Up & Down Shortcut
---  > Add Audio Fade Handles Shortcut
+--  > Add Custom Audio Fade Handles Shortcut
 --  > Save/Restore User Settings
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --  > Remember Last Project & Layout when restarting FCPX
@@ -59,23 +59,34 @@
 --  > Favourites folder for Effects, Transitions, Titles, Generators & Themes
 --  > Mouse Rewind History (as someone suggested on FCPX Grill)
 --  > Automatically add markers based on music beats (suggested by Ilyas Akhmedov)
+--  > Turn a viewer into a skimmable item. For example, open event viewer and by
+--    mousing over the window with a key command down, it would skim as though it
+--    was a tile in the browser (suggested by Michael Matzdorff)
 --
 --------------------------------------------------------------------------------
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > highlightFCPXBrowserPlayhead() needs support for dual screen
---  > updateEffectsList() needs support for dual screen
+--  > Rewrite GUI Scripting code for Final Cut Pro 10.3:
+--		  >  fcpxSaveKeywordSearches()
+--		  >  fcpxRestoreKeywordSearches()
+--		  >  fcpxWhichBrowserMode()
+--		  >  selectClipAtLane()
+--		  >  batchExportToCompressor()
+--		  >  multicamMatchFrame()
+--		  >  singleMatchFrame()
+--		  >  colorBoardMousePuck()
+--
+--  > highlightFCPXBrowserPlayhead() needs support for dual screens
+--  > updateEffectsList() needs support for dual screens
 --
 --------------------------------------------------------------------------------
 --  LOW PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > fcpxRestoreKeywordSearches() needs more testing
 --  > Fix clipboardWatcher() so it correctly labels clipboard items by name
---  > Fix Color Board Mouse functions speed
---  > updateEffectsList() needs to be faster
---  > translateKeyboardCharacters() could be done better
+--  > Add option to turn off different menubar sections.
+--  > Do better error messages and bug submissions.
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -134,9 +145,9 @@ local debugMode = false
 -- THIRD PARTY:
 
 	ax 							= require("hs._asm.axuielement")
+	touchbar 					= require("hs._asm.touchbar")
 	slaxml 						= require("hs.slaxml")
 	slaxdom 					= require("hs.slaxml.slaxdom")
-	touchbar 					= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -213,6 +224,7 @@ local fcpxChooserActive							= false											-- Chooser Active?
 
 local touchBarSupported						 	= touchbar.supported()							-- Touch Bar Supported?
 local touchBarWindow 							= nil			 								-- Touch Bar Window
+local mouseInsideTouchbar						= false											-- Mouse Inside Touch Bar?
 
 local fcpxChooserChoices 						= {}											-- Chooser Choices
 
@@ -231,9 +243,13 @@ local hostname									= host.localizedName()							-- Hostname
 function loadScript()
 
 	--------------------------------------------------------------------------------
-	-- Version:
+	-- Is Final Cut Pro Installed:
 	--------------------------------------------------------------------------------
-	print("[FCPX Hacks] Loading Final Cut Pro 10.3 Features.")
+	if not isFinalCutProInstalled() then
+    	displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
+		print("[FCPX Hacks] ERROR: Final Cut Pro could not be found so giving up.")
+		return "fail"
+	end
 
 	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
@@ -246,6 +262,18 @@ function loadScript()
 	hotkey.setLogLevel("warning")
 	hs.window.filter.setLogLevel(1)
 	hs.window.filter.ignoreAlways['System Events'] = true
+
+	--------------------------------------------------------------------------------
+	-- Display Useful Debugging Information in Console:
+	--------------------------------------------------------------------------------
+	if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
+	if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
+	if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
+
+	--------------------------------------------------------------------------------
+	-- Startup Message:
+	--------------------------------------------------------------------------------
+	print("[FCPX Hacks] Loading Final Cut Pro 10.3 Features...")
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? Trash settings:
@@ -268,225 +296,244 @@ function loadScript()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Is Final Cut Pro Installed:
+	-- Setup Default Settings:
 	--------------------------------------------------------------------------------
-	if isFinalCutProInstalled() then
+	if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
+	if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
+	if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
 
-		--------------------------------------------------------------------------------
-		-- Settings Defaults:
-		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
-		if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
-		if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
+	if hs.settings.get("fcpxHacks.chooserShowAutomation") == nil then hs.settings.set("fcpxHacks.chooserShowAutomation", true) end
+	if hs.settings.get("fcpxHacks.chooserShowShortcuts") == nil then hs.settings.set("fcpxHacks.chooserShowShortcuts", true) end
+	if hs.settings.get("fcpxHacks.chooserShowHacks") == nil then hs.settings.set("fcpxHacks.chooserShowHacks", true) end
+	if hs.settings.get("fcpxHacks.chooserShowVideoEffects") == nil then hs.settings.set("fcpxHacks.chooserShowVideoEffects", true) end
+	if hs.settings.get("fcpxHacks.chooserShowAudioEffects") == nil then hs.settings.set("fcpxHacks.chooserShowAudioEffects", true) end
+	if hs.settings.get("fcpxHacks.chooserShowTransitions") == nil then hs.settings.set("fcpxHacks.chooserShowTransitions", true) end
 
-		if hs.settings.get("fcpxHacks.chooserShowAutomation") == nil then hs.settings.set("fcpxHacks.chooserShowAutomation", true) end
-		if hs.settings.get("fcpxHacks.chooserShowShortcuts") == nil then hs.settings.set("fcpxHacks.chooserShowShortcuts", true) end
-		if hs.settings.get("fcpxHacks.chooserShowHacks") == nil then hs.settings.set("fcpxHacks.chooserShowHacks", true) end
-		if hs.settings.get("fcpxHacks.chooserShowVideoEffects") == nil then hs.settings.set("fcpxHacks.chooserShowVideoEffects", true) end
-		if hs.settings.get("fcpxHacks.chooserShowAudioEffects") == nil then hs.settings.set("fcpxHacks.chooserShowAudioEffects", true) end
-		if hs.settings.get("fcpxHacks.chooserShowTransitions") == nil then hs.settings.set("fcpxHacks.chooserShowTransitions", true) end
+	if hs.settings.get("fcpxHacks.enableMoveableTouchbar") == nil then hs.settings.set("fcpxHacks.enableMoveableTouchbar", true) end
 
-		--------------------------------------------------------------------------------
-		-- Useful Debugging Information:
-		--------------------------------------------------------------------------------
-		if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
-		if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
-		if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
+	-------------------------------------------------------------------------------
+	-- Common Error Messages:
+	-------------------------------------------------------------------------------
+	commonErrorMessageStart = "I'm sorry, but the following error has occurred:\n\n"
+	commonErrorMessageEnd = "\n\nmacOS Version: " .. macOSVersion() .. "\nFCPX Version: " .. finalCutProVersion() .. "\nScript Version: " .. scriptVersion .. "\n\nPlease take a screenshot of your entire screen and email it to the below address so that we can try and come up with a fix:\n\nchris@latenitefilms.com\n\nThank you for testing!"
+	commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
-		-------------------------------------------------------------------------------
-		-- Common Error Messages:
-		-------------------------------------------------------------------------------
-		commonErrorMessageStart = "I'm sorry, but the following error has occurred:\n\n"
-		commonErrorMessageEnd = "\n\nmacOS Version: " .. macOSVersion() .. "\nFCPX Version: " .. finalCutProVersion() .. "\nScript Version: " .. scriptVersion .. "\n\nPlease take a screenshot of your entire screen and email it to the below address so that we can try and come up with a fix:\n\nchris@latenitefilms.com\n\nThank you for testing!"
-		commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
-
-		--------------------------------------------------------------------------------
-		-- Check if we need to update the Final Cut Pro Shortcut Files:
-		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.lastVersion") == nil then
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
-		else
-			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
-				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
-					local finalCutProRunning = isFinalCutProRunning()
-					if finalCutProRunning then
-						displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
-						updateKeyboardShortcuts()
-						if not restartFinalCutPro() then
-							--------------------------------------------------------------------------------
-							-- Failed to restart Final Cut Pro:
-							--------------------------------------------------------------------------------
-							displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-							return "Failed"
-						end
-					else
-						displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.")
-						updateKeyboardShortcuts()
+	--------------------------------------------------------------------------------
+	-- Check if we need to update the Final Cut Pro Shortcut Files:
+	--------------------------------------------------------------------------------
+	if hs.settings.get("fcpxHacks.lastVersion") == nil then
+		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+		hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+	else
+		if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+			if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+				local finalCutProRunning = isFinalCutProRunning()
+				if finalCutProRunning then
+					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
+					updateKeyboardShortcuts()
+					if not restartFinalCutPro() then
+						--------------------------------------------------------------------------------
+						-- Failed to restart Final Cut Pro:
+						--------------------------------------------------------------------------------
+						displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+						return "Failed"
 					end
-				end
-			end
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check for Script Updates:
-		--------------------------------------------------------------------------------
-		latestScriptVersion = nil
-		updateResponse, updateBody, updateHeader = hs.http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
-		if updateResponse == 200 then
-			if updateBody:sub(1,8) == "LATEST: " then
-				latestScriptVersion = updateBody:sub(9,12)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Setup Touch Bar:
-		--------------------------------------------------------------------------------
-		if touchBarSupported then
-
-			touchBarWindow = touchbar.new()
-
-			--------------------------------------------------------------------------------
-			-- Get last Touch Bar Location from Settings:
-			--------------------------------------------------------------------------------
-			local lastTouchBarLocation = hs.settings.get("fcpxHacks.lastTouchBarLocation")
-			if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Setup Watches:
-		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Create and start the application event watcher:
-			--------------------------------------------------------------------------------
-			watcher = hs.application.watcher.new(finalCutProWatcher):start()
-
-			--------------------------------------------------------------------------------
-			-- Watch For Hammerspoon Script Updates:
-			--------------------------------------------------------------------------------
-			hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
-
-			--------------------------------------------------------------------------------
-			-- Watch for Final Cut Pro plist Changes:
-			--------------------------------------------------------------------------------
-			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
-
-			--------------------------------------------------------------------------------
-			-- Watch for Shared Clipboard Changes:
-			--------------------------------------------------------------------------------
-			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-			if sharedClipboardPath ~= nil then
-				if doesDirectoryExist(sharedClipboardPath) then
-					sharedClipboardWatcher = hs.pathwatcher.new(sharedClipboardPath, function() if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end; refreshMenuBar() end):start()
 				else
-					print("[FCPX Hacks] The Shared Clipboard Directory could not be found, so disabling.")
-					settings.set("fcpxHacks.sharedClipboardPath", nil)
-					settings.set("fcpxHacks.enableSharedClipboard", false)
+					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.")
+					updateKeyboardShortcuts()
 				end
 			end
+		end
+		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+	end
 
-			--------------------------------------------------------------------------------
-			-- Full Screen Keyboard Watcher:
-			--------------------------------------------------------------------------------
-			fullscreenKeyboardWatcher()
-
-			--------------------------------------------------------------------------------
-			-- Command Editor Watcher:
-			--------------------------------------------------------------------------------
-			commandEditorWatcher()
-
-			--------------------------------------------------------------------------------
-			-- Scrolling Timeline Watcher:
-			--------------------------------------------------------------------------------
-			scrollingTimelineWatcher()
-
-			--------------------------------------------------------------------------------
-			-- Clipboard Watcher:
-			--------------------------------------------------------------------------------
-			local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-			if enableClipboardHistory then clipboardWatcher() end
-
-			--------------------------------------------------------------------------------
-			-- Notification Watcher:
-			--------------------------------------------------------------------------------
-			local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
-			if enableMobileNotifications then notificationWatcher() end
-
-			--------------------------------------------------------------------------------
-			-- Media Import Watcher:
-			--------------------------------------------------------------------------------
-			local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-			if enableMediaImportWatcher then mediaImportWatcher() end
-
-			--------------------------------------------------------------------------------
-			-- Resize Watcher:
-			--------------------------------------------------------------------------------
-			finalCutProResizeWatcher()
+	--------------------------------------------------------------------------------
+	-- Setup Touch Bar:
+	--------------------------------------------------------------------------------
+	if touchBarSupported then
 
 		--------------------------------------------------------------------------------
-		-- Bind Keyboard Shortcuts:
+		-- New Touch Bar:
 		--------------------------------------------------------------------------------
-		lastCommandSet = getFinalCutProActiveCommandSet()
-		bindKeyboardShortcuts()
+		touchBarWindow = touchbar.new()
 
 		--------------------------------------------------------------------------------
-		-- Activate the correct modal state:
+		-- Touch Bar Watcher:
 		--------------------------------------------------------------------------------
-		if isFinalCutProFrontmost() then
+		touchBarWindow:setCallback(touchbarWatcher)
 
-			--------------------------------------------------------------------------------
-			-- Enable Final Cut Pro Shortcut Keys:
-			--------------------------------------------------------------------------------
-			hotkeys:enter()
+		--------------------------------------------------------------------------------
+		-- Get last Touch Bar Location from Settings:
+		--------------------------------------------------------------------------------
+		local lastTouchBarLocation = hs.settings.get("fcpxHacks.lastTouchBarLocation")
+		if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
 
-			--------------------------------------------------------------------------------
-			-- Enable Fullscreen Playback Shortcut Keys:
-			--------------------------------------------------------------------------------
-			if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
-				fullscreenKeyboardWatcherUp:start()
-				fullscreenKeyboardWatcherDown:start()
+		--------------------------------------------------------------------------------
+		-- Draggable Touch Bar:
+		--------------------------------------------------------------------------------
+		local events = eventtap.event.types
+		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
+			if mouseInsideTouchbar then
+				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
+					touchBarWindow:backgroundColor{ red = 1 }
+								  :movable(true)
+								  :acceptsMouseEvents(false)
+				elseif ev:getType() ~= events.leftMouseDown then
+					touchBarWindow:backgroundColor{ white = 0 }
+								  :movable(false)
+								  :acceptsMouseEvents(true)
+					hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+				end
 			end
+			return false
+		end):start()
 
-			--------------------------------------------------------------------------------
-			-- Enable Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			if hs.settings.get("fcpxHacks.scrollingTimelineActive") then
-				scrollingTimelineWatcherUp:start()
-				scrollingTimelineWatcherDown:start()
-			end
-		else
-			--------------------------------------------------------------------------------
-			-- Disable Final Cut Pro Shortcut Keys:
-			--------------------------------------------------------------------------------
-			hotkeys:exit()
+	end
 
-			--------------------------------------------------------------------------------
-			-- Disable Fullscreen Playback Shortcut Keys:
-			--------------------------------------------------------------------------------
-			if fullscreenKeyboardWatcherUp ~= nil then
-				fullscreenKeyboardWatcherUp:stop()
-				fullscreenKeyboardWatcherDown:stop()
-			end
+	--------------------------------------------------------------------------------
+	-- Setup Watches:
+	--------------------------------------------------------------------------------
 
-			--------------------------------------------------------------------------------
-			-- Disable Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			if scrollingTimelineWatcherUp ~= nil then
-				scrollingTimelineWatcherUp:stop()
-				scrollingTimelineWatcherDown:stop()
+		--------------------------------------------------------------------------------
+		-- Create and start the application event watcher:
+		--------------------------------------------------------------------------------
+		watcher = hs.application.watcher.new(finalCutProWatcher):start()
+
+		--------------------------------------------------------------------------------
+		-- Watch For Hammerspoon Script Updates:
+		--------------------------------------------------------------------------------
+		hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
+
+		--------------------------------------------------------------------------------
+		-- Watch for Final Cut Pro plist Changes:
+		--------------------------------------------------------------------------------
+		preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
+
+		--------------------------------------------------------------------------------
+		-- Watch for Shared Clipboard Changes:
+		--------------------------------------------------------------------------------
+		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+		if sharedClipboardPath ~= nil then
+			if doesDirectoryExist(sharedClipboardPath) then
+				sharedClipboardWatcher = hs.pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
+			else
+				print("[FCPX Hacks] The Shared Clipboard Directory could not be found, so disabling.")
+				settings.set("fcpxHacks.sharedClipboardPath", nil)
+				settings.set("fcpxHacks.enableSharedClipboard", false)
 			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Watch for Shared XML Changes:
+		--------------------------------------------------------------------------------
+		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+		if enableXMLSharing then
+			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
+			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
+				xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+				sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+			else
+				print("[FCPX Hacks] The Shared XML Folder(s) could not be found, so disabling.")
+				settings.set("fcpxHacks.xmlSharingPath", nil)
+				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+				settings.set("fcpxHacks.enableXMLSharing", false)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Full Screen Keyboard Watcher:
+		--------------------------------------------------------------------------------
+		fullscreenKeyboardWatcher()
+
+		--------------------------------------------------------------------------------
+		-- Command Editor Watcher:
+		--------------------------------------------------------------------------------
+		commandEditorWatcher()
+
+		--------------------------------------------------------------------------------
+		-- Scrolling Timeline Watcher:
+		--------------------------------------------------------------------------------
+		scrollingTimelineWatcher()
+
+		--------------------------------------------------------------------------------
+		-- Clipboard Watcher:
+		--------------------------------------------------------------------------------
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		if enableClipboardHistory then clipboardWatcher() end
+
+		--------------------------------------------------------------------------------
+		-- Notification Watcher:
+		--------------------------------------------------------------------------------
+		local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+		if enableMobileNotifications then notificationWatcher() end
+
+		--------------------------------------------------------------------------------
+		-- Media Import Watcher:
+		--------------------------------------------------------------------------------
+		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		if enableMediaImportWatcher then mediaImportWatcher() end
+
+		--------------------------------------------------------------------------------
+		-- Resize Watcher:
+		--------------------------------------------------------------------------------
+		finalCutProResizeWatcher()
+
+	--------------------------------------------------------------------------------
+	-- Bind Keyboard Shortcuts:
+	--------------------------------------------------------------------------------
+	lastCommandSet = getFinalCutProActiveCommandSet()
+	bindKeyboardShortcuts()
+
+	--------------------------------------------------------------------------------
+	-- Activate the correct modal state:
+	--------------------------------------------------------------------------------
+	if isFinalCutProFrontmost() then
+
+		--------------------------------------------------------------------------------
+		-- Enable Final Cut Pro Shortcut Keys:
+		--------------------------------------------------------------------------------
+		hotkeys:enter()
+
+		--------------------------------------------------------------------------------
+		-- Enable Fullscreen Playback Shortcut Keys:
+		--------------------------------------------------------------------------------
+		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
+			fullscreenKeyboardWatcherUp:start()
+			fullscreenKeyboardWatcherDown:start()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Scrolling Timeline:
+		--------------------------------------------------------------------------------
+		if hs.settings.get("fcpxHacks.scrollingTimelineActive") then
+			scrollingTimelineWatcherUp:start()
+			scrollingTimelineWatcherDown:start()
 		end
 
 	else
-    	--------------------------------------------------------------------------------
-    	-- Final Cut Pro couldn't be found so giving up:
-    	--------------------------------------------------------------------------------
-    	displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
-		print("[FCPX Hacks] ERROR: Final Cut Pro could not be found so giving up.")
-		return "fail"
+
+		--------------------------------------------------------------------------------
+		-- Disable Final Cut Pro Shortcut Keys:
+		--------------------------------------------------------------------------------
+		hotkeys:exit()
+
+		--------------------------------------------------------------------------------
+		-- Disable Fullscreen Playback Shortcut Keys:
+		--------------------------------------------------------------------------------
+		if fullscreenKeyboardWatcherUp ~= nil then
+			fullscreenKeyboardWatcherUp:stop()
+			fullscreenKeyboardWatcherDown:stop()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Disable Scrolling Timeline:
+		--------------------------------------------------------------------------------
+		if scrollingTimelineWatcherUp ~= nil then
+			scrollingTimelineWatcherUp:stop()
+			scrollingTimelineWatcherDown:stop()
+		end
+
 	end
 
 	-------------------------------------------------------------------------------
@@ -520,6 +567,12 @@ function loadScript()
 	print("[FCPX Hacks] Successfully loaded.")
 	hs.alert.closeAll(0)
 	hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
+
+	--------------------------------------------------------------------------------
+	-- Check for Script Updates every 15 minutes:
+	--------------------------------------------------------------------------------
+	checkForUpdatesTimer = hs.timer.doEvery(15, checkForUpdates)
+	checkForUpdatesTimer:fire()
 
 end
 
@@ -1725,7 +1778,7 @@ function refreshMenuBar(refreshPlistValues)
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = executeResult end
+		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
@@ -1858,6 +1911,11 @@ function refreshMenuBar(refreshPlistValues)
 	if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
 
 	--------------------------------------------------------------------------------
+	-- Enable XML Sharing:
+	--------------------------------------------------------------------------------
+	enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+
+	--------------------------------------------------------------------------------
 	-- Enable Clipboard History:
 	--------------------------------------------------------------------------------
 	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -1875,7 +1933,7 @@ function refreshMenuBar(refreshPlistValues)
 		if clipboardHistory ~= nil then
 			if #clipboardHistory ~= 0 then
 				for i=#clipboardHistory, 1, -1 do
-					table.insert(settingsClipboardHistoryTable, {title = clipboardHistory[i][2], fn = function() finalCutProPasteFromClipboardHistory(clipboardHistory[i][1]) end, disabled = not fcpxActive})
+					table.insert(settingsClipboardHistoryTable, {title = clipboardHistory[i][2], fn = function() finalCutProPasteFromClipboardHistory(clipboardHistory[i][1]) end, disabled = not fcpxRunning})
 				end
 				table.insert(settingsClipboardHistoryTable, { title = "-" })
 				table.insert(settingsClipboardHistoryTable, { title = "Clear Clipboard History", fn = clearClipboardHistory })
@@ -1915,7 +1973,7 @@ function refreshMenuBar(refreshPlistValues)
 			-- Something in the Shared Clipboard:
 			--------------------------------------------------------------------------------
 			for i=1, #sharedClipboardFiles do
-				table.insert(settingsSharedClipboardTable, {title = sharedClipboardFiles[i], fn = function() pasteFromSharedClipboard(sharedClipboardFiles[i]) end, disabled = not fcpxActive})
+				table.insert(settingsSharedClipboardTable, {title = sharedClipboardFiles[i], fn = function() pasteFromSharedClipboard(sharedClipboardFiles[i]) end, disabled = not fcpxRunning})
 			end
 			table.insert(settingsSharedClipboardTable, { title = "-" })
 			table.insert(settingsSharedClipboardTable, { title = "Clear Shared Clipboard History", fn = clearSharedClipboardHistory })
@@ -1925,6 +1983,47 @@ function refreshMenuBar(refreshPlistValues)
 		-- Shared Clipboard Disabled:
 		--------------------------------------------------------------------------------
 		table.insert(settingsSharedClipboardTable, { title = "Disabled in Settings", disabled = true })
+	end
+
+	--------------------------------------------------------------------------------
+	-- Shared XML Menu:
+	--------------------------------------------------------------------------------
+	local settingsSharedXMLTable = {}
+	if enableXMLSharing then
+
+		--------------------------------------------------------------------------------
+		-- Get list of files:
+		--------------------------------------------------------------------------------
+		local sharedXMLFiles = {}
+
+		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+
+		for file in hs.fs.dir(xmlSharingPath) do
+			 if file:sub(-7) == ".fcpxml" then
+				sharedXMLFiles[#sharedXMLFiles + 1] = file:sub(1, -8)
+			 end
+		end
+
+		if next(sharedXMLFiles) == nil then
+			--------------------------------------------------------------------------------
+			-- Nothing in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			table.insert(settingsSharedXMLTable, { title = "Empty", disabled = true })
+		else
+			--------------------------------------------------------------------------------
+			-- Something in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			for i=1, #sharedXMLFiles do
+				table.insert(settingsSharedXMLTable, {title = sharedXMLFiles[i], fn = function() importSharedXML(sharedXMLFiles[i]) end, disabled = not fcpxRunning})
+			end
+			table.insert(settingsSharedXMLTable, { title = "-" })
+			table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = clearSharedXMLFiles })
+		end
+	else
+		--------------------------------------------------------------------------------
+		-- Shared Clipboard Disabled:
+		--------------------------------------------------------------------------------
+		table.insert(settingsSharedXMLTable, { title = "Disabled in Settings", disabled = true })
 	end
 
 	--------------------------------------------------------------------------------
@@ -1984,6 +2083,8 @@ function refreshMenuBar(refreshPlistValues)
 	local settingsTouchBarLocation = {
 	   	{ title = "Mouse Location", 																fn = function() changeTouchBarLocation("Mouse") end,				checked = displayTouchBarLocationMouse, disabled = not touchBarSupported },
 	   	{ title = "Top Centre of Timeline", 														fn = function() changeTouchBarLocation("TimelineTopCentre") end,	checked = displayTouchBarLocationTimelineTopCentre, disabled = not touchBarSupported },
+	   	{ title = "-" },
+	   	{ title = "TIP: Hold down left OPTION to move Touch Bar", 																																																	disabled = true },
 	}
 	local settingsMenuTable = {
 		{ title = "Touch Bar Location", 															menu = settingsTouchBarLocation},
@@ -2038,8 +2139,10 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
    	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
+  	  	{ title = "Enable XML Sharing", 															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
+      	{ title = "Import Shared XML File", 													menu = settingsSharedXMLTable },
       	{ title = "-" },
    	    { title = "HACKS:", 																																																		disabled = true },
    		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
@@ -2196,7 +2299,7 @@ function toggleEnableSharedClipboard()
 			--------------------------------------------------------------------------------
 			-- Watch for Shared Clipboard Changes:
 			--------------------------------------------------------------------------------
-			sharedClipboardWatcher = hs.pathwatcher.new(result, function() if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end; refreshMenuBar() end):start()
+			sharedClipboardWatcher = hs.pathwatcher.new(result, sharedClipboardFileWatcher):start()
 
 		else
 			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Choose Path Cancelled.") end
@@ -2214,6 +2317,64 @@ function toggleEnableSharedClipboard()
 	end
 
 	settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
+	refreshMenuBar()
+
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE XML SHARING:
+--------------------------------------------------------------------------------
+function toggleEnableXMLSharing()
+
+	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+
+	if not enableXMLSharing then
+
+		xmlSharingDropboxPath = displayChooseFolder("Which folder would you like to use as the local Drop Box?")
+
+		if xmlSharingDropboxPath ~= false then
+			settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
+		else
+			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+			settings.set("fcpxHacks.xmlSharingPath", nil)
+			return "Cancelled"
+		end
+
+		xmlSharingPath = displayChooseFolder("Which folder would you like to use for XML Sharing?")
+
+		if xmlSharingPath ~= false then
+			settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
+		else
+			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+			settings.set("fcpxHacks.xmlSharingPath", nil)
+			return "Cancelled"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Watch for XML Dropbox Changes:
+		--------------------------------------------------------------------------------
+		xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+
+		--------------------------------------------------------------------------------
+		-- Watch for Shared XML Folder Changes:
+		--------------------------------------------------------------------------------
+		sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+
+	else
+		--------------------------------------------------------------------------------
+		-- Stop Watchers:
+		--------------------------------------------------------------------------------
+		xmlDropboxWatcher:stop()
+		sharedXMLWatcher:stop()
+
+		--------------------------------------------------------------------------------
+		-- Clear Settings:
+		--------------------------------------------------------------------------------
+		settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+		settings.set("fcpxHacks.xmlSharingPath", nil)
+	end
+
+	settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
 	refreshMenuBar()
 
 end
@@ -2625,39 +2786,6 @@ function updateTransitionsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure Transitions Browser Sidebar is Visible:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXCheckBox (checkbox 1)
-	transitionsBrowserSidebar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup" },
-		{ role = "AXCheckBox", Identifier = "_NS:85" },
-	}, 1)
-	if transitionsBrowserSidebar ~= nil then
-		if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
-			transitionsBrowserSidebar:performAction("AXPress")
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- Click 'All Transitions':
 	--------------------------------------------------------------------------------
 	-- PATH:
@@ -2692,8 +2820,74 @@ function updateTransitionsList()
 	if allTransitionsButton ~= nil then
 		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to locate 'All Transitions' button.")
-		return "Fail"
+
+		--------------------------------------------------------------------------------
+		-- Make sure Transitions Browser Sidebar is Visible:
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXCheckBox (checkbox 1)
+		transitionsBrowserSidebar = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup" },
+			{ role = "AXCheckBox", Identifier = "_NS:85" },
+		}, 1)
+		if transitionsBrowserSidebar ~= nil then transitionsBrowserSidebar:performAction("AXPress") end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Transitions':
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXScrollArea (scroll area 1)
+		-- AXTable (table 1)
+		-- AXRow (row 1)
+		allTransitionsButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:452" },
+			{ role = "AXScrollArea", Identifier = "_NS:66" },
+			{ role = "AXTable", Identifier = "_NS:9" }
+		}, 1)
+		if allTransitionsButton ~= nil then
+			allTransitionsButton[1]:setAttributeValue("AXSelected", true)
+		else
+			displayErrorMessage("Unable to locate 'All Transitions' button.")
+			return "Fail"
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -3022,39 +3216,6 @@ function updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure Effects Browser Sidebar is Visible:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXCheckBox (checkbox 1)
-	effectsBrowserSidebar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup" },
-		{ role = "AXCheckBox", Identifier = "_NS:85" },
-	}, 1)
-	if effectsBrowserSidebar ~= nil then
-		if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-			effectsBrowserSidebar:performAction("AXPress")
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- Click 'All Video':
 	--------------------------------------------------------------------------------
 	-- PATH:
@@ -3089,8 +3250,61 @@ function updateEffectsList()
 	if allVideoButton ~= nil then
 		allVideoButton[3]:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to locate 'All Video' button.")
-		return "Fail"
+		--------------------------------------------------------------------------------
+		-- Make sure Effects Browser Sidebar is Visible:
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXCheckBox (checkbox 1)
+		effectsBrowserSidebar = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup" },
+			{ role = "AXCheckBox", Identifier = "_NS:85" },
+		}, 1)
+		if effectsBrowserSidebar ~= nil then
+			effectsBrowserSidebar:performAction("AXPress")
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		allVideoButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:452" },
+			{ role = "AXScrollArea", Identifier = "_NS:66" },
+			{ role = "AXTable", Identifier = "_NS:9" }
+		}, 1)
+		if allVideoButton ~= nil then
+			allVideoButton[3]:setAttributeValue("AXSelected", true)
+		else
+			displayErrorMessage("Unable to locate 'All Video' button.")
+			return "Fail"
+		end
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -3659,7 +3873,7 @@ end
 -- GO TO LATENITE FILMS SITE:
 --------------------------------------------------------------------------------
 function gotoLateNiteSite()
-	os.execute('open "https://latenitefilms.com"')
+	os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
 end
 
 --------------------------------------------------------------------------------
@@ -4266,7 +4480,7 @@ function changeBackupInterval()
 	--------------------------------------------------------------------------------
 	-- Ask user what to set the backup interval to:
 	--------------------------------------------------------------------------------
-	local userSelectedBackupInterval = displayNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
+	local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
 	if not userSelectedBackupInterval then
 		return "Cancel"
 	end
@@ -4569,6 +4783,7 @@ function finalCutProPasteFromClipboardHistory(data)
 	--------------------------------------------------------------------------------
 	-- Paste in FCPX:
 	--------------------------------------------------------------------------------
+	launchFinalCutPro()
 	if not keyStrokeFromPlist("Paste") then
 		displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 		return "Failed"
@@ -4615,6 +4830,25 @@ function pasteFromSharedClipboard(whichClipboard)
 end
 
 --------------------------------------------------------------------------------
+-- IMPORT SHARED XML:
+--------------------------------------------------------------------------------
+function importSharedXML(whichSharedXML)
+
+	local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+	whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
+
+	local appleScriptA = 'set whichSharedXMLPath to "' .. whichSharedXMLPath .. '"' .. '\n\n'
+	local appleScriptB = [[
+		tell application "Final Cut Pro"
+    		activate
+  		  	open POSIX file whichSharedXMLPath as string
+		end tell
+	]]
+	hs.osascript.applescript(appleScriptA .. appleScriptB)
+
+end
+
+--------------------------------------------------------------------------------
 -- CLEAR CLIPBOARD HISTORY:
 --------------------------------------------------------------------------------
 function clearClipboardHistory()
@@ -4632,6 +4866,19 @@ function clearSharedClipboardHistory()
 	for file in hs.fs.dir(sharedClipboardPath) do
 		 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
 			os.remove(sharedClipboardPath .. file)
+		 end
+		 refreshMenuBar()
+	end
+end
+
+--------------------------------------------------------------------------------
+-- CLEAR SHARED XML FILES:
+--------------------------------------------------------------------------------
+function clearSharedXMLFiles()
+	local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+	for file in hs.fs.dir(xmlSharingPath) do
+		 if file:sub(-7) == ".fcpxml" then
+			os.remove(xmlSharingPath .. file)
 		 end
 		 refreshMenuBar()
 	end
@@ -4744,7 +4991,7 @@ end
 -- SELECT CLIP AT LANE:
 --------------------------------------------------------------------------------
 --
--- >>> NEEDS UPDATING <<<
+-- >>> BROKEN! <<<
 --
 function selectClipAtLane(whichLane)
 
@@ -5277,39 +5524,6 @@ function transitionsShortcut(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure Transitions Browser Sidebar is Visible:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXCheckBox (checkbox 1)
-	transitionsBrowserSidebar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup" },
-		{ role = "AXCheckBox", Identifier = "_NS:85" },
-	}, 1)
-	if transitionsBrowserSidebar ~= nil then
-		if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
-			transitionsBrowserSidebar:performAction("AXPress")
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- Click 'All Transitions':
 	--------------------------------------------------------------------------------
 	-- PATH:
@@ -5344,8 +5558,78 @@ function transitionsShortcut(whichShortcut)
 	if allTransitionsButton ~= nil then
 		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to locate 'All Transitions' button.")
-		return "Fail"
+
+		--------------------------------------------------------------------------------
+		-- Make sure Transitions Browser Sidebar is Visible:
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXCheckBox (checkbox 1)
+		transitionsBrowserSidebar = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup" },
+			{ role = "AXCheckBox", Identifier = "_NS:85" },
+		}, 1)
+		if transitionsBrowserSidebar ~= nil then
+			if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
+				transitionsBrowserSidebar:performAction("AXPress")
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Transitions':
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXScrollArea (scroll area 1)
+		-- AXTable (table 1)
+		-- AXRow (row 1)
+		allTransitionsButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:452" },
+			{ role = "AXScrollArea", Identifier = "_NS:66" },
+			{ role = "AXTable", Identifier = "_NS:9" }
+		}, 1)
+		if allTransitionsButton ~= nil then
+			allTransitionsButton[1]:setAttributeValue("AXSelected", true)
+		else
+			displayErrorMessage("Unable to locate 'All Transitions' button.")
+			return "Fail"
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -5482,46 +5766,15 @@ function transitionsShortcut(whichShortcut)
 		return "Fail"
 	end
 
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	transitionsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if transitionsSearchCancelButton ~= nil then
-		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
-		if transitionsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to clear Transitions search.")
-			return "Fail"
-		end
-	end
 
 	--------------------------------------------------------------------------------
-	-- If the effects panel was originally closed, let's close it again:
+	-- Add a bit of a delay:
 	--------------------------------------------------------------------------------
-	if wasTransitionsPanelClosed then
+	hs.timer.doAfter(0.2, function()
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
 		-- PATH:
 		-- AXApplication "Final Cut Pro"
 		-- AXWindow "Final Cut Pro" (window 2)
@@ -5531,10 +5784,10 @@ function transitionsShortcut(whichShortcut)
 		-- AXGroup (group 1)
 		-- AXSplitGroup (splitter group 1)
 		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
 		-- AXGroup (group 1)
-		-- AXRadioGroup (radio group 1)
-		-- AXRadioButton (radio button 1)
-		transitionsBrowserButton = sw:searchPath({
+		-- AXTextField (text field 1)
+		transitionsSearchCancelButton = sw:searchPath({
 			{ role = "AXWindow", title = "Final Cut Pro"},
 			{ role = "AXSplitGroup" },
 			{ role = "AXGroup", },
@@ -5542,17 +5795,55 @@ function transitionsShortcut(whichShortcut)
 			{ role = "AXGroup", },
 			{ role = "AXSplitGroup" },
 			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
 			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-			{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
+			{ role = "AXTextField", Description = "Effect Library Search Field" },
+			{ role = "AXButton", Description = "cancel"},
 		}, 1)
-		if transitionsBrowserButton ~= nil then
-			transitionsBrowserButton:performAction("AXPress")
-		else
-			displayErrorMessage("Unable to close Transitions Panel.")
-			return "Fail"
+		if transitionsSearchCancelButton ~= nil then
+			transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
+			if transitionsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to clear Transitions search.")
+				return "Fail"
+			end
 		end
-	end
+
+		--------------------------------------------------------------------------------
+		-- If the effects panel was originally closed, let's close it again:
+		--------------------------------------------------------------------------------
+		if wasTransitionsPanelClosed then
+			-- PATH:
+			-- AXApplication "Final Cut Pro"
+			-- AXWindow "Final Cut Pro" (window 2)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXGroup (group 1)
+			-- AXRadioGroup (radio group 1)
+			-- AXRadioButton (radio button 1)
+			transitionsBrowserButton = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXGroup", },
+				{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+				{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
+			}, 1)
+			if transitionsBrowserButton ~= nil then
+				transitionsBrowserButton:performAction("AXPress")
+			else
+				displayErrorMessage("Unable to close Transitions Panel.")
+				return "Fail"
+			end
+		end
+	end)
 
 end
 
@@ -5560,6 +5851,11 @@ end
 -- EFFECTS SHORTCUT PRESSED:
 --------------------------------------------------------------------------------
 function effectsShortcut(whichShortcut)
+
+	--------------------------------------------------------------------------------
+	-- Hide the Touch Bar:
+	--------------------------------------------------------------------------------
+	hideTouchbar()
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
@@ -5574,6 +5870,7 @@ function effectsShortcut(whichShortcut)
 
 	if currentShortcut == nil then
 		displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
+		showTouchbar() -- Do we need to enable the Touch Bar?
 		return "Fail"
 	end
 
@@ -5616,11 +5913,13 @@ function effectsShortcut(whichShortcut)
 			local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
 			if presseffectsBrowserButtonResult == nil then
 				displayErrorMessage("Unable to press Video Effects icon.")
+				showTouchbar() -- Do we need to enable the Touch Bar?
 				return "Fail"
 			end
 		end
 	else
 		displayErrorMessage("Unable to activate Video Effects Panel.")
+		showTouchbar() -- Do we need to enable the Touch Bar?
 		return "Fail"
 	end
 
@@ -5675,6 +5974,7 @@ function effectsShortcut(whichShortcut)
 		end
 	else
 		displayErrorMessage("Unable to find 'Installed Effects' popup.")
+		showTouchbar() -- Do we need to enable the Touch Bar?
 		return "Fail"
 	end
 
@@ -5710,40 +6010,8 @@ function effectsShortcut(whichShortcut)
 		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 		if effectsSearchCancelButtonResult == nil then
 			displayErrorMessage("Unable to cancel effects search.")
+			showTouchbar() -- Do we need to enable the Touch Bar?
 			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure Effects Browser Sidebar is Visible:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXCheckBox (checkbox 1)
-	effectsBrowserSidebar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup" },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup" },
-		{ role = "AXCheckBox", Identifier = "_NS:85" },
-	}, 1)
-	if effectsBrowserSidebar ~= nil then
-		if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-			effectsBrowserSidebar:performAction("AXPress")
 		end
 	end
 
@@ -5783,8 +6051,80 @@ function effectsShortcut(whichShortcut)
 	if allVideoAndAudioButton ~= nil then
 		allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to locate 'All Video & Audio' button.")
-		return "Fail"
+
+		--------------------------------------------------------------------------------
+		-- Make sure Effects Browser Sidebar is Visible:
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXCheckBox (checkbox 1)
+		effectsBrowserSidebar = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup" },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup" },
+			{ role = "AXCheckBox", Identifier = "_NS:85" },
+		}, 1)
+		if effectsBrowserSidebar ~= nil then
+			if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+				effectsBrowserSidebar:performAction("AXPress")
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Video & Audio':
+		--------------------------------------------------------------------------------
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXScrollArea (scroll area 1)
+		-- AXTable (table 1)
+		-- AXRow (row 1)
+		allVideoAndAudioButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:452" },
+			{ role = "AXScrollArea", Identifier = "_NS:66" },
+			{ role = "AXTable", Identifier = "_NS:9" },
+			{ role = "AXRow", _id=1 },
+		}, 1)
+		if allVideoAndAudioButton ~= nil then
+			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+		else
+			displayErrorMessage("Unable to locate 'All Video & Audio' button.")
+			showTouchbar() -- Do we need to enable the Touch Bar?
+			return "Fail"
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -5819,6 +6159,7 @@ function effectsShortcut(whichShortcut)
 		effectsSearchField[1]:performAction("AXPress")
 	else
 		displayErrorMessage("Unable to type search request in search box.")
+		showTouchbar() -- Do we need to enable the Touch Bar?
 		return "Fail"
 	end
 
@@ -5918,49 +6259,18 @@ function effectsShortcut(whichShortcut)
 
 	else
 		displayErrorMessage("Unable to locate effect.")
+		showTouchbar() -- Do we need to enable the Touch Bar?
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
+	-- Add a bit of a delay:
 	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	effectsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if effectsSearchCancelButton ~= nil then
-		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-		if effectsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to cancel effects search.")
-			return "Fail"
-		end
-	end
+	hs.timer.doAfter(0.2, function()
 
-	--------------------------------------------------------------------------------
-	-- If the effects panel was originally closed, let's close it again:
-	--------------------------------------------------------------------------------
-	if wasEffectsPanelClosed then
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
 		-- PATH:
 		-- AXApplication "Final Cut Pro"
 		-- AXWindow "Final Cut Pro" (window 2)
@@ -5970,10 +6280,10 @@ function effectsShortcut(whichShortcut)
 		-- AXGroup (group 1)
 		-- AXSplitGroup (splitter group 1)
 		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
 		-- AXGroup (group 1)
-		-- AXRadioGroup (radio group 1)
-		-- AXRadioButton (radio button 1)
-		effectsBrowserButton = sw:searchPath({
+		-- AXTextField (text field 1)
+		effectsSearchCancelButton = sw:searchPath({
 			{ role = "AXWindow", title = "Final Cut Pro"},
 			{ role = "AXSplitGroup" },
 			{ role = "AXGroup", },
@@ -5981,17 +6291,63 @@ function effectsShortcut(whichShortcut)
 			{ role = "AXGroup", },
 			{ role = "AXSplitGroup" },
 			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
 			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-			{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
+			{ role = "AXTextField", Description = "Effect Library Search Field" },
+			{ role = "AXButton", Description = "cancel"},
 		}, 1)
-		if effectsBrowserButton ~= nil then
-			effectsBrowserButton:performAction("AXPress")
-		else
-			displayErrorMessage("Unable to close Video Effects Panel.")
-			return "Fail"
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.")
+				showTouchbar() -- Do we need to enable the Touch Bar?
+				return "Fail"
+			end
 		end
-	end
+
+		--------------------------------------------------------------------------------
+		-- If the effects panel was originally closed, let's close it again:
+		--------------------------------------------------------------------------------
+		if wasEffectsPanelClosed then
+			-- PATH:
+			-- AXApplication "Final Cut Pro"
+			-- AXWindow "Final Cut Pro" (window 2)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXSplitGroup (splitter group 1)
+			-- AXGroup (group 1)
+			-- AXGroup (group 1)
+			-- AXRadioGroup (radio group 1)
+			-- AXRadioButton (radio button 1)
+			effectsBrowserButton = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXGroup", },
+				{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+				{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
+			}, 1)
+			if effectsBrowserButton ~= nil then
+				effectsBrowserButton:performAction("AXPress")
+			else
+				displayErrorMessage("Unable to close Video Effects Panel.")
+				showTouchbar() -- Do we need to enable the Touch Bar?
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Do we need to enable the Touch Bar?
+		--------------------------------------------------------------------------------
+		showTouchbar()
+
+	end)
 
 end
 
@@ -6175,7 +6531,7 @@ end
 -- BATCH EXPORT FROM BROWSER:
 --------------------------------------------------------------------------------
 --
--- >>> NEEDS UPDATING <<<
+-- >>> BROKEN! <<<
 --
 function batchExportToCompressor()
 
@@ -7551,7 +7907,7 @@ end
 -- PERFORM MULTICAM MATCH FRAME:
 --------------------------------------------------------------------------------
 --
--- >>> NEEDS UPDATING <<<
+-- >>> BROKEN! <<<
 --
 function multicamMatchFrame(goBackToTimeline)
 
@@ -8057,7 +8413,7 @@ end
 -- FCPX SINGLE MATCH FRAME:
 --------------------------------------------------------------------------------
 --
--- >>> NEEDS UPDATING <<<
+-- >>> BROKEN! <<<
 --
 function singleMatchFrame()
 
@@ -8463,7 +8819,16 @@ end
 --------------------------------------------------------------------------------
 -- FCPX SAVE KEYWORDS:
 --------------------------------------------------------------------------------
+--
+-- >>> BROKEN! <<<
+--
 function fcpxSaveKeywordSearches(whichButton)
+
+	--------------------------------------------------------------------------------
+	-- UNDER CONSTRUCTION:
+	--------------------------------------------------------------------------------
+	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+	if 1==1 then return end
 
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
@@ -8558,7 +8923,16 @@ end
 --------------------------------------------------------------------------------
 -- FCPX RESTORE KEYWORDS:
 --------------------------------------------------------------------------------
+--
+-- >>> BROKEN! <<<
+--
 function fcpxRestoreKeywordSearches(whichButton)
+
+	--------------------------------------------------------------------------------
+	-- UNDER CONSTRUCTION:
+	--------------------------------------------------------------------------------
+	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+	if 1==1 then return end
 
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
@@ -8886,7 +9260,16 @@ end
 --------------------------------------------------------------------------------
 -- FCPX COLOR BOARD PUCK CONTROL VIA MOUSE:
 --------------------------------------------------------------------------------
+--
+-- >>> BROKEN! <<<
+--
 function colorBoardMousePuck(whichPuck, whichPanel)
+
+	--------------------------------------------------------------------------------
+	-- UNDER CONSTRUCTION:
+	--------------------------------------------------------------------------------
+	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+	if 1==1 then return end
 
 	--------------------------------------------------------------------------------
 	-- Local Variables:
@@ -9081,6 +9464,9 @@ end
 --------------------------------------------------------------------------------
 -- COLOR BOARD - RELEASE MOUSE KEYPRESS:
 --------------------------------------------------------------------------------
+--
+-- >>> BROKEN! <<<
+--
 function colorBoardMousePuckRelease()
 	releaseMouseColorBoardDown = true
 end
@@ -9537,7 +9923,7 @@ end
 -- WHICH BROWSER MODE IS ACTIVE IN FCPX?
 --------------------------------------------------------------------------------
 --
--- >>> NEEDS UPDATING <<<
+-- >>> BROKEN! <<<
 --
 function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 
@@ -9986,6 +10372,29 @@ function setTouchBarLocation()
 	--------------------------------------------------------------------------------
 	hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
+end
+
+--------------------------------------------------------------------------------
+-- SHOW TOUCH BAR:
+--------------------------------------------------------------------------------
+function showTouchbar()
+	--------------------------------------------------------------------------------
+	-- Check if we need to show the Touch Bar:
+	--------------------------------------------------------------------------------
+	if touchBarSupported then
+		local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
+		if displayTouchBar then touchBarWindow:show() end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- HIDE TOUCH BAR:
+--------------------------------------------------------------------------------
+function hideTouchbar()
+	--------------------------------------------------------------------------------
+	-- Hide the Touch Bar:
+	--------------------------------------------------------------------------------
+	if touchBarSupported then touchBarWindow:hide() end
 end
 
 --------------------------------------------------------------------------------
@@ -10635,6 +11044,21 @@ function notificationWatcherAction(name, object, userInfo)
 end
 
 --------------------------------------------------------------------------------
+-- CHECK FOR FCPX HACKS UPDATES:
+--------------------------------------------------------------------------------
+function checkForUpdates()
+	if debugMode then print("[FCPX Hacks] Checking for updates.") end
+	latestScriptVersion = nil
+	updateResponse, updateBody, updateHeader = hs.http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
+	if updateResponse == 200 then
+		if updateBody:sub(1,8) == "LATEST: " then
+			latestScriptVersion = updateBody:sub(9,12)
+			refreshMenuBar()
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -10703,10 +11127,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
-				if touchBarSupported then
-					local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
-					if displayTouchBar then touchBarWindow:show() end
-				end
+				showTouchbar()
 
 		elseif (eventType == hs.application.watcher.deactivated) or (eventType == hs.application.watcher.terminated) then
 			--------------------------------------------------------------------------------
@@ -10732,9 +11153,9 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
-				-- Check if we need to show the Touch Bar:
+				-- Check if we need to hide the Touch Bar:
 				--------------------------------------------------------------------------------
-				if touchBarSupported then touchBarWindow:hide() end
+				hideTouchbar()
 
 				--------------------------------------------------------------------------------
 				-- Disable hotkeys:
@@ -10836,7 +11257,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				-- Hide the Touch Bar:
 				--------------------------------------------------------------------------------
-				if touchBarSupported then touchBarWindow:hide() end
+				hideTouchbar()
 
 			end
 		end
@@ -10860,10 +11281,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
-				if touchBarSupported then
-					local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
-					if displayTouchBar then touchBarWindow:show() end
-				end
+				showTouchbar()
 				--------------------------------------------------------------------------------
 
 				--------------------------------------------------------------------------------
@@ -11161,6 +11579,9 @@ function clipboardWatcher()
 					--------------------------------------------------------------------------------
 					if debugMode then print("[FCPX Hacks] Something has been added to FCPX's Clipboard.") end
 
+					--------------------------------------------------------------------------------
+					-- Shared Clipboard:
+					--------------------------------------------------------------------------------
 					local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
 					if enableSharedClipboard then
 						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
@@ -11173,6 +11594,9 @@ function clipboardWatcher()
 						end
 					end
 
+					--------------------------------------------------------------------------------
+					-- Clipboard History:
+					--------------------------------------------------------------------------------
 					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
 
 					while (#clipboardHistory >= clipboardHistoryMaximumSize) do
@@ -11333,6 +11757,121 @@ function notificationWatcher()
 	--------------------------------------------------------------------------------
 	shareFailedNotificationWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
 	shareFailedNotificationWatcher:start()
+
+end
+
+--------------------------------------------------------------------------------
+-- SHARED CLIPBOARD WATCHER:
+--------------------------------------------------------------------------------
+function sharedClipboardFileWatcher(files)
+	if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- SHARED CLIPBOARD WATCHER:
+--------------------------------------------------------------------------------
+function sharedXMLFileWatcher(files)
+	if debugMode then print("[FCPX Hacks] Refreshing Shared XML Folder.") end
+
+	for _,file in pairs(files) do
+        if file:sub(-7) == ".fcpxml" then
+			local testFile = io.open(file, "r")
+			if testFile ~= nil then
+				testFile:close()
+				if not string.find(file, "(" .. hostname ..")") then
+					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+					sharedXMLNotification = hs.notify.new()
+					sharedXMLNotification:setIdImage(hs.image.imageFromPath("~/.hammerspoon/hs/assets/fcpxhacks.icns"))
+					sharedXMLNotification:title("New XML Recieved")
+					sharedXMLNotification:subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
+					sharedXMLNotification:informativeText("FCPX Hacks has recieved a new XML file.")
+					sharedXMLNotification:hasActionButton(true)
+					sharedXMLNotification:actionButtonTitle("Import XML")
+					sharedXMLNotification:send()
+				end
+			end
+        end
+    end
+
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- LOCAL XML DROPBOX WATCHER:
+--------------------------------------------------------------------------------
+function xmlDropboxFileWatcher(files)
+    for _,file in pairs(files) do
+        if string.match(file, '<?xml version="1.0" encoding') then
+
+			--------------------------------------------------------------------------------
+			-- Read XML Data:
+			--------------------------------------------------------------------------------
+			local plistFile = io.open(file, "r")
+			if plistFile == nil then return end -- This happens when the file is deleted from the Watch Folder.
+
+			--------------------------------------------------------------------------------
+			-- Display Text Box:
+			--------------------------------------------------------------------------------
+			local textboxResult = displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
+
+			--------------------------------------------------------------------------------
+			-- Read XML File Data:
+			--------------------------------------------------------------------------------
+			plistFileData = plistFile:read("*all")
+			plistFile:close()
+
+			--------------------------------------------------------------------------------
+			-- Delete file in Drop Box:
+			--------------------------------------------------------------------------------
+			os.remove(file)
+
+			if not textboxResult then
+				return -- Cancelled
+			else
+				--------------------------------------------------------------------------------
+				-- Get Settings:
+				--------------------------------------------------------------------------------
+				local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+				local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
+
+				--------------------------------------------------------------------------------
+				-- Get only the needed XML content:
+				--------------------------------------------------------------------------------
+				local startOfXML = string.find(plistFileData, "<?xml version=")
+				local endOfXML = string.find(plistFileData, "</fcpxml>")
+
+				newXML = string.sub(plistFileData, startOfXML - 2, endOfXML + 8)
+
+				--------------------------------------------------------------------------------
+				-- Save the XML content to the Shared XML Folder:
+				--------------------------------------------------------------------------------
+				local file = io.open(xmlSharingPath .. textboxResult .. " (" .. hostname .. ").fcpxml", "w")
+				currentClipboardData = file:write(newXML)
+				file:close()
+			end
+        end
+    end
+end
+
+--------------------------------------------------------------------------------
+-- TOUCH BAR WATCHER:
+--------------------------------------------------------------------------------
+function touchbarWatcher(obj, message)
+
+	if message == "didEnter" then
+        mouseInsideTouchbar = true
+    elseif message == "didExit" then
+        mouseInsideTouchbar = false
+
+        --------------------------------------------------------------------------------
+	    -- Just in case we got here before the eventtap returned the Touch Bar to normal:
+	    --------------------------------------------------------------------------------
+        touchBarWindow:movable(false)
+        touchBarWindow:acceptsMouseEvents(true)
+		hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+
+    end
 
 end
 

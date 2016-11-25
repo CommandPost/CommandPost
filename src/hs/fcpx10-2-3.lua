@@ -2809,7 +2809,7 @@ end
 -- GO TO LATENITE FILMS SITE:
 --------------------------------------------------------------------------------
 function gotoLateNiteSite()
-	os.execute('open "https://latenitefilms.com"')
+	os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
 end
 
 --------------------------------------------------------------------------------

@@ -9,13 +9,15 @@
 
 local USERDATA_TAG = "hs._asm.touchbar"
 local module       = require(USERDATA_TAG..".supported")
-if module.supported() then
+if module.supported(true) then
     for k, v in pairs(require(USERDATA_TAG..".internal")) do module[k] = v end
 end
 
 local objectMT     = hs.getObjectMetatable(USERDATA_TAG) or {}
 local mouse        = require("hs.mouse")
 local screen       = require("hs.screen")
+
+require("hs.drawing.color")
 
 -- private variables and methods -----------------------------------------
 
@@ -50,7 +52,7 @@ end
 objectMT.atMousePosition = function(self)
     local origin    = mouse.getAbsolutePosition()
     local tbFrame   = self:getFrame()
-    local scFrame   = mouse.getCurrentScreen():frame()
+    local scFrame   = mouse.getCurrentScreen():fullFrame()
     local scRight   = scFrame.x + scFrame.w
     local scBottom  = scFrame.y + scFrame.h
 
@@ -77,7 +79,7 @@ objectMT.centered = function(self, top)
 
     local origin    = {}
     local tbFrame   = self:getFrame()
-    local scFrame   = screen.mainScreen():frame()
+    local scFrame   = screen.mainScreen():fullFrame()
     local scRight   = scFrame.x + scFrame.w
     local scBottom  = scFrame.y + scFrame.h
 
