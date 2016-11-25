@@ -3,7 +3,7 @@ local mod = {}
 -------------------------------------------------------------------------------
 -- Requirements
 -------------------------------------------------------------------------------
-local fs								= require("hs.fs")
+local fs						= require("hs.fs")
 local osascript 				= require("hs.osascript")
 
 -------------------------------------------------------------------------------
@@ -68,14 +68,12 @@ end
 -- DISPLAY ALERT MESSAGE:
 --------------------------------------------------------------------------------
 function mod.displayAlertMessage(whatMessage)
-	local returnToFinalCutPro = mod.isFinalCutProFrontmost()
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
 		display dialog whatMessage buttons {"OK"} with icon stop
 	]]
 	osascript.applescript(appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then mod.launchFinalCutPro() end
 end
 
 --------------------------------------------------------------------------------
@@ -110,7 +108,9 @@ function mod.init()
 		require("hs.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
-		mod.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
+		print("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
+		mod.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 is installed in the root of the Applications folder and hasn't been renamed.\n\nHammerspoon will now quit.")
+		application.get("Hammerspoon"):kill()
 	end
 end
 
