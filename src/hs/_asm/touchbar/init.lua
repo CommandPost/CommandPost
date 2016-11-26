@@ -9,7 +9,7 @@
 
 local USERDATA_TAG = "hs._asm.touchbar"
 local module       = require(USERDATA_TAG..".supported")
-if module.supported(true) then
+if module.supported() then
     for k, v in pairs(require(USERDATA_TAG..".internal")) do module[k] = v end
 end
 
