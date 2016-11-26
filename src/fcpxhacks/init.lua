@@ -101,11 +101,11 @@ function mod.init()
 	local validFinalCutProVersion = false
 	if finalCutProVersion == "10.2.3" then
 		validFinalCutProVersion = true
-		require("latenite.fcpx.hacks.fcpx10-2-3")
+		require("fcpxhacks.fcpx10-2-3")
 	end
 	if finalCutProVersion == "10.3" then
 		validFinalCutProVersion = true
-		require("latenite.fcpx.hacks.fcpx10-3")
+		require("fcpxhacks.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
 		print("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
