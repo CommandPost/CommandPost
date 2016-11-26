@@ -1,0 +1,18 @@
+#!/bin/sh
+
+### This script will create a new DMG file for distribution
+
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+
+if [ -e "build/FCPXHacks.dmg" ]; then
+	rm "build/FCPXHacks.dmg"
+fi
+
+appdmg dmg/config.json build/FCPXHacks.dmg
+dmg/licenseDMG.py build/FCPXHacks.dmg dmg/license.rtf
+
+open build/FCPXHacks.dmg
+
+echo "The package is in 'build/FCPXHacks.dmg'"
