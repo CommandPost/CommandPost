@@ -14,7 +14,7 @@
 --  You can download the latest version here:
 --  https://latenitefilms.com/blog/final-cut-pro-hacks/
 --
---  Please be aware that I'm a filmmaker, not a coder, so... apologies!
+--  Please be aware that I'm a filmmaker, not a programmer, so... apologies!
 --
 --------------------------------------------------------------------------------
 --  LICENSE:
@@ -63,12 +63,12 @@
 --  HUGE SPECIAL THANKS TO THESE AMAZING DEVELOPERS FOR ALL THEIR HELP:
 --------------------------------------------------------------------------------
 --
---  > Aaron Magill (https://github.com/asmagill)
---  > Chris Jones (https://github.com/cmsj)
---  > Bill Cheeseman (http://pfiddlesoft.com)
---  > David Peterson (https://github.com/randomeizer)
---  > Yvan Koenig (http://macscripter.net/viewtopic.php?id=45148)
---  > Tim Webb (https://twitter.com/_timwebb_)
+--  > Aaron Magill 				https://github.com/asmagill
+--  > Chris Jones 				https://github.com/cmsj
+--  > Bill Cheeseman 			http://pfiddlesoft.com
+--  > David Peterson 			https://github.com/randomeizer
+--  > Yvan Koenig 				http://macscripter.net/viewtopic.php?id=45148
+--  > Tim Webb 					https://twitter.com/_timwebb_
 --
 --------------------------------------------------------------------------------
 --  VERY SPECIAL THANKS TO THESE AWESOME TESTERS & SUPPORTERS:
@@ -108,8 +108,9 @@ scriptVersion = "0.70"
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- LOAD EXTENSIONS:
+-- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
+
 application 				= require("hs.application")
 console 					= require("hs.console")
 drawing 					= require("hs.drawing")
@@ -126,7 +127,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- CLEAR THE CONSOLE:
 	--------------------------------------------------------------------------------
-	hs.console.clearConsole()
+	console.clearConsole()
 
 	--------------------------------------------------------------------------------
 	-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
@@ -152,7 +153,7 @@ function loadScript()
 	end
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 is installed in the root of the Applications folder and hasn't been renamed.\n\nHammerspoon will now quit.")
+		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
@@ -177,8 +178,8 @@ end
 print = function(value)
 	if type(value) == "table" then value = inspect(value) end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
-		local consoleStyledText = hs.styledtext.new(value, {
-			color = hs.drawing.color.definedCollections.hammerspoon["red"],
+		local consoleStyledText = styledtext.new(value, {
+			color = drawing.color.definedCollections.hammerspoon["red"],
 			font = { name = "Menlo", size = 12 },
 		})
 		console.printStyledtext(consoleStyledText)
@@ -192,8 +193,8 @@ function writeToConsole(value, overrideLabel)
 	if value ~= nil then
 		if type(value) == "table" then value = inspect(value) end
 		if overrideLabel == nil then value = "> " .. value end
-		local consoleStyledText = hs.styledtext.new(value, {
-			color = hs.drawing.color.definedCollections.hammerspoon["blue"],
+		local consoleStyledText = styledtext.new(value, {
+			color = drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },
 		})
 		console.printStyledtext(consoleStyledText)
