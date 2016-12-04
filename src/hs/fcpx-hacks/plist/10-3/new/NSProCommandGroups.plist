@@ -8,6 +8,16 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackTitlesOne</string>
+			<string>FCPXHackTitlesTwo</string>
+			<string>FCPXHackTitlesThree</string>
+			<string>FCPXHackTitlesFour</string>
+			<string>FCPXHackTitlesFive</string>
+			<string>FCPXHackGeneratorsOne</string>
+			<string>FCPXHackGeneratorsTwo</string>
+			<string>FCPXHackGeneratorsThree</string>
+			<string>FCPXHackGeneratorsFour</string>
+			<string>FCPXHackGeneratorsFive</string>
 			<string>FCPXHackTransitionsOne</string>
 			<string>FCPXHackTransitionsTwo</string>
 			<string>FCPXHackTransitionsThree</string>

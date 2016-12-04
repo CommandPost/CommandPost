@@ -2269,15 +2269,9 @@
 	<array>
 		<dict>
 			<key>characterString</key>
-			<string>=</string>
+			<string>^</string>
 			<key>modifiers</key>
 			<string>command shift</string>
-		</dict>
-		<dict>
-			<key>characterString</key>
-			<string>=</string>
-			<key>modifiers</key>
-			<string>command shift keypad</string>
 		</dict>
 	</array>
 	<key>InsertMedia</key>
@@ -2455,14 +2449,14 @@
 	<key>NextKeyframe</key>
 	<dict>
 		<key>characterString</key>
-		<string>'</string>
+		<string>:</string>
 		<key>modifiers</key>
 		<string>option</string>
 	</dict>
 	<key>NextMarker</key>
 	<dict>
 		<key>characterString</key>
-		<string>'</string>
+		<string>:</string>
 		<key>modifiers</key>
 		<string>control</string>
 	</dict>
@@ -2588,7 +2582,7 @@
 	<key>SelectLeftRightEdge</key>
 	<dict>
 		<key>characterString</key>
-		<string>\</string>
+		<string>¥</string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
@@ -2609,7 +2603,7 @@
 	<key>SelectLeftRightEdgeAudio</key>
 	<dict>
 		<key>characterString</key>
-		<string>\</string>
+		<string>¥</string>
 		<key>modifiers</key>
 		<string>shift</string>
 	</dict>
@@ -2630,7 +2624,7 @@
     <key>SelectLeftRightEdgeVideo</key>
     <dict>
         <key>characterString</key>
-        <string>\</string>
+        <string>¥</string>
         <key>modifiers</key>
         <string>control</string>
     </dict>
@@ -2665,7 +2659,7 @@
 	<key>ToggleEventsLibrary</key>
 	<dict>
 		<key>characterString</key>
-		<string>`</string>
+		<string>@</string>
 		<key>modifiers</key>
 		<string>command</string>
 	</dict>
@@ -2843,7 +2837,7 @@
 	<key>NextEdit</key>
 	<dict>
 		<key>characterString</key>
-		<string>'</string>
+		<string>:</string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
@@ -2903,7 +2897,7 @@
 		<key>characterString</key>
 		<string>r</string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string>command control</string>
 	</dict>
 	<key>ReplaceWithSelectedMediaWhole</key>
 	<dict>
@@ -3048,7 +3042,7 @@
 	<key>SelectNextAngleBank</key>
 	<dict>
 		<key>characterString</key>
-		<string>'</string>
+		<string>:</string>
 		<key>modifiers</key>
 		<string>option shift</string>
 	</dict>
@@ -3600,13 +3594,13 @@
 		</dict>
 		<dict>
 			<key>characterString</key>
-			<string>=</string>
+			<string>^</string>
 			<key>modifiers</key>
 			<string></string>
 		</dict>
 		<dict>
 			<key>characterString</key>
-			<string>=</string>
+			<string>^</string>
 			<key>modifiers</key>
 			<string>shift</string>
 		</dict>
@@ -3896,7 +3890,7 @@
 	<key>ToggleOverrideConnections</key>
 	<dict>
 		<key>characterString</key>
-		<string>`</string>
+		<string>@</string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
@@ -3968,7 +3962,7 @@
 	<key>TrimSelection</key>
 	<dict>
 		<key>characterString</key>
-		<string>\</string>
+		<string>¥</string>
 		<key>modifiers</key>
 		<string>option</string>
 	</dict>
@@ -4011,15 +4005,9 @@
 	<array>
 		<dict>
 			<key>characterString</key>
-			<string>=</string>
+			<string>^</string>
 			<key>modifiers</key>
 			<string>control</string>
-		</dict>
-		<dict>
-			<key>characterString</key>
-			<string>=</string>
-			<key>modifiers</key>
-			<string>control keypad</string>
 		</dict>
 	</array>
 	<key>AdjustVolumeRelative</key>
@@ -4040,15 +4028,9 @@
 	<array>
 		<dict>
 			<key>characterString</key>
-			<string>=</string>
+			<string>^</string>
 			<key>modifiers</key>
 			<string>command</string>
-		</dict>
-		<dict>
-			<key>characterString</key>
-			<string>=</string>
-			<key>modifiers</key>
-			<string>command keypad</string>
 		</dict>
 		<dict>
 			<key>characterString</key>

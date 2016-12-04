@@ -1,73 +1,209 @@
-local mod = {}
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--  			  ===========================================
+--
+--  			             F C P X    H A C K S
+--
+--			      ===========================================
+--
+--
+--  Thrown together by Chris Hocking @ LateNite Films
+--  https://latenitefilms.com
+--
+--  You can download the latest version here:
+--  https://latenitefilms.com/blog/final-cut-pro-hacks/
+--
+--  Please be aware that I'm a filmmaker, not a coder, so... apologies!
+--
+--------------------------------------------------------------------------------
+--  LICENSE:
+--------------------------------------------------------------------------------
+--
+-- The MIT License (MIT)
+--
+-- Copyright (c) 2016 Chris Hocking.
+--
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to deal
+-- in the Software without restriction, including without limitation the rights
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
+--
+-- The above copyright notice and this permission notice shall be included in
+-- all copies or substantial portions of the Software.
+--
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-- THE SOFTWARE.
+--
+--------------------------------------------------------------------------------
+--  FCPX HACKS LOGO DESIGNED BY:
+--------------------------------------------------------------------------------
+--
+--  > Sam Woodhall (https://twitter.com/SWDoctor)
+--
+--------------------------------------------------------------------------------
+--  USING SNIPPETS OF CODE FROM:
+--------------------------------------------------------------------------------
+--
+--  > http://www.hammerspoon.org/go/
+--  > https://github.com/asmagill/hs._asm.axuielement
+--  > https://github.com/asmagill/hammerspoon_asm/tree/master/touchbar
+--  > https://github.com/Hammerspoon/hammerspoon/issues/272
+--  > https://github.com/Hammerspoon/hammerspoon/issues/1021#issuecomment-251827969
+--  > https://github.com/Hammerspoon/hammerspoon/issues/1027#issuecomment-252024969
+--
+--------------------------------------------------------------------------------
+--  HUGE SPECIAL THANKS TO THESE AMAZING DEVELOPERS FOR ALL THEIR HELP:
+--------------------------------------------------------------------------------
+--
+--  > Aaron Magill (https://github.com/asmagill)
+--  > Chris Jones (https://github.com/cmsj)
+--  > Bill Cheeseman (http://pfiddlesoft.com)
+--  > David Peterson (https://github.com/randomeizer)
+--  > Yvan Koenig (http://macscripter.net/viewtopic.php?id=45148)
+--  > Tim Webb (https://twitter.com/_timwebb_)
+--
+--------------------------------------------------------------------------------
+--  VERY SPECIAL THANKS TO THESE AWESOME TESTERS & SUPPORTERS:
+--------------------------------------------------------------------------------
+--
+--  > The always incredible Karen Hocking!
+--  > Daniel Daperis & David Hocking
+--  > Alex Gollner (http://alex4d.com)
+--  > Scott Simmons (http://www.scottsimmons.tv)
+--  > FCPX Editors InSync Facebook Group
+--  > Isaac J. Terronez (https://twitter.com/ijterronez)
+--  > Андрей Смирнов, Al Piazza, Shahin Shokoui, Ilyas Akhmedov & Tim Webb
+--
+--  Latest credits at: https://latenitefilms.com/blog/final-cut-pro-hacks/
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------
--- Requirements
--------------------------------------------------------------------------------
-local fs						= require("hs.fs")
-local osascript 				= require("hs.osascript")
+
+
+
 
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
 scriptVersion = "0.70"
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-function mod.version()
-	return scriptVersion;
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   T H E    M A I N    S C R I P T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- LOAD EXTENSIONS:
+--------------------------------------------------------------------------------
+application 				= require("hs.application")
+console 					= require("hs.console")
+drawing 					= require("hs.drawing")
+fs 							= require("hs.fs")
+inspect 					= require("hs.inspect")
+osascript 					= require("hs.osascript")
+styledtext 					= require("hs.styledtext")
+
+--------------------------------------------------------------------------------
+-- LOAD SCRIPT:
+--------------------------------------------------------------------------------
+function loadScript()
+
+	--------------------------------------------------------------------------------
+	-- CLEAR THE CONSOLE:
+	--------------------------------------------------------------------------------
+	hs.console.clearConsole()
+
+	--------------------------------------------------------------------------------
+	-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
+	--------------------------------------------------------------------------------
+	writeToConsole("-----------------------------", true)
+	writeToConsole("| FCPX Hacks v" .. scriptVersion .. "          |", true)
+	writeToConsole("| Created by LateNite Films |", true)
+	writeToConsole("-----------------------------", true)
+
+	--------------------------------------------------------------------------------
+	-- CHECK FINAL CUT PRO VERSION:
+	--------------------------------------------------------------------------------
+	finalCutProVersion = finalCutProVersion()
+
+	local validFinalCutProVersion = false
+	if finalCutProVersion == "10.2.3" then
+		validFinalCutProVersion = true
+		require("hs.fcpx-hacks.fcpx10-2-3")
+	end
+	if finalCutProVersion:sub(1,4) == "10.3" then
+		validFinalCutProVersion = true
+		require("hs.fcpx-hacks.fcpx10-3")
+	end
+	if not validFinalCutProVersion then
+		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
+		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 is installed in the root of the Applications folder and hasn't been renamed.\n\nHammerspoon will now quit.")
+		application.get("Hammerspoon"):kill()
+	end
+
 end
 
 --------------------------------------------------------------------------------
--- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
-function mod.isFinalCutProInstalled()
-	return mod.doesDirectoryExist('/Applications/Final Cut Pro.app')
-end
+
+
+
+
 
 --------------------------------------------------------------------------------
--- RETURNS FCPX VERSION:
 --------------------------------------------------------------------------------
-function mod.finalCutProVersion()
-	if mod.isFinalCutProInstalled() then
-		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
-		return appleScriptFinalCutProVersion
-	else
-		return "Not Installed"
+--                     C O M M O N    F U N C T I O N S                       --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- REPLACE THE BUILT-IN PRINT FEATURE:
+--------------------------------------------------------------------------------
+print = function(value)
+	if type(value) == "table" then value = inspect(value) end
+	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
+		local consoleStyledText = hs.styledtext.new(value, {
+			color = hs.drawing.color.definedCollections.hammerspoon["red"],
+			font = { name = "Menlo", size = 12 },
+		})
+		console.printStyledtext(consoleStyledText)
 	end
 end
 
 --------------------------------------------------------------------------------
--- LAUNCH FINAL CUT PRO:
+-- WRITE TO CONSOLE:
 --------------------------------------------------------------------------------
-function mod.launchFinalCutPro()
-	hs.application.launchOrFocus("Final Cut Pro")
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO FRONTMOST?
---------------------------------------------------------------------------------
-function mod.isFinalCutProFrontmost()
-
-	local fcpx = hs.appfinder.appFromName("Final Cut Pro")
-	if fcpx == nil then
-		return false
-	else
-		return fcpx:isFrontmost()
+function writeToConsole(value, overrideLabel)
+	if value ~= nil then
+		if type(value) == "table" then value = inspect(value) end
+		if overrideLabel == nil then value = "> " .. value end
+		local consoleStyledText = hs.styledtext.new(value, {
+			color = hs.drawing.color.definedCollections.hammerspoon["blue"],
+			font = { name = "Menlo", size = 12 },
+		})
+		console.printStyledtext(consoleStyledText)
 	end
-
-end
-
---------------------------------------------------------------------------------
--- DOES DIRECTORY EXIST:
---------------------------------------------------------------------------------
-function mod.doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.mode == 'directory'
 end
 
 --------------------------------------------------------------------------------
 -- DISPLAY ALERT MESSAGE:
 --------------------------------------------------------------------------------
-function mod.displayAlertMessage(whatMessage)
+function displayAlertMessage(whatMessage)
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
@@ -77,41 +213,46 @@ function mod.displayAlertMessage(whatMessage)
 end
 
 --------------------------------------------------------------------------------
--- INITIALISES THE HACK
+-- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
-function mod.init()
-	--------------------------------------------------------------------------------
-	-- CLEAR THE CONSOLE:
-	--------------------------------------------------------------------------------
-	hs.console.clearConsole()
+function isFinalCutProInstalled()
+	return doesDirectoryExist('/Applications/Final Cut Pro.app')
+end
 
-	--------------------------------------------------------------------------------
-	-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
-	--------------------------------------------------------------------------------
-	print("====================================================")
-	print("                  FCPX Hacks v" .. mod.version()     )
-	print("====================================================")
-	print("    If you have any problems with this script,      ")
-	print("  please email a screenshot of your entire screen   ")
-	print(" with this console open to: chris@latenitefilms.com ")
-	print("====================================================")
-	
-	local finalCutProVersion = mod.finalCutProVersion()
-
-	local validFinalCutProVersion = false
-	if finalCutProVersion == "10.2.3" then
-		validFinalCutProVersion = true
-		require("hs.fcpx-hacks.fcpx10-2-3")
-	end
-	if finalCutProVersion == "10.3.1" then
-		validFinalCutProVersion = true
-		require("hs.fcpx-hacks.fcpx10-3")
-	end
-	if not validFinalCutProVersion then
-		print("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
-		mod.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 is installed in the root of the Applications folder and hasn't been renamed.\n\nHammerspoon will now quit.")
-		application.get("Hammerspoon"):kill()
+--------------------------------------------------------------------------------
+-- RETURNS FCPX VERSION:
+--------------------------------------------------------------------------------
+function finalCutProVersion()
+	if isFinalCutProInstalled() then
+		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
+		return appleScriptFinalCutProVersion
+	else
+		return "Not Installed"
 	end
 end
 
-return mod
+--------------------------------------------------------------------------------
+-- DOES DIRECTORY EXIST:
+--------------------------------------------------------------------------------
+function doesDirectoryExist(path)
+    local attr = fs.attributes(path)
+    return attr and attr.mode == 'directory'
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                L E T ' S     D O     T H I S     T H I N G !               --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+loadScript()
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
