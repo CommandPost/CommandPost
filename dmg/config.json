@@ -1,0 +1,17 @@
+{
+	"title": "FCPX Hacks",
+	"icon": "../src/hs/fcpx-hacks/assets/fcpxhacks.icns",
+	"background": "backgroundImage-assets/backgroundImage.png",
+	"window": {
+		"size": {
+			"width": 524,
+			"height": 370
+		}
+	},
+	"icon-size": 64,
+	"contents": [
+		{ "x": 430, "y": 161, "type": "file", "path": "Hammerspoon" },
+		{ "x": 110,	"y": 161, "type": "file", "path": "../src/init.lua" },
+		{ "x": 220, "y": 161, "type": "file", "path": "../src/hs" }
+	]
+}
