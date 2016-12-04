@@ -92,14 +92,10 @@
 
 
 -------------------------------------------------------------------------------
--- SCRIPT VERSION:
+-- CONSTANTS:
 -------------------------------------------------------------------------------
 scriptVersion = "0.70"
---------------------------------------------------------------------------------
-
-
-
-
+fcpxBundleID = "com.apple.FinalCut"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -118,6 +114,7 @@ fs 							= require("hs.fs")
 inspect 					= require("hs.inspect")
 osascript 					= require("hs.osascript")
 styledtext 					= require("hs.styledtext")
+keycodes					= require("hs.keycodes")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -140,19 +137,27 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- CHECK FINAL CUT PRO VERSION:
 	--------------------------------------------------------------------------------
-	finalCutProVersion = finalCutProVersion()
-
+	local fcpVersion = finalCutProVersion()
+	local osVersion = macOSVersion()
+	
+	--------------------------------------------------------------------------------
+	-- Display Useful Debugging Information in Console:
+	--------------------------------------------------------------------------------
+	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
+	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
+	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
+	
 	local validFinalCutProVersion = false
-	if finalCutProVersion == "10.2.3" then
+	if fcpVersion == "10.2.3" then
 		validFinalCutProVersion = true
 		require("hs.fcpx-hacks.fcpx10-2-3")
 	end
-	if finalCutProVersion:sub(1,4) == "10.3" then
+	if fcpVersion:sub(1,4) == "10.3" then
 		validFinalCutProVersion = true
 		require("hs.fcpx-hacks.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
-		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
+		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
 		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
@@ -217,20 +222,30 @@ end
 -- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
 function isFinalCutProInstalled()
-	return doesDirectoryExist('/Applications/Final Cut Pro.app')
+	local path = application.pathForBundleID(fcpxBundleID)
+	return doesDirectoryExist(path)
 end
 
 --------------------------------------------------------------------------------
 -- RETURNS FCPX VERSION:
 --------------------------------------------------------------------------------
 function finalCutProVersion()
+	local version = nil
 	if isFinalCutProInstalled() then
-		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
-		return appleScriptFinalCutProVersion
-	else
-		return "Not Installed"
+		ok,version = osascript.applescript('return version of application id "'..fcpxBundleID..'"')
 	end
+	return version or "Not Installed"
 end
+
+-------------------------------------------------------------------------------
+-- RETURNS MACOS VERSION:
+-------------------------------------------------------------------------------
+function macOSVersion()
+	local osVersion = hs.host.operatingSystemVersion()
+	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
+	return osVersionString
+end
+
 
 --------------------------------------------------------------------------------
 -- DOES DIRECTORY EXIST:

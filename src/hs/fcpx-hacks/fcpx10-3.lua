@@ -238,13 +238,6 @@ function loadScript()
 	window.filter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
-	-- Display Useful Debugging Information in Console:
-	--------------------------------------------------------------------------------
-	if macOSVersion() ~= nil then 					writeToConsole("macOS Version: " .. tostring(macOSVersion())) 							end
-	if finalCutProVersion() ~= nil then				writeToConsole("Final Cut Pro Version: " .. tostring(finalCutProVersion()))				end
-	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 	end
-
-	--------------------------------------------------------------------------------
 	-- First time running 10.3? Trash settings:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
@@ -554,9 +547,9 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-
-
-
+function fcpxApplication()
+	return application("com.apple.FinalCut")
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -627,7 +620,7 @@ function getFinalCutProApplicationTree()
     end
 
     print(timestamp())
-	s = ax.applicationElement(hs.application("Final Cut Pro"))
+	s = ax.applicationElement(fcpxApplication())
 	print(inspect(s:buildTree()))
 	print(timestamp())
 
@@ -5045,7 +5038,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5150,7 +5143,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5255,7 +5248,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5360,7 +5353,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5469,7 +5462,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5883,12 +5876,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx 				= application("Final Cut Pro")
+		local fcpx 				= fcpxApplication()
 
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(application("Final Cut Pro"))[1]
+		fcpxElements = ax.applicationElement(fcpxApplication())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
@@ -6143,7 +6136,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = application("Final Cut Pro")
+		fcpx = fcpxApplication()
 		fcpxElements = ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
@@ -7507,7 +7500,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = application("Final Cut Pro")
+		fcpx = fcpxApplication()
 		fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -7967,7 +7960,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -8084,7 +8077,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -10794,7 +10787,7 @@ end
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
-	application.launchOrFocus("Final Cut Pro")
+	application.launchOrFocusByBundleID("com.apple.FinalCut")
 end
 
 --------------------------------------------------------------------------------
@@ -10802,12 +10795,12 @@ end
 --------------------------------------------------------------------------------
 function restartFinalCutPro()
 
-	if application("Final Cut Pro") ~= nil then
+	if fcpxApplication() ~= nil then
 
 		--------------------------------------------------------------------------------
 		-- Kill Final Cut Pro:
 		--------------------------------------------------------------------------------
-		application("Final Cut Pro"):kill()
+		fcpxApplication():kill()
 
 		--------------------------------------------------------------------------------
 		-- Wait until Final Cut Pro is Closed:
@@ -11059,7 +11052,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	local fcpx = application.get("Final Cut Pro")
+	local fcpx = fcpxApplication()
 	if fcpx == nil then
 		return false
 	else
@@ -11073,32 +11066,13 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	local fcpx = application.get("Final Cut Pro")
+	local fcpx = fcpxApplication()
 	if fcpx == nil then
 		return false
 	else
 		return fcpx:isRunning()
 	end
 
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO INSTALLED:
---------------------------------------------------------------------------------
-function isFinalCutProInstalled()
-	return doesDirectoryExist('/Applications/Final Cut Pro.app')
-end
-
---------------------------------------------------------------------------------
--- RETURNS FINAL CUT PRO VERSION:
---------------------------------------------------------------------------------
-function finalCutProVersion()
-	if isFinalCutProInstalled() then
-		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
-		return appleScriptFinalCutProVersion
-	else
-		return "Not Installed"
-	end
 end
 
 --------------------------------------------------------------------------------
@@ -11139,7 +11113,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = application("Final Cut Pro")
+	local fcpx = fcpxApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -11180,7 +11154,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= application("Final Cut Pro")
+	local fcpx 				= fcpxApplication()
 	local fcpxElements 		= ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -11385,7 +11359,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = application("Final Cut Pro")
+	local fcpx = fcpxApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -12311,15 +12285,6 @@ end
 	  return (s:gsub("^%s*(.-)%s*$", "%1"))
 	end
 
-	-------------------------------------------------------------------------------
-	-- RETURNS MACOS VERSION:
-	-------------------------------------------------------------------------------
-	function macOSVersion()
-		local osVersion = host.operatingSystemVersion()
-		local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
-		return osVersionString
-	end
-
 --------------------------------------------------------------------------------
 -- MISC:
 --------------------------------------------------------------------------------
@@ -12672,7 +12637,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = application("Final Cut Pro")
+		local fcpx = fcpxApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -12869,7 +12834,7 @@ function mediaImportWatcher()
 			stopMediaImportTimer = false
 			currentApplication = application.frontmostApplication()
 
-			local fcpx = application.get("Final Cut Pro")
+			local fcpx = fcpxApplication()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
@@ -12877,7 +12842,7 @@ function mediaImportWatcher()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
-					local fcpx = application.get("Final Cut Pro")
+					local fcpx = fcpxApplication()
 					local fcpxElements = ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then

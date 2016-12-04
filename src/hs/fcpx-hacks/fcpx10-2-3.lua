@@ -201,9 +201,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Useful Debugging Information:
 		--------------------------------------------------------------------------------
-		if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
-		if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
-		if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
 		local settingsDebug1 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
 		local settingsDebug2 = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or ""
 		local settingsDebug3 = hs.settings.get("fcpxHacks.allEffects") or ""
@@ -9365,15 +9362,6 @@ function secondsToTimecode(seconds, framerate)
 		frames 	= string.format("%02.f", (seconds % 1) * framerate);
 		return hours..":"..mins..":"..secs..":"..frames
 	end
-end
-
--------------------------------------------------------------------------------
--- RETURNS MACOS VERSION:
--------------------------------------------------------------------------------
-function macOSVersion()
-	local osVersion = hs.host.operatingSystemVersion()
-	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
-	return osVersionString
 end
 
 --------------------------------------------------------------------------------
