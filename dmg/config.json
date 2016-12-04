@@ -10,8 +10,8 @@
 	},
 	"icon-size": 64,
 	"contents": [
-		{ "x": 410, "y": 161, "type": "file", "path": "Hammerspoon" },
-		{ "x": 82,	"y": 161, "type": "file", "path": "../src/init.lua" },
-		{ "x": 200, "y": 161, "type": "file", "path": "../src/hs" }
+		{ "x": 430, "y": 161, "type": "file", "path": "Hammerspoon" },
+		{ "x": 110,	"y": 161, "type": "file", "path": "../src/init.lua" },
+		{ "x": 220, "y": 161, "type": "file", "path": "../src/hs" }
 	]
 }
