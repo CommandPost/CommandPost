@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 
 
-local plist 									= require("hs.fcpx-hacks.plist")
+local plist 									= require("hs.fcpx-hacks.plister")
 local protect 									= require("hs.fcpx-hacks.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
