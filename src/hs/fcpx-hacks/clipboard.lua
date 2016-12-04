@@ -16,7 +16,12 @@ local CLIPBOARD = protect({
 	-- Standard types
 	ARRAY 										= "NSMutableArray",
 	SET 										= "NSMutableSet",
-	OBJECTS 									= "NS.Objects",
+	OBJECTS 									= "NS.objects",
+	
+	-- Dictionary
+	DICTIONARY									= "NSDictionary",
+	KEYS										= "NS.keys",
+	VALUES										= "NS.objects",
 		
 	-- FCPX Types
 	ANCHORED_ANGLE 								= "FFAnchoredAngle",
@@ -49,31 +54,49 @@ local clipboardHistoryMaximumSize 				= 5
 -- Hostname
 local hostname									= host.localizedName()
 
+-- Gets the specified object, looking up the reference object if necessary.
+function _get(data, objects)
+	if type(data) == 'table' and data["CF$UID"] then
+		-- it's a reference
+		-- log.d("_get: lookup "..data["CF$UID"])
+		return objects[data["CF$UID"]+1]
+	else
+		-- log.d("_get: direct")
+		return data
+	end
+end
+
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
 function processObject(data, objects)
-	if data['$class'] and data['$class']['$classname'] then
-		log.d("Object > $classname: "..data['$class']['$classname'])
-		local class = data['$class']['$classname']
-		if class == CLIPBOARD.ARRAY or class == CLIPBOARD.SET then
-			return processMutableCollection(data, objects)
-		elseif class == CLIPBOARD.ANCHORED_ANGLE then
-			return processAnchoredAngle(data, objects)
-		elseif class == CLIPBOARD.ANCHORED_COLLECTION then
-			return processAnchoredCollection(data, objects)
-		elseif class == CLIPBOARD.TIMERANGE_AND_OBJECT then
-			return processTimeRangeAndObject(data, objects)
+	data = _get(data, objects)
+	if type(data) == "table" then
+		log.d("processing object:\n"..inspect(data))
+		log.d("getting $class")
+		local class = _get(data['$class'], objects)
+		if class then
+			local classname = _get(class["$classname"], objects)
+			log.d("$classname: "..classname)
+			if classname == CLIPBOARD.ARRAY or classname == CLIPBOARD.SET then
+				return processMutableCollection(data, objects)
+			elseif classname == CLIPBOARD.ANCHORED_ANGLE then
+				return processAnchoredAngle(data, objects)
+			elseif classname == CLIPBOARD.ANCHORED_COLLECTION then
+				return processAnchoredCollection(data, objects)
+			elseif classname == CLIPBOARD.TIMERANGE_AND_OBJECT then
+				return processTimeRangeAndObject(data, objects)
+			elseif classname == CLIPBOARD.DICTIONARY then
+				return processDictionary(data, objects)
+			end
+			log.d("Unsupported classname: "..classname)
 		end
-	elseif data['CF$UID'] then
-		log.d("Object > CF$UID: "..tostring(data['CF$UID']))
-		log.d("CF$UID type: "..type(data['CF$UID']))
-		return processObject(objects[data['CF$UID']+1], objects)
 	end
 	log.d("Object > ?: "..inspect(data))
 	return nil, 0
 end
 
--- Processes the 'NSMutableArray' object
+
+-- Processes the 'NSDictionary' object
 -- Params:
 --		* data: 	The data object to process
 --		* objects:	The table of objects
@@ -81,9 +104,13 @@ end
 function processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
-	local objects = data[CLIPBOARD.OBJECTS]
-	for k,v in ipairs(objects) do
-		local n,c = processObject(e, objects)
+	log.d("Getting "..CLIPBOARD.OBJECTS)
+	local obs = _get(data[CLIPBOARD.OBJECTS], objects)
+	log.d("objs:\n"..inspect(objs))
+	for k,v in ipairs(obs) do
+		log.d("processing item #"..k)
+		v = _get(v, objects)
+		local n,c = processObject(v, objects)
 		if name == nil then
 			name = n
 		end
@@ -92,26 +119,57 @@ function processMutableCollection(data, objects)
 	return name, count
 end
 
+-- Processes the 'NSMutableArray' object
+-- Params:
+--		* data: 	The data object to process
+--		* objects:	The table of objects
+-- Returns: string (primary clip name), integer (number of clips)
+function processDictionary(data, objects)
+	local name = nil
+	local count = 0
+	
+	log.d("Getting "..CLIPBOARD.KEYS)
+	local keys = _get(data[CLIPBOARD.KEYS], objects)
+	local values = _get(data[CLIPBOARD.VALUES], objects)
+	
+	for i,key in ipairs(keys) do
+		key = _get(key, objects)
+		local value = _get(values[i], objects)
+		log.d(key..": "..inspect(value))
+		
+		if key == "objects" then
+			local n,c = processObject(value, objects)
+			if name == nil then
+				name = n
+			end
+			count = count + c
+		end
+	end
+	return name, count
+end
+
 -- Processes 'FFAnchoredCollection' objects
 -- Returns: string (primary clip name), integer (number of clips)
 function processAnchoredCollection(data, objects)
-	if data.displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
+	local displayName = _get(data.displayName, objects)
+	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
 		return processObject(data.containedItems, objects)
 	else
-		return data.displayName, processObject(data.anchoredItems, objects) + 1
+		local _, count = processObject(data.anchoredItems, objects)
+		return displayName, count + 1
 	end
 end
 
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
 function processAnchoredAngle(data, objects)
-	return data.displayName, processObject(data.anchoredItems, objects) + 1
+	return _get(data.displayName, objects), processObject(data.anchoredItems, objects) + 1
 end
 
 -- Process 'FFAnchoredSequence' objects
 -- Returns: string (primary clip name), integer (number of clips)
 function processAnchoredSequence(data, objects)
-	return data.displayName, 1
+	return _get(data.displayName, objects), 1
 end
 
 -- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
@@ -129,12 +187,12 @@ local mod = {}
 --	 local name = findClipName(myXmlData, "Unknown")
 function mod.findClipName(fcpxTable, default)
 	
-	local root = fcpxTable['$top']['root']
+	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
 	
-	log.d("root: "..inspect(root))
+	log.d("top: "..inspect(top))
 	
-	local name, count = processObject(root, objects)
+	local name, count = processObject(top.root, objects)
 
 	if name then
 		if count > 1 then
