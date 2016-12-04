@@ -59,10 +59,8 @@ local hostname									= host.localizedName()
 function _get(data, objects)
 	if type(data) == 'table' and data["CF$UID"] then
 		-- it's a reference
-		-- log.d("_get: lookup "..data["CF$UID"])
 		return objects[data["CF$UID"]+1]
 	else
-		-- log.d("_get: direct")
 		return data
 	end
 end
@@ -72,8 +70,10 @@ end
 function processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
-		log.d("processing object:\n"..inspect(data))
-		-- log.d("getting $class")
+		-- inspect(data) is potentially expensive, so make sure debug is on first.
+		if log.getLogLevel() >= 4 then
+			log.d("processing object:\n"..inspect(data))
+		end
 		local class = _get(data['$class'], objects)
 		if class then
 			local classname = _get(class["$classname"], objects)
@@ -111,7 +111,6 @@ function processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
 	local obs = _get(data[CLIPBOARD.OBJECTS], objects)
-	-- log.d("obs:\n"..inspect(obs))
 	for k,v in ipairs(obs) do
 		log.d("processing item #"..k)
 		v = _get(v, objects)
@@ -139,7 +138,6 @@ function processDictionary(data, objects)
 	for i,key in ipairs(keys) do
 		key = _get(key, objects)
 		local value = _get(values[i], objects)
-		-- log.d(key..": "..inspect(value))
 		
 		if key == "objects" then
 			local n,c = processObject(value, objects)
@@ -157,7 +155,7 @@ end
 function processAnchoredCollection(data, objects)
 	local displayName = _get(data.displayName, objects)
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
-		log.d("processing a copy from the Timeline")
+		log.d("Processing a copy from the Timeline")
 		return processObject(data.containedItems, objects)
 	else
 		local _, count = processObject(data.anchoredItems, objects)
@@ -220,8 +218,6 @@ function mod.findClipName(fcpxTable, default)
 	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
 	
-	-- log.d("top: "..inspect(top))
-	
 	local name, count = processObject(top.root, objects)
 
 	if name then
@@ -280,14 +276,10 @@ function mod.startWatching()
 				local currentClipboardLabel 	= os.date()
 
 				
-				log.d("Converting clipboard data from binary to a table.")
 				local clipboardTable = plist.binaryToTable(currentClipboardData)
 				local fcpxData = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
 				if fcpxData then
-					log.d("Converting pasteboard object from BASE64 to a table.")
 					local fcpxTable = plist.base64ToTable(fcpxData)
-					-- log.d("fcpxTable: "..inspect(fcpxTable))
-					log.d("Finding the clip name.")
 					currentClipboardLabel = mod.findClipName(fcpxTable, currentClipboardLabel)
 				else
 					log.e("The clipboard does not contain any data.")
