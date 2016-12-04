@@ -1,7 +1,7 @@
 {
-  "title": "FCPX Hacks",
-  "icon": "../src/fcpxhacks/assets/fcpxhacks.icns",
-  "background": "backgroundImage-assets/backgroundImage.png",
+	"title": "FCPX Hacks",
+	"icon": "../src/hs/fcpx-hacks/assets/fcpxhacks.icns",
+	"background": "backgroundImage-assets/backgroundImage.png",
 	"window": {
 		"size": {
 			"width": 524,
@@ -9,10 +9,9 @@
 		}
 	},
 	"icon-size": 64,
-  "contents": [
-    { "x": 410, "y": 161, "type": "file", "path": "Hammerspoon" },
-    { "x": 82,  "y": 161, "type": "file", "path": "../src/init.lua" },
-		{ "x": 161, "y": 161, "type": "file", "path": "../src/hs" },
-		{ "x": 240, "y": 161, "type": "file", "path": "../src/fcpxhacks" }
-  ]
+	"contents": [
+		{ "x": 430, "y": 161, "type": "file", "path": "Hammerspoon" },
+		{ "x": 110,	"y": 161, "type": "file", "path": "../src/init.lua" },
+		{ "x": 220, "y": 161, "type": "file", "path": "../src/hs" }
+	]
 }
