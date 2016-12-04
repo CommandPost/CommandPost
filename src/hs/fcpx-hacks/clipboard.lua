@@ -4,11 +4,13 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local log										= hs.logger.new("clipboard")
 
 local plist 									= require("hs.fcpx-hacks.plister")
 local protect 									= require("hs.fcpx-hacks.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
+local inspect									= require("inspect")
 
 local CLIPBOARD = protect({
 	-- Standard types
@@ -47,48 +49,11 @@ local clipboardHistoryMaximumSize 				= 5
 -- Hostname
 local hostname									= host.localizedName()
 
-function parseRoot(binaryData)
-	local data = plist.binaryToTable(binaryData)
-	local options = {
-		depth = 7,
-		include = [],
-		exclude = []
-	}
-	return lookup(data['$top'].root, data['$objects'], options.depth, options)
-end
-
-function lookup(value, objects, depth, options)
-	--
-	if (Array.isArray(value)) then
-		local result = []
-		for i,v in ipairs(value) do
-			result[i] = lookup(v, objects, depth, options)
-		end
-		return result
-	end
-	if value and typeof value == 'table' then
-		if value['CF$UID'] != undefined and depth > 0 then
-			local result = lookup(objects[value['CF$UID']], objects, depth-1, options)
-			result._UID = value['CF$UID']
-			return result
-		end
-		
-		local result = {}
-		for local key,value in pairs(value) do
-			if ((!options.include or options.include.indexOf(key) >= 0) and (!options.exclude or options.exclude.indexOf(key) == -1)) then
-				result[key] = lookup(value[key], objects, depth, options)
-			end
-		end
-		return result
-	end
-	
-	return value
-end
-
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
 function processObject(data, objects)
-	if data['$class'] and data['$classname'] then
+	if data['$class'] and data['$class']['$classname'] then
+		log.d("Object > $classname: "..data['$class']['$classname'])
 		local class = data['$class']['$classname']
 		if class == CLIPBOARD.ARRAY or class == CLIPBOARD.SET then
 			return processMutableCollection(data, objects)
@@ -100,8 +65,11 @@ function processObject(data, objects)
 			return processTimeRangeAndObject(data, objects)
 		end
 	elseif data['CF$UID'] then
-		return processObject(objects[data['CF$UID']], objects)
+		log.d("Object > CF$UID: "..tostring(data['CF$UID']))
+		log.d("CF$UID type: "..type(data['CF$UID']))
+		return processObject(objects[data['CF$UID']+1], objects)
 	end
+	log.d("Object > ?: "..inspect(data))
 	return nil, 0
 end
 
@@ -111,14 +79,15 @@ end
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
 function processMutableCollection(data, objects)
-	local name = nil, count = 0
+	local name = nil
+	local count = 0
 	local objects = data[CLIPBOARD.OBJECTS]
 	for k,v in ipairs(objects) do
 		local n,c = processObject(e, objects)
 		if name == nil then
 			name = n
 		end
-		count += c
+		count = count + c 
 	end
 	return name, count
 end
@@ -162,6 +131,9 @@ function mod.findClipName(fcpxTable, default)
 	
 	local root = fcpxTable['$top']['root']
 	local objects = fcpxTable['$objects']
+	
+	log.d("root: "..inspect(root))
+	
 	local name, count = processObject(root, objects)
 
 	if name then
@@ -219,13 +191,18 @@ function mod.startWatching()
 				local currentClipboardData 		= pasteboard.readDataForUTI(CLIPBOARD.UTI)
 				local currentClipboardLabel 	= os.date()
 
+				
+				log.d("Converting clipboard data from binary to a table.")
 				local clipboardTable = plist.binaryToTable(currentClipboardData)
 				local fcpxData = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
 				if fcpxData then
+					log.d("Converting pasteboard object from BASE64 to a table.")
 					local fcpxTable = plist.base64ToTable(fcpxData)
-					currentClipboardLabel = findClipName(fcpxTable, currentClipboardLable)
+					-- log.d("fcpxTable: "..inspect(fcpxTable))
+					log.d("Finding the clip name.")
+					currentClipboardLabel = mod.findClipName(fcpxTable, currentClipboardLabel)
 				else
-					print("[FCPX Hacks] ERROR: The clipboard does not contain any data.")
+					log.e("The clipboard does not contain any data.")
 					addToClipboardHistory = false
 				end
 
@@ -237,7 +214,7 @@ function mod.startWatching()
 					--------------------------------------------------------------------------------
 					-- Used for debugging:
 					--------------------------------------------------------------------------------
-					if debugMode then print("[FCPX Hacks] Something has been added to FCPX's Clipboard.") end
+					log.d("Added '"..currentClipboardLabel.."' to FCPX's Clipboard.")
 
 					--------------------------------------------------------------------------------
 					-- Shared Clipboard:
@@ -280,6 +257,27 @@ function mod.startWatching()
 	end)
 	clipboardTimer:start()
 
+end
+
+function mod.stopWatching()
+	if clipboardTimer then
+		clipboardTimer:stop()
+		clipboardTime = nil
+	end
+end
+
+function mod.isWatching()
+	return clipboardTimer or false
+end
+
+function mod.getHistory()
+	return clipboardHistory
+end
+
+function mod.clearHistory()
+	clipboardHistory = {}
+	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+	clipboardCurrentChange = pasteboard.changeCount()
 end
 
 return mod
