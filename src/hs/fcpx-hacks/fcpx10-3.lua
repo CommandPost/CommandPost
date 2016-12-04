@@ -14,7 +14,7 @@
 --  You can download the latest version here:
 --  https://latenitefilms.com/blog/final-cut-pro-hacks/
 --
---  Please be aware that I'm a filmmaker, not a coder, so... apologies!
+--  Please be aware that I'm a filmmaker, not a programmer, so... apologies!
 --
 --------------------------------------------------------------------------------
 --  LICENSE:
@@ -46,6 +46,11 @@
 --  FEATURE WISH LIST:
 --------------------------------------------------------------------------------
 --
+--  > Change Keyframe Colour from Yellow to Red
+--  > Shortcut to add a Keyframe and Automatically Select it
+--  > Automate a cross dissolve: Use the select left edge/select
+--    ridge edge commands along with the toggle default fade commands?
+--    (suggested by Patrick Southern)
 --  > Cancel All Background Tasks
 --  > Move Storyline Up & Down Shortcut
 --  > Add Custom Audio Fade Handles Shortcut
@@ -53,7 +58,6 @@
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --  > Remember Last Project & Layout when restarting FCPX
 --  > Shortcut to go to full screen mode without playing
---  > Transitions, Titles, Generators & Themes Shortcuts
 --  > Timeline Index HUD on Mouseover
 --  > Watch Folders for Compressor
 --  > Favourites folder for Effects, Transitions, Titles, Generators & Themes
@@ -64,41 +68,20 @@
 --    was a tile in the browser (suggested by Michael Matzdorff)
 --
 --------------------------------------------------------------------------------
---  HIGH PRIORITY LIST:
+--  BUGS & ISSUES:
 --------------------------------------------------------------------------------
 --
 --  > Rewrite GUI Scripting code for Final Cut Pro 10.3:
---		  >  fcpxSaveKeywordSearches()
---		  >  fcpxRestoreKeywordSearches()
---		  >  fcpxWhichBrowserMode()
 --		  >  selectClipAtLane()
---		  >  batchExportToCompressor()
---		  >  multicamMatchFrame()
 --		  >  singleMatchFrame()
---		  >  colorBoardMousePuck()
+--		  >  batchExportToCompressor()
 --
---  > highlightFCPXBrowserPlayhead() needs support for dual screens
---  > updateEffectsList() needs support for dual screens
---
---------------------------------------------------------------------------------
---  LOW PRIORITY LIST:
---------------------------------------------------------------------------------
---
---  > Fix clipboardWatcher() so it correctly labels clipboard items by name
---  > Add option to turn off different menubar sections.
---  > Do better error messages and bug submissions.
+--  > Finish getClipNameFromFinalCutProClipboard()
+--  > multicamMatchFrame() needs to somehow detect which angle is selected in timeline
+--  > changeTimelineClipHeight() doesn't trigger shortcut for some reason?
+--  > bindKeyboardShortcuts() is now VERY slow. Need to re-think plist reading.
 --
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
--- ENABLE DEBUG MODE:
---------------------------------------------------------------------------------
-local debugMode = false
 --------------------------------------------------------------------------------
 
 
@@ -112,130 +95,123 @@ local debugMode = false
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- LOAD EXTENSIONS:
+-- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
--- BUILT-IN:
-
-	fs							= require("hs.fs")
-	host						= require("hs.host")
-	settings					= require("hs.settings")
-	http						= require("hs.http")
-	menubar						= require("hs.menubar")
-	eventtap					= require("hs.eventtap")
-	window						= require("hs.window")
-	window.filter				= require("hs.window.filter")
-	pathwatcher					= require("hs.pathwatcher")
-	alert 						= require("hs.alert")
-	hotkey 						= require("hs.hotkey")
-	application 				= require("hs.application")
-	uielement 					= require("hs.uielement")
-	appfinder 					= require("hs.appfinder")
-	osascript 					= require("hs.osascript")
-	drawing 					= require("hs.drawing")
-	fnutils 					= require("hs.fnutils")
-	keycodes					= require("hs.keycodes")
-	json  						= require("hs.json")
-	base64 						= require("hs.base64")
-	distributednotifications	= require("hs.distributednotifications")
-	utf8						= require("hs.utf8")
-	http						= require("hs.http")
-	pasteboard 					= require("hs.pasteboard")
-
--- THIRD PARTY:
-
-	ax 							= require("hs._asm.axuielement")
-	touchbar 					= require("hs._asm.touchbar")
-	slaxml 						= require("hs.slaxml")
-	slaxdom 					= require("hs.slaxml.slaxdom")
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
+alert 											= require("hs.alert")
+appfinder 										= require("hs.appfinder")
+application 									= require("hs.application")
+base64 											= require("hs.base64")
+chooser											= require("hs.chooser")
+console 										= require("hs.console")
+distributednotifications						= require("hs.distributednotifications")
+drawing 										= require("hs.drawing")
+eventtap										= require("hs.eventtap")
+fnutils 										= require("hs.fnutils")
+fs												= require("hs.fs")
+geometry										= require("hs.geometry")
+host											= require("hs.host")
+hotkey 											= require("hs.hotkey")
+http											= require("hs.http")
+image											= require("hs.image")
+inspect											= require("hs.inspect")
+json  											= require("hs.json")
+keycodes										= require("hs.keycodes")
+menubar											= require("hs.menubar")
+mouse											= require("hs.mouse")
+notify											= require("hs.notify")
+osascript 										= require("hs.osascript")
+pasteboard 										= require("hs.pasteboard")
+pathwatcher										= require("hs.pathwatcher")
+screen											= require("hs.screen")
+settings										= require("hs.settings")
+sharing											= require("hs.sharing")
+styledtext										= require("hs.styledtext")
+timer											= require("hs.timer")
+uielement 										= require("hs.uielement")
+utf8											= require("hs.utf8")
+window											= require("hs.window")
+window.filter									= require("hs.window.filter")
 
 --------------------------------------------------------------------------------
--- LOCAL VARIABLES:
---------------------------------------------------------------------------------
-local clock 									= os.clock										-- Used for sleep()
-
-local browserHighlight 							= nil											-- Used for Highlight Browser Playhead
-local browserHighlightTimer 					= nil											-- Used for Highlight Browser Playhead
-
-local scrollingTimelineSpacebarPressed   		= false											-- Was spacebar pressed?
-local scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
-
-local scrollingTimelineTimer					= nil											-- Scrolling Timeline Timer
-local scrollingTimelineScrollbarTimer			= nil											-- Scrolling Timeline Scrollbar Timer
-
-local finalCutProShortcutKey 					= nil											-- Table of all Final Cut Pro Shortcuts
-local finalCutProShortcutKeyPlaceholders 		= nil											-- Table of all needed Final Cut Pro Shortcuts
-
-local isCommandEditorOpen 						= false 										-- Is Command Editor Open?
-
-local colorBoardSelectPuckSplitGroupCache 		= nil											-- Color Board Select Puck Split Group Cache
-local colorBoardSelectPuckGroupCache 			= nil											-- Color Board Select Puck Group Cache
-
-local releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
-local releaseMouseColorBoardDown 				= false											-- Color Board Mouse Shortcut Currently Being Pressed
-
-local changeTimelineClipHeightAlreadyInProgress = false											-- Change Timeline Clip Height Already In Progress
-local releaseChangeTimelineClipHeightDown		= false											-- Change Timeline Clip Height Currently Being Pressed
-local changeAppearanceButtonLocation 			= {}											-- Change Timeline Appearance Button Location
-local changeTimelineClipHeightSplitGroupCache 	= nil											-- Change Timeline Clip Height Split Group Cache
-local changeTimelineClipHeightGroupCache 		= nil											-- Change Timeline Clip Height Group Cache
-
-local clipboardTimer							= nil											-- Clipboard Watcher Timer
-local clipboardLastChange 						= pasteboard.changeCount()						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-
-local clipboardHistory							= {}											-- Clipboard History
-local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
-
-local clipboardWatcherFrequency 				= 0.5											-- Clipboard Watcher Update Frequency
-local clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
-
-local selectClipAtLaneSplitGroupCache 			= nil											-- Select Secondary Storyline Split Group Cache
-local selectClipAtLaneGroupCache 				= nil											-- Select Secondary Storyline Group Cache
-
-local newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
-local mediaImportCount 							= 0												-- Media Import Count
-local stopMediaImportTimer 						= false											-- Stop Media Import Timer
-local currentApplication 						= nil											-- Current Application (used by Media Import Watcher)
-
-local lastCommandSet							= nil											-- Last Keyboard Shortcut Command Set
-
-local colorBoardMousePuckOriginalPosition		= nil											-- Color Board Mouse Puck Original Position
-
-local FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
-local allowMovingMarkers 						= nil											-- Used in refreshMenuBar
-local FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
-local FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
-local FFEnableGuards 							= nil											-- Used in refreshMenuBar
-local FFCreateOptimizedMediaForMulticamClips 	= nil											-- Used in refreshMenuBar
-local FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
-local FFAutoRenderDelay 						= nil											-- Used in refreshMenuBar
-local FFImportCopyToMediaFolder 				= nil											-- Used in refreshMenuBar
-local FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
-
-local fcpxChooser								= nil											-- Chooser
-local fcpxChooserActive							= false											-- Chooser Active?
-
-local touchBarSupported						 	= touchbar.supported()							-- Touch Bar Supported?
-local touchBarWindow 							= nil			 								-- Touch Bar Window
-local mouseInsideTouchbar						= false											-- Mouse Inside Touch Bar?
-
-local fcpxChooserChoices 						= {}											-- Chooser Choices
-
-local hostname									= host.localizedName()							-- Hostname
-
---------------------------------------------------------------------------------
+-- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
+ax 												= require("hs._asm.axuielement")
+slaxdom 										= require("hs.slaxml.slaxdom")
+slaxml 											= require("hs.slaxml")
+touchbar 										= require("hs._asm.touchbar")
 
+--------------------------------------------------------------------------------
+-- HARDCODED SETTINGS:
+--------------------------------------------------------------------------------
 
+bugReportEmail									= "chris@latenitefilms.com"
+updateURL										= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
 
+finalCutProClipboardUTI 						= "com.apple.flexo.proFFPasteboardUTI"
+flexoLanguages 									= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
+finalCutProLanguages 							= {"de", "en", "es", "fr", "ja", "zh_CN"}
+
+commonErrorMessageStart 						= "I'm sorry, but the following error has occurred:\n\n"
+commonErrorMessageEnd 							= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
+commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx-hacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+
+clipboardWatcherFrequency 						= 0.5											-- Clipboard Watcher Update Frequency
+clipboardHistoryMaximumSize 					= 5												-- Maximum Size of Clipboard History
+
+--------------------------------------------------------------------------------
+-- GLOBAL VARIABLES:
+--------------------------------------------------------------------------------
+
+execute											= hs.execute									-- Execute!
+clock 											= os.clock										-- Used for sleep()
+clipboardLastChange 							= pasteboard.changeCount()						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+touchBarSupported						 		= touchbar.supported()							-- Touch Bar Supported?
+hostname										= host.localizedName()							-- Hostname
+
+debugMode 										= false											-- Debug Mode is off by default.
+scrollingTimelineSpacebarPressed				= false											-- Was spacebar pressed?
+scrollingTimelineWatcherWorking 				= false											-- Is Scrolling Timeline Spacebar Held Down?
+isCommandEditorOpen 							= false 										-- Is Command Editor Open?
+releaseColorBoardDown							= false											-- Color Board Shortcut Currently Being Pressed
+releaseMouseColorBoardDown 						= false											-- Color Board Mouse Shortcut Currently Being Pressed
+changeTimelineClipHeightAlreadyInProgress 		= false											-- Change Timeline Clip Height Already In Progress
+releaseChangeTimelineClipHeightDown				= false											-- Change Timeline Clip Height Currently Being Pressed
+stopMediaImportTimer 							= false											-- Stop Media Import Timer
+fcpxChooserActive								= false											-- Chooser Active?
+mouseInsideTouchbar								= false											-- Mouse Inside Touch Bar?
+shownUpdateNotification			 				= false											-- Shown Update Notification Already?
+
+changeAppearanceButtonLocation 					= {}											-- Change Timeline Appearance Button Location
+clipboardHistory								= {}											-- Clipboard History
+fcpxChooserChoices 								= {}											-- Chooser Choices
+
+mediaImportCount 								= 0												-- Media Import Count
+
+fcpxChooser										= nil											-- Chooser
+touchBarWindow 									= nil			 								-- Touch Bar Window
+browserHighlight 								= nil											-- Used for Highlight Browser Playhead
+browserHighlightTimer 							= nil											-- Used for Highlight Browser Playhead
+scrollingTimelineTimer							= nil											-- Scrolling Timeline Timer
+scrollingTimelineScrollbarTimer					= nil											-- Scrolling Timeline Scrollbar Timer
+finalCutProShortcutKey 							= nil											-- Table of all Final Cut Pro Shortcuts
+finalCutProShortcutKeyPlaceholders 				= nil											-- Table of all needed Final Cut Pro Shortcuts
+clipboardTimer									= nil											-- Clipboard Watcher Timer
+newDeviceMounted 								= nil											-- New Device Mounted Volume Watcher
+currentApplication 								= nil											-- Current Application (used by Media Import Watcher)
+lastCommandSet									= nil											-- Last Keyboard Shortcut Command Set
+colorBoardMousePuckOriginalPosition				= nil											-- Color Board Mouse Puck Original Position
+FFImportCreateProxyMedia 						= nil											-- Used in refreshMenuBar
+allowMovingMarkers 								= nil											-- Used in refreshMenuBar
+FFPeriodicBackupInterval 						= nil											-- Used in refreshMenuBar
+FFSuspendBGOpsDuringPlay 						= nil											-- Used in refreshMenuBar
+FFEnableGuards 									= nil											-- Used in refreshMenuBar
+FFCreateOptimizedMediaForMulticamClips 			= nil											-- Used in refreshMenuBar
+FFAutoStartBGRender 							= nil											-- Used in refreshMenuBar
+FFAutoRenderDelay 								= nil											-- Used in refreshMenuBar
+FFImportCopyToMediaFolder 						= nil											-- Used in refreshMenuBar
+FFImportCreateOptimizeMedia 					= nil											-- Used in refreshMenuBar
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -243,13 +219,10 @@ local hostname									= host.localizedName()							-- Hostname
 function loadScript()
 
 	--------------------------------------------------------------------------------
-	-- Is Final Cut Pro Installed:
+	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	if not isFinalCutProInstalled() then
-    	displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
-		print("[FCPX Hacks] ERROR: Final Cut Pro could not be found so giving up.")
-		return "fail"
-	end
+	debugMode = settings.get("fcpxHacks.debugMode") or false
+	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
@@ -259,74 +232,75 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
+	console.titleVisibility("hidden")
 	hotkey.setLogLevel("warning")
-	hs.window.filter.setLogLevel(1)
-	hs.window.filter.ignoreAlways['System Events'] = true
+	window.filter.setLogLevel(1)
+	window.filter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
-	if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
-	if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
-
-	--------------------------------------------------------------------------------
-	-- Startup Message:
-	--------------------------------------------------------------------------------
-	print("[FCPX Hacks] Loading Final Cut Pro 10.3 Features...")
+	if macOSVersion() ~= nil then 					writeToConsole("macOS Version: " .. tostring(macOSVersion())) 							end
+	if finalCutProVersion() ~= nil then				writeToConsole("Final Cut Pro Version: " .. tostring(finalCutProVersion()))				end
+	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 	end
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? Trash settings:
 	--------------------------------------------------------------------------------
-	if hs.settings.get("fcpxHacks.firstTimeRunning103") == nil then
+	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
 
-		print("[FCPX Hacks] First time running Final Cut Pro 10.3.")
+		writeToConsole("First time running Final Cut Pro 10.3.")
 
 		--------------------------------------------------------------------------------
 		-- Trash all FCPX Hacks Settings:
 		--------------------------------------------------------------------------------
-		for i, v in ipairs(hs.settings.getKeys()) do
+		for i, v in ipairs(settings.getKeys()) do
 			if (v:sub(1,10)) == "fcpxHacks." then
-				hs.settings.set(v, nil)
+				settings.set(v, nil)
 			end
 		end
 
-		hs.settings.set("fcpxHacks.firstTimeRunning103", false)
+		settings.set("fcpxHacks.firstTimeRunning103", false)
 
 	end
 
 	--------------------------------------------------------------------------------
-	-- Setup Default Settings:
+	-- Set Up Default Settings:
 	--------------------------------------------------------------------------------
-	if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
-	if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
-	if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
-
-	if hs.settings.get("fcpxHacks.chooserShowAutomation") == nil then hs.settings.set("fcpxHacks.chooserShowAutomation", true) end
-	if hs.settings.get("fcpxHacks.chooserShowShortcuts") == nil then hs.settings.set("fcpxHacks.chooserShowShortcuts", true) end
-	if hs.settings.get("fcpxHacks.chooserShowHacks") == nil then hs.settings.set("fcpxHacks.chooserShowHacks", true) end
-	if hs.settings.get("fcpxHacks.chooserShowVideoEffects") == nil then hs.settings.set("fcpxHacks.chooserShowVideoEffects", true) end
-	if hs.settings.get("fcpxHacks.chooserShowAudioEffects") == nil then hs.settings.set("fcpxHacks.chooserShowAudioEffects", true) end
-	if hs.settings.get("fcpxHacks.chooserShowTransitions") == nil then hs.settings.set("fcpxHacks.chooserShowTransitions", true) end
-
-	if hs.settings.get("fcpxHacks.enableMoveableTouchbar") == nil then hs.settings.set("fcpxHacks.enableMoveableTouchbar", true) end
-
-	-------------------------------------------------------------------------------
-	-- Common Error Messages:
-	-------------------------------------------------------------------------------
-	commonErrorMessageStart = "I'm sorry, but the following error has occurred:\n\n"
-	commonErrorMessageEnd = "\n\nmacOS Version: " .. macOSVersion() .. "\nFCPX Version: " .. finalCutProVersion() .. "\nScript Version: " .. scriptVersion .. "\n\nPlease take a screenshot of your entire screen and email it to the below address so that we can try and come up with a fix:\n\nchris@latenitefilms.com\n\nThank you for testing!"
-	commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+	local defaultSettings = {
+		["enableShortcutsDuringFullscreenPlayback"] 	= false,
+		["scrollingTimelineActive"] 					= false,
+		["enableHacksShortcutsInFinalCutPro"] 			= false,
+		["chooserShowAutomation"] 						= true,
+		["chooserShowShortcuts"] 						= true,
+		["chooserShowHacks"] 							= true,
+		["chooserShowVideoEffects"] 					= true,
+		["chooserShowAudioEffects"] 					= true,
+		["chooserShowTransitions"] 						= true,
+		["chooserShowTitles"] 							= true,
+		["chooserShowGenerators"] 						= true,
+		["menubarShortcutsEnabled"] 					= true,
+		["menubarAutomationEnabled"] 					= true,
+		["menubarToolsEnabled"] 						= true,
+		["menubarHacksEnabled"] 						= true,
+		["enableCheckForUpdates"]						= true,
+		["checkForUpdatesInterval"]						= 600,
+	}
+	for k, v in pairs(defaultSettings) do
+		if settings.get("fcpxHacks." .. k) == nil then
+			settings.set("fcpxHacks." .. k, v)
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
-	if hs.settings.get("fcpxHacks.lastVersion") == nil then
-		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-		hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+	if settings.get("fcpxHacks.lastVersion") == nil then
+		settings.set("fcpxHacks.lastVersion", scriptVersion)
+		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
-			if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = isFinalCutProRunning()
 				if finalCutProRunning then
 					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
@@ -344,7 +318,7 @@ function loadScript()
 				end
 			end
 		end
-		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+		settings.set("fcpxHacks.lastVersion", scriptVersion)
 	end
 
 	--------------------------------------------------------------------------------
@@ -365,7 +339,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
-		local lastTouchBarLocation = hs.settings.get("fcpxHacks.lastTouchBarLocation")
+		local lastTouchBarLocation = settings.get("fcpxHacks.lastTouchBarLocation")
 		if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
@@ -382,7 +356,7 @@ function loadScript()
 					touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+					settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -397,17 +371,17 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Create and start the application event watcher:
 		--------------------------------------------------------------------------------
-		watcher = hs.application.watcher.new(finalCutProWatcher):start()
+		watcher = application.watcher.new(finalCutProWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
 		--------------------------------------------------------------------------------
-		hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
+		hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
-		preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
+		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch for Shared Clipboard Changes:
@@ -415,9 +389,9 @@ function loadScript()
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 		if sharedClipboardPath ~= nil then
 			if doesDirectoryExist(sharedClipboardPath) then
-				sharedClipboardWatcher = hs.pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
+				sharedClipboardWatcher = pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
 			else
-				print("[FCPX Hacks] The Shared Clipboard Directory could not be found, so disabling.")
+				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
 				settings.set("fcpxHacks.sharedClipboardPath", nil)
 				settings.set("fcpxHacks.enableSharedClipboard", false)
 			end
@@ -431,10 +405,10 @@ function loadScript()
 			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
-				sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+				xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+				sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 			else
-				print("[FCPX Hacks] The Shared XML Folder(s) could not be found, so disabling.")
+				writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
 				settings.set("fcpxHacks.xmlSharingPath", nil)
 				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 				settings.set("fcpxHacks.enableXMLSharing", false)
@@ -498,7 +472,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Enable Fullscreen Playback Shortcut Keys:
 		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
+		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
 			fullscreenKeyboardWatcherUp:start()
 			fullscreenKeyboardWatcherDown:start()
 		end
@@ -506,7 +480,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Enable Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.scrollingTimelineActive") then
+		if settings.get("fcpxHacks.scrollingTimelineActive") then
 			scrollingTimelineWatcherUp:start()
 			scrollingTimelineWatcherDown:start()
 		end
@@ -539,7 +513,7 @@ function loadScript()
 	-------------------------------------------------------------------------------
 	-- Set up Menubar:
 	--------------------------------------------------------------------------------
-	fcpxMenubar = hs.menubar.newWithPriority(1)
+	fcpxMenubar = menubar.newWithPriority(1)
 
 		--------------------------------------------------------------------------------
 		-- Set Tool Tip:
@@ -564,14 +538,15 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- All loaded!
 	--------------------------------------------------------------------------------
-	print("[FCPX Hacks] Successfully loaded.")
-	hs.alert.closeAll(0)
-	hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
+	writeToConsole("Successfully loaded.")
+	alert.closeAll(0)
+	alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
-	-- Check for Script Updates every 15 minutes:
+	-- Check for Script Updates:
 	--------------------------------------------------------------------------------
-	checkForUpdatesTimer = hs.timer.doEvery(15, checkForUpdates)
+	local checkForUpdatesInterval = settings.get("fcpxHacks.checkForUpdatesInterval")
+	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
 
 end
@@ -597,7 +572,7 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	-- Clear Console:
 	--------------------------------------------------------------------------------
-	--hs.console.clearConsole()
+	--console.clearConsole()
 
 end
 
@@ -627,7 +602,7 @@ end
 -- GET UI ELEMENT CURRENTLY UNDER MOUSE:
 --------------------------------------------------------------------------------
 function getElementUnderMouse()
-	underMouse = ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
+	underMouse = ax.systemElementAtPosition(mouse.getAbsolutePosition())
 	--print_r(underMouse:path())
 	for i=1, #underMouse:attributeNames() do
 		--print(underMouse:attributeNames()[i] .. ": " .. underMouse:attributeValue(underMouse:attributeNames()[i]))
@@ -679,7 +654,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -696,7 +671,7 @@ function bindKeyboardShortcuts()
 			["AnchorWithSelectedMediaBacktimed"]						= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["InsertMedia"]												= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["AppendWithSelectedMedia"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["ToggleEventLibraryBrowser"]											= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
+			["ToggleEventLibraryBrowser"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["PlayFullscreen"]											= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["ShowTimecodeEntryPlayhead"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["ShareDefaultDestination"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
@@ -722,6 +697,8 @@ function bindKeyboardShortcuts()
 			["CutSwitchAngle14"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["CutSwitchAngle15"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["CutSwitchAngle16"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
+			["IncreaseThumbnailSize"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
+			["DecreaseThumbnailSize"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 	}
 
 	if enableHacksShortcutsInFinalCutPro then
@@ -754,25 +731,25 @@ function bindKeyboardShortcuts()
 			FCPXHackSelectColorBoardPuckThree 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackSelectColorBoardPuckFour 							= { characterString = "", 							modifiers = {},									 	fn = function() colorBoardSelectPuck(4) end, 						releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackRestoreKeywordPresetOne 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetTwo 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetThree 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetFour 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetFive 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetSix 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetSeven 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetEight 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetNine 							= { characterString = "", 							modifiers = {}, 									fn = function() fcpxRestoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetOne 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetTwo 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetThree 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFour 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFive 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSix 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSeven 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetEight 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetNine 							= { characterString = "", 							modifiers = {}, 									fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackSaveKeywordPresetOne 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetTwo 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetThree 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetFour 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetFive 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetSix 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetSeven 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetEight 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetNine 								= { characterString = "", 							modifiers = {}, 									fn = function() fcpxSaveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetOne 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetTwo 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetThree 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetFour 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetFive 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetSix 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetSeven 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetEight 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetNine 								= { characterString = "", 							modifiers = {}, 									fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackEffectsOne			 								= { characterString = "", 							modifiers = {}, 									fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsTwo			 								= { characterString = "", 							modifiers = {}, 									fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
@@ -785,6 +762,18 @@ function bindKeyboardShortcuts()
 			FCPXHackTransitionsThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackTransitionsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackTransitionsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackTitlesOne			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(1) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesTwo			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(2) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesThree			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(3) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesFour			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(4) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesFive			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(5) end, 								releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackGeneratorsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackScrollingTimeline	 								= { characterString = "", 							modifiers = {}, 									fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
@@ -952,7 +941,7 @@ function bindKeyboardShortcuts()
 
 		if readShortcutKeysFromPlist() ~= "Done" then
 			displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
-			print("[FCPX Hacks] ERROR: Something went wrong during the plist reading process. Falling back to default shortcut keys.")
+			writeToConsole("ERROR: Something went wrong during the plist reading process. Falling back to default shortcut keys.")
 			enableHacksShortcutsInFinalCutPro = false
 		end
 	end
@@ -983,25 +972,25 @@ function bindKeyboardShortcuts()
 			FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(3) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(4) end, 						releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetThree 							= { characterString = keyCodeTranslator("3"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetFour 							= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetFive 							= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetSix 							= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetSeven 							= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetEight 							= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackRestoreKeywordPresetNine 							= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetThree 							= { characterString = keyCodeTranslator("3"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFour 							= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFive 							= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSix 							= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSeven 							= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetEight 							= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackRestoreKeywordPresetNine 							= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackSaveKeywordPresetOne 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetTwo 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetThree 								= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetFour 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetFive 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetSix 								= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetSeven 								= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetEight 								= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSaveKeywordPresetNine 								= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetOne 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetTwo 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetThree 								= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetFour 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetFive 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetSix 								= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetSeven 								= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetEight 								= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSaveKeywordPresetNine 								= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackEffectsOne			 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsTwo			 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
@@ -1014,6 +1003,18 @@ function bindKeyboardShortcuts()
 			FCPXHackTransitionsThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackTransitionsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
 			FCPXHackTransitionsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackTitlesOne			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(1) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesTwo			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(2) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesThree			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(3) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesFour			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(4) end, 								releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTitlesFive			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(5) end, 								releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackGeneratorsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackGeneratorsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
@@ -1072,8 +1073,8 @@ function bindKeyboardShortcuts()
 			FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 			FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 
-			FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("+"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
-			FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("="),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 						releasedFn = function() writeToConsole("release") end, 					repeatFn = function() changeTimelineClipHeightRepeat("up") end },
+			FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 						releasedFn = function() writeToConsole("release") end, 					repeatFn = function() changeTimelineClipHeightRepeat("down") end },
 
 			FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
@@ -1188,7 +1189,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Reset Global Hotkeys:
 	--------------------------------------------------------------------------------
-	local currentHotkeys = hs.hotkey.getHotkeys()
+	local currentHotkeys = hotkey.getHotkeys()
 	for i=1, #currentHotkeys do
 		result = currentHotkeys[i]:delete()
 	end
@@ -1196,7 +1197,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Create a modal hotkey object with an absurd triggering hotkey:
 	--------------------------------------------------------------------------------
-	hotkeys = hs.hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
+	hotkeys = hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
 
 	--------------------------------------------------------------------------------
 	-- Enable Hotkeys Loop:
@@ -1207,7 +1208,7 @@ function bindKeyboardShortcuts()
 				--------------------------------------------------------------------------------
 				-- Global Shortcut:
 				--------------------------------------------------------------------------------
-				hs.hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'])
+				hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
 			else
 				--------------------------------------------------------------------------------
 				-- Final Cut Pro Specific Shortcut:
@@ -1221,7 +1222,7 @@ function bindKeyboardShortcuts()
 	-- Development Shortcut:
 	--------------------------------------------------------------------------------
 	if debugMode then
-		hs.hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
+		hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
 	end
 
 	--------------------------------------------------------------------------------
@@ -1229,6 +1230,69 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	hotkeys:enter()
 
+	--------------------------------------------------------------------------------
+	-- Let user know that keyboard shortcuts have loaded:
+	--------------------------------------------------------------------------------
+	alert.closeAll(0)
+	alert.show("FCPX Hacks Keyboard Shortcuts Updated")
+
+end
+
+--------------------------------------------------------------------------------
+-- UPDATE KEYBOARD SHORTCUTS:
+--------------------------------------------------------------------------------
+function updateKeyboardShortcuts()
+	--------------------------------------------------------------------------------
+	-- Revert back to default keyboard layout:
+	--------------------------------------------------------------------------------
+	local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
+	--------------------------------------------------------------------------------
+	-- Update Keyboard Settings:
+	--------------------------------------------------------------------------------
+	local appleScriptA = [[
+		--------------------------------------------------------------------------------
+		-- Replace Files:
+		--------------------------------------------------------------------------------
+		try
+			tell me to activate
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+		try
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+
+		set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
+		repeat with whichLanguage in finalCutProLanguages
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+			on error
+				display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+			on error
+				display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+			on error
+				display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+				return "Failed"
+			end try
+		end repeat
+		return "Done"
+	]]
+	ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+	return toggleEnableHacksShortcutsInFinalCutProResult
 end
 
 --------------------------------------------------------------------------------
@@ -1240,7 +1304,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---     C H O O S E R    (  T H E   F C P X   H A C K S   C O N S O L E  )     --
+--                     C H O O S E R    /  C O N S O L E                      --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -1249,13 +1313,11 @@ end
 --------------------------------------------------------------------------------
 function setupChooser()
 
-	fcpxChooser = hs.chooser.new(chooserAction)
-
-	fcpxChooser:bgDark(true)
-	fcpxChooser:fgColor(hs.drawing.color.x11.snow)
-	fcpxChooser:subTextColor(hs.drawing.color.x11.snow)
-	fcpxChooser:rightClickCallback(chooserRightClick)
-	fcpxChooser:choices(chooserChoices)
+	fcpxChooser = chooser.new(chooserAction):bgDark(true)
+											:fgColor(drawing.color.x11.snow)
+											:subTextColor(drawing.color.x11.snow)
+											:rightClickCallback(chooserRightClick)
+											:choices(chooserChoices)
 
 end
 
@@ -1275,7 +1337,7 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	if debugMode then print("[FCPX Hacks] Updating Chooser Choices.") end
+	debugMessage("Updating Chooser Choices.")
 
 	--------------------------------------------------------------------------------
 	-- Reset Choices:
@@ -1286,12 +1348,14 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation")
-	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts")
-	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks")
-	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects")
-	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects")
-	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions")
+	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
+	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
+	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
+	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
+	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
+	local chooserShowTitles 			= settings.get("fcpxHacks.chooserShowTitles")
+	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
 
 	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
@@ -1575,15 +1639,15 @@ function chooserChoices()
 		},
 	}
 
-	if chooserShowAutomation then hs.fnutils.concat(fcpxChooserChoices, chooserAutomation) end
-	if chooserShowShortcuts then hs.fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
-	if chooserShowHacks then hs.fnutils.concat(fcpxChooserChoices, chooserHacks) end
+	if chooserShowAutomation then fnutils.concat(fcpxChooserChoices, chooserAutomation) end
+	if chooserShowShortcuts then fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
+	if chooserShowHacks then fnutils.concat(fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
 	if chooserShowVideoEffects then
-		local allVideoEffects = hs.settings.get("fcpxHacks.allVideoEffects")
+		local allVideoEffects = settings.get("fcpxHacks.allVideoEffects")
 		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 			for i=1, #allVideoEffects do
 				individualEffect = {
@@ -1603,7 +1667,7 @@ function chooserChoices()
 	-- Audio Effects List:
 	--------------------------------------------------------------------------------
 	if chooserShowAudioEffects then
-		local allAudioEffects = hs.settings.get("fcpxHacks.allAudioEffects")
+		local allAudioEffects = settings.get("fcpxHacks.allAudioEffects")
 		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 			for i=1, #allAudioEffects do
 				individualEffect = {
@@ -1623,14 +1687,54 @@ function chooserChoices()
 	-- Transitions List:
 	--------------------------------------------------------------------------------
 	if chooserShowTransitions then
-		local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
+		local allTransitions = settings.get("fcpxHacks.allTransitions")
 		if allTransitions ~= nil and next(allTransitions) ~= nil then
 			for i=1, #allTransitions do
-				individualEffect = {
+				local individualEffect = {
 					["text"] = allTransitions[i],
 					["subText"] = "Transition",
 					["function"] = "transitionsShortcut",
 					["function1"] = allTransitions[i],
+					["function2"] = "",
+					["function3"] = "",
+				}
+				table.insert(fcpxChooserChoices, 1, individualEffect)
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Titles List:
+	--------------------------------------------------------------------------------
+	if chooserShowTitles then
+		local allTitles = settings.get("fcpxHacks.allTitles")
+		if allTitles ~= nil and next(allTitles) ~= nil then
+			for i=1, #allTitles do
+				individualEffect = {
+					["text"] = allTitles[i],
+					["subText"] = "Title",
+					["function"] = "titlesShortcut",
+					["function1"] = allTitles[i],
+					["function2"] = "",
+					["function3"] = "",
+				}
+				table.insert(fcpxChooserChoices, 1, individualEffect)
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Generators List:
+	--------------------------------------------------------------------------------
+	if chooserShowGenerators then
+		local allGenerators = settings.get("fcpxHacks.allGenerators")
+		if allGenerators ~= nil and next(allGenerators) ~= nil then
+			for i=1, #allGenerators do
+				local individualEffect = {
+					["text"] = allGenerators[i],
+					["subText"] = "Generator",
+					["function"] = "generatorsShortcut",
+					["function1"] = allGenerators[i],
 					["function2"] = "",
 					["function3"] = "",
 				}
@@ -1665,7 +1769,7 @@ function chooserAction(result)
 	-- Perform Specific Function:
 	--------------------------------------------------------------------------------
 	if result ~= nil then
-		hs.timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
+		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
 	end
 
 	--------------------------------------------------------------------------------
@@ -1686,36 +1790,69 @@ end
 --------------------------------------------------------------------------------
 function chooserRightClick()
 
-	--print(fcpxChooser:selectedRow())
-
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
-	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
-	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
-	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects") and true
-	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects") and true
-	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions") and true
+	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
+	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
+	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
+	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
+	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
+	local chooserShowTitles				= settings.get("fcpxHacks.chooserShowTitles")
+	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
+
+	--------------------------------------------------------------------------------
+	-- 'Show All' Display Option:
+	--------------------------------------------------------------------------------
+	local chooserShowAll = false
+	if chooserShowAutomation and chooserShowShortcuts and chooserShowHacks and chooserShowVideoEffects and chooserShowAudioEffects and chooserShowTransitions and chooserShowTitles and chooserShowGenerators then
+		chooserShowAll = true
+	end
 
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	fcpxRightClickMenubar = hs.menubar.new(false)
+	fcpxRightClickMenubar = menubar.new(false)
 	local rightClickMenu = {
-		{ title = "Favourite Selected Item", disabled = true },
-		{ title = "Hide Selected Item", 	 disabled = true },
-     	{ title = "-" },
+		--{ title = "SELECTED ITEM:",	 	disabled = true },
+		--{ title = "Favourite Selected Item", disabled = true },
+		--{ title = "Hide Selected Item", 	 disabled = true },
+     	--{ title = "-" },
      	{ title = "DISPLAY OPTIONS:",	 	disabled = true },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() hs.settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() hs.settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 					fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() hs.settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 			fcpxChooser:refreshChoicesCallback() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() hs.settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 		fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show None", fn = function()
+     		settings.set("fcpxHacks.chooserShowAutomation", false)
+     		settings.set("fcpxHacks.chooserShowShortcuts", false)
+     		settings.set("fcpxHacks.chooserShowHacks", false)
+     		settings.set("fcpxHacks.chooserShowVideoEffects", false)
+     		settings.set("fcpxHacks.chooserShowAudioEffects", false)
+     		settings.set("fcpxHacks.chooserShowTransitions", false)
+     		settings.set("fcpxHacks.chooserShowTitles", false)
+     		settings.set("fcpxHacks.chooserShowGenerators", false)
+     		fcpxChooser:refreshChoicesCallback()
+     	end },
+     	{ title = "Show All", 				checked = chooserShowAll,	fn = function()
+     		settings.set("fcpxHacks.chooserShowAutomation", true)
+     		settings.set("fcpxHacks.chooserShowShortcuts", true)
+     		settings.set("fcpxHacks.chooserShowHacks", true)
+     		settings.set("fcpxHacks.chooserShowVideoEffects", true)
+     		settings.set("fcpxHacks.chooserShowAudioEffects", true)
+     		settings.set("fcpxHacks.chooserShowTransitions", true)
+     		settings.set("fcpxHacks.chooserShowTitles", true)
+     		settings.set("fcpxHacks.chooserShowGenerators", true)
+     		fcpxChooser:refreshChoicesCallback()
+     	end },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
-	fcpxRightClickMenubar:popupMenu(hs.mouse.getAbsolutePosition())
+	fcpxRightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 
 end
 
@@ -1752,7 +1889,7 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Used for debugging:
 		--------------------------------------------------------------------------------
-		if debugMode then print("[FCPX Hacks] plist values updated in menubar.") end
+		debugMessage("The plist values have been updated for the menubar.")
 
 		--------------------------------------------------------------------------------
 		-- Default Values:
@@ -1771,61 +1908,61 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if trim(executeResult) == "true" then allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
 		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
 		if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFEnableGuards:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
 		if trim(executeResult) == "1" then FFEnableGuards = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
 		if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoStartBGRender:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
 		if trim(executeResult) == "0" then FFAutoStartBGRender = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoRenderDelay")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoRenderDelay")
 		if executeStatus == true then FFAutoRenderDelay = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCopyToMediaFolder:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
 		if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateOptimizeMedia:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
 		if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateProxyMedia:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
 		if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
 
 	end
@@ -1833,13 +1970,13 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Menubar Display Mode from Settings:
 	--------------------------------------------------------------------------------
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or false
+	local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
 	local displayHighlightShapeRectangle = false
 	local displayHighlightShapeCircle = false
 	local displayHighlightShapeDiamond = false
@@ -1852,7 +1989,7 @@ function refreshMenuBar(refreshPlistValues)
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
 	local displayHighlightColourRed = false
 	local displayHighlightColourBlue = false
 	local displayHighlightColourGreen = false
@@ -1866,17 +2003,17 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Enable Shortcuts During Fullscreen Playback from Settings:
 	--------------------------------------------------------------------------------
-	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
+	local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
+	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or false
+	local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Hammerspoon Settings:
@@ -1889,7 +2026,7 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	scrollingTimelineActive = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
+	scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Mobile Notifications:
@@ -1904,11 +2041,17 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Touch Bar Location:
 	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+	local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 	local displayTouchBarLocationMouse = false
 	if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
 	local displayTouchBarLocationTimelineTopCentre = false
 	if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
+
+
+	--------------------------------------------------------------------------------
+	-- Enable Check for Updates:
+	--------------------------------------------------------------------------------
+	enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable XML Sharing:
@@ -1957,7 +2100,7 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		local sharedClipboardFiles = {}
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		for file in hs.fs.dir(sharedClipboardPath) do
+		for file in fs.dir(sharedClipboardPath) do
 			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
 				sharedClipboardFiles[#sharedClipboardFiles + 1] = file:sub(36)
 			 end
@@ -1998,7 +2141,7 @@ function refreshMenuBar(refreshPlistValues)
 
 		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 
-		for file in hs.fs.dir(xmlSharingPath) do
+		for file in fs.dir(xmlSharingPath) do
 			 if file:sub(-7) == ".fcpxml" then
 				sharedXMLFiles[#sharedXMLFiles + 1] = file:sub(1, -8)
 			 end
@@ -2029,12 +2172,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Effects Shortcuts:
 	--------------------------------------------------------------------------------
-	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
-	local effectsShortcutOne 	= hs.settings.get("fcpxHacks.effectsShortcutOne")
-	local effectsShortcutTwo 	= hs.settings.get("fcpxHacks.effectsShortcutTwo")
-	local effectsShortcutThree 	= hs.settings.get("fcpxHacks.effectsShortcutThree")
-	local effectsShortcutFour 	= hs.settings.get("fcpxHacks.effectsShortcutFour")
-	local effectsShortcutFive 	= hs.settings.get("fcpxHacks.effectsShortcutFive")
+	local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated") or false
+	local effectsShortcutOne 	= settings.get("fcpxHacks.effectsShortcutOne")
+	local effectsShortcutTwo 	= settings.get("fcpxHacks.effectsShortcutTwo")
+	local effectsShortcutThree 	= settings.get("fcpxHacks.effectsShortcutThree")
+	local effectsShortcutFour 	= settings.get("fcpxHacks.effectsShortcutFour")
+	local effectsShortcutFive 	= settings.get("fcpxHacks.effectsShortcutFive")
 	if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. string.format("%.20s", effectsShortcutOne) .. ")" end
 	if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. string.format("%.20s", effectsShortcutTwo) .. ")" end
 	if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. string.format("%.20s", effectsShortcutThree) .. ")" end
@@ -2044,17 +2187,55 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Transition Shortcuts:
 	--------------------------------------------------------------------------------
-	local transitionsListUpdated = hs.settings.get("fcpxHacks.transitionsListUpdated") or false
-	local transitionsShortcutOne 	= hs.settings.get("fcpxHacks.transitionsShortcutOne")
-	local transitionsShortcutTwo 	= hs.settings.get("fcpxHacks.transitionsShortcutTwo")
-	local transitionsShortcutThree 	= hs.settings.get("fcpxHacks.transitionsShortcutThree")
-	local transitionsShortcutFour 	= hs.settings.get("fcpxHacks.transitionsShortcutFour")
-	local transitionsShortcutFive 	= hs.settings.get("fcpxHacks.transitionsShortcutFive")
+	local transitionsListUpdated 	= settings.get("fcpxHacks.transitionsListUpdated") or false
+	local transitionsShortcutOne 	= settings.get("fcpxHacks.transitionsShortcutOne")
+	local transitionsShortcutTwo 	= settings.get("fcpxHacks.transitionsShortcutTwo")
+	local transitionsShortcutThree 	= settings.get("fcpxHacks.transitionsShortcutThree")
+	local transitionsShortcutFour 	= settings.get("fcpxHacks.transitionsShortcutFour")
+	local transitionsShortcutFive 	= settings.get("fcpxHacks.transitionsShortcutFive")
 	if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. string.format("%.20s", transitionsShortcutOne) .. ")" 	end
 	if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. string.format("%.20s", transitionsShortcutTwo) .. ")" 	end
 	if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. string.format("%.20s", transitionsShortcutThree) .. ")"	end
 	if transitionsShortcutFour == nil then 		transitionsShortcutFour = " (Unassigned)" 		else transitionsShortcutFour 	= " (" .. string.format("%.20s", transitionsShortcutFour) .. ")" 	end
 	if transitionsShortcutFive == nil then 		transitionsShortcutFive = " (Unassigned)" 		else transitionsShortcutFive 	= " (" .. string.format("%.20s", transitionsShortcutFive) .. ")" 	end
+
+	--------------------------------------------------------------------------------
+	-- Titles Shortcuts:
+	--------------------------------------------------------------------------------
+	local titlesListUpdated 	= settings.get("fcpxHacks.titlesListUpdated") or false
+	local titlesShortcutOne 	= settings.get("fcpxHacks.titlesShortcutOne")
+	local titlesShortcutTwo 	= settings.get("fcpxHacks.titlesShortcutTwo")
+	local titlesShortcutThree 	= settings.get("fcpxHacks.titlesShortcutThree")
+	local titlesShortcutFour 	= settings.get("fcpxHacks.titlesShortcutFour")
+	local titlesShortcutFive 	= settings.get("fcpxHacks.titlesShortcutFive")
+	if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. string.format("%.20s", titlesShortcutOne) .. ")" 	end
+	if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. string.format("%.20s", titlesShortcutTwo) .. ")" 	end
+	if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. string.format("%.20s", titlesShortcutThree) .. ")"	end
+	if titlesShortcutFour == nil then 		titlesShortcutFour = " (Unassigned)" 		else titlesShortcutFour 	= " (" .. string.format("%.20s", titlesShortcutFour) .. ")" 	end
+	if titlesShortcutFive == nil then 		titlesShortcutFive = " (Unassigned)" 		else titlesShortcutFive 	= " (" .. string.format("%.20s", titlesShortcutFive) .. ")" 	end
+
+	--------------------------------------------------------------------------------
+	-- Generators Shortcuts:
+	--------------------------------------------------------------------------------
+	local generatorsListUpdated 	= settings.get("fcpxHacks.generatorsListUpdated") or false
+	local generatorsShortcutOne 	= settings.get("fcpxHacks.generatorsShortcutOne")
+	local generatorsShortcutTwo 	= settings.get("fcpxHacks.generatorsShortcutTwo")
+	local generatorsShortcutThree 	= settings.get("fcpxHacks.generatorsShortcutThree")
+	local generatorsShortcutFour 	= settings.get("fcpxHacks.generatorsShortcutFour")
+	local generatorsShortcutFive 	= settings.get("fcpxHacks.generatorsShortcutFive")
+	if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. string.format("%.20s", generatorsShortcutOne) .. ")" 	end
+	if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. string.format("%.20s", generatorsShortcutTwo) .. ")" 	end
+	if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. string.format("%.20s", generatorsShortcutThree) .. ")"	end
+	if generatorsShortcutFour == nil then 		generatorsShortcutFour = " (Unassigned)" 		else generatorsShortcutFour 	= " (" .. string.format("%.20s", generatorsShortcutFour) .. ")" 	end
+	if generatorsShortcutFive == nil then 		generatorsShortcutFive = " (Unassigned)" 		else generatorsShortcutFive 	= " (" .. string.format("%.20s", generatorsShortcutFive) .. ")" 	end
+
+	--------------------------------------------------------------------------------
+	-- Get Menubar Settings:
+	--------------------------------------------------------------------------------
+	local menubarShortcutsEnabled = 	settings.get("fcpxHacks.menubarShortcutsEnabled")
+	local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
+	local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
+	local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
 	--------------------------------------------------------------------------------
 	-- Setup Menu:
@@ -2084,17 +2265,30 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Mouse Location", 																fn = function() changeTouchBarLocation("Mouse") end,				checked = displayTouchBarLocationMouse, disabled = not touchBarSupported },
 	   	{ title = "Top Centre of Timeline", 														fn = function() changeTouchBarLocation("TimelineTopCentre") end,	checked = displayTouchBarLocationTimelineTopCentre, disabled = not touchBarSupported },
 	   	{ title = "-" },
-	   	{ title = "TIP: Hold down left OPTION to move Touch Bar", 																																																	disabled = true },
+	   	{ title = "TIP: Hold down left OPTION", 																																																	disabled = true },
+	   	{ title = "key & drag to move Touch Bar.", 																																																	disabled = true },
+	}
+	local settingsMenubar = {
+		{ title = "Show Shortcuts", 																fn = function() toggleMenubarDisplay("Shortcuts") end, 				checked = menubarShortcutsEnabled},
+		{ title = "Show Automation", 																fn = function() toggleMenubarDisplay("Automation") end, 			checked = menubarAutomationEnabled},
+		{ title = "Show Tools", 																	fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
+		{ title = "Show Hacks", 																	fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
+		{ title = "-" },
+		{ title = "Display Proxy/Original Icon", 													fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
+	   	{ title = "Display This Menu As Icon", 														fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
 	}
 	local settingsMenuTable = {
+	    { title = "Menubar Options", 																menu = settingsMenubar},
+       	{ title = "-" },
 		{ title = "Touch Bar Location", 															menu = settingsTouchBarLocation},
        	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", 														menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", 														menu = settingsShapeMenuTable},
        	{ title = "-" },
-	   	{ title = "Display Proxy/Original Icon", 													fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
-	   	{ title = "Display This Menu As Icon", 														fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
+	   	{ title = "Hammerspoon", 																	menu = settingsHammerspoonSettings},
       	{ title = "-" },
+      	{ title = "Check for Updates", 																fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
+      	{ title = "Enable Debug Mode", 																fn = toggleDebugMode, 												checked = debugMode},
 		{ title = "Trash FCPX Hacks Preferences", 													fn = resetSettings },
     	{ title = "-" },
     	{ title = "Created by LateNite Films", 														fn = gotoLateNiteSite },
@@ -2105,7 +2299,7 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "-" },
 		{ title = "Effect Shortcut 1" .. effectsShortcutOne, 										fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
 		{ title = "Effect Shortcut 2" .. effectsShortcutTwo, 										fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
-		{ title = "Effect Shortcut 3" .. effectsShortcutThree, 									fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 3" .. effectsShortcutThree, 										fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
 		{ title = "Effect Shortcut 4" .. effectsShortcutFour, 										fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
 		{ title = "Effect Shortcut 5" .. effectsShortcutFive, 										fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
 	}
@@ -2118,9 +2312,29 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Transition Shortcut 4" .. transitionsShortcutFour, 								fn = function() assignTransitionsShortcut(4) end, 																				disabled = not transitionsListUpdated },
 		{ title = "Transition Shortcut 5" .. transitionsShortcutFive, 								fn = function() assignTransitionsShortcut(5) end, 																				disabled = not transitionsListUpdated },
 	}
+	local settingsTitlesShortcutsTable = {
+		{ title = "Update Titles List", 															fn = updateTitlesList, 																											disabled = not fcpxRunning },
+		{ title = "-" },
+		{ title = "Titles Shortcut 1" .. titlesShortcutOne, 										fn = function() assignTitlesShortcut(1) end,																					disabled = not titlesListUpdated },
+		{ title = "Titles Shortcut 2" .. titlesShortcutTwo, 										fn = function() assignTitlesShortcut(2) end, 																					disabled = not titlesListUpdated },
+		{ title = "Titles Shortcut 3" .. titlesShortcutThree, 										fn = function() assignTitlesShortcut(3) end, 																					disabled = not titlesListUpdated },
+		{ title = "Titles Shortcut 4" .. titlesShortcutFour, 										fn = function() assignTitlesShortcut(4) end, 																					disabled = not titlesListUpdated },
+		{ title = "Titles Shortcut 5" .. titlesShortcutFive, 										fn = function() assignTitlesShortcut(5) end, 																					disabled = not titlesListUpdated },
+	}
+	local settingsGeneratorsShortcutsTable = {
+		{ title = "Update Generators List", 														fn = updateGeneratorsList, 																										disabled = not fcpxRunning },
+		{ title = "-" },
+		{ title = "Generators Shortcut 1" .. generatorsShortcutOne, 								fn = function() assignGeneratorsShortcut(1) end,																				disabled = not generatorsListUpdated },
+		{ title = "Generators Shortcut 2" .. generatorsShortcutTwo, 								fn = function() assignGeneratorsShortcut(2) end, 																				disabled = not generatorsListUpdated },
+		{ title = "Generators Shortcut 3" .. generatorsShortcutThree, 								fn = function() assignGeneratorsShortcut(3) end, 																				disabled = not generatorsListUpdated },
+		{ title = "Generators Shortcut 4" .. generatorsShortcutFour, 								fn = function() assignGeneratorsShortcut(4) end, 																				disabled = not generatorsListUpdated },
+		{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
+	}
 	local menuTable = {
 	   	{ title = "Open Final Cut Pro", 															fn = launchFinalCutPro },
 		{ title = "-" },
+	}
+	local shortcutsTable = {
    	    { title = "SHORTCUTS:", 																																																	disabled = true },
 	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not FFImportCreateOptimizeMedia) end, 												checked = FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
 	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not FFCreateOptimizedMediaForMulticamClips) end, 							checked = FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
@@ -2128,13 +2342,19 @@ function refreshMenuBar(refreshPlistValues)
 	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(FFImportCopyToMediaFolder) end, 																checked = not FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
 	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not FFAutoStartBGRender) end, 															checked = FFAutoStartBGRender, 								disabled = not fcpxRunning },
    	    { title = "-" },
+	}
+	local automationTable = {
  	    { title = "AUTOMATION:", 																																																	disabled = true },
    	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
    	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
    	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
    	    { title = "Assign Effects Shortcuts", 														menu = settingsEffectsShortcutsTable },
    	    { title = "Assign Transitions Shortcuts", 													menu = settingsTransitionsShortcutsTable },
+   	    { title = "Assign Titles Shortcuts", 														menu = settingsTitlesShortcutsTable },
+   	    { title = "Assign Generators Shortcuts", 													menu = settingsGeneratorsShortcutsTable },
       	{ title = "-" },
+	}
+	local toolsTable = {
    	    { title = "TOOLS:", 																																																		disabled = true },
    	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
@@ -2142,8 +2362,10 @@ function refreshMenuBar(refreshPlistValues)
   	  	{ title = "Enable XML Sharing", 															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
-      	{ title = "Import Shared XML File", 													menu = settingsSharedXMLTable },
+      	{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
       	{ title = "-" },
+	}
+	local hacksTable = {
    	    { title = "HACKS:", 																																																		disabled = true },
    		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
    		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = FFEnableGuards },
@@ -2152,20 +2374,29 @@ function refreshMenuBar(refreshPlistValues)
         { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
    	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
         { title = "-" },
-      	{ title = "FCPX Hacks Settings", 															menu = settingsMenuTable },
-      	{ title = "Hammerspoon Settings", 															menu = settingsHammerspoonSettings},
-   	    { title = "-" },
-      	{ title = "Show Keyboard Shortcuts", 														fn = displayShortcutList },
+    }
+	local settingsTable = {
+		{ title = "Display Keyboard Shortcuts", 													fn = displayShortcutList },
+		{ title = "-" },
+      	{ title = "Preferences...", 																menu = settingsMenuTable },
     	{ title = "-" },
     	{ title = "Quit FCPX Hacks", 																fn = quitFCPXHacks},
 	}
 
 	--------------------------------------------------------------------------------
+	-- Setup Menubar:
+	--------------------------------------------------------------------------------
+	if menubarShortcutsEnabled then 	menuTable = fnutils.concat(menuTable, shortcutsTable) 	end
+	if menubarAutomationEnabled then	menuTable = fnutils.concat(menuTable, automationTable)	end
+	if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
+	if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
+
+	menuTable = fnutils.concat(menuTable, settingsTable)
+
+	--------------------------------------------------------------------------------
 	-- Check for Updates:
 	--------------------------------------------------------------------------------
-	if latestScriptVersion == nil then
-		-- Do Nothing.
-	else
+	if latestScriptVersion ~= nil then
 		if latestScriptVersion > scriptVersion then
 			table.insert(menuTable, 1, { title = "UPDATE AVAILABLE (Version " .. latestScriptVersion .. ")", fn = getScriptUpdate})
 			table.insert(menuTable, 2, { title = "-" })
@@ -2183,7 +2414,7 @@ end
 --------------------------------------------------------------------------------
 function displayShortcutList()
 
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
@@ -2240,709 +2471,609 @@ CONTROL+SHIFT:
 end
 
 --------------------------------------------------------------------------------
--- CHANGE TOUCH BAR LOCATION:
+-- UPDATE EFFECTS/TRANSITIONS/TITLES/GENERATORS LISTS:
 --------------------------------------------------------------------------------
-function changeTouchBarLocation(value)
-	hs.settings.set("fcpxHacks.displayTouchBarLocation", value)
 
-	if touchBarSupported then
-		local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
-		if displayTouchBar then setTouchBarLocation() end
-	end
+	--------------------------------------------------------------------------------
+	-- GET LIST OF EFFECTS:
+	--------------------------------------------------------------------------------
+	function updateEffectsList()
 
-	refreshMenuBar()
-end
+		--------------------------------------------------------------------------------
+		-- Make sure Final Cut Pro is active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
 
---------------------------------------------------------------------------------
--- TOGGLE MEDIA IMPORT WATCHER:
---------------------------------------------------------------------------------
-function toggleMediaImportWatcher()
-	local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-	if not enableMediaImportWatcher then
-		mediaImportWatcher()
-	else
-		newDeviceMounted:stop()
-	end
-	settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
-	refreshMenuBar()
-end
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
 
---------------------------------------------------------------------------------
--- TOGGLE CLIPBOARD HISTORY:
---------------------------------------------------------------------------------
-function toggleEnableClipboardHistory()
-	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-	if not enableClipboardHistory then
-		clipboardWatcher()
-	else
-		clipboardTimer:stop()
-	end
-	settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
-	refreshMenuBar()
-end
+		--------------------------------------------------------------------------------
+		-- Warning message:
+		--------------------------------------------------------------------------------
+		displayMessage("Depending on how many Effects you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
---------------------------------------------------------------------------------
--- TOGGLE SHARED CLIPBOARD:
---------------------------------------------------------------------------------
-function toggleEnableSharedClipboard()
+		--------------------------------------------------------------------------------
+		-- Get Timeline Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		if finalCutProTimelineButtonBar == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
 
-	local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+		--------------------------------------------------------------------------------
+		-- Find Effects Browser Button:
+		--------------------------------------------------------------------------------
+		local whichRadioGroup = nil
+		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
+				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
+					whichRadioGroup = i
+				end
+			end
+		end
+		if whichRadioGroup == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
+			return "Failed"
+		end
 
-	if not enableSharedClipboard then
+		--------------------------------------------------------------------------------
+		-- Effects or Transitions Panel Open?
+		--------------------------------------------------------------------------------
+		local whichPanelActivated = "None"
+		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
+			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
+			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
+		end
 
-		result = displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
+		--------------------------------------------------------------------------------
+		-- Make sure Video Effects panel is open:
+		--------------------------------------------------------------------------------
+		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][1]
+		if effectsBrowserButton ~= nil then
+			if effectsBrowserButton:attributeValue("AXValue") == 0 then
+				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
+				if presseffectsBrowserButtonResult == nil then
+					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+		else
+			displayErrorMessage("Unable to activate Video Effects Panel.")
+			showTouchbar()
+			return "Fail"
+		end
 
-		if result ~= false then
-			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Path: " .. tostring(result)) end
-			settings.set("fcpxHacks.sharedClipboardPath", result)
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Effects" is selected:
+		--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
-			-- Watch for Shared Clipboard Changes:
+			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			sharedClipboardWatcher = hs.pathwatcher.new(result, sharedClipboardFileWatcher):start()
+			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
 
-		else
-			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Choose Path Cancelled.") end
-			settings.set("fcpxHacks.sharedClipboardPath", nil)
-			return "failed"
-		end
-
-	else
-
-		--------------------------------------------------------------------------------
-		-- Stop Watching for Shared Clipboard Changes:
-		--------------------------------------------------------------------------------
-		sharedClipboardWatcher:stop()
-
-	end
-
-	settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
-	refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE XML SHARING:
---------------------------------------------------------------------------------
-function toggleEnableXMLSharing()
-
-	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
-
-	if not enableXMLSharing then
-
-		xmlSharingDropboxPath = displayChooseFolder("Which folder would you like to use as the local Drop Box?")
-
-		if xmlSharingDropboxPath ~= false then
-			settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
-		else
-			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-			settings.set("fcpxHacks.xmlSharingPath", nil)
-			return "Cancelled"
-		end
-
-		xmlSharingPath = displayChooseFolder("Which folder would you like to use for XML Sharing?")
-
-		if xmlSharingPath ~= false then
-			settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
-		else
-			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-			settings.set("fcpxHacks.xmlSharingPath", nil)
-			return "Cancelled"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Watch for XML Dropbox Changes:
-		--------------------------------------------------------------------------------
-		xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
-
-		--------------------------------------------------------------------------------
-		-- Watch for Shared XML Folder Changes:
-		--------------------------------------------------------------------------------
-		sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-
-	else
-		--------------------------------------------------------------------------------
-		-- Stop Watchers:
-		--------------------------------------------------------------------------------
-		xmlDropboxWatcher:stop()
-		sharedXMLWatcher:stop()
-
-		--------------------------------------------------------------------------------
-		-- Clear Settings:
-		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-		settings.set("fcpxHacks.xmlSharingPath", nil)
-	end
-
-	settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
-	refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE MOBILE NOTIFICATIONS:
---------------------------------------------------------------------------------
-function toggleEnableMobileNotifications()
-	local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
-	local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
-
-	if not enableMobileNotifications then
-
-		local returnToFinalCutPro = isFinalCutProFrontmost()
-		::retryProwlAPIKeyEntry::
-		local appleScriptA = 'set defaultAnswer to "' .. prowlAPIKey .. '"' .. '\n\n'
-		local appleScriptB = [[
-			set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
-			set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
-			set allowedAll to allowedLetters & allowedNumbers
-
-			repeat
-				try
-					tell me to activate
-					set response to text returned of (display dialog "Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com." default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
-				on error
-					-- Cancel Pressed:
-					return false
-				end try
-				try
-					set invalidCharacters to false
-					repeat with aCharacter in response
-						if (aCharacter as text) is not in allowedAll then
-							set invalidCharacters to true
-						end if
-					end repeat
-					if length of response is 0 then
-						set invalidCharacters to true
-					end if
-					if invalidCharacters is false then
-						exit repeat
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserSplitGroup = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+						whichEffectsBrowserSplitGroup = i
 					end
-				end try
-				display dialog "The Prowl API Key you entered is not valid.\n\nPlease try again." buttons {"OK"} with icon fcpxIcon
-			end repeat
-			return response
-		]]
-		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if result == false then
-			return "Cancel"
-		end
-		local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
-		if prowlAPIKeyValidResult then
-			if returnToFinalCutPro then launchFinalCutPro() end
-			settings.set("fcpxHacks.prowlAPIKey", result)
-			notificationWatcher()
-			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-		else
-			displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
-			goto retryProwlAPIKeyEntry
-		end
-	else
-		shareSuccessNotificationWatcher:stop()
-		shareFailedNotificationWatcher:stop()
-		settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-	end
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- UPDATE KEYBOARD SHORTCUTS:
---------------------------------------------------------------------------------
-function updateKeyboardShortcuts()
-	--------------------------------------------------------------------------------
-	-- Revert back to default keyboard layout:
-	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
-
-	--------------------------------------------------------------------------------
-	-- Update Keyboard Settings:
-	--------------------------------------------------------------------------------
-	local appleScriptA = [[
-		--------------------------------------------------------------------------------
-		-- Replace Files:
-		--------------------------------------------------------------------------------
-		try
-			tell me to activate
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-		on error
-			display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-			return "Failed"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
-		on error
-			display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-			return "Failed"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
-		on error
-			display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
-			return "Failed"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
-		on error
-			display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-			return "Failed"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
-		on error
-			display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-			return "Failed"
-		end try
-
-		return "Done"
-	]]
-	ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-	return toggleEnableHacksShortcutsInFinalCutProResult
-end
-
---------------------------------------------------------------------------------
--- QUIT FCPX HACKS:
---------------------------------------------------------------------------------
-function quitFCPXHacks()
-	hs.application("Hammerspoon"):kill()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE HAMMERSPOON DOCK ICON:
---------------------------------------------------------------------------------
-function toggleHammerspoonDockIcon()
-	local originalValue = hs.dockIcon()
-	hs.dockIcon(not originalValue)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE HAMMERSPOON MENU ICON:
---------------------------------------------------------------------------------
-function toggleHammerspoonMenuIcon()
-	local originalValue = hs.menuIcon()
-	hs.menuIcon(not originalValue)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- OPEN HAMMERSPOON CONSOLE:
---------------------------------------------------------------------------------
-function openHammerspoonConsole()
-	hs.openConsole()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE LAUNCH HAMMERSPOON ON START:
---------------------------------------------------------------------------------
-function toggleLaunchHammerspoonOnStartup()
-	local originalValue = hs.autoLaunch()
-	hs.autoLaunch(not originalValue)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
---------------------------------------------------------------------------------
-function toggleCheckforHammerspoonUpdates()
-	local originalValue = hs.automaticallyCheckForUpdates()
-	hs.automaticallyCheckForUpdates(not originalValue)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- RESET SETTINGS:
---------------------------------------------------------------------------------
-function resetSettings()
-
-	local finalCutProRunning = isFinalCutProRunning()
-
-	local resetMessage = "Are you sure you want to trash the FCPX Hacks Preferences?"
-	if finalCutProRunning then
-		resetMessage = resetMessage .. "\n\nThis will require your Administrator password and require Final Cut Pro to restart."
-	else
-		resetMessage = resetMessage .. "\n\nThis will require your Administrator password."
-	end
-
-	if displayYesNoQuestion(resetMessage) then
-
-		--------------------------------------------------------------------------------
-		-- Remove Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local removeHacksResult = true
-		local appleScriptA = [[
-			--------------------------------------------------------------------------------
-			-- Replace Files:
-			--------------------------------------------------------------------------------
-			try
-				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
-			on error
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
-			on error
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
-			on error
-				return "Failed"
-			end try
-
-			return "Done"
-		]]
-		ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-		if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
-			displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
-		else
-			removeHacksResult = true
-		end
-
-		if removeHacksResult then
-
-			--------------------------------------------------------------------------------
-			-- Trash all FCPX Hacks Settings:
-			--------------------------------------------------------------------------------
-			for i, v in ipairs(hs.settings.getKeys()) do
-				if (v:sub(1,10)) == "fcpxHacks." then
-					hs.settings.set(v, nil)
 				end
+			end
+			if whichEffectsBrowserSplitGroup == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
+				return "Failed"
 			end
 
 			--------------------------------------------------------------------------------
-			-- Restart Final Cut Pro if running:
+			-- Get Transitions Browser Split Group:
 			--------------------------------------------------------------------------------
-			if finalCutProRunning then
-				if not restartFinalCutPro() then
-					--------------------------------------------------------------------------------
-					-- Failed to restart Final Cut Pro:
-					--------------------------------------------------------------------------------
-					displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
+			local whichEffectsBrowserPopupButton = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
+					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
+						whichEffectsBrowserPopupButton = i
+					end
 				end
+			end
+			if whichEffectsBrowserPopupButton == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
+				return "Failed"
 			end
 
 			--------------------------------------------------------------------------------
-			-- Reload Hammerspoon:
+			-- Check that "Installed Effects" is selected:
 			--------------------------------------------------------------------------------
-			hs.reload()
+			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
+			if installedEffectsPopup ~= nil then
+				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+					installedEffectsPopup:performAction("AXPress")
+					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
+					installedEffectsPopupMenuItem:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
 
-		end --removeHacksResult
-	end -- displayYesNoQuestion(resetMessage)
-end
-
---------------------------------------------------------------------------------
--- GET LIST OF TRANSITIONS:
---------------------------------------------------------------------------------
-function updateTransitionsList()
-
-	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	displayMessage("Depending on how many transitions you have installed this might take a while.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
-
-	--------------------------------------------------------------------------------
-	-- Make sure Transitions panel is open:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXGroup (group 1)
-	-- AXRadioGroup (radio group 1)
-	-- AXRadioButton (radio button 2)
-	transitionsBrowserButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-		{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
-	}, 1)
-	if transitionsBrowserButton ~= nil then
-		if transitionsBrowserButton:attributeValue("AXValue") == 0 then
-			local pressTransitionsBrowserButtonResult = transitionsBrowserButton:performAction("AXPress")
-			if pressTransitionsBrowserButtonResult == nil then
-				displayErrorMessage("Unable to press Transitions icon.")
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		local effectsSearchCancelButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+			end
+		end
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+				showTouchbar()
 				return "Fail"
 			end
 		end
-	else
-		displayErrorMessage("Unable to activate Transitions Panel.")
-		return "Fail"
-	end
 
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXPopUpButton (pop up button 1)
-	installedTransitionsPopup = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-	}, 1)
-	if installedTransitionsPopup ~= nil then
-		if installedTransitionsPopup:attributeValue("AXValue") ~= "Installed Transitions" then
-			installedTransitionsPopup:performAction("AXPress")
-			installedTransitionsPopupMenuItem = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-				{ role = "AXMenu", },
-				{ role = "AXMenuItem", AXTitle = "Installed Transitions"},
-			}, 1)
-			installedTransitionsPopupMenuItem:performAction("AXPress")
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		local allVideoAndAudioButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][3] ~= nil then
+						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][3]
+					end
+				end
+			end
 		end
-	else
-		displayErrorMessage("Unable to find 'Installed Transitions' popup.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	transitionsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if transitionsSearchCancelButton ~= nil then
-		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
-		if transitionsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to cancel existing Transitions search.")
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Click 'All Transitions':
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXTable (table 1)
-	-- AXRow (row 1)
-	allTransitionsButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" }
-	}, 1)
-	if allTransitionsButton ~= nil then
-		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
-	else
-
-		--------------------------------------------------------------------------------
-		-- Make sure Transitions Browser Sidebar is Visible:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXCheckBox (checkbox 1)
-		transitionsBrowserSidebar = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup" },
-			{ role = "AXCheckBox", Identifier = "_NS:85" },
-		}, 1)
-		if transitionsBrowserSidebar ~= nil then transitionsBrowserSidebar:performAction("AXPress") end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Transitions':
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXScrollArea (scroll area 1)
-		-- AXTable (table 1)
-		-- AXRow (row 1)
-		allTransitionsButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:452" },
-			{ role = "AXScrollArea", Identifier = "_NS:66" },
-			{ role = "AXTable", Identifier = "_NS:9" }
-		}, 1)
-		if allTransitionsButton ~= nil then
-			allTransitionsButton[1]:setAttributeValue("AXSelected", true)
+		if allVideoAndAudioButton ~= nil then
+			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 		else
-			displayErrorMessage("Unable to locate 'All Transitions' button.")
+
+			--------------------------------------------------------------------------------
+			-- Make sure Effects Browser Sidebar is Visible:
+			--------------------------------------------------------------------------------
+			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
+			if effectsBrowserSidebar ~= nil then
+				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+					effectsBrowserSidebar:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Click 'All Video':
+			--------------------------------------------------------------------------------
+			local allVideoAndAudioButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][3] ~= nil then
+							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][3]
+						end
+					end
+				end
+			end
+			if allVideoAndAudioButton ~= nil then
+				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+			else
+				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay...
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Get list of All Video Effects:
+		--------------------------------------------------------------------------------
+		effectsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		local allVideoEffects = {}
+		if effectsList ~= nil then
+			for i=1, #effectsList:attributeValue("AXChildren") do
+				allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+			end
+		else
+			displayErrorMessage("Unable to get list of all effects.")
 			return "Fail"
 		end
-	end
 
-	--------------------------------------------------------------------------------
-	-- Get list of All Transitions:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXGrid (UI element 1)
-	transitionsList = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:9" },
-		{ role = "AXGrid", Identifier = "_NS:16" },
-	}, 1)
-	local allTransitions = {}
-	if transitionsList ~= nil then
-		for i=1, #transitionsList:attributeValue("AXChildren") do
-			allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+		--------------------------------------------------------------------------------
+		-- Click 'All Audio':
+		--------------------------------------------------------------------------------
+		allAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1]
+		local secondAll = false
+		local whichAudioButton = nil
+		if allAudioButton ~= nil then
+			for i=1, #allAudioButton:attributeValue("AXChildren") do
+				if allAudioButton[i][1] ~= nil then
+					if allAudioButton[i][1][1] ~= nil then
+						if allAudioButton[i][1][1]:attributeValue("AXValue") == "All" then
+							if secondAll then
+								whichAudioButton = i
+							else
+								secondAll = true
+							end
+						end
+					end
+				end
+			end
+			allAudioButton[whichAudioButton]:setAttributeValue("AXSelected", true)
+		else
+			displayErrorMessage("Unable to locate 'All Audio' button.")
+			return "Fail"
 		end
-	else
-		displayErrorMessage("Unable to get list of all transitions.")
-		return "Fail"
+
+		--------------------------------------------------------------------------------
+		-- Get list of All Audio Effects:
+		--------------------------------------------------------------------------------
+		effectsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		local allAudioEffects = {}
+		if effectsList ~= nil then
+			for i=1, #effectsList:attributeValue("AXChildren") do
+				allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+			end
+		else
+			displayErrorMessage("Unable to get list of all effects.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			local effectsSearchCancelButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+					effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+				end
+			end
+			if effectsSearchCancelButton ~= nil then
+				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+				if effectsSearchCancelButtonResult == nil then
+					displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Restore Effects or Transitions Panel:
+			--------------------------------------------------------------------------------
+			if whichPanelActivated == "None" then
+				finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
+			elseif whichPanelActivated == "Transitions" then
+				finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
+			end
+
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			showTouchbar()
+
+		end)
+
+		--------------------------------------------------------------------------------
+		-- All done!
+		--------------------------------------------------------------------------------
+		if #allVideoEffects == 0 or #allAudioEffects == 0 then
+			displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
+			return "Fail"
+		else
+			--------------------------------------------------------------------------------
+			-- Save Results to Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
+			settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
+			settings.set("fcpxHacks.effectsListUpdated", true)
+
+			--------------------------------------------------------------------------------
+			-- Update Chooser:
+			--------------------------------------------------------------------------------
+			fcpxChooser:refreshChoicesCallback()
+
+			--------------------------------------------------------------------------------
+			-- Refresh Menubar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+			--------------------------------------------------------------------------------
+			-- Let the user know everything's good:
+			--------------------------------------------------------------------------------
+			displayMessage("Effects List updated successfully.")
+		end
+
 	end
 
 	--------------------------------------------------------------------------------
-	-- All done!
+	-- GET LIST OF TRANSITIONS:
 	--------------------------------------------------------------------------------
-	if #allTransitions == 0 or #allTransitions == 0 then
-		displayMessage("Unfortunately the Transitions List was not successfully updated.\n\nPlease try again.")
-		return "Fail"
-	else
+	function updateTransitionsList()
+
+		--------------------------------------------------------------------------------
+		-- Make sure Final Cut Pro is active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
+
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Warning message:
+		--------------------------------------------------------------------------------
+		displayMessage("Depending on how many Transitions you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		if finalCutProTimelineButtonBar == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find Transitions Browser Button:
+		--------------------------------------------------------------------------------
+		local whichRadioGroup = nil
+		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
+				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
+					whichRadioGroup = i
+				end
+			end
+		end
+		if whichRadioGroup == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Effects or Transitions Panel Open?
+		--------------------------------------------------------------------------------
+		local whichPanelActivated = "None"
+		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
+			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
+			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Transitions panel is open:
+		--------------------------------------------------------------------------------
+		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][2]
+		if effectsBrowserButton ~= nil then
+			if effectsBrowserButton:attributeValue("AXValue") == 0 then
+				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
+				if presseffectsBrowserButtonResult == nil then
+					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+		else
+			displayErrorMessage("Unable to activate Video Effects Panel.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Effects" is selected:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Group:
+			--------------------------------------------------------------------------------
+			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserSplitGroup = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+						whichEffectsBrowserSplitGroup = i
+					end
+				end
+			end
+			if whichEffectsBrowserSplitGroup == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserPopupButton = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
+					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
+						whichEffectsBrowserPopupButton = i
+					end
+				end
+			end
+			if whichEffectsBrowserPopupButton == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Check that "Installed Effects" is selected:
+			--------------------------------------------------------------------------------
+			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
+			if installedEffectsPopup ~= nil then
+				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+					installedEffectsPopup:performAction("AXPress")
+					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
+					installedEffectsPopupMenuItem:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		local effectsSearchCancelButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+			end
+		end
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All' Transitions:
+		--------------------------------------------------------------------------------
+		local allVideoAndAudioButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+					end
+				end
+			end
+		end
+		if allVideoAndAudioButton ~= nil then
+			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+		else
+
+			--------------------------------------------------------------------------------
+			-- Make sure Transitions Browser Sidebar is Visible:
+			--------------------------------------------------------------------------------
+			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
+			if effectsBrowserSidebar ~= nil then
+				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+					effectsBrowserSidebar:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Click 'All' Transitions:
+			--------------------------------------------------------------------------------
+			local allVideoAndAudioButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+						end
+					end
+				end
+			end
+			if allVideoAndAudioButton ~= nil then
+				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+			else
+				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Get list of All Transitions:
+		--------------------------------------------------------------------------------
+		local transitionsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		local allTransitions = {}
+		if transitionsList ~= nil then
+			for i=1, #transitionsList:attributeValue("AXChildren") do
+				allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+			end
+		else
+			displayErrorMessage("Unable to get list of all transitions.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check to make sure it all worked:
+		--------------------------------------------------------------------------------
+		if #allTransitions == 0 or #allTransitions == 0 then
+			displayMessage("Unfortunately the Transitions List was not successfully updated.\n\nPlease try again.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		local effectsSearchCancelButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+			end
+		end
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restore Effects or Transitions Panel:
+		--------------------------------------------------------------------------------
+		if whichPanelActivated == "Effects" then
+			finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
+		elseif whichPanelActivated == "None" then
+			finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
+		end
+
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.allTransitions", allTransitions)
-		hs.settings.set("fcpxHacks.transitionsListUpdated", true)
+		settings.set("fcpxHacks.allTransitions", allTransitions)
+		settings.set("fcpxHacks.transitionsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -2958,504 +3089,295 @@ function updateTransitionsList()
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
 		displayMessage("Transitions List updated successfully.")
-	end
 
-end
-
---------------------------------------------------------------------------------
--- ASSIGN TRANSITIONS SHORTCUT:
---------------------------------------------------------------------------------
-function assignTransitionsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- Was Final Cut Pro Open?
-	--------------------------------------------------------------------------------
-	local wasFinalCutProOpen = isFinalCutProFrontmost()
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local transitionsListUpdated = hs.settings.get("fcpxHacks.transitionsListUpdated")
-	local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
-
-	--------------------------------------------------------------------------------
-	-- Error Checking:
-	--------------------------------------------------------------------------------
-	if not transitionsListUpdated then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
-	end
-	if allTransitions == nil then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
-	end
-	if next(allTransitions) == nil then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Video Effects List:
-	--------------------------------------------------------------------------------
-	local transitionChooserChoices = {}
-	if allTransitions ~= nil and next(allTransitions) ~= nil then
-		for i=1, #allTransitions do
-			individualEffect = {
-				["text"] = allTransitions[i],
-				["subText"] = "Transition",
-				["function"] = "transitionsShortcut",
-				["function1"] = allTransitions[i],
-				["function2"] = "",
-				["function3"] = "",
-				["whichShortcut"] = whichShortcut,
-				["wasFinalCutProOpen"] = wasFinalCutProOpen,
-			}
-			table.insert(transitionChooserChoices, 1, individualEffect)
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort everything:
-	--------------------------------------------------------------------------------
-	table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
-
-	transitionChooser = hs.chooser.new(transitionsChooserAction)
-
-	transitionChooser:bgDark(true)
-	transitionChooser:fgColor(hs.drawing.color.x11.snow)
-	transitionChooser:subTextColor(hs.drawing.color.x11.snow)
-
-	transitionChooser:choices(transitionChooserChoices)
-
-	transitionChooser:show()
-
-end
-
---------------------------------------------------------------------------------
--- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
---------------------------------------------------------------------------------
-function transitionsChooserAction(result)
-
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	transitionChooser:hide()
-
-	--------------------------------------------------------------------------------
-	-- Perform Specific Function:
-	--------------------------------------------------------------------------------
-	if result ~= nil then
 		--------------------------------------------------------------------------------
-		-- Save the selection:
+		-- Show the Touch Bar:
 		--------------------------------------------------------------------------------
-		whichShortcut = result["whichShortcut"]
-		if whichShortcut == 1 then hs.settings.set("fcpxHacks.transitionsShortcutOne", 		result["text"]) end
-		if whichShortcut == 2 then hs.settings.set("fcpxHacks.transitionsShortcutTwo", 		result["text"]) end
-		if whichShortcut == 3 then hs.settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
-		if whichShortcut == 4 then hs.settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
-		if whichShortcut == 5 then hs.settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
+		showTouchbar()
+
 	end
 
 	--------------------------------------------------------------------------------
-	-- Put focus back in Final Cut Pro:
+	-- GET LIST OF TITLES:
 	--------------------------------------------------------------------------------
-	if result["wasFinalCutProOpen"] then
+	function updateTitlesList()
+
+		--------------------------------------------------------------------------------
+		-- Make sure Final Cut Pro is active:
+		--------------------------------------------------------------------------------
 		launchFinalCutPro()
-	end
 
-	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar()
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
 
-end
+		--------------------------------------------------------------------------------
+		-- Warning message:
+		--------------------------------------------------------------------------------
+		displayMessage("Depending on how many Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
---------------------------------------------------------------------------------
--- GET LIST OF EFFECTS:
---------------------------------------------------------------------------------
-function updateEffectsList()
+		--------------------------------------------------------------------------------
+		-- Get Browser Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		if finalCutProBrowserButtonBar == nil then
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using getFinalCutProBrowserButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
 
-	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	displayMessage("Depending on how many effects you have installed this might take a while.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+		--------------------------------------------------------------------------------
+		-- Get Button IDs:
+		--------------------------------------------------------------------------------
+		local libariesButtonID = nil
+		local photosAudioButtonID = nil
+		local titlesGeneratorsButtonID = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
 
-	--------------------------------------------------------------------------------
-	-- Make sure Video Effects panel is open:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXGroup (group 1)
-	-- AXRadioGroup (radio group 1)
-	-- AXRadioButton (radio button 1)
-	effectsBrowserButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-		{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
-	}, 1)
-	if effectsBrowserButton ~= nil then
-		if effectsBrowserButton:attributeValue("AXValue") == 0 then
-			local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-			if presseffectsBrowserButtonResult == nil then
-				displayErrorMessage("Unable to press Video Effects icon.")
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
+
+			end
+		end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Browser Panel is Open?
+		--------------------------------------------------------------------------------
+		local whichBrowserPanelWasOpen = nil
+		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
+		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+
+		--------------------------------------------------------------------------------
+		-- If Titles & Generators is Closed, let's open it:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
 				return "Fail"
 			end
 		end
-	else
-		displayErrorMessage("Unable to activate Video Effects Panel.")
-		return "Fail"
-	end
 
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Effects" is selected:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXPopUpButton (pop up button 1)
-	installedEffectsPopup = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-	}, 1)
-	if installedEffectsPopup ~= nil then
-		if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-			installedEffectsPopup:performAction("AXPress")
-			installedEffectsPopupMenuItem = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-				{ role = "AXMenu", },
-				{ role = "AXMenuItem", AXTitle = "Installed Effects"},
-			}, 1)
-			installedEffectsPopupMenuItem:performAction("AXPress")
+		--------------------------------------------------------------------------------
+		-- Which Split Group?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSplitGroup = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				titlesGeneratorsSplitGroup = i
+				goto titlesGeneratorsSplitGroupExit
+			end
 		end
-	else
-		displayErrorMessage("Unable to find 'Installed Effects' popup.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	effectsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if effectsSearchCancelButton ~= nil then
-		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-		if effectsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to cancel effects search.")
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Click 'All Video':
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXTable (table 1)
-	-- AXRow (row 1)
-	allVideoButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" }
-	}, 1)
-	if allVideoButton ~= nil then
-		allVideoButton[3]:setAttributeValue("AXSelected", true)
-	else
-		--------------------------------------------------------------------------------
-		-- Make sure Effects Browser Sidebar is Visible:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXCheckBox (checkbox 1)
-		effectsBrowserSidebar = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup" },
-			{ role = "AXCheckBox", Identifier = "_NS:85" },
-		}, 1)
-		if effectsBrowserSidebar ~= nil then
-			effectsBrowserSidebar:performAction("AXPress")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Video':
-		--------------------------------------------------------------------------------
-		allVideoButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:452" },
-			{ role = "AXScrollArea", Identifier = "_NS:66" },
-			{ role = "AXTable", Identifier = "_NS:9" }
-		}, 1)
-		if allVideoButton ~= nil then
-			allVideoButton[3]:setAttributeValue("AXSelected", true)
-		else
-			displayErrorMessage("Unable to locate 'All Video' button.")
+		::titlesGeneratorsSplitGroupExit::
+		if titlesGeneratorsSplitGroup == nil then
+			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateTitlesList().")
+			showTouchbar()
 			return "Fail"
 		end
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get list of All Video Effects:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXGrid (UI element 1)
-	effectsList = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:9" },
-		{ role = "AXGrid", Identifier = "_NS:16" },
-	}, 1)
-	local allVideoEffects = {}
-	if effectsList ~= nil then
-		for i=1, #effectsList:attributeValue("AXChildren") do
-			allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+		--------------------------------------------------------------------------------
+		-- Is the Side Bar Closed?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSideBarClosed = true
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
+					titlesGeneratorsSideBarClosed = false
+				end
+			end
 		end
-	else
-		displayErrorMessage("Unable to get list of all effects.")
-		return "Fail"
-	end
+		if titlesGeneratorsSideBarClosed then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
 
-	--------------------------------------------------------------------------------
-	-- Click 'All Audio':
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXTable (table 1)
-	-- AXRow (row 1)
-	allAudioButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" }
-	}, 1)
-	local secondAll = false
-	local whichAudioButton = nil
-	if allAudioButton ~= nil then
-		for i=1, #allAudioButton:attributeValue("AXChildren") do
-			if allAudioButton[i][1] ~= nil then
-				if allAudioButton[i][1][1] ~= nil then
-					if allAudioButton[i][1][1]:attributeValue("AXValue") == "All" then
-						if secondAll then
-							whichAudioButton = i
-						else
-							secondAll = true
+		--------------------------------------------------------------------------------
+		-- Make sure Titles is selected:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
+		if result == nil then
+			displayErrorMessage("Unable to select Titles from List.\n\nError occured in updateTitlesList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Popup Button:
+		--------------------------------------------------------------------------------
+		local titlesPopupButton = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+					titlesPopupButton = i
+					goto titlesGeneratorsDropdownExit
+				end
+			end
+		end
+		if titlesPopupButton == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsDropdownExit::
+
+		--------------------------------------------------------------------------------
+		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
+		--------------------------------------------------------------------------------
+		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
+			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Group:
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsGroup = nil
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+							titlesGeneratorsGroup = i
+							goto titlesGeneratorsGroupExit
 						end
 					end
 				end
 			end
 		end
-		allAudioButton[whichAudioButton]:setAttributeValue("AXSelected", true)
-	else
-		displayErrorMessage("Unable to locate 'All Audio' button.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get list of All Audio Effects:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXGrid (UI element 1)
-	effectsList = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:9" },
-		{ role = "AXGrid", Identifier = "_NS:16" },
-	}, 1)
-	local allAudioEffects = {}
-	if effectsList ~= nil then
-		for i=1, #effectsList:attributeValue("AXChildren") do
-			allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+		if titlesGeneratorsGroup == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
 		end
-	else
-		displayErrorMessage("Unable to get list of all effects.")
-		return "Fail"
-	end
+		::titlesGeneratorsGroupExit::
 
-	--------------------------------------------------------------------------------
-	-- All done!
-	--------------------------------------------------------------------------------
-	if #allVideoEffects == 0 or #allAudioEffects == 0 then
-		displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
-		return "Fail"
-	else
+		--------------------------------------------------------------------------------
+		-- Get list of all Titles:
+		--------------------------------------------------------------------------------
+		local allTitles = {}
+		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
+			allTitles[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
+		end
+
+		--------------------------------------------------------------------------------
+		-- No Titles Found:
+		--------------------------------------------------------------------------------
+		if next(allTitles) == nil then
+			displayMessage("Unfortunately the Titles List was not successfully updated.\n\nPlease try again.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Button IDs Again:
+		--------------------------------------------------------------------------------
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
+
+			end
+		end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Go back to previously selected panel:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen == "Library" then
+			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
+			if result == nil then
+				displayMessage("Unable to press Libraries Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
+			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
+			if result == nil then
+				displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+		if titlesGeneratorsSideBarClosed then
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
-		hs.settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
-		hs.settings.set("fcpxHacks.effectsListUpdated", true)
+		settings.set("fcpxHacks.allTitles", allTitles)
+		settings.set("fcpxHacks.titlesListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -3470,349 +3392,1454 @@ function updateEffectsList()
 		--------------------------------------------------------------------------------
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
-		displayMessage("Effects List updated successfully.")
-	end
+		displayMessage("Titles List updated successfully.")
 
-end
-
---------------------------------------------------------------------------------
--- ASSIGN EFFECTS SHORTCUT:
---------------------------------------------------------------------------------
-function assignEffectsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- Was Final Cut Pro Open?
-	--------------------------------------------------------------------------------
-	local wasFinalCutProOpen = isFinalCutProFrontmost()
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated")
-	local allVideoEffects = hs.settings.get("fcpxHacks.allVideoEffects")
-	local allAudioEffects = hs.settings.get("fcpxHacks.allAudioEffects")
-
-	--------------------------------------------------------------------------------
-	-- Error Checking:
-	--------------------------------------------------------------------------------
-	if not effectsListUpdated then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
-	end
-	if allVideoEffects == nil or allAudioEffects == nil then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
-	end
-	if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
-		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
-		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Video Effects List:
+	-- GET LIST OF GENERATORS:
 	--------------------------------------------------------------------------------
-	local effectChooserChoices = {}
-	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
-		for i=1, #allVideoEffects do
-			individualEffect = {
-				["text"] = allVideoEffects[i],
-				["subText"] = "Video Effect",
-				["function"] = "effectsShortcut",
-				["function1"] = allVideoEffects[i],
-				["function2"] = "",
-				["function3"] = "",
-				["whichShortcut"] = whichShortcut,
-				["wasFinalCutProOpen"] = wasFinalCutProOpen,
-			}
-			table.insert(effectChooserChoices, 1, individualEffect)
-		end
-	end
+	function updateGeneratorsList()
 
-	--------------------------------------------------------------------------------
-	-- Audio Effects List:
-	--------------------------------------------------------------------------------
-	if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
-		for i=1, #allAudioEffects do
-			individualEffect = {
-				["text"] = allAudioEffects[i],
-				["subText"] = "Audio Effect",
-				["function"] = "effectsShortcut",
-				["function1"] = allAudioEffects[i],
-				["function2"] = "",
-				["function3"] = "",
-				["whichShortcut"] = whichShortcut,
-				["wasFinalCutProOpen"] = wasFinalCutProOpen,
-			}
-			table.insert(effectChooserChoices, 1, individualEffect)
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort everything:
-	--------------------------------------------------------------------------------
-	table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
-
-	effectChooser = hs.chooser.new(effectChooserAction)
-
-	effectChooser:bgDark(true)
-	effectChooser:fgColor(hs.drawing.color.x11.snow)
-	effectChooser:subTextColor(hs.drawing.color.x11.snow)
-
-	effectChooser:choices(effectChooserChoices)
-
-	effectChooser:show()
-
-end
-
---------------------------------------------------------------------------------
--- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
---------------------------------------------------------------------------------
-function effectChooserAction(result)
-
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	effectChooser:hide()
-
-	--------------------------------------------------------------------------------
-	-- Perform Specific Function:
-	--------------------------------------------------------------------------------
-	if result ~= nil then
 		--------------------------------------------------------------------------------
-		-- Save the selection:
+		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		whichShortcut = result["whichShortcut"]
-		if whichShortcut == 1 then hs.settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
-		if whichShortcut == 2 then hs.settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
-		if whichShortcut == 3 then hs.settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
-		if whichShortcut == 4 then hs.settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
-		if whichShortcut == 5 then hs.settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Put focus back in Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if result["wasFinalCutProOpen"] then
 		launchFinalCutPro()
-	end
 
-	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar()
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
 
-end
+		--------------------------------------------------------------------------------
+		-- Warning message:
+		--------------------------------------------------------------------------------
+		displayMessage("Depending on how many Generators you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
---------------------------------------------------------------------------------
--- TOGGLE ENABLE PROXY MENU ICON:
---------------------------------------------------------------------------------
-function toggleEnableProxyMenuIcon()
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
-	if enableProxyMenuIcon == nil then
-		hs.settings.set("fcpxHacks.enableProxyMenuIcon", true)
-		enableProxyMenuIcon = true
-	else
-		hs.settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
-	end
+		--------------------------------------------------------------------------------
+		-- Get Browser Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		if finalCutProBrowserButtonBar == nil then
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using getFinalCutProBrowserButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
 
-	updateMenubarIcon()
-	refreshMenuBar()
+		--------------------------------------------------------------------------------
+		-- Get Button IDs:
+		--------------------------------------------------------------------------------
+		local libariesButtonID = nil
+		local photosAudioButtonID = nil
+		local titlesGeneratorsButtonID = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-end
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
 
---------------------------------------------------------------------------------
--- UPDATE MENUBAR ICON:
---------------------------------------------------------------------------------
-function updateMenubarIcon()
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
 
-	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.png")
-	local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
-	local proxyMenuIcon = ""
-	local proxyStatusIcon = getProxyStatusIcon()
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
 
-	fcpxMenubar:setIcon(nil)
-
-	if enableProxyMenuIcon ~= nil then
-		if enableProxyMenuIcon == true then
-			if proxyStatusIcon ~= nil then
-				proxyMenuIcon = " " .. proxyStatusIcon
-			else
-				proxyMenuIcon = ""
 			end
 		end
-	end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
 
-	if displayMenubarAsIcon == nil then
-		fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
-	else
-		if displayMenubarAsIcon then
-			fcpxMenubar:setIcon(fcpxHacksIconSmall)
-			if proxyStatusIcon ~= nil then
-				if proxyStatusIcon ~= "" then
-					if enableProxyMenuIcon then
-						proxyMenuIcon = proxyMenuIcon .. "  "
+		--------------------------------------------------------------------------------
+		-- Which Browser Panel is Open?
+		--------------------------------------------------------------------------------
+		local whichBrowserPanelWasOpen = nil
+		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
+		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+
+		--------------------------------------------------------------------------------
+		-- If Titles & Generators is Closed, let's open it:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSplitGroup = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				titlesGeneratorsSplitGroup = i
+				goto titlesGeneratorsSplitGroupExit
+			end
+		end
+		::titlesGeneratorsSplitGroupExit::
+		if titlesGeneratorsSplitGroup == nil then
+			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Is the Side Bar Closed?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSideBarClosed = true
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
+					titlesGeneratorsSideBarClosed = false
+				end
+			end
+		end
+		if titlesGeneratorsSideBarClosed then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find Generators Row:
+		--------------------------------------------------------------------------------
+		local generatorsRow = nil
+		local foundTitles = false
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][i][1]:attributeValue("AXRole") == "AXGroup" then
+				if foundTitles == false then
+					foundTitles = true
+				else
+					generatorsRow = i
+					goto generatorsRowExit
+				end
+			end
+		end
+		::generatorsRowExit::
+		if generatorsRow == nil then
+			displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Generators Row:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
+		if result == nil then
+			displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Popup Button:
+		--------------------------------------------------------------------------------
+		local titlesPopupButton = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+					titlesPopupButton = i
+					goto titlesGeneratorsDropdownExit
+				end
+			end
+		end
+		if titlesPopupButton == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsDropdownExit::
+
+		--------------------------------------------------------------------------------
+		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
+		--------------------------------------------------------------------------------
+		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Generators" then
+			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Group:
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsGroup = nil
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+							titlesGeneratorsGroup = i
+							goto titlesGeneratorsGroupExit
+						end
 					end
-			 	end
-			 end
-			fcpxMenubar:setTitle(proxyMenuIcon)
-		else
-			fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
+				end
+			end
 		end
-	end
+		if titlesGeneratorsGroup == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsGroupExit::
 
-end
+		--------------------------------------------------------------------------------
+		-- Get list of all Generators:
+		--------------------------------------------------------------------------------
+		local allGenerators = {}
+		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
+			allGenerators[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
+		end
+
+		--------------------------------------------------------------------------------
+		-- No Titles Found:
+		--------------------------------------------------------------------------------
+		if next(allGenerators) == nil then
+			displayMessage("Unfortunately the Generators List was not successfully updated.\n\nPlease try again.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Button IDs Again:
+		--------------------------------------------------------------------------------
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
+
+			end
+		end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Go back to previously selected panel:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen == "Library" then
+			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
+			if result == nil then
+				displayMessage("Unable to press Libraries Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
+			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
+			if result == nil then
+				displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+		if titlesGeneratorsSideBarClosed then
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Save Results to Settings:
+		--------------------------------------------------------------------------------
+		settings.set("fcpxHacks.allGenerators", allGenerators)
+		settings.set("fcpxHacks.generatorsListUpdated", true)
+
+		--------------------------------------------------------------------------------
+		-- Update Chooser:
+		--------------------------------------------------------------------------------
+		fcpxChooser:refreshChoicesCallback()
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
+		--------------------------------------------------------------------------------
+		-- Let the user know everything's good:
+		--------------------------------------------------------------------------------
+		displayMessage("Generators List updated successfully.")
+
+	end
 
 --------------------------------------------------------------------------------
--- ENABLE HACKS SHORTCUTS IN FINAL CUT PRO:
+-- ASSIGN EFFECTS/TRANSITIONS/TITLES/GENERATORS SHORTCUTS:
 --------------------------------------------------------------------------------
-function toggleEnableHacksShortcutsInFinalCutPro()
 
 	--------------------------------------------------------------------------------
-	-- Get current value from settings:
+	-- ASSIGN EFFECTS SHORTCUT:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
+	function assignEffectsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Was Final Cut Pro Open?
+		--------------------------------------------------------------------------------
+		local wasFinalCutProOpen = isFinalCutProFrontmost()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated")
+		local allVideoEffects 		= settings.get("fcpxHacks.allVideoEffects")
+		local allAudioEffects 		= settings.get("fcpxHacks.allAudioEffects")
+
+		--------------------------------------------------------------------------------
+		-- Error Checking:
+		--------------------------------------------------------------------------------
+		if not effectsListUpdated then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+		if allVideoEffects == nil or allAudioEffects == nil then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+		if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Video Effects List:
+		--------------------------------------------------------------------------------
+		local effectChooserChoices = {}
+		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
+			for i=1, #allVideoEffects do
+				individualEffect = {
+					["text"] = allVideoEffects[i],
+					["subText"] = "Video Effect",
+					["function"] = "effectsShortcut",
+					["function1"] = allVideoEffects[i],
+					["function2"] = "",
+					["function3"] = "",
+					["whichShortcut"] = whichShortcut,
+					["wasFinalCutProOpen"] = wasFinalCutProOpen,
+				}
+				table.insert(effectChooserChoices, 1, individualEffect)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Audio Effects List:
+		--------------------------------------------------------------------------------
+		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
+			for i=1, #allAudioEffects do
+				individualEffect = {
+					["text"] = allAudioEffects[i],
+					["subText"] = "Audio Effect",
+					["function"] = "effectsShortcut",
+					["function1"] = allAudioEffects[i],
+					["function2"] = "",
+					["function3"] = "",
+					["whichShortcut"] = whichShortcut,
+					["wasFinalCutProOpen"] = wasFinalCutProOpen,
+				}
+				table.insert(effectChooserChoices, 1, individualEffect)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort everything:
+		--------------------------------------------------------------------------------
+		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
+
+		effectChooser = chooser.new(effectChooserAction):bgDark(true)
+														:fgColor(hs.drawing.color.x11.snow)
+														:subTextColor(hs.drawing.color.x11.snow)
+														:choices(effectChooserChoices)
+														:show()
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
+		--------------------------------------------------------------------------------
+		function effectChooserAction(result)
+
+			--------------------------------------------------------------------------------
+			-- Hide Chooser:
+			--------------------------------------------------------------------------------
+			effectChooser:hide()
+
+			--------------------------------------------------------------------------------
+			-- Perform Specific Function:
+			--------------------------------------------------------------------------------
+			if result ~= nil then
+				--------------------------------------------------------------------------------
+				-- Save the selection:
+				--------------------------------------------------------------------------------
+				whichShortcut = result["whichShortcut"]
+				if whichShortcut == 1 then settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if result["wasFinalCutProOpen"] then
+				launchFinalCutPro()
+			end
+
+			--------------------------------------------------------------------------------
+			-- Refresh Menubar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+		end
 
 	--------------------------------------------------------------------------------
-	-- Are we enabling or disabling?
+	-- ASSIGN TRANSITIONS SHORTCUT:
 	--------------------------------------------------------------------------------
-	local enableOrDisableText = nil
-	if enableHacksShortcutsInFinalCutPro then
-		enableOrDisableText = "Disabling"
-	else
-		enableOrDisableText = "Enabling"
+	function assignTransitionsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Was Final Cut Pro Open?
+		--------------------------------------------------------------------------------
+		local wasFinalCutProOpen = isFinalCutProFrontmost()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local transitionsListUpdated = settings.get("fcpxHacks.transitionsListUpdated")
+		local allTransitions = settings.get("fcpxHacks.allTransitions")
+
+		--------------------------------------------------------------------------------
+		-- Error Checking:
+		--------------------------------------------------------------------------------
+		if not transitionsListUpdated then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+		if allTransitions == nil then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+		if next(allTransitions) == nil then
+			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Video Effects List:
+		--------------------------------------------------------------------------------
+		local transitionChooserChoices = {}
+		if allTransitions ~= nil and next(allTransitions) ~= nil then
+			for i=1, #allTransitions do
+				individualEffect = {
+					["text"] = allTransitions[i],
+					["subText"] = "Transition",
+					["function"] = "transitionsShortcut",
+					["function1"] = allTransitions[i],
+					["function2"] = "",
+					["function3"] = "",
+					["whichShortcut"] = whichShortcut,
+					["wasFinalCutProOpen"] = wasFinalCutProOpen,
+				}
+				table.insert(transitionChooserChoices, 1, individualEffect)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort everything:
+		--------------------------------------------------------------------------------
+		table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
+
+		transitionChooser = chooser.new(transitionsChooserAction):bgDark(true)
+																 :fgColor(hs.drawing.color.x11.snow)
+																 :subTextColor(hs.drawing.color.x11.snow)
+																 :choices(transitionChooserChoices)
+																 :show()
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
+		--------------------------------------------------------------------------------
+		function transitionsChooserAction(result)
+
+			--------------------------------------------------------------------------------
+			-- Hide Chooser:
+			--------------------------------------------------------------------------------
+			transitionChooser:hide()
+
+			--------------------------------------------------------------------------------
+			-- Perform Specific Function:
+			--------------------------------------------------------------------------------
+			if result ~= nil then
+				--------------------------------------------------------------------------------
+				-- Save the selection:
+				--------------------------------------------------------------------------------
+				whichShortcut = result["whichShortcut"]
+				if whichShortcut == 1 then settings.set("fcpxHacks.transitionsShortcutOne", 	result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks.transitionsShortcutTwo", 	result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if result["wasFinalCutProOpen"] then
+				launchFinalCutPro()
+			end
+
+			--------------------------------------------------------------------------------
+			-- Refresh Menubar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+		end
+
+	--------------------------------------------------------------------------------
+	-- ASSIGN TITLES SHORTCUT:
+	--------------------------------------------------------------------------------
+	function assignTitlesShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Was Final Cut Pro Open?
+		--------------------------------------------------------------------------------
+		local wasFinalCutProOpen = isFinalCutProFrontmost()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local titlesListUpdated = settings.get("fcpxHacks.titlesListUpdated")
+		local allTitles = settings.get("fcpxHacks.allTitles")
+
+		--------------------------------------------------------------------------------
+		-- Error Checking:
+		--------------------------------------------------------------------------------
+		if not titlesListUpdated then
+			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			return "Failed"
+		end
+		if allTitles == nil then
+			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			return "Failed"
+		end
+		if next(allTitles) == nil then
+			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Titles List:
+		--------------------------------------------------------------------------------
+		local titlesChooserChoices = {}
+		if allTitles ~= nil and next(allTitles) ~= nil then
+			for i=1, #allTitles do
+				individualEffect = {
+					["text"] = allTitles[i],
+					["subText"] = "Title",
+					["function"] = "transitionsShortcut",
+					["function1"] = allTitles[i],
+					["function2"] = "",
+					["function3"] = "",
+					["whichShortcut"] = whichShortcut,
+					["wasFinalCutProOpen"] = wasFinalCutProOpen,
+				}
+				table.insert(titlesChooserChoices, 1, individualEffect)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort everything:
+		--------------------------------------------------------------------------------
+		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
+
+		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
+													    :fgColor(hs.drawing.color.x11.snow)
+													    :subTextColor(hs.drawing.color.x11.snow)
+														:choices(titlesChooserChoices)
+														:show()
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- ASSIGN TITLES SHORTCUT CHOOSER ACTION:
+		--------------------------------------------------------------------------------
+		function titlesChooserAction(result)
+
+			--------------------------------------------------------------------------------
+			-- Hide Chooser:
+			--------------------------------------------------------------------------------
+			titlesChooser:hide()
+
+			--------------------------------------------------------------------------------
+			-- Perform Specific Function:
+			--------------------------------------------------------------------------------
+			if result ~= nil then
+				--------------------------------------------------------------------------------
+				-- Save the selection:
+				--------------------------------------------------------------------------------
+				whichShortcut = result["whichShortcut"]
+				if whichShortcut == 1 then settings.set("fcpxHacks.titlesShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks.titlesShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks.titlesShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks.titlesShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks.titlesShortcutFive", 		result["text"]) end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if result["wasFinalCutProOpen"] then
+				launchFinalCutPro()
+			end
+
+			--------------------------------------------------------------------------------
+			-- Refresh Menubar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+		end
+
+	--------------------------------------------------------------------------------
+	-- ASSIGN GENERATORS SHORTCUT:
+	--------------------------------------------------------------------------------
+	function assignGeneratorsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Was Final Cut Pro Open?
+		--------------------------------------------------------------------------------
+		local wasFinalCutProOpen = isFinalCutProFrontmost()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local generatorsListUpdated = settings.get("fcpxHacks.generatorsListUpdated")
+		local allGenerators = settings.get("fcpxHacks.allGenerators")
+
+		--------------------------------------------------------------------------------
+		-- Error Checking:
+		--------------------------------------------------------------------------------
+		if not generatorsListUpdated then
+			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			return "Failed"
+		end
+		if allGenerators == nil then
+			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			return "Failed"
+		end
+		if next(allGenerators) == nil then
+			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Generators List:
+		--------------------------------------------------------------------------------
+		local generatorsChooserChoices = {}
+		if allGenerators ~= nil and next(allGenerators) ~= nil then
+			for i=1, #allGenerators do
+				individualEffect = {
+					["text"] = allGenerators[i],
+					["subText"] = "Title",
+					["function"] = "transitionsShortcut",
+					["function1"] = allGenerators[i],
+					["function2"] = "",
+					["function3"] = "",
+					["whichShortcut"] = whichShortcut,
+					["wasFinalCutProOpen"] = wasFinalCutProOpen,
+				}
+				table.insert(generatorsChooserChoices, 1, individualEffect)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort everything:
+		--------------------------------------------------------------------------------
+		table.sort(generatorsChooserChoices, function(a, b) return a.text < b.text end)
+
+		generatorsChooser = chooser.new(generatorsChooserAction):bgDark(true)
+																:fgColor(hs.drawing.color.x11.snow)
+																:subTextColor(hs.drawing.color.x11.snow)
+																:choices(generatorsChooserChoices)
+																:show()
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- ASSIGN GENERATORS SHORTCUT CHOOSER ACTION:
+		--------------------------------------------------------------------------------
+		function generatorsChooserAction(result)
+
+			--------------------------------------------------------------------------------
+			-- Hide Chooser:
+			--------------------------------------------------------------------------------
+			generatorsChooser:hide()
+
+			--------------------------------------------------------------------------------
+			-- Perform Specific Function:
+			--------------------------------------------------------------------------------
+			if result ~= nil then
+				--------------------------------------------------------------------------------
+				-- Save the selection:
+				--------------------------------------------------------------------------------
+				whichShortcut = result["whichShortcut"]
+				if whichShortcut == 1 then settings.set("fcpxHacks.generatorsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks.generatorsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks.generatorsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks.generatorsShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks.generatorsShortcutFive", 		result["text"]) end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if result["wasFinalCutProOpen"] then
+				launchFinalCutPro()
+			end
+
+			--------------------------------------------------------------------------------
+			-- Refresh Menubar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+		end
+
+--------------------------------------------------------------------------------
+-- CHANGE:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- CHANGE TOUCH BAR LOCATION:
+	--------------------------------------------------------------------------------
+	function changeTouchBarLocation(value)
+		settings.set("fcpxHacks.displayTouchBarLocation", value)
+
+		if touchBarSupported then
+			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			if displayTouchBar then setTouchBarLocation() end
+		end
+
+		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
+	-- CHANGE HIGHLIGHT SHAPE:
 	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
+	function changeHighlightShape(value)
+		settings.set("fcpxHacks.displayHighlightShape", value)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- CHANGE HIGHLIGHT COLOUR:
+	--------------------------------------------------------------------------------
+	function changeHighlightColour(value)
+		settings.set("fcpxHacks.displayHighlightColour", value)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- FCPX CHANGE BACKUP INTERVAL:
+	--------------------------------------------------------------------------------
+	function changeBackupInterval()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		FFPeriodicBackupInterval = 15
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
+		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = executeResult end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion("Changing the Backup Interval requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Ask user what to set the backup interval to:
+		--------------------------------------------------------------------------------
+		local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
+		if not userSelectedBackupInterval then
+			return "Cancel"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval -string '" .. userSelectedBackupInterval .. "'")
+		if executeStatus == nil then
+			displayErrorMessage("Failed to write to plist.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartFinalCutProStatus then
+			if not restartFinalCutPro() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				return "Failed"
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CHANGE SMART COLLECTIONS LABEL:
+	--------------------------------------------------------------------------------
+	function changeSmartCollectionsLabel()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
+		if trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion("Changing the Smart Collections Label requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Ask user what to set the backup interval to:
+		--------------------------------------------------------------------------------
+		local userSelectedSmartCollectionsLabel = displayTextBoxMessage("What would you like to set your Smart Collections Label to:", "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.", trim(FFOrganizerSmartCollections))
+		if not userSelectedSmartCollectionsLabel then
+			return "Cancel"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist for every Flexo language:
+		--------------------------------------------------------------------------------
+		for k, v in pairs(flexoLanguages) do
+			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. flexoLanguages[k] .. ".lproj/FFLocalizable.strings'")
+			if executeStatus == nil then
+				writeToConsole("Failed to write to '" .. flexoLanguages[k] .. ".lproj' plist.")
+				displayErrorMessage("Failed to write to '" .. flexoLanguages[k] .. ".lproj' plist.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartFinalCutProStatus then
+			if not restartFinalCutPro() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				return "Failed"
+			end
+		end
+
+	end
+
+--------------------------------------------------------------------------------
+-- TOGGLE:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE DEBUG MODE:
+	--------------------------------------------------------------------------------
+	function toggleDebugMode()
+		debugMode = not debugMode
+		settings.set("fcpxHacks.debugMode", debugMode)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE CHECK FOR UPDATES:
+	--------------------------------------------------------------------------------
+	function toggleCheckForUpdates()
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
+		settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE MENUBAR DISPLAY:
+	--------------------------------------------------------------------------------
+	function toggleMenubarDisplay(value)
+		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
+		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE MEDIA IMPORT WATCHER:
+	--------------------------------------------------------------------------------
+	function toggleMediaImportWatcher()
+		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		if not enableMediaImportWatcher then
+			mediaImportWatcher()
 		else
-			return "Done"
+			newDeviceMounted:stop()
 		end
-	else
-		if not displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password.\n\nDo you want to continue?") then
-			return "Done"
-		end
+		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
+		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Let's do it!
+	-- TOGGLE CLIPBOARD HISTORY:
 	--------------------------------------------------------------------------------
-	local saveSettings = false
-	if enableHacksShortcutsInFinalCutPro then
-		--------------------------------------------------------------------------------
-		-- Revert back to default keyboard layout:
-		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
-
-		--------------------------------------------------------------------------------
-		-- Disable Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local appleScriptA = [[
-			--------------------------------------------------------------------------------
-			-- Replace Files:
-			--------------------------------------------------------------------------------
-			try
-				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to restore NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to restore NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to restore Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to restore NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to restore NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-
-			return "Done"
-		]]
-		ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-		if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
-	else
-		--------------------------------------------------------------------------------
-		-- Revert back to default keyboard layout:
-		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
-
-		--------------------------------------------------------------------------------
-		-- Enable Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local appleScriptA = [[
-			--------------------------------------------------------------------------------
-			-- Replace Files:
-			--------------------------------------------------------------------------------
-			try
-				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
-			on error
-				display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
-				return "Failed"
-			end try
-
-			return "Done"
-		]]
-		ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-		if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
+	function toggleEnableClipboardHistory()
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		if not enableClipboardHistory then
+			clipboardWatcher()
+		else
+			clipboardTimer:stop()
+		end
+		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
+		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
-	-- If all is good then...
+	-- TOGGLE SHARED CLIPBOARD:
 	--------------------------------------------------------------------------------
-	if saveSettings then
+	function toggleEnableSharedClipboard()
+
+		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+
+		if not enableSharedClipboard then
+
+			result = displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
+
+			if result ~= false then
+				debugMessage("Enabled Shared Clipboard Path: " .. tostring(result))
+				settings.set("fcpxHacks.sharedClipboardPath", result)
+
+				--------------------------------------------------------------------------------
+				-- Watch for Shared Clipboard Changes:
+				--------------------------------------------------------------------------------
+				sharedClipboardWatcher = pathwatcher.new(result, sharedClipboardFileWatcher):start()
+
+			else
+				debugMessage("Enabled Shared Clipboard Choose Path Cancelled.")
+				settings.set("fcpxHacks.sharedClipboardPath", nil)
+				return "failed"
+			end
+
+		else
+
+			--------------------------------------------------------------------------------
+			-- Stop Watching for Shared Clipboard Changes:
+			--------------------------------------------------------------------------------
+			sharedClipboardWatcher:stop()
+
+		end
+
+		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE XML SHARING:
+	--------------------------------------------------------------------------------
+	function toggleEnableXMLSharing()
+
+		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+
+		if not enableXMLSharing then
+
+			xmlSharingDropboxPath = displayChooseFolder("Which folder would you like to use as the local Drop Box?")
+
+			if xmlSharingDropboxPath ~= false then
+				settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
+			else
+				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+				settings.set("fcpxHacks.xmlSharingPath", nil)
+				return "Cancelled"
+			end
+
+			xmlSharingPath = displayChooseFolder("Which folder would you like to use for XML Sharing?")
+
+			if xmlSharingPath ~= false then
+				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
+			else
+				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+				settings.set("fcpxHacks.xmlSharingPath", nil)
+				return "Cancelled"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Watch for XML Dropbox Changes:
+			--------------------------------------------------------------------------------
+			xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+
+			--------------------------------------------------------------------------------
+			-- Watch for Shared XML Folder Changes:
+			--------------------------------------------------------------------------------
+			sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+
+		else
+			--------------------------------------------------------------------------------
+			-- Stop Watchers:
+			--------------------------------------------------------------------------------
+			xmlDropboxWatcher:stop()
+			sharedXMLWatcher:stop()
+
+			--------------------------------------------------------------------------------
+			-- Clear Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+			settings.set("fcpxHacks.xmlSharingPath", nil)
+		end
+
+		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE MOBILE NOTIFICATIONS:
+	--------------------------------------------------------------------------------
+	function toggleEnableMobileNotifications()
+		local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
+		local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
+
+		if not enableMobileNotifications then
+
+			local returnToFinalCutPro = isFinalCutProFrontmost()
+			::retryProwlAPIKeyEntry::
+			local appleScriptA = 'set defaultAnswer to "' .. prowlAPIKey .. '"' .. '\n\n'
+			local appleScriptB = [[
+				set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
+				set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
+				set allowedAll to allowedLetters & allowedNumbers
+
+				repeat
+					try
+						tell me to activate
+						set response to text returned of (display dialog "Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com." default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
+					on error
+						-- Cancel Pressed:
+						return false
+					end try
+					try
+						set invalidCharacters to false
+						repeat with aCharacter in response
+							if (aCharacter as text) is not in allowedAll then
+								set invalidCharacters to true
+							end if
+						end repeat
+						if length of response is 0 then
+							set invalidCharacters to true
+						end if
+						if invalidCharacters is false then
+							exit repeat
+						end
+					end try
+					display dialog "The Prowl API Key you entered is not valid.\n\nPlease try again." buttons {"OK"} with icon fcpxIcon
+				end repeat
+				return response
+			]]
+			a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+			if result == false then
+				return "Cancel"
+			end
+			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
+			if prowlAPIKeyValidResult then
+				if returnToFinalCutPro then launchFinalCutPro() end
+				settings.set("fcpxHacks.prowlAPIKey", result)
+				notificationWatcher()
+				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+			else
+				displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
+				goto retryProwlAPIKeyEntry
+			end
+		else
+			shareSuccessNotificationWatcher:stop()
+			shareFailedNotificationWatcher:stop()
+			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+		end
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE HAMMERSPOON DOCK ICON:
+	--------------------------------------------------------------------------------
+	function toggleHammerspoonDockIcon()
+		local originalValue = hs.dockIcon()
+		hs.dockIcon(not originalValue)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE HAMMERSPOON MENU ICON:
+	--------------------------------------------------------------------------------
+	function toggleHammerspoonMenuIcon()
+		local originalValue = hs.menuIcon()
+		hs.menuIcon(not originalValue)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE LAUNCH HAMMERSPOON ON START:
+	--------------------------------------------------------------------------------
+	function toggleLaunchHammerspoonOnStartup()
+		local originalValue = hs.autoLaunch()
+		hs.autoLaunch(not originalValue)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
+	--------------------------------------------------------------------------------
+	function toggleCheckforHammerspoonUpdates()
+		local originalValue = hs.automaticallyCheckForUpdates()
+		hs.automaticallyCheckForUpdates(not originalValue)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE PROXY MENU ICON:
+	--------------------------------------------------------------------------------
+	function toggleEnableProxyMenuIcon()
+		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
+		if enableProxyMenuIcon == nil then
+			settings.set("fcpxHacks.enableProxyMenuIcon", true)
+			enableProxyMenuIcon = true
+		else
+			settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
+		end
+
+		updateMenubarIcon()
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE HACKS SHORTCUTS IN FINAL CUT PRO:
+	--------------------------------------------------------------------------------
+	function toggleEnableHacksShortcutsInFinalCutPro()
+
 		--------------------------------------------------------------------------------
-		-- Save new value to settings:
+		-- Get current value from settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
+		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+		if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
+
+		--------------------------------------------------------------------------------
+		-- Are we enabling or disabling?
+		--------------------------------------------------------------------------------
+		local enableOrDisableText = nil
+		if enableHacksShortcutsInFinalCutPro then
+			enableOrDisableText = "Disabling"
+		else
+			enableOrDisableText = "Enabling"
+		end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		else
+			if not displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password.\n\nDo you want to continue?") then
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Let's do it!
+		--------------------------------------------------------------------------------
+		local saveSettings = false
+		if enableHacksShortcutsInFinalCutPro then
+			--------------------------------------------------------------------------------
+			-- Revert back to default keyboard layout:
+			--------------------------------------------------------------------------------
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
+			--------------------------------------------------------------------------------
+			-- Disable Hacks Shortcut in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			local appleScriptA = [[
+				--------------------------------------------------------------------------------
+				-- Replace Files:
+				--------------------------------------------------------------------------------
+				try
+					tell me to activate
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				on error
+					display dialog commonErrorMessageStart & "Failed to restore NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+					return "Failed"
+				end try
+				try
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				on error
+					display dialog commonErrorMessageStart & "Failed to restore NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+					return "Failed"
+				end try
+
+
+				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
+				repeat with whichLanguage in finalCutProLanguages
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to restore Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to restore NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to restore NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+				end repeat
+				return "Done"
+			]]
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
+		else
+			--------------------------------------------------------------------------------
+			-- Revert back to default keyboard layout:
+			--------------------------------------------------------------------------------
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
+			--------------------------------------------------------------------------------
+			-- Enable Hacks Shortcut in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			local appleScriptA = [[
+				--------------------------------------------------------------------------------
+				-- Replace Files:
+				--------------------------------------------------------------------------------
+				try
+					tell me to activate
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				on error
+					display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+					return "Failed"
+				end try
+				try
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				on error
+					display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+					return "Failed"
+				end try
+
+				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
+				repeat with whichLanguage in finalCutProLanguages
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+					on error
+						display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+						return "Failed"
+					end try
+				end repeat
+				return "Done"
+			]]
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If all is good then...
+		--------------------------------------------------------------------------------
+		if saveSettings then
+			--------------------------------------------------------------------------------
+			-- Save new value to settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
+
+			--------------------------------------------------------------------------------
+			-- Restart Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if restartFinalCutProStatus then
+				if not restartFinalCutPro() then
+					--------------------------------------------------------------------------------
+					-- Failed to restart Final Cut Pro:
+					--------------------------------------------------------------------------------
+					displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+					return "Failed"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Refresh the Keyboard Shortcuts:
+			--------------------------------------------------------------------------------
+			bindKeyboardShortcuts()
+
+			--------------------------------------------------------------------------------
+			-- Refresh the Menu Bar:
+			--------------------------------------------------------------------------------
+			refreshMenuBar()
+
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
+	--------------------------------------------------------------------------------
+	function toggleEnableShortcutsDuringFullscreenPlayback()
+
+		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
+		if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
+		settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
+
+		if enableShortcutsDuringFullscreenPlayback == true then
+			fullscreenKeyboardWatcherUp:stop()
+			fullscreenKeyboardWatcherDown:stop()
+		else
+			fullscreenKeyboardWatcherUp:start()
+			fullscreenKeyboardWatcherDown:start()
+		end
+
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE MOVING MARKERS:
+	--------------------------------------------------------------------------------
+	function toggleMovingMarkers()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		allowMovingMarkers = false
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
+		if trim(executeResult) == "true" then allowMovingMarkers = true end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion("Toggling Moving Markers requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		if allowMovingMarkers then
+			local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			if executeStatus == false then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		else
+			local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			if executeStatus == false then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		end
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -3828,1061 +4855,999 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Refresh the Keyboard Shortcuts:
+		-- Refresh Menu Bar:
 		--------------------------------------------------------------------------------
-		bindKeyboardShortcuts()
+		refreshMenuBar(true)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE PERFORM TASKS DURING PLAYBACK:
+	--------------------------------------------------------------------------------
+	function togglePerformTasksDuringPlayback()
 
 		--------------------------------------------------------------------------------
-		-- Refresh the Menu Bar:
+		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		FFSuspendBGOpsDuringPlay = false
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
+		if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion("Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		if FFSuspendBGOpsDuringPlay then
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool false")
+			if executeStatus == nil then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		else
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool true")
+			if executeStatus == nil then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartFinalCutProStatus then
+			if not restartFinalCutPro() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menu Bar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar(true)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE TIMECODE OVERLAY:
+	--------------------------------------------------------------------------------
+	function toggleTimecodeOverlay()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		FFEnableGuards = false
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
+		if trim(executeResult) == "1" then FFEnableGuards = true end
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartFinalCutProStatus = false
+		if isFinalCutProRunning() then
+			if displayYesNoQuestion("Toggling Timecode Overlays requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartFinalCutProStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		if FFEnableGuards then
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool false")
+			if executeStatus == nil then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		else
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool true")
+			if executeStatus == nil then
+				displayErrorMessage("Failed to write to plist.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartFinalCutProStatus then
+			if not restartFinalCutPro() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menu Bar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar(true)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE MENUBAR DISPLAY MODE:
+	--------------------------------------------------------------------------------
+	function toggleMenubarDisplayMode()
+
+		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
+
+
+		if displayMenubarAsIcon == nil then
+			 settings.set("fcpxHacks.displayMenubarAsIcon", true)
+		else
+			if displayMenubarAsIcon then
+				settings.set("fcpxHacks.displayMenubarAsIcon", false)
+			else
+				settings.set("fcpxHacks.displayMenubarAsIcon", true)
+			end
+		end
+
+		updateMenubarIcon()
 		refreshMenuBar()
 
 	end
 
-end
-
---------------------------------------------------------------------------------
--- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
---------------------------------------------------------------------------------
-function toggleEnableShortcutsDuringFullscreenPlayback()
-
-	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
-	if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
-	hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
-
-	if enableShortcutsDuringFullscreenPlayback == true then
-	 	fullscreenKeyboardWatcherUp:stop()
-		fullscreenKeyboardWatcherDown:stop()
-	else
-	 	fullscreenKeyboardWatcherUp:start()
-		fullscreenKeyboardWatcherDown:start()
-	end
-
-	refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- GET SCRIPT UPDATE:
---------------------------------------------------------------------------------
-function getScriptUpdate()
-	os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
-end
-
---------------------------------------------------------------------------------
--- GO TO LATENITE FILMS SITE:
---------------------------------------------------------------------------------
-function gotoLateNiteSite()
-	os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
-end
-
---------------------------------------------------------------------------------
--- CHANGE HIGHLIGHT SHAPE:
---------------------------------------------------------------------------------
-function changeHighlightShape(value)
-	hs.settings.set("fcpxHacks.displayHighlightShape", value)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- CHANGE HIGHLIGHT COLOUR:
---------------------------------------------------------------------------------
-function changeHighlightColour(value)
-	hs.settings.set("fcpxHacks.displayHighlightColour", value)
-	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE MENUBAR DISPLAY MODE:
---------------------------------------------------------------------------------
-function toggleMenubarDisplayMode()
-
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
-
-
-	if displayMenubarAsIcon == nil then
-		 hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
-	else
-		if displayMenubarAsIcon then
-			hs.settings.set("fcpxHacks.displayMenubarAsIcon", false)
-		else
-			hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
-		end
-	end
-
-	updateMenubarIcon()
-	refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
---------------------------------------------------------------------------------
-function toggleCreateMulticamOptimizedMedia(optionalValue)
-
 	--------------------------------------------------------------------------------
-	-- Make sure it's active:
+	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil then
+	function toggleCreateMulticamOptimizedMedia(optionalValue)
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
+		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		local FFCreateOptimizedMediaForMulticamClips = true
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
-		if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
-
-		if optionalValue == FFCreateOptimizedMediaForMulticamClips then return end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Open Preferences:
-	--------------------------------------------------------------------------------
-	local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-	if activatePreferencesResult == "Failed" then
-		displayErrorMessage("Failed to open Preferences Panel.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Toolbar:
-	--------------------------------------------------------------------------------
-	local timeoutCount = 0
-	local whichToolbar = nil
-	::tryToolbarAgain::
-	fcpxElements = ax.applicationElement(fcpx)[1]
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-			whichToolbar = i
-			goto foundToolbar
-		end
-	end
-	if whichToolbar == nil then
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 10 then
-			displayErrorMessage("Unable to locate Preferences Toolbar.")
-			return "Failed"
-		end
-		sleep(0.2)
-		goto tryToolbarAgain
-	end
-	::foundToolbar::
-
-	--------------------------------------------------------------------------------
-	-- Goto Playback Preferences:
-	--------------------------------------------------------------------------------
-	local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
-	if pressPlaybackButton == nil then
-		displayErrorMessage("Failed to open Import Preferences.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-			goto foundGroup
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::foundGroup::
-
-	--------------------------------------------------------------------------------
-	-- Toggle Create Optimized Media:
-	--------------------------------------------------------------------------------
-	fcpxElements[whichGroup][1][15]:performAction("AXPress")
-
-	--------------------------------------------------------------------------------
-	-- Close Preferences:
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[2]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to close Preferences window.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE CREATE PROXY MEDIA:
---------------------------------------------------------------------------------
-function toggleCreateProxyMedia(optionalValue)
-
-	--------------------------------------------------------------------------------
-	-- Make sure it's active:
-	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil then
+		launchFinalCutPro()
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCreateProxyMedia:
+		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		local FFImportCreateProxyMedia = false
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
-		if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
+		if optionalValue ~= nil then
 
-		if optionalValue == FFImportCreateProxyMedia then return end
+			--------------------------------------------------------------------------------
+			-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
+			--------------------------------------------------------------------------------
+			local FFCreateOptimizedMediaForMulticamClips = true
+			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
+			if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
 
-	end
+			if optionalValue == FFCreateOptimizedMediaForMulticamClips then return end
 
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Open Preferences:
-	--------------------------------------------------------------------------------
-	local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-	if activatePreferencesResult == "Failed" then
-		displayErrorMessage("Failed to open Preferences Panel.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Toolbar:
-	--------------------------------------------------------------------------------
-	local timeoutCount = 0
-	local whichToolbar = nil
-	::tryToolbarAgain::
-	fcpxElements = ax.applicationElement(fcpx)[1]
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-			whichToolbar = i
-			goto foundToolbar
 		end
-	end
-	if whichToolbar == nil then
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 10 then
-			displayErrorMessage("Unable to locate Preferences Toolbar.")
-			return "Failed"
-		end
-		sleep(0.2)
-		goto tryToolbarAgain
-	end
-	::foundToolbar::
-
-	--------------------------------------------------------------------------------
-	-- Goto Playback Preferences:
-	--------------------------------------------------------------------------------
-	local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-	if pressPlaybackButton == nil then
-		displayErrorMessage("Failed to open Import Preferences.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-			goto foundGroup
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::foundGroup::
-
-	--------------------------------------------------------------------------------
-	-- Toggle Create Proxy Media:
-	--------------------------------------------------------------------------------
-	fcpxElements[whichGroup][1][19]:performAction("AXPress")
-
-	--------------------------------------------------------------------------------
-	-- Close Preferences:
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[2]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to close Preferences window.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE CREATE OPTIMIZED MEDIA:
---------------------------------------------------------------------------------
-function toggleCreateOptimizedMedia(optionalValue)
-
-	--------------------------------------------------------------------------------
-	-- Make sure it's active:
-	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil then
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCreateOptimizeMedia:
+		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local FFImportCreateOptimizeMedia = false
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
-		if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
-
-		if optionalValue == FFImportCreateOptimizeMedia then return end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Open Preferences:
-	--------------------------------------------------------------------------------
-	local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-	if activatePreferencesResult == "Failed" then
-		displayErrorMessage("Failed to open Preferences Panel.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Toolbar:
-	--------------------------------------------------------------------------------
-	local timeoutCount = 0
-	local whichToolbar = nil
-	::tryToolbarAgain::
-	fcpxElements = ax.applicationElement(fcpx)[1]
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-			whichToolbar = i
-			goto foundToolbar
-		end
-	end
-	if whichToolbar == nil then
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 10 then
-			displayErrorMessage("Unable to locate Preferences Toolbar.")
-			return "Failed"
-		end
-		sleep(0.2)
-		goto tryToolbarAgain
-	end
-	::foundToolbar::
-
-	--------------------------------------------------------------------------------
-	-- Goto Playback Preferences:
-	--------------------------------------------------------------------------------
-	local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-	if pressPlaybackButton == nil then
-		displayErrorMessage("Failed to open Import Preferences.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-			goto foundGroup
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::foundGroup::
-
-	--------------------------------------------------------------------------------
-	-- Toggle Create Optimized Media:
-	--------------------------------------------------------------------------------
-	fcpxElements[whichGroup][1][1]:performAction("AXPress")
-
-	--------------------------------------------------------------------------------
-	-- Close Preferences:
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[2]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to close Preferences window.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE LEAVE IN PLACE ON IMPORT:
---------------------------------------------------------------------------------
-function toggleLeaveInPlace(optionalValue)
-
-	--------------------------------------------------------------------------------
-	-- Make sure it's active:
-	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil then
+		local fcpx = application("Final Cut Pro")
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCopyToMediaFolder:
+		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local FFImportCopyToMediaFolder = true
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
-		if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
-
-		if optionalValue == not FFImportCopyToMediaFolder then return end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Open Preferences:
-	--------------------------------------------------------------------------------
-	local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-	if activatePreferencesResult == "Failed" then
-		displayErrorMessage("Failed to open Preferences Panel.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Toolbar:
-	--------------------------------------------------------------------------------
-	local timeoutCount = 0
-	local whichToolbar = nil
-	::tryToolbarAgain::
-	fcpxElements = ax.applicationElement(fcpx)[1]
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-			whichToolbar = i
-			goto foundToolbar
-		end
-	end
-	if whichToolbar == nil then
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 10 then
-			displayErrorMessage("Unable to locate Preferences Toolbar.")
+		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == "Failed" then
+			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
-		sleep(0.2)
-		goto tryToolbarAgain
-	end
-	::foundToolbar::
-
-	--------------------------------------------------------------------------------
-	-- Goto Playback Preferences:
-	--------------------------------------------------------------------------------
-	local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-	if pressPlaybackButton == nil then
-		displayErrorMessage("Failed to open Import Preferences.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-			goto foundGroup
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::foundGroup::
-
-	--------------------------------------------------------------------------------
-	-- Toggle "AutoStart Background Render":
-	--------------------------------------------------------------------------------
-	if fcpxElements[whichGroup][1][9][1]:attributeValue("AXValue") == 0 then
-		fcpxElements[whichGroup][1][9][1]:performAction("AXPress")
-	else
-		fcpxElements[whichGroup][1][9][2]:performAction("AXPress")
-	end
-
-	--------------------------------------------------------------------------------
-	-- Close Preferences:
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[2]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to close Preferences window.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- TOGGLE BACKGROUND RENDER:
---------------------------------------------------------------------------------
-function toggleBackgroundRender(optionalValue)
-
-	--------------------------------------------------------------------------------
-	-- Make sure it's active:
-	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil then
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFAutoStartBGRender:
+		-- Which Toolbar:
 		--------------------------------------------------------------------------------
-		local FFAutoStartBGRender = true
-		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
-		if trim(executeResult) == "0" then FFAutoStartBGRender = false end
-
-		if optionalValue == FFAutoStartBGRender then return end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Open Preferences:
-	--------------------------------------------------------------------------------
-	local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-	if activatePreferencesResult == "Failed" then
-		displayErrorMessage("Failed to open Preferences Panel.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Toolbar:
-	--------------------------------------------------------------------------------
-	local timeoutCount = 0
-	local whichToolbar = nil
-	::tryToolbarAgain::
-	fcpxElements = ax.applicationElement(fcpx)[1]
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-			whichToolbar = i
-			goto foundToolbar
-		end
-	end
-	if whichToolbar == nil then
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 10 then
-			displayErrorMessage("Unable to locate Preferences Toolbar.")
-			return "Failed"
-		end
-		sleep(0.2)
-		goto tryToolbarAgain
-	end
-	::foundToolbar::
-
-	--------------------------------------------------------------------------------
-	-- Goto Playback Preferences:
-	--------------------------------------------------------------------------------
-	local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
-	if pressPlaybackButton == nil then
-		displayErrorMessage("Failed to open Playback Preferences.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-			goto foundGroup
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::foundGroup::
-
-	--------------------------------------------------------------------------------
-	-- Toggle "AutoStart Background Render":
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[whichGroup][1][1]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to toggle Background Render option.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Close Preferences:
-	--------------------------------------------------------------------------------
-	local buttonResult = fcpxElements[2]:performAction("AXPress")
-	if buttonResult == nil then
-		displayErrorMessage("Unable to close Preferences window.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- FCPX CHANGE BACKUP INTERVAL:
---------------------------------------------------------------------------------
-function changeBackupInterval()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	FFPeriodicBackupInterval = 15
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-	if trim(executeResult) ~= "" then FFPeriodicBackupInterval = executeResult end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion("Changing the Backup Interval requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Ask user what to set the backup interval to:
-	--------------------------------------------------------------------------------
-	local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
-	if not userSelectedBackupInterval then
-		return "Cancel"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval -string '" .. userSelectedBackupInterval .. "'")
-	if executeStatus == nil then
-		displayErrorMessage("Failed to write to plist.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartFinalCutProStatus then
-		if not restartFinalCutPro() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-			return "Failed"
-		end
-	end
-
-end
-
---------------------------------------------------------------------------------
--- FCPX TOGGLE MOVING MARKERS:
---------------------------------------------------------------------------------
-function toggleMovingMarkers()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	allowMovingMarkers = false
-	local executeResult,executeStatus = hs.execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-	if trim(executeResult) == "true" then allowMovingMarkers = true end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion("Toggling Moving Markers requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	if allowMovingMarkers then
-		local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-		if executeStatus == false then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	else
-		local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-		if executeStatus == false then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartFinalCutProStatus then
-		if not restartFinalCutPro() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menu Bar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar(true)
-
-end
-
---------------------------------------------------------------------------------
--- FCPX PERFORM TASKS DURING PLAYBACK:
---------------------------------------------------------------------------------
-function togglePerformTasksDuringPlayback()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	FFSuspendBGOpsDuringPlay = false
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
-	if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion("Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	if FFSuspendBGOpsDuringPlay then
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool false")
-		if executeStatus == nil then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	else
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool true")
-		if executeStatus == nil then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartFinalCutProStatus then
-		if not restartFinalCutPro() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menu Bar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar(true)
-
-end
-
---------------------------------------------------------------------------------
--- FCPX TIMECODE OVERLAY TOGGLE:
---------------------------------------------------------------------------------
-function toggleTimecodeOverlay()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	FFEnableGuards = false
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
-	if trim(executeResult) == "1" then FFEnableGuards = true end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion("Toggling Timecode Overlays requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	if FFEnableGuards then
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool false")
-		if executeStatus == nil then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	else
-		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool true")
-		if executeStatus == nil then
-			displayErrorMessage("Failed to write to plist.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartFinalCutProStatus then
-		if not restartFinalCutPro() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menu Bar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar(true)
-
-end
-
---------------------------------------------------------------------------------
--- CHANGE SMART COLLECTIONS LABEL:
---------------------------------------------------------------------------------
-function changeSmartCollectionsLabel()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	FFPeriodicBackupInterval = 15
-	local executeResult,executeStatus = hs.execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
-	if trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartFinalCutProStatus = false
-	if isFinalCutProRunning() then
-		if displayYesNoQuestion("Changing the Smart Collections Label requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-			restartFinalCutProStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Ask user what to set the backup interval to:
-	--------------------------------------------------------------------------------
-	local userSelectedSmartCollectionsLabel = displayTextBoxMessage("What would you like to set your Smart Collections Label to:", "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.", trim(FFOrganizerSmartCollections))
-	if not userSelectedSmartCollectionsLabel then
-		return "Cancel"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
-	if executeStatus == nil then
-		displayErrorMessage("Failed to write to plist.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartFinalCutProStatus then
-		if not restartFinalCutPro() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
-			return "Failed"
-		end
-	end
-
-end
-
---------------------------------------------------------------------------------
--- PASTE FROM CLIPBOARD HISTORY:
---------------------------------------------------------------------------------
-function finalCutProPasteFromClipboardHistory(data)
-
-	--------------------------------------------------------------------------------
-	-- Write data back to Clipboard:
-	--------------------------------------------------------------------------------
-	clipboardTimer:stop()
-	pasteboard.writeDataForUTI(finalCutProClipboardUTI, data)
-	clipboardWatcher()
-
-	--------------------------------------------------------------------------------
-	-- Paste in FCPX:
-	--------------------------------------------------------------------------------
-	launchFinalCutPro()
-	if not keyStrokeFromPlist("Paste") then
-		displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- PASTE FROM SHARED CLIPBOARD:
---------------------------------------------------------------------------------
-function pasteFromSharedClipboard(whichClipboard)
-
-	local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
-	if enableSharedClipboard then
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		if sharedClipboardPath ~= nil then
-
-			local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
-			if file == nil then
-				displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
-				return "Fail"
+		local timeoutCount = 0
+		local whichToolbar = nil
+		::tryToolbarAgain::
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+				whichToolbar = i
+				goto foundToolbar
 			end
-			currentClipboardData = file:read("*all")
-			file:close()
-
-			--------------------------------------------------------------------------------
-			-- Write data back to Clipboard:
-			--------------------------------------------------------------------------------
-			clipboardTimer:stop()
-			pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
-			clipboardWatcher()
-
-			--------------------------------------------------------------------------------
-			-- Paste in FCPX:
-			--------------------------------------------------------------------------------
-			launchFinalCutPro()
-			if not keyStrokeFromPlist("Paste") then
-				displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+		end
+		if whichToolbar == nil then
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
+			sleep(0.2)
+			goto tryToolbarAgain
+		end
+		::foundToolbar::
+
+		--------------------------------------------------------------------------------
+		-- Goto Playback Preferences:
+		--------------------------------------------------------------------------------
+		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
+		if pressPlaybackButton == nil then
+			displayErrorMessage("Failed to open Import Preferences.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+				goto foundGroup
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::foundGroup::
+
+		--------------------------------------------------------------------------------
+		-- Toggle Create Optimized Media:
+		--------------------------------------------------------------------------------
+		fcpxElements[whichGroup][1][15]:performAction("AXPress")
+
+		--------------------------------------------------------------------------------
+		-- Close Preferences:
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[2]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to close Preferences window.")
+			return "Failed"
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE CREATE PROXY MEDIA:
+	--------------------------------------------------------------------------------
+	function toggleCreateProxyMedia(optionalValue)
+
+		--------------------------------------------------------------------------------
+		-- Make sure it's active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
+
+		--------------------------------------------------------------------------------
+		-- If we're setting rather than toggling...
+		--------------------------------------------------------------------------------
+		if optionalValue ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Get plist values for FFImportCreateProxyMedia:
+			--------------------------------------------------------------------------------
+			local FFImportCreateProxyMedia = false
+			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
+			if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
+
+			if optionalValue == FFImportCreateProxyMedia then return end
 
 		end
+
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+
+		--------------------------------------------------------------------------------
+		-- Open Preferences:
+		--------------------------------------------------------------------------------
+		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == "Failed" then
+			displayErrorMessage("Failed to open Preferences Panel.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Toolbar:
+		--------------------------------------------------------------------------------
+		local timeoutCount = 0
+		local whichToolbar = nil
+		::tryToolbarAgain::
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+				whichToolbar = i
+				goto foundToolbar
+			end
+		end
+		if whichToolbar == nil then
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				return "Failed"
+			end
+			sleep(0.2)
+			goto tryToolbarAgain
+		end
+		::foundToolbar::
+
+		--------------------------------------------------------------------------------
+		-- Goto Playback Preferences:
+		--------------------------------------------------------------------------------
+		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
+		if pressPlaybackButton == nil then
+			displayErrorMessage("Failed to open Import Preferences.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+				goto foundGroup
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::foundGroup::
+
+		--------------------------------------------------------------------------------
+		-- Toggle Create Proxy Media:
+		--------------------------------------------------------------------------------
+		fcpxElements[whichGroup][1][19]:performAction("AXPress")
+
+		--------------------------------------------------------------------------------
+		-- Close Preferences:
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[2]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to close Preferences window.")
+			return "Failed"
+		end
+
 	end
-end
 
---------------------------------------------------------------------------------
--- IMPORT SHARED XML:
---------------------------------------------------------------------------------
-function importSharedXML(whichSharedXML)
+	--------------------------------------------------------------------------------
+	-- TOGGLE CREATE OPTIMIZED MEDIA:
+	--------------------------------------------------------------------------------
+	function toggleCreateOptimizedMedia(optionalValue)
 
-	local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-	whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
+		--------------------------------------------------------------------------------
+		-- Make sure it's active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
 
-	local appleScriptA = 'set whichSharedXMLPath to "' .. whichSharedXMLPath .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell application "Final Cut Pro"
-    		activate
-  		  	open POSIX file whichSharedXMLPath as string
-		end tell
-	]]
-	hs.osascript.applescript(appleScriptA .. appleScriptB)
+		--------------------------------------------------------------------------------
+		-- If we're setting rather than toggling...
+		--------------------------------------------------------------------------------
+		if optionalValue ~= nil then
 
-end
+			--------------------------------------------------------------------------------
+			-- Get plist values for FFImportCreateOptimizeMedia:
+			--------------------------------------------------------------------------------
+			local FFImportCreateOptimizeMedia = false
+			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
+			if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
 
---------------------------------------------------------------------------------
--- CLEAR CLIPBOARD HISTORY:
---------------------------------------------------------------------------------
-function clearClipboardHistory()
-	clipboardHistory = {}
-	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
-	clipboardCurrentChange = pasteboard.changeCount()
-	refreshMenuBar()
-end
+			if optionalValue == FFImportCreateOptimizeMedia then return end
 
---------------------------------------------------------------------------------
--- CLEAR SHARED CLIPBOARD HISTORY:
---------------------------------------------------------------------------------
-function clearSharedClipboardHistory()
-	local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-	for file in hs.fs.dir(sharedClipboardPath) do
-		 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
-			os.remove(sharedClipboardPath .. file)
-		 end
-		 refreshMenuBar()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+
+		--------------------------------------------------------------------------------
+		-- Open Preferences:
+		--------------------------------------------------------------------------------
+		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == "Failed" then
+			displayErrorMessage("Failed to open Preferences Panel.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Toolbar:
+		--------------------------------------------------------------------------------
+		local timeoutCount = 0
+		local whichToolbar = nil
+		::tryToolbarAgain::
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+				whichToolbar = i
+				goto foundToolbar
+			end
+		end
+		if whichToolbar == nil then
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				return "Failed"
+			end
+			sleep(0.2)
+			goto tryToolbarAgain
+		end
+		::foundToolbar::
+
+		--------------------------------------------------------------------------------
+		-- Goto Playback Preferences:
+		--------------------------------------------------------------------------------
+		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
+		if pressPlaybackButton == nil then
+			displayErrorMessage("Failed to open Import Preferences.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+				goto foundGroup
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::foundGroup::
+
+		--------------------------------------------------------------------------------
+		-- Toggle Create Optimized Media:
+		--------------------------------------------------------------------------------
+		fcpxElements[whichGroup][1][1]:performAction("AXPress")
+
+		--------------------------------------------------------------------------------
+		-- Close Preferences:
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[2]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to close Preferences window.")
+			return "Failed"
+		end
+
 	end
-end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE LEAVE IN PLACE ON IMPORT:
+	--------------------------------------------------------------------------------
+	function toggleLeaveInPlace(optionalValue)
+
+		--------------------------------------------------------------------------------
+		-- Make sure it's active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
+
+		--------------------------------------------------------------------------------
+		-- If we're setting rather than toggling...
+		--------------------------------------------------------------------------------
+		if optionalValue ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Get plist values for FFImportCopyToMediaFolder:
+			--------------------------------------------------------------------------------
+			local FFImportCopyToMediaFolder = true
+			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
+			if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
+
+			if optionalValue == not FFImportCopyToMediaFolder then return end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+
+		--------------------------------------------------------------------------------
+		-- Open Preferences:
+		--------------------------------------------------------------------------------
+		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == "Failed" then
+			displayErrorMessage("Failed to open Preferences Panel.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Toolbar:
+		--------------------------------------------------------------------------------
+		local timeoutCount = 0
+		local whichToolbar = nil
+		::tryToolbarAgain::
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+				whichToolbar = i
+				goto foundToolbar
+			end
+		end
+		if whichToolbar == nil then
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				return "Failed"
+			end
+			sleep(0.2)
+			goto tryToolbarAgain
+		end
+		::foundToolbar::
+
+		--------------------------------------------------------------------------------
+		-- Goto Playback Preferences:
+		--------------------------------------------------------------------------------
+		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
+		if pressPlaybackButton == nil then
+			displayErrorMessage("Failed to open Import Preferences.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+				goto foundGroup
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::foundGroup::
+
+		--------------------------------------------------------------------------------
+		-- Toggle "AutoStart Background Render":
+		--------------------------------------------------------------------------------
+		if fcpxElements[whichGroup][1][9][1]:attributeValue("AXValue") == 0 then
+			fcpxElements[whichGroup][1][9][1]:performAction("AXPress")
+		else
+			fcpxElements[whichGroup][1][9][2]:performAction("AXPress")
+		end
+
+		--------------------------------------------------------------------------------
+		-- Close Preferences:
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[2]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to close Preferences window.")
+			return "Failed"
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE BACKGROUND RENDER:
+	--------------------------------------------------------------------------------
+	function toggleBackgroundRender(optionalValue)
+
+		--------------------------------------------------------------------------------
+		-- Make sure it's active:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
+
+		--------------------------------------------------------------------------------
+		-- If we're setting rather than toggling...
+		--------------------------------------------------------------------------------
+		if optionalValue ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Get plist values for FFAutoStartBGRender:
+			--------------------------------------------------------------------------------
+			local FFAutoStartBGRender = true
+			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
+			if trim(executeResult) == "0" then FFAutoStartBGRender = false end
+
+			if optionalValue == FFAutoStartBGRender then return end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+
+		--------------------------------------------------------------------------------
+		-- Open Preferences:
+		--------------------------------------------------------------------------------
+		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == "Failed" then
+			displayErrorMessage("Failed to open Preferences Panel.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Toolbar:
+		--------------------------------------------------------------------------------
+		local timeoutCount = 0
+		local whichToolbar = nil
+		::tryToolbarAgain::
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+				whichToolbar = i
+				goto foundToolbar
+			end
+		end
+		if whichToolbar == nil then
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				return "Failed"
+			end
+			sleep(0.2)
+			goto tryToolbarAgain
+		end
+		::foundToolbar::
+
+		--------------------------------------------------------------------------------
+		-- Goto Playback Preferences:
+		--------------------------------------------------------------------------------
+		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
+		if pressPlaybackButton == nil then
+			displayErrorMessage("Failed to open Playback Preferences.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+				goto foundGroup
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::foundGroup::
+
+		--------------------------------------------------------------------------------
+		-- Toggle "AutoStart Background Render":
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[whichGroup][1][1]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to toggle Background Render option.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Close Preferences:
+		--------------------------------------------------------------------------------
+		local buttonResult = fcpxElements[2]:performAction("AXPress")
+		if buttonResult == nil then
+			displayErrorMessage("Unable to close Preferences window.")
+			return "Failed"
+		end
+
+	end
 
 --------------------------------------------------------------------------------
--- CLEAR SHARED XML FILES:
+-- PASTE:
 --------------------------------------------------------------------------------
-function clearSharedXMLFiles()
-	local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-	for file in hs.fs.dir(xmlSharingPath) do
-		 if file:sub(-7) == ".fcpxml" then
-			os.remove(xmlSharingPath .. file)
-		 end
-		 refreshMenuBar()
+
+	--------------------------------------------------------------------------------
+	-- PASTE FROM CLIPBOARD HISTORY:
+	--------------------------------------------------------------------------------
+	function finalCutProPasteFromClipboardHistory(data)
+
+		--------------------------------------------------------------------------------
+		-- Write data back to Clipboard:
+		--------------------------------------------------------------------------------
+		clipboardTimer:stop()
+		pasteboard.writeDataForUTI(finalCutProClipboardUTI, data)
+		clipboardWatcher()
+
+		--------------------------------------------------------------------------------
+		-- Paste in FCPX:
+		--------------------------------------------------------------------------------
+		launchFinalCutPro()
+		if not keyStrokeFromPlist("Paste") then
+			displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+			return "Failed"
+		end
+
 	end
-end
+
+	--------------------------------------------------------------------------------
+	-- PASTE FROM SHARED CLIPBOARD:
+	--------------------------------------------------------------------------------
+	function pasteFromSharedClipboard(whichClipboard)
+
+		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
+		if enableSharedClipboard then
+			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+			if sharedClipboardPath ~= nil then
+
+				local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
+				if file == nil then
+					displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
+					return "Fail"
+				end
+				currentClipboardData = file:read("*all")
+				file:close()
+
+				--------------------------------------------------------------------------------
+				-- Write data back to Clipboard:
+				--------------------------------------------------------------------------------
+				clipboardTimer:stop()
+				pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
+				clipboardWatcher()
+
+				--------------------------------------------------------------------------------
+				-- Paste in FCPX:
+				--------------------------------------------------------------------------------
+				launchFinalCutPro()
+				if not keyStrokeFromPlist("Paste") then
+					displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+					return "Failed"
+				end
+
+			end
+		end
+	end
+
+--------------------------------------------------------------------------------
+-- CLEAR:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- CLEAR CLIPBOARD HISTORY:
+	--------------------------------------------------------------------------------
+	function clearClipboardHistory()
+		clipboardHistory = {}
+		settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+		clipboardCurrentChange = pasteboard.changeCount()
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- CLEAR SHARED CLIPBOARD HISTORY:
+	--------------------------------------------------------------------------------
+	function clearSharedClipboardHistory()
+		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+		for file in fs.dir(sharedClipboardPath) do
+			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
+				os.remove(sharedClipboardPath .. file)
+			 end
+			 refreshMenuBar()
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- CLEAR SHARED XML FILES:
+	--------------------------------------------------------------------------------
+	function clearSharedXMLFiles()
+		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		for file in fs.dir(xmlSharingPath) do
+			 if file:sub(-7) == ".fcpxml" then
+				os.remove(xmlSharingPath .. file)
+			 end
+			 refreshMenuBar()
+		end
+	end
+
+--------------------------------------------------------------------------------
+-- UPDATE:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- UPDATE MENUBAR ICON:
+	--------------------------------------------------------------------------------
+	function updateMenubarIcon()
+
+		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.png")
+		local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
+		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
+		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
+		local proxyMenuIcon = ""
+		local proxyStatusIcon = getProxyStatusIcon()
+
+		fcpxMenubar:setIcon(nil)
+
+		if enableProxyMenuIcon ~= nil then
+			if enableProxyMenuIcon == true then
+				if proxyStatusIcon ~= nil then
+					proxyMenuIcon = " " .. proxyStatusIcon
+				else
+					proxyMenuIcon = ""
+				end
+			end
+		end
+
+		if displayMenubarAsIcon == nil then
+			fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
+		else
+			if displayMenubarAsIcon then
+				fcpxMenubar:setIcon(fcpxHacksIconSmall)
+				if proxyStatusIcon ~= nil then
+					if proxyStatusIcon ~= "" then
+						if enableProxyMenuIcon then
+							proxyMenuIcon = proxyMenuIcon .. "  "
+						end
+					end
+				 end
+				fcpxMenubar:setTitle(proxyMenuIcon)
+			else
+				fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
+			end
+		end
+
+	end
+
+--------------------------------------------------------------------------------
+-- MISC:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- QUIT FCPX HACKS:
+	--------------------------------------------------------------------------------
+	function quitFCPXHacks()
+		application("Hammerspoon"):kill()
+	end
+
+	--------------------------------------------------------------------------------
+	-- OPEN HAMMERSPOON CONSOLE:
+	--------------------------------------------------------------------------------
+	function openHammerspoonConsole()
+		hs.openConsole()
+	end
+
+	--------------------------------------------------------------------------------
+	-- RESET SETTINGS:
+	--------------------------------------------------------------------------------
+	function resetSettings()
+
+		local finalCutProRunning = isFinalCutProRunning()
+
+		local resetMessage = "Are you sure you want to trash the FCPX Hacks Preferences?"
+		if finalCutProRunning then
+			resetMessage = resetMessage .. "\n\nThis will require your Administrator password and require Final Cut Pro to restart."
+		else
+			resetMessage = resetMessage .. "\n\nThis will require your Administrator password."
+		end
+
+		if displayYesNoQuestion(resetMessage) then
+
+			--------------------------------------------------------------------------------
+			-- Remove Hacks Shortcut in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			local removeHacksResult = true
+			local appleScriptA = [[
+				--------------------------------------------------------------------------------
+				-- Replace Files:
+				--------------------------------------------------------------------------------
+				try
+					tell me to activate
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				on error
+					return "Failed"
+				end try
+				try
+					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				on error
+					return "Failed"
+				end try
+
+				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
+				repeat with whichLanguage in finalCutProLanguages
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+					on error
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+					on error
+						return "Failed"
+					end try
+					try
+						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+					on error
+						return "Failed"
+					end try
+				end repeat
+
+				return "Done"
+			]]
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
+				displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
+			else
+				removeHacksResult = true
+			end
+
+			if removeHacksResult then
+
+				--------------------------------------------------------------------------------
+				-- Trash all FCPX Hacks Settings:
+				--------------------------------------------------------------------------------
+				for i, v in ipairs(settings.getKeys()) do
+					if (v:sub(1,10)) == "fcpxHacks." then
+						settings.set(v, nil)
+					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Restart Final Cut Pro if running:
+				--------------------------------------------------------------------------------
+				if finalCutProRunning then
+					if not restartFinalCutPro() then
+						--------------------------------------------------------------------------------
+						-- Failed to restart Final Cut Pro:
+						--------------------------------------------------------------------------------
+						displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
+					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Reload Hammerspoon:
+				--------------------------------------------------------------------------------
+				hs.reload()
+
+			end --removeHacksResult
+		end -- displayYesNoQuestion(resetMessage)
+	end
+
+	--------------------------------------------------------------------------------
+	-- GET SCRIPT UPDATE:
+	--------------------------------------------------------------------------------
+	function getScriptUpdate()
+		os.execute('open "' .. updateURL .. '"')
+	end
+
+	--------------------------------------------------------------------------------
+	-- GO TO LATENITE FILMS SITE:
+	--------------------------------------------------------------------------------
+	function gotoLateNiteSite()
+		os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
+	end
+
+	--------------------------------------------------------------------------------
+	-- IMPORT SHARED XML:
+	--------------------------------------------------------------------------------
+	function importSharedXML(whichSharedXML)
+
+		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
+
+		local appleScriptA = 'set whichSharedXMLPath to "' .. whichSharedXMLPath .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell application "Final Cut Pro"
+				activate
+				open POSIX file whichSharedXMLPath as string
+			end tell
+		]]
+		osascript.applescript(appleScriptA .. appleScriptB)
+
+	end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -4898,156 +5863,297 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TOGGLE TOUCH BAR:
+-- NEEDS UPDATING:
 --------------------------------------------------------------------------------
-function toggleTouchBar()
 
 	--------------------------------------------------------------------------------
-	-- Check for compatibility:
+	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
-	if not touchBarSupported then
-		displayMessage("Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.")
-		return "Fail"
-	end
+	--
+	-- TO DO: This is currently broken in Final Cut Pro 10.3.
+	--
+	function selectClipAtLane(whichLane)
 
-	--------------------------------------------------------------------------------
-	-- Get Settings:
-	--------------------------------------------------------------------------------
-	local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
+		--------------------------------------------------------------------------------
+		-- UNDER CONSTRUCTION:
+		--------------------------------------------------------------------------------
+		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however you can use the new built-in 'Select Above/Below' shortcuts as a workaround.")
+		if 1==1 then return end
 
-	--------------------------------------------------------------------------------
-	-- Toggle Touch Bar:
-	--------------------------------------------------------------------------------
-	setTouchBarLocation()
-	touchBarWindow:toggle()
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		local fcpx 				= application("Final Cut Pro")
 
-	--------------------------------------------------------------------------------
-	-- Update Settings:
-	--------------------------------------------------------------------------------
-	hs.settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
+		--------------------------------------------------------------------------------
+		-- Get all FCPX UI Elements:
+		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(application("Final Cut Pro"))[1]
 
-end
+		--------------------------------------------------------------------------------
+		-- Variables:
+		--------------------------------------------------------------------------------
+		local whichSplitGroup 			= nil
+		local whichGroup 				= nil
+		local whichValueIndicator 		= nil
+		local whichScrollArea			= nil
 
---------------------------------------------------------------------------------
--- CUT AND SWITCH MULTI-CAM:
---------------------------------------------------------------------------------
-function cutAndSwitchMulticam(whichMode, whichAngle)
-
-	if whichMode == "Audio" then
-		if not keyStrokeFromPlist("MultiAngleEditStyleAudio") then
-			displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
-			return "Failed"
-		end
-	end
-
-	if whichMode == "Video" then
-		if not keyStrokeFromPlist("MultiAngleEditStyleVideo") then
-			displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
-			return "Failed"
-		end
-	end
-
-	if whichMode == "Both" then
-		if not keyStrokeFromPlist("MultiAngleEditStyleAudioVideo") then
-			displayMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
-			return "Failed"
-		end
-	end
-
-	if not keyStrokeFromPlist("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
-		displayMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
-		return "Failed"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- MOVE TO PLAYHEAD:
---------------------------------------------------------------------------------
-function moveToPlayhead()
-
-	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-	if enableClipboardHistory then clipboardTimer:stop() end
-
-	if not keyStrokeFromPlist("Cut") then
-		displayErrorMessage("Failed to trigger the 'Cut' Shortcut.")
-		return "Failed"
-	end
-
-	if not keyStrokeFromPlist("Paste") then
-		displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
-		return "Failed"
-	end
-
-	if enableClipboardHistory then
-		sleep(1) -- Not sure why this is needed, but it is.
-		clipboardWatcher()
-	end
-
-end
-
---------------------------------------------------------------------------------
--- SELECT CLIP AT LANE:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function selectClipAtLane(whichLane)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
-
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup 			= nil
-	local whichGroup 				= nil
-	local whichValueIndicator 		= nil
-	local whichScrollArea			= nil
-
-	--------------------------------------------------------------------------------
-	-- Cache:
-	--------------------------------------------------------------------------------
-	local useCache = false
-	if fcpxElements[selectClipAtLaneSplitGroupCache] ~= nil then
-		if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache] ~= nil then
-			if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
-				if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
-					useCache = true
-					whichSplitGroup = selectClipAtLaneSplitGroupCache
-					whichGroup = selectClipAtLaneGroupCache
+		--------------------------------------------------------------------------------
+		-- Cache:
+		--------------------------------------------------------------------------------
+		local useCache = false
+		if fcpxElements[selectClipAtLaneSplitGroupCache] ~= nil then
+			if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache] ~= nil then
+				if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
+						useCache = true
+						whichSplitGroup = selectClipAtLaneSplitGroupCache
+						whichGroup = selectClipAtLaneGroupCache
+					end
 				end
 			end
 		end
+
+		--------------------------------------------------------------------------------
+		-- If Cache didn't work:
+		--------------------------------------------------------------------------------
+		if not useCache then
+
+			--------------------------------------------------------------------------------
+			-- Which Split Group:
+			--------------------------------------------------------------------------------
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if whichSplitGroup == nil then
+					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						whichSplitGroup = i
+						goto selectClipAtLaneSplitGroupExit
+					end
+				end
+			end
+			if whichSplitGroup == nil then
+				displayErrorMessage("Unable to locate Split Group.")
+				return "Failed"
+			end
+			::selectClipAtLaneSplitGroupExit::
+			selectClipAtLaneSplitGroupCache = whichSplitGroup
+
+			--------------------------------------------------------------------------------
+			-- Which Group:
+			--------------------------------------------------------------------------------
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if whichGroup == nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+								whichGroup = i
+								goto selectClipAtLaneGroupExit
+							end
+						end
+					end
+				end
+			end
+			if whichGroup == nil then
+				displayErrorMessage("Unable to locate Group.")
+				return "Failed"
+			end
+			::selectClipAtLaneGroupExit::
+			selectClipAtLaneGroupCache = whichGroup
+		end
+
+		--------------------------------------------------------------------------------
+		-- NOE: Split Group = 1
+		--------------------------------------------------------------------------------
+
+		--------------------------------------------------------------------------------
+		-- Which Scroll Area:
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
+				if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
+						whichScrollArea = i
+						goto performScrollingTimelineWatcherScrollAreaExit
+					end
+				end
+			end
+		end
+		if whichScrollArea == nil then
+			displayErrorMessage("Unable to locate Scroll Area.")
+			return "Failed"
+		end
+		::performScrollingTimelineWatcherScrollAreaExit::
+
+		--------------------------------------------------------------------------------
+		-- NOTE: Layout Area = 1
+		--------------------------------------------------------------------------------
+
+		--------------------------------------------------------------------------------
+		-- Which Value Indicator:
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+				whichValueIndicator = i
+				goto selectClipAtLaneValueIndicatorExit
+			end
+		end
+		if whichValueIndicator == nil then
+			displayErrorMessage("Unable to locate Value Indicator.")
+			return "Failed"
+		end
+		::selectClipAtLaneValueIndicatorExit::
+
+		--------------------------------------------------------------------------------
+		-- Timeline Playhead Position:
+		--------------------------------------------------------------------------------
+		local timelinePlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+		--------------------------------------------------------------------------------
+		-- Which Layout Items (Selected Timeline Clip):
+		--------------------------------------------------------------------------------
+		local whichLayoutItems = {}
+		for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i] ~= nil then
+
+				--------------------------------------------------------------------------------
+				-- Normal clips:
+				--------------------------------------------------------------------------------
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
+					local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
+					local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
+
+					if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
+						local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
+						whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
+					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Storylines:
+				--------------------------------------------------------------------------------
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+					for ii=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValueCount("AXChildren") do
+						if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii] ~= nil then
+							if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
+
+								local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXPosition")['x']
+								local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXSize")['w']
+
+								if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
+									local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXPosition")['y']
+									whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH }
+								end
+
+							end
+						end
+					end -- ii loop
+				end
+			end
+		end
+
+		local howManyClips = tableCount(whichLayoutItems)
+		if next(whichLayoutItems) == nil or howManyClips < whichLane then
+			writeToConsole("ERROR: Couldn't find any clips at selected lane (selectClipAtLane).")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort the table:
+		--------------------------------------------------------------------------------
+		table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
+
+		--------------------------------------------------------------------------------
+		-- Which clip to we need:
+		--------------------------------------------------------------------------------
+		local whichClip = whichLayoutItems[whichLane][1]
+
+		--------------------------------------------------------------------------------
+		-- Click the clip:
+		--------------------------------------------------------------------------------
+		local clipCentrePosition = {}
+		local clipPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichClip]:attributeValue("AXPosition")
+		local clipSize = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichClip]:attributeValue("AXSize")
+
+		clipCentrePosition['x'] = timelinePlayheadXPosition
+		clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
+
+		ninjaMouseClick(clipCentrePosition)
+
 	end
 
 	--------------------------------------------------------------------------------
-	-- If Cache didn't work:
+	-- BATCH EXPORT FROM BROWSER:
 	--------------------------------------------------------------------------------
-	if not useCache then
+	--
+	-- TO DO: This is currently broken in Final Cut Pro 10.3.
+	--
+	function batchExportToCompressor()
+
+		--------------------------------------------------------------------------------
+		-- UNDER CONSTRUCTION:
+		--------------------------------------------------------------------------------
+		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+		if 1==1 then return end
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Check that there's a default destination:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFShareDestinationsDefaultDestinationIndex")
+		if executeStatus == nil then
+			displayErrorMessage("Failed to access the Final Cut Pro preferences when trying to work out Default Share Destination.")
+			return "Failed"
+		end
+		if tonumber(executeResult) > 10000 then
+				local appleScriptA = [[
+				activate application "Final Cut Pro"
+				tell application "System Events"
+					tell process "Final Cut Pro"
+						display dialog "It doesn't look like you have a Default Destination selected." & return & return & "You can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'." buttons {"Close"} with icon fcpxIcon
+						set frontmost to true
+					end tell
+				end tell
+			]]
+			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Current FCPX Save Location:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist NSNavLastRootDirectory -string")
+		if executeStatus == nil then
+			displayErrorMessage("We could not determine the last place you exported a file to. If this is the first time you've used Final Cut Pro, please do a test export prior to using this tool.")
+			return "Failed"
+		end
+		local lastSavePath = trim(executeResult)
+
+		--------------------------------------------------------------------------------
+		-- Filmstrip or List Mode?
+		--------------------------------------------------------------------------------
+		local fcpxBrowserMode = fcpxWhichBrowserMode()
+		if (fcpxBrowserMode == "Failed") then -- Error Checking:
+			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get all FCPX UI Elements:
+		--------------------------------------------------------------------------------
+		fcpx = application("Final Cut Pro")
+		fcpxElements = ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
 		--------------------------------------------------------------------------------
+		local whichSplitGroup = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if whichSplitGroup == nil then
 				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroup = i
-					goto selectClipAtLaneSplitGroupExit
 				end
 			end
 		end
@@ -5055,1890 +6161,11 @@ function selectClipAtLane(whichLane)
 			displayErrorMessage("Unable to locate Split Group.")
 			return "Failed"
 		end
-		::selectClipAtLaneSplitGroupExit::
-		selectClipAtLaneSplitGroupCache = whichSplitGroup
 
 		--------------------------------------------------------------------------------
-		-- Which Group:
+		-- List Mode:
 		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroup == nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-							whichGroup = i
-							goto selectClipAtLaneGroupExit
-						end
-					end
-				end
-			end
-		end
-		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::selectClipAtLaneGroupExit::
-		selectClipAtLaneGroupCache = whichGroup
-	end
-
-	--------------------------------------------------------------------------------
-	-- NOE: Split Group = 1
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Which Scroll Area:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
-			if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
-					whichScrollArea = i
-					goto performScrollingTimelineWatcherScrollAreaExit
-				end
-			end
-		end
-	end
-	if whichScrollArea == nil then
-		displayErrorMessage("Unable to locate Scroll Area.")
-		return "Failed"
-	end
-	::performScrollingTimelineWatcherScrollAreaExit::
-
-	--------------------------------------------------------------------------------
-	-- NOTE: Layout Area = 1
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Which Value Indicator:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
-			whichValueIndicator = i
-			goto selectClipAtLaneValueIndicatorExit
-		end
-	end
-	if whichValueIndicator == nil then
-		displayErrorMessage("Unable to locate Value Indicator.")
-		return "Failed"
-	end
-	::selectClipAtLaneValueIndicatorExit::
-
-	--------------------------------------------------------------------------------
-	-- Timeline Playhead Position:
-	--------------------------------------------------------------------------------
-	local timelinePlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-	--------------------------------------------------------------------------------
-	-- Which Layout Items (Selected Timeline Clip):
-	--------------------------------------------------------------------------------
-	local whichLayoutItems = {}
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i] ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Normal clips:
-			--------------------------------------------------------------------------------
-			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
-				local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
-				local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
-
-				if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-					local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
-					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Storylines:
-			--------------------------------------------------------------------------------
-			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				for ii=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii] ~= nil then
-						if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
-
-							local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXPosition")['x']
-							local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXSize")['w']
-
-							if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-								local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXPosition")['y']
-								whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH }
-							end
-
-						end
-					end
-				end -- ii loop
-			end
-		end
-	end
-
-	local howManyClips = tableCount(whichLayoutItems)
-	if next(whichLayoutItems) == nil or howManyClips < whichLane then
-		print("[FCPX Hacks] ERROR: Couldn't find any clips at selected lane (selectClipAtLane).")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort the table:
-	--------------------------------------------------------------------------------
-	table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
-
-	--------------------------------------------------------------------------------
-	-- Which clip to we need:
-	--------------------------------------------------------------------------------
-	local whichClip = whichLayoutItems[whichLane][1]
-
-	--------------------------------------------------------------------------------
-	-- Click the clip:
-	--------------------------------------------------------------------------------
-	local clipCentrePosition = {}
-	local clipPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichClip]:attributeValue("AXPosition")
-	local clipSize = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichClip]:attributeValue("AXSize")
-
-	clipCentrePosition['x'] = timelinePlayheadXPosition
-	clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
-
-	ninjaMouseClick(clipCentrePosition)
-
-end
-
---------------------------------------------------------------------------------
--- ACTIVE SCROLLING TIMELINE WATCHER:
---------------------------------------------------------------------------------
-function toggleScrollingTimeline()
-
-	--------------------------------------------------------------------------------
-	-- Toggle Scrolling Timeline:
-	--------------------------------------------------------------------------------
-	scrollingTimelineActivated = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
-	if scrollingTimelineActivated then
-		--------------------------------------------------------------------------------
-		-- Update Settings:
-		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.scrollingTimelineActive", false)
-
-		--------------------------------------------------------------------------------
-		-- Stop Watchers:
-		--------------------------------------------------------------------------------
-		scrollingTimelineWatcherUp:stop()
-		scrollingTimelineWatcherDown:stop()
-
-		--------------------------------------------------------------------------------
-		-- Stop Scrolling Timeline Loops:
-		--------------------------------------------------------------------------------
-		if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
-		if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
-
-		--------------------------------------------------------------------------------
-		-- Turn off variable:
-		--------------------------------------------------------------------------------
-		scrollingTimelineSpacebarPressed = false
-
-		--------------------------------------------------------------------------------
-		-- Display Notification:
-		--------------------------------------------------------------------------------
-		hs.alert.closeAll(0)
-		hs.alert.show("Scrolling Timeline Deactivated")
-	else
-		--------------------------------------------------------------------------------
-		-- Update Settings:
-		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.scrollingTimelineActive", true)
-
-		--------------------------------------------------------------------------------
-		-- Start Watchers:
-		--------------------------------------------------------------------------------
-		scrollingTimelineWatcherUp:start()
-		scrollingTimelineWatcherDown:start()
-
-		--------------------------------------------------------------------------------
-		-- If activated whilst already playing, then turn on Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		-- TO DO: it would be great to be able to do this if possible?
-			-- scrollingTimelineSpacebarCheck = true
-			-- hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
-
-		--------------------------------------------------------------------------------
-		-- Display Notification:
-		--------------------------------------------------------------------------------
-		hs.alert.closeAll(0)
-		hs.alert.show("Scrolling Timeline Activated")
-	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menu Bar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- SCROLLING TIMELINE FUNCTION:
---------------------------------------------------------------------------------
-function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
-
-	--------------------------------------------------------------------------------
-	-- Define Scrollbar Check Timer:
-	--------------------------------------------------------------------------------
-	scrollingTimelineScrollbarTimer = hs.timer.new(0.001, function()
-		if timelineScrollArea[2] ~= nil then
-			performScrollingTimelineLoops(whichSplitGroup, whichGroup)
-			scrollbarSearchLoopActivated = false
-		end
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
-	--------------------------------------------------------------------------------
-	if timelineScrollArea[2] == nil then
-		scrollingTimelineScrollbarTimer:start()
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure Playhead is actually visible:
-	--------------------------------------------------------------------------------
-	local scrollAreaX = timelineScrollArea:attributeValue("AXPosition")['x']
-	local scrollAreaW = timelineScrollArea:attributeValue("AXSize")['w']
-	local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
-	if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
-		local timelineWidth = timelineScrollArea:attributeValue("AXSize")['w']
-		initialPlayheadXPosition = (timelineWidth / 2)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Initial Scrollbar Value:
-	--------------------------------------------------------------------------------
-	local initialScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-
-	--------------------------------------------------------------------------------
-	-- Define the Loop of Death:
-	--------------------------------------------------------------------------------
-	scrollingTimelineTimer = hs.timer.new(0.000001, function()
-
-		--------------------------------------------------------------------------------
-		-- Does the scrollbar still exist?
-		--------------------------------------------------------------------------------
-		if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
-
-			local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
-			local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
-
-			local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
-
-			--------------------------------------------------------------------------------
-			-- If you change the edit the location of the Value Indicator will change:
-			--------------------------------------------------------------------------------
-			if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
-				for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-					if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
-						whichValueIndicator = i
-						goto performScrollingTimelineValueIndicatorExitX
-					end
-				end
-				if whichValueIndicator == nil then
-					displayErrorMessage("Unable to locate Value Indicator.")
-					return "Failed"
-				end
-				::performScrollingTimelineValueIndicatorExitX::
-			end
-
-			local currentPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-			initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
-			currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
-
-			x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
-			y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
-
-			scrollbarStep = y - x
-
-			local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-			timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
-		end
-
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Begin the Loop of Death:
-	--------------------------------------------------------------------------------
-	scrollingTimelineTimer:start()
-
-end
-
---------------------------------------------------------------------------------
--- TRANSITIONS SHORTCUT PRESSED:
---------------------------------------------------------------------------------
-function transitionsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local currentShortcut = nil
-	if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutOne") end
-	if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutTwo") end
-	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutThree") end
-	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFour") end
-	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFive") end
-	if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
-
-	if currentShortcut == nil then
-		displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
-
-	--------------------------------------------------------------------------------
-	-- Make sure Transitions panel is open:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXGroup (group 1)
-	-- AXRadioGroup (radio group 1)
-	-- AXRadioButton (radio button 2)
-	transitionsBrowserButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-		{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
-	}, 1)
-	local wasTransitionsPanelClosed = false
-	if transitionsBrowserButton ~= nil then
-		if transitionsBrowserButton:attributeValue("AXValue") == 0 then
-			wasTransitionsPanelClosed = true
-			local pressTransitionsBrowserButtonResult = transitionsBrowserButton:performAction("AXPress")
-			if pressTransitionsBrowserButtonResult == nil then
-				displayErrorMessage("Unable to press Transitions icon.")
-				return "Fail"
-			end
-		end
-	else
-		displayErrorMessage("Unable to activate Transitions Panel.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXPopUpButton (pop up button 1)
-	installedTransitionsPopup = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-	}, 1)
-	if installedTransitionsPopup ~= nil then
-		if installedTransitionsPopup:attributeValue("AXValue") ~= "Installed Transitions" then
-			installedTransitionsPopup:performAction("AXPress")
-			installedTransitionsPopupMenuItem = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-				{ role = "AXMenu", },
-				{ role = "AXMenuItem", AXTitle = "Installed Transitions"},
-			}, 1)
-			installedTransitionsPopupMenuItem:performAction("AXPress")
-		end
-	else
-		displayErrorMessage("Unable to find 'Installed Transitions' popup.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	transitionsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if transitionsSearchCancelButton ~= nil then
-		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
-		if transitionsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to cancel existing Transitions search.")
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Click 'All Transitions':
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXTable (table 1)
-	-- AXRow (row 1)
-	allTransitionsButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" }
-	}, 1)
-	if allTransitionsButton ~= nil then
-		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
-	else
-
-		--------------------------------------------------------------------------------
-		-- Make sure Transitions Browser Sidebar is Visible:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXCheckBox (checkbox 1)
-		transitionsBrowserSidebar = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup" },
-			{ role = "AXCheckBox", Identifier = "_NS:85" },
-		}, 1)
-		if transitionsBrowserSidebar ~= nil then
-			if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
-				transitionsBrowserSidebar:performAction("AXPress")
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Transitions':
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXScrollArea (scroll area 1)
-		-- AXTable (table 1)
-		-- AXRow (row 1)
-		allTransitionsButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:452" },
-			{ role = "AXScrollArea", Identifier = "_NS:66" },
-			{ role = "AXTable", Identifier = "_NS:9" }
-		}, 1)
-		if allTransitionsButton ~= nil then
-			allTransitionsButton[1]:setAttributeValue("AXSelected", true)
-		else
-			displayErrorMessage("Unable to locate 'All Transitions' button.")
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Perform Search:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	transitionsSearchField = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-	}, 1)
-	if transitionsSearchField ~= nil then
-		transitionsSearchField:setAttributeValue("AXValue", currentShortcut)
-		transitionsSearchField[1]:performAction("AXPress")
-	else
-		displayErrorMessage("Unable to type search request in search box.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure scroll bar is at top:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXScrollBar (scroll bar 1)
-	-- AXValueIndicator (value indicator 1)
-	transitionsScrollBar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
-		{ role = "AXScrollBar", AXIdentifier = "_NS:34" },
-		{ role = "AXValueIndicator" },
-	}, 1)
-	if transitionsScrollBar ~= nil then
-		transitionsScrollBar:setAttributeValue("AXValue", 0)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Double click on effect:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXGrid (UI element 1)
-	-- AXImage "Blur" (image 1)
-	transitionsButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
-		{ role = "AXGrid", AXIdentifier = "_NS:16" },
-		{ role = "AXImage", _id=1 },
-	}, 1)
-	if transitionsButton ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Original Mouse Position:
-		--------------------------------------------------------------------------------
-		local originalMousePosition = hs.mouse.getAbsolutePosition()
-
-		--------------------------------------------------------------------------------
-		-- Get centre of button:
-		--------------------------------------------------------------------------------
-		local transitionsButtonPosition = {}
-		transitionsButtonPosition['x'] = transitionsButton:attributeValue("AXPosition")['x'] + (transitionsButton:attributeValue("AXSize")['w'] / 2)
-		transitionsButtonPosition['y'] = transitionsButton:attributeValue("AXPosition")['y'] + (transitionsButton:attributeValue("AXSize")['h'] / 2)
-
-		--------------------------------------------------------------------------------
-		-- Double Click:
-		--------------------------------------------------------------------------------
-		doubleLeftClick(transitionsButtonPosition)
-
-		--------------------------------------------------------------------------------
-		-- Put it back:
-		--------------------------------------------------------------------------------
-		hs.mouse.setAbsolutePosition(originalMousePosition)
-
-	else
-		displayErrorMessage("Unable to locate selected Transition.")
-		return "Fail"
-	end
-
-
-	--------------------------------------------------------------------------------
-	-- Add a bit of a delay:
-	--------------------------------------------------------------------------------
-	hs.timer.doAfter(0.2, function()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXTextField (text field 1)
-		transitionsSearchCancelButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXTextField", Description = "Effect Library Search Field" },
-			{ role = "AXButton", Description = "cancel"},
-		}, 1)
-		if transitionsSearchCancelButton ~= nil then
-			transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
-			if transitionsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to clear Transitions search.")
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If the effects panel was originally closed, let's close it again:
-		--------------------------------------------------------------------------------
-		if wasTransitionsPanelClosed then
-			-- PATH:
-			-- AXApplication "Final Cut Pro"
-			-- AXWindow "Final Cut Pro" (window 2)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXGroup (group 1)
-			-- AXRadioGroup (radio group 1)
-			-- AXRadioButton (radio button 1)
-			transitionsBrowserButton = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-				{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
-			}, 1)
-			if transitionsBrowserButton ~= nil then
-				transitionsBrowserButton:performAction("AXPress")
-			else
-				displayErrorMessage("Unable to close Transitions Panel.")
-				return "Fail"
-			end
-		end
-	end)
-
-end
-
---------------------------------------------------------------------------------
--- EFFECTS SHORTCUT PRESSED:
---------------------------------------------------------------------------------
-function effectsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- Hide the Touch Bar:
-	--------------------------------------------------------------------------------
-	hideTouchbar()
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local currentShortcut = nil
-	if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutOne") end
-	if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutTwo") end
-	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutThree") end
-	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFour") end
-	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFive") end
-	if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
-
-	if currentShortcut == nil then
-		displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
-		showTouchbar() -- Do we need to enable the Touch Bar?
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
-
-	--------------------------------------------------------------------------------
-	-- Make sure Video Effects panel is open:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXGroup (group 1)
-	-- AXRadioGroup (radio group 1)
-	-- AXRadioButton (radio button 1)
-	effectsBrowserButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-		{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
-	}, 1)
-	local wasEffectsPanelClosed = false
-	if effectsBrowserButton ~= nil then
-		if effectsBrowserButton:attributeValue("AXValue") == 0 then
-			wasEffectsPanelClosed = true
-			local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-			if presseffectsBrowserButtonResult == nil then
-				displayErrorMessage("Unable to press Video Effects icon.")
-				showTouchbar() -- Do we need to enable the Touch Bar?
-				return "Fail"
-			end
-		end
-	else
-		displayErrorMessage("Unable to activate Video Effects Panel.")
-		showTouchbar() -- Do we need to enable the Touch Bar?
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Effects" is selected:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXPopUpButton (pop up button 1)
-	installedEffectsPopup = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-	}, 1)
-	if installedEffectsPopup ~= nil then
-		if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-			installedEffectsPopup:performAction("AXPress")
-			installedEffectsPopupMenuItem = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
-				{ role = "AXMenu", },
-				{ role = "AXMenuItem", AXTitle = "Installed Effects"},
-			}, 1)
-			installedEffectsPopupMenuItem:performAction("AXPress")
-		end
-	else
-		displayErrorMessage("Unable to find 'Installed Effects' popup.")
-		showTouchbar() -- Do we need to enable the Touch Bar?
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	effectsSearchCancelButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-		{ role = "AXButton", Description = "cancel"},
-	}, 1)
-	if effectsSearchCancelButton ~= nil then
-		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-		if effectsSearchCancelButtonResult == nil then
-			displayErrorMessage("Unable to cancel effects search.")
-			showTouchbar() -- Do we need to enable the Touch Bar?
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Click 'All Video & Audio':
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXTable (table 1)
-	-- AXRow (row 1)
-	allVideoAndAudioButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:452" },
-		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" },
-		{ role = "AXRow", _id=1 },
-	}, 1)
-	if allVideoAndAudioButton ~= nil then
-		allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-	else
-
-		--------------------------------------------------------------------------------
-		-- Make sure Effects Browser Sidebar is Visible:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXCheckBox (checkbox 1)
-		effectsBrowserSidebar = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup" },
-			{ role = "AXCheckBox", Identifier = "_NS:85" },
-		}, 1)
-		if effectsBrowserSidebar ~= nil then
-			if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-				effectsBrowserSidebar:performAction("AXPress")
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Video & Audio':
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXScrollArea (scroll area 1)
-		-- AXTable (table 1)
-		-- AXRow (row 1)
-		allVideoAndAudioButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:452" },
-			{ role = "AXScrollArea", Identifier = "_NS:66" },
-			{ role = "AXTable", Identifier = "_NS:9" },
-			{ role = "AXRow", _id=1 },
-		}, 1)
-		if allVideoAndAudioButton ~= nil then
-			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-		else
-			displayErrorMessage("Unable to locate 'All Video & Audio' button.")
-			showTouchbar() -- Do we need to enable the Touch Bar?
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Perform Search:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXTextField (text field 1)
-	effectsSearchField = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXTextField", Description = "Effect Library Search Field" },
-	}, 1)
-	if effectsSearchField ~= nil then
-		effectsSearchField:setAttributeValue("AXValue", currentShortcut)
-		effectsSearchField[1]:performAction("AXPress")
-	else
-		displayErrorMessage("Unable to type search request in search box.")
-		showTouchbar() -- Do we need to enable the Touch Bar?
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure scroll bar is at top:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXScrollBar (scroll bar 1)
-	-- AXValueIndicator (value indicator 1)
-	effectsScrollBar = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
-		{ role = "AXScrollBar", AXIdentifier = "_NS:34" },
-		{ role = "AXValueIndicator" },
-	}, 1)
-	if effectsScrollBar ~= nil then
-		effectsScrollBar:setAttributeValue("AXValue", 0)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Double click on effect:
-	--------------------------------------------------------------------------------
-	-- PATH:
-	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 2)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 1)
-	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 2)
-	-- AXGrid (UI element 1)
-	-- AXImage "Blur" (image 1)
-	effectButton = sw:searchPath({
-		{ role = "AXWindow", title = "Final Cut Pro"},
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
-		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
-		{ role = "AXGrid", AXIdentifier = "_NS:16" },
-		{ role = "AXImage", _id=1 },
-	}, 1)
-	if effectButton ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Original Mouse Position:
-		--------------------------------------------------------------------------------
-		local originalMousePosition = hs.mouse.getAbsolutePosition()
-
-		--------------------------------------------------------------------------------
-		-- Get centre of button:
-		--------------------------------------------------------------------------------
-		local effectButtonPosition = {}
-		effectButtonPosition['x'] = effectButton:attributeValue("AXPosition")['x'] + (effectButton:attributeValue("AXSize")['w'] / 2)
-		effectButtonPosition['y'] = effectButton:attributeValue("AXPosition")['y'] + (effectButton:attributeValue("AXSize")['h'] / 2)
-
-		--------------------------------------------------------------------------------
-		-- Double Click:
-		--------------------------------------------------------------------------------
-		doubleLeftClick(effectButtonPosition)
-
-		--------------------------------------------------------------------------------
-		-- Put it back:
-		--------------------------------------------------------------------------------
-		hs.mouse.setAbsolutePosition(originalMousePosition)
-
-	else
-		displayErrorMessage("Unable to locate effect.")
-		showTouchbar() -- Do we need to enable the Touch Bar?
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Add a bit of a delay:
-	--------------------------------------------------------------------------------
-	hs.timer.doAfter(0.2, function()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 2)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXTextField (text field 1)
-		effectsSearchCancelButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
-			{ role = "AXGroup", },
-			{ role = "AXTextField", Description = "Effect Library Search Field" },
-			{ role = "AXButton", Description = "cancel"},
-		}, 1)
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.")
-				showTouchbar() -- Do we need to enable the Touch Bar?
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If the effects panel was originally closed, let's close it again:
-		--------------------------------------------------------------------------------
-		if wasEffectsPanelClosed then
-			-- PATH:
-			-- AXApplication "Final Cut Pro"
-			-- AXWindow "Final Cut Pro" (window 2)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXSplitGroup (splitter group 1)
-			-- AXGroup (group 1)
-			-- AXGroup (group 1)
-			-- AXRadioGroup (radio group 1)
-			-- AXRadioButton (radio button 1)
-			effectsBrowserButton = sw:searchPath({
-				{ role = "AXWindow", title = "Final Cut Pro"},
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup" },
-				{ role = "AXGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
-				{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
-			}, 1)
-			if effectsBrowserButton ~= nil then
-				effectsBrowserButton:performAction("AXPress")
-			else
-				displayErrorMessage("Unable to close Video Effects Panel.")
-				showTouchbar() -- Do we need to enable the Touch Bar?
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Do we need to enable the Touch Bar?
-		--------------------------------------------------------------------------------
-		showTouchbar()
-
-	end)
-
-end
-
---------------------------------------------------------------------------------
--- HIGHLIGHT FCPX BROWSER PLAYHEAD:
---------------------------------------------------------------------------------
-function highlightFCPXBrowserPlayhead()
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get Browser Split Group:
-	--------------------------------------------------------------------------------
-	browserSplitGroup = getFinalCutProBrowserSplitGroup()
-	if browserSplitGroup == nil then
-		print("[FCPX Hacks] ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-		if browserSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			whichGroup = i
-		end
-	end
-	if whichGroup == nil then
-		print("[FCPX Hacks] ERROR: Unable to locate Group in highlightFCPXBrowserPlayhead().")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Scroll Area:
-	--------------------------------------------------------------------------------
-	local whichScrollArea = nil
-	for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-		if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-			whichScrollArea = i
-		end
-	end
-
-	if whichScrollArea == nil then
-
-		--------------------------------------------------------------------------------
-		-- LIST VIEW:
-		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group:
-			--------------------------------------------------------------------------------
-			local whichSplitGroup = nil
-			for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:658" then
-						whichSplitGroup = i
-						goto exitWhichSplitGroupLoop
-					end
-				end
-			end
-			::exitWhichSplitGroupLoop::
-			if whichSplitGroup == nil then
-				print("[FCPX Hacks] ERROR: Unable to locate Split Group in highlightFCPXBrowserPlayhead().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group 2:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:590" then
-						whichGroupTwo = i
-						goto exitWhichGroupTwoLoop
-					end
-				end
-			end
-			::exitWhichGroupTwoLoop::
-			if whichGroupTwo == nil then
-				print("[FCPX Hacks] ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Value Indicator:
-			--------------------------------------------------------------------------------
-			local whichValueIndicator = nil
-			whichValueIndicator = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-			persistentPlayhead = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo][whichValueIndicator]
-
-	else
-
-		--------------------------------------------------------------------------------
-		-- FILMSTRIP VIEW:
-		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Which Group 2:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:39" then
-						whichGroupTwo = i
-						goto exitWhichGroupTwoLoop
-					end
-				end
-			end
-			::exitWhichGroupTwoLoop::
-			if whichGroupTwo == nil then
-				print("[FCPX Hacks] ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Value Indicator:
-			--------------------------------------------------------------------------------
-			local whichValueIndicator = nil
-			whichValueIndicator = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-			persistentPlayhead = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichValueIndicator]
-
-	end
-
-	--[[
-	if persistentPlayhead == nil then
-		--------------------------------------------------------------------------------
-		-- Browser on Second Screen (Filmstrip View):
-		--------------------------------------------------------------------------------
-		persistentPlayhead = sw:searchPath({
-			{ role = "AXWindow", Title = "Events"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
-			{ role = "AXGroup", },
-			{ role = "AXScrollArea", Identifier = "_NS:33"},
-			{ role = "AXGroup", Identifier = "_NS:39"},
-			{ role = "AXValueIndicator", Description = "persistent playhead" },
-		}, 1)
-	end
-
-	if persistentPlayhead == nil then
-		--------------------------------------------------------------------------------
-		-- Browser on Second Screen (List View):
-		--------------------------------------------------------------------------------
-		persistentPlayhead = sw:searchPath({
-			{ role = "AXWindow", Title = "Events"},
-			{ role = "AXSplitGroup",},
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:658"},
-			{ role = "AXGroup", Identifier = "_NS:590"},
-			{ role = "AXValueIndicator", Description = "persistent playhead" },
-		}, 1)
-	end
-	--]]
-
-	if persistentPlayhead ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Playhead Position:
-		--------------------------------------------------------------------------------
-		persistentPlayheadPosition = persistentPlayhead:attributeValue("AXPosition")
-		persistentPlayheadSize = persistentPlayhead:attributeValue("AXSize")
-
-		--------------------------------------------------------------------------------
-		-- Highlight Mouse:
-		--------------------------------------------------------------------------------
-		mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
-
-	end
-
-end
-
---------------------------------------------------------------------------------
--- BATCH EXPORT FROM BROWSER:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function batchExportToCompressor()
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Check that there's a default destination:
-	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFShareDestinationsDefaultDestinationIndex")
-	if executeStatus == nil then
-		displayErrorMessage("Failed to access the Final Cut Pro preferences when trying to work out Default Share Destination.")
-		return "Failed"
-	end
-	if tonumber(executeResult) > 10000 then
-			local appleScriptA = [[
-			activate application "Final Cut Pro"
-			tell application "System Events"
-				tell process "Final Cut Pro"
-					display dialog "It doesn't look like you have a Default Destination selected." & return & return & "You can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'." buttons {"Close"} with icon fcpxIcon
-					set frontmost to true
-				end tell
-			end tell
-		]]
-		local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get Current FCPX Save Location:
-	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist NSNavLastRootDirectory -string")
-	if executeStatus == nil then
-		displayErrorMessage("We could not determine the last place you exported a file to. If this is the first time you've used Final Cut Pro, please do a test export prior to using this tool.")
-		return "Failed"
-	end
-	local lastSavePath = trim(executeResult)
-
-	--------------------------------------------------------------------------------
-	-- Filmstrip or List Mode?
-	--------------------------------------------------------------------------------
-	local fcpxBrowserMode = fcpxWhichBrowserMode()
-	if (fcpxBrowserMode == "Failed") then -- Error Checking:
-		displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- Which Split Group:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-			end
-		end
-	end
-	if whichSplitGroup == nil then
-		displayErrorMessage("Unable to locate Split Group.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- List Mode:
-	--------------------------------------------------------------------------------
-	if fcpxBrowserMode == "List" then
-
-		--------------------------------------------------------------------------------
-		-- Which Group contains the browser:
-		--------------------------------------------------------------------------------
-		whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-					--------------------------------------------------------------------------------
-					-- We now have ALL of the groups, and need to work out which group we actually want:
-					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-							--------------------------------------------------------------------------------
-							-- Which Split Group is it:
-							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
-										whichGroup = i
-										goto listGroupDone
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		::listGroupDone::
-		if whichGroup == nil then
-			local appleScriptA = [[
-				activate application "Final Cut Pro"
-				tell application "System Events"
-					tell process "Final Cut Pro"
-						display dialog "It doesn't look like you have any clips selected in the Library?" buttons {"Close"} with icon fcpxIcon
-						set frontmost to true
-					end tell
-				end tell
-			]]
-			local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group Two:
-		--------------------------------------------------------------------------------
-		whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupTwo = i
-					goto listSplitGroupTwo
-				end
-			end
-		end
-		::listSplitGroupTwo::
-		if whichSplitGroupTwo == nil then
-			displayErrorMessage("Unable to locate Split Group Two.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group Three:
-		--------------------------------------------------------------------------------
-		whichSplitGroupThree = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupThree == nil then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupThree = i
-					goto listSplitGroupThree
-				end
-			end
-		end
-		::listSplitGroupThree::
-		if whichSplitGroupThree == nil then
-			displayErrorMessage("Unable to locate Split Group Three.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Scroll Area:
-		--------------------------------------------------------------------------------
-		whichScrollArea = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				whichScrollArea = i
-			end
-		end
-		if whichScrollArea == nil then
-			displayErrorMessage("Unable to locate Scroll Area.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Outline:
-		--------------------------------------------------------------------------------
-		whichOutline = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
-				whichOutline = i
-			end
-		end
-		if whichOutline == nil then
-			displayErrorMessage("Unable to locate Outline.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Rows's (can be multiple):
-		--------------------------------------------------------------------------------
-		whichRows = {nil}
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
-					whichRows[#whichRows + 1] = i
-				end
-			end
-		end
-
-	--------------------------------------------------------------------------------
-	-- Filmstrip Mode:
-	--------------------------------------------------------------------------------
-	elseif fcpxBrowserMode == "Filmstrip" then
-
-		--------------------------------------------------------------------------------
-		-- Which Group contains the browser:
-		--------------------------------------------------------------------------------
-		whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-					--------------------------------------------------------------------------------
-					-- We now have ALL of the groups, and need to work out which group we actually want:
-					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-							--------------------------------------------------------------------------------
-							-- Which Split Group is it:
-							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
-										whichGroup = i
-										goto filmstripGroupDone
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		::filmstripGroupDone::
-		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group Two:
-		--------------------------------------------------------------------------------
-		whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupTwo = i
-					goto filmstripSplitGroupTwoDone
-				end
-			end
-		end
-		::filmstripSplitGroupTwoDone::
-		if whichSplitGroupTwo == nil then
-			displayErrorMessage("Unable to locate Split Group Two.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Scroll Area:
-		--------------------------------------------------------------------------------
-		whichScrollArea = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				whichScrollArea = i
-			end
-		end
-		if whichScrollArea == nil then
-			displayErrorMessage("Unable to locate Scroll Area.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group Two:
-		--------------------------------------------------------------------------------
-		whichGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroupTwo = i
-			end
-		end
-		if whichGroupTwo == nil then
-			displayErrorMessage("Unable to locate Group Two.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group Three's (can be multiple):
-		--------------------------------------------------------------------------------
-		whichGroupThree = {}
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXSelectedChildren")[1] ~= nil then
-					whichGroupThree[#whichGroupThree + 1] = i
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- How many clips (regardless of Filmstrip or List mode)?
-	--------------------------------------------------------------------------------
-	local howManyClips = 0
-	if fcpxBrowserMode == "Filmstrip" then howManyClips = #whichGroupThree end
-	if fcpxBrowserMode == "List" then howManyClips = #whichRows end
-
-	--------------------------------------------------------------------------------
-	-- How many times cancel is forced during the Batch Export:
-	--------------------------------------------------------------------------------
-	cancelCount = 0
-
-	--------------------------------------------------------------------------------
-	-- If no clips are selected, then what about Keywords, Events or Libraries?
-	--------------------------------------------------------------------------------
-	if howManyClips == 0 then
-
-		--------------------------------------------------------------------------------
-		-- Which Library Scroll Area:
-		--------------------------------------------------------------------------------
-		whichLibraryScrollArea = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:32" then
-					whichLibraryScrollArea = i
-				end
-			end
-		end
-		if whichLibraryScrollArea == nil then
-			displayErrorMessage("Unable to locate Library Scroll Area.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- NOTE: There's only one AXOutline next so just use [1].
-		--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Which Library Role:
-		--------------------------------------------------------------------------------
-		whichLibraryRows = {}
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
-					whichLibraryRows[#whichLibraryRows + 1] = i
-				end
-			end
-		end
-
-		if #whichLibraryRows == 0 then
-			displayErrorMessage("Unable to locate Library Role.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Display Dialog to make sure the current path is acceptable:
-		--------------------------------------------------------------------------------
-		local appleScriptA = 'set howManyClips to "' .. #whichLibraryRows .. '"\n'
-		local appleScriptB = 'set lastSavePath to "' .. lastSavePath .. '"\n'
-		local appleScriptC = [[
-			activate application "Final Cut Pro"
-			tell application "System Events"
-				tell process "Final Cut Pro"
-					try
-						if howManyClips is equal to "1" then
-							display dialog "Final Cut Pro will export the contents of the selected item using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
-						else
-							display dialog "Final Cut Pro will export the contents of the " & howManyClips & " selected items using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
-						end if
-					on error
-						return "Failed"
-					end try
-					if the button returned of the result is "Continue Batch Export" then
-						return "Done"
-					end if
-					set frontmost to true
-				end tell
-			end tell
-		]]
-		local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
-
-		--------------------------------------------------------------------------------
-		-- Abort when Cancel is pressed:
-		--------------------------------------------------------------------------------
-		if dialogBoxResult == "Failed" then return "Failed" end
-
-		--------------------------------------------------------------------------------
-		-- If was previously in Filmstrip mode - need to get data as if from list:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "Filmstrip" then
-
-			--------------------------------------------------------------------------------
-			-- Switch to list mode:
-			--------------------------------------------------------------------------------
-			viewAsListResult = performFinalCutProMenuItem({"View", "Browser", "as List"})
-			if viewAsListResult == "Failed" then
-				displayErrorMessage("Failed to switch to list mode.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger Group clips by None:
-			--------------------------------------------------------------------------------
-			groupClipsByResult = performFinalCutProMenuItem({"View", "Browser", "Group Clips By", "None"})
-			if groupClipsByResult == "Failed" then
-				displayErrorMessage("Failed to switch to Group Clips by None.")
-				return "Failed"
-			end
+		if fcpxBrowserMode == "List" then
 
 			--------------------------------------------------------------------------------
 			-- Which Group contains the browser:
@@ -6959,7 +6186,7 @@ function batchExportToCompressor()
 									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
 										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
 											whichGroup = i
-											goto listGroupDoneA
+											goto listGroupDone
 										end
 									end
 								end
@@ -6968,9 +6195,18 @@ function batchExportToCompressor()
 					end
 				end
 			end
-			::listGroupDoneA::
+			::listGroupDone::
 			if whichGroup == nil then
-				displayErrorMessage("Unable to locate Group.")
+				local appleScriptA = [[
+					activate application "Final Cut Pro"
+					tell application "System Events"
+						tell process "Final Cut Pro"
+							display dialog "It doesn't look like you have any clips selected in the Library?" buttons {"Close"} with icon fcpxIcon
+							set frontmost to true
+						end tell
+					end tell
+				]]
+				local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 				return "Failed"
 			end
 
@@ -6982,11 +6218,11 @@ function batchExportToCompressor()
 				if whichSplitGroupTwo == nil then
 					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupTwo = i
-						goto listSplitGroupTwoA
+						goto listSplitGroupTwo
 					end
 				end
 			end
-			::listSplitGroupTwoA::
+			::listSplitGroupTwo::
 			if whichSplitGroupTwo == nil then
 				displayErrorMessage("Unable to locate Split Group Two.")
 				return "Failed"
@@ -7000,11 +6236,11 @@ function batchExportToCompressor()
 				if whichSplitGroupThree == nil then
 					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupThree = i
-						goto listSplitGroupThreeA
+						goto listSplitGroupThree
 					end
 				end
 			end
-			::listSplitGroupThreeA::
+			::listSplitGroupThree::
 			if whichSplitGroupThree == nil then
 				displayErrorMessage("Unable to locate Split Group Three.")
 				return "Failed"
@@ -7038,924 +6274,1232 @@ function batchExportToCompressor()
 				return "Failed"
 			end
 
-		end
-
-		--------------------------------------------------------------------------------
-		-- Now we need to apply to each row:
-		--------------------------------------------------------------------------------
-		for i=1, #whichLibraryRows do
-
 			--------------------------------------------------------------------------------
-			-- Select Left Panel Item:
+			-- Which Rows's (can be multiple):
 			--------------------------------------------------------------------------------
-			fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][whichLibraryRows[i]]:setAttributeValue("AXSelected", true)
-
-			--------------------------------------------------------------------------------
-			-- Get all individual items from right panel:
-			--------------------------------------------------------------------------------
-			local whichRows = {}
-			if whichRows ~= nil then -- Clear whichRows if needed.
-				for k in pairs (whichRows) do
-					whichRows[k] = nil
-				end
-			end
-			for ii=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii]:attributeValue("AXRole") == "AXRow" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1]:attributeValue("AXRole") == "AXGroup" then
-						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1][2]:attributeValue("AXDescription") == "Organizer filmlist name column" then
-							whichRows[#whichRows + 1] = ii
-						end
+			whichRows = {nil}
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+						whichRows[#whichRows + 1] = i
 					end
 				end
 			end
 
-			if #whichRows == 0 then
-				displayErrorMessage("Nothing in the selected item.")
+		--------------------------------------------------------------------------------
+		-- Filmstrip Mode:
+		--------------------------------------------------------------------------------
+		elseif fcpxBrowserMode == "Filmstrip" then
+
+			--------------------------------------------------------------------------------
+			-- Which Group contains the browser:
+			--------------------------------------------------------------------------------
+			whichGroup = nil
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if whichGroupGroup == nil then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+						--------------------------------------------------------------------------------
+						-- We now have ALL of the groups, and need to work out which group we actually want:
+						--------------------------------------------------------------------------------
+						for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
+							if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
+								--------------------------------------------------------------------------------
+								-- Which Split Group is it:
+								--------------------------------------------------------------------------------
+								for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
+									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
+										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
+											whichGroup = i
+											goto filmstripGroupDone
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+			::filmstripGroupDone::
+			if whichGroup == nil then
+				displayErrorMessage("Unable to locate Group.")
 				return "Failed"
 			end
 
 			--------------------------------------------------------------------------------
-			-- Bring Focus Back to Clips:
+			-- Which Split Group Two:
 			--------------------------------------------------------------------------------
-			local originalMousePoint = hs.mouse.getAbsolutePosition()
-			local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXPosition")
-			hs.eventtap.leftClick(listPosition)
-			hs.mouse.setAbsolutePosition(originalMousePoint)
+			whichSplitGroupTwo = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+				if whichSplitGroupTwo == nil then
+					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						whichSplitGroupTwo = i
+						goto filmstripSplitGroupTwoDone
+					end
+				end
+			end
+			::filmstripSplitGroupTwoDone::
+			if whichSplitGroupTwo == nil then
+				displayErrorMessage("Unable to locate Split Group Two.")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
-			-- Begin Clip Loop:
+			-- Which Scroll Area:
 			--------------------------------------------------------------------------------
-			for x=1, #whichRows do
+			whichScrollArea = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					whichScrollArea = i
+				end
+			end
+			if whichScrollArea == nil then
+				displayErrorMessage("Unable to locate Scroll Area.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Which Group Two:
+			--------------------------------------------------------------------------------
+			whichGroupTwo = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+					whichGroupTwo = i
+				end
+			end
+			if whichGroupTwo == nil then
+				displayErrorMessage("Unable to locate Group Two.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Which Group Three's (can be multiple):
+			--------------------------------------------------------------------------------
+			whichGroupThree = {}
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXSelectedChildren")[1] ~= nil then
+						whichGroupThree[#whichGroupThree + 1] = i
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- How many clips (regardless of Filmstrip or List mode)?
+		--------------------------------------------------------------------------------
+		local howManyClips = 0
+		if fcpxBrowserMode == "Filmstrip" then howManyClips = #whichGroupThree end
+		if fcpxBrowserMode == "List" then howManyClips = #whichRows end
+
+		--------------------------------------------------------------------------------
+		-- How many times cancel is forced during the Batch Export:
+		--------------------------------------------------------------------------------
+		cancelCount = 0
+
+		--------------------------------------------------------------------------------
+		-- If no clips are selected, then what about Keywords, Events or Libraries?
+		--------------------------------------------------------------------------------
+		if howManyClips == 0 then
+
+			--------------------------------------------------------------------------------
+			-- Which Library Scroll Area:
+			--------------------------------------------------------------------------------
+			whichLibraryScrollArea = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:32" then
+						whichLibraryScrollArea = i
+					end
+				end
+			end
+			if whichLibraryScrollArea == nil then
+				displayErrorMessage("Unable to locate Library Scroll Area.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- NOTE: There's only one AXOutline next so just use [1].
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Which Library Role:
+			--------------------------------------------------------------------------------
+			whichLibraryRows = {}
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValueCount("AXChildren")) do
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+						whichLibraryRows[#whichLibraryRows + 1] = i
+					end
+				end
+			end
+
+			if #whichLibraryRows == 0 then
+				displayErrorMessage("Unable to locate Library Role.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Display Dialog to make sure the current path is acceptable:
+			--------------------------------------------------------------------------------
+			local appleScriptA = 'set howManyClips to "' .. #whichLibraryRows .. '"\n'
+			local appleScriptB = 'set lastSavePath to "' .. lastSavePath .. '"\n'
+			local appleScriptC = [[
+				activate application "Final Cut Pro"
+				tell application "System Events"
+					tell process "Final Cut Pro"
+						try
+							if howManyClips is equal to "1" then
+								display dialog "Final Cut Pro will export the contents of the selected item using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
+							else
+								display dialog "Final Cut Pro will export the contents of the " & howManyClips & " selected items using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
+							end if
+						on error
+							return "Failed"
+						end try
+						if the button returned of the result is "Continue Batch Export" then
+							return "Done"
+						end if
+						set frontmost to true
+					end tell
+				end tell
+			]]
+			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+
+			--------------------------------------------------------------------------------
+			-- Abort when Cancel is pressed:
+			--------------------------------------------------------------------------------
+			if dialogBoxResult == "Failed" then return "Failed" end
+
+			--------------------------------------------------------------------------------
+			-- If was previously in Filmstrip mode - need to get data as if from list:
+			--------------------------------------------------------------------------------
+			if fcpxBrowserMode == "Filmstrip" then
 
 				--------------------------------------------------------------------------------
-				-- Select clip:
+				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[x]]:setAttributeValue("AXSelected", true)
-
-				--------------------------------------------------------------------------------
-				-- Trigger CMD+E (Export Using Default Share)
-				--------------------------------------------------------------------------------
-				if not keyStrokeFromPlist("ShareDefaultDestination") then
-					displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+				viewAsListResult = performFinalCutProMenuItem({"View", "Browser", "as List"})
+				if viewAsListResult == "Failed" then
+					displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
 
 				--------------------------------------------------------------------------------
-				-- Wait for window to open:
+				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				fcpxExportWindow = ax.applicationElement(fcpx)
-
-				local timeoutCount = 0
-				local exportWindowOpen = false
-
-				::waitForExportWindowA::
-				whichExportWindow = nil
-				for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-						for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-							if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-								if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
-									exportWindowOpen = true
-									whichExportWindow = yi
-								end
-							end
-						end
-					end
-				end
-
-				if exportWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 10 then
-						displayErrorMessage("It took too long for Export Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto waitForExportWindowA
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Next Button:
-				--------------------------------------------------------------------------------
-				whichNextButton = nil
-				for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Next…" then
-							whichNextButton = yi
-						end
-					end
-				end
-				if whichNextButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
+				groupClipsByResult = performFinalCutProMenuItem({"View", "Browser", "Group Clips By", "None"})
+				if groupClipsByResult == "Failed" then
+					displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
 
 				--------------------------------------------------------------------------------
-				-- Then press it:
+				-- Which Group contains the browser:
 				--------------------------------------------------------------------------------
-				pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-				if pressNextButtonResult == nil then
-					displayErrorMessage("Unable to press Next Button.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Wait for Save Window to Open:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-				local saveWindowOpen = false
-
-				whichSaveSheet = nil
-
-				::waitForSaveWindowA::
-				for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "save" then
-							whichSaveSheet = yi
-							saveWindowOpen = true
-						end
-					end
-				end
-				if whichSaveSheet == nil then
-					displayErrorMessage("Unable to locate Save Window.")
-					return "Failed"
-				end
-
-				if saveWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 10 then
-						displayErrorMessage("It took too long for Save Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto waitForSaveWindowA
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Save Button:
-				--------------------------------------------------------------------------------
-				whichSaveButton = nil
-				for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
-							whichSaveButton = yi
-						end
-					end
-				end
-				if whichSaveButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Press Save Button:
-				--------------------------------------------------------------------------------
-				local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-				if pressSaveButtonResult == nil then
-					displayErrorMessage("Unable to press Save Button.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Make sure Save Window is closed:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-
-				::checkSaveWindowIsClosedA::
-				if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-					-- Continue on...
-				else
-					--------------------------------------------------------------------------------
-					-- If an alert appears, click Cancel:
-					--------------------------------------------------------------------------------
-					whichAlertSheet = nil
-					whichAlertButton = nil
-					performCancel = false
-					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
-								for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
-											whichAlertSheet = yi
-											whichAlertButton = yx
-											performCancel = true
+				whichGroup = nil
+				for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+					if whichGroupGroup == nil then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+							--------------------------------------------------------------------------------
+							-- We now have ALL of the groups, and need to work out which group we actually want:
+							--------------------------------------------------------------------------------
+							for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
+								if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
+									--------------------------------------------------------------------------------
+									-- Which Split Group is it:
+									--------------------------------------------------------------------------------
+									for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
+										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
+											if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
+												whichGroup = i
+												goto listGroupDoneA
+											end
 										end
 									end
 								end
 							end
 						end
 					end
-					if performCancel then
-						cancelCount = cancelCount + 1
+				end
+				::listGroupDoneA::
+				if whichGroup == nil then
+					displayErrorMessage("Unable to locate Group.")
+					return "Failed"
+				end
 
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Alert:
-						--------------------------------------------------------------------------------
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press Cancel Button on the Alert.")
-							return "Failed"
+				--------------------------------------------------------------------------------
+				-- Which Split Group Two:
+				--------------------------------------------------------------------------------
+				whichSplitGroupTwo = nil
+				for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+					if whichSplitGroupTwo == nil then
+						if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+							whichSplitGroupTwo = i
+							goto listSplitGroupTwoA
 						end
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Save Dialog:
-						--------------------------------------------------------------------------------
-						whichCancelButton = nil
-						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelButton = yi
-								end
-							end
-						end
-						if whichCancelButton == nil then
-							displayErrorMessage("Unable to locate the cancel button.")
-							return "Failed"
-						end
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press Cancel Button on Save Dialog.")
-							return "Failed"
-						end
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Export Window:
-						--------------------------------------------------------------------------------
-						whichCancelExportButton = nil
-						for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelExportButton = yi
-								end
-							end
-						end
-						if whichCancelExportButton == nil then
-							displayErrorMessage("Unable to locate Group Two.")
-							return "Failed"
-						end
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press Cancel Button on Export Window.")
-							return "Failed"
-						end
-
-						goto nextClipInListQueueA
-
-					end -- Perform Cancel
-
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 20 then
-						displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto checkSaveWindowIsClosedA
 					end
-				end -- Save Sheet Closed
-				::nextClipInListQueueA::
-			end -- x loop
-		end -- i loop
-	else
-	--------------------------------------------------------------------------------
-	-- Single Keyword or Smart Selection:
-	--------------------------------------------------------------------------------
+				end
+				::listSplitGroupTwoA::
+				if whichSplitGroupTwo == nil then
+					displayErrorMessage("Unable to locate Split Group Two.")
+					return "Failed"
+				end
+
+				--------------------------------------------------------------------------------
+				-- Which Split Group Three:
+				--------------------------------------------------------------------------------
+				whichSplitGroupThree = nil
+				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
+					if whichSplitGroupThree == nil then
+						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+							whichSplitGroupThree = i
+							goto listSplitGroupThreeA
+						end
+					end
+				end
+				::listSplitGroupThreeA::
+				if whichSplitGroupThree == nil then
+					displayErrorMessage("Unable to locate Split Group Three.")
+					return "Failed"
+				end
+
+				--------------------------------------------------------------------------------
+				-- Which Scroll Area:
+				--------------------------------------------------------------------------------
+				whichScrollArea = nil
+				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+						whichScrollArea = i
+					end
+				end
+				if whichScrollArea == nil then
+					displayErrorMessage("Unable to locate Scroll Area.")
+					return "Failed"
+				end
+
+				--------------------------------------------------------------------------------
+				-- Which Outline:
+				--------------------------------------------------------------------------------
+				whichOutline = nil
+				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
+						whichOutline = i
+					end
+				end
+				if whichOutline == nil then
+					displayErrorMessage("Unable to locate Outline.")
+					return "Failed"
+				end
+
+			end
+
+			--------------------------------------------------------------------------------
+			-- Now we need to apply to each row:
+			--------------------------------------------------------------------------------
+			for i=1, #whichLibraryRows do
+
+				--------------------------------------------------------------------------------
+				-- Select Left Panel Item:
+				--------------------------------------------------------------------------------
+				fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][whichLibraryRows[i]]:setAttributeValue("AXSelected", true)
+
+				--------------------------------------------------------------------------------
+				-- Get all individual items from right panel:
+				--------------------------------------------------------------------------------
+				local whichRows = {}
+				if whichRows ~= nil then -- Clear whichRows if needed.
+					for k in pairs (whichRows) do
+						whichRows[k] = nil
+					end
+				end
+				for ii=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii]:attributeValue("AXRole") == "AXRow" then
+						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1]:attributeValue("AXRole") == "AXGroup" then
+							if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1][2]:attributeValue("AXDescription") == "Organizer filmlist name column" then
+								whichRows[#whichRows + 1] = ii
+							end
+						end
+					end
+				end
+
+				if #whichRows == 0 then
+					displayErrorMessage("Nothing in the selected item.")
+					return "Failed"
+				end
+
+				--------------------------------------------------------------------------------
+				-- Bring Focus Back to Clips:
+				--------------------------------------------------------------------------------
+				local originalMousePoint = mouse.getAbsolutePosition()
+				local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXPosition")
+				eventtap.leftClick(listPosition)
+				mouse.setAbsolutePosition(originalMousePoint)
+
+				--------------------------------------------------------------------------------
+				-- Begin Clip Loop:
+				--------------------------------------------------------------------------------
+				for x=1, #whichRows do
+
+					--------------------------------------------------------------------------------
+					-- Select clip:
+					--------------------------------------------------------------------------------
+					fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[x]]:setAttributeValue("AXSelected", true)
+
+					--------------------------------------------------------------------------------
+					-- Trigger CMD+E (Export Using Default Share)
+					--------------------------------------------------------------------------------
+					if not keyStrokeFromPlist("ShareDefaultDestination") then
+						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Wait for window to open:
+					--------------------------------------------------------------------------------
+					fcpxExportWindow = ax.applicationElement(fcpx)
+
+					local timeoutCount = 0
+					local exportWindowOpen = false
+
+					::waitForExportWindowA::
+					whichExportWindow = nil
+					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
+							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
+								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
+									if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
+										exportWindowOpen = true
+										whichExportWindow = yi
+									end
+								end
+							end
+						end
+					end
+
+					if exportWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 10 then
+							displayErrorMessage("It took too long for Export Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto waitForExportWindowA
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Next Button:
+					--------------------------------------------------------------------------------
+					whichNextButton = nil
+					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Next…" then
+								whichNextButton = yi
+							end
+						end
+					end
+					if whichNextButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Then press it:
+					--------------------------------------------------------------------------------
+					pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
+					if pressNextButtonResult == nil then
+						displayErrorMessage("Unable to press Next Button.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Wait for Save Window to Open:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+					local saveWindowOpen = false
+
+					whichSaveSheet = nil
+
+					::waitForSaveWindowA::
+					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "save" then
+								whichSaveSheet = yi
+								saveWindowOpen = true
+							end
+						end
+					end
+					if whichSaveSheet == nil then
+						displayErrorMessage("Unable to locate Save Window.")
+						return "Failed"
+					end
+
+					if saveWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 10 then
+							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto waitForSaveWindowA
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Save Button:
+					--------------------------------------------------------------------------------
+					whichSaveButton = nil
+					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
+								whichSaveButton = yi
+							end
+						end
+					end
+					if whichSaveButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Press Save Button:
+					--------------------------------------------------------------------------------
+					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
+					if pressSaveButtonResult == nil then
+						displayErrorMessage("Unable to press Save Button.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Make sure Save Window is closed:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+
+					::checkSaveWindowIsClosedA::
+					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
+						-- Continue on...
+					else
+						--------------------------------------------------------------------------------
+						-- If an alert appears, click Cancel:
+						--------------------------------------------------------------------------------
+						whichAlertSheet = nil
+						whichAlertButton = nil
+						performCancel = false
+						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
+									for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
+										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
+											if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
+												whichAlertSheet = yi
+												whichAlertButton = yx
+												performCancel = true
+											end
+										end
+									end
+								end
+							end
+						end
+						if performCancel then
+							cancelCount = cancelCount + 1
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Alert:
+							--------------------------------------------------------------------------------
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press Cancel Button on the Alert.")
+								return "Failed"
+							end
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Save Dialog:
+							--------------------------------------------------------------------------------
+							whichCancelButton = nil
+							for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelButton = yi
+									end
+								end
+							end
+							if whichCancelButton == nil then
+								displayErrorMessage("Unable to locate the cancel button.")
+								return "Failed"
+							end
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press Cancel Button on Save Dialog.")
+								return "Failed"
+							end
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Export Window:
+							--------------------------------------------------------------------------------
+							whichCancelExportButton = nil
+							for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelExportButton = yi
+									end
+								end
+							end
+							if whichCancelExportButton == nil then
+								displayErrorMessage("Unable to locate Group Two.")
+								return "Failed"
+							end
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press Cancel Button on Export Window.")
+								return "Failed"
+							end
+
+							goto nextClipInListQueueA
+
+						end -- Perform Cancel
+
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 20 then
+							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto checkSaveWindowIsClosedA
+						end
+					end -- Save Sheet Closed
+					::nextClipInListQueueA::
+				end -- x loop
+			end -- i loop
+		else
+		--------------------------------------------------------------------------------
+		-- Single Keyword or Smart Selection:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Display Dialog to make sure the current path is acceptable:
+			--------------------------------------------------------------------------------
+			local appleScriptA = 'set howManyClips to "' .. howManyClips .. '"\n'
+			local appleScriptB = 'set lastSavePath to "' .. lastSavePath .. '"\n'
+			local appleScriptC = [[
+				activate application "Final Cut Pro"
+				tell application "System Events"
+					tell process "Final Cut Pro"
+						try
+							if howManyClips is "1" then
+								display dialog "Final Cut Pro will export this clip using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
+							else
+								display dialog "Final Cut Pro will export these " & howManyClips & " clips using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
+							end if
+						on error
+							return "Failed"
+						end try
+						if the button returned of the result is "Continue Batch Export" then
+							return "Done"
+						end if
+						set frontmost to true
+					end tell
+				end tell
+			]]
+			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+
+			--------------------------------------------------------------------------------
+			-- Abort when Cancel is pressed:
+			--------------------------------------------------------------------------------
+			if dialogBoxResult == "Failed" then return "Failed" end
+
+			--------------------------------------------------------------------------------
+			-- Bring Focus Back to Clips:
+			--------------------------------------------------------------------------------
+			if fcpxBrowserMode == "List" then
+				local originalMousePoint = mouse.getAbsolutePosition()
+				local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][1]:attributeValue("AXPosition")
+				eventtap.leftClick(listPosition)
+				mouse.setAbsolutePosition(originalMousePoint)
+			end
+
+			--------------------------------------------------------------------------------
+			-- Let the games begin!
+			--------------------------------------------------------------------------------
+			if fcpxBrowserMode == "Filmstrip" then
+				for i=1, #whichGroupThree do
+
+					--------------------------------------------------------------------------------
+					-- Which Layout Item:
+					--------------------------------------------------------------------------------
+					whichLayoutItem = nil
+					local noRangeSelected = false
+					for x=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValueCount("AXChildren")) do
+						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXLayoutItem" then
+							whichLayoutItem = x
+						else
+							--------------------------------------------------------------------------------
+							-- If one of the clips doesn't have a range selected:
+							--------------------------------------------------------------------------------
+							if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXImage" then
+								whichLayoutItem = x
+								noRangeSelected = true
+							end
+						end
+					end
+					if whichLayoutItem == nil then
+						displayErrorMessage("Unable to locate Layout Item.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- If one of the clips doesn't have a range selected:
+					--------------------------------------------------------------------------------
+					::checkClipPositionTop::
+					if noRangeSelected then
+						clipPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem]:attributeValue("AXPosition")
+					else
+						clipPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem][1]:attributeValue("AXPosition")
+					end
+
+					clipPosition['x'] = clipPosition['x'] + 5
+					clipPosition['y'] = clipPosition['y'] + 10
+
+					--------------------------------------------------------------------------------
+					-- Make sure the clip is actually visible:
+					--------------------------------------------------------------------------------
+					local scrollAreaPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXPosition")
+					local scrollAreaSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXSize")
+
+						--------------------------------------------------------------------------------
+						-- Need to scroll up:
+						--------------------------------------------------------------------------------
+						if clipPosition['y'] < scrollAreaPosition['y'] then
+							local scrollBarValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:attributeValue("AXValue")
+							fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue - 0.02))
+							goto checkClipPositionTop
+						end
+
+						--------------------------------------------------------------------------------
+						-- Need to scroll down:
+						--------------------------------------------------------------------------------
+						if clipPosition['y'] > (scrollAreaPosition['y']+scrollAreaSize['h']) then
+							local scrollBarValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:attributeValue("AXValue")
+							fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue + 0.02))
+							goto checkClipPositionTop
+						end
+
+					--------------------------------------------------------------------------------
+					-- Click Thumbnail:
+					--------------------------------------------------------------------------------
+					local originalMousePoint = mouse.getAbsolutePosition()
+					eventtap.leftClick(clipPosition)
+					mouse.setAbsolutePosition(originalMousePoint)
+
+					--------------------------------------------------------------------------------
+					-- Trigger CMD+E (Export Using Default Share):
+					--------------------------------------------------------------------------------
+					if not keyStrokeFromPlist("ShareDefaultDestination") then
+						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Wait for window to open:
+					--------------------------------------------------------------------------------
+					fcpxExportWindow = ax.applicationElement(fcpx)
+
+					local timeoutCount = 0
+					local exportWindowOpen = false
+
+					::waitForExportWindowC::
+					whichExportWindow = nil
+					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
+							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
+								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
+									if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
+
+										exportWindowOpen = true
+										whichExportWindow = yi
+									end
+								end
+							end
+						end
+					end
+
+					if exportWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 5 then
+							displayErrorMessage("It took too long (five seconds) for Export Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(1)
+							goto waitForExportWindowC
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Next Button:
+					--------------------------------------------------------------------------------
+					whichNextButton = nil
+					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Next…" then
+								whichNextButton = yi
+							end
+						end
+					end
+					if whichNextButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Then press it:
+					--------------------------------------------------------------------------------
+					local pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
+					if pressNextButtonResult == nil then
+						displayErrorMessage("Failed to press Next Button.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Wait for Save Window to Open:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+					local saveWindowOpen = false
+
+					whichSaveSheet = nil
+
+					::waitForSaveWindowC::
+					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "save" then
+								whichSaveSheet = yi
+								saveWindowOpen = true
+							end
+						end
+					end
+					if whichSaveSheet == nil then
+						displayErrorMessage("Unable to locate Save Window.")
+						return "Failed"
+					end
+
+					if saveWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 10 then
+							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto waitForSaveWindowC
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Save Button:
+					--------------------------------------------------------------------------------
+					whichSaveButton = nil
+					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
+								whichSaveButton = yi
+							end
+						end
+					end
+					if whichSaveButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Press Save Button:
+					--------------------------------------------------------------------------------
+					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
+					if pressSaveButtonResult == nil then
+						displayErrorMessage("Unable to press Save Button.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Make sure Save Window is closed:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+
+					::checkSaveWindowIsClosedC::
+					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
+						-- Continue on...
+					else
+
+						--------------------------------------------------------------------------------
+						-- If an alert appears, click Cancel:
+						--------------------------------------------------------------------------------
+						whichAlertSheet = nil
+						whichAlertButton = nil
+						performCancel = false
+						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
+									for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
+										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
+											if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
+												whichAlertSheet = yi
+												whichAlertButton = yx
+												performCancel = true
+											end
+										end
+									end
+								end
+							end
+						end
+						if performCancel then
+							cancelCount = cancelCount + 1
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Alert:
+							--------------------------------------------------------------------------------
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press Cancel on the Alert.")
+								return "Failed"
+							end
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Save Dialog:
+							--------------------------------------------------------------------------------
+							whichCancelButton = nil
+							for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelButton = yi
+									end
+								end
+							end
+							if whichCancelButton == nil then
+								displayErrorMessage("Unable to locate the cancel button.")
+								return "Failed"
+							end
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press the cancel button on the save dialog.")
+								return "Failed"
+							end
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Export Window:
+							--------------------------------------------------------------------------------
+							whichCancelExportButton = nil
+							for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelExportButton = yi
+									end
+								end
+							end
+							if whichCancelExportButton == nil then
+								displayErrorMessage("Unable to locate Group Two.")
+								return "Failed"
+							end
+							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
+							if pressCancelButton == nil then
+								displayErrorMessage("Unable to press the Cancel button on the Export Window.")
+								return "Failed"
+							end
+
+							goto nextClipInFilmstripQueueC
+
+						end
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 20 then
+							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto checkSaveWindowIsClosedC
+						end
+					end
+					::nextClipInFilmstripQueueC::
+				end
+			end
+			--------------------------------------------------------------------------------
+			-- List Mode:
+			--------------------------------------------------------------------------------
+			if fcpxBrowserMode == "List" then
+				for i=1, #whichRows do
+
+					--------------------------------------------------------------------------------
+					-- Select clip:
+					--------------------------------------------------------------------------------
+					fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[i]]:setAttributeValue("AXSelected", true)
+
+					--------------------------------------------------------------------------------
+					-- Trigger CMD+E (Export Using Default Share)
+					--------------------------------------------------------------------------------
+					if not keyStrokeFromPlist("ShareDefaultDestination") then
+						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Wait for window to open:
+					--------------------------------------------------------------------------------
+					fcpxExportWindow = ax.applicationElement(fcpx)
+
+					local timeoutCount = 0
+					local exportWindowOpen = false
+
+					::waitForExportWindow::
+					whichExportWindow = nil
+					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
+							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
+								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
+									if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
+										exportWindowOpen = true
+										whichExportWindow = yi
+									end
+								end
+							end
+						end
+					end
+
+					if exportWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 10 then
+							displayErrorMessage("It took too long for Export Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto waitForExportWindow
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Next Button:
+					--------------------------------------------------------------------------------
+					whichNextButton = nil
+					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Next…" then
+								whichNextButton = i
+							end
+						end
+					end
+					if whichNextButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Then press it:
+					--------------------------------------------------------------------------------
+					fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
+
+					--------------------------------------------------------------------------------
+					-- Wait for Save Window to Open:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+					local saveWindowOpen = false
+
+					whichSaveSheet = nil
+
+					::waitForSaveWindow::
+					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
+							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "save" then
+								whichSaveSheet = i
+								saveWindowOpen = true
+							end
+						end
+					end
+					if whichSaveSheet == nil then
+						displayErrorMessage("Unable to locate Save Window.")
+						return "Failed"
+					end
+
+					if saveWindowOpen == false then
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 10 then
+							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto waitForSaveWindow
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Find Save Button:
+					--------------------------------------------------------------------------------
+					whichSaveButton = nil
+					for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Save" then
+								whichSaveButton = i
+							end
+						end
+					end
+					if whichSaveButton == nil then
+						displayErrorMessage("Unable to locate Group Two.")
+						return "Failed"
+					end
+
+					--------------------------------------------------------------------------------
+					-- Press Save Button:
+					--------------------------------------------------------------------------------
+					fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
+
+					--------------------------------------------------------------------------------
+					-- Make sure Save Window is closed:
+					--------------------------------------------------------------------------------
+					local timeoutCount = 0
+
+					::checkSaveWindowIsClosed::
+					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
+						-- Continue on...
+					else
+
+						--------------------------------------------------------------------------------
+						-- If an alert appears, click Cancel:
+						--------------------------------------------------------------------------------
+						whichAlertSheet = nil
+						whichAlertButton = nil
+						performCancel = false
+						for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "alert" then
+									for x=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValueCount("AXChildren") do
+										if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXRole") == "AXButton" then
+											if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXTitle") == "Cancel" then
+												whichAlertSheet = i
+												whichAlertButton = x
+												performCancel = true
+											end
+										end
+									end
+								end
+							end
+						end
+						if performCancel then
+							cancelCount = cancelCount + 1
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Alert:
+							--------------------------------------------------------------------------------
+							fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Save Dialog:
+							--------------------------------------------------------------------------------
+							whichCancelButton = nil
+							for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelButton = i
+									end
+								end
+							end
+							if whichCancelButton == nil then
+								displayErrorMessage("Unable to locate the cancel button.")
+								return "Failed"
+							end
+							fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
+
+							--------------------------------------------------------------------------------
+							-- Press Cancel on the Export Window:
+							--------------------------------------------------------------------------------
+							whichCancelExportButton = nil
+							for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
+								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+										whichCancelExportButton = i
+									end
+								end
+							end
+							if whichCancelExportButton == nil then
+								displayErrorMessage("Unable to locate Group Two.")
+								return "Failed"
+							end
+							fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
+
+							goto nextClipInListQueue
+
+						end
+						timeoutCount = timeoutCount + 1
+						if timeoutCount == 20 then
+							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							return "Failed"
+						else
+							sleep(0.5)
+							goto checkSaveWindowIsClosed
+						end
+					end
+					::nextClipInListQueue::
+				end -- i loop
+			end -- List Mode
+		end -- Left Panel or Right Panel
 
 		--------------------------------------------------------------------------------
-		-- Display Dialog to make sure the current path is acceptable:
+		-- Batch Export Complete:
 		--------------------------------------------------------------------------------
-		local appleScriptA = 'set howManyClips to "' .. howManyClips .. '"\n'
-		local appleScriptB = 'set lastSavePath to "' .. lastSavePath .. '"\n'
-		local appleScriptC = [[
+		local appleScriptA = 'set cancelCount to "' .. cancelCount .. '"\n'
+		local appleScriptB = [[
 			activate application "Final Cut Pro"
 			tell application "System Events"
 				tell process "Final Cut Pro"
-					try
-						if howManyClips is "1" then
-							display dialog "Final Cut Pro will export this clip using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
-						else
-							display dialog "Final Cut Pro will export these " & howManyClips & " clips using your default export settings to the following location:" & return & return & lastSavePath & return & return & "If you wish to change this location, export something else with your preferred destination first." & return & return & "Please do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation." & return & return & "If there's already a file with the same name in the export destination then that clip will be skipped." buttons {"Continue Batch Export", "Cancel"} with icon fcpxIcon
-						end if
-					on error
-						return "Failed"
-					end try
-					if the button returned of the result is "Continue Batch Export" then
-						return "Done"
+					if cancelCount is "0" then
+						display dialog "Batch Export is now complete." buttons {"Done"} with icon fcpxIcon
+					else if cancelCount is "1" then
+						display dialog "Batch Export is now complete." & return & return & "One clip was skipped as a file with the same name already existed." buttons {"Done"} with icon fcpxIcon
+					else
+						display dialog "Batch Export is now complete." & return & return & cancelCount & " clips were skipped as files with the same names already existed." buttons {"Done"} with icon fcpxIcon
 					end if
-					set frontmost to true
 				end tell
 			end tell
 		]]
-		local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+		local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
-		--------------------------------------------------------------------------------
-		-- Abort when Cancel is pressed:
-		--------------------------------------------------------------------------------
-		if dialogBoxResult == "Failed" then return "Failed" end
-
-		--------------------------------------------------------------------------------
-		-- Bring Focus Back to Clips:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "List" then
-			local originalMousePoint = hs.mouse.getAbsolutePosition()
-			local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][1]:attributeValue("AXPosition")
-			hs.eventtap.leftClick(listPosition)
-			hs.mouse.setAbsolutePosition(originalMousePoint)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Let the games begin!
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "Filmstrip" then
-			for i=1, #whichGroupThree do
-
-				--------------------------------------------------------------------------------
-				-- Which Layout Item:
-				--------------------------------------------------------------------------------
-				whichLayoutItem = nil
-				local noRangeSelected = false
-				for x=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValueCount("AXChildren")) do
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXLayoutItem" then
-						whichLayoutItem = x
-					else
-						--------------------------------------------------------------------------------
-						-- If one of the clips doesn't have a range selected:
-						--------------------------------------------------------------------------------
-						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXImage" then
-							whichLayoutItem = x
-							noRangeSelected = true
-						end
-					end
-				end
-				if whichLayoutItem == nil then
-					displayErrorMessage("Unable to locate Layout Item.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- If one of the clips doesn't have a range selected:
-				--------------------------------------------------------------------------------
-				::checkClipPositionTop::
-				if noRangeSelected then
-					clipPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem]:attributeValue("AXPosition")
-				else
-					clipPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem][1]:attributeValue("AXPosition")
-				end
-
-				clipPosition['x'] = clipPosition['x'] + 5
-				clipPosition['y'] = clipPosition['y'] + 10
-
-				--------------------------------------------------------------------------------
-				-- Make sure the clip is actually visible:
-				--------------------------------------------------------------------------------
-				local scrollAreaPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXPosition")
-				local scrollAreaSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXSize")
-
-					--------------------------------------------------------------------------------
-					-- Need to scroll up:
-					--------------------------------------------------------------------------------
-					if clipPosition['y'] < scrollAreaPosition['y'] then
-						local scrollBarValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:attributeValue("AXValue")
-						fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue - 0.02))
-						goto checkClipPositionTop
-					end
-
-					--------------------------------------------------------------------------------
-					-- Need to scroll down:
-					--------------------------------------------------------------------------------
-					if clipPosition['y'] > (scrollAreaPosition['y']+scrollAreaSize['h']) then
-						local scrollBarValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:attributeValue("AXValue")
-						fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue + 0.02))
-						goto checkClipPositionTop
-					end
-
-				--------------------------------------------------------------------------------
-				-- Click Thumbnail:
-				--------------------------------------------------------------------------------
-				local originalMousePoint = hs.mouse.getAbsolutePosition()
-				hs.eventtap.leftClick(clipPosition)
-				hs.mouse.setAbsolutePosition(originalMousePoint)
-
-				--------------------------------------------------------------------------------
-				-- Trigger CMD+E (Export Using Default Share):
-				--------------------------------------------------------------------------------
-				if not keyStrokeFromPlist("ShareDefaultDestination") then
-					displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Wait for window to open:
-				--------------------------------------------------------------------------------
-				fcpxExportWindow = ax.applicationElement(fcpx)
-
-				local timeoutCount = 0
-				local exportWindowOpen = false
-
-				::waitForExportWindowC::
-				whichExportWindow = nil
-				for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-						for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-							if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-								if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
-
-									exportWindowOpen = true
-									whichExportWindow = yi
-								end
-							end
-						end
-					end
-				end
-
-				if exportWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 5 then
-						displayErrorMessage("It took too long (five seconds) for Export Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(1)
-						goto waitForExportWindowC
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Next Button:
-				--------------------------------------------------------------------------------
-				whichNextButton = nil
-				for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Next…" then
-							whichNextButton = yi
-						end
-					end
-				end
-				if whichNextButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Then press it:
-				--------------------------------------------------------------------------------
-				local pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-				if pressNextButtonResult == nil then
-					displayErrorMessage("Failed to press Next Button.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Wait for Save Window to Open:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-				local saveWindowOpen = false
-
-				whichSaveSheet = nil
-
-				::waitForSaveWindowC::
-				for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "save" then
-							whichSaveSheet = yi
-							saveWindowOpen = true
-						end
-					end
-				end
-				if whichSaveSheet == nil then
-					displayErrorMessage("Unable to locate Save Window.")
-					return "Failed"
-				end
-
-				if saveWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 10 then
-						displayErrorMessage("It took too long for Save Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto waitForSaveWindowC
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Save Button:
-				--------------------------------------------------------------------------------
-				whichSaveButton = nil
-				for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
-							whichSaveButton = yi
-						end
-					end
-				end
-				if whichSaveButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Press Save Button:
-				--------------------------------------------------------------------------------
-				local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-				if pressSaveButtonResult == nil then
-					displayErrorMessage("Unable to press Save Button.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Make sure Save Window is closed:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-
-				::checkSaveWindowIsClosedC::
-				if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-					-- Continue on...
-				else
-
-					--------------------------------------------------------------------------------
-					-- If an alert appears, click Cancel:
-					--------------------------------------------------------------------------------
-					whichAlertSheet = nil
-					whichAlertButton = nil
-					performCancel = false
-					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
-								for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
-											whichAlertSheet = yi
-											whichAlertButton = yx
-											performCancel = true
-										end
-									end
-								end
-							end
-						end
-					end
-					if performCancel then
-						cancelCount = cancelCount + 1
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Alert:
-						--------------------------------------------------------------------------------
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press Cancel on the Alert.")
-							return "Failed"
-						end
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Save Dialog:
-						--------------------------------------------------------------------------------
-						whichCancelButton = nil
-						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelButton = yi
-								end
-							end
-						end
-						if whichCancelButton == nil then
-							displayErrorMessage("Unable to locate the cancel button.")
-							return "Failed"
-						end
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press the cancel button on the save dialog.")
-							return "Failed"
-						end
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Export Window:
-						--------------------------------------------------------------------------------
-						whichCancelExportButton = nil
-						for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelExportButton = yi
-								end
-							end
-						end
-						if whichCancelExportButton == nil then
-							displayErrorMessage("Unable to locate Group Two.")
-							return "Failed"
-						end
-						local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-						if pressCancelButton == nil then
-							displayErrorMessage("Unable to press the Cancel button on the Export Window.")
-							return "Failed"
-						end
-
-						goto nextClipInFilmstripQueueC
-
-					end
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 20 then
-						displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto checkSaveWindowIsClosedC
-					end
-				end
-				::nextClipInFilmstripQueueC::
-			end
-		end
-		--------------------------------------------------------------------------------
-		-- List Mode:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "List" then
-			for i=1, #whichRows do
-
-				--------------------------------------------------------------------------------
-				-- Select clip:
-				--------------------------------------------------------------------------------
-				fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[i]]:setAttributeValue("AXSelected", true)
-
-				--------------------------------------------------------------------------------
-				-- Trigger CMD+E (Export Using Default Share)
-				--------------------------------------------------------------------------------
-				if not keyStrokeFromPlist("ShareDefaultDestination") then
-					displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Wait for window to open:
-				--------------------------------------------------------------------------------
-				fcpxExportWindow = ax.applicationElement(fcpx)
-
-				local timeoutCount = 0
-				local exportWindowOpen = false
-
-				::waitForExportWindow::
-				whichExportWindow = nil
-				for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-						for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-							if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-								if fcpxExportWindow[yi][yx]:attributeValue("AXDescription") == "Share WindowBackground" then
-									exportWindowOpen = true
-									whichExportWindow = yi
-								end
-							end
-						end
-					end
-				end
-
-				if exportWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 10 then
-						displayErrorMessage("It took too long for Export Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto waitForExportWindow
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Next Button:
-				--------------------------------------------------------------------------------
-				whichNextButton = nil
-				for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Next…" then
-							whichNextButton = i
-						end
-					end
-				end
-				if whichNextButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Then press it:
-				--------------------------------------------------------------------------------
-				fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-
-				--------------------------------------------------------------------------------
-				-- Wait for Save Window to Open:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-				local saveWindowOpen = false
-
-				whichSaveSheet = nil
-
-				::waitForSaveWindow::
-				for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "save" then
-							whichSaveSheet = i
-							saveWindowOpen = true
-						end
-					end
-				end
-				if whichSaveSheet == nil then
-					displayErrorMessage("Unable to locate Save Window.")
-					return "Failed"
-				end
-
-				if saveWindowOpen == false then
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 10 then
-						displayErrorMessage("It took too long for Save Window to open so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto waitForSaveWindow
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Find Save Button:
-				--------------------------------------------------------------------------------
-				whichSaveButton = nil
-				for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Save" then
-							whichSaveButton = i
-						end
-					end
-				end
-				if whichSaveButton == nil then
-					displayErrorMessage("Unable to locate Group Two.")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Press Save Button:
-				--------------------------------------------------------------------------------
-				fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-
-				--------------------------------------------------------------------------------
-				-- Make sure Save Window is closed:
-				--------------------------------------------------------------------------------
-				local timeoutCount = 0
-
-				::checkSaveWindowIsClosed::
-				if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-					-- Continue on...
-				else
-
-					--------------------------------------------------------------------------------
-					-- If an alert appears, click Cancel:
-					--------------------------------------------------------------------------------
-					whichAlertSheet = nil
-					whichAlertButton = nil
-					performCancel = false
-					for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "alert" then
-								for x=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValueCount("AXChildren") do
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXRole") == "AXButton" then
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXTitle") == "Cancel" then
-											whichAlertSheet = i
-											whichAlertButton = x
-											performCancel = true
-										end
-									end
-								end
-							end
-						end
-					end
-					if performCancel then
-						cancelCount = cancelCount + 1
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Alert:
-						--------------------------------------------------------------------------------
-						fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Save Dialog:
-						--------------------------------------------------------------------------------
-						whichCancelButton = nil
-						for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelButton = i
-								end
-							end
-						end
-						if whichCancelButton == nil then
-							displayErrorMessage("Unable to locate the cancel button.")
-							return "Failed"
-						end
-						fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-
-						--------------------------------------------------------------------------------
-						-- Press Cancel on the Export Window:
-						--------------------------------------------------------------------------------
-						whichCancelExportButton = nil
-						for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
-									whichCancelExportButton = i
-								end
-							end
-						end
-						if whichCancelExportButton == nil then
-							displayErrorMessage("Unable to locate Group Two.")
-							return "Failed"
-						end
-						fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-
-						goto nextClipInListQueue
-
-					end
-					timeoutCount = timeoutCount + 1
-					if timeoutCount == 20 then
-						displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-						return "Failed"
-					else
-						sleep(0.5)
-						goto checkSaveWindowIsClosed
-					end
-				end
-				::nextClipInListQueue::
-			end -- i loop
-		end -- List Mode
-	end -- Left Panel or Right Panel
-
-	--------------------------------------------------------------------------------
-	-- Batch Export Complete:
-	--------------------------------------------------------------------------------
-	local appleScriptA = 'set cancelCount to "' .. cancelCount .. '"\n'
-	local appleScriptB = [[
-		activate application "Final Cut Pro"
-		tell application "System Events"
-			tell process "Final Cut Pro"
-				if cancelCount is "0" then
-					display dialog "Batch Export is now complete." buttons {"Done"} with icon fcpxIcon
-				else if cancelCount is "1" then
-					display dialog "Batch Export is now complete." & return & return & "One clip was skipped as a file with the same name already existed." buttons {"Done"} with icon fcpxIcon
-				else
-					display dialog "Batch Export is now complete." & return & return & cancelCount & " clips were skipped as files with the same names already existed." buttons {"Done"} with icon fcpxIcon
-				end if
-			end tell
-		end tell
-	]]
-	local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-
-end
-
---------------------------------------------------------------------------------
--- PERFORM MULTICAM MATCH FRAME:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function multicamMatchFrame(goBackToTimeline)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Just in case:
-	--------------------------------------------------------------------------------
-	if goBackToTimeline == nil then goBackToTimeline = true end
-	if type(goBackToTimeline) ~= "boolean" then goBackToTimeline = true end
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Reveal In Browser:
-	--------------------------------------------------------------------------------
-	revealInBrowserResult = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-	if revealInBrowserResult == "Failed" then
-		displayErrorMessage("Unable to Reveal in Browser.")
-		return
 	end
 
 	--------------------------------------------------------------------------------
-	-- Get Browser Playhead Value:
+	-- FCPX SINGLE MATCH FRAME:
 	--------------------------------------------------------------------------------
+	--
+	-- TO DO: This is currently broken in Final Cut Pro 10.3.
+	--
+	function singleMatchFrame()
 
 		--------------------------------------------------------------------------------
-		-- Our Persistent Playhead Value:
+		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		local persistentPlayheadValue = nil
+		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+		if 1==1 then return end
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Define FCPX:
+		--------------------------------------------------------------------------------
+		fcpx = application.get("Final Cut Pro")
+
+		--------------------------------------------------------------------------------
+		-- Click on 'Reveal in Browser':
+		--------------------------------------------------------------------------------
+		local resultRevealInBrowser = nil
+		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
+		if resultRevealInBrowser == "Failed" then
+			--------------------------------------------------------------------------------
+			-- Error:
+			--------------------------------------------------------------------------------
+			displayErrorMessage("Unable to trigger Reveal in Browser.")
+			return
+		end
 
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
 		local fcpxBrowserMode = fcpxWhichBrowserMode()
-		if (fcpxBrowserMode == "Failed") then -- Error Checking:
+
+		-- Error Checking:
+		if (fcpxBrowserMode == "Failed") then
 			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 			return
 		end
@@ -7963,6 +7507,7 @@ function multicamMatchFrame(goBackToTimeline)
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
+		fcpx = application("Final Cut Pro")
 		fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -7994,15 +7539,12 @@ function multicamMatchFrame(goBackToTimeline)
 			end
 		end
 		if whichWindow == nil then
-			print("[FCPX Hacks] ERROR: Unable to find whichWindow in multicamMatchFrame.")
-			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
+			writeToConsole("ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
+			displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
 			return "Failed"
 		end
-		if whichEventsWindow ~= nil then
-			fcpxElements = ax.applicationElement(fcpx)[whichEventsWindow]
-		else
-			fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-		end
+		if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
+		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
@@ -8115,9 +7657,61 @@ function multicamMatchFrame(goBackToTimeline)
 			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
 
 			--------------------------------------------------------------------------------
-			-- Get it's value:
+			-- Get Description Based off Playhead:
 			--------------------------------------------------------------------------------
-			persistentPlayheadValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXValue")
+			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+
+			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
+			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
+
+			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+
+			if currentElement:attributeValue("AXRole") == "AXHandle" then
+				currentElement = currentElement:attributeValue("AXParent")
+			end
+
+			oneElementBack = currentElement:attributeValue("AXParent")
+
+			local searchTerm = oneElementBack:attributeValue("AXDescription")
+
+			local whichSearchGroup = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+				if whichSearchGroup == nil then
+					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+						whichSearchGroup = i
+						goto searchGroupDone
+					end
+				end
+			end
+			::searchGroupDone::
+			if whichSearchGroup == nil then
+				displayErrorMessage("Unable to locate Search Group.")
+				return "Failed"
+			end
+
+			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
+			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
+
+			--------------------------------------------------------------------------------
+			-- Set the search field to Title of the Selected Clip:
+			--------------------------------------------------------------------------------
+			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
+			if searchTextFieldResult == nil then
+				displayErrorMessage("Unable to set Search Field.")
+			end
+
+			--------------------------------------------------------------------------------
+			-- Trigger the search:
+			--------------------------------------------------------------------------------
+			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
+			if searchTextFieldActionResult == nil then
+				displayErrorMessage("Unable to trigger Search.")
+			end
+
+			--------------------------------------------------------------------------------
+			-- Highlight Browser Playhead:
+			--------------------------------------------------------------------------------
+			highlightFCPXBrowserPlayhead()
 
 		--------------------------------------------------------------------------------
 		-- Filmstrip Mode:
@@ -8205,460 +7799,602 @@ function multicamMatchFrame(goBackToTimeline)
 			end
 
 			--------------------------------------------------------------------------------
-			-- Which is Persistent Playhead?
+			-- Which is Persistent Playhead:
 			--------------------------------------------------------------------------------
 			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
 
 			--------------------------------------------------------------------------------
-			-- Let's get it's value:
+			-- Get Description Based off Playhead:
 			--------------------------------------------------------------------------------
-			persistentPlayheadValue = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXValue")
+			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+
+			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
+			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
+
+			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+
+			if currentElement:attributeValue("AXRole") == "AXHandle" then
+				currentElement = currentElement:attributeValue("AXParent")
+			end
+
+			oneElementBack = currentElement:attributeValue("AXParent")
+
+			local searchTerm = oneElementBack:attributeValue("AXDescription")
+
+			local whichSearchGroup = nil
+			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+				if whichSearchGroup == nil then
+					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+						whichSearchGroup = i
+						goto searchGroupDone
+					end
+				end
+			end
+			::searchGroupDone::
+			if whichSearchGroup == nil then
+				displayErrorMessage("Unable to locate Search Group.")
+				return "Failed"
+			end
+
+			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
+			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
+
+			--------------------------------------------------------------------------------
+			-- Set the search field to Title of the Selected Clip:
+			--------------------------------------------------------------------------------
+			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
+			if searchTextFieldResult == nil then
+				displayErrorMessage("Unable to set Search Field.")
+			end
+
+			--------------------------------------------------------------------------------
+			-- Trigger the search:
+			--------------------------------------------------------------------------------
+			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
+			if searchTextFieldActionResult == nil then
+				displayErrorMessage("Unable to trigger Search.")
+			end
+
+			--------------------------------------------------------------------------------
+			-- Highlight Browser Playhead:
+			--------------------------------------------------------------------------------
+			highlightFCPXBrowserPlayhead()
+
 		end
-
-	--------------------------------------------------------------------------------
-	-- Is the Persistent Playhead Value valid:
-	--------------------------------------------------------------------------------
-	if persistentPlayheadValue == nil then
-		displayErrorMessage("Failed to get Persistent Playhead Value.")
-		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Put focus back on the timeline:
+	-- CHANGE TIMELINE CLIP HEIGHT:
 	--------------------------------------------------------------------------------
-	goToTimelineResult = performFinalCutProMenuItem({"Window", "Go To", "Timeline"})
-	if goToTimelineResult == "Failed" then
-		displayErrorMessage("Unable to return to timeline.")
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Open in Angle Editor:
-	--------------------------------------------------------------------------------
-	openInAngleEditorResult = performFinalCutProMenuItem({"Clip", "Open in Angle Editor"})
-	if openInAngleEditorResult == "Failed" then
-		displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Zoom to Fit:
-	--------------------------------------------------------------------------------
-	if goBackToTimeline == false then
-		zoomToFitResult = performFinalCutProMenuItem({"View", "Zoom to Fit"})
-		if zoomToFitResult == "Failed" then
-			displayErrorMessage("Failed to Zoom to Fit.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Is using dual screens:
-	--------------------------------------------------------------------------------
-	if whichEventsWindow ~= nil then
+	--
+	-- TO DO: This is currently broken in Final Cut Pro 10.3.
+	--
+	local changeTimelineClipHeightPressed = nil
+	function changeTimelineClipHeight(direction)
 
 		--------------------------------------------------------------------------------
-		-- Which Window:
+		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		whichWindow = nil
+		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use.")
+		if 1==1 then return end
+
+		writeToConsole("DOWN " .. direction)
+
+		--------------------------------------------------------------------------------
+		-- LOCAL VARIABLES:
+		--------------------------------------------------------------------------------
+		local showError = false
+		local event = eventtap.event
+
+		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
+		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
+		increaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
+		decreaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
+
+		--------------------------------------------------------------------------------
+		-- ERROR DETECTION:
+		--------------------------------------------------------------------------------
+		if increaseThumbnailSizeModifiers == nil then showError = true end
+		if decreaseThumbnailSizeModifiers == nil then showError = true end
+		if increaseThumbnailSizeCharacterString == nil then showError = true end
+		if decreaseThumbnailSizeCharacterString == nil then showError = true end
+		if next(increaseThumbnailSizeModifiers) == nil and increaseThumbnailSizeCharacterString == "" then showError = true end
+		if next(decreaseThumbnailSizeModifiers) == nil and decreaseThumbnailSizeCharacterString == "" then showError = true end
+		if showError then
+			displayErrorMessage("The Increase/Decrease Clip Height keyboard shortcuts must be allocated in the Final Cut Pro Command Editor for this feature to work.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- DO ONCE:
+		--------------------------------------------------------------------------------
+		if direction == "up" then
+			writeToConsole("up")
+			--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, true):post()
+			--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, false):post()
+		else
+			writeToConsole("down")
+			--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, true):post()
+			--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, false):post()
+		end
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- CHANGE TIMELINE CLIP HEIGHT REPEAT:
+		--------------------------------------------------------------------------------
+		function changeTimelineClipHeightRepeat(direction)
+
+		--------------------------------------------------------------------------------
+		-- UNDER CONSTRUCTION:
+		--------------------------------------------------------------------------------
+		if 1==1 then return end
+
+			writeToConsole("REPEAT " .. direction)
+
+			local event = eventtap.event
+			if direction == "up" then
+				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, true):post()
+				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, false):post()
+
+				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", true):post()
+				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", false):post()
+
+			else
+				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, true):post()
+				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, false):post()
+
+				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", true):post()
+				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", false):post()
+			end
+
+		end
+
+--------------------------------------------------------------------------------
+-- KEYWORDS:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- SAVE KEYWORDS:
+	--------------------------------------------------------------------------------
+	function saveKeywordSearches(whichButton)
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Check to see if the Keyword Editor is already open:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+		local fcpxElements = ax.applicationElement(fcpx)
+		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
 					whichWindow = i
 				end
 			end
 		end
 		if whichWindow == nil then
-			print("[FCPX Hacks] ERROR: Unable to find whichWindow in multicamMatchFrame.")
-			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
-			return "Failed"
-		end
-		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-		whichSplitGroup = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroup = i
-				end
-			end
-		end
-		if whichSplitGroup == nil then
-			print("[FCPX Hacks] ERROR: Unable to find whichSplitGroup in multicamMatchFrame.")
-			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
-			return "Failed"
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Timecode Text:
-	--------------------------------------------------------------------------------
-	local timecodeValue = 25 -- Assume 25fps by default.
-	local whichTimecodeText = nil
-	for i=1, (fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren")) do
-		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXStaticText" then
-			whichTimecodeText = i
-		end
-	end
-	if whichTimecodeText ~= nil then
-		if fcpxElements[whichSplitGroup][whichTimecodeText]:attributeValue("AXValue") ~= nil then
-			local timecodeText = fcpxElements[whichSplitGroup][whichTimecodeText]:attributeValue("AXValue")
-			if string.match(timecodeText, " 23.98p ") then timecodeValue = 23.98 end
-			if string.match(timecodeText, " 24p ") then timecodeValue = 24 end
-			if string.match(timecodeText, " 29.97i ") then timecodeValue = 29.97 end
-			if string.match(timecodeText, " 29.97p ") then timecodeValue = 29.97 end
-			if string.match(timecodeText, " 30p ") then timecodeValue = 30 end
-			if string.match(timecodeText, " 50p ") then timecodeValue = 50 end
-			if string.match(timecodeText, " 59.94p ") then timecodeValue = 59.94 end
-			if string.match(timecodeText, " 60p ") then timecodeValue = 60 end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Convert Seconds to Timecode:
-	--------------------------------------------------------------------------------
-	local matchFrameTimecode = secondsToTimecode(persistentPlayheadValue, timecodeValue)
-
-	--------------------------------------------------------------------------------
-	-- Go to that position in timeline:
-	--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Which Timecode Group:
-		--------------------------------------------------------------------------------
-		local whichTimecodeGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichTimecodeGroup == nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if (fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]) ~= nil then
-						for x=1, fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValueCount("AXChildren") do
-							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][x] ~= nil then
-								if (fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][x]:attributeValue("AXDescription")) == "Timecode LCD" then
-									whichTimecodeGroup = i
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		if whichTimecodeGroup == nil then
-			displayErrorMessage("Unable to locate Timecode Group.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Activate 'Move Playhead Position':
-		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		::tryTimecodeEnterModeAgain::
-		if not keyStrokeFromPlist("ShowTimecodeEntryPlayhead") then
-			displayErrorMessage("Failed to trigger the 'Move Playhead Position' Command.")
-			return "Failed"
-		end
-		for i=1, fcpxElements[whichSplitGroup][whichTimecodeGroup]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichTimecodeGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-				if fcpxElements[whichSplitGroup][whichTimecodeGroup]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Numeric Entry Type" then
-					goto typeTimecode
-				end
-			end
-		end
-		timeoutCount = timeoutCount + 1
-		if timeoutCount == 100 then
-			displayErrorMessage("We were unable to enter the source timecode for some reason.\n\nPlease make sure you haven't changed the default shortcut key for 'Move Playhead Position'.")
-			return "Failed"
-		end
-		sleep(0.01)
-		goto tryTimecodeEnterModeAgain
-		::typeTimecode::
-
-		--------------------------------------------------------------------------------
-		-- Type in Original Timecode & Press Return Key:
-		--------------------------------------------------------------------------------
-		hs.eventtap.keyStrokes(matchFrameTimecode)
-		hs.eventtap.keyStroke({}, 'return')
-
-	--------------------------------------------------------------------------------
-	-- Reveal In Browser:
-	--------------------------------------------------------------------------------
-	revealInBrowserResult = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-	if revealInBrowserResult == "Failed" then
-		displayErrorMessage("Unable to Reveal in Browser.")
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Go back to original timeline if appropriate:
-	--------------------------------------------------------------------------------
-	if goBackToTimeline then
-		timelineHistoryBackResult = performFinalCutProMenuItem({"View", "Timeline History Back"})
-		if timelineHistoryBackResult == "Failed" then
-			displayErrorMessage("Unable to go back to previous timeline.")
+			displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
 			return
 		end
+		fcpxElements = fcpxElements[whichWindow]
+
+		--------------------------------------------------------------------------------
+		-- Get Starting Textfield:
+		--------------------------------------------------------------------------------
+		local startTextField = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if startTextField == nil then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+					startTextField = i
+					goto startTextFieldDone
+				end
+			end
+		end
+		::startTextFieldDone::
+		if startTextField == nil then
+			--------------------------------------------------------------------------------
+			-- Keyword Shortcuts Buttons isn't down:
+			--------------------------------------------------------------------------------
+			fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+					keywordDisclosureTriangle = i
+					goto keywordDisclosureTriangleDone
+				end
+			end
+			::keywordDisclosureTriangleDone::
+			if fcpxElements[keywordDisclosureTriangle] == nil then
+				displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+				return "Failed"
+			else
+				local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
+				if keywordDisclosureTriangleResult == nil then
+					displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+					return "Failed"
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Values from the Keyword Editor:
+		--------------------------------------------------------------------------------
+		local savedKeywordValues = {}
+		local favoriteCount = 1
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
+				favoriteCount = favoriteCount + 1
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Save Values to Settings:
+		--------------------------------------------------------------------------------
+		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		if savedKeywords == nil then savedKeywords = {} end
+		for i=1, 9 do
+			if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
+				savedKeywords['Preset ' .. tostring(whichButton)] = {}
+			end
+			savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
+		end
+		settings.set("fcpxHacks.savedKeywords", savedKeywords)
+
+		--------------------------------------------------------------------------------
+		-- Saved:
+		--------------------------------------------------------------------------------
+		alert.closeAll(0)
+		alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton))
+
 	end
 
 	--------------------------------------------------------------------------------
-	-- Highlight Browser Playhead:
+	-- RESTORE KEYWORDS:
 	--------------------------------------------------------------------------------
-	highlightFCPXBrowserPlayhead()
+	function restoreKeywordSearches(whichButton)
 
-end
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Values from Settings:
+		--------------------------------------------------------------------------------
+		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		local restoredKeywordValues = {}
+
+		if savedKeywords == nil then
+			displayMessage("It doesn't look like you've saved any keyword presets yet?")
+			return "Fail"
+		end
+		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
+			displayMessage("It doesn't look like you've saved anything to this keyword preset yet?")
+			return "Fail"
+		end
+		for i=1, 9 do
+			restoredKeywordValues[i] = savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)]
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check to see if the Keyword Editor is already open:
+		--------------------------------------------------------------------------------
+		local fcpx = application("Final Cut Pro")
+		local fcpxElements = ax.applicationElement(fcpx)
+		local whichWindow = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
+					whichWindow = i
+				end
+			end
+		end
+		if whichWindow == nil then
+			displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
+			return
+		end
+		fcpxElements = fcpxElements[whichWindow]
+
+		--------------------------------------------------------------------------------
+		-- Get Starting Textfield:
+		--------------------------------------------------------------------------------
+		local startTextField = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if startTextField == nil then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+					startTextField = i
+					goto startTextFieldDone
+				end
+			end
+		end
+		::startTextFieldDone::
+		if startTextField == nil then
+			--------------------------------------------------------------------------------
+			-- Keyword Shortcuts Buttons isn't down:
+			--------------------------------------------------------------------------------
+			local keywordDisclosureTriangle = nil
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+					keywordDisclosureTriangle = i
+					goto keywordDisclosureTriangleDone
+				end
+			end
+			::keywordDisclosureTriangleDone::
+
+			if fcpxElements[keywordDisclosureTriangle] ~= nil then
+				local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
+				if keywordDisclosureTriangleResult == nil then
+					displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+					return "Failed"
+				end
+			else
+				displayErrorMessage("Could not find keyword disclosure triangle.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restore Values to Keyword Editor:
+		--------------------------------------------------------------------------------
+		local favoriteCount = 1
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+				currentKeywordSelection = fcpxElements[i]
+
+				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
+				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
+				eventtap.keyStroke({""}, "return")
+
+				--------------------------------------------------------------------------------
+				-- If at first you don't succeed, try, oh try, again!
+				--------------------------------------------------------------------------------
+				if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
+					setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
+					keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
+					eventtap.keyStroke({""}, "return")
+				end
+
+				favoriteCount = favoriteCount + 1
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Successfully Restored:
+		--------------------------------------------------------------------------------
+		alert.closeAll(0)
+		alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton))
+
+	end
 
 --------------------------------------------------------------------------------
--- FCPX SINGLE MATCH FRAME:
+-- SCROLLING TIMELINE RELATED:
 --------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function singleMatchFrame()
 
 	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
+	-- ACTIVE SCROLLING TIMELINE WATCHER:
 	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
+	function toggleScrollingTimeline()
 
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	fcpx = hs.appfinder.appFromName("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Click on 'Reveal in Browser':
-	--------------------------------------------------------------------------------
-	local resultRevealInBrowser = nil
-	resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-	if resultRevealInBrowser == "Failed" then
 		--------------------------------------------------------------------------------
-		-- Error:
+		-- Toggle Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		displayErrorMessage("Unable to trigger Reveal in Browser.")
-		return
+		scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		if scrollingTimelineActivated then
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", false)
+
+			--------------------------------------------------------------------------------
+			-- Stop Watchers:
+			--------------------------------------------------------------------------------
+			scrollingTimelineWatcherUp:stop()
+			scrollingTimelineWatcherDown:stop()
+
+			--------------------------------------------------------------------------------
+			-- Stop Scrolling Timeline Loops:
+			--------------------------------------------------------------------------------
+			if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
+			if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
+
+			--------------------------------------------------------------------------------
+			-- Turn off variable:
+			--------------------------------------------------------------------------------
+			scrollingTimelineSpacebarPressed = false
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			alert.closeAll(0)
+			alert.show("Scrolling Timeline Deactivated")
+		else
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", true)
+
+			--------------------------------------------------------------------------------
+			-- Start Watchers:
+			--------------------------------------------------------------------------------
+			scrollingTimelineWatcherUp:start()
+			scrollingTimelineWatcherDown:start()
+
+			--------------------------------------------------------------------------------
+			-- If activated whilst already playing, then turn on Scrolling Timeline:
+			--------------------------------------------------------------------------------
+			-- TO DO: it would be great to be able to do this if possible?
+				-- scrollingTimelineSpacebarCheck = true
+				-- timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			alert.closeAll(0)
+			alert.show("Scrolling Timeline Activated")
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menu Bar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
 	end
 
 	--------------------------------------------------------------------------------
-	-- Filmstrip or List Mode?
+	-- SCROLLING TIMELINE FUNCTION:
 	--------------------------------------------------------------------------------
-	local fcpxBrowserMode = fcpxWhichBrowserMode()
+	function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
 
-	-- Error Checking:
-	if (fcpxBrowserMode == "Failed") then
-		displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which Window:
-	--------------------------------------------------------------------------------
-	local whichWindow = nil
-	local whichEventsWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-				whichEventsWindow = i
+		--------------------------------------------------------------------------------
+		-- Define Scrollbar Check Timer:
+		--------------------------------------------------------------------------------
+		scrollingTimelineScrollbarTimer = timer.new(0.001, function()
+			if timelineScrollArea[2] ~= nil then
+				performScrollingTimelineLoops(whichSplitGroup, whichGroup)
+				scrollbarSearchLoopActivated = false
 			end
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
-				whichWindow = i
-			end
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-				if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
-					if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
-						if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
-							if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
-								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
-									whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
-								end
-							end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
+		--------------------------------------------------------------------------------
+		if timelineScrollArea[2] == nil then
+			scrollingTimelineScrollbarTimer:start()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Playhead is actually visible:
+		--------------------------------------------------------------------------------
+		local scrollAreaX = timelineScrollArea:attributeValue("AXPosition")['x']
+		local scrollAreaW = timelineScrollArea:attributeValue("AXSize")['w']
+		local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
+		if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
+			local timelineWidth = timelineScrollArea:attributeValue("AXSize")['w']
+			initialPlayheadXPosition = (timelineWidth / 2)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Initial Scrollbar Value:
+		--------------------------------------------------------------------------------
+		local initialScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
+
+		--------------------------------------------------------------------------------
+		-- Define the Loop of Death:
+		--------------------------------------------------------------------------------
+		scrollingTimelineTimer = timer.new(0.000001, function()
+
+			--------------------------------------------------------------------------------
+			-- Does the scrollbar still exist?
+			--------------------------------------------------------------------------------
+			if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
+
+				local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
+				local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
+
+				local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
+
+				--------------------------------------------------------------------------------
+				-- If you change the edit the location of the Value Indicator will change:
+				--------------------------------------------------------------------------------
+				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
+					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
+						if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+							whichValueIndicator = i
+							goto performScrollingTimelineValueIndicatorExitX
 						end
 					end
-				end
-			end
-		end
-	end
-	if whichWindow == nil then
-		print("[FCPX Hacks] ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
-		displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
-		return "Failed"
-	end
-	if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
-	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-	--------------------------------------------------------------------------------
-	-- Which Split Group:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-			end
-		end
-	end
-	if whichSplitGroup == nil then
-		displayErrorMessage("Unable to locate Split Group.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- List Mode:
-	--------------------------------------------------------------------------------
-	if fcpxBrowserMode == "List" then
-
-		--------------------------------------------------------------------------------
-		-- Which Group contains the browser:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-					--------------------------------------------------------------------------------
-					-- We now have ALL of the groups, and need to work out which group we actually want:
-					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-							--------------------------------------------------------------------------------
-							-- Which Split Group is it:
-							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
-										whichGroup = i
-										goto listGroupDone
-									end
-								end
-							end
-						end
+					if whichValueIndicator == nil then
+						displayErrorMessage("Unable to locate Value Indicator.")
+						return "Failed"
 					end
+					::performScrollingTimelineValueIndicatorExitX::
 				end
+
+				local currentPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+				initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
+				currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
+
+				x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
+				y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
+
+				scrollbarStep = y - x
+
+				local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
+				timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
 			end
-		end
-		::listGroupDone::
-		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Begin the Loop of Death:
+		--------------------------------------------------------------------------------
+		scrollingTimelineTimer:start()
+
+	end
+
+--------------------------------------------------------------------------------
+-- MATCH FRAME RELATED:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- PERFORM MULTICAM MATCH FRAME:
+	--------------------------------------------------------------------------------
+	function multicamMatchFrame(goBackToTimeline) -- True or False
+
+		--------------------------------------------------------------------------------
+		-- Just in case:
+		--------------------------------------------------------------------------------
+		if goBackToTimeline == nil then goBackToTimeline = true end
+		if type(goBackToTimeline) ~= "boolean" then goBackToTimeline = true end
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Open in Angle Editor:
+		--------------------------------------------------------------------------------
+		local openInAngleEditorResult = performFinalCutProMenuItem({"Clip", "Open in Angle Editor"})
+		if openInAngleEditorResult == "Failed" then
+			displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Split Group Two:
+		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		local whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupTwo = i
-					goto listSplitGroupTwo
-				end
+		local goToTimelineResult = performFinalCutProMenuItem({"Window", "Go To", "Timeline"})
+		if goToTimelineResult == "Failed" then
+			displayErrorMessage("Unable to return to timeline.")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Reveal In Browser:
+		--------------------------------------------------------------------------------
+		local revealInBrowserResult = performFinalCutProMenuItem({"File", "Reveal in Browser"})
+		if revealInBrowserResult == "Failed" then
+			displayErrorMessage("Unable to Reveal in Browser.")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Go back to original timeline if appropriate:
+		--------------------------------------------------------------------------------
+		if goBackToTimeline then
+			local timelineHistoryBackResult = performFinalCutProMenuItem({"View", "Timeline History Back"})
+			if timelineHistoryBackResult == "Failed" then
+				displayErrorMessage("Unable to go back to previous timeline.")
+				return
 			end
-		end
-		::listSplitGroupTwo::
-		if whichSplitGroupTwo == nil then
-			displayErrorMessage("Unable to locate Split Group Two.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group Three:
-		--------------------------------------------------------------------------------
-		local whichSplitGroupThree = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupThree == nil then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupThree = i
-					goto listSplitGroupThree
-				end
-			end
-		end
-		::listSplitGroupThree::
-		if whichSplitGroupThree == nil then
-			displayErrorMessage("Unable to locate Split Group Three.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group Two:
-		--------------------------------------------------------------------------------
-		local whichGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroupTwo = i
-			end
-		end
-		if whichGroupTwo == nil then
-			displayErrorMessage("Unable to locate Group Two.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which is Persistent Playhead?
-		--------------------------------------------------------------------------------
-		local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-		--------------------------------------------------------------------------------
-		-- Get Description Based off Playhead:
-		--------------------------------------------------------------------------------
-		persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-		persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-		currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-		if currentElement:attributeValue("AXRole") == "AXHandle" then
-			currentElement = currentElement:attributeValue("AXParent")
-		end
-
-		oneElementBack = currentElement:attributeValue("AXParent")
-
-		local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-		local whichSearchGroup = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSearchGroup == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichSearchGroup = i
-					goto searchGroupDone
-				end
-			end
-		end
-		::searchGroupDone::
-		if whichSearchGroup == nil then
-			displayErrorMessage("Unable to locate Search Group.")
-			return "Failed"
-		end
-
-		local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-		local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
-
-		--------------------------------------------------------------------------------
-		-- Set the search field to Title of the Selected Clip:
-		--------------------------------------------------------------------------------
-		local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-		if searchTextFieldResult == nil then
-			displayErrorMessage("Unable to set Search Field.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Trigger the search:
-		--------------------------------------------------------------------------------
-		local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-		if searchTextFieldActionResult == nil then
-			displayErrorMessage("Unable to trigger Search.")
 		end
 
 		--------------------------------------------------------------------------------
@@ -8666,60 +8402,2010 @@ function singleMatchFrame()
 		--------------------------------------------------------------------------------
 		highlightFCPXBrowserPlayhead()
 
+	end
+
 	--------------------------------------------------------------------------------
-	-- Filmstrip Mode:
+	-- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
 	--------------------------------------------------------------------------------
-	elseif fcpxBrowserMode == "Filmstrip" then
+	function matchFrameThenHighlightFCPXBrowserPlayhead()
+		--------------------------------------------------------------------------------
+		-- Delete Any Highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
 
 		--------------------------------------------------------------------------------
-		-- Which Group contains the browser:
+		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-					--------------------------------------------------------------------------------
-					-- We now have ALL of the groups, and need to work out which group we actually want:
-					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-							--------------------------------------------------------------------------------
-							-- Which Split Group is it:
-							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
-										whichGroup = i
-										goto filmstripGroupDone
-									end
-								end
-							end
+		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
+
+		--------------------------------------------------------------------------------
+		-- If it worked then...
+		--------------------------------------------------------------------------------
+		if resultRevealInBrowser then
+			--------------------------------------------------------------------------------
+			-- Highlight FCPX Browser Playhead:
+			--------------------------------------------------------------------------------
+			highlightFCPXBrowserPlayhead()
+		else
+			--------------------------------------------------------------------------------
+			-- Error:
+			--------------------------------------------------------------------------------
+			displayErrorMessage("Unable to trigger Reveal in Browser.")
+		end
+	end
+
+--------------------------------------------------------------------------------
+-- COLOR BOARD RELATED:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - PUCK SELECTION:
+	--------------------------------------------------------------------------------
+	function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
+
+		--------------------------------------------------------------------------------
+		-- Make sure Nudge Shortcuts are allocated:
+		--------------------------------------------------------------------------------
+		local nudgeShortcutMissing = false
+		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if nudgeShortcutMissing then
+			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- The first button is actually the reset button:
+		--------------------------------------------------------------------------------
+		whichPuck = whichPuck + 1
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Final Cut Pro Color Board Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		if finalCutProColorBoardRadioGroup == nil then
+
+			--------------------------------------------------------------------------------
+			-- Open Color Board:
+			--------------------------------------------------------------------------------
+			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
+
+
+			--------------------------------------------------------------------------------
+			-- Try again:
+			--------------------------------------------------------------------------------
+			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+
+		end
+		if finalCutProColorBoardRadioGroup == nil then
+			displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Change to correct panel:
+		--------------------------------------------------------------------------------
+		if whichPanel ~= nil then
+			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Could not open specific Color Board panel.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Correct Puck:
+		--------------------------------------------------------------------------------
+		colorBoardPanel = finalCutProColorBoardRadioGroup
+		local whichPuckCount = 1
+		for i=1, colorBoardPanel:attributeValue("AXParent"):attributeValueCount("AXChildren") do
+			if colorBoardPanel:attributeValue("AXParent")[i]:attributeValue("AXRole") == "AXButton" then
+				if whichPuckCount == whichPuck then
+					whichPuckButton = i
+					goto colorBoardSelectPuckExit
+				else
+					whichPuckCount = whichPuckCount + 1
+				end
+			end
+		end
+		::colorBoardSelectPuckExit::
+
+		if not colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXFocused") then
+			local colorBoardPosition = {}
+			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
+			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
+			ninjaMouseClick(colorBoardPosition)
+		end
+
+		--------------------------------------------------------------------------------
+		-- If a Direction is specified:
+		--------------------------------------------------------------------------------
+		if whichDirection ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Get shortcut key from plist, press and hold if required:
+			--------------------------------------------------------------------------------
+			releaseColorBoardDown = false
+			timer.doUntil(function() return releaseColorBoardDown end, function()
+				if whichDirection == "up" then
+					if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
+						keyStrokeFromPlist("ColorBoard-NudgePuckUp")
+					end
+				end
+				if whichDirection == "down" then
+					if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
+						keyStrokeFromPlist("ColorBoard-NudgePuckDown")
+					end
+				end
+				if whichDirection == "left" then
+					if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
+						keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
+					end
+				end
+				if whichDirection == "right" then
+					if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
+						keyStrokeFromPlist("ColorBoard-NudgePuckRight")
+					end
+				end
+			end, eventtap.keyRepeatInterval())
+
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - PUCK CONTROL VIA MOUSE:
+	--------------------------------------------------------------------------------
+	function colorBoardMousePuck(whichPuck, whichPanel)
+
+		--------------------------------------------------------------------------------
+		-- Local Variables:
+		--------------------------------------------------------------------------------
+		local colorBoardOriginalMousePoint = mouse.getAbsolutePosition()
+
+		--------------------------------------------------------------------------------
+		-- Make sure Nudge Shortcuts are allocated:
+		--------------------------------------------------------------------------------
+		local nudgeShortcutMissing = false
+		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if nudgeShortcutMissing then
+			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- The first button is actually the reset button:
+		--------------------------------------------------------------------------------
+		whichPuck = whichPuck + 1
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Final Cut Pro Color Board Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		if finalCutProColorBoardRadioGroup == nil then
+
+			--------------------------------------------------------------------------------
+			-- Open Color Board:
+			--------------------------------------------------------------------------------
+			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
+
+
+			--------------------------------------------------------------------------------
+			-- Try again:
+			--------------------------------------------------------------------------------
+			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+
+		end
+		if finalCutProColorBoardRadioGroup == nil then
+			displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Change to correct panel:
+		--------------------------------------------------------------------------------
+		if whichPanel ~= nil then
+			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Could not open specific Color Board panel.")
+				return "Failed"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Correct Puck:
+		--------------------------------------------------------------------------------
+		colorBoardPanel = finalCutProColorBoardRadioGroup
+		local whichPuckCount = 1
+		for i=1, colorBoardPanel:attributeValue("AXParent"):attributeValueCount("AXChildren") do
+			if colorBoardPanel:attributeValue("AXParent")[i]:attributeValue("AXRole") == "AXButton" then
+				if whichPuckCount == whichPuck then
+					whichPuckButton = i
+					goto colorBoardSelectPuckExit
+				else
+					whichPuckCount = whichPuckCount + 1
+				end
+			end
+		end
+		::colorBoardSelectPuckExit::
+
+		if not colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXFocused") then
+			local colorBoardPosition = {}
+			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
+			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
+			ninjaMouseClick(colorBoardPosition)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get shortcut key from plist, press and hold if required:
+		--------------------------------------------------------------------------------
+		releaseMouseColorBoardDown = false
+		timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+
+			local currentMousePoint = mouse.getAbsolutePosition()
+
+			if currentMousePoint['y'] < colorBoardOriginalMousePoint['y'] then
+				keyStrokeFromPlist("ColorBoard-NudgePuckUp")
+				colorBoardOriginalMousePoint = currentMousePoint
+			end
+			if currentMousePoint['y'] > colorBoardOriginalMousePoint['y'] then
+				keyStrokeFromPlist("ColorBoard-NudgePuckDown")
+				colorBoardOriginalMousePoint = currentMousePoint
+			end
+
+			if whichPanel == 1 then
+				if currentMousePoint['x'] < colorBoardOriginalMousePoint['x'] then
+					keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
+					colorBoardOriginalMousePoint = currentMousePoint
+				end
+				if currentMousePoint['x'] > colorBoardOriginalMousePoint['x'] then
+					keyStrokeFromPlist("ColorBoard-NudgePuckRight")
+					colorBoardOriginalMousePoint = currentMousePoint
+				end
+			end
+
+		end, 0.00001)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+	--------------------------------------------------------------------------------
+	function colorBoardMousePuckRelease()
+		releaseMouseColorBoardDown = true
+	end
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - RELEASE KEYPRESS:
+	--------------------------------------------------------------------------------
+	function colorBoardSelectPuckRelease()
+		releaseColorBoardDown = true
+	end
+
+--------------------------------------------------------------------------------
+-- EFFECTS/TRANSITIONS/TITLES/GENERATOR RELATED:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TRANSITIONS SHORTCUT PRESSED:
+	--------------------------------------------------------------------------------
+	function transitionsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local currentShortcut = nil
+		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive") end
+		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+
+		if currentShortcut == nil then
+			displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		if finalCutProTimelineButtonBar == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find Transitions Browser Button:
+		--------------------------------------------------------------------------------
+		local whichRadioGroup = nil
+		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
+				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
+					whichRadioGroup = i
+				end
+			end
+		end
+		if whichRadioGroup == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Effects or Transitions Panel Open?
+		--------------------------------------------------------------------------------
+		local whichPanelActivated = "None"
+		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
+			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
+			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Transitions panel is open:
+		--------------------------------------------------------------------------------
+		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][2]
+		if effectsBrowserButton ~= nil then
+			if effectsBrowserButton:attributeValue("AXValue") == 0 then
+				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
+				if presseffectsBrowserButtonResult == nil then
+					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+		else
+			displayErrorMessage("Unable to activate Video Effects Panel.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Effects" is selected:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Group:
+			--------------------------------------------------------------------------------
+			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserSplitGroup = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+						whichEffectsBrowserSplitGroup = i
+					end
+				end
+			end
+			if whichEffectsBrowserSplitGroup == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserPopupButton = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
+					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
+						whichEffectsBrowserPopupButton = i
+					end
+				end
+			end
+			if whichEffectsBrowserPopupButton == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Check that "Installed Effects" is selected:
+			--------------------------------------------------------------------------------
+			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
+			if installedEffectsPopup ~= nil then
+				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+					installedEffectsPopup:performAction("AXPress")
+					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
+					installedEffectsPopupMenuItem:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		local effectsSearchCancelButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+			end
+		end
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All':
+		--------------------------------------------------------------------------------
+		local allVideoAndAudioButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+					end
+				end
+			end
+		end
+		if allVideoAndAudioButton ~= nil then
+			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+		else
+
+			--------------------------------------------------------------------------------
+			-- Make sure Transitions Browser Sidebar is Visible:
+			--------------------------------------------------------------------------------
+			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
+			if effectsBrowserSidebar ~= nil then
+				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+					effectsBrowserSidebar:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Click 'All Video & Audio':
+			--------------------------------------------------------------------------------
+			local allVideoAndAudioButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+						end
+					end
+				end
+			end
+			if allVideoAndAudioButton ~= nil then
+				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+			else
+				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay...
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Perform Search:
+		--------------------------------------------------------------------------------
+		local effectsSearchField = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
+		if effectsSearchField ~= nil then
+			effectsSearchField:setAttributeValue("AXValue", currentShortcut)
+			effectsSearchField[1]:performAction("AXPress")
+		else
+			displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure scroll bar is at top:
+		--------------------------------------------------------------------------------
+		local effectsScrollBar = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4][2] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][2][1] ~= nil then
+						effectsScrollBar = finalCutProEffectsTransitionsBrowserGroup[1][4][2][1]
+					end
+				end
+			end
+		end
+		if effectsScrollBar ~= nil then
+			effectsScrollBar:setAttributeValue("AXValue", 0)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get First Item in Browser:
+		--------------------------------------------------------------------------------
+		local effectButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
+						effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If Needed, Search Again Without Text Before First Dash:
+		--------------------------------------------------------------------------------
+		if effectButton == nil then
+
+			--------------------------------------------------------------------------------
+			-- Remove first dash:
+			--------------------------------------------------------------------------------
+			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+
+			writeToConsole("currentShortcut: " .. currentShortcut)
+
+			--------------------------------------------------------------------------------
+			-- Perform Search:
+			--------------------------------------------------------------------------------
+			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
+			if effectsSearchField ~= nil then
+				effectsSearchField:setAttributeValue("AXValue", currentShortcut)
+				effectsSearchField[1]:performAction("AXPress")
+			else
+				displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get First Item in Browser:
+			--------------------------------------------------------------------------------
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
+							effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
+						end
+					end
+				end
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Double Click on First Item in Browser:
+		--------------------------------------------------------------------------------
+		if effectButton ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Original Mouse Position:
+			--------------------------------------------------------------------------------
+			local originalMousePosition = mouse.getAbsolutePosition()
+
+			--------------------------------------------------------------------------------
+			-- Get centre of button:
+			--------------------------------------------------------------------------------
+			local effectButtonPosition = {}
+			effectButtonPosition['x'] = effectButton:attributeValue("AXPosition")['x'] + (effectButton:attributeValue("AXSize")['w'] / 2)
+			effectButtonPosition['y'] = effectButton:attributeValue("AXPosition")['y'] + (effectButton:attributeValue("AXSize")['h'] / 2)
+
+			--------------------------------------------------------------------------------
+			-- Double Click:
+			--------------------------------------------------------------------------------
+			doubleLeftClick(effectButtonPosition)
+
+			--------------------------------------------------------------------------------
+			-- Put it back:
+			--------------------------------------------------------------------------------
+			mouse.setAbsolutePosition(originalMousePosition)
+
+		else
+			displayErrorMessage("Unable to locate effect.\n\nError occured in transitionsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			local effectsSearchCancelButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+					effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+				end
+			end
+			if effectsSearchCancelButton ~= nil then
+				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+				if effectsSearchCancelButtonResult == nil then
+					displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Restore Effects or Transitions Panel:
+			--------------------------------------------------------------------------------
+			if whichPanelActivated == "Effects" then
+				finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
+			elseif whichPanelActivated == "None" then
+				finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
+			end
+
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			showTouchbar()
+
+		end)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- EFFECTS SHORTCUT PRESSED:
+	--------------------------------------------------------------------------------
+	function effectsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local currentShortcut = nil
+		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.effectsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.effectsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFive") end
+		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+
+		if currentShortcut == nil then
+			displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		if finalCutProTimelineButtonBar == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find Effects Browser Button:
+		--------------------------------------------------------------------------------
+		local whichRadioGroup = nil
+		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
+				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
+					whichRadioGroup = i
+				end
+			end
+		end
+		if whichRadioGroup == nil then
+			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
+			return "Failed"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Effects or Transitions Panel Open?
+		--------------------------------------------------------------------------------
+		local whichPanelActivated = "None"
+		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
+			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
+			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Video Effects panel is open:
+		--------------------------------------------------------------------------------
+		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][1]
+		if effectsBrowserButton ~= nil then
+			if effectsBrowserButton:attributeValue("AXValue") == 0 then
+				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
+				if presseffectsBrowserButtonResult == nil then
+					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+		else
+			displayErrorMessage("Unable to activate Video Effects Panel.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Effects" is selected:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Group:
+			--------------------------------------------------------------------------------
+			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserSplitGroup = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+						whichEffectsBrowserSplitGroup = i
+					end
+				end
+			end
+			if whichEffectsBrowserSplitGroup == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Transitions Browser Split Group:
+			--------------------------------------------------------------------------------
+			local whichEffectsBrowserPopupButton = nil
+			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
+				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
+					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
+						whichEffectsBrowserPopupButton = i
+					end
+				end
+			end
+			if whichEffectsBrowserPopupButton == nil then
+				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Check that "Installed Effects" is selected:
+			--------------------------------------------------------------------------------
+			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
+			if installedEffectsPopup ~= nil then
+				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+					installedEffectsPopup:performAction("AXPress")
+					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
+					installedEffectsPopupMenuItem:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		local effectsSearchCancelButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+			end
+		end
+		if effectsSearchCancelButton ~= nil then
+			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+			if effectsSearchCancelButtonResult == nil then
+				displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Video & Audio':
+		--------------------------------------------------------------------------------
+		local allVideoAndAudioButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+					end
+				end
+			end
+		end
+		if allVideoAndAudioButton ~= nil then
+			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+		else
+
+			--------------------------------------------------------------------------------
+			-- Make sure Effects Browser Sidebar is Visible:
+			--------------------------------------------------------------------------------
+			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
+			if effectsBrowserSidebar ~= nil then
+				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+					effectsBrowserSidebar:performAction("AXPress")
+				end
+			else
+				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Click 'All Video & Audio':
+			--------------------------------------------------------------------------------
+			local allVideoAndAudioButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
+							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
+						end
+					end
+				end
+			end
+			if allVideoAndAudioButton ~= nil then
+				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+			else
+				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay...
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Perform Search:
+		--------------------------------------------------------------------------------
+		local effectsSearchField = nil
+		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
+		if effectsSearchField ~= nil then
+			effectsSearchField:setAttributeValue("AXValue", currentShortcut)
+			effectsSearchField[1]:performAction("AXPress")
+		else
+			displayErrorMessage("Unable to type search request in search box.\n\nError occured in effectsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure scroll bar is at top:
+		--------------------------------------------------------------------------------
+		local effectsScrollBar = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4][2] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][2][1] ~= nil then
+						effectsScrollBar = finalCutProEffectsTransitionsBrowserGroup[1][4][2][1]
+					end
+				end
+			end
+		end
+		if effectsScrollBar ~= nil then
+			effectsScrollBar:setAttributeValue("AXValue", 0)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Double click on effect:
+		--------------------------------------------------------------------------------
+		local effectButton = nil
+		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
+						effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If Needed, Search Again Without Text Before First Dash:
+		--------------------------------------------------------------------------------
+		if effectButton == nil then
+
+			--------------------------------------------------------------------------------
+			-- Remove first dash:
+			--------------------------------------------------------------------------------
+			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+
+			writeToConsole("currentShortcut: " .. currentShortcut)
+
+			--------------------------------------------------------------------------------
+			-- Perform Search:
+			--------------------------------------------------------------------------------
+			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
+			if effectsSearchField ~= nil then
+				effectsSearchField:setAttributeValue("AXValue", currentShortcut)
+				effectsSearchField[1]:performAction("AXPress")
+			else
+				displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get First Item in Browser:
+			--------------------------------------------------------------------------------
+			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
+					if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
+						if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
+							effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
+						end
+					end
+				end
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get First Item in Browser:
+		--------------------------------------------------------------------------------
+		if effectButton ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Original Mouse Position:
+			--------------------------------------------------------------------------------
+			local originalMousePosition = mouse.getAbsolutePosition()
+
+			--------------------------------------------------------------------------------
+			-- Get centre of button:
+			--------------------------------------------------------------------------------
+			local effectButtonPosition = {}
+			effectButtonPosition['x'] = effectButton:attributeValue("AXPosition")['x'] + (effectButton:attributeValue("AXSize")['w'] / 2)
+			effectButtonPosition['y'] = effectButton:attributeValue("AXPosition")['y'] + (effectButton:attributeValue("AXSize")['h'] / 2)
+
+			--------------------------------------------------------------------------------
+			-- Double Click:
+			--------------------------------------------------------------------------------
+			doubleLeftClick(effectButtonPosition)
+
+			--------------------------------------------------------------------------------
+			-- Put it back:
+			--------------------------------------------------------------------------------
+			mouse.setAbsolutePosition(originalMousePosition)
+
+		else
+			displayErrorMessage("Unable to locate effect.\n\nError occured in effectsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			local effectsSearchCancelButton = nil
+			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
+				if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
+					effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
+				end
+			end
+			if effectsSearchCancelButton ~= nil then
+				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+				if effectsSearchCancelButtonResult == nil then
+					displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Restore Effects or Transitions Panel:
+			--------------------------------------------------------------------------------
+			if whichPanelActivated == "None" then
+				finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
+			elseif whichPanelActivated == "Transitions" then
+				finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
+			end
+
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			showTouchbar()
+
+		end)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TITLES SHORTCUT PRESSED:
+	--------------------------------------------------------------------------------
+	function titlesShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local currentShortcut = nil
+		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.titlesShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.titlesShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFive") end
+		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+
+		if currentShortcut == nil then
+			displayMessage("There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		if finalCutProBrowserButtonBar == nil then
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Button IDs:
+		--------------------------------------------------------------------------------
+		local libariesButtonID = nil
+		local photosAudioButtonID = nil
+		local titlesGeneratorsButtonID = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
+
+			end
+		end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Browser Panel is Open?
+		--------------------------------------------------------------------------------
+		local whichBrowserPanelWasOpen = nil
+		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
+		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+
+		--------------------------------------------------------------------------------
+		-- If Titles & Generators is Closed, let's open it:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSplitGroup = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				titlesGeneratorsSplitGroup = i
+				goto titlesGeneratorsSplitGroupExit
+			end
+		end
+		::titlesGeneratorsSplitGroupExit::
+		if titlesGeneratorsSplitGroup == nil then
+			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Is the Side Bar Closed?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSideBarClosed = true
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
+					titlesGeneratorsSideBarClosed = false
+				end
+			end
+		end
+		if titlesGeneratorsSideBarClosed then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Titles is selected:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
+		if result == nil then
+			displayErrorMessage("Unable to select Titles from List.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Popup Button:
+		--------------------------------------------------------------------------------
+		local titlesPopupButton = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+					titlesPopupButton = i
+					goto titlesGeneratorsDropdownExit
+				end
+			end
+		end
+		if titlesPopupButton == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsDropdownExit::
+
+		--------------------------------------------------------------------------------
+		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
+		--------------------------------------------------------------------------------
+		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
+			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay...
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Group:
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsGroup = nil
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+							titlesGeneratorsGroup = i
+							goto titlesGeneratorsGroupExit
 						end
 					end
 				end
 			end
 		end
-		::filmstripGroupDone::
-		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
-			return "Failed"
+		if titlesGeneratorsGroup == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsGroupExit::
+
+		--------------------------------------------------------------------------------
+		-- Enter text into Search box:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
+		if result == nil then
+			displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Split Group Two:
+		-- Trigger Search:
 		--------------------------------------------------------------------------------
-		local whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroupTwo = i
-					goto filmstripSplitGroupTwoDone
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
+		if result == nil then
+			displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Selected Title:
+		--------------------------------------------------------------------------------
+		local selectedTitle = nil
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
+						selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
+					end
 				end
 			end
 		end
-		::filmstripSplitGroupTwoDone::
-		if whichSplitGroupTwo == nil then
-			displayErrorMessage("Unable to locate Split Group Two.")
+
+		--------------------------------------------------------------------------------
+		-- If Needed, Search Again Without Text Before First Dash:
+		--------------------------------------------------------------------------------
+		if selectedTitle == nil then
+
+			--------------------------------------------------------------------------------
+			-- Remove first dash:
+			--------------------------------------------------------------------------------
+			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+
+			--------------------------------------------------------------------------------
+			-- Enter text into Search box:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
+			if result == nil then
+				displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Trigger Search:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Selected Title:
+			--------------------------------------------------------------------------------
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
+							selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
+						end
+					end
+				end
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click First Item in Browser:
+		--------------------------------------------------------------------------------
+		if selectedTitle ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Original Mouse Position:
+			--------------------------------------------------------------------------------
+			local originalMousePosition = mouse.getAbsolutePosition()
+
+			--------------------------------------------------------------------------------
+			-- Get centre of button:
+			--------------------------------------------------------------------------------
+			local selectedTitlePosition = {}
+			selectedTitlePosition['x'] = selectedTitle:attributeValue("AXPosition")['x'] + (selectedTitle:attributeValue("AXSize")['w'] / 2)
+			selectedTitlePosition['y'] = selectedTitle:attributeValue("AXPosition")['y'] + (selectedTitle:attributeValue("AXSize")['h'] / 2)
+
+			--------------------------------------------------------------------------------
+			-- Double Click:
+			--------------------------------------------------------------------------------
+			doubleLeftClick(selectedTitlePosition)
+
+			--------------------------------------------------------------------------------
+			-- Put it back:
+			--------------------------------------------------------------------------------
+			mouse.setAbsolutePosition(originalMousePosition)
+
+		else
+			displayErrorMessage("Unable to locate Title.\n\nError occured in titlesShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Button IDs Again:
+			--------------------------------------------------------------------------------
+			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+					--------------------------------------------------------------------------------
+					-- Button 1: Libraries
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+						libariesButtonID = i
+					end
+
+					--------------------------------------------------------------------------------
+					-- Button 2: Photos/Audio
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+						photosAudioButtonID = i
+					end
+
+					--------------------------------------------------------------------------------
+					-- Button 3: Titles/Transitions
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+						titlesGeneratorsButtonID = i
+					end
+
+				end
+			end
+			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+				displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Go back to previously selected panel:
+			--------------------------------------------------------------------------------
+			if whichBrowserPanelWasOpen == "Library" then
+				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
+				if result == nil then
+					displayMessage("Unable to press Libraries Button.\n\nError occured in titlesShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
+				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
+				if result == nil then
+					displayMessage("Unable to press Photos & Audio Button.\n\nError occured in titlesShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+			if titlesGeneratorsSideBarClosed then
+				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+				if result == nil then
+					displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Restore Touch Bar:
+			--------------------------------------------------------------------------------
+			showTouchbar()
+		end)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- GENERATORS SHORTCUT PRESSED:
+	--------------------------------------------------------------------------------
+	function generatorsShortcut(whichShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local currentShortcut = nil
+		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive") end
+		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+
+		if currentShortcut == nil then
+			displayMessage("There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Button Bar:
+		--------------------------------------------------------------------------------
+		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		if finalCutProBrowserButtonBar == nil then
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Button IDs:
+		--------------------------------------------------------------------------------
+		local libariesButtonID = nil
+		local photosAudioButtonID = nil
+		local titlesGeneratorsButtonID = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+				--------------------------------------------------------------------------------
+				-- Button 1: Libraries
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+					libariesButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 2: Photos/Audio
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+					photosAudioButtonID = i
+				end
+
+				--------------------------------------------------------------------------------
+				-- Button 3: Titles/Transitions
+				--------------------------------------------------------------------------------
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+					titlesGeneratorsButtonID = i
+				end
+
+			end
+		end
+		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Browser Panel is Open?
+		--------------------------------------------------------------------------------
+		local whichBrowserPanelWasOpen = nil
+		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
+		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+
+		--------------------------------------------------------------------------------
+		-- If Titles & Generators is Closed, let's open it:
+		--------------------------------------------------------------------------------
+		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSplitGroup = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				titlesGeneratorsSplitGroup = i
+				goto titlesGeneratorsSplitGroupExit
+			end
+		end
+		::titlesGeneratorsSplitGroupExit::
+		if titlesGeneratorsSplitGroup == nil then
+			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Is the Side Bar Closed?
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsSideBarClosed = true
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
+					titlesGeneratorsSideBarClosed = false
+				end
+			end
+		end
+		if titlesGeneratorsSideBarClosed then
+			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find Generators Row:
+		--------------------------------------------------------------------------------
+		local generatorsRow = nil
+		local foundTitles = false
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][i][1]:attributeValue("AXRole") == "AXGroup" then
+				if foundTitles == false then
+					foundTitles = true
+				else
+					generatorsRow = i
+					goto generatorsRowExit
+				end
+			end
+		end
+		::generatorsRowExit::
+		if generatorsRow == nil then
+			displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Generators Row:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
+		if result == nil then
+			displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Popup Button:
+		--------------------------------------------------------------------------------
+		local titlesPopupButton = nil
+		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+					titlesPopupButton = i
+					goto titlesGeneratorsDropdownExit
+				end
+			end
+		end
+		if titlesPopupButton == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsDropdownExit::
+
+		--------------------------------------------------------------------------------
+		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
+		--------------------------------------------------------------------------------
+		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
+			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay...
+		--------------------------------------------------------------------------------
+		sleep(0.1)
+
+		--------------------------------------------------------------------------------
+		-- Get Titles/Generators Group:
+		--------------------------------------------------------------------------------
+		local titlesGeneratorsGroup = nil
+		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+							titlesGeneratorsGroup = i
+							goto titlesGeneratorsGroupExit
+						end
+					end
+				end
+			end
+		end
+		if titlesGeneratorsGroup == nil then
+			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+		::titlesGeneratorsGroupExit::
+
+		--------------------------------------------------------------------------------
+		-- Enter text into Search box:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
+		if result == nil then
+			displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Trigger Search:
+		--------------------------------------------------------------------------------
+		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
+		if result == nil then
+			displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Selected Title:
+		--------------------------------------------------------------------------------
+		local selectedTitle = nil
+		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
+						selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If Needed, Search Again Without Text Before First Dash:
+		--------------------------------------------------------------------------------
+		if selectedTitle == nil then
+
+			--------------------------------------------------------------------------------
+			-- Remove first dash:
+			--------------------------------------------------------------------------------
+			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+
+			--------------------------------------------------------------------------------
+			-- Enter text into Search box:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
+			if result == nil then
+				displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Trigger Search:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Selected Title:
+			--------------------------------------------------------------------------------
+			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
+				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
+					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
+						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
+							selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
+						end
+					end
+				end
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click First Item in Browser:
+		--------------------------------------------------------------------------------
+		if selectedTitle ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Original Mouse Position:
+			--------------------------------------------------------------------------------
+			local originalMousePosition = mouse.getAbsolutePosition()
+
+			--------------------------------------------------------------------------------
+			-- Get centre of button:
+			--------------------------------------------------------------------------------
+			local selectedTitlePosition = {}
+			selectedTitlePosition['x'] = selectedTitle:attributeValue("AXPosition")['x'] + (selectedTitle:attributeValue("AXSize")['w'] / 2)
+			selectedTitlePosition['y'] = selectedTitle:attributeValue("AXPosition")['y'] + (selectedTitle:attributeValue("AXSize")['h'] / 2)
+
+			--------------------------------------------------------------------------------
+			-- Double Click:
+			--------------------------------------------------------------------------------
+			doubleLeftClick(selectedTitlePosition)
+
+			--------------------------------------------------------------------------------
+			-- Put it back:
+			--------------------------------------------------------------------------------
+			mouse.setAbsolutePosition(originalMousePosition)
+
+		else
+			displayErrorMessage("Unable to locate Generator.\n\nError occured in generatorsShortcut().")
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Add a bit of a delay:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get Button IDs Again:
+			--------------------------------------------------------------------------------
+			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
+
+					--------------------------------------------------------------------------------
+					-- Button 1: Libraries
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
+						libariesButtonID = i
+					end
+
+					--------------------------------------------------------------------------------
+					-- Button 2: Photos/Audio
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
+						photosAudioButtonID = i
+					end
+
+					--------------------------------------------------------------------------------
+					-- Button 3: Titles/Transitions
+					--------------------------------------------------------------------------------
+					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
+						titlesGeneratorsButtonID = i
+					end
+
+				end
+			end
+			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
+				displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+				showTouchbar()
+				return "Fail"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Go back to previously selected panel:
+			--------------------------------------------------------------------------------
+			if whichBrowserPanelWasOpen == "Library" then
+				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
+				if result == nil then
+					displayMessage("Unable to press Libraries Button.\n\nError occured in generatorsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
+				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
+				if result == nil then
+					displayMessage("Unable to press Photos & Audio Button.\n\nError occured in generatorsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+			if titlesGeneratorsSideBarClosed then
+				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
+				if result == nil then
+					displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+					showTouchbar()
+					return "Fail"
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Restore Touch Bar:
+			--------------------------------------------------------------------------------
+			showTouchbar()
+		end)
+
+	end
+
+--------------------------------------------------------------------------------
+-- OTHER SHORTCUTS:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE TOUCH BAR:
+	--------------------------------------------------------------------------------
+	function toggleTouchBar()
+
+		--------------------------------------------------------------------------------
+		-- Check for compatibility:
+		--------------------------------------------------------------------------------
+		if not touchBarSupported then
+			displayMessage("Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Settings:
+		--------------------------------------------------------------------------------
+		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+
+		--------------------------------------------------------------------------------
+		-- Toggle Touch Bar:
+		--------------------------------------------------------------------------------
+		setTouchBarLocation()
+		touchBarWindow:toggle()
+
+		--------------------------------------------------------------------------------
+		-- Update Settings:
+		--------------------------------------------------------------------------------
+		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CUT AND SWITCH MULTI-CAM:
+	--------------------------------------------------------------------------------
+	function cutAndSwitchMulticam(whichMode, whichAngle)
+
+		if whichMode == "Audio" then
+			if not keyStrokeFromPlist("MultiAngleEditStyleAudio") then
+				displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				return "Failed"
+			end
+		end
+
+		if whichMode == "Video" then
+			if not keyStrokeFromPlist("MultiAngleEditStyleVideo") then
+				displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				return "Failed"
+			end
+		end
+
+		if whichMode == "Both" then
+			if not keyStrokeFromPlist("MultiAngleEditStyleAudioVideo") then
+				displayMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				return "Failed"
+			end
+		end
+
+		if not keyStrokeFromPlist("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
+			displayMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+			return "Failed"
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- MOVE TO PLAYHEAD:
+	--------------------------------------------------------------------------------
+	function moveToPlayhead()
+
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+		if enableClipboardHistory then clipboardTimer:stop() end
+
+		if not keyStrokeFromPlist("Cut") then
+			displayErrorMessage("Failed to trigger the 'Cut' Shortcut.")
+			return "Failed"
+		end
+
+		if not keyStrokeFromPlist("Paste") then
+			displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+			return "Failed"
+		end
+
+		if enableClipboardHistory then
+			sleep(1) -- Not sure why this is needed, but it is.
+			clipboardWatcher()
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- HIGHLIGHT FINAL CUT PRO BROWSER PLAYHEAD:
+	--------------------------------------------------------------------------------
+	function highlightFCPXBrowserPlayhead()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Split Group:
+		--------------------------------------------------------------------------------
+		browserSplitGroup = getFinalCutProBrowserSplitGroup()
+		if browserSplitGroup == nil then
+			writeToConsole("ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		local whichGroup = nil
+		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+			if browserSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				whichGroup = i
+			end
+		end
+		if whichGroup == nil then
+			writeToConsole("ERROR: Unable to locate Group in highlightFCPXBrowserPlayhead().")
 			return "Failed"
 		end
 
@@ -8727,749 +10413,369 @@ function singleMatchFrame()
 		-- Which Scroll Area:
 		--------------------------------------------------------------------------------
 		local whichScrollArea = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+		for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+			if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
 				whichScrollArea = i
 			end
 		end
+
 		if whichScrollArea == nil then
-			displayErrorMessage("Unable to locate Scroll Area.")
-			return "Failed"
-		end
 
-		--------------------------------------------------------------------------------
-		-- Which Group Two:
-		--------------------------------------------------------------------------------
-		local whichGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroupTwo = i
-			end
-		end
-		if whichGroupTwo == nil then
-			displayErrorMessage("Unable to locate Group Two.")
-			return "Failed"
-		end
+			--------------------------------------------------------------------------------
+			-- LIST VIEW:
+			--------------------------------------------------------------------------------
 
-		--------------------------------------------------------------------------------
-		-- Which is Persistent Playhead:
-		--------------------------------------------------------------------------------
-		local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-		--------------------------------------------------------------------------------
-		-- Get Description Based off Playhead:
-		--------------------------------------------------------------------------------
-		persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-		persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-		currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-		if currentElement:attributeValue("AXRole") == "AXHandle" then
-			currentElement = currentElement:attributeValue("AXParent")
-		end
-
-		oneElementBack = currentElement:attributeValue("AXParent")
-
-		local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-		local whichSearchGroup = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-			if whichSearchGroup == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichSearchGroup = i
-					goto searchGroupDone
+				--------------------------------------------------------------------------------
+				-- Which Split Group:
+				--------------------------------------------------------------------------------
+				local whichSplitGroup = nil
+				for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+					if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:658" then
+							whichSplitGroup = i
+							goto exitWhichSplitGroupLoop
+						end
+					end
 				end
-			end
-		end
-		::searchGroupDone::
-		if whichSearchGroup == nil then
-			displayErrorMessage("Unable to locate Search Group.")
-			return "Failed"
-		end
+				::exitWhichSplitGroupLoop::
+				if whichSplitGroup == nil then
+					writeToConsole("ERROR: Unable to locate Split Group in highlightFCPXBrowserPlayhead().")
+					return "Failed"
+				end
 
-		local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-		local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
+				--------------------------------------------------------------------------------
+				-- Which Group 2:
+				--------------------------------------------------------------------------------
+				local whichGroupTwo = nil
+				for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
+					if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+						if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:590" then
+							whichGroupTwo = i
+							goto exitWhichGroupTwoLoop
+						end
+					end
+				end
+				::exitWhichGroupTwoLoop::
+				if whichGroupTwo == nil then
+					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
+					return "Failed"
+				end
 
-		--------------------------------------------------------------------------------
-		-- Set the search field to Title of the Selected Clip:
-		--------------------------------------------------------------------------------
-		local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-		if searchTextFieldResult == nil then
-			displayErrorMessage("Unable to set Search Field.")
-		end
+				--------------------------------------------------------------------------------
+				-- Which Value Indicator:
+				--------------------------------------------------------------------------------
+				local whichValueIndicator = nil
+				whichValueIndicator = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") - 1
+				persistentPlayhead = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo][whichValueIndicator]
 
-		--------------------------------------------------------------------------------
-		-- Trigger the search:
-		--------------------------------------------------------------------------------
-		local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-		if searchTextFieldActionResult == nil then
-			displayErrorMessage("Unable to trigger Search.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Highlight Browser Playhead:
-		--------------------------------------------------------------------------------
-		highlightFCPXBrowserPlayhead()
-
-	end
-end
-
---------------------------------------------------------------------------------
--- FCPX SAVE KEYWORDS:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function fcpxSaveKeywordSearches(whichButton)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Open FCPX Keyword Editor:
-	--------------------------------------------------------------------------------
-	fcpxOpenKeywordEditorResult = fcpxOpenKeywordEditor()
-	if fcpxOpenKeywordEditorResult == "Failed" then
-		displayErrorMessage("Unable to open Keyword Editor.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
-		if fcpxElements[keywordDisclosureTriangle] == nil then
-			displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
-			return "Failed"
 		else
-			local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-			if keywordDisclosureTriangleResult == nil then
-				displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
-				return "Failed"
-			end
-		end
-	end
 
-	--------------------------------------------------------------------------------
-	-- Get Values from the Keyword Editor:
-	--------------------------------------------------------------------------------
-	local savedKeywordValues = {}
-	local favoriteCount = 1
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
-			savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
-			favoriteCount = favoriteCount + 1
-		end
-	end
+			--------------------------------------------------------------------------------
+			-- FILMSTRIP VIEW:
+			--------------------------------------------------------------------------------
 
-	--------------------------------------------------------------------------------
-	-- Save Values to Settings:
-	--------------------------------------------------------------------------------
-	local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
-	if savedKeywords == nil then savedKeywords = {} end
-	for i=1, 9 do
-		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-			savedKeywords['Preset ' .. tostring(whichButton)] = {}
-		end
-		savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
-	end
-	hs.settings.set("fcpxHacks.savedKeywords", savedKeywords)
-
-	--------------------------------------------------------------------------------
-	-- Saved:
-	--------------------------------------------------------------------------------
-	hs.alert.closeAll(0)
-	hs.alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton) .. ".")
-
-end
-
---------------------------------------------------------------------------------
--- FCPX RESTORE KEYWORDS:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function fcpxRestoreKeywordSearches(whichButton)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get Values from FCPX's plist:
-	--------------------------------------------------------------------------------
-	local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
-	local restoredKeywordValues = {}
-
-	if savedKeywords == nil then
-		displayMessage("It doesn't look like you've saved any keyword presets yet?")
-		return "Fail"
-	end
-	if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-		displayMessage("It doesn't look like you've saved anything to this keyword preset yet?")
-		return "Fail"
-	end
-	for i=1, 9 do
-		restoredKeywordValues[i] = savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)]
-	end
-
-	--------------------------------------------------------------------------------
-	-- Open FCPX Keyword Editor:
-	--------------------------------------------------------------------------------
-	fcpxOpenKeywordEditorResult = fcpxOpenKeywordEditor()
-	if fcpxOpenKeywordEditorResult == "Failed" then
-		displayErrorMessage("Unable to open Keyword Editor.")
-		return "Failed"
-	else
-		sleep(0.5)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		local keywordDisclosureTriangle = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
-
-		local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-		if keywordDisclosureTriangleResult == nil then
-			displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restore Values to Keyword Editor:
-	--------------------------------------------------------------------------------
-	local favoriteCount = 1
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
-			currentKeywordSelection = fcpxElements[i]
-
-			setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-			keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-			hs.eventtap.keyStroke({""}, "return")
-			sleep(0.2)
-
-			favoriteCount = favoriteCount + 1
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Successfully Restored:
-	--------------------------------------------------------------------------------
-	hs.alert.closeAll(0)
-	hs.alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton) .. ".")
-
-end
-
---------------------------------------------------------------------------------
--- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
---------------------------------------------------------------------------------
-function matchFrameThenHighlightFCPXBrowserPlayhead()
-	--------------------------------------------------------------------------------
-	-- Delete Any Highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Click on 'Reveal in Browser':
-	--------------------------------------------------------------------------------
-	resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-
-	--------------------------------------------------------------------------------
-	-- If it worked then...
-	--------------------------------------------------------------------------------
-	if resultRevealInBrowser then
-		--------------------------------------------------------------------------------
-		-- Highlight FCPX Browser Playhead:
-		--------------------------------------------------------------------------------
-		highlightFCPXBrowserPlayhead()
-	else
-		--------------------------------------------------------------------------------
-		-- Error:
-		--------------------------------------------------------------------------------
-		displayErrorMessage("Unable to trigger Reveal in Browser.")
-	end
-end
-
---------------------------------------------------------------------------------
--- FCPX COLOR BOARD PUCK SELECTION:
---------------------------------------------------------------------------------
-function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
-
-	--------------------------------------------------------------------------------
-	-- Make sure Nudge Shortcuts are allocated:
-	--------------------------------------------------------------------------------
-	local nudgeShortcutMissing = false
-	if whichDirection == "up" then
-		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then
-			nudgeShortcutMissing = true
-		end
-	end
-	if whichDirection == "down" then
-		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then
-			nudgeShortcutMissing = true
-		end
-	end
-	if whichDirection == "left" then
-		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then
-			nudgeShortcutMissing = true
-		end
-	end
-	if whichDirection == "right" then
-		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then
-			nudgeShortcutMissing = true
-		end
-	end
-	if nudgeShortcutMissing then
-		displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- The first button is actually the reset button:
-	--------------------------------------------------------------------------------
-	whichPuck = whichPuck + 1
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro:
-	--------------------------------------------------------------------------------
-	sw = ax.applicationElement(hs.appfinder.appFromName("Final Cut Pro"))
-
-	--------------------------------------------------------------------------------
-	-- Find Color Button:
-	--------------------------------------------------------------------------------
-    colorBoardColorButton = sw:searchPath({
-        { role = "AXWindow", Title = "Final Cut Pro"},
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXRadioGroup", Identifier = "_NS:128"},
-        { role = "AXRadioButton", Title = "Color" },
-    }, 1)
-	if colorBoardColorButton == nil then
-		--------------------------------------------------------------------------------
-		-- Open Color Board:
-		--------------------------------------------------------------------------------
-		resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-
-		--------------------------------------------------------------------------------
-		-- Find Color Button (Take 2):
-		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(hs.appfinder.appFromName("Final Cut Pro"))
-		colorBoardColorButton = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", Identifier = "_NS:128"},
-			{ role = "AXRadioButton", Title = "Color" },
-		}, 1)
-	end
-
-	if colorBoardColorButton == nil then
-		print("[FCPX Hacks] ERROR: Could not find Color Board.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Change to correct panel:
-	--------------------------------------------------------------------------------
-	if whichPanel ~= nil then
-
-		if whichPanel == 1 then whichPanelName = "Color" end
-		if whichPanel == 2 then whichPanelName = "Saturation" end
-		if whichPanel == 3 then whichPanelName = "Exposure" end
-
-		colorBoardButton = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", Identifier = "_NS:128"},
-			{ role = "AXRadioButton", Title = whichPanelName },
-		}, 1)
-
-		colorBoardButton:performAction("AXPress")
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Correct Puck:
-	--------------------------------------------------------------------------------
-	colorBoardPanel = sw:searchPath({
-		{ role = "AXWindow", Title = "Final Cut Pro"},
-		{ role = "AXSplitGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", },
-		{ role = "AXGroup", },
-		{ role = "AXRadioGroup", Identifier = "_NS:128"},
-	}, 1)
-
-	local whichPuckCount = 1
-	for i=1, colorBoardPanel:attributeValue("AXParent"):attributeValueCount("AXChildren") do
-		if colorBoardPanel:attributeValue("AXParent")[i]:attributeValue("AXRole") == "AXButton" then
-			if whichPuckCount == whichPuck then
-				whichPuckButton = i
-				goto colorBoardSelectPuckExit
-			else
-				whichPuckCount = whichPuckCount + 1
-			end
-		end
-	end
-	::colorBoardSelectPuckExit::
-
-	if not colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXFocused") then
-		local originalMousePoint = hs.mouse.getAbsolutePosition()
-		local colorBoardPosition = {}
-		colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
-		colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-		hs.eventtap.leftClick(colorBoardPosition)
-		hs.mouse.setAbsolutePosition(originalMousePoint)
-	end
-
-	--------------------------------------------------------------------------------
-	-- If a Direction is specified:
-	--------------------------------------------------------------------------------
-	if whichDirection ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Get shortcut key from plist, press and hold if required:
-		--------------------------------------------------------------------------------
-		releaseColorBoardDown = false
-		hs.timer.doUntil(function() return releaseColorBoardDown end, function()
-			if whichDirection == "up" then
-				if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
-					keyStrokeFromPlist("ColorBoard-NudgePuckUp")
+				--------------------------------------------------------------------------------
+				-- Which Group 2:
+				--------------------------------------------------------------------------------
+				local whichGroupTwo = nil
+				for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
+					if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+						if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:39" then
+							whichGroupTwo = i
+							goto exitWhichGroupTwoLoop
+						end
+					end
 				end
-			end
-			if whichDirection == "down" then
-				if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
-					keyStrokeFromPlist("ColorBoard-NudgePuckDown")
+				::exitWhichGroupTwoLoop::
+				if whichGroupTwo == nil then
+					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
+					return "Failed"
 				end
-			end
-			if whichDirection == "left" then
-				if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
-					keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
-				end
-			end
-			if whichDirection == "right" then
-				if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
-					keyStrokeFromPlist("ColorBoard-NudgePuckRight")
-				end
-			end
-		end, hs.eventtap.keyRepeatInterval())
 
-	end
+				--------------------------------------------------------------------------------
+				-- Which Value Indicator:
+				--------------------------------------------------------------------------------
+				local whichValueIndicator = nil
+				whichValueIndicator = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren") - 1
+				persistentPlayhead = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichValueIndicator]
 
-end
-
---------------------------------------------------------------------------------
--- COLOR BOARD - RELEASE KEYPRESS:
---------------------------------------------------------------------------------
-function colorBoardSelectPuckRelease()
-	releaseColorBoardDown = true
-end
-
---------------------------------------------------------------------------------
--- FCPX COLOR BOARD PUCK CONTROL VIA MOUSE:
---------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function colorBoardMousePuck(whichPuck, whichPanel)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
-
-	--------------------------------------------------------------------------------
-	-- Local Variables:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	local whichGroup = nil
-	local colorBoardOriginalMousePoint = hs.mouse.getAbsolutePosition()
-
-	--------------------------------------------------------------------------------
-	-- Make sure Nudge Shortcuts are allocated:
-	--------------------------------------------------------------------------------
-	local nudgeShortcutMissing = false
-	if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-	if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-	if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-	if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
-	if nudgeShortcutMissing then
-		displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- The first button is actually the reset button:
-	--------------------------------------------------------------------------------
-	whichPuck = whichPuck + 1
-
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- Check for cached value:
-	--------------------------------------------------------------------------------
-	local useCache = false
-	if colorBoardSelectPuckSplitGroupCache ~= nil and colorBoardSelectPuckGroupCache ~= nil then
-		if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
-			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXDescription") == "Color" then
-				useCache = true
-				whichSplitGroup = colorBoardSelectPuckSplitGroupCache
-				whichGroup = colorBoardSelectPuckGroupCache
-			end
 		end
+
+		--[[
+		if persistentPlayhead == nil then
+			--------------------------------------------------------------------------------
+			-- Browser on Second Screen (Filmstrip View):
+			--------------------------------------------------------------------------------
+			persistentPlayhead = sw:searchPath({
+				{ role = "AXWindow", Title = "Events"},
+				{ role = "AXSplitGroup", },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", Identifier = "_NS:344"},
+				{ role = "AXGroup", },
+				{ role = "AXScrollArea", Identifier = "_NS:33"},
+				{ role = "AXGroup", Identifier = "_NS:39"},
+				{ role = "AXValueIndicator", Description = "persistent playhead" },
+			}, 1)
+		end
+
+		if persistentPlayhead == nil then
+			--------------------------------------------------------------------------------
+			-- Browser on Second Screen (List View):
+			--------------------------------------------------------------------------------
+			persistentPlayhead = sw:searchPath({
+				{ role = "AXWindow", Title = "Events"},
+				{ role = "AXSplitGroup",},
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", Identifier = "_NS:344"},
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", Identifier = "_NS:658"},
+				{ role = "AXGroup", Identifier = "_NS:590"},
+				{ role = "AXValueIndicator", Description = "persistent playhead" },
+			}, 1)
+		end
+		--]]
+
+		if persistentPlayhead ~= nil then
+
+			--------------------------------------------------------------------------------
+			-- Playhead Position:
+			--------------------------------------------------------------------------------
+			persistentPlayheadPosition = persistentPlayhead:attributeValue("AXPosition")
+			persistentPlayheadSize = persistentPlayhead:attributeValue("AXSize")
+
+			--------------------------------------------------------------------------------
+			-- Highlight Mouse:
+			--------------------------------------------------------------------------------
+			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+
+		end
+
 	end
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--         F I N A L    C U T    P R O     G U I     S C R I P T I N G        --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- TIMELINE:
+--------------------------------------------------------------------------------
+
 	--------------------------------------------------------------------------------
-	-- Find these values if not already in the cache:
+	-- GET FINAL CUT PRO TIMELINE SPLIT GROUP:
 	--------------------------------------------------------------------------------
-	if not useCache then
+	function getFinalCutProTimelineSplitGroup()
+
+		--------------------------------------------------------------------------------
+		-- Used for debugging:
+		--------------------------------------------------------------------------------
+		--ax.log.level = 4
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
 		--------------------------------------------------------------------------------
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-				goto colorBoardSelectPuckSplitGroupExit
-			end
-		end
+		local whichSplitGroup = nil
+
+		--------------------------------------------------------------------------------
+		-- Define Final Cut Pro:
+		--------------------------------------------------------------------------------
+		local sw = ax.applicationElement(application.get("Final Cut Pro"))
+
+		--------------------------------------------------------------------------------
+		-- Single Screen:
+		--------------------------------------------------------------------------------
+		whichSplitGroup = sw:searchPath({
+			{ role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
+			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
+			{ role = "AXGroup", },													    -- AXGroup (group 1)
+			{ role = "AXSplitGroup", },												    -- AXSplitGroup (splitter group 1)
+			{ role = "AXGroup", },												        -- AXGroup (group 2)
+			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
+			{ role = "AXGroup", },														-- AXGroup (group 1)
+			{ role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
+		}, 1)
+
+		--------------------------------------------------------------------------------
+		-- Dual Screen:
+		--------------------------------------------------------------------------------
 		if whichSplitGroup == nil then
-			displayErrorMessage("Unable to locate Split Group.")
-			return "Failed"
+
+			whichSplitGroup = sw:searchPath({
+				{ role = "AXWindow", Title = "Final Cut Pro"},							-- AXWindow "Final Cut Pro" (window 2)
+				{ role = "AXSplitGroup", },											 	-- AXSplitGroup (splitter group 1)
+				{ role = "AXGroup", },												    -- AXGroup (group 1)
+				{ role = "AXSplitGroup", },											    -- AXSplitGroup (splitter group 1)
+				{ role = "AXGroup", },											        -- AXGroup (group 2)
+				{ role = "AXSplitGroup", Identifier = "_NS:237"},					 	-- AXSplitGroup (splitter group 1)
+			}, 1)
+
 		end
-		::colorBoardSelectPuckSplitGroupExit::
-		colorBoardSelectPuckSplitGroupCache = whichSplitGroup -- Used for caching.
+
+		return whichSplitGroup
+
+	end
 
 		--------------------------------------------------------------------------------
-		-- Which Group?
+		-- GET FINAL CUT PRO TIMELINE SCROLL AREA:
 		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
-						whichGroup = i
-						goto colorBoardSelectPuckGroupExit
+		function getFinalCutProTimelineScrollArea()
+
+			--------------------------------------------------------------------------------
+			-- Which Split Group
+			--------------------------------------------------------------------------------
+			local finalCutProTimelineScrollArea = nil
+			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
+
+			--------------------------------------------------------------------------------
+			-- Get last scroll area:
+			--------------------------------------------------------------------------------
+			if finalCutProTimelineSplitGroup ~= nil then
+
+				local whichScrollArea = nil
+				for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
+					if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+						whichScrollArea = i
 					end
 				end
-			end
-		end
-		if whichGroup == nil then
-			--------------------------------------------------------------------------------
-			-- If we can't find the group, maybe it's not open?
-			--------------------------------------------------------------------------------
-			local pressColorBoard = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-			if pressColorBoard == "Failed" then
-				displayErrorMessage("Unable to open Color Board.")
-				return "Failed"
+				if whichScrollArea == nil then
+					writeToConsole("ERROR: Unable to find scroll area in getFinalCutProTimelineScrollArea().")
+					return "Failed"
+				end
+				finalCutProTimelineScrollArea = finalCutProTimelineSplitGroup[whichScrollArea]
+
 			end
 
+			return finalCutProTimelineScrollArea
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- GET FINAL CUT PRO TIMELINE BUTTON BAR:
+		--------------------------------------------------------------------------------
+		function getFinalCutProTimelineButtonBar()
+
+			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
+			return finalCutProTimelineSplitGroup:attributeValue("AXParent")[2]
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- GET FINAL CUT PRO EFFECTS/TRANSITIONS BROWSER GROUP:
+		--------------------------------------------------------------------------------
+		function getFinalCutProEffectsTransitionsBrowserGroup()
+
 			--------------------------------------------------------------------------------
-			-- Try Which Group Again:
+			-- Get Timeline Split Group:
 			--------------------------------------------------------------------------------
-			whichGroup = nil
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
-							whichGroup = i
-							goto colorBoardSelectPuckGroupExit
-						end
-					end
+			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
+
+			--------------------------------------------------------------------------------
+			-- Which Group:
+			--------------------------------------------------------------------------------
+			for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
+				if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
+					return finalCutProTimelineSplitGroup[i]
 				end
 			end
-			if whichGroup == nil then
-				displayMessage("This feature only works when you have a single clip selected in the timeline.\n\nPlease select a clip and try again.")
-				return "Failed"
-			end
+
+			--------------------------------------------------------------------------------
+			-- If things get to here it's failed:
+			--------------------------------------------------------------------------------
+			return nil
+
 		end
-		::colorBoardSelectPuckGroupExit::
-		colorBoardSelectPuckGroupCache = whichGroup -- Used for caching.
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Panel?
-	--------------------------------------------------------------------------------
-	if whichPanel ~= nil then
-		if fcpxElements[whichSplitGroup][whichGroup][whichPanel]:attributeValue("AXValue") == 0 then
-			fcpxElements[whichSplitGroup][whichGroup][whichPanel]:performAction("AXPress")
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Puck?
-	--------------------------------------------------------------------------------
-	local whichPuckCount = 1
-	for i=1, fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-			if whichPuckCount == whichPuck then
-				whichPuckButton = i
-				goto colorBoardSelectPuckPuckButtonExit
-			else
-				whichPuckCount = whichPuckCount + 1
-			end
-		end
-	end
-	if whichPuckButton == nil then
-		displayErrorMessage("Unable to locate Puck.")
-		return "Failed"
-	end
-	::colorBoardSelectPuckPuckButtonExit::
-
-	--------------------------------------------------------------------------------
-	-- Click on the Puck:
-	--------------------------------------------------------------------------------
-	if not fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXFocused") then
-		local originalMousePoint = hs.mouse.getAbsolutePosition()
-		local colorBoardPosition = {}
-		colorBoardPosition['x'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['x'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['w'] / 2)
-		colorBoardPosition['y'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['y'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-		hs.eventtap.leftClick(colorBoardPosition)
-		hs.mouse.setAbsolutePosition(originalMousePoint)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get shortcut key from plist, press and hold if required:
-	--------------------------------------------------------------------------------
-	releaseMouseColorBoardDown = false
-	hs.timer.doUntil(function() return releaseMouseColorBoardDown end, function()
-
-		local currentMousePoint = hs.mouse.getAbsolutePosition()
-
-		if currentMousePoint['y'] < colorBoardOriginalMousePoint['y'] then
-			keyStrokeFromPlist("ColorBoard-NudgePuckUp")
-			colorBoardOriginalMousePoint = currentMousePoint
-		end
-		if currentMousePoint['y'] > colorBoardOriginalMousePoint['y'] then
-			keyStrokeFromPlist("ColorBoard-NudgePuckDown")
-			colorBoardOriginalMousePoint = currentMousePoint
-		end
-
-		if whichPanel == 1 then
-			if currentMousePoint['x'] < colorBoardOriginalMousePoint['x'] then
-				keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
-				colorBoardOriginalMousePoint = currentMousePoint
-			end
-			if currentMousePoint['x'] > colorBoardOriginalMousePoint['x'] then
-				keyStrokeFromPlist("ColorBoard-NudgePuckRight")
-				colorBoardOriginalMousePoint = currentMousePoint
-			end
-		end
-
-	end, 0.00001)
-
-end
 
 --------------------------------------------------------------------------------
--- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+-- BROWSER:
 --------------------------------------------------------------------------------
---
--- >>> BROKEN! <<<
---
-function colorBoardMousePuckRelease()
-	releaseMouseColorBoardDown = true
-end
+
+	--------------------------------------------------------------------------------
+	-- GET FINAL CUT PRO BROWSER SPLIT GROUP:
+	--------------------------------------------------------------------------------
+	function getFinalCutProBrowserSplitGroup()
+
+		--------------------------------------------------------------------------------
+		-- Define Final Cut Pro:
+		--------------------------------------------------------------------------------
+		sw = ax.applicationElement(application.get("Final Cut Pro"))
+
+		--------------------------------------------------------------------------------
+		-- Single Screen:
+		--------------------------------------------------------------------------------
+		local browserSplitGroup = sw:searchPath({
+			{ role = "AXWindow", Title = "Final Cut Pro"},
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:344"},
+		}, 1)
+
+		--------------------------------------------------------------------------------
+		-- Dual Screen:
+		--------------------------------------------------------------------------------
+		if browserSplitGroup == nil then
+			browserSplitGroup = sw:searchPath({
+				{ role = "AXWindow", Title = "Events"},
+				{ role = "AXSplitGroup", },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", Identifier = "_NS:344"},
+			}, 1)
+		end
+
+		return browserSplitGroup
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- GET FINAL CUT PRO BROWSER BUTTON BAR:
+		--------------------------------------------------------------------------------
+		function getFinalCutProBrowserButtonBar()
+			local finalCutProBrowserSplitGroup = getFinalCutProBrowserSplitGroup()
+			return finalCutProBrowserSplitGroup:attributeValue("AXParent")
+		end
+
+--------------------------------------------------------------------------------
+-- INSPECTOR:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- GET FINAL CUT PRO COLOR BOARD BUTTON BAR:
+	--------------------------------------------------------------------------------
+	function getFinalCutProColorBoardRadioGroup()
+
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro:
+		--------------------------------------------------------------------------------
+		sw = ax.applicationElement(application.get("Final Cut Pro"))
+
+		--------------------------------------------------------------------------------
+		-- Find Color Button:
+		--------------------------------------------------------------------------------
+		local result = sw:searchPath({
+			{ role = "AXWindow", Title = "Final Cut Pro"},
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXRadioGroup", Identifier = "_NS:128"},
+		}, 1)
+
+		return result
+
+	end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -9485,106 +10791,10 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- GET FINAL CUT PRO TIMELINE SCROLL AREA:
---------------------------------------------------------------------------------
-function getFinalCutProTimelineScrollArea()
-
-	--------------------------------------------------------------------------------
-	-- Used for debugging:
-	--------------------------------------------------------------------------------
-	--ax.log.level = 4
-
-	--------------------------------------------------------------------------------
-	-- Define Final Cut Pro:
-	--------------------------------------------------------------------------------
-	local fcpxScrollArea = nil
-	local sw = ax.applicationElement(hs.appfinder.appFromName("Final Cut Pro"))
-
-	--------------------------------------------------------------------------------
-	-- Single Screen:
-	--------------------------------------------------------------------------------
-    whichSplitGroup = sw:searchPath({
-        { role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
-        { role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-        { role = "AXGroup", },													    -- AXGroup (group 1)
-        { role = "AXSplitGroup", },												    -- AXSplitGroup (splitter group 1)
-        { role = "AXGroup", },												        -- AXGroup (group 2)
-        { role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-        { role = "AXGroup", },														-- AXGroup (group 1)
-        { role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
-    }, 1)
-
-	--------------------------------------------------------------------------------
-	-- Dual Screen:
-	--------------------------------------------------------------------------------
-	if whichSplitGroup == nil then
-
-		whichSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},							-- AXWindow "Final Cut Pro" (window 2)
-			{ role = "AXSplitGroup", },											 	-- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },												    -- AXGroup (group 1)
-			{ role = "AXSplitGroup", },											    -- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },											        -- AXGroup (group 2)
-			{ role = "AXSplitGroup", Identifier = "_NS:237"},					 	-- AXSplitGroup (splitter group 1)
-		}, 1)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get last scroll area:
-	--------------------------------------------------------------------------------
-	if whichSplitGroup ~= nil then
-
-		local whichScrollArea = nil
-		for i=1, whichSplitGroup:attributeValueCount("AXChildren") do
-			if whichSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				whichScrollArea = i
-			end
-		end
-		if whichScrollArea == nil then
-			print("[FCPX Hacks] ERROR: Unable to find scroll area in getFinalCutProTimelineScrollArea().")
-			return "Failed"
-		end
-		fcpxScrollArea = whichSplitGroup[whichScrollArea]
-
-	end
-
-	return fcpxScrollArea
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO BROWSER SPLIT GROUP:
---------------------------------------------------------------------------------
-function getFinalCutProBrowserSplitGroup()
-
-	--------------------------------------------------------------------------------
-	-- Define Final Cut Pro:
-	--------------------------------------------------------------------------------
-	sw = ax.applicationElement(hs.appfinder.appFromName("Final Cut Pro"))
-
-	--------------------------------------------------------------------------------
-	-- Single Screen (Filmstrip View):
-	--------------------------------------------------------------------------------
-    local browserSplitGroup = sw:searchPath({
-        { role = "AXWindow", Title = "Final Cut Pro"},
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", Identifier = "_NS:344"},
-    }, 1)
-
-    return browserSplitGroup
-
-end
-
---------------------------------------------------------------------------------
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
-	hs.application.launchOrFocus("Final Cut Pro")
+	application.launchOrFocus("Final Cut Pro")
 end
 
 --------------------------------------------------------------------------------
@@ -9592,12 +10802,12 @@ end
 --------------------------------------------------------------------------------
 function restartFinalCutPro()
 
-	if hs.application("Final Cut Pro") ~= nil then
+	if application("Final Cut Pro") ~= nil then
 
 		--------------------------------------------------------------------------------
 		-- Kill Final Cut Pro:
 		--------------------------------------------------------------------------------
-		hs.application("Final Cut Pro"):kill()
+		application("Final Cut Pro"):kill()
 
 		--------------------------------------------------------------------------------
 		-- Wait until Final Cut Pro is Closed:
@@ -9659,7 +10869,7 @@ function getFinalCutProActiveCommandSet()
 	if activeCommandSetResult == nil then
 		return nil
 	else
-		if hs.fs.attributes(activeCommandSetResult) == nil then
+		if fs.attributes(activeCommandSetResult) == nil then
 			return nil
 		else
 			return activeCommandSetResult
@@ -9673,7 +10883,7 @@ end
 --------------------------------------------------------------------------------
 function getFinalCutProPlistValue(value) -- Returns Result or Nil
 
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist '" .. tostring(value) .. "'")
+	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist '" .. tostring(value) .. "'")
 
 	if executeStatus == nil then
 		return nil
@@ -9690,12 +10900,12 @@ function readShortcutKeysFromPlist()
 	--------------------------------------------------------------------------------
 	-- Get plist values for 'Active Command Set':
 	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set'")
+	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set'")
 	if executeStatus == nil then
 		displayErrorMessage("Could not retreieve the Active Command Set from Final Cut Pro's plist.")
 		return "Failed"
 	else
-		if hs.fs.attributes(trim(executeResult)) == nil then
+		if fs.attributes(trim(executeResult)) == nil then
 			displayErrorMessage("The Active Command Set in Final Cut Pro's plist could not be found.")
 			return "Failed"
 		else
@@ -9703,20 +10913,14 @@ function readShortcutKeysFromPlist()
 			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
-				local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 
 				if executeStatus == nil then
 					--------------------------------------------------------------------------------
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
-						if debugMode then
-							print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-							--print("executeResult: " .. tostring(executeResult))
-							--print("executeStatus: " .. tostring(executeStatus))
-							--print("executeType: " .. tostring(executeType))
-							--print("executeRC: " .. tostring(executeRC))
-						end
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 					end
 					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
 					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
@@ -9750,7 +10954,7 @@ function readShortcutKeysFromPlist()
 						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 
 						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 
 						if executeStatus == nil then
 							if executeType == "exit" then
@@ -9781,20 +10985,13 @@ function readShortcutKeysFromPlist()
 			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
-				local executeResult,executeStatus = hs.execute(executeCommand)
+				local executeResult,executeStatus = execute(executeCommand)
 				if executeStatus == nil then
 					--------------------------------------------------------------------------------
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
-						if debugMode then
-							print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-							--print("executeCommand: " .. tostring(executeCommand))
-							--print("executeResult: " .. tostring(executeResult))
-							--print("executeStatus: " .. tostring(executeStatus))
-							--print("executeType: " .. tostring(executeType))
-							--print("executeRC: " .. tostring(executeRC))
-						end
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 					end
 					finalCutProShortcutKey[k]['modifiers'] = {}
 				else
@@ -9821,14 +11018,14 @@ function readShortcutKeysFromPlist()
 						end
 
 						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSet) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 						if executeStatus == nil then
 							if executeType == "exit" then
 								--------------------------------------------------------------------------------
 								-- Try modifierMask Instead!
 								--------------------------------------------------------------------------------
 								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSet) .. "'"
-								local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 								if executeStatus == nil then
 									if executeType == "exit" then
 										--------------------------------------------------------------------------------
@@ -9862,7 +11059,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+	local fcpx = application.get("Final Cut Pro")
 	if fcpx == nil then
 		return false
 	else
@@ -9876,7 +11073,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+	local fcpx = application.get("Final Cut Pro")
 	if fcpx == nil then
 		return false
 	else
@@ -9893,14 +11090,11 @@ function isFinalCutProInstalled()
 end
 
 --------------------------------------------------------------------------------
--- RETURNS FCPX VERSION:
+-- RETURNS FINAL CUT PRO VERSION:
 --------------------------------------------------------------------------------
 function finalCutProVersion()
-	--------------------------------------------------------------------------------
-	-- TO DO: Rewrite this in Lua:
-	--------------------------------------------------------------------------------
 	if isFinalCutProInstalled() then
-		ok,appleScriptFinalCutProVersion = hs.osascript.applescript('return version of application "Final Cut Pro"')
+		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
 		return appleScriptFinalCutProVersion
 	else
 		return "Not Installed"
@@ -9908,9 +11102,9 @@ function finalCutProVersion()
 end
 
 --------------------------------------------------------------------------------
--- FCPX OPEN KEYWORD EDITOR:
+-- OPEN FINAL CUT PRO KEYWORD EDITOR:
 --------------------------------------------------------------------------------
-function fcpxOpenKeywordEditor() -- Returns "Done" or "Failed"
+function openFinalCutProKeywordEditor() -- Returns "Done" or "Failed"
 
 	local newresult = "Failed"
 	result = keyStrokeFromPlist("ToggleKeywordEditor")
@@ -9920,10 +11114,10 @@ function fcpxOpenKeywordEditor() -- Returns "Done" or "Failed"
 end
 
 --------------------------------------------------------------------------------
--- WHICH BROWSER MODE IS ACTIVE IN FCPX?
+-- WHICH BROWSER MODE IS ACTIVE IN FINAL CUT PRO?
 --------------------------------------------------------------------------------
 --
--- >>> BROKEN! <<<
+-- TO DO: This is currently broken in Final Cut Pro 10.3, and probably no longer needed.
 --
 function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 
@@ -9945,7 +11139,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = application("Final Cut Pro")
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -9986,7 +11180,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
+	local fcpx 				= application("Final Cut Pro")
 	local fcpxElements 		= ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -10020,7 +11214,7 @@ function checkScrollingTimelinePress()
 	-- If Full Screen is Active then abort:
 	--------------------------------------------------------------------------------
 	if fullscreenActive then
-		if debugMode then print("[FCPX Hacks] Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.") end
+		debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
 		return "Stop"
 	end
 
@@ -10029,14 +11223,14 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	local timelineScrollArea = getFinalCutProTimelineScrollArea()
 	if timelineScrollArea == nil then
-		print("[FCPX Hacks] ERROR: Could not find Timeline Scroll Area.")
+		writeToConsole("ERROR: Could not find Timeline Scroll Area.")
 		return "Stop"
 	end
 
 	--------------------------------------------------------------------------------
 	-- Check mouse is in timeline area:
 	--------------------------------------------------------------------------------
-	local mouseLocation = hs.mouse.getAbsolutePosition()
+	local mouseLocation = mouse.getAbsolutePosition()
 	local timelinePosition = timelineScrollArea:attributeValue("AXPosition")
 	local timelineSize = timelineScrollArea:attributeValue("AXSize")
 	local isMouseInTimelineArea = true
@@ -10053,7 +11247,7 @@ function checkScrollingTimelinePress()
 			--------------------------------------------------------------------------------
 			-- Debug Mode:
 			--------------------------------------------------------------------------------
-			if debugMode then print("[FCPX Hacks] Mouse inside Timeline Area") end
+			debugMessage("Mouse inside Timeline Area.")
 
 			--------------------------------------------------------------------------------
 			-- Which Value Indicator:
@@ -10079,7 +11273,7 @@ function checkScrollingTimelinePress()
 		--------------------------------------------------------------------------------
 		-- Debug Mode:
 		--------------------------------------------------------------------------------
-		if debugMode then print("[FCPX Hacks] Mouse outside of Timeline Area.") end
+		debugMessage("Mouse outside of Timeline Area.")
 
 	end
 end
@@ -10098,14 +11292,14 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
 	if displayHighlightColour == nil then 		displayHighlightColour = "Red" 												end
 	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
@@ -10116,21 +11310,21 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
     -- Highlight the FCPX Browser Playhead:
     --------------------------------------------------------------------------------
    	if displayHighlightShape == "Rectangle" then
-		browserHighlight = hs.drawing.rectangle(hs.geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
 		browserHighlight:show()
 	end
 	if displayHighlightShape == "Circle" then
-		browserHighlight = hs.drawing.circle(hs.geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
+		browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
 		browserHighlight:show()
 	end
 	if displayHighlightShape == "Diamond" then
-		browserHighlight = hs.drawing.circle(hs.geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
@@ -10140,7 +11334,7 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 	--------------------------------------------------------------------------------
     -- Set a timer to delete the circle after 3 seconds:
     --------------------------------------------------------------------------------
-    browserHighlightTimer = hs.timer.doAfter(3, function() browserHighlight:delete() end)
+    browserHighlightTimer = timer.doAfter(3, function() browserHighlight:delete() end)
 
 end
 
@@ -10160,41 +11354,38 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Hardcoded Values (for system other than English):
 	--------------------------------------------------------------------------------
-	if menuItemTable[1] == "Apple" 					then whichMenuOne = 1 		end
-	if menuItemTable[1] == "Final Cut Pro" 			then whichMenuOne = 2 		end
-		if menuItemTable[2] == "Preferences…" 			then whichMenuTwo = 3 		end
-		if menuItemTable[25] == "Reveal in Browser" 		then whichMenuTwo = 23 		end
-	if menuItemTable[1] == "File" 					then whichMenuOne = 3 		end
-	if menuItemTable[1] == "Edit" 					then whichMenuOne = 4 		end
-	if menuItemTable[1] == "Trim" 					then whichMenuOne = 5 		end
-	if menuItemTable[1] == "Mark" 					then whichMenuOne = 6 		end
-	if menuItemTable[1] == "Clip" 					then whichMenuOne = 7 		end
-	if menuItemTable[1] == "Modify" 				then whichMenuOne = 8 		end
-	if menuItemTable[1] == "View" 					then whichMenuOne = 9 		end
-	if menuItemTable[1] == "Window" 				then whichMenuOne = 10 		end
-		if menuItemTable[2] == "Go To" 					then whichMenuTwo = 6 		end
-			if menuItemTable[3] == "Timeline"				then whichMenuThree = 7		end
-			if menuItemTable[3] == "Color Board"			then whichMenuThree = 9		end
-	if menuItemTable[1] == "Help" 					then whichMenuOne = 11 		end
+	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
+	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
+		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
+		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
+	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
+	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
+	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
+	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
+	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
+		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
+	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
+	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
+		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
+		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
+	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
+		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
+			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
+			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
+	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
 
-
+	--------------------------------------------------------------------------------
+	-- TO DO: Commenting this stuff out will have definitely broken something:
+	--------------------------------------------------------------------------------
 	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
-
-	if menuItemTable[2] == "Open in Angle Editor"	then whichMenuTwo = 4 		end
-	if menuItemTable[2] == "Zoom to Fit"			then whichMenuTwo = 21 		end
-	if menuItemTable[2] == "Timeline History Back"	then whichMenuTwo = 12 		end
-
-	if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
-	if menuItemTable[3] == "Group Clips By"			then whichMenuThree = 4		end
-
-
-
-	if menuItemTable[4] == "None"					then whichMenuThree = 1		end
+	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
+	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
+	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = application("Final Cut Pro")
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -10317,6 +11508,124 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 end
 
 --------------------------------------------------------------------------------
+-- GET CLIP NAME FROM FINAL CUT PRO CLIPBOARD:
+--------------------------------------------------------------------------------
+--
+-- TO DO: This is still very much a work-in-progress.
+--
+function getClipNameFromFinalCutProClipboard(currentClipboardData)
+
+	--------------------------------------------------------------------------------
+	-- JUST RETURN A DATE UNTIL WE FIX PROPERLY:
+	--------------------------------------------------------------------------------
+	if 1==1 then return os.date() end
+
+	--------------------------------------------------------------------------------
+	-- Define Temporary Files:
+	--------------------------------------------------------------------------------
+	local temporaryFileName 		= os.tmpname()
+	local temporaryFileNameTwo	 	= os.tmpname()
+
+	--------------------------------------------------------------------------------
+	-- Write Clipboard Data to Temporary File:
+	--------------------------------------------------------------------------------
+	local temporaryFile = io.open(temporaryFileName, "w")
+	temporaryFile:write(currentClipboardData)
+	temporaryFile:close()
+
+	--------------------------------------------------------------------------------
+	-- Convert binary plist to XML then return in JSON:
+	--------------------------------------------------------------------------------
+	local executeOutput, executeStatus, executeType, executeRC = execute([[
+		plutil -convert xml1 ]] .. temporaryFileName .. [[ -o - |
+		sed 's/data>/string>/g' |
+		plutil -convert json - -o -
+	]])
+	if not executeStatus then
+		writeToConsole("ERROR: Failed to convert binary plist to XML.")
+		addToClipboardHistory = false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get data from 'ffpasteboardobject':
+	--------------------------------------------------------------------------------
+	local file = io.open(temporaryFileName, "w")
+	file:write(json.decode(executeOutput)["ffpasteboardobject"])
+	file:close()
+
+	--------------------------------------------------------------------------------
+	-- Convert base64 data to human readable:
+	--------------------------------------------------------------------------------
+	executeCommand = "openssl base64 -in " .. tostring(temporaryFileName) .. " -out " .. tostring(temporaryFileNameTwo) .. " -d"
+	executeOutput, executeStatus, executeType, executeRC = execute(executeCommand)
+	if not executeStatus then
+		writeToConsole("ERROR: Failed to convert base64 data to human readable.")
+		addToClipboardHistory = false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Convert from binary plist to human readable:
+	--------------------------------------------------------------------------------
+	executeOutput, executeStatus, executeType, executeRC = execute("plutil -convert xml1 " .. tostring(temporaryFileNameTwo))
+	if not executeStatus then
+		writeToConsole("ERROR: Failed to convert from binary plist to human readable.")
+		addToClipboardHistory = false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Bring XML data into Hammerspoon:
+	--------------------------------------------------------------------------------
+	executeOutput, executeStatus, executeType, executeRC = execute("cat " .. tostring(temporaryFileNameTwo))
+	if not executeStatus then
+		writeToConsole("ERROR: Failed to cat the plist.")
+		addToClipboardHistory = false
+	end
+
+	--------------------------------------------------------------------------------
+	-- XML fun times!
+	--------------------------------------------------------------------------------
+	local currentClipboardLabel = nil
+	local xml = slaxdom:dom(tostring(executeOutput))
+
+		--------------------------------------------------------------------------------
+		-- Clip copied from Primary Storyline:
+		--------------------------------------------------------------------------------
+		--if xml['root']['kids'][2]['kids'][8]['kids'][24]['kids'][1]['value'] == "metadataImportToApp" then
+		--	currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][20]['kids'][1]['value']
+		--end
+
+		--------------------------------------------------------------------------------
+		-- Clip copied from Secondary Storyline:
+		--------------------------------------------------------------------------------
+		--if xml['kids'][2]['el'][1]['el'][4]['el'][17]['kids'][1]['value'] == "metadataImportToApp" then
+		--	currentClipboardLabel = xml['kids'][2]['el'][1]['el'][4]['el'][15]['kids'][1]['value']
+		--end
+
+		--------------------------------------------------------------------------------
+		-- Clip copied from Browser:
+		--------------------------------------------------------------------------------
+		--if xml['root']['kids'][2]['kids'][8]['kids'][30]['kids'][1]['value'] == "metadataImportToApp" then
+		--	currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][18]['kids'][1]['value']
+		--end
+
+	--------------------------------------------------------------------------------
+	-- Unknown item in clipboard:
+	--------------------------------------------------------------------------------
+	if currentClipboardLabel == nil then
+		currentClipboardLabel = os.date()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Clean up temporary files:
+	--------------------------------------------------------------------------------
+	executeOutput, executeStatus, executeType, executeRC = execute("rm " .. tostring(temporaryFileName))
+	executeOutput, executeStatus, executeType, executeRC = execute("rm " .. tostring(temporaryFileNameTwo))
+
+	return currentClipboardLabel
+
+end
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -10330,733 +11639,780 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- SET TOUCH BAR LOCATION:
+-- TOUCH BAR RELATED:
 --------------------------------------------------------------------------------
-function setTouchBarLocation()
 
 	--------------------------------------------------------------------------------
-	-- Get Settings:
+	-- SHOW TOUCH BAR:
 	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-
-	--------------------------------------------------------------------------------
-	-- Show Touch Bar at Mouse Pointer Position:
-	--------------------------------------------------------------------------------
-	if displayTouchBarLocation == "Mouse" then
-
+	function showTouchbar()
 		--------------------------------------------------------------------------------
-		-- Position Touch Bar to Mouse Pointer Location:
+		-- Check if we need to show the Touch Bar:
 		--------------------------------------------------------------------------------
-		touchBarWindow:atMousePosition()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Show Touch Bar at Top Centre of Timeline:
-	--------------------------------------------------------------------------------
-	if displayTouchBarLocation == "TimelineTopCentre" then
-
-		--------------------------------------------------------------------------------
-		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
-		--------------------------------------------------------------------------------
-		local timelineScrollArea = getFinalCutProTimelineScrollArea()
-		local timelineScrollAreaPosition = {}
-		timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
-		timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-		touchBarWindow:topLeft(timelineScrollAreaPosition)
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Save last Touch Bar Location to Settings:
-	--------------------------------------------------------------------------------
-	hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
-
-end
-
---------------------------------------------------------------------------------
--- SHOW TOUCH BAR:
---------------------------------------------------------------------------------
-function showTouchbar()
-	--------------------------------------------------------------------------------
-	-- Check if we need to show the Touch Bar:
-	--------------------------------------------------------------------------------
-	if touchBarSupported then
-		local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
-		if displayTouchBar then touchBarWindow:show() end
-	end
-end
-
---------------------------------------------------------------------------------
--- HIDE TOUCH BAR:
---------------------------------------------------------------------------------
-function hideTouchbar()
-	--------------------------------------------------------------------------------
-	-- Hide the Touch Bar:
-	--------------------------------------------------------------------------------
-	if touchBarSupported then touchBarWindow:hide() end
-end
-
---------------------------------------------------------------------------------
--- HOW MANY ITEMS IN A TABLE?
---------------------------------------------------------------------------------
-function tableCount(table)
-  local count = 0
-  for _ in pairs(table) do count = count + 1 end
-  return count
-end
-
---------------------------------------------------------------------------------
--- PROWL API KEY VALID:
---------------------------------------------------------------------------------
-function prowlAPIKeyValid(input)
-
-	local result = false
-	local errorMessage = nil
-
-	prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
-	httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
-
-	if string.match(httpBody, "success") then
-		result = true
-	else
-		local xml = slaxdom:dom(tostring(httpBody))
-		errorMessage = xml['root']['el'][1]['kids'][1]['value']
-	end
-
-	return result, errorMessage
-
-end
-
---------------------------------------------------------------------------------
--- NINJA MOUSE CLICK:
---------------------------------------------------------------------------------
-function ninjaMouseClick(position)
-		local originalMousePoint = hs.mouse.getAbsolutePosition()
-		hs.eventtap.leftClick(position)
-		hs.mouse.setAbsolutePosition(originalMousePoint)
-end
-
---------------------------------------------------------------------------------
--- PERFORM KEYSTROKE FROM PLIST DATA:
---------------------------------------------------------------------------------
-function keyStrokeFromPlist(whichShortcut)
-	if finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
-	if finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
-	if next(finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-	hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
-	return true
-end
-
---------------------------------------------------------------------------------
--- MODIFIER MATCH:
---------------------------------------------------------------------------------
-function modifierMatch(inputA, inputB)
-
-	local match = true
-
-	if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-	if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-	if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-	if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
-
-	return match
-
-end
-
---------------------------------------------------------------------------------
--- CONVERTS MODIFIERS KEYS INTO SOMETHING EVENTTAP CAN UNDERSTAND:
---------------------------------------------------------------------------------
-function convertModifiersKeysForEventTap(input)
-
-	for i in pairs(input) do
-		if input[i] == "control" 	then input[i] = "ctrl" end
-		if input[i] == "option" 	then input[i] = "alt" end
-		if input[i] == "command" 	then input[i] = "cmd" end
-		if input[i] == "⌃" 			then input[i] = "ctrl" end
-		if input[i] == "⌥" 			then input[i] = "alt" end
-		if input[i] == "⌘" 			then input[i] = "cmd" end
-		if input[i] == "⇧" 			then input[i] = "shift" end
-	end
-
-	return input
-
-end
-
---------------------------------------------------------------------------------
--- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
---------------------------------------------------------------------------------
-function executeWithAdministratorPrivileges(input)
-	local appleScriptA = 'set shellScriptInput to "' .. input .. '"\n\n'
-	local appleScriptB = [[
-		try
-			tell me to activate
-			do shell script shellScriptInput with administrator privileges
-			return true
-		on error
-			return false
-		end try
-	]]
-
-	ok,result = hs.osascript.applescript(appleScriptA .. appleScriptB)
-	return result
-end
-
---------------------------------------------------------------------------------
--- KEYCODE TRANSLATOR:
---------------------------------------------------------------------------------
-function keyCodeTranslator(input)
-
-	local englishKeyCodes = {
-		["'"] = 39,
-		[","] = 43,
-		["-"] = 27,
-		["."] = 47,
-		["/"] = 44,
-		["0"] = 29,
-		["1"] = 18,
-		["2"] = 19,
-		["3"] = 20,
-		["4"] = 21,
-		["5"] = 23,
-		["6"] = 22,
-		["7"] = 26,
-		["8"] = 28,
-		["9"] = 25,
-		[";"] = 41,
-		["="] = 24,
-		["["] = 33,
-		["\\"] = 42,
-		["]"] = 30,
-		["`"] = 50,
-		["a"] = 0,
-		["b"] = 11,
-		["c"] = 8,
-		["d"] = 2,
-		["delete"] = 51,
-		["down"] = 125,
-		["e"] = 14,
-		["end"] = 119,
-		["escape"] = 53,
-		["f"] = 3,
-		["f1"] = 122,
-		["f10"] = 109,
-		["f11"] = 103,
-		["f12"] = 111,
-		["f13"] = 105,
-		["f14"] = 107,
-		["f15"] = 113,
-		["f16"] = 106,
-		["f17"] = 64,
-		["f18"] = 79,
-		["f19"] = 80,
-		["f2"] = 120,
-		["f20"] = 90,
-		["f3"] = 99,
-		["f4"] = 118,
-		["f5"] = 96,
-		["f6"] = 97,
-		["f7"] = 98,
-		["f8"] = 100,
-		["f9"] = 101,
-		["forwarddelete"] = 117,
-		["g"] = 5,
-		["h"] = 4,
-		["help"] = 114,
-		["home"] = 115,
-		["i"] = 34,
-		["j"] = 38,
-		["k"] = 40,
-		["l"] = 37,
-		["left"] = 123,
-		["m"] = 46,
-		["n"] = 45,
-		["o"] = 31,
-		["p"] = 35,
-		["pad*"] = 67,
-		["pad+"] = 69,
-		["pad-"] = 78,
-		["pad."] = 65,
-		["pad/"] = 75,
-		["pad0"] = 82,
-		["pad1"] = 83,
-		["pad2"] = 84,
-		["pad3"] = 85,
-		["pad4"] = 86,
-		["pad5"] = 87,
-		["pad6"] = 88,
-		["pad7"] = 89,
-		["pad8"] = 91,
-		["pad9"] = 92,
-		["pad="] = 81,
-		["padclear"] = 71,
-		["padenter"] = 76,
-		["pagedown"] = 121,
-		["pageup"] = 116,
-		["q"] = 12,
-		["r"] = 15,
-		["return"] = 36,
-		["right"] = 124,
-		["s"] = 1,
-		["space"] = 49,
-		["t"] = 17,
-		["tab"] = 48,
-		["u"] = 32,
-		["up"] = 126,
-		["v"] = 9,
-		["w"] = 13,
-		["x"] = 7,
-		["y"] = 16,
-		["z"] = 6,
-		["§"] = 10
-	}
-
-	if englishKeyCodes[input] == nil then
-		if hs.keycodes.map[input] == nil then
-			return ""
-		else
-			return hs.keycodes.map[input]
+		if touchBarSupported then
+			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			if displayTouchBar then touchBarWindow:show() end
 		end
-	else
-		return englishKeyCodes[input]
 	end
-
-end
-
---------------------------------------------------------------------------------
--- DOUBLE LEFT CLICK:
---------------------------------------------------------------------------------
-function doubleLeftClick(point)
-	local clickState = hs.eventtap.event.properties.mouseEventClickState
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-	hs.timer.usleep(1000)
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
-end
-
---------------------------------------------------------------------------------
--- TRANSLATE KEYBOARD CHARACTER STRINGS FROM PLIST TO HS FORMAT:
---------------------------------------------------------------------------------
-function translateKeyboardCharacters(input)
-
-	local result = tostring(input)
-
-	if input == " " 									then result = "space"		end
-	if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
-	if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
-	if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
-	if string.find(input, "NSF4FunctionKey") 			then result = "f4" 			end
-	if string.find(input, "NSF5FunctionKey") 			then result = "f5" 			end
-	if string.find(input, "NSF6FunctionKey") 			then result = "f6" 			end
-	if string.find(input, "NSF7FunctionKey") 			then result = "f7" 			end
-	if string.find(input, "NSF8FunctionKey") 			then result = "f8" 			end
-	if string.find(input, "NSF9FunctionKey") 			then result = "f9" 			end
-	if string.find(input, "NSF10FunctionKey") 			then result = "f10" 		end
-	if string.find(input, "NSF11FunctionKey") 			then result = "f11" 		end
-	if string.find(input, "NSF12FunctionKey") 			then result = "f12" 		end
-	if string.find(input, "NSF13FunctionKey") 			then result = "f13" 		end
-	if string.find(input, "NSF14FunctionKey") 			then result = "f14" 		end
-	if string.find(input, "NSF15FunctionKey") 			then result = "f15" 		end
-	if string.find(input, "NSF16FunctionKey") 			then result = "f16" 		end
-	if string.find(input, "NSF17FunctionKey") 			then result = "f17" 		end
-	if string.find(input, "NSF18FunctionKey") 			then result = "f18" 		end
-	if string.find(input, "NSF19FunctionKey") 			then result = "f19" 		end
-	if string.find(input, "NSF20FunctionKey") 			then result = "f20" 		end
-	if string.find(input, "NSUpArrowFunctionKey") 		then result = "up" 			end
-	if string.find(input, "NSDownArrowFunctionKey") 	then result = "down" 		end
-	if string.find(input, "NSLeftArrowFunctionKey") 	then result = "left" 		end
-	if string.find(input, "NSRightArrowFunctionKey") 	then result = "right" 		end
-	if string.find(input, "NSDeleteFunctionKey") 		then result = "delete" 		end
-	if string.find(input, "NSHomeFunctionKey") 			then result = "home" 		end
-	if string.find(input, "NSEndFunctionKey") 			then result = "end" 		end
-	if string.find(input, "NSPageUpFunctionKey") 		then result = "pageup" 		end
-	if string.find(input, "NSPageDownFunctionKey") 		then result = "pagedown" 	end
 
 	--------------------------------------------------------------------------------
-	-- Convert to lowercase:
+	-- HIDE TOUCH BAR:
 	--------------------------------------------------------------------------------
-	result = string.lower(result)
-
-	local convertedToKeycode = keyCodeTranslator(result)
-	if convertedToKeycode == nil then
-		print("[FCPX HACKS] NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
-		result = ""
-	else
-		result = convertedToKeycode
+	function hideTouchbar()
+		--------------------------------------------------------------------------------
+		-- Hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		if touchBarSupported then touchBarWindow:hide() end
 	end
 
-	return result
+	--------------------------------------------------------------------------------
+	-- SET TOUCH BAR LOCATION:
+	--------------------------------------------------------------------------------
+	function setTouchBarLocation()
 
-end
+		--------------------------------------------------------------------------------
+		-- Get Settings:
+		--------------------------------------------------------------------------------
+		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 
---------------------------------------------------------------------------------
--- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
---------------------------------------------------------------------------------
-function translateKeyboardModifiers(input)
+		--------------------------------------------------------------------------------
+		-- Show Touch Bar at Mouse Pointer Position:
+		--------------------------------------------------------------------------------
+		if displayTouchBarLocation == "Mouse" then
 
-	local result = {}
-	if string.find(input, "command") then result[#result + 1] = "command" end
-	if string.find(input, "control") then result[#result + 1] = "control" end
-	if string.find(input, "option") then result[#result + 1] = "option" end
-	if string.find(input, "shift") then result[#result + 1] = "shift" end
-	return result
+			--------------------------------------------------------------------------------
+			-- Position Touch Bar to Mouse Pointer Location:
+			--------------------------------------------------------------------------------
+			touchBarWindow:atMousePosition()
 
-end
+		end
 
---------------------------------------------------------------------------------
--- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
---------------------------------------------------------------------------------
-function translateModifierMask(value)
+		--------------------------------------------------------------------------------
+		-- Show Touch Bar at Top Centre of Timeline:
+		--------------------------------------------------------------------------------
+		if displayTouchBarLocation == "TimelineTopCentre" then
 
-    local modifiers = {
-        --AlphaShift = 1 << 16,
-        shift      = 1 << 17,
-        control    = 1 << 18,
-        option	   = 1 << 19,
-        command    = 1 << 20,
-        --NumericPad = 1 << 21,
-        --Help       = 1 << 22,
-        --Function   = 1 << 23,
-    }
+			--------------------------------------------------------------------------------
+			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
+			--------------------------------------------------------------------------------
+			local timelineScrollArea = getFinalCutProTimelineScrollArea()
+			local timelineScrollAreaPosition = {}
+			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
+			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
+			touchBarWindow:topLeft(timelineScrollAreaPosition)
 
-    local answer = {}
+		end
 
-    for k, v in pairs(modifiers) do
-        if (value & v) == v then
-            table.insert(answer, k)
-        end
-    end
+		--------------------------------------------------------------------------------
+		-- Save last Touch Bar Location to Settings:
+		--------------------------------------------------------------------------------
+		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
-    return answer
-
-end
-
---------------------------------------------------------------------------------
--- REMOVE FILENAME FROM PATH:
---------------------------------------------------------------------------------
-function removeFilenameFromPath(input)
-	return (string.sub(input, 1, (string.find(input, "/[^/]*$"))))
-end
-
---------------------------------------------------------------------------------
--- SLEEP:
---------------------------------------------------------------------------------
-function sleep(n)  -- seconds
-	local t0 = clock()
-	while clock() - t0 <= n do end
-end
-
---------------------------------------------------------------------------------
--- CONVERT SECONDS TO TIMECODE:
---------------------------------------------------------------------------------
-function secondsToTimecode(seconds, framerate)
-	local seconds = tonumber(seconds)
-	if framerate == nil then framerate = 25 end
-	if framerate <= 0 then framerate = 25 end
-	if seconds <= 0 then
-		return "00:00:00:00";
-	else
-		hours 	= string.format("%02.f", math.floor(seconds/3600));
-		mins 	= string.format("%02.f", math.floor(seconds/60 - (hours*60)));
-		secs 	= string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
-		frames 	= string.format("%02.f", (seconds % 1) * framerate);
-		return hours..":"..mins..":"..secs..":"..frames
 	end
-end
-
--------------------------------------------------------------------------------
--- RETURNS MACOS VERSION:
--------------------------------------------------------------------------------
-function macOSVersion()
-	local osVersion = hs.host.operatingSystemVersion()
-	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
-	return osVersionString
-end
 
 --------------------------------------------------------------------------------
--- DOES DIRECTORY EXIST:
+-- SHORTCUT RELATED:
 --------------------------------------------------------------------------------
-function doesDirectoryExist(path)
-    local attr = hs.fs.attributes(path)
-    return attr and attr.mode == 'directory'
-end
+
+	--------------------------------------------------------------------------------
+	-- PERFORM KEYSTROKE FROM PLIST DATA:
+	--------------------------------------------------------------------------------
+	function keyStrokeFromPlist(whichShortcut)
+		if finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
+		if finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
+		if next(finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
+		eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
+		return true
+	end
+
+	--------------------------------------------------------------------------------
+	-- MODIFIER MATCH:
+	--------------------------------------------------------------------------------
+	function modifierMatch(inputA, inputB)
+
+		local match = true
+
+		if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
+		if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
+		if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
+		if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
+
+		return match
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CONVERTS MODIFIERS KEYS INTO SOMETHING EVENTTAP CAN UNDERSTAND:
+	--------------------------------------------------------------------------------
+	function convertModifiersKeysForEventTap(input)
+
+		for i in pairs(input) do
+			if input[i] == "control" 	then input[i] = "ctrl" end
+			if input[i] == "option" 	then input[i] = "alt" end
+			if input[i] == "command" 	then input[i] = "cmd" end
+			if input[i] == "⌃" 			then input[i] = "ctrl" end
+			if input[i] == "⌥" 			then input[i] = "alt" end
+			if input[i] == "⌘" 			then input[i] = "cmd" end
+			if input[i] == "⇧" 			then input[i] = "shift" end
+		end
+
+		return input
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- KEYCODE TRANSLATOR:
+	--------------------------------------------------------------------------------
+	function keyCodeTranslator(input)
+
+		local englishKeyCodes = {
+			["'"] = 39,
+			[","] = 43,
+			["-"] = 27,
+			["."] = 47,
+			["/"] = 44,
+			["0"] = 29,
+			["1"] = 18,
+			["2"] = 19,
+			["3"] = 20,
+			["4"] = 21,
+			["5"] = 23,
+			["6"] = 22,
+			["7"] = 26,
+			["8"] = 28,
+			["9"] = 25,
+			[";"] = 41,
+			["="] = 24,
+			["["] = 33,
+			["\\"] = 42,
+			["]"] = 30,
+			["`"] = 50,
+			["a"] = 0,
+			["b"] = 11,
+			["c"] = 8,
+			["d"] = 2,
+			["delete"] = 51,
+			["down"] = 125,
+			["e"] = 14,
+			["end"] = 119,
+			["escape"] = 53,
+			["f"] = 3,
+			["f1"] = 122,
+			["f10"] = 109,
+			["f11"] = 103,
+			["f12"] = 111,
+			["f13"] = 105,
+			["f14"] = 107,
+			["f15"] = 113,
+			["f16"] = 106,
+			["f17"] = 64,
+			["f18"] = 79,
+			["f19"] = 80,
+			["f2"] = 120,
+			["f20"] = 90,
+			["f3"] = 99,
+			["f4"] = 118,
+			["f5"] = 96,
+			["f6"] = 97,
+			["f7"] = 98,
+			["f8"] = 100,
+			["f9"] = 101,
+			["forwarddelete"] = 117,
+			["g"] = 5,
+			["h"] = 4,
+			["help"] = 114,
+			["home"] = 115,
+			["i"] = 34,
+			["j"] = 38,
+			["k"] = 40,
+			["l"] = 37,
+			["left"] = 123,
+			["m"] = 46,
+			["n"] = 45,
+			["o"] = 31,
+			["p"] = 35,
+			["pad*"] = 67,
+			["pad+"] = 69,
+			["pad-"] = 78,
+			["pad."] = 65,
+			["pad/"] = 75,
+			["pad0"] = 82,
+			["pad1"] = 83,
+			["pad2"] = 84,
+			["pad3"] = 85,
+			["pad4"] = 86,
+			["pad5"] = 87,
+			["pad6"] = 88,
+			["pad7"] = 89,
+			["pad8"] = 91,
+			["pad9"] = 92,
+			["pad="] = 81,
+			["padclear"] = 71,
+			["padenter"] = 76,
+			["pagedown"] = 121,
+			["pageup"] = 116,
+			["q"] = 12,
+			["r"] = 15,
+			["return"] = 36,
+			["right"] = 124,
+			["s"] = 1,
+			["space"] = 49,
+			["t"] = 17,
+			["tab"] = 48,
+			["u"] = 32,
+			["up"] = 126,
+			["v"] = 9,
+			["w"] = 13,
+			["x"] = 7,
+			["y"] = 16,
+			["z"] = 6,
+			["§"] = 10
+		}
+
+		if englishKeyCodes[input] == nil then
+			if keycodes.map[input] == nil then
+				return ""
+			else
+				return keycodes.map[input]
+			end
+		else
+			return englishKeyCodes[input]
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM PLIST TO HS FORMAT:
+	--------------------------------------------------------------------------------
+	function translateKeyboardCharacters(input)
+
+		local result = tostring(input)
+
+		if input == " " 									then result = "space"		end
+		if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
+		if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
+		if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
+		if string.find(input, "NSF4FunctionKey") 			then result = "f4" 			end
+		if string.find(input, "NSF5FunctionKey") 			then result = "f5" 			end
+		if string.find(input, "NSF6FunctionKey") 			then result = "f6" 			end
+		if string.find(input, "NSF7FunctionKey") 			then result = "f7" 			end
+		if string.find(input, "NSF8FunctionKey") 			then result = "f8" 			end
+		if string.find(input, "NSF9FunctionKey") 			then result = "f9" 			end
+		if string.find(input, "NSF10FunctionKey") 			then result = "f10" 		end
+		if string.find(input, "NSF11FunctionKey") 			then result = "f11" 		end
+		if string.find(input, "NSF12FunctionKey") 			then result = "f12" 		end
+		if string.find(input, "NSF13FunctionKey") 			then result = "f13" 		end
+		if string.find(input, "NSF14FunctionKey") 			then result = "f14" 		end
+		if string.find(input, "NSF15FunctionKey") 			then result = "f15" 		end
+		if string.find(input, "NSF16FunctionKey") 			then result = "f16" 		end
+		if string.find(input, "NSF17FunctionKey") 			then result = "f17" 		end
+		if string.find(input, "NSF18FunctionKey") 			then result = "f18" 		end
+		if string.find(input, "NSF19FunctionKey") 			then result = "f19" 		end
+		if string.find(input, "NSF20FunctionKey") 			then result = "f20" 		end
+		if string.find(input, "NSUpArrowFunctionKey") 		then result = "up" 			end
+		if string.find(input, "NSDownArrowFunctionKey") 	then result = "down" 		end
+		if string.find(input, "NSLeftArrowFunctionKey") 	then result = "left" 		end
+		if string.find(input, "NSRightArrowFunctionKey") 	then result = "right" 		end
+		if string.find(input, "NSDeleteFunctionKey") 		then result = "delete" 		end
+		if string.find(input, "NSHomeFunctionKey") 			then result = "home" 		end
+		if string.find(input, "NSEndFunctionKey") 			then result = "end" 		end
+		if string.find(input, "NSPageUpFunctionKey") 		then result = "pageup" 		end
+		if string.find(input, "NSPageDownFunctionKey") 		then result = "pagedown" 	end
+
+		--------------------------------------------------------------------------------
+		-- Convert to lowercase:
+		--------------------------------------------------------------------------------
+		result = string.lower(result)
+
+		local convertedToKeycode = keyCodeTranslator(result)
+		if convertedToKeycode == nil then
+			writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
+			result = ""
+		else
+			result = convertedToKeycode
+		end
+
+		return result
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
+	--------------------------------------------------------------------------------
+	function translateKeyboardModifiers(input)
+
+		local result = {}
+		if string.find(input, "command") then result[#result + 1] = "command" end
+		if string.find(input, "control") then result[#result + 1] = "control" end
+		if string.find(input, "option") then result[#result + 1] = "option" end
+		if string.find(input, "shift") then result[#result + 1] = "shift" end
+		return result
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
+	--------------------------------------------------------------------------------
+	function translateModifierMask(value)
+
+		local modifiers = {
+			--AlphaShift = 1 << 16,
+			shift      = 1 << 17,
+			control    = 1 << 18,
+			option	   = 1 << 19,
+			command    = 1 << 20,
+			--NumericPad = 1 << 21,
+			--Help       = 1 << 22,
+			--Function   = 1 << 23,
+		}
+
+		local answer = {}
+
+		for k, v in pairs(modifiers) do
+			if (value & v) == v then
+				table.insert(answer, k)
+			end
+		end
+
+		return answer
+
+	end
 
 --------------------------------------------------------------------------------
--- SPLIT STRING:
+-- MOUSE RELATED:
 --------------------------------------------------------------------------------
-local function split(str, sep)
-   local result = {}
-   local regex = ("([^%s]+)"):format(sep)
-   for each in str:gmatch(regex) do
-      table.insert(result, each)
-   end
-   return result
-end
+
+	--------------------------------------------------------------------------------
+	-- DOUBLE LEFT CLICK:
+	--------------------------------------------------------------------------------
+	function doubleLeftClick(point)
+		local clickState = eventtap.event.properties.mouseEventClickState
+		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
+		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
+		timer.usleep(1000)
+		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
+		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
+	end
+
+	--------------------------------------------------------------------------------
+	-- NINJA MOUSE CLICK:
+	--------------------------------------------------------------------------------
+	function ninjaMouseClick(position)
+			local originalMousePoint = mouse.getAbsolutePosition()
+			eventtap.leftClick(position)
+			mouse.setAbsolutePosition(originalMousePoint)
+	end
 
 --------------------------------------------------------------------------------
--- TRIM STRING:
+-- DIALOG BOXES:
 --------------------------------------------------------------------------------
-function trim(s)
-  return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
 
---------------------------------------------------------------------------------
--- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
---------------------------------------------------------------------------------
-function displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-	local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-	local appleScriptD = [[
-		repeat
-			try
-				tell me to activate
-				set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} with icon fcpxIcon)
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-			try
-				set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
-				if usersInput is not equal to missing value then
-					if usersInput is not 0 then
-						exit repeat
+	--------------------------------------------------------------------------------
+	-- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
+	--------------------------------------------------------------------------------
+	function displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
+		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
+		local appleScriptD = [[
+			repeat
+				try
+					tell me to activate
+					set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} with icon fcpxIcon)
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+				try
+					set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
+					if usersInput is not equal to missing value then
+						if usersInput is not 0 then
+							exit repeat
+						end if
 					end if
-				end if
-			end try
-			display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
-		end repeat
-		return usersInput
-	]]
-	a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-	if returnToFinalCutPro then launchFinalCutPro() end
-	return result
-end
+				end try
+				display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
+			end repeat
+			return usersInput
+		]]
+		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+		if returnToFinalCutPro then launchFinalCutPro() end
+		return result
+	end
 
---------------------------------------------------------------------------------
--- DISPLAY TEXT BOX MESSAGE:
---------------------------------------------------------------------------------
-function displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-	local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-	local appleScriptD = [[
-		set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
-		set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
-		set allowedAll to allowedLetters & allowedNumbers & space
+	--------------------------------------------------------------------------------
+	-- DISPLAY TEXT BOX MESSAGE:
+	--------------------------------------------------------------------------------
+	function displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
+		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
+		local appleScriptD = [[
+			set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
+			set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
+			set allowedAll to allowedLetters & allowedNumbers & space
 
-		repeat
-			try
-				tell me to activate
-				set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-			try
-				set invalidCharacters to false
-				repeat with aCharacter in response
-					if (aCharacter as text) is not in allowedAll then
+			repeat
+				try
+					tell me to activate
+					set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+				try
+					set invalidCharacters to false
+					repeat with aCharacter in response
+						if (aCharacter as text) is not in allowedAll then
+							set invalidCharacters to true
+						end if
+					end repeat
+					if length of response is 0 then
 						set invalidCharacters to true
 					end if
-				end repeat
-				if length of response is 0 then
-					set invalidCharacters to true
-				end if
-				if invalidCharacters is false then
-					exit repeat
-				end
-			end try
-			display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
-		end repeat
-		return response
-	]]
-	a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-	if returnToFinalCutPro then launchFinalCutPro() end
-	return result
-end
+					if invalidCharacters is false then
+						exit repeat
+					end
+				end try
+				display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
+			end repeat
+			return response
+		]]
+		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+		if returnToFinalCutPro then launchFinalCutPro() end
+		return result
+	end
 
---------------------------------------------------------------------------------
--- DISPLAY CHOOSE FOLDER DIALOG:
---------------------------------------------------------------------------------
-function displayChooseFolder(whatMessage)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		try
-			set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
-			return whichFolder
-		on error
-			-- Cancel Pressed:
-			return false
-		end try
-	]]
-	a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
-	return result
-end
-
---------------------------------------------------------------------------------
--- DISPLAY ALERT MESSAGE:
---------------------------------------------------------------------------------
-function displayAlertMessage(whatMessage)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon stop
-	]]
-	hs.osascript.applescript(appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
-end
-
---------------------------------------------------------------------------------
--- DISPLAY ERROR MESSAGE:
---------------------------------------------------------------------------------
-function displayErrorMessage(whatError)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {"OK"} with icon fcpxIcon
-	]]
-	hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
-end
-
---------------------------------------------------------------------------------
--- DISPLAY MESSAGE:
---------------------------------------------------------------------------------
-function displayMessage(whatMessage)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon fcpxIcon
-	]]
-	hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
-end
-
---------------------------------------------------------------------------------
--- DISPLAY YES OR NO QUESTION:
---------------------------------------------------------------------------------
-function displayYesNoQuestion(whatMessage) -- returns true or false
-
-	local returnToFinalCutPro = isFinalCutProFrontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {"Yes", "No"} default button 1 with icon fcpxIcon
-		if the button returned of the result is "Yes" then
-			return true
-		else
-			return false
-		end if
-	]]
-	a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
-	return result
-
-end
-
---------------------------------------------------------------------------------
--- DELETE ALL HIGHLIGHTS:
---------------------------------------------------------------------------------
-function deleteAllHighlights()
 	--------------------------------------------------------------------------------
-    -- Delete FCPX Browser Highlight:
-    --------------------------------------------------------------------------------
-    if browserHighlight then
-        browserHighlight:delete()
-        if browserHighlightTimer then
-            browserHighlightTimer:stop()
-        end
-    end
-end
+	-- DISPLAY CHOOSE FOLDER DIALOG:
+	--------------------------------------------------------------------------------
+	function displayChooseFolder(whatMessage)
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell me to activate
+			try
+				set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
+				return whichFolder
+			on error
+				-- Cancel Pressed:
+				return false
+			end try
+		]]
+		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		if returnToFinalCutPro then launchFinalCutPro() end
+		return result
+	end
+
+	--------------------------------------------------------------------------------
+	-- DISPLAY ALERT MESSAGE:
+	--------------------------------------------------------------------------------
+	function displayAlertMessage(whatMessage)
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell me to activate
+			display dialog whatMessage buttons {"OK"} with icon stop
+		]]
+		osascript.applescript(appleScriptA .. appleScriptB)
+		if returnToFinalCutPro then launchFinalCutPro() end
+	end
+
+	--------------------------------------------------------------------------------
+	-- DISPLAY ERROR MESSAGE:
+	--------------------------------------------------------------------------------
+	function displayErrorMessage(whatError)
+
+		--------------------------------------------------------------------------------
+		-- Write error message to console:
+		--------------------------------------------------------------------------------
+		writeToConsole(whatError)
+
+		--------------------------------------------------------------------------------
+		-- Display Dialog Box:
+		--------------------------------------------------------------------------------
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell me to activate
+			display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {"Yes", "No"} with icon fcpxIcon
+			if the button returned of the result is "Yes" then
+				return true
+			else
+				return false
+			end if
+		]]
+		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+
+		--------------------------------------------------------------------------------
+		-- Send bug report:
+		--------------------------------------------------------------------------------
+		if result then emailBugReport() end
+		if returnToFinalCutPro then launchFinalCutPro() end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- DISPLAY MESSAGE:
+	--------------------------------------------------------------------------------
+	function displayMessage(whatMessage)
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell me to activate
+			display dialog whatMessage buttons {"OK"} with icon fcpxIcon
+		]]
+		osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		if returnToFinalCutPro then launchFinalCutPro() end
+	end
+
+	--------------------------------------------------------------------------------
+	-- DISPLAY YES OR NO QUESTION:
+	--------------------------------------------------------------------------------
+	function displayYesNoQuestion(whatMessage) -- returns true or false
+
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell me to activate
+			display dialog whatMessage buttons {"Yes", "No"} default button 1 with icon fcpxIcon
+			if the button returned of the result is "Yes" then
+				return true
+			else
+				return false
+			end if
+		]]
+		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		if returnToFinalCutPro then launchFinalCutPro() end
+		return result
+
+	end
 
 --------------------------------------------------------------------------------
--- PRINT TABLE CONTENTS (USED FOR DEBUGGING):
+-- GENERAL TOOLS:
 --------------------------------------------------------------------------------
-function print_r ( t )
-    local print_r_cache={}
-    local function sub_print_r(t,indent)
-        if (print_r_cache[tostring(t)]) then
-            print(indent.."*"..tostring(t))
-        else
-            print_r_cache[tostring(t)]=true
-            if (type(t)=="table") then
-                for pos,val in pairs(t) do
-                    if (type(val)=="table") then
-                        print(indent.."["..pos.."] => "..tostring(t).." {")
-                        sub_print_r(val,indent..string.rep(" ",string.len(pos)+8))
-                        print(indent..string.rep(" ",string.len(pos)+6).."}")
-                    elseif (type(val)=="string") then
-                        print(indent.."["..pos..'] => "'..val..'"')
-                    else
-                        print(indent.."["..pos.."] => "..tostring(val))
-                    end
-                end
-            else
-                print(indent..tostring(t))
-            end
-        end
-    end
-    if (type(t)=="table") then
-        print(tostring(t).." {")
-        sub_print_r(t,"  ")
-        print("}")
-    else
-        sub_print_r(t,"  ")
-    end
-    print()
-end
+
+	--------------------------------------------------------------------------------
+	-- WRITE TO CONSOLE:
+	--------------------------------------------------------------------------------
+	function writeToConsole(value, overrideLabel)
+
+		if value ~= nil then
+			if type(value) == "table" then value = inspect(value) end
+			if overrideLabel == nil then value = "> " .. value end
+
+			local consoleStyledText = styledtext.new(value, {
+				color = drawing.color.definedCollections.hammerspoon["blue"],
+				font = { name = "Menlo", size = 12 },
+			})
+
+			console.printStyledtext(consoleStyledText)
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- DEBUG MESSAGE:
+	--------------------------------------------------------------------------------
+	function debugMessage(value)
+		if value ~= nil then
+			if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+			if debugMode then writeToConsole(value) end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
+	--------------------------------------------------------------------------------
+	function executeWithAdministratorPrivileges(input)
+		local appleScriptA = 'set shellScriptInput to "' .. input .. '"\n\n'
+		local appleScriptB = [[
+			try
+				tell me to activate
+				do shell script shellScriptInput with administrator privileges
+				return true
+			on error
+				return false
+			end try
+		]]
+
+		ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+		return result
+	end
+
+	--------------------------------------------------------------------------------
+	-- HOW MANY ITEMS IN A TABLE?
+	--------------------------------------------------------------------------------
+	function tableCount(table)
+		local count = 0
+	  	for _ in pairs(table) do count = count + 1 end
+	  	return count
+	end
+
+	--------------------------------------------------------------------------------
+	-- REMOVE FILENAME FROM PATH:
+	--------------------------------------------------------------------------------
+	function removeFilenameFromPath(input)
+		return (string.sub(input, 1, (string.find(input, "/[^/]*$"))))
+	end
+
+	--------------------------------------------------------------------------------
+	-- SLEEP:
+	--------------------------------------------------------------------------------
+	function sleep(n)  -- seconds
+		local t0 = clock()
+		while clock() - t0 <= n do end
+	end
+
+	--------------------------------------------------------------------------------
+	-- CONVERT SECONDS TO TIMECODE:
+	--------------------------------------------------------------------------------
+	function secondsToTimecode(seconds, framerate)
+		local seconds = tonumber(seconds)
+		if framerate == nil then framerate = 25 end
+		if framerate <= 0 then framerate = 25 end
+		if seconds <= 0 then
+			return "00:00:00:00";
+		else
+			hours 	= string.format("%02.f", math.floor(seconds/3600));
+			mins 	= string.format("%02.f", math.floor(seconds/60 - (hours*60)));
+			secs 	= string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
+			frames 	= string.format("%02.f", (seconds % 1) * framerate);
+			return hours..":"..mins..":"..secs..":"..frames
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- DOES DIRECTORY EXIST:
+	--------------------------------------------------------------------------------
+	function doesDirectoryExist(path)
+		local attr = fs.attributes(path)
+		return attr and attr.mode == 'directory'
+	end
+
+	--------------------------------------------------------------------------------
+	-- SPLIT STRING:
+	--------------------------------------------------------------------------------
+	local function split(str, sep)
+	   local result = {}
+	   local regex = ("([^%s]+)"):format(sep)
+	   for each in str:gmatch(regex) do
+		  table.insert(result, each)
+	   end
+	   return result
+	end
+
+	--------------------------------------------------------------------------------
+	-- TRIM STRING:
+	--------------------------------------------------------------------------------
+	function trim(s)
+	  return (s:gsub("^%s*(.-)%s*$", "%1"))
+	end
+
+	-------------------------------------------------------------------------------
+	-- RETURNS MACOS VERSION:
+	-------------------------------------------------------------------------------
+	function macOSVersion()
+		local osVersion = host.operatingSystemVersion()
+		local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
+		return osVersionString
+	end
 
 --------------------------------------------------------------------------------
--- NOTIFICATION WATCHER ACTIONS:
+-- MISC:
 --------------------------------------------------------------------------------
-function notificationWatcherAction(name, object, userInfo)
 
-	local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
-	if prowlAPIKey ~= nil then
+	--------------------------------------------------------------------------------
+	-- PROWL API KEY VALID:
+	--------------------------------------------------------------------------------
+	function prowlAPIKeyValid(input)
 
-		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
-		local prowlEvent = http.encodeForQuery("")
-		local prowlDescription = nil
+		local result = false
+		local errorMessage = nil
 
-		if name == "uploadSuccess" then prowlDescription = http.encodeForQuery("Share Successful") end
-		if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery("Share Failed") end
+		prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
+		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
 
-		local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
-		httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
-
-		if not string.match(httpBody, "success") then
+		if string.match(httpBody, "success") then
+			result = true
+		else
 			local xml = slaxdom:dom(tostring(httpBody))
-			local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
-			if errorMessage ~= nil then print("[FCPX Hacks] PROWL ERROR: " .. trim(tostring(errorMessage))) end
+			errorMessage = xml['root']['el'][1]['kids'][1]['value']
+		end
+
+		return result, errorMessage
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- EMAIL BUG REPORT:
+	--------------------------------------------------------------------------------
+	function emailBugReport()
+		mailer = sharing.newShare("com.apple.share.Mail.compose")
+		mailer:subject("[FCPX Hacks " .. scriptVersion .. "] Bug Report"):recipients({bugReportEmail})
+		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
+	end
+
+	--------------------------------------------------------------------------------
+	-- DELETE ALL HIGHLIGHTS:
+	--------------------------------------------------------------------------------
+	function deleteAllHighlights()
+		--------------------------------------------------------------------------------
+		-- Delete FCPX Browser Highlight:
+		--------------------------------------------------------------------------------
+		if browserHighlight then
+			browserHighlight:delete()
+			if browserHighlightTimer then
+				browserHighlightTimer:stop()
+			end
 		end
 	end
 
-end
+	--------------------------------------------------------------------------------
+	-- CHECK FOR FCPX HACKS UPDATES:
+	--------------------------------------------------------------------------------
+	function checkForUpdates()
 
---------------------------------------------------------------------------------
--- CHECK FOR FCPX HACKS UPDATES:
---------------------------------------------------------------------------------
-function checkForUpdates()
-	if debugMode then print("[FCPX Hacks] Checking for updates.") end
-	latestScriptVersion = nil
-	updateResponse, updateBody, updateHeader = hs.http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
-	if updateResponse == 200 then
-		if updateBody:sub(1,8) == "LATEST: " then
-			latestScriptVersion = updateBody:sub(9,12)
-			refreshMenuBar()
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
+		if enableCheckForUpdates then
+			debugMessage("Checking for updates.")
+			latestScriptVersion = nil
+			updateResponse, updateBody, updateHeader = http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
+			if updateResponse == 200 then
+				if updateBody:sub(1,8) == "LATEST: " then
+					--------------------------------------------------------------------------------
+					-- Update Script Version:
+					--------------------------------------------------------------------------------
+					latestScriptVersion = updateBody:sub(9)
+
+					--------------------------------------------------------------------------------
+					-- macOS Notification:
+					--------------------------------------------------------------------------------
+					if not shownUpdateNotification then
+						if latestScriptVersion > scriptVersion then
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.icns"))
+																:title("FCPX Hacks Update Available")
+																:subTitle("Version " .. latestScriptVersion)
+																:informativeText("Do you wish to install?")
+																:hasActionButton(true)
+																:actionButtonTitle("Install")
+																:otherButtonTitle("Not Yet")
+																:send()
+							shownUpdateNotification = true
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Refresh Menubar:
+					--------------------------------------------------------------------------------
+					refreshMenuBar()
+				end
+			end
 		end
+
 	end
-end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -11077,9 +12433,9 @@ end
 function finalCutProResizeWatcher()
 	finalCutProWindowFilter = window.filter.new{"Final Cut Pro"}
 	finalCutProWindowFilter:subscribe(window.filter.windowMoved, function()
-		if debugMode then print("[FCPX Hacks] Window Resized.") end
+		debugMessage("Window Resized.")
 		if touchBarSupported then
-			local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
+			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
 	end)
@@ -11091,7 +12447,7 @@ end
 function finalCutProWatcher(appName, eventType, appObject)
 
 	if (appName == "Final Cut Pro") then
-		if (eventType == hs.application.watcher.activated) then
+		if (eventType == application.watcher.activated) then
 			--------------------------------------------------------------------------------
 	  		-- Final Cut Pro Activated:
 	  		--------------------------------------------------------------------------------
@@ -11109,7 +12465,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Full Screen Keyboard Watcher:
 				--------------------------------------------------------------------------------
-				if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
 					fullscreenKeyboardWatcherUp:start()
 					fullscreenKeyboardWatcherDown:start()
 				end
@@ -11117,7 +12473,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Disable Scrolling Timeline Watcher:
 				--------------------------------------------------------------------------------
-				if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
 					if scrollingTimelineWatcherUp ~= nil then
 						scrollingTimelineWatcherUp:start()
 						scrollingTimelineWatcherDown:start()
@@ -11129,7 +12485,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				showTouchbar()
 
-		elseif (eventType == hs.application.watcher.deactivated) or (eventType == hs.application.watcher.terminated) then
+		elseif (eventType == application.watcher.deactivated) or (eventType == application.watcher.terminated) then
 			--------------------------------------------------------------------------------
 			-- Final Cut Pro Lost Focus:
 			--------------------------------------------------------------------------------
@@ -11137,7 +12493,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Full Screen Keyboard Watcher:
 				--------------------------------------------------------------------------------
-				if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
 					fullscreenKeyboardWatcherUp:stop()
 					fullscreenKeyboardWatcherDown:stop()
 				end
@@ -11145,7 +12501,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Disable Scrolling Timeline Watcher:
 				--------------------------------------------------------------------------------
-				if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
 					if scrollingTimelineWatcherUp ~= nil then
 						scrollingTimelineWatcherUp:stop()
 						scrollingTimelineWatcherDown:stop()
@@ -11204,14 +12560,12 @@ function finalCutProSettingsWatcher(files)
     if doReload then
 
 		--------------------------------------------------------------------------------
-		-- Refresh Keyboard Shortcuts if changed:
+		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
     	if lastCommandSet ~= getFinalCutProActiveCommandSet() then
-			local doOnce = true
-			hs.timer.waitUntil(function() return doOnce end, function()
-				bindKeyboardShortcuts()
-				doOnce = false
-			end, 0.00000001)
+    		if not isCommandEditorOpen then
+	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
+			end
 		end
 
     	--------------------------------------------------------------------------------
@@ -11223,6 +12577,7 @@ function finalCutProSettingsWatcher(files)
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
     	updateMenubarIcon()
+
     end
 end
 
@@ -11231,9 +12586,9 @@ end
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
 	local commandEditorID = nil
-	local filter = hs.window.filter.new(true)
+	local filter = window.filter.new(true)
 	filter:subscribe(
-	  hs.window.filter.windowCreated,
+	  window.filter.windowCreated,
 	  (function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:title() == 'Command Editor') then
@@ -11243,7 +12598,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				commandEditorID = window:id()
 				isCommandEditorOpen = true
-				if debugMode then print("[FCPX Hacks] Command Editor Opened.") end
+				debugMessage("Command Editor Opened.")
 				--------------------------------------------------------------------------------
 
 				--------------------------------------------------------------------------------
@@ -11265,7 +12620,7 @@ function commandEditorWatcher()
 	  true
 	)
 	filter:subscribe(
-	  hs.window.filter.windowDestroyed,
+	  window.filter.windowDestroyed,
 	  (function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:id() == commandEditorID) then
@@ -11275,7 +12630,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				commandEditorID = nil
 				isCommandEditorOpen = false
-				if debugMode then print("[FCPX Hacks] Command Editor Closed.") end
+				debugMessage("Command Editor Closed.")
 				--------------------------------------------------------------------------------
 
 				--------------------------------------------------------------------------------
@@ -11287,11 +12642,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				-- Refresh Keyboard Shortcuts:
 				--------------------------------------------------------------------------------
-				local doOnce = true
-				hs.timer.waitUntil(function() return doOnce end, function()
-					bindKeyboardShortcuts()
-					doOnce = false
-				end, 0.00000001)
+				timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 				--------------------------------------------------------------------------------
 
 			end
@@ -11307,10 +12658,10 @@ end
 --------------------------------------------------------------------------------
 function fullscreenKeyboardWatcher()
 	fullscreenKeyboardWatcherWorking = false
-	fullscreenKeyboardWatcherUp = hs.eventtap.new({ hs.eventtap.event.types.keyUp }, function(event)
+	fullscreenKeyboardWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
 		fullscreenKeyboardWatcherWorking = false
 	end)
-	fullscreenKeyboardWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+	fullscreenKeyboardWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
 
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
@@ -11321,7 +12672,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = hs.application("Final Cut Pro")
+		local fcpx = application("Final Cut Pro")
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -11345,10 +12696,10 @@ function fullscreenKeyboardWatcher()
 						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
 								if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-									hs.eventtap.keyStroke({""}, "escape")
-									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									eventtap.keyStroke({""}, "escape")
+									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 									return true
 								end
 							end
@@ -11379,10 +12730,10 @@ function fullscreenKeyboardWatcher()
 							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 								if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
 									if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-										hs.eventtap.keyStroke({""}, "escape")
-										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+										eventtap.keyStroke({""}, "escape")
+										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 										return true
 									end
 								end
@@ -11405,7 +12756,7 @@ function clipboardWatcher()
 	--------------------------------------------------------------------------------
 	-- Used for debugging:
 	--------------------------------------------------------------------------------
-	if debugMode then print("[FCPX Hacks] Starting Clipboard Watcher.") end
+	debugMessage("Starting Clipboard Watcher.")
 
 	--------------------------------------------------------------------------------
 	-- Get Clipboard History from Settings:
@@ -11421,201 +12772,81 @@ function clipboardWatcher()
 	--------------------------------------------------------------------------------
 	-- Watch for Clipboard Changes:
 	--------------------------------------------------------------------------------
-	clipboardTimer = hs.timer.new(clipboardWatcherFrequency, function()
+	clipboardTimer = timer.new(clipboardWatcherFrequency, function()
 
 		clipboardCurrentChange = pasteboard.changeCount()
 
   		if (clipboardCurrentChange > clipboardLastChange) then
 
 		 	local clipboardContent = pasteboard.allContentTypes()
-		 	if clipboardContent[1][1] == finalCutProClipboardUTI then
-
-				--------------------------------------------------------------------------------
-				-- Set Up Variables:
-				--------------------------------------------------------------------------------
-				local executeOutput 			= nil
-				local executeStatus 			= nil
-				local executeType 				= nil
-				local executeRC 				= nil
-				local addToClipboardHistory 	= true
-
-				--------------------------------------------------------------------------------
-				-- Save Clipboard Data:
-				--------------------------------------------------------------------------------
-				local currentClipboardData 		= pasteboard.readDataForUTI(finalCutProClipboardUTI)
-				local currentClipboardLabel 	= os.date()
-
-				--------------------------------------------------------------------------------
-				-- TO-DO: Work out the structure of the clipboard data then rewrite this:
-				--------------------------------------------------------------------------------
-
-					--------------------------------------------------------------------------------
-					-- Define Temporary Files:
-					--------------------------------------------------------------------------------
-					--local temporaryFileName 		= os.tmpname()
-					--local temporaryFileNameTwo	 	= os.tmpname()
-
-					--------------------------------------------------------------------------------
-					-- Write Clipboard Data to Temporary File:
-					--------------------------------------------------------------------------------
-					--[[
-					local temporaryFile = io.open(temporaryFileName, "w")
-					temporaryFile:write(currentClipboardData)
-					temporaryFile:close()
-
-					executeCommand = "cp " .. tostring(temporaryFileName) .. " ~/.hammerspoon/test.txt"
-					executeOutput, executeStatus, executeType, executeRC = hs.execute(executeCommand)
-					executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileName))
-
-					print("temporaryFileName: " .. temporaryFileName)
-					--]]
-
-					--------------------------------------------------------------------------------
-					-- Convert binary plist to XML then return in JSON:
-					--------------------------------------------------------------------------------
-					--local executeOutput, executeStatus, executeType, executeRC = hs.execute([[
-					--	plutil -convert xml1 ]] .. temporaryFileName .. [[ -o - |
-					--	sed 's/data>/string>/g' |
-					--	plutil -convert json - -o -
-					--]])
-					--if not executeStatus then
-					--	print("[FCPX Hacks] ERROR: Failed to convert binary plist to XML.")
-					--	addToClipboardHistory = false
-					--end
-
-					--------------------------------------------------------------------------------
-					-- Get data from 'ffpasteboardobject':
-					--------------------------------------------------------------------------------
-					--[[
-					local file = io.open(temporaryFileName, "w")
-					file:write(json.decode(executeOutput)["ffpasteboardobject"])
-					file:close()
-					--]]
-
-					--------------------------------------------------------------------------------
-					-- Convert base64 data to human readable:
-					--------------------------------------------------------------------------------
-					--[[
-					executeCommand = "openssl base64 -in " .. tostring(temporaryFileName) .. " -out " .. tostring(temporaryFileNameTwo) .. " -d"
-					executeOutput, executeStatus, executeType, executeRC = hs.execute(executeCommand)
-					if not executeStatus then
-						print("[FCPX Hacks] ERROR: Failed to convert base64 data to human readable.")
-						addToClipboardHistory = false
-					end
-					--]]
-
-					--------------------------------------------------------------------------------
-					-- Convert from binary plist to human readable:
-					--------------------------------------------------------------------------------
-					--[[
-					executeOutput, executeStatus, executeType, executeRC = hs.execute("plutil -convert xml1 " .. tostring(temporaryFileNameTwo))
-					if not executeStatus then
-						print("[FCPX Hacks] ERROR: Failed to convert from binary plist to human readable.")
-						addToClipboardHistory = false
-					end
-					--]]
-
-					--------------------------------------------------------------------------------
-					-- Bring XML data into Hammerspoon:
-					--------------------------------------------------------------------------------
-					--[[
-					executeOutput, executeStatus, executeType, executeRC = hs.execute("cat " .. tostring(temporaryFileNameTwo))
-					if not executeStatus then
-						print("[FCPX Hacks] ERROR: Failed to cat the plist.")
-						addToClipboardHistory = false
-					end
-					--]]
-
-					--------------------------------------------------------------------------------
-					-- XML fun times!
-					--------------------------------------------------------------------------------
-					--local xml = slaxdom:dom(tostring(executeOutput))
-
-							--[[
-							--------------------------------------------------------------------------------
-							-- Clip copied from Primary Storyline:
-							--------------------------------------------------------------------------------
-							if xml['root']['kids'][2]['kids'][8]['kids'][24]['kids'][1]['value'] == "metadataImportToApp" then
-								currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][20]['kids'][1]['value']
-							end
-
-							--------------------------------------------------------------------------------
-							-- Clip copied from Secondary Storyline:
-							--------------------------------------------------------------------------------
-							if xml['kids'][2]['el'][1]['el'][4]['el'][17]['kids'][1]['value'] == "metadataImportToApp" then
-								currentClipboardLabel = xml['kids'][2]['el'][1]['el'][4]['el'][15]['kids'][1]['value']
-							end
-
-							--------------------------------------------------------------------------------
-							-- Clip copied from Browser:
-							--------------------------------------------------------------------------------
-							if xml['root']['kids'][2]['kids'][8]['kids'][30]['kids'][1]['value'] == "metadataImportToApp" then
-								currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][18]['kids'][1]['value']
-							end
-							--]]
+		 	if clipboardContent[1] ~= nil then
+			 	if clipboardContent[1][1] ~= nil then
+					if clipboardContent[1][1] == finalCutProClipboardUTI then
 
 						--------------------------------------------------------------------------------
-						-- Unknown item in clipboard:
+						-- Set Up Variables:
 						--------------------------------------------------------------------------------
-						--[[
-						if currentClipboardLabel == nil then
-							currentClipboardLabel = os.date()
-						end
-						--]]
+						local executeOutput 			= nil
+						local executeStatus 			= nil
+						local executeType 				= nil
+						local executeRC 				= nil
+						local addToClipboardHistory 	= true
 
-					--------------------------------------------------------------------------------
-					-- Clean up temporary files:
-					--------------------------------------------------------------------------------
-					--executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileName))
-					--executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileNameTwo))
+						--------------------------------------------------------------------------------
+						-- Save Clipboard Data:
+						--------------------------------------------------------------------------------
+						local currentClipboardData 		= pasteboard.readDataForUTI(finalCutProClipboardUTI)
+						local currentClipboardLabel 	= getClipNameFromFinalCutProClipboard(currentClipboardData)
 
-				--------------------------------------------------------------------------------
-				-- If all is good then...
-				--------------------------------------------------------------------------------
-				if addToClipboardHistory then
+						--------------------------------------------------------------------------------
+						-- If all is good then...
+						--------------------------------------------------------------------------------
+						if addToClipboardHistory then
 
-					--------------------------------------------------------------------------------
-					-- Used for debugging:
-					--------------------------------------------------------------------------------
-					if debugMode then print("[FCPX Hacks] Something has been added to FCPX's Clipboard.") end
+							--------------------------------------------------------------------------------
+							-- Used for debugging:
+							--------------------------------------------------------------------------------
+							debugMessage("Item added to the Final Cut Pro Clipboard.")
 
-					--------------------------------------------------------------------------------
-					-- Shared Clipboard:
-					--------------------------------------------------------------------------------
-					local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
-					if enableSharedClipboard then
-						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-						if sharedClipboardPath ~= nil then
+							--------------------------------------------------------------------------------
+							-- Shared Clipboard:
+							--------------------------------------------------------------------------------
+							local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
+							if enableSharedClipboard then
+								local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+								if sharedClipboardPath ~= nil then
 
-							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. hostname, "w")
-							file:write(currentClipboardData)
-							file:close()
+									local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. hostname, "w")
+									file:write(currentClipboardData)
+									file:close()
+
+								end
+							end
+
+							--------------------------------------------------------------------------------
+							-- Clipboard History:
+							--------------------------------------------------------------------------------
+							local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
+
+							while (#clipboardHistory >= clipboardHistoryMaximumSize) do
+								table.remove(clipboardHistory,1)
+							end
+							table.insert(clipboardHistory, currentClipboardItem)
+
+							--------------------------------------------------------------------------------
+							-- Update Settings:
+							--------------------------------------------------------------------------------
+							settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+
+							--------------------------------------------------------------------------------
+							-- Refresh Menubar:
+							--------------------------------------------------------------------------------
+							refreshMenuBar()
 
 						end
 					end
-
-					--------------------------------------------------------------------------------
-					-- Clipboard History:
-					--------------------------------------------------------------------------------
-					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
-
-					while (#clipboardHistory >= clipboardHistoryMaximumSize) do
-						table.remove(clipboardHistory,1)
-					end
-					table.insert(clipboardHistory, currentClipboardItem)
-
-					--------------------------------------------------------------------------------
-					-- Update Settings:
-					--------------------------------------------------------------------------------
-					settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
-
-					--------------------------------------------------------------------------------
-					-- Refresh Menubar:
-					--------------------------------------------------------------------------------
-					refreshMenuBar()
-
 				end
-		 	end
+			end
   			clipboardLastChange = clipboardCurrentChange
   		end
 
@@ -11629,24 +12860,24 @@ end
 --------------------------------------------------------------------------------
 function mediaImportWatcher()
 
-	newDeviceMounted = hs.fs.volume.new(function(event, table)
-		if event == hs.fs.volume.didMount then
+	newDeviceMounted = fs.volume.new(function(event, table)
+		if event == fs.volume.didMount then
 
-			if debugMode then print("[FCPX Hacks] Media Inserted.") end
+			debugMessage("Media Inserted.")
 
 			mediaImportCount = 0
 			stopMediaImportTimer = false
-			currentApplication = hs.application.frontmostApplication()
+			currentApplication = application.frontmostApplication()
 
-			local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+			local fcpx = application.get("Final Cut Pro")
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
-			mediaImportTimer = hs.timer.doUntil(function() return stopMediaImportTimer end, function()
+			mediaImportTimer = timer.doUntil(function() return stopMediaImportTimer end, function()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
-					local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+					local fcpx = application.get("Final Cut Pro")
 					local fcpxElements = ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
@@ -11658,7 +12889,7 @@ function mediaImportWatcher()
 							else
 								fcpxElements[1][11]:performAction("AXPress")
 								if fcpxHidden then fcpx:hide() end
-								hs.application.launchOrFocus(currentApplication:name())
+								application.launchOrFocus(currentApplication:name())
 								stopMediaImportTimer = true
 							end
 						end
@@ -11683,14 +12914,14 @@ function scrollingTimelineWatcher()
 	--------------------------------------------------------------------------------
 	-- Key Press Up Watcher:
 	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherUp = hs.eventtap.new({ hs.eventtap.event.types.keyUp }, function(event)
+	scrollingTimelineWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
 		scrollingTimelineWatcherWorking = false
 	end)
 
 	--------------------------------------------------------------------------------
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+	scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
 
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
@@ -11722,7 +12953,7 @@ function scrollingTimelineWatcher()
 					--------------------------------------------------------------------------------
 					if scrollingTimelineSpacebarPressed then
 						scrollingTimelineSpacebarCheck = true
-						hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
+						timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
 					else
 						if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
 						if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
@@ -11742,7 +12973,7 @@ function notificationWatcher()
 	--------------------------------------------------------------------------------
 	-- USED FOR DEVELOPMENT:
 	--------------------------------------------------------------------------------
-	--foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
+	--foo = distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, inspect(userInfo))) end)
 	--foo:start()
 
 	--------------------------------------------------------------------------------
@@ -11760,19 +12991,46 @@ function notificationWatcher()
 
 end
 
---------------------------------------------------------------------------------
--- SHARED CLIPBOARD WATCHER:
---------------------------------------------------------------------------------
-function sharedClipboardFileWatcher(files)
-	if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end
-	refreshMenuBar()
-end
+	--------------------------------------------------------------------------------
+	-- NOTIFICATION WATCHER ACTION:
+	--------------------------------------------------------------------------------
+	function notificationWatcherAction(name, object, userInfo)
+
+		local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+		if prowlAPIKey ~= nil then
+
+			local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
+			local prowlEvent = http.encodeForQuery("")
+			local prowlDescription = nil
+
+			if name == "uploadSuccess" then prowlDescription = http.encodeForQuery("Share Successful") end
+			if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery("Share Failed") end
+
+			local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
+			httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
+
+			if not string.match(httpBody, "success") then
+				local xml = slaxdom:dom(tostring(httpBody))
+				local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
+				if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. trim(tostring(errorMessage))) end
+			end
+		end
+
+	end
 
 --------------------------------------------------------------------------------
 -- SHARED CLIPBOARD WATCHER:
 --------------------------------------------------------------------------------
+function sharedClipboardFileWatcher(files)
+	debugMessage("Refreshing Shared Clipboard.")
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- SHARED XML FILE WATCHER:
+--------------------------------------------------------------------------------
 function sharedXMLFileWatcher(files)
-	if debugMode then print("[FCPX Hacks] Refreshing Shared XML Folder.") end
+	debugMessage("Refreshing Shared XML Folder.")
 
 	for _,file in pairs(files) do
         if file:sub(-7) == ".fcpxml" then
@@ -11781,14 +13039,13 @@ function sharedXMLFileWatcher(files)
 				testFile:close()
 				if not string.find(file, "(" .. hostname ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = hs.notify.new()
-					sharedXMLNotification:setIdImage(hs.image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.icns"))
-					sharedXMLNotification:title("New XML Recieved")
-					sharedXMLNotification:subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
-					sharedXMLNotification:informativeText("FCPX Hacks has recieved a new XML file.")
-					sharedXMLNotification:hasActionButton(true)
-					sharedXMLNotification:actionButtonTitle("Import XML")
-					sharedXMLNotification:send()
+					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.icns"))
+														   						   :title("New XML Recieved")
+														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
+														   						   :informativeText("FCPX Hacks has recieved a new XML file.")
+														   						   :hasActionButton(true)
+														   						   :actionButtonTitle("Import XML")
+														   						   :send()
 				end
 			end
         end
@@ -11796,6 +13053,13 @@ function sharedXMLFileWatcher(files)
 
 	refreshMenuBar()
 end
+
+	--------------------------------------------------------------------------------
+	-- SHARED XML FILE NOTIFICATION ACTION:
+	--------------------------------------------------------------------------------
+	function sharedXMLNotificationAction(value)
+		importSharedXML(value:subTitle())
+	end
 
 --------------------------------------------------------------------------------
 -- LOCAL XML DROPBOX WATCHER:
@@ -11841,6 +13105,24 @@ function xmlDropboxFileWatcher(files)
 				local startOfXML = string.find(plistFileData, "<?xml version=")
 				local endOfXML = string.find(plistFileData, "</fcpxml>")
 
+				--------------------------------------------------------------------------------
+				-- Error Detection:
+				--------------------------------------------------------------------------------
+				if startOfXML == nil or endOfXML == nil then
+					displayErrorMessage("Something went wrong when attempting to translate the XML data from the file in the Dropbox. Please try again.\n\nError occurred in xmlDropboxFileWatcher().")
+					if plistFileData ~= nil then
+						debugMessage("Start of plistFileData.")
+						debugMessage(plistFileData)
+						debugMessage("End of plistFileData.")
+					else
+						debugMessage("ERROR: plistFileData is nil.")
+					end
+					return "fail"
+				end
+
+				--------------------------------------------------------------------------------
+				-- New XML:
+				--------------------------------------------------------------------------------
 				newXML = string.sub(plistFileData, startOfXML - 2, endOfXML + 8)
 
 				--------------------------------------------------------------------------------
@@ -11869,7 +13151,7 @@ function touchbarWatcher(obj, message)
 	    --------------------------------------------------------------------------------
         touchBarWindow:movable(false)
         touchBarWindow:acceptsMouseEvents(true)
-		hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
     end
 
