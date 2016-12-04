@@ -83,6 +83,8 @@ function processObject(data, objects)
 				return processAnchoredAngle(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_COLLECTION then
 				return processAnchoredCollection(data, objects)
+			elseif classname == CLIPBOARD.ANCHORED_SEQUENCE then
+				return processAnchoredSequence(data, objects)
 			elseif classname == CLIPBOARD.TIMERANGE_AND_OBJECT then
 				return processTimeRangeAndObject(data, objects)
 			elseif classname == CLIPBOARD.DICTIONARY then
@@ -163,7 +165,8 @@ end
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
 function processAnchoredAngle(data, objects)
-	return _get(data.displayName, objects), processObject(data.anchoredItems, objects) + 1
+	local _, count = processObject(data.anchoredItems, objects)
+	return _get(data.displayName, objects), count + 1
 end
 
 -- Process 'FFAnchoredSequence' objects
