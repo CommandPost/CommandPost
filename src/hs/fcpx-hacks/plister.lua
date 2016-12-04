@@ -36,8 +36,6 @@ function plist.base64ToTable(base64Data)
 		plistTable = plist.binaryFileToTable(plistFileName)
 	end
 	
-	-- log.d("plistTable: "..inspect(plistTable))
-	
 	-- Clean up the temp files
 	os.remove(base64FileName)
 	os.remove(plistFileName)
@@ -91,8 +89,6 @@ function plist.binaryFileToTable(plistFileName)
 	else
 		-- Convert the XML to a LUA table
 		plistTable = plistParse(executeOutput)
-		-- plistTable = json.decode(executeOutput)
-		-- log.d("plistTable: "..inspect(executeOutput))
 	end
 	
 	return plistTable
@@ -106,11 +102,6 @@ function plist.binaryFileToXML(plistFileName)
 	--------------------------------------------------------------------------------
 	-- Convert binary plist file to XML then return in JSON:
 	--------------------------------------------------------------------------------
-	-- local executeOutput, executeStatus, _, _ = hs.execute([[
-	-- 	plutil -convert xml1 ]] .. plistFileName .. [[ -o - |
-	--    		sed 's/data>/string>/g;s/date>/string>/g;s/<true\/>/<string>true<\/string>/g;s/<false\/>/<string>false<\/string>/g'
-	-- ]])
-	
 	local executeOutput, executeStatus, _, _ = hs.execute([[
 		plutil -convert xml1 ]] .. plistFileName .. [[ -o -
 	]])
@@ -122,34 +113,21 @@ function plist.binaryFileToXML(plistFileName)
 		plistTable = executeOutput
 	end
 	
-	log.e("plistTable: "..plistTable)
-	
 	return plistTable
 end
 
 function plist.xmlFileToTable(plistFileName)
-	local executeOutput 			= nil
-	local executeStatus 			= nil
-	local plistTable 				= nil
-	
 	--------------------------------------------------------------------------------
 	-- Convert binary plist file to XML then return in JSON:
 	--------------------------------------------------------------------------------
-	local executeOutput, executeStatus, _, _ = hs.execute([[
-		sed 's/data>/string>/g' ]] .. plistFileName .. [[ |
-		plutil -convert json - -o -
-	]])
-		
-	if not executeStatus then
-		log.e("Failed to convert binary plist to XML: "..tostring(executeOutput))
-	else
-		-- print("[FCPX Hacks] DEBUG output: "..tostring(executeOutput))
-	
-		-- Convert the JSON to a LUA table
-		plistTable = json.decode(executeOutput)
-		-- log.d("plistTable: "..inspect(executeOutput))
-	
-	end
+	local file = io.open(plistFileName, "r") -- r read mode and b binary mode
+    if not file then return nil end
+
+    local content = file:read "*a" -- *a or *all reads the whole file
+    file:close()
+					  		
+	-- Convert the JSON to a LUA table
+	plistTable = plistParse(content)
 	
 	return plistTable
 end
