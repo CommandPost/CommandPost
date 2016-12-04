@@ -28,6 +28,7 @@ local CLIPBOARD = protect({
 	ANCHORED_COLLECTION 						= "FFAnchoredCollection",
 	ANCHORED_SEQUENCE 							= "FFAnchoredSequence",
 	GAP 										= "FFAnchoredGapGeneratorComponent",
+	GENERATOR									= "FFAnchoredGeneratorComponent",
 	TIMERANGE_AND_OBJECT 						= "FigTimeRangeAndObject",
 		
 	-- The default name used when copying from the Timeline
@@ -72,7 +73,7 @@ function processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
 		log.d("processing object:\n"..inspect(data))
-		log.d("getting $class")
+		-- log.d("getting $class")
 		local class = _get(data['$class'], objects)
 		if class then
 			local classname = _get(class["$classname"], objects)
@@ -89,11 +90,14 @@ function processObject(data, objects)
 				return processTimeRangeAndObject(data, objects)
 			elseif classname == CLIPBOARD.DICTIONARY then
 				return processDictionary(data, objects)
+			elseif classname == CLIPBOARD.GAP then
+				return processGap(data, objects)
+			elseif classname == CLIPBOARD.GENERATOR then
+				return processGenerator(data, objects)
 			end
 			log.d("Unsupported classname: "..classname)
 		end
 	end
-	log.d("Object > ?: "..inspect(data))
 	return nil, 0
 end
 
@@ -106,9 +110,8 @@ end
 function processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
-	log.d("Getting "..CLIPBOARD.OBJECTS)
 	local obs = _get(data[CLIPBOARD.OBJECTS], objects)
-	log.d("objs:\n"..inspect(objs))
+	-- log.d("obs:\n"..inspect(obs))
 	for k,v in ipairs(obs) do
 		log.d("processing item #"..k)
 		v = _get(v, objects)
@@ -130,14 +133,13 @@ function processDictionary(data, objects)
 	local name = nil
 	local count = 0
 	
-	log.d("Getting "..CLIPBOARD.KEYS)
 	local keys = _get(data[CLIPBOARD.KEYS], objects)
 	local values = _get(data[CLIPBOARD.VALUES], objects)
 	
 	for i,key in ipairs(keys) do
 		key = _get(key, objects)
 		local value = _get(values[i], objects)
-		log.d(key..": "..inspect(value))
+		-- log.d(key..": "..inspect(value))
 		
 		if key == "objects" then
 			local n,c = processObject(value, objects)
@@ -155,11 +157,36 @@ end
 function processAnchoredCollection(data, objects)
 	local displayName = _get(data.displayName, objects)
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
+		log.d("processing a copy from the Timeline")
 		return processObject(data.containedItems, objects)
 	else
 		local _, count = processObject(data.anchoredItems, objects)
 		return displayName, count + 1
 	end
+end
+
+-- Processes 'FFAnchoredGapGeneratorComponent' objects
+-- Returns: string (primary clip name), integer (number of clips)
+function processGap(data, objects)
+	local displayName = _get(data.displayName, objects)
+	local count = 0
+	if data.anchoredItems then
+		displayName, count = processObject(data.anchoredItems, objects)
+	end
+	return displayName, count
+end
+
+-- Processes 'FFAnchoredGeneratorComponent' objects
+-- Returns: string (primary clip name), integer (number of clips)
+function processGenerator(data, objects)
+	local displayName = _get(data.displayName, objects)
+	local count = 1
+	if data.anchoredItems then
+		local n, c = processObject(data.anchoredItems, objects)
+		displayName = displayName or n
+		count = count + c
+	end
+	return displayName, count
 end
 
 -- Processes 'FFAnchoredAngle' objects.
@@ -193,7 +220,7 @@ function mod.findClipName(fcpxTable, default)
 	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
 	
-	log.d("top: "..inspect(top))
+	-- log.d("top: "..inspect(top))
 	
 	local name, count = processObject(top.root, objects)
 
