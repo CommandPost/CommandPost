@@ -95,7 +95,7 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
+-- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
 alert 											= require("hs.alert")
@@ -143,6 +143,12 @@ slaxml 											= require("hs.slaxml")
 touchbar 										= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
+-- INTERNAL EXTENSIONS:
+--------------------------------------------------------------------------------
+
+clipboard										= require("hs.fcpx-hacks.clipboard")
+
+--------------------------------------------------------------------------------
 -- HARDCODED SETTINGS:
 --------------------------------------------------------------------------------
 
@@ -157,16 +163,12 @@ commonErrorMessageStart 						= "I'm sorry, but the following error has occurred
 commonErrorMessageEnd 							= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
 commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx-hacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
-clipboardWatcherFrequency 						= 0.5											-- Clipboard Watcher Update Frequency
-clipboardHistoryMaximumSize 					= 5												-- Maximum Size of Clipboard History
-
 --------------------------------------------------------------------------------
 -- GLOBAL VARIABLES:
 --------------------------------------------------------------------------------
 
 execute											= hs.execute									-- Execute!
 clock 											= os.clock										-- Used for sleep()
-clipboardLastChange 							= pasteboard.changeCount()						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
 touchBarSupported						 		= touchbar.supported()							-- Touch Bar Supported?
 hostname										= host.localizedName()							-- Hostname
 
@@ -184,7 +186,6 @@ mouseInsideTouchbar								= false											-- Mouse Inside Touch Bar?
 shownUpdateNotification			 				= false											-- Shown Update Notification Already?
 
 changeAppearanceButtonLocation 					= {}											-- Change Timeline Appearance Button Location
-clipboardHistory								= {}											-- Clipboard History
 fcpxChooserChoices 								= {}											-- Chooser Choices
 
 mediaImportCount 								= 0												-- Media Import Count
@@ -197,7 +198,6 @@ scrollingTimelineTimer							= nil											-- Scrolling Timeline Timer
 scrollingTimelineScrollbarTimer					= nil											-- Scrolling Timeline Scrollbar Timer
 finalCutProShortcutKey 							= nil											-- Table of all Final Cut Pro Shortcuts
 finalCutProShortcutKeyPlaceholders 				= nil											-- Table of all needed Final Cut Pro Shortcuts
-clipboardTimer									= nil											-- Clipboard Watcher Timer
 newDeviceMounted 								= nil											-- New Device Mounted Volume Watcher
 currentApplication 								= nil											-- Current Application (used by Media Import Watcher)
 lastCommandSet									= nil											-- Last Keyboard Shortcut Command Set
@@ -427,7 +427,7 @@ function loadScript()
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-		if enableClipboardHistory then clipboardWatcher() end
+		if enableClipboardHistory then clipboard.startWatching() end
 
 		--------------------------------------------------------------------------------
 		-- Notification Watcher:
@@ -2066,6 +2066,7 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	local settingsClipboardHistoryTable = {}
 	if enableClipboardHistory then
+		local clipboardHistory = clipboard.getHistory()
 		if clipboardHistory ~= nil then
 			if #clipboardHistory ~= 0 then
 				for i=#clipboardHistory, 1, -1 do
@@ -4359,9 +4360,9 @@ end
 	function toggleEnableClipboardHistory()
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 		if not enableClipboardHistory then
-			clipboardWatcher()
+			clipboard.startWatching()
 		else
-			clipboardTimer:stop()
+			clipboard.stopWatching()
 		end
 		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
 		refreshMenuBar()
@@ -5554,9 +5555,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Write data back to Clipboard:
 		--------------------------------------------------------------------------------
-		clipboardTimer:stop()
+		clipboard.stopWatching()
 		pasteboard.writeDataForUTI(finalCutProClipboardUTI, data)
-		clipboardWatcher()
+		clipboard.startWatching()
 
 		--------------------------------------------------------------------------------
 		-- Paste in FCPX:
@@ -5590,9 +5591,9 @@ end
 				--------------------------------------------------------------------------------
 				-- Write data back to Clipboard:
 				--------------------------------------------------------------------------------
-				clipboardTimer:stop()
+				clipboard.stopWatching()
 				pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
-				clipboardWatcher()
+				clipboard.startWatching()
 
 				--------------------------------------------------------------------------------
 				-- Paste in FCPX:
@@ -5615,9 +5616,7 @@ end
 	-- CLEAR CLIPBOARD HISTORY:
 	--------------------------------------------------------------------------------
 	function clearClipboardHistory()
-		clipboardHistory = {}
-		settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
-		clipboardCurrentChange = pasteboard.changeCount()
+		clipboard.clearHistory()
 		refreshMenuBar()
 	end
 
@@ -10350,7 +10349,7 @@ end
 
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 
-		if enableClipboardHistory then clipboardTimer:stop() end
+		if enableClipboardHistory then clipboard.stopWatching() end
 
 		if not keyStrokeFromPlist("Cut") then
 			displayErrorMessage("Failed to trigger the 'Cut' Shortcut.")
@@ -10364,7 +10363,7 @@ end
 
 		if enableClipboardHistory then
 			sleep(1) -- Not sure why this is needed, but it is.
-			clipboardWatcher()
+			clipboard.startWatching()
 		end
 
 	end
@@ -11480,125 +11479,6 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	return "Done"
 
 end
-
---------------------------------------------------------------------------------
--- GET CLIP NAME FROM FINAL CUT PRO CLIPBOARD:
---------------------------------------------------------------------------------
---
--- TO DO: This is still very much a work-in-progress.
---
-function getClipNameFromFinalCutProClipboard(currentClipboardData)
-
-	--------------------------------------------------------------------------------
-	-- JUST RETURN A DATE UNTIL WE FIX PROPERLY:
-	--------------------------------------------------------------------------------
-	if 1==1 then return os.date() end
-
-	--------------------------------------------------------------------------------
-	-- Define Temporary Files:
-	--------------------------------------------------------------------------------
-	local temporaryFileName 		= os.tmpname()
-	local temporaryFileNameTwo	 	= os.tmpname()
-
-	--------------------------------------------------------------------------------
-	-- Write Clipboard Data to Temporary File:
-	--------------------------------------------------------------------------------
-	local temporaryFile = io.open(temporaryFileName, "w")
-	temporaryFile:write(currentClipboardData)
-	temporaryFile:close()
-
-	--------------------------------------------------------------------------------
-	-- Convert binary plist to XML then return in JSON:
-	--------------------------------------------------------------------------------
-	local executeOutput, executeStatus, executeType, executeRC = execute([[
-		plutil -convert xml1 ]] .. temporaryFileName .. [[ -o - |
-		sed 's/data>/string>/g' |
-		plutil -convert json - -o -
-	]])
-	if not executeStatus then
-		writeToConsole("ERROR: Failed to convert binary plist to XML.")
-		addToClipboardHistory = false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get data from 'ffpasteboardobject':
-	--------------------------------------------------------------------------------
-	local file = io.open(temporaryFileName, "w")
-	file:write(json.decode(executeOutput)["ffpasteboardobject"])
-	file:close()
-
-	--------------------------------------------------------------------------------
-	-- Convert base64 data to human readable:
-	--------------------------------------------------------------------------------
-	executeCommand = "openssl base64 -in " .. tostring(temporaryFileName) .. " -out " .. tostring(temporaryFileNameTwo) .. " -d"
-	executeOutput, executeStatus, executeType, executeRC = execute(executeCommand)
-	if not executeStatus then
-		writeToConsole("ERROR: Failed to convert base64 data to human readable.")
-		addToClipboardHistory = false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Convert from binary plist to human readable:
-	--------------------------------------------------------------------------------
-	executeOutput, executeStatus, executeType, executeRC = execute("plutil -convert xml1 " .. tostring(temporaryFileNameTwo))
-	if not executeStatus then
-		writeToConsole("ERROR: Failed to convert from binary plist to human readable.")
-		addToClipboardHistory = false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Bring XML data into Hammerspoon:
-	--------------------------------------------------------------------------------
-	executeOutput, executeStatus, executeType, executeRC = execute("cat " .. tostring(temporaryFileNameTwo))
-	if not executeStatus then
-		writeToConsole("ERROR: Failed to cat the plist.")
-		addToClipboardHistory = false
-	end
-
-	--------------------------------------------------------------------------------
-	-- XML fun times!
-	--------------------------------------------------------------------------------
-	local currentClipboardLabel = nil
-	local xml = slaxdom:dom(tostring(executeOutput))
-
-		--------------------------------------------------------------------------------
-		-- Clip copied from Primary Storyline:
-		--------------------------------------------------------------------------------
-		--if xml['root']['kids'][2]['kids'][8]['kids'][24]['kids'][1]['value'] == "metadataImportToApp" then
-		--	currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][20]['kids'][1]['value']
-		--end
-
-		--------------------------------------------------------------------------------
-		-- Clip copied from Secondary Storyline:
-		--------------------------------------------------------------------------------
-		--if xml['kids'][2]['el'][1]['el'][4]['el'][17]['kids'][1]['value'] == "metadataImportToApp" then
-		--	currentClipboardLabel = xml['kids'][2]['el'][1]['el'][4]['el'][15]['kids'][1]['value']
-		--end
-
-		--------------------------------------------------------------------------------
-		-- Clip copied from Browser:
-		--------------------------------------------------------------------------------
-		--if xml['root']['kids'][2]['kids'][8]['kids'][30]['kids'][1]['value'] == "metadataImportToApp" then
-		--	currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][18]['kids'][1]['value']
-		--end
-
-	--------------------------------------------------------------------------------
-	-- Unknown item in clipboard:
-	--------------------------------------------------------------------------------
-	if currentClipboardLabel == nil then
-		currentClipboardLabel = os.date()
-	end
-
-	--------------------------------------------------------------------------------
-	-- Clean up temporary files:
-	--------------------------------------------------------------------------------
-	executeOutput, executeStatus, executeType, executeRC = execute("rm " .. tostring(temporaryFileName))
-	executeOutput, executeStatus, executeType, executeRC = execute("rm " .. tostring(temporaryFileNameTwo))
-
-	return currentClipboardLabel
-
-end
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -12711,113 +12591,6 @@ function fullscreenKeyboardWatcher()
 
 		end
 	end)
-end
-
---------------------------------------------------------------------------------
--- WATCH THE FINAL CUT PRO CLIPBOARD FOR CHANGES:
---------------------------------------------------------------------------------
-function clipboardWatcher()
-
-	--------------------------------------------------------------------------------
-	-- Used for debugging:
-	--------------------------------------------------------------------------------
-	debugMessage("Starting Clipboard Watcher.")
-
-	--------------------------------------------------------------------------------
-	-- Get Clipboard History from Settings:
-	--------------------------------------------------------------------------------
-	clipboardHistory = settings.get("fcpxHacks.clipboardHistory") or {}
-
-	--------------------------------------------------------------------------------
-	-- Reset:
-	--------------------------------------------------------------------------------
-	clipboardCurrentChange = pasteboard.changeCount()
-	clipboardLastChange = pasteboard.changeCount()
-
-	--------------------------------------------------------------------------------
-	-- Watch for Clipboard Changes:
-	--------------------------------------------------------------------------------
-	clipboardTimer = timer.new(clipboardWatcherFrequency, function()
-
-		clipboardCurrentChange = pasteboard.changeCount()
-
-  		if (clipboardCurrentChange > clipboardLastChange) then
-
-		 	local clipboardContent = pasteboard.allContentTypes()
-		 	if clipboardContent[1] ~= nil then
-			 	if clipboardContent[1][1] ~= nil then
-					if clipboardContent[1][1] == finalCutProClipboardUTI then
-
-						--------------------------------------------------------------------------------
-						-- Set Up Variables:
-						--------------------------------------------------------------------------------
-						local executeOutput 			= nil
-						local executeStatus 			= nil
-						local executeType 				= nil
-						local executeRC 				= nil
-						local addToClipboardHistory 	= true
-
-						--------------------------------------------------------------------------------
-						-- Save Clipboard Data:
-						--------------------------------------------------------------------------------
-						local currentClipboardData 		= pasteboard.readDataForUTI(finalCutProClipboardUTI)
-						local currentClipboardLabel 	= getClipNameFromFinalCutProClipboard(currentClipboardData)
-
-						--------------------------------------------------------------------------------
-						-- If all is good then...
-						--------------------------------------------------------------------------------
-						if addToClipboardHistory then
-
-							--------------------------------------------------------------------------------
-							-- Used for debugging:
-							--------------------------------------------------------------------------------
-							debugMessage("Item added to the Final Cut Pro Clipboard.")
-
-							--------------------------------------------------------------------------------
-							-- Shared Clipboard:
-							--------------------------------------------------------------------------------
-							local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
-							if enableSharedClipboard then
-								local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-								if sharedClipboardPath ~= nil then
-
-									local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. hostname, "w")
-									file:write(currentClipboardData)
-									file:close()
-
-								end
-							end
-
-							--------------------------------------------------------------------------------
-							-- Clipboard History:
-							--------------------------------------------------------------------------------
-							local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
-
-							while (#clipboardHistory >= clipboardHistoryMaximumSize) do
-								table.remove(clipboardHistory,1)
-							end
-							table.insert(clipboardHistory, currentClipboardItem)
-
-							--------------------------------------------------------------------------------
-							-- Update Settings:
-							--------------------------------------------------------------------------------
-							settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
-
-							--------------------------------------------------------------------------------
-							-- Refresh Menubar:
-							--------------------------------------------------------------------------------
-							refreshMenuBar()
-
-						end
-					end
-				end
-			end
-  			clipboardLastChange = clipboardCurrentChange
-  		end
-
-	end)
-	clipboardTimer:start()
-
 end
 
 --------------------------------------------------------------------------------
