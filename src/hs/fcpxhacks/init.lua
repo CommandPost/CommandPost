@@ -130,12 +130,12 @@ keycodes					= require("hs.keycodes")
 function loadScript()
 
 	--------------------------------------------------------------------------------
-	-- CLEAR THE CONSOLE:
+	-- Clear The Console:
 	--------------------------------------------------------------------------------
 	console.clearConsole()
 
 	--------------------------------------------------------------------------------
-	-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
+	-- Display Welcome Message In The Console:
 	--------------------------------------------------------------------------------
 	writeToConsole("-----------------------------", true)
 	writeToConsole("| FCPX Hacks v" .. scriptVersion .. "          |", true)
@@ -143,7 +143,78 @@ function loadScript()
 	writeToConsole("-----------------------------", true)
 
 	--------------------------------------------------------------------------------
-	-- CHECK FINAL CUT PRO VERSION:
+	-- Check All The Required Files Exist:
+	--------------------------------------------------------------------------------
+	local requiredFiles = {
+		"hs/fcpxhacks/init.lua",
+		"hs/fcpxhacks/assets/fcpxhacks.icns",
+		"hs/fcpxhacks/assets/fcpxhacks.png",
+		"hs/fcpxhacks/modules/clipboard.lua",
+		"hs/fcpxhacks/modules/fcpx10-2-3.lua",
+		"hs/fcpxhacks/modules/fcpx10-3.lua",
+		"hs/fcpxhacks/modules/protect.lua",
+		"hs/fcpxhacks/plist/10-2-3/new/NSProCommandGroups.plist",
+		"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
+		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-2-3/old/NSProCommandGroups.plist",
+		"hs/fcpxhacks/plist/10-2-3/old/NSProCommands.plist",
+		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist",
+		"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
+		"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/de.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/es.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/fr.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/ja.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist",
+		"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
+		"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/de.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/es.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/fr.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/ja.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandNames.strings",
+		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/Default.commandset",
+		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandDescriptions.strings",
+		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings" }
+	local checkFailed = false
+	for i=1, #requiredFiles do
+		if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
+	end
+	if checkFailed then
+		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
+		displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
+		application.get("Hammerspoon"):kill()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
 	local fcpVersion = finalCutProVersion()
 	local osVersion = macOSVersion()
@@ -158,15 +229,15 @@ function loadScript()
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
 		validFinalCutProVersion = true
-		require("hs.fcpx-hacks.fcpx10-2-3")
+		require("hs.fcpxhacks.modules.fcpx10-2-3")
 	end
 	if fcpVersion:sub(1,4) == "10.3" then
 		validFinalCutProVersion = true
-		require("hs.fcpx-hacks.fcpx10-3")
+		require("hs.fcpxhacks.modules.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 or above is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
