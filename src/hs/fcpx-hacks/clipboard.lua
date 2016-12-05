@@ -10,19 +10,19 @@ local plist 									= require("hs.fcpx-hacks.plister")
 local protect 									= require("hs.fcpx-hacks.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
-local inspect									= require("inspect")
+local inspect									= require("hs.inspect")
 
 local CLIPBOARD = protect({
 	-- Standard types
 	ARRAY 										= "NSMutableArray",
 	SET 										= "NSMutableSet",
 	OBJECTS 									= "NS.objects",
-	
+
 	-- Dictionary
 	DICTIONARY									= "NSDictionary",
 	KEYS										= "NS.keys",
 	VALUES										= "NS.objects",
-		
+
 	-- FCPX Types
 	ANCHORED_ANGLE 								= "FFAnchoredAngle",
 	ANCHORED_COLLECTION 						= "FFAnchoredCollection",
@@ -30,10 +30,10 @@ local CLIPBOARD = protect({
 	GAP 										= "FFAnchoredGapGeneratorComponent",
 	GENERATOR									= "FFAnchoredGeneratorComponent",
 	TIMERANGE_AND_OBJECT 						= "FigTimeRangeAndObject",
-		
+
 	-- The default name used when copying from the Timeline
 	TIMELINE_DISPLAY_NAME 						= "__timelineContainerClip",
-	
+
 	-- The pasteboard/clipboard property containing the copied clips
 	PASTEBOARD_OBJECT 							= "ffpasteboardobject",
 	UTI 										= "com.apple.flexo.proFFPasteboardUTI"
@@ -42,7 +42,7 @@ local CLIPBOARD = protect({
 -- Clipboard Watcher Timer
 local clipboardTimer							= nil
 -- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-local clipboardLastChange 						= pasteboard.changeCount()						
+local clipboardLastChange 						= pasteboard.changeCount()
 
 -- Clipboard History
 local clipboardHistory							= {}
@@ -118,7 +118,7 @@ function processMutableCollection(data, objects)
 		if name == nil then
 			name = n
 		end
-		count = count + c 
+		count = count + c
 	end
 	return name, count
 end
@@ -131,14 +131,14 @@ end
 function processDictionary(data, objects)
 	local name = nil
 	local count = 0
-	
+
 	local keys = _get(data[CLIPBOARD.KEYS], objects)
 	local values = _get(data[CLIPBOARD.VALUES], objects)
-	
+
 	for i,key in ipairs(keys) do
 		key = _get(key, objects)
 		local value = _get(values[i], objects)
-		
+
 		if key == "objects" then
 			local n,c = processObject(value, objects)
 			if name == nil then
@@ -214,10 +214,10 @@ local mod = {}
 -- Example use:
 --	 local name = findClipName(myXmlData, "Unknown")
 function mod.findClipName(fcpxTable, default)
-	
+
 	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
-	
+
 	local name, count = processObject(top.root, objects)
 
 	if name then
@@ -275,7 +275,7 @@ function mod.startWatching()
 				local currentClipboardData 		= pasteboard.readDataForUTI(CLIPBOARD.UTI)
 				local currentClipboardLabel 	= os.date()
 
-				
+
 				local clipboardTable = plist.binaryToTable(currentClipboardData)
 				local fcpxData = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
 				if fcpxData then

@@ -7,7 +7,7 @@
 local log							= hs.logger.new("plister")
 
 local json  						= require("hs.json")
-local inspect						= require("inspect")
+local inspect						= require("hs.inspect")
 
 -- import the plistParser function
 local plistParse 					= require("hs.fcpx-hacks.plistParse")
@@ -25,7 +25,7 @@ function plist.base64ToTable(base64Data)
 	local file = io.open(base64FileName, "w")
 	file:write(base64Data)
 	file:close()
-	
+
 	-- Convert the base64 file to a binary plist
 	executeCommand = "openssl base64 -in " .. tostring(base64FileName) .. " -out " .. tostring(plistFileName) .. " -d"
 	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
@@ -35,11 +35,11 @@ function plist.base64ToTable(base64Data)
 		-- convert the binary plist file to a LUA table
 		plistTable = plist.binaryFileToTable(plistFileName)
 	end
-	
+
 	-- Clean up the temp files
 	os.remove(base64FileName)
 	os.remove(plistFileName)
-	
+
 	return plistTable
 end
 
@@ -59,7 +59,7 @@ function plist.binaryToTable(binaryData)
 
 	-- Read the binary plist file
 	local plistTable = plist.binaryFileToTable(plistFileName)
-	
+
 	-- Delete the temporary file
 	os.remove(plistFileName)
 
@@ -70,7 +70,7 @@ function plist.binaryFileToTable(plistFileName)
 	local executeOutput 			= nil
 	local executeStatus 			= nil
 	local plistTable 				= nil
-	
+
 	--------------------------------------------------------------------------------
 	-- Convert binary plist file to XML then return in JSON:
 	--------------------------------------------------------------------------------
@@ -83,14 +83,14 @@ function plist.binaryFileToTable(plistFileName)
 	local executeOutput, executeStatus, _, _ = hs.execute([[
 		plutil -convert xml1 ]] .. plistFileName .. [[ -o -
 	]])
-	
+
 	if not executeStatus then
 		log.e("Failed to convert binary plist to XML: "..tostring(executeOutput))
 	else
 		-- Convert the XML to a LUA table
 		plistTable = plistParse(executeOutput)
 	end
-	
+
 	return plistTable
 end
 
@@ -98,21 +98,21 @@ function plist.binaryFileToXML(plistFileName)
 	local executeOutput 			= nil
 	local executeStatus 			= nil
 	local plistTable 				= nil
-	
+
 	--------------------------------------------------------------------------------
 	-- Convert binary plist file to XML then return in JSON:
 	--------------------------------------------------------------------------------
 	local executeOutput, executeStatus, _, _ = hs.execute([[
 		plutil -convert xml1 ]] .. plistFileName .. [[ -o -
 	]])
-	
-		
+
+
 	if not executeStatus then
 		log.e("Failed to convert binary plist to XML: "..tostring(executeOutput))
 	else
 		plistTable = executeOutput
 	end
-	
+
 	return plistTable
 end
 
@@ -125,10 +125,10 @@ function plist.xmlFileToTable(plistFileName)
 
     local content = file:read "*a" -- *a or *all reads the whole file
     file:close()
-					  		
+
 	-- Convert the JSON to a LUA table
 	plistTable = plistParse(content)
-	
+
 	return plistTable
 end
 
