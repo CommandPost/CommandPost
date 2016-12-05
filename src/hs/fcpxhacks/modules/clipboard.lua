@@ -1,73 +1,21 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---
---  			  ===========================================
---
---  			             F C P X    H A C K S
---
---			      ===========================================
---
---
---  Thrown together by Chris Hocking @ LateNite Films
---  https://latenitefilms.com
---
---  You can download the latest version here:
---  https://latenitefilms.com/blog/final-cut-pro-hacks/
---
---  Please be aware that I'm a filmmaker, not a programmer, so... apologies!
---
---------------------------------------------------------------------------------
---  LICENSE:
---------------------------------------------------------------------------------
---
--- The MIT License (MIT)
---
--- Copyright (c) 2016 Chris Hocking.
---
--- Permission is hereby granted, free of charge, to any person obtaining a copy
--- of this software and associated documentation files (the "Software"), to deal
--- in the Software without restriction, including without limitation the rights
--- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
--- copies of the Software, and to permit persons to whom the Software is
--- furnished to do so, subject to the following conditions:
---
--- The above copyright notice and this permission notice shall be included in
--- all copies or substantial portions of the Software.
---
--- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
--- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
--- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
--- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
--- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
--- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
--- THE SOFTWARE.
---
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --           P A S T E B O A R D     S U P P O R T     L I B R A R Y          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
--- Module created by David Peterson (https://github.com/randomeizer)
-
-
-
-
+--
+-- Module created by David Peterson (https://github.com/randomeizer).
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local log										= hs.logger.new("clipboard")
-local plist 									= require("hs.fcpx-hacks.plister")
-local protect 									= require("hs.fcpx-hacks.protect")
+local log										= require("hs.logger").new("clipboard")
+local plist 									= require("hs.plist")
+local protect 									= require("hs.fcpxhacks.modules.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
 local inspect									= require("hs.inspect")
@@ -133,6 +81,8 @@ function _get(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS OBJECT:
+--------------------------------------------------------------------------------
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -171,6 +121,8 @@ function processObject(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS MUTABLE COLLECTION:
+--------------------------------------------------------------------------------
 -- Processes the 'NSDictionary' object
 -- Params:
 --		* data: 	The data object to process
@@ -193,6 +145,8 @@ function processMutableCollection(data, objects)
 	return name, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS DICTIONARY:
 --------------------------------------------------------------------------------
 -- Processes the 'NSMutableArray' object
 -- Params:
@@ -223,6 +177,8 @@ function processDictionary(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS ANCHORED COLLECTION:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredCollection' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -238,6 +194,8 @@ function processAnchoredCollection(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS GAP:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredGapGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -250,6 +208,8 @@ function processGap(data, objects)
 	return displayName, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS GENERATOR:
 --------------------------------------------------------------------------------
 -- Processes 'FFAnchoredGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
@@ -266,6 +226,8 @@ function processGenerator(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS ANCHORED ANGLE:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -275,6 +237,8 @@ function processAnchoredAngle(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS ANCHORED SEQUENCE:
+--------------------------------------------------------------------------------
 -- Process 'FFAnchoredSequence' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -283,6 +247,8 @@ function processAnchoredSequence(data, objects)
 end
 
 --------------------------------------------------------------------------------
+-- PROCESS TIME RANGE AND OBJECT:
+--------------------------------------------------------------------------------
 -- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
@@ -290,8 +256,13 @@ function processTimeRangeAndObject(data, objects)
 	return processObject(data.object, objects)
 end
 
+--------------------------------------------------------------------------------
+-- START MODULE:
+--------------------------------------------------------------------------------
 local mod = {}
 
+--------------------------------------------------------------------------------
+-- FIND CLIP NAME:
 --------------------------------------------------------------------------------
 -- Searches the Plist XML data for the first clip name, and returns it, along with the
 -- total number of clips that have been copied.
