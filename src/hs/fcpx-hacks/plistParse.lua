@@ -1,9 +1,9 @@
--- plistParser
+-- plistParser (https://codea.io/talk/discussion/1269/code-plist-parser)
 -- version 1.01
 --
 -- based on an XML parser by Roberto Ierusalimschy at:
 -- lua-users.org/wiki/LuaXml
--- 
+--
 -- Takes a string-ified .plist file as input, and outputs
 -- a table. Nested dictionaries and arrays are parsed into
 -- subtables. Table structure will match the structure of
@@ -96,7 +96,7 @@ function plp.dictionary(s, i)
                         local val = string.sub(s, i, ni-1)
                         if label == "integer" or label == "real" then
                             dict[key] = tonumber(val)
-                        else 
+                        else
                             dict[key] = val
                         end
                     end
@@ -106,7 +106,7 @@ function plp.dictionary(s, i)
             assert(label == "dict")
             return dict, j+1, j
         end
-    
+
         i = j + 1
     end
 end
@@ -118,7 +118,7 @@ local function plistParse(s)
         ni, i, label, version = string.find(s, "<([%w:]+)(.-)>", i+1)
         assert(ni)
     end
-    
+
     ni, i, _, label, empty = plp.nextTag(s, i)
 
     if empty == "/" then
