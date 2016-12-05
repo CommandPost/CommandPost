@@ -43,45 +43,6 @@
 -- THE SOFTWARE.
 --
 --------------------------------------------------------------------------------
---  FEATURE WISH LIST:
---------------------------------------------------------------------------------
---
---  > Change Keyframe Colour from Yellow to Red
---  > Shortcut to add a Keyframe and Automatically Select it
---  > Automate a cross dissolve: Use the select left edge/select
---    ridge edge commands along with the toggle default fade commands?
---    (suggested by Patrick Southern)
---  > Cancel All Background Tasks
---  > Move Storyline Up & Down Shortcut
---  > Add Custom Audio Fade Handles Shortcut
---  > Save/Restore User Settings
---  > "Activate all audio tracks on all selected multicam clips" shortcut.
---  > Remember Last Project & Layout when restarting FCPX
---  > Shortcut to go to full screen mode without playing
---  > Timeline Index HUD on Mouseover
---  > Watch Folders for Compressor
---  > Favourites folder for Effects, Transitions, Titles, Generators & Themes
---  > Mouse Rewind History (as someone suggested on FCPX Grill)
---  > Automatically add markers based on music beats (suggested by Ilyas Akhmedov)
---  > Turn a viewer into a skimmable item. For example, open event viewer and by
---    mousing over the window with a key command down, it would skim as though it
---    was a tile in the browser (suggested by Michael Matzdorff)
---
---------------------------------------------------------------------------------
---  BUGS & ISSUES:
---------------------------------------------------------------------------------
---
---  > Rewrite GUI Scripting code for Final Cut Pro 10.3:
---		  >  selectClipAtLane()
---		  >  singleMatchFrame()
---		  >  batchExportToCompressor()
---
---  > Finish getClipNameFromFinalCutProClipboard()
---  > multicamMatchFrame() needs to somehow detect which angle is selected in timeline
---  > changeTimelineClipHeight() doesn't trigger shortcut for some reason?
---  > bindKeyboardShortcuts() is now VERY slow. Need to re-think plist reading.
---
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -147,7 +108,7 @@ touchbar 										= require("hs._asm.touchbar")
 clipboard										= require("hs.fcpx-hacks.clipboard")
 
 --------------------------------------------------------------------------------
--- HARDCODED SETTINGS:
+-- CONSTANTS:
 --------------------------------------------------------------------------------
 
 bugReportEmail									= "chris@latenitefilms.com"
@@ -162,7 +123,7 @@ commonErrorMessageEnd 							= "\n\nWould you like to email this bug to Chris so
 commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx-hacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
 --------------------------------------------------------------------------------
--- GLOBAL VARIABLES:
+-- VARIABLES:
 --------------------------------------------------------------------------------
 
 execute											= hs.execute									-- Execute!
@@ -566,63 +527,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
-
-end
-
---------------------------------------------------------------------------------
--- FRAME.IO PASTE:
---------------------------------------------------------------------------------
-function frameioPaste()
-
-	--[[
-	FRAME.IO TEST:
-
-	THE-SWELL-005-CHRIS-R1.mp4
-	Version 1 - Chris Hocking - 4:33PM May 22nd, 2015
-
-	000 - Chris Hocking - 2:51PM October 26th, 2016
-	00:00:00:00 - This is a test
-
-	001 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:02:09 - This is another test
-
-	002 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:35:21 - Yet another test
-	--]]
-end
-
---------------------------------------------------------------------------------
--- GET UI ELEMENT CURRENTLY UNDER MOUSE:
---------------------------------------------------------------------------------
-function getElementUnderMouse()
-	underMouse = ax.systemElementAtPosition(mouse.getAbsolutePosition())
-	--print_r(underMouse:path())
-	for i=1, #underMouse:attributeNames() do
-		--print(underMouse:attributeNames()[i] .. ": " .. underMouse:attributeValue(underMouse:attributeNames()[i]))
-		local description = tostring(underMouse:attributeNames()[i])
-		local result = tostring(underMouse:attributeValue(underMouse:attributeNames()[i]))
-		print(description .. ": " .. result)
-
-	end
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO APPLICATION UI TREE:
---------------------------------------------------------------------------------
-function getFinalCutProApplicationTree()
-
-	ax = require("hs._asm.axuielement")
-	inspect = require("hs.inspect")
-	timestamp = function(date)
-	    date = date or require"hs.timer".secondsSinceEpoch()
-	    return os.date("%F %T" .. ((tostring(date):match("(%.%d+)$")) or ""), math.floor(date))
-    end
-
-    print(timestamp())
-	s = ax.applicationElement(finalCutProApplication())
-	print(inspect(s:buildTree()))
-	print(timestamp())
 
 end
 
