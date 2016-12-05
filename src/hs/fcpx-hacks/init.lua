@@ -87,15 +87,13 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-
-
-
+local mod = {}
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
-scriptVersion = "0.70"
-fcpxBundleID = "com.apple.FinalCut"
+mod.scriptVersion = "0.70"
+mod.fcpxBundleID = "com.apple.FinalCut"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -107,45 +105,45 @@ fcpxBundleID = "com.apple.FinalCut"
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-application 				= require("hs.application")
-console 					= require("hs.console")
-drawing 					= require("hs.drawing")
-fs 							= require("hs.fs")
-inspect 					= require("hs.inspect")
-osascript 					= require("hs.osascript")
-styledtext 					= require("hs.styledtext")
-keycodes					= require("hs.keycodes")
+mod.application 				= require("hs.application")
+mod.console 					= require("hs.console")
+mod.drawing 					= require("hs.drawing")
+mod.fs 							= require("hs.fs")
+mod.inspect 					= require("hs.inspect")
+mod.osascript 					= require("hs.osascript")
+mod.styledtext 					= require("hs.styledtext")
+mod.keycodes					= require("hs.keycodes")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
-function loadScript()
+function mod.init()
 
 	--------------------------------------------------------------------------------
 	-- CLEAR THE CONSOLE:
 	--------------------------------------------------------------------------------
-	console.clearConsole()
+	mod.console.clearConsole()
 
 	--------------------------------------------------------------------------------
 	-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
 	--------------------------------------------------------------------------------
 	writeToConsole("-----------------------------", true)
-	writeToConsole("| FCPX Hacks v" .. scriptVersion .. "          |", true)
+	writeToConsole("| FCPX Hacks v" .. mod.scriptVersion .. "          |", true)
 	writeToConsole("| Created by LateNite Films |", true)
 	writeToConsole("-----------------------------", true)
 
 	--------------------------------------------------------------------------------
 	-- CHECK FINAL CUT PRO VERSION:
 	--------------------------------------------------------------------------------
-	local fcpVersion = finalCutProVersion()
-	local osVersion = macOSVersion()
+	local fcpVersion = mod.finalCutProVersion()
+	local osVersion = mod.macOSVersion()
 	
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
-	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
-	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
+	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 									end
+	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))							end
+	if mod.keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(mod.keycodes.currentLayout())) 		end
 	
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
@@ -159,7 +157,7 @@ function loadScript()
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
 		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
-		application.get("Hammerspoon"):kill()
+		mod.application.get("Hammerspoon"):kill()
 	end
 
 end
@@ -183,11 +181,11 @@ end
 print = function(value)
 	if type(value) == "table" then value = inspect(value) end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
-		local consoleStyledText = styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["red"],
+		local consoleStyledText = mod.styledtext.new(value, {
+			color = mod.drawing.color.definedCollections.hammerspoon["red"],
 			font = { name = "Menlo", size = 12 },
 		})
-		console.printStyledtext(consoleStyledText)
+		mod.console.printStyledtext(consoleStyledText)
 	end
 end
 
@@ -196,13 +194,10 @@ end
 --------------------------------------------------------------------------------
 function writeToConsole(value, overrideLabel)
 	if value ~= nil then
-		if type(value) == "table" then value = inspect(value) end
-		if overrideLabel == nil then value = "> " .. value end
-		local consoleStyledText = styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["blue"],
-			font = { name = "Menlo", size = 12 },
-		})
-		console.printStyledtext(consoleStyledText)
+		if not overrideLabel then
+			value = "> "..value
+		end
+		print(value)
 	end
 end
 
@@ -215,24 +210,24 @@ function displayAlertMessage(whatMessage)
 		tell me to activate
 		display dialog whatMessage buttons {"OK"} with icon stop
 	]]
-	osascript.applescript(appleScriptA .. appleScriptB)
+	mod.osascript.applescript(appleScriptA .. appleScriptB)
 end
 
 --------------------------------------------------------------------------------
 -- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
-function isFinalCutProInstalled()
-	local path = application.pathForBundleID(fcpxBundleID)
-	return doesDirectoryExist(path)
+function mod.isFinalCutProInstalled()
+	local path = mod.application.pathForBundleID(mod.fcpxBundleID)
+	return mod.doesDirectoryExist(path)
 end
 
 --------------------------------------------------------------------------------
 -- RETURNS FCPX VERSION:
 --------------------------------------------------------------------------------
-function finalCutProVersion()
+function mod.finalCutProVersion()
 	local version = nil
-	if isFinalCutProInstalled() then
-		ok,version = osascript.applescript('return version of application id "'..fcpxBundleID..'"')
+	if mod.isFinalCutProInstalled() then
+		ok,version = mod.osascript.applescript('return version of application id "'.. mod.fcpxBundleID ..'"')
 	end
 	return version or "Not Installed"
 end
@@ -240,7 +235,7 @@ end
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
 -------------------------------------------------------------------------------
-function macOSVersion()
+function mod.macOSVersion()
 	local osVersion = hs.host.operatingSystemVersion()
 	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
 	return osVersionString
@@ -250,17 +245,13 @@ end
 --------------------------------------------------------------------------------
 -- DOES DIRECTORY EXIST:
 --------------------------------------------------------------------------------
-function doesDirectoryExist(path)
-    local attr = fs.attributes(path)
+function mod.doesDirectoryExist(path)
+    local attr = mod.fs.attributes(path)
     return attr and attr.mode == 'directory'
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
-
-
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -268,7 +259,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-loadScript()
+return mod
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

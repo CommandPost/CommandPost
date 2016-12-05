@@ -2,4 +2,4 @@
 -- hs.logger.defaultLogLevel = 'debug'
 
 -- Load FCPX Hacks:
-require("hs.fcpx-hacks")
+fcpxHacks = require("hs.fcpx-hacks").init()
