@@ -88,8 +88,6 @@ http										= require("hs.http")
 --------------------------------------------------------------------------------
 
 ax 											= require("hs._asm.axuielement")
-slaxml 										= require("hs.slaxml")
-slaxdom 									= require("hs.slaxml.slaxdom")
 pasteboard 									= require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
@@ -2038,7 +2036,7 @@ function updateEffectsList()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
+	sw = ax.windowElement(finalCutProApplication():mainWindow())
 
 	--------------------------------------------------------------------------------
 	-- Make sure Video Effects panel is open:
@@ -2749,7 +2747,7 @@ function toggleCreateMulticamOptimizedMedia(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Open Preferences:
@@ -2849,7 +2847,7 @@ function toggleCreateProxyMedia(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Open Preferences:
@@ -2949,7 +2947,7 @@ function toggleCreateOptimizedMedia(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Open Preferences:
@@ -3049,7 +3047,7 @@ function toggleLeaveInPlace(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Open Preferences:
@@ -3153,7 +3151,7 @@ function toggleBackgroundRender(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Open Preferences:
@@ -3661,12 +3659,12 @@ function selectClipAtLane(whichLane)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
+	local fcpx 				= finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
+	fcpxElements = ax.applicationElement(finalCutProApplication())[1]
 
 	--------------------------------------------------------------------------------
 	-- Variables:
@@ -3886,7 +3884,7 @@ function changeTimelineClipHeight(direction)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -4247,7 +4245,7 @@ function effectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -4735,7 +4733,7 @@ function highlightFCPXBrowserPlayhead()
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -5064,7 +5062,7 @@ function batchExportToCompressor()
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
@@ -6396,7 +6394,7 @@ function multicamMatchFrame(goBackToTimeline)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Reveal In Browser:
@@ -6916,7 +6914,7 @@ function singleMatchFrame()
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -7294,7 +7292,7 @@ function fcpxSaveKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
@@ -7408,7 +7406,7 @@ function fcpxRestoreKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
@@ -7551,7 +7549,7 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
@@ -7757,7 +7755,7 @@ function colorBoardMousePuck(whichPuck, whichPanel)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
@@ -7963,7 +7961,7 @@ function colorBoardMousePuckWIP(whichPuck, whichPanel)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
+	fcpx = finalCutProApplication()
 	fcpxElements = ax.applicationElement(fcpx)
 
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -8177,6 +8175,13 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- RETURNS THE FINAL CUT PRO APPLICATION:
+--------------------------------------------------------------------------------
+function finalCutProApplication()
+	return application(finalCutProBundleID)
+end
+
+--------------------------------------------------------------------------------
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
@@ -8188,12 +8193,12 @@ end
 --------------------------------------------------------------------------------
 function restartFinalCutPro()
 
-	if hs.application("Final Cut Pro") ~= nil then
+	if finalCutProApplication() ~= nil then
 
 		--------------------------------------------------------------------------------
 		-- Kill Final Cut Pro:
 		--------------------------------------------------------------------------------
-		hs.application("Final Cut Pro"):kill()
+		finalCutProApplication():kill()
 
 		--------------------------------------------------------------------------------
 		-- Wait until Final Cut Pro is Closed:
@@ -8523,7 +8528,7 @@ function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -8570,7 +8575,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
+	local fcpx 				= finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Don't activate scrollbar in fullscreen mode (no player controls visible):
@@ -8610,7 +8615,7 @@ function checkScrollingTimelinePress()
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))
+		fcpxElements = ax.applicationElement(finalCutProApplication())
 
 		--------------------------------------------------------------------------------
 		-- Check to see if the cache works, otherwise re-find the interface elements:
@@ -8861,7 +8866,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -9821,7 +9826,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = hs.application("Final Cut Pro")
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
