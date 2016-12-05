@@ -94,8 +94,16 @@
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
-scriptVersion = "0.70"
-fcpxBundleID = "com.apple.FinalCut"
+
+scriptVersion 				= "0.70"
+finalCutProBundleID 		= "com.apple.FinalCut"
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -139,14 +147,14 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	local fcpVersion = finalCutProVersion()
 	local osVersion = macOSVersion()
-	
+
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
 	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
 	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
 	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
-	
+
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
 		validFinalCutProVersion = true
@@ -222,7 +230,7 @@ end
 -- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
 function isFinalCutProInstalled()
-	local path = application.pathForBundleID(fcpxBundleID)
+	local path = application.pathForBundleID(finalCutProBundleID)
 	return doesDirectoryExist(path)
 end
 
@@ -232,7 +240,7 @@ end
 function finalCutProVersion()
 	local version = nil
 	if isFinalCutProInstalled() then
-		ok,version = osascript.applescript('return version of application id "'..fcpxBundleID..'"')
+		ok,version = osascript.applescript('return version of application id "'..finalCutProBundleID..'"')
 	end
 	return version or "Not Installed"
 end

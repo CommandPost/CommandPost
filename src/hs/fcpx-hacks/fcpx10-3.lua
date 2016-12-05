@@ -138,8 +138,6 @@ window.filter									= require("hs.window.filter")
 --------------------------------------------------------------------------------
 
 ax 												= require("hs._asm.axuielement")
-slaxdom 										= require("hs.slaxml.slaxdom")
-slaxml 											= require("hs.slaxml")
 touchbar 										= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
@@ -398,13 +396,15 @@ function loadScript()
 			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
-				sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-			else
-				writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.enableXMLSharing", false)
+				if doesDirectoryExist(xmlSharingDropboxPath) and doesDirectoryExist(xmlSharingPath) then
+					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+				else
+					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
+					settings.set("fcpxHacks.xmlSharingPath", nil)
+					settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+					settings.set("fcpxHacks.enableXMLSharing", false)
+				end
 			end
 		end
 
@@ -547,9 +547,9 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-function fcpxApplication()
-	return application("com.apple.FinalCut")
-end
+
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -620,7 +620,7 @@ function getFinalCutProApplicationTree()
     end
 
     print(timestamp())
-	s = ax.applicationElement(fcpxApplication())
+	s = ax.applicationElement(finalCutProApplication())
 	print(inspect(s:buildTree()))
 	print(timestamp())
 
@@ -5039,7 +5039,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5144,7 +5144,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5249,7 +5249,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5354,7 +5354,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5463,7 +5463,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5875,12 +5875,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx 				= fcpxApplication()
+		local fcpx 				= finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpxApplication())[1]
+		fcpxElements = ax.applicationElement(finalCutProApplication())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
@@ -6126,7 +6126,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = fcpxWhichBrowserMode()
+		local fcpxBrowserMode = getFinalCutProBrowserMode()
 		if (fcpxBrowserMode == "Failed") then -- Error Checking:
 			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 			return
@@ -6135,7 +6135,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxApplication()
+		fcpx = finalCutProApplication()
 		fcpxElements = ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
@@ -7488,7 +7488,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = fcpxWhichBrowserMode()
+		local fcpxBrowserMode = getFinalCutProBrowserMode()
 
 		-- Error Checking:
 		if (fcpxBrowserMode == "Failed") then
@@ -7499,7 +7499,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxApplication()
+		fcpx = finalCutProApplication()
 		fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -7959,7 +7959,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -8076,7 +8076,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -10783,6 +10783,13 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- RETURNS THE FINAL CUT PRO APPLICATION:
+--------------------------------------------------------------------------------
+function finalCutProApplication()
+	return application(finalCutProBundleID)
+end
+
+--------------------------------------------------------------------------------
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
@@ -10794,12 +10801,12 @@ end
 --------------------------------------------------------------------------------
 function restartFinalCutPro()
 
-	if fcpxApplication() ~= nil then
+	if finalCutProApplication() ~= nil then
 
 		--------------------------------------------------------------------------------
 		-- Kill Final Cut Pro:
 		--------------------------------------------------------------------------------
-		fcpxApplication():kill()
+		finalCutProApplication():kill()
 
 		--------------------------------------------------------------------------------
 		-- Wait until Final Cut Pro is Closed:
@@ -11051,7 +11058,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 	if fcpx == nil then
 		return false
 	else
@@ -11065,7 +11072,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 	if fcpx == nil then
 		return false
 	else
@@ -11092,7 +11099,7 @@ end
 --
 -- TO DO: This is currently broken in Final Cut Pro 10.3, and probably no longer needed.
 --
-function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
+function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 
 --[[
 THUMBNAIL VIEW (PRIMARY MONITOR):
@@ -11112,7 +11119,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -11126,11 +11133,11 @@ AXScrollArea (scroll area 1)
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
 				whichMenuBar = i
-				goto fcpxWhichBrowserModeWhichMenuBarExit
+				goto getFinalCutProBrowserModeWhichMenuBarExit
 			end
 	end
 	if whichMenuBar == nil then	return "Failed"	end
-	::fcpxWhichBrowserModeWhichMenuBarExit::
+	::getFinalCutProBrowserModeWhichMenuBarExit::
 
 	--------------------------------------------------------------------------------
 	-- Which option is ticked?
@@ -11153,7 +11160,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= fcpxApplication()
+	local fcpx 				= finalCutProApplication()
 	local fcpxElements 		= ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -11358,7 +11365,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -12517,7 +12524,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -12607,7 +12614,7 @@ function mediaImportWatcher()
 			stopMediaImportTimer = false
 			currentApplication = application.frontmostApplication()
 
-			local fcpx = fcpxApplication()
+			local fcpx = finalCutProApplication()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
@@ -12615,7 +12622,7 @@ function mediaImportWatcher()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
-					local fcpx = fcpxApplication()
+					local fcpx = finalCutProApplication()
 					local fcpxElements = ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
