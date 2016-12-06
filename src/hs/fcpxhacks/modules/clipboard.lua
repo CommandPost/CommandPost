@@ -29,7 +29,7 @@ local clipboardLastChange 						= pasteboard.changeCount()				-- Displays how ma
 local clipboardHistory							= {}									-- Clipboard History
 local clipboardWatcherFrequency 				= 0.5									-- Clipboard Watcher Update Frequency
 local clipboardHistoryMaximumSize 				= 5										-- Maximum Size of Clipboard History
-local hostname									= host.localizedName()					-- Hostname
+local hostname									= hs.host.localizedName()				-- Hostname
 
 local CLIPBOARD = protect({
 	--------------------------------------------------------------------------------

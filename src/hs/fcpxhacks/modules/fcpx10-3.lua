@@ -54,43 +54,11 @@ local mod = {}
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- STANDARD EXTENSIONS:
---------------------------------------------------------------------------------
-
-distributednotifications						= require("hs.distributednotifications")
-drawing 										= require("hs.drawing")
-eventtap										= require("hs.eventtap")
-fnutils 										= require("hs.fnutils")
-fs												= require("hs.fs")
-geometry										= require("hs.geometry")
-host											= require("hs.host")
-hotkey 											= require("hs.hotkey")
-http											= require("hs.http")
-image											= require("hs.image")
-inspect											= require("hs.inspect")
-json  											= require("hs.json")
-keycodes										= require("hs.keycodes")
-menubar											= require("hs.menubar")
-mouse											= require("hs.mouse")
-osascript 										= require("hs.osascript")
-pasteboard 										= require("hs.pasteboard")
-pathwatcher										= require("hs.pathwatcher")
-screen											= require("hs.screen")
-settings										= require("hs.settings")
-sharing											= require("hs.sharing")
-styledtext										= require("hs.styledtext")
-timer											= require("hs.timer")
-uielement 										= require("hs.uielement")
-utf8											= require("hs.utf8")
-window											= require("hs.window")
-window.filter									= require("hs.window.filter")
-
---------------------------------------------------------------------------------
 -- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-ax 												= require("hs._asm.axuielement")
-touchbar 										= require("hs._asm.touchbar")
+mod.ax 												= require("hs._asm.axuielement")
+mod.touchbar 										= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
@@ -119,8 +87,8 @@ commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to
 
 execute											= hs.execute									-- Execute!
 clock 											= os.clock										-- Used for sleep()
-touchBarSupported						 		= touchbar.supported()							-- Touch Bar Supported?
-hostname										= host.localizedName()							-- Hostname
+touchBarSupported						 		= mod.touchbar.supported()							-- Touch Bar Supported?
+hostname										= hs.host.localizedName()							-- Hostname
 
 debugMode 										= false											-- Debug Mode is off by default.
 scrollingTimelineSpacebarPressed				= false											-- Was spacebar pressed?
@@ -171,7 +139,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMode = settings.get("fcpxHacks.debugMode") or false
+	debugMode = hs.settings.get("fcpxHacks.debugMode") or false
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
@@ -183,27 +151,27 @@ function loadScript()
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
 	hs.console.titleVisibility("hidden")
-	hotkey.setLogLevel("warning")
-	window.filter.setLogLevel(1)
-	window.filter.ignoreAlways['System Events'] = true
+	hs.hotkey.setLogLevel("warning")
+	hs.window.filter.setLogLevel(1)
+	hs.window.filter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? Trash settings:
 	--------------------------------------------------------------------------------
-	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
+	if hs.settings.get("fcpxHacks.firstTimeRunning103") == nil then
 
 		writeToConsole("First time running Final Cut Pro 10.3.")
 
 		--------------------------------------------------------------------------------
 		-- Trash all FCPX Hacks Settings:
 		--------------------------------------------------------------------------------
-		for i, v in ipairs(settings.getKeys()) do
+		for i, v in ipairs(hs.settings.getKeys()) do
 			if (v:sub(1,10)) == "fcpxHacks." then
-				settings.set(v, nil)
+				hs.settings.set(v, nil)
 			end
 		end
 
-		settings.set("fcpxHacks.firstTimeRunning103", false)
+		hs.settings.set("fcpxHacks.firstTimeRunning103", false)
 
 	end
 
@@ -230,20 +198,20 @@ function loadScript()
 		["checkForUpdatesInterval"]						= 600,
 	}
 	for k, v in pairs(defaultSettings) do
-		if settings.get("fcpxHacks." .. k) == nil then
-			settings.set("fcpxHacks." .. k, v)
+		if hs.settings.get("fcpxHacks." .. k) == nil then
+			hs.settings.set("fcpxHacks." .. k, v)
 		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
-	if settings.get("fcpxHacks.lastVersion") == nil then
-		settings.set("fcpxHacks.lastVersion", scriptVersion)
-		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+	if hs.settings.get("fcpxHacks.lastVersion") == nil then
+		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+		hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxHacks.scriptVersion) then
-			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+		if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxHacks.scriptVersion) then
+			if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = isFinalCutProRunning()
 				if finalCutProRunning then
 					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
@@ -261,7 +229,7 @@ function loadScript()
 				end
 			end
 		end
-		settings.set("fcpxHacks.lastVersion", scriptVersion)
+		hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
 	end
 
 	--------------------------------------------------------------------------------
@@ -272,7 +240,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
-		touchBarWindow = touchbar.new()
+		touchBarWindow = mod.touchbar.new()
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Watcher:
@@ -282,14 +250,14 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
-		local lastTouchBarLocation = settings.get("fcpxHacks.lastTouchBarLocation")
+		local lastTouchBarLocation = hs.settings.get("fcpxHacks.lastTouchBarLocation")
 		if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
 		-- Draggable Touch Bar:
 		--------------------------------------------------------------------------------
-		local events = eventtap.event.types
-		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
+		local events = hs.eventtap.event.types
+		touchbarKeyboardWatcher = hs.eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
 			if mouseInsideTouchbar then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
 					touchBarWindow:backgroundColor{ red = 1 }
@@ -299,7 +267,7 @@ function loadScript()
 					touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+					hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -319,43 +287,43 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
 		--------------------------------------------------------------------------------
-		hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
+		hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
-		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
+		preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch for Shared Clipboard Changes:
 		--------------------------------------------------------------------------------
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+		local sharedClipboardPath = hs.settings.get("fcpxHacks.sharedClipboardPath")
 		if sharedClipboardPath ~= nil then
 			if doesDirectoryExist(sharedClipboardPath) then
-				sharedClipboardWatcher = pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
+				sharedClipboardWatcher = hs.pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
 			else
 				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
-				settings.set("fcpxHacks.sharedClipboardPath", nil)
-				settings.set("fcpxHacks.enableSharedClipboard", false)
+				hs.settings.set("fcpxHacks.sharedClipboardPath", nil)
+				hs.settings.set("fcpxHacks.enableSharedClipboard", false)
 			end
 		end
 
 		--------------------------------------------------------------------------------
 		-- Watch for Shared XML Changes:
 		--------------------------------------------------------------------------------
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+		local enableXMLSharing = hs.settings.get("fcpxHacks.enableXMLSharing") or false
 		if enableXMLSharing then
-			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
-			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+			local xmlSharingDropboxPath = hs.settings.get("fcpxHacks.xmlSharingDropboxPath")
+			local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
 			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
 				if doesDirectoryExist(xmlSharingDropboxPath) and doesDirectoryExist(xmlSharingPath) then
-					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
-					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+					xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+					sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 				else
 					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-					settings.set("fcpxHacks.xmlSharingPath", nil)
-					settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-					settings.set("fcpxHacks.enableXMLSharing", false)
+					hs.settings.set("fcpxHacks.xmlSharingPath", nil)
+					hs.settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+					hs.settings.set("fcpxHacks.enableXMLSharing", false)
 				end
 			end
 		end
@@ -378,19 +346,19 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		local enableClipboardHistory = hs.settings.get("fcpxHacks.enableClipboardHistory") or false
 		if enableClipboardHistory then clipboard.startWatching() end
 
 		--------------------------------------------------------------------------------
 		-- Notification Watcher:
 		--------------------------------------------------------------------------------
-		local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+		local enableMobileNotifications = hs.settings.get("fcpxHacks.enableMobileNotifications") or false
 		if enableMobileNotifications then notificationWatcher() end
 
 		--------------------------------------------------------------------------------
 		-- Media Import Watcher:
 		--------------------------------------------------------------------------------
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		local enableMediaImportWatcher = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or false
 		if enableMediaImportWatcher then mediaImportWatcher() end
 
 		--------------------------------------------------------------------------------
@@ -417,7 +385,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Enable Fullscreen Playback Shortcut Keys:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
+		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
 			fullscreenKeyboardWatcherUp:start()
 			fullscreenKeyboardWatcherDown:start()
 		end
@@ -425,7 +393,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Enable Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") then
+		if hs.settings.get("fcpxHacks.scrollingTimelineActive") then
 			scrollingTimelineWatcherUp:start()
 			scrollingTimelineWatcherDown:start()
 		end
@@ -458,7 +426,7 @@ function loadScript()
 	-------------------------------------------------------------------------------
 	-- Set up Menubar:
 	--------------------------------------------------------------------------------
-	fcpxMenubar = menubar.newWithPriority(1)
+	fcpxMenubar = hs.menubar.newWithPriority(1)
 
 		--------------------------------------------------------------------------------
 		-- Set Tool Tip:
@@ -489,8 +457,8 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
 	--------------------------------------------------------------------------------
-	local checkForUpdatesInterval = settings.get("fcpxHacks.checkForUpdatesInterval")
-	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
+	local checkForUpdatesInterval = hs.settings.get("fcpxHacks.checkForUpdatesInterval")
+	checkForUpdatesTimer = hs.timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
 
 end
@@ -541,7 +509,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -1076,7 +1044,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Reset Global Hotkeys:
 	--------------------------------------------------------------------------------
-	local currentHotkeys = hotkey.getHotkeys()
+	local currentHotkeys = hs.hotkey.getHotkeys()
 	for i=1, #currentHotkeys do
 		result = currentHotkeys[i]:delete()
 	end
@@ -1084,7 +1052,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Create a modal hotkey object with an absurd triggering hotkey:
 	--------------------------------------------------------------------------------
-	hotkeys = hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
+	hotkeys = hs.hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
 
 	--------------------------------------------------------------------------------
 	-- Enable Hotkeys Loop:
@@ -1095,7 +1063,7 @@ function bindKeyboardShortcuts()
 				--------------------------------------------------------------------------------
 				-- Global Shortcut:
 				--------------------------------------------------------------------------------
-				hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
+				hs.hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
 			else
 				--------------------------------------------------------------------------------
 				-- Final Cut Pro Specific Shortcut:
@@ -1109,7 +1077,7 @@ function bindKeyboardShortcuts()
 	-- Development Shortcut:
 	--------------------------------------------------------------------------------
 	if debugMode then
-		hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
+		hs.hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
 	end
 
 	--------------------------------------------------------------------------------
@@ -1177,7 +1145,7 @@ function updateKeyboardShortcuts()
 		end repeat
 		return "Done"
 	]]
-	ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+	ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 	return toggleEnableHacksShortcutsInFinalCutProResult
 end
 
@@ -1200,8 +1168,8 @@ end
 function setupChooser()
 
 	fcpxChooser = hs.chooser.new(chooserAction):bgDark(true)
-											:fgColor(drawing.color.x11.snow)
-											:subTextColor(drawing.color.x11.snow)
+											:fgColor(hs.drawing.color.x11.snow)
+											:subTextColor(hs.drawing.color.x11.snow)
 											:rightClickCallback(chooserRightClick)
 											:choices(chooserChoices)
 
@@ -1234,14 +1202,14 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
-	local chooserShowTitles 			= settings.get("fcpxHacks.chooserShowTitles")
-	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
+	local chooserShowAutomation 		= hs.settings.get("fcpxHacks.chooserShowAutomation")
+	local chooserShowShortcuts 			= hs.settings.get("fcpxHacks.chooserShowShortcuts")
+	local chooserShowHacks 				= hs.settings.get("fcpxHacks.chooserShowHacks")
+	local chooserShowVideoEffects 		= hs.settings.get("fcpxHacks.chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= hs.settings.get("fcpxHacks.chooserShowAudioEffects")
+	local chooserShowTransitions 		= hs.settings.get("fcpxHacks.chooserShowTransitions")
+	local chooserShowTitles 			= hs.settings.get("fcpxHacks.chooserShowTitles")
+	local chooserShowGenerators 		= hs.settings.get("fcpxHacks.chooserShowGenerators")
 
 	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
@@ -1525,15 +1493,15 @@ function chooserChoices()
 		},
 	}
 
-	if chooserShowAutomation then fnutils.concat(fcpxChooserChoices, chooserAutomation) end
-	if chooserShowShortcuts then fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
-	if chooserShowHacks then fnutils.concat(fcpxChooserChoices, chooserHacks) end
+	if chooserShowAutomation then hs.fnutils.concat(fcpxChooserChoices, chooserAutomation) end
+	if chooserShowShortcuts then hs.fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
+	if chooserShowHacks then hs.fnutils.concat(fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
 	if chooserShowVideoEffects then
-		local allVideoEffects = settings.get("fcpxHacks.allVideoEffects")
+		local allVideoEffects = hs.settings.get("fcpxHacks.allVideoEffects")
 		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 			for i=1, #allVideoEffects do
 				individualEffect = {
@@ -1553,7 +1521,7 @@ function chooserChoices()
 	-- Audio Effects List:
 	--------------------------------------------------------------------------------
 	if chooserShowAudioEffects then
-		local allAudioEffects = settings.get("fcpxHacks.allAudioEffects")
+		local allAudioEffects = hs.settings.get("fcpxHacks.allAudioEffects")
 		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 			for i=1, #allAudioEffects do
 				individualEffect = {
@@ -1573,7 +1541,7 @@ function chooserChoices()
 	-- Transitions List:
 	--------------------------------------------------------------------------------
 	if chooserShowTransitions then
-		local allTransitions = settings.get("fcpxHacks.allTransitions")
+		local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
 		if allTransitions ~= nil and next(allTransitions) ~= nil then
 			for i=1, #allTransitions do
 				local individualEffect = {
@@ -1593,7 +1561,7 @@ function chooserChoices()
 	-- Titles List:
 	--------------------------------------------------------------------------------
 	if chooserShowTitles then
-		local allTitles = settings.get("fcpxHacks.allTitles")
+		local allTitles = hs.settings.get("fcpxHacks.allTitles")
 		if allTitles ~= nil and next(allTitles) ~= nil then
 			for i=1, #allTitles do
 				individualEffect = {
@@ -1613,7 +1581,7 @@ function chooserChoices()
 	-- Generators List:
 	--------------------------------------------------------------------------------
 	if chooserShowGenerators then
-		local allGenerators = settings.get("fcpxHacks.allGenerators")
+		local allGenerators = hs.settings.get("fcpxHacks.allGenerators")
 		if allGenerators ~= nil and next(allGenerators) ~= nil then
 			for i=1, #allGenerators do
 				local individualEffect = {
@@ -1655,7 +1623,7 @@ function chooserAction(result)
 	-- Perform Specific Function:
 	--------------------------------------------------------------------------------
 	if result ~= nil then
-		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
+		hs.timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
 	end
 
 	--------------------------------------------------------------------------------
@@ -1679,14 +1647,14 @@ function chooserRightClick()
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
-	local chooserShowTitles				= settings.get("fcpxHacks.chooserShowTitles")
-	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
+	local chooserShowAutomation 		= hs.settings.get("fcpxHacks.chooserShowAutomation")
+	local chooserShowShortcuts 			= hs.settings.get("fcpxHacks.chooserShowShortcuts")
+	local chooserShowHacks 				= hs.settings.get("fcpxHacks.chooserShowHacks")
+	local chooserShowVideoEffects 		= hs.settings.get("fcpxHacks.chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= hs.settings.get("fcpxHacks.chooserShowAudioEffects")
+	local chooserShowTransitions 		= hs.settings.get("fcpxHacks.chooserShowTransitions")
+	local chooserShowTitles				= hs.settings.get("fcpxHacks.chooserShowTitles")
+	local chooserShowGenerators 		= hs.settings.get("fcpxHacks.chooserShowGenerators")
 
 	--------------------------------------------------------------------------------
 	-- 'Show All' Display Option:
@@ -1699,7 +1667,7 @@ function chooserRightClick()
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	fcpxRightClickMenubar = menubar.new(false)
+	fcpxRightClickMenubar = hs.menubar.new(false)
 	local rightClickMenu = {
 		--{ title = "SELECTED ITEM:",	 	disabled = true },
 		--{ title = "Favourite Selected Item", disabled = true },
@@ -1707,38 +1675,38 @@ function chooserRightClick()
      	--{ title = "-" },
      	{ title = "DISPLAY OPTIONS:",	 	disabled = true },
      	{ title = "Show None", fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", false)
-     		settings.set("fcpxHacks.chooserShowShortcuts", false)
-     		settings.set("fcpxHacks.chooserShowHacks", false)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", false)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", false)
-     		settings.set("fcpxHacks.chooserShowTransitions", false)
-     		settings.set("fcpxHacks.chooserShowTitles", false)
-     		settings.set("fcpxHacks.chooserShowGenerators", false)
+     		hs.settings.set("fcpxHacks.chooserShowAutomation", false)
+     		hs.settings.set("fcpxHacks.chooserShowShortcuts", false)
+     		hs.settings.set("fcpxHacks.chooserShowHacks", false)
+     		hs.settings.set("fcpxHacks.chooserShowVideoEffects", false)
+     		hs.settings.set("fcpxHacks.chooserShowAudioEffects", false)
+     		hs.settings.set("fcpxHacks.chooserShowTransitions", false)
+     		hs.settings.set("fcpxHacks.chooserShowTitles", false)
+     		hs.settings.set("fcpxHacks.chooserShowGenerators", false)
      		fcpxChooser:refreshChoicesCallback()
      	end },
      	{ title = "Show All", 				checked = chooserShowAll,	fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", true)
-     		settings.set("fcpxHacks.chooserShowShortcuts", true)
-     		settings.set("fcpxHacks.chooserShowHacks", true)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", true)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", true)
-     		settings.set("fcpxHacks.chooserShowTransitions", true)
-     		settings.set("fcpxHacks.chooserShowTitles", true)
-     		settings.set("fcpxHacks.chooserShowGenerators", true)
+     		hs.settings.set("fcpxHacks.chooserShowAutomation", true)
+     		hs.settings.set("fcpxHacks.chooserShowShortcuts", true)
+     		hs.settings.set("fcpxHacks.chooserShowHacks", true)
+     		hs.settings.set("fcpxHacks.chooserShowVideoEffects", true)
+     		hs.settings.set("fcpxHacks.chooserShowAudioEffects", true)
+     		hs.settings.set("fcpxHacks.chooserShowTransitions", true)
+     		hs.settings.set("fcpxHacks.chooserShowTitles", true)
+     		hs.settings.set("fcpxHacks.chooserShowGenerators", true)
      		fcpxChooser:refreshChoicesCallback()
      	end },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				fcpxChooser:refreshChoicesCallback() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() hs.settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() hs.settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() hs.settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() hs.settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() hs.settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() hs.settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
-	fcpxRightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+	fcpxRightClickMenubar:popupMenu(hs.mouse.getAbsolutePosition())
 
 end
 
@@ -1856,13 +1824,13 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Menubar Display Mode from Settings:
 	--------------------------------------------------------------------------------
-	local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
+	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
 	local displayHighlightShapeRectangle = false
 	local displayHighlightShapeCircle = false
 	local displayHighlightShapeDiamond = false
@@ -1875,7 +1843,7 @@ function refreshMenuBar(refreshPlistValues)
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
 	local displayHighlightColourRed = false
 	local displayHighlightColourBlue = false
 	local displayHighlightColourGreen = false
@@ -1889,17 +1857,17 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Enable Shortcuts During Fullscreen Playback from Settings:
 	--------------------------------------------------------------------------------
-	local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
+	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
-	local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
+	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Hammerspoon Settings:
@@ -1912,22 +1880,22 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
+	scrollingTimelineActive = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Mobile Notifications:
 	--------------------------------------------------------------------------------
-	enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+	enableMobileNotifications = hs.settings.get("fcpxHacks.enableMobileNotifications") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Media Import Watcher:
 	--------------------------------------------------------------------------------
-	enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+	enableMediaImportWatcher = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or false
 
 	--------------------------------------------------------------------------------
 	-- Touch Bar Location:
 	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+	local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 	local displayTouchBarLocationMouse = false
 	if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
 	local displayTouchBarLocationTimelineTopCentre = false
@@ -1937,22 +1905,22 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Enable Check for Updates:
 	--------------------------------------------------------------------------------
-	enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
+	enableCheckForUpdates = hs.settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable XML Sharing:
 	--------------------------------------------------------------------------------
-	enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+	enableXMLSharing = hs.settings.get("fcpxHacks.enableXMLSharing") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Clipboard History:
 	--------------------------------------------------------------------------------
-	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	enableClipboardHistory = hs.settings.get("fcpxHacks.enableClipboardHistory") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Shared Clipboard:
 	--------------------------------------------------------------------------------
-	enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+	enableSharedClipboard = hs.settings.get("fcpxHacks.enableSharedClipboard") or false
 
 	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
@@ -1986,8 +1954,8 @@ function refreshMenuBar(refreshPlistValues)
 		-- Get list of files:
 		--------------------------------------------------------------------------------
 		local sharedClipboardFiles = {}
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		for file in fs.dir(sharedClipboardPath) do
+		local sharedClipboardPath = hs.settings.get("fcpxHacks.sharedClipboardPath")
+		for file in hs.fs.dir(sharedClipboardPath) do
 			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
 				sharedClipboardFiles[#sharedClipboardFiles + 1] = file:sub(36)
 			 end
@@ -2026,9 +1994,9 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		local sharedXMLFiles = {}
 
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
 
-		for file in fs.dir(xmlSharingPath) do
+		for file in hs.fs.dir(xmlSharingPath) do
 			 if file:sub(-7) == ".fcpxml" then
 				sharedXMLFiles[#sharedXMLFiles + 1] = file:sub(1, -8)
 			 end
@@ -2059,12 +2027,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Effects Shortcuts:
 	--------------------------------------------------------------------------------
-	local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated") or false
-	local effectsShortcutOne 	= settings.get("fcpxHacks.effectsShortcutOne")
-	local effectsShortcutTwo 	= settings.get("fcpxHacks.effectsShortcutTwo")
-	local effectsShortcutThree 	= settings.get("fcpxHacks.effectsShortcutThree")
-	local effectsShortcutFour 	= settings.get("fcpxHacks.effectsShortcutFour")
-	local effectsShortcutFive 	= settings.get("fcpxHacks.effectsShortcutFive")
+	local effectsListUpdated 	= hs.settings.get("fcpxHacks.effectsListUpdated") or false
+	local effectsShortcutOne 	= hs.settings.get("fcpxHacks.effectsShortcutOne")
+	local effectsShortcutTwo 	= hs.settings.get("fcpxHacks.effectsShortcutTwo")
+	local effectsShortcutThree 	= hs.settings.get("fcpxHacks.effectsShortcutThree")
+	local effectsShortcutFour 	= hs.settings.get("fcpxHacks.effectsShortcutFour")
+	local effectsShortcutFive 	= hs.settings.get("fcpxHacks.effectsShortcutFive")
 	if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. string.format("%.20s", effectsShortcutOne) .. ")" end
 	if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. string.format("%.20s", effectsShortcutTwo) .. ")" end
 	if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. string.format("%.20s", effectsShortcutThree) .. ")" end
@@ -2074,12 +2042,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Transition Shortcuts:
 	--------------------------------------------------------------------------------
-	local transitionsListUpdated 	= settings.get("fcpxHacks.transitionsListUpdated") or false
-	local transitionsShortcutOne 	= settings.get("fcpxHacks.transitionsShortcutOne")
-	local transitionsShortcutTwo 	= settings.get("fcpxHacks.transitionsShortcutTwo")
-	local transitionsShortcutThree 	= settings.get("fcpxHacks.transitionsShortcutThree")
-	local transitionsShortcutFour 	= settings.get("fcpxHacks.transitionsShortcutFour")
-	local transitionsShortcutFive 	= settings.get("fcpxHacks.transitionsShortcutFive")
+	local transitionsListUpdated 	= hs.settings.get("fcpxHacks.transitionsListUpdated") or false
+	local transitionsShortcutOne 	= hs.settings.get("fcpxHacks.transitionsShortcutOne")
+	local transitionsShortcutTwo 	= hs.settings.get("fcpxHacks.transitionsShortcutTwo")
+	local transitionsShortcutThree 	= hs.settings.get("fcpxHacks.transitionsShortcutThree")
+	local transitionsShortcutFour 	= hs.settings.get("fcpxHacks.transitionsShortcutFour")
+	local transitionsShortcutFive 	= hs.settings.get("fcpxHacks.transitionsShortcutFive")
 	if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. string.format("%.20s", transitionsShortcutOne) .. ")" 	end
 	if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. string.format("%.20s", transitionsShortcutTwo) .. ")" 	end
 	if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. string.format("%.20s", transitionsShortcutThree) .. ")"	end
@@ -2089,12 +2057,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Titles Shortcuts:
 	--------------------------------------------------------------------------------
-	local titlesListUpdated 	= settings.get("fcpxHacks.titlesListUpdated") or false
-	local titlesShortcutOne 	= settings.get("fcpxHacks.titlesShortcutOne")
-	local titlesShortcutTwo 	= settings.get("fcpxHacks.titlesShortcutTwo")
-	local titlesShortcutThree 	= settings.get("fcpxHacks.titlesShortcutThree")
-	local titlesShortcutFour 	= settings.get("fcpxHacks.titlesShortcutFour")
-	local titlesShortcutFive 	= settings.get("fcpxHacks.titlesShortcutFive")
+	local titlesListUpdated 	= hs.settings.get("fcpxHacks.titlesListUpdated") or false
+	local titlesShortcutOne 	= hs.settings.get("fcpxHacks.titlesShortcutOne")
+	local titlesShortcutTwo 	= hs.settings.get("fcpxHacks.titlesShortcutTwo")
+	local titlesShortcutThree 	= hs.settings.get("fcpxHacks.titlesShortcutThree")
+	local titlesShortcutFour 	= hs.settings.get("fcpxHacks.titlesShortcutFour")
+	local titlesShortcutFive 	= hs.settings.get("fcpxHacks.titlesShortcutFive")
 	if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. string.format("%.20s", titlesShortcutOne) .. ")" 	end
 	if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. string.format("%.20s", titlesShortcutTwo) .. ")" 	end
 	if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. string.format("%.20s", titlesShortcutThree) .. ")"	end
@@ -2104,12 +2072,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Generators Shortcuts:
 	--------------------------------------------------------------------------------
-	local generatorsListUpdated 	= settings.get("fcpxHacks.generatorsListUpdated") or false
-	local generatorsShortcutOne 	= settings.get("fcpxHacks.generatorsShortcutOne")
-	local generatorsShortcutTwo 	= settings.get("fcpxHacks.generatorsShortcutTwo")
-	local generatorsShortcutThree 	= settings.get("fcpxHacks.generatorsShortcutThree")
-	local generatorsShortcutFour 	= settings.get("fcpxHacks.generatorsShortcutFour")
-	local generatorsShortcutFive 	= settings.get("fcpxHacks.generatorsShortcutFive")
+	local generatorsListUpdated 	= hs.settings.get("fcpxHacks.generatorsListUpdated") or false
+	local generatorsShortcutOne 	= hs.settings.get("fcpxHacks.generatorsShortcutOne")
+	local generatorsShortcutTwo 	= hs.settings.get("fcpxHacks.generatorsShortcutTwo")
+	local generatorsShortcutThree 	= hs.settings.get("fcpxHacks.generatorsShortcutThree")
+	local generatorsShortcutFour 	= hs.settings.get("fcpxHacks.generatorsShortcutFour")
+	local generatorsShortcutFive 	= hs.settings.get("fcpxHacks.generatorsShortcutFive")
 	if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. string.format("%.20s", generatorsShortcutOne) .. ")" 	end
 	if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. string.format("%.20s", generatorsShortcutTwo) .. ")" 	end
 	if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. string.format("%.20s", generatorsShortcutThree) .. ")"	end
@@ -2119,10 +2087,10 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Menubar Settings:
 	--------------------------------------------------------------------------------
-	local menubarShortcutsEnabled = 	settings.get("fcpxHacks.menubarShortcutsEnabled")
-	local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
-	local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
-	local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
+	local menubarShortcutsEnabled = 	hs.settings.get("fcpxHacks.menubarShortcutsEnabled")
+	local menubarAutomationEnabled = 	hs.settings.get("fcpxHacks.menubarAutomationEnabled")
+	local menubarToolsEnabled = 		hs.settings.get("fcpxHacks.menubarToolsEnabled")
+	local menubarHacksEnabled = 		hs.settings.get("fcpxHacks.menubarHacksEnabled")
 
 	--------------------------------------------------------------------------------
 	-- Setup Menu:
@@ -2273,12 +2241,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Setup Menubar:
 	--------------------------------------------------------------------------------
-	if menubarShortcutsEnabled then 	menuTable = fnutils.concat(menuTable, shortcutsTable) 	end
-	if menubarAutomationEnabled then	menuTable = fnutils.concat(menuTable, automationTable)	end
-	if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
-	if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
+	if menubarShortcutsEnabled then 	menuTable = hs.fnutils.concat(menuTable, shortcutsTable) 	end
+	if menubarAutomationEnabled then	menuTable = hs.fnutils.concat(menuTable, automationTable)	end
+	if menubarToolsEnabled then 		menuTable = hs.fnutils.concat(menuTable, toolsTable)		end
+	if menubarHacksEnabled then 		menuTable = hs.fnutils.concat(menuTable, hacksTable)		end
 
-	menuTable = fnutils.concat(menuTable, settingsTable)
+	menuTable = hs.fnutils.concat(menuTable, settingsTable)
 
 	--------------------------------------------------------------------------------
 	-- Check for Updates:
@@ -2301,7 +2269,7 @@ end
 --------------------------------------------------------------------------------
 function displayShortcutList()
 
-	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
@@ -2626,7 +2594,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		hs.timer.doAfter(0.1, function()
 
 			--------------------------------------------------------------------------------
 			-- Make sure there's nothing in the search box:
@@ -2672,9 +2640,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Save Results to Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
-			settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
-			settings.set("fcpxHacks.effectsListUpdated", true)
+			hs.settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
+			hs.settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
+			hs.settings.set("fcpxHacks.effectsListUpdated", true)
 
 			--------------------------------------------------------------------------------
 			-- Update Chooser:
@@ -2959,8 +2927,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allTransitions", allTransitions)
-		settings.set("fcpxHacks.transitionsListUpdated", true)
+		hs.settings.set("fcpxHacks.allTransitions", allTransitions)
+		hs.settings.set("fcpxHacks.transitionsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -3263,8 +3231,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allTitles", allTitles)
-		settings.set("fcpxHacks.titlesListUpdated", true)
+		hs.settings.set("fcpxHacks.allTitles", allTitles)
+		hs.settings.set("fcpxHacks.titlesListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -3584,8 +3552,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allGenerators", allGenerators)
-		settings.set("fcpxHacks.generatorsListUpdated", true)
+		hs.settings.set("fcpxHacks.allGenerators", allGenerators)
+		hs.settings.set("fcpxHacks.generatorsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -3621,9 +3589,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated")
-		local allVideoEffects 		= settings.get("fcpxHacks.allVideoEffects")
-		local allAudioEffects 		= settings.get("fcpxHacks.allAudioEffects")
+		local effectsListUpdated 	= hs.settings.get("fcpxHacks.effectsListUpdated")
+		local allVideoEffects 		= hs.settings.get("fcpxHacks.allVideoEffects")
+		local allAudioEffects 		= hs.settings.get("fcpxHacks.allAudioEffects")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -3711,11 +3679,11 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
+				if whichShortcut == 1 then hs.settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then hs.settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then hs.settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then hs.settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then hs.settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3745,8 +3713,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local transitionsListUpdated = settings.get("fcpxHacks.transitionsListUpdated")
-		local allTransitions = settings.get("fcpxHacks.allTransitions")
+		local transitionsListUpdated = hs.settings.get("fcpxHacks.transitionsListUpdated")
+		local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -3815,11 +3783,11 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.transitionsShortcutOne", 	result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.transitionsShortcutTwo", 	result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
+				if whichShortcut == 1 then hs.settings.set("fcpxHacks.transitionsShortcutOne", 	result["text"]) end
+				if whichShortcut == 2 then hs.settings.set("fcpxHacks.transitionsShortcutTwo", 	result["text"]) end
+				if whichShortcut == 3 then hs.settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then hs.settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then hs.settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3849,8 +3817,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local titlesListUpdated = settings.get("fcpxHacks.titlesListUpdated")
-		local allTitles = settings.get("fcpxHacks.allTitles")
+		local titlesListUpdated = hs.settings.get("fcpxHacks.titlesListUpdated")
+		local allTitles = hs.settings.get("fcpxHacks.allTitles")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -3919,11 +3887,11 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.titlesShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.titlesShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.titlesShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.titlesShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.titlesShortcutFive", 		result["text"]) end
+				if whichShortcut == 1 then hs.settings.set("fcpxHacks.titlesShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then hs.settings.set("fcpxHacks.titlesShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then hs.settings.set("fcpxHacks.titlesShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then hs.settings.set("fcpxHacks.titlesShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then hs.settings.set("fcpxHacks.titlesShortcutFive", 		result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3953,8 +3921,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local generatorsListUpdated = settings.get("fcpxHacks.generatorsListUpdated")
-		local allGenerators = settings.get("fcpxHacks.allGenerators")
+		local generatorsListUpdated = hs.settings.get("fcpxHacks.generatorsListUpdated")
+		local allGenerators = hs.settings.get("fcpxHacks.allGenerators")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -4023,11 +3991,11 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.generatorsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.generatorsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.generatorsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.generatorsShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.generatorsShortcutFive", 		result["text"]) end
+				if whichShortcut == 1 then hs.settings.set("fcpxHacks.generatorsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then hs.settings.set("fcpxHacks.generatorsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then hs.settings.set("fcpxHacks.generatorsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then hs.settings.set("fcpxHacks.generatorsShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then hs.settings.set("fcpxHacks.generatorsShortcutFive", 		result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -4052,10 +4020,10 @@ end
 	-- CHANGE TOUCH BAR LOCATION:
 	--------------------------------------------------------------------------------
 	function changeTouchBarLocation(value)
-		settings.set("fcpxHacks.displayTouchBarLocation", value)
+		hs.settings.set("fcpxHacks.displayTouchBarLocation", value)
 
 		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
 
@@ -4066,7 +4034,7 @@ end
 	-- CHANGE HIGHLIGHT SHAPE:
 	--------------------------------------------------------------------------------
 	function changeHighlightShape(value)
-		settings.set("fcpxHacks.displayHighlightShape", value)
+		hs.settings.set("fcpxHacks.displayHighlightShape", value)
 		refreshMenuBar()
 	end
 
@@ -4074,7 +4042,7 @@ end
 	-- CHANGE HIGHLIGHT COLOUR:
 	--------------------------------------------------------------------------------
 	function changeHighlightColour(value)
-		settings.set("fcpxHacks.displayHighlightColour", value)
+		hs.settings.set("fcpxHacks.displayHighlightColour", value)
 		refreshMenuBar()
 	end
 
@@ -4211,7 +4179,7 @@ end
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
 		debugMode = not debugMode
-		settings.set("fcpxHacks.debugMode", debugMode)
+		hs.settings.set("fcpxHacks.debugMode", debugMode)
 		refreshMenuBar()
 	end
 
@@ -4219,8 +4187,8 @@ end
 	-- TOGGLE CHECK FOR UPDATES:
 	--------------------------------------------------------------------------------
 	function toggleCheckForUpdates()
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
-		settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
+		local enableCheckForUpdates = hs.settings.get("fcpxHacks.enableCheckForUpdates")
+		hs.settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
 		refreshMenuBar()
 	end
 
@@ -4228,8 +4196,8 @@ end
 	-- TOGGLE MENUBAR DISPLAY:
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplay(value)
-		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
-		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
+		local menubarEnabled = hs.settings.get("fcpxHacks.menubar" .. value .. "Enabled")
+		hs.settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
 		refreshMenuBar()
 	end
 
@@ -4237,13 +4205,13 @@ end
 	-- TOGGLE MEDIA IMPORT WATCHER:
 	--------------------------------------------------------------------------------
 	function toggleMediaImportWatcher()
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		local enableMediaImportWatcher = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or false
 		if not enableMediaImportWatcher then
 			mediaImportWatcher()
 		else
 			newDeviceMounted:stop()
 		end
-		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
+		hs.settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
 		refreshMenuBar()
 	end
 
@@ -4251,13 +4219,13 @@ end
 	-- TOGGLE CLIPBOARD HISTORY:
 	--------------------------------------------------------------------------------
 	function toggleEnableClipboardHistory()
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		local enableClipboardHistory = hs.settings.get("fcpxHacks.enableClipboardHistory") or false
 		if not enableClipboardHistory then
 			clipboard.startWatching()
 		else
 			clipboard.stopWatching()
 		end
-		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
+		hs.settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
 		refreshMenuBar()
 	end
 
@@ -4266,7 +4234,7 @@ end
 	--------------------------------------------------------------------------------
 	function toggleEnableSharedClipboard()
 
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+		local enableSharedClipboard = hs.settings.get("fcpxHacks.enableSharedClipboard") or false
 
 		if not enableSharedClipboard then
 
@@ -4274,16 +4242,16 @@ end
 
 			if result ~= false then
 				debugMessage("Enabled Shared Clipboard Path: " .. tostring(result))
-				settings.set("fcpxHacks.sharedClipboardPath", result)
+				hs.settings.set("fcpxHacks.sharedClipboardPath", result)
 
 				--------------------------------------------------------------------------------
 				-- Watch for Shared Clipboard Changes:
 				--------------------------------------------------------------------------------
-				sharedClipboardWatcher = pathwatcher.new(result, sharedClipboardFileWatcher):start()
+				sharedClipboardWatcher = hs.pathwatcher.new(result, sharedClipboardFileWatcher):start()
 
 			else
 				debugMessage("Enabled Shared Clipboard Choose Path Cancelled.")
-				settings.set("fcpxHacks.sharedClipboardPath", nil)
+				hs.settings.set("fcpxHacks.sharedClipboardPath", nil)
 				return "failed"
 			end
 
@@ -4296,7 +4264,7 @@ end
 
 		end
 
-		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
+		hs.settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
 		refreshMenuBar()
 
 	end
@@ -4306,39 +4274,39 @@ end
 	--------------------------------------------------------------------------------
 	function toggleEnableXMLSharing()
 
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+		local enableXMLSharing = hs.settings.get("fcpxHacks.enableXMLSharing") or false
 
 		if not enableXMLSharing then
 
 			xmlSharingDropboxPath = displayChooseFolder("Which folder would you like to use as the local Drop Box?")
 
 			if xmlSharingDropboxPath ~= false then
-				settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
+				hs.settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
 			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.xmlSharingPath", nil)
+				hs.settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+				hs.settings.set("fcpxHacks.xmlSharingPath", nil)
 				return "Cancelled"
 			end
 
 			xmlSharingPath = displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
 			if xmlSharingPath ~= false then
-				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
+				hs.settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
 			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.xmlSharingPath", nil)
+				hs.settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+				hs.settings.set("fcpxHacks.xmlSharingPath", nil)
 				return "Cancelled"
 			end
 
 			--------------------------------------------------------------------------------
 			-- Watch for XML Dropbox Changes:
 			--------------------------------------------------------------------------------
-			xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+			xmlDropboxWatcher = hs.pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Watch for Shared XML Folder Changes:
 			--------------------------------------------------------------------------------
-			sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+			sharedXMLWatcher = hs.pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 
 		else
 			--------------------------------------------------------------------------------
@@ -4350,11 +4318,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Clear Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-			settings.set("fcpxHacks.xmlSharingPath", nil)
+			hs.settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+			hs.settings.set("fcpxHacks.xmlSharingPath", nil)
 		end
 
-		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
+		hs.settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
 		refreshMenuBar()
 
 	end
@@ -4363,8 +4331,8 @@ end
 	-- TOGGLE MOBILE NOTIFICATIONS:
 	--------------------------------------------------------------------------------
 	function toggleEnableMobileNotifications()
-		local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
-		local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
+		local enableMobileNotifications 	= hs.settings.get("fcpxHacks.enableMobileNotifications") or false
+		local prowlAPIKey 					= hs.settings.get("fcpxHacks.prowlAPIKey") or ""
 
 		if not enableMobileNotifications then
 
@@ -4402,16 +4370,16 @@ end
 				end repeat
 				return response
 			]]
-			a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+			a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 			if result == false then
 				return "Cancel"
 			end
 			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
 			if prowlAPIKeyValidResult then
 				if returnToFinalCutPro then launchFinalCutPro() end
-				settings.set("fcpxHacks.prowlAPIKey", result)
+				hs.settings.set("fcpxHacks.prowlAPIKey", result)
 				notificationWatcher()
-				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+				hs.settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
 			else
 				displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
 				goto retryProwlAPIKeyEntry
@@ -4419,7 +4387,7 @@ end
 		else
 			shareSuccessNotificationWatcher:stop()
 			shareFailedNotificationWatcher:stop()
-			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+			hs.settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
 		end
 		refreshMenuBar()
 	end
@@ -4464,12 +4432,12 @@ end
 	-- TOGGLE ENABLE PROXY MENU ICON:
 	--------------------------------------------------------------------------------
 	function toggleEnableProxyMenuIcon()
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
+		local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
 		if enableProxyMenuIcon == nil then
-			settings.set("fcpxHacks.enableProxyMenuIcon", true)
+			hs.settings.set("fcpxHacks.enableProxyMenuIcon", true)
 			enableProxyMenuIcon = true
 		else
-			settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
+			hs.settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
 		end
 
 		updateMenubarIcon()
@@ -4485,7 +4453,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get current value from settings:
 		--------------------------------------------------------------------------------
-		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+		local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 		if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 		--------------------------------------------------------------------------------
@@ -4569,7 +4537,7 @@ end
 				end repeat
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
 		else
 			--------------------------------------------------------------------------------
@@ -4621,7 +4589,7 @@ end
 				end repeat
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
 		end
 
@@ -4632,7 +4600,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Save new value to settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
+			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
 
 			--------------------------------------------------------------------------------
 			-- Restart Final Cut Pro:
@@ -4666,9 +4634,9 @@ end
 	--------------------------------------------------------------------------------
 	function toggleEnableShortcutsDuringFullscreenPlayback()
 
-		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
+		local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
 		if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
-		settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
+		hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
 
 		if enableShortcutsDuringFullscreenPlayback == true then
 			fullscreenKeyboardWatcherUp:stop()
@@ -4885,16 +4853,16 @@ end
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplayMode()
 
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
+		local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
 
 
 		if displayMenubarAsIcon == nil then
-			 settings.set("fcpxHacks.displayMenubarAsIcon", true)
+			 hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
 		else
 			if displayMenubarAsIcon then
-				settings.set("fcpxHacks.displayMenubarAsIcon", false)
+				hs.settings.set("fcpxHacks.displayMenubarAsIcon", false)
 			else
-				settings.set("fcpxHacks.displayMenubarAsIcon", true)
+				hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
 			end
 		end
 
@@ -4949,7 +4917,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5054,7 +5022,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5159,7 +5127,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5264,7 +5232,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5373,7 +5341,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5449,7 +5417,7 @@ end
 		-- Write data back to Clipboard:
 		--------------------------------------------------------------------------------
 		clipboard.stopWatching()
-		pasteboard.writeDataForUTI(finalCutProClipboardUTI, data)
+		hs.pasteboard.writeDataForUTI(finalCutProClipboardUTI, data)
 		clipboard.startWatching()
 
 		--------------------------------------------------------------------------------
@@ -5468,9 +5436,9 @@ end
 	--------------------------------------------------------------------------------
 	function pasteFromSharedClipboard(whichClipboard)
 
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
+		local enableSharedClipboard = hs.settings.get("fcpxHacks.enableSharedClipboard")
 		if enableSharedClipboard then
-			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+			local sharedClipboardPath = hs.settings.get("fcpxHacks.sharedClipboardPath")
 			if sharedClipboardPath ~= nil then
 
 				local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
@@ -5485,7 +5453,7 @@ end
 				-- Write data back to Clipboard:
 				--------------------------------------------------------------------------------
 				clipboard.stopWatching()
-				pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
+				hs.pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
 				clipboard.startWatching()
 
 				--------------------------------------------------------------------------------
@@ -5517,8 +5485,8 @@ end
 	-- CLEAR SHARED CLIPBOARD HISTORY:
 	--------------------------------------------------------------------------------
 	function clearSharedClipboardHistory()
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		for file in fs.dir(sharedClipboardPath) do
+		local sharedClipboardPath = hs.settings.get("fcpxHacks.sharedClipboardPath")
+		for file in hs.fs.dir(sharedClipboardPath) do
 			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
 				os.remove(sharedClipboardPath .. file)
 			 end
@@ -5530,8 +5498,8 @@ end
 	-- CLEAR SHARED XML FILES:
 	--------------------------------------------------------------------------------
 	function clearSharedXMLFiles()
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		for file in fs.dir(xmlSharingPath) do
+		local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
+		for file in hs.fs.dir(xmlSharingPath) do
 			 if file:sub(-7) == ".fcpxml" then
 				os.remove(xmlSharingPath .. file)
 			 end
@@ -5548,10 +5516,10 @@ end
 	--------------------------------------------------------------------------------
 	function updateMenubarIcon()
 
-		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
+		local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
 		local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
+		local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
+		local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
 		local proxyMenuIcon = ""
 		local proxyStatusIcon = getProxyStatusIcon()
 
@@ -5662,7 +5630,7 @@ end
 
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
 				displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
 			else
@@ -5674,9 +5642,9 @@ end
 				--------------------------------------------------------------------------------
 				-- Trash all FCPX Hacks Settings:
 				--------------------------------------------------------------------------------
-				for i, v in ipairs(settings.getKeys()) do
+				for i, v in ipairs(hs.settings.getKeys()) do
 					if (v:sub(1,10)) == "fcpxHacks." then
-						settings.set(v, nil)
+						hs.settings.set(v, nil)
 					end
 				end
 
@@ -5720,7 +5688,7 @@ end
 	--------------------------------------------------------------------------------
 	function importSharedXML(whichSharedXML)
 
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
 		whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
 
 		local appleScriptA = 'set whichSharedXMLPath to "' .. whichSharedXMLPath .. '"' .. '\n\n'
@@ -5730,7 +5698,7 @@ end
 				open POSIX file whichSharedXMLPath as string
 			end tell
 		]]
-		osascript.applescript(appleScriptA .. appleScriptB)
+		hs.osascript.applescript(appleScriptA .. appleScriptB)
 
 	end
 
@@ -5773,7 +5741,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(finalCutProApplication())[1]
+		fcpxElements = mod.ax.applicationElement(finalCutProApplication())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
@@ -6002,7 +5970,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 			return "Failed"
 		end
 
@@ -6029,7 +5997,7 @@ end
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
 		fcpx = finalCutProApplication()
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = mod.ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
@@ -6091,7 +6059,7 @@ end
 						end tell
 					end tell
 				]]
-				local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+				local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 				return "Failed"
 			end
 
@@ -6348,7 +6316,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+			local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
 
 			--------------------------------------------------------------------------------
 			-- Abort when Cancel is pressed:
@@ -6515,10 +6483,10 @@ end
 				--------------------------------------------------------------------------------
 				-- Bring Focus Back to Clips:
 				--------------------------------------------------------------------------------
-				local originalMousePoint = mouse.getAbsolutePosition()
+				local originalMousePoint = hs.mouse.getAbsolutePosition()
 				local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXPosition")
-				eventtap.leftClick(listPosition)
-				mouse.setAbsolutePosition(originalMousePoint)
+				hs.eventtap.leftClick(listPosition)
+				hs.mouse.setAbsolutePosition(originalMousePoint)
 
 				--------------------------------------------------------------------------------
 				-- Begin Clip Loop:
@@ -6541,7 +6509,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Wait for window to open:
 					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
+					fcpxExportWindow = mod.ax.applicationElement(fcpx)
 
 					local timeoutCount = 0
 					local exportWindowOpen = false
@@ -6785,7 +6753,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+			local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
 
 			--------------------------------------------------------------------------------
 			-- Abort when Cancel is pressed:
@@ -6796,10 +6764,10 @@ end
 			-- Bring Focus Back to Clips:
 			--------------------------------------------------------------------------------
 			if fcpxBrowserMode == "List" then
-				local originalMousePoint = mouse.getAbsolutePosition()
+				local originalMousePoint = hs.mouse.getAbsolutePosition()
 				local listPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][1]:attributeValue("AXPosition")
-				eventtap.leftClick(listPosition)
-				mouse.setAbsolutePosition(originalMousePoint)
+				hs.eventtap.leftClick(listPosition)
+				hs.mouse.setAbsolutePosition(originalMousePoint)
 			end
 
 			--------------------------------------------------------------------------------
@@ -6871,9 +6839,9 @@ end
 					--------------------------------------------------------------------------------
 					-- Click Thumbnail:
 					--------------------------------------------------------------------------------
-					local originalMousePoint = mouse.getAbsolutePosition()
-					eventtap.leftClick(clipPosition)
-					mouse.setAbsolutePosition(originalMousePoint)
+					local originalMousePoint = hs.mouse.getAbsolutePosition()
+					hs.eventtap.leftClick(clipPosition)
+					hs.mouse.setAbsolutePosition(originalMousePoint)
 
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share):
@@ -6886,7 +6854,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Wait for window to open:
 					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
+					fcpxExportWindow = mod.ax.applicationElement(fcpx)
 
 					local timeoutCount = 0
 					local exportWindowOpen = false
@@ -7123,7 +7091,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Wait for window to open:
 					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
+					fcpxExportWindow = mod.ax.applicationElement(fcpx)
 
 					local timeoutCount = 0
 					local exportWindowOpen = false
@@ -7337,7 +7305,7 @@ end
 				end tell
 			end tell
 		]]
-		local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
 	end
 
@@ -7393,7 +7361,7 @@ end
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
 		fcpx = finalCutProApplication()
-		fcpxElements = ax.applicationElement(fcpx)
+		fcpxElements = mod.ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
 		-- Which Window:
@@ -7429,7 +7397,7 @@ end
 			return "Failed"
 		end
 		if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
-		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
+		fcpxElements = mod.ax.applicationElement(fcpx)[whichWindow]
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
@@ -7549,7 +7517,7 @@ end
 			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
 			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
 
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+			currentElement = mod.ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
 
 			if currentElement:attributeValue("AXRole") == "AXHandle" then
 				currentElement = currentElement:attributeValue("AXParent")
@@ -7696,7 +7664,7 @@ end
 			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
 			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
 
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+			currentElement = mod.ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
 
 			if currentElement:attributeValue("AXRole") == "AXHandle" then
 				currentElement = currentElement:attributeValue("AXParent")
@@ -7769,12 +7737,12 @@ end
 		-- LOCAL VARIABLES:
 		--------------------------------------------------------------------------------
 		local showError = false
-		local event = eventtap.event
+		local event = hs.eventtap.event
 
 		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
 		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
-		increaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
-		decreaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
+		increaseThumbnailSizeCharacterString = hs.keycodes.map[finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
+		decreaseThumbnailSizeCharacterString = hs.keycodes.map[finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
 
 		--------------------------------------------------------------------------------
 		-- ERROR DETECTION:
@@ -7817,20 +7785,20 @@ end
 
 			writeToConsole("REPEAT " .. direction)
 
-			local event = eventtap.event
+			local event = hs.eventtap.event
 			if direction == "up" then
 				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, true):post()
 				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, false):post()
 
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", true):post()
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", false):post()
+				--hs.eventtap.event.newKeyEvent({"cmd", "shift"}, "=", true):post()
+				--hs.eventtap.event.newKeyEvent({"cmd", "shift"}, "=", false):post()
 
 			else
 				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, true):post()
 				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, false):post()
 
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", true):post()
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", false):post()
+				--hs.eventtap.event.newKeyEvent({"cmd", "shift"}, "-", true):post()
+				--hs.eventtap.event.newKeyEvent({"cmd", "shift"}, "-", false):post()
 			end
 
 		end
@@ -7853,7 +7821,7 @@ end
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
 		local fcpx = finalCutProApplication()
-		local fcpxElements = ax.applicationElement(fcpx)
+		local fcpxElements = mod.ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
@@ -7885,7 +7853,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Keyword Shortcuts Buttons isn't down:
 			--------------------------------------------------------------------------------
-			fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
+			fcpxElements = mod.ax.applicationElement(fcpx)[1] -- Refresh
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
 				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
 					keywordDisclosureTriangle = i
@@ -7920,7 +7888,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Values to Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
 		if savedKeywords == nil then savedKeywords = {} end
 		for i=1, 9 do
 			if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
@@ -7928,7 +7896,7 @@ end
 			end
 			savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
 		end
-		settings.set("fcpxHacks.savedKeywords", savedKeywords)
+		hs.settings.set("fcpxHacks.savedKeywords", savedKeywords)
 
 		--------------------------------------------------------------------------------
 		-- Saved:
@@ -7951,7 +7919,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Values from Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
 		local restoredKeywordValues = {}
 
 		if savedKeywords == nil then
@@ -7970,7 +7938,7 @@ end
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
 		local fcpx = finalCutProApplication()
-		local fcpxElements = ax.applicationElement(fcpx)
+		local fcpxElements = mod.ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
@@ -8033,7 +8001,7 @@ end
 
 				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
 				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-				eventtap.keyStroke({""}, "return")
+				hs.eventtap.keyStroke({""}, "return")
 
 				--------------------------------------------------------------------------------
 				-- If at first you don't succeed, try, oh try, again!
@@ -8041,7 +8009,7 @@ end
 				if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
 					setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
 					keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-					eventtap.keyStroke({""}, "return")
+					hs.eventtap.keyStroke({""}, "return")
 				end
 
 				favoriteCount = favoriteCount + 1
@@ -8068,12 +8036,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Toggle Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		scrollingTimelineActivated = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
 		if scrollingTimelineActivated then
 			--------------------------------------------------------------------------------
 			-- Update Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", false)
+			hs.settings.set("fcpxHacks.scrollingTimelineActive", false)
 
 			--------------------------------------------------------------------------------
 			-- Stop Watchers:
@@ -8101,7 +8069,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Update Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", true)
+			hs.settings.set("fcpxHacks.scrollingTimelineActive", true)
 
 			--------------------------------------------------------------------------------
 			-- Start Watchers:
@@ -8114,7 +8082,7 @@ end
 			--------------------------------------------------------------------------------
 			-- TO DO: it would be great to be able to do this if possible?
 				-- scrollingTimelineSpacebarCheck = true
-				-- timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
+				-- hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
 
 			--------------------------------------------------------------------------------
 			-- Display Notification:
@@ -8138,7 +8106,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Scrollbar Check Timer:
 		--------------------------------------------------------------------------------
-		scrollingTimelineScrollbarTimer = timer.new(0.001, function()
+		scrollingTimelineScrollbarTimer = hs.timer.new(0.001, function()
 			if timelineScrollArea[2] ~= nil then
 				performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 				scrollbarSearchLoopActivated = false
@@ -8172,7 +8140,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define the Loop of Death:
 		--------------------------------------------------------------------------------
-		scrollingTimelineTimer = timer.new(0.000001, function()
+		scrollingTimelineTimer = hs.timer.new(0.000001, function()
 
 			--------------------------------------------------------------------------------
 			-- Does the scrollbar still exist?
@@ -8418,7 +8386,7 @@ end
 			-- Get shortcut key from plist, press and hold if required:
 			--------------------------------------------------------------------------------
 			releaseColorBoardDown = false
-			timer.doUntil(function() return releaseColorBoardDown end, function()
+			hs.timer.doUntil(function() return releaseColorBoardDown end, function()
 				if whichDirection == "up" then
 					if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckUp")
@@ -8439,7 +8407,7 @@ end
 						keyStrokeFromPlist("ColorBoard-NudgePuckRight")
 					end
 				end
-			end, eventtap.keyRepeatInterval())
+			end, hs.eventtap.keyRepeatInterval())
 
 		end
 
@@ -8453,7 +8421,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Local Variables:
 		--------------------------------------------------------------------------------
-		local colorBoardOriginalMousePoint = mouse.getAbsolutePosition()
+		local colorBoardOriginalMousePoint = hs.mouse.getAbsolutePosition()
 
 		--------------------------------------------------------------------------------
 		-- Make sure Nudge Shortcuts are allocated:
@@ -8540,9 +8508,9 @@ end
 		-- Get shortcut key from plist, press and hold if required:
 		--------------------------------------------------------------------------------
 		releaseMouseColorBoardDown = false
-		timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+		hs.timer.doUntil(function() return releaseMouseColorBoardDown end, function()
 
-			local currentMousePoint = mouse.getAbsolutePosition()
+			local currentMousePoint = hs.mouse.getAbsolutePosition()
 
 			if currentMousePoint['y'] < colorBoardOriginalMousePoint['y'] then
 				keyStrokeFromPlist("ColorBoard-NudgePuckUp")
@@ -8600,11 +8568,11 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive") end
+		if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFive") end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
@@ -8893,7 +8861,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Original Mouse Position:
 			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
+			local originalMousePosition = hs.mouse.getAbsolutePosition()
 
 			--------------------------------------------------------------------------------
 			-- Get centre of button:
@@ -8910,7 +8878,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put it back:
 			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
+			hs.mouse.setAbsolutePosition(originalMousePosition)
 
 		else
 			displayErrorMessage("Unable to locate effect.\n\nError occured in transitionsShortcut().")
@@ -8921,7 +8889,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		hs.timer.doAfter(0.1, function()
 
 			--------------------------------------------------------------------------------
 			-- Make sure there's nothing in the search box:
@@ -8973,11 +8941,11 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.effectsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.effectsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFive") end
+		if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFive") end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
@@ -9267,7 +9235,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Original Mouse Position:
 			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
+			local originalMousePosition = hs.mouse.getAbsolutePosition()
 
 			--------------------------------------------------------------------------------
 			-- Get centre of button:
@@ -9284,7 +9252,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put it back:
 			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
+			hs.mouse.setAbsolutePosition(originalMousePosition)
 
 		else
 			displayErrorMessage("Unable to locate effect.\n\nError occured in effectsShortcut().")
@@ -9295,7 +9263,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		hs.timer.doAfter(0.1, function()
 
 			--------------------------------------------------------------------------------
 			-- Make sure there's nothing in the search box:
@@ -9347,11 +9315,11 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.titlesShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.titlesShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFive") end
+		if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.titlesShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.titlesShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.titlesShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.titlesShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.titlesShortcutFive") end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
@@ -9628,7 +9596,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Original Mouse Position:
 			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
+			local originalMousePosition = hs.mouse.getAbsolutePosition()
 
 			--------------------------------------------------------------------------------
 			-- Get centre of button:
@@ -9645,7 +9613,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put it back:
 			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
+			hs.mouse.setAbsolutePosition(originalMousePosition)
 
 		else
 			displayErrorMessage("Unable to locate Title.\n\nError occured in titlesShortcut().")
@@ -9656,7 +9624,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		hs.timer.doAfter(0.1, function()
 
 			--------------------------------------------------------------------------------
 			-- Make sure there's nothing in the search box:
@@ -9753,11 +9721,11 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive") end
+		if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.generatorsShortcutOne") end
+		if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.generatorsShortcutTwo") end
+		if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.generatorsShortcutThree") end
+		if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.generatorsShortcutFour") end
+		if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.generatorsShortcutFive") end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
@@ -10056,7 +10024,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Original Mouse Position:
 			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
+			local originalMousePosition = hs.mouse.getAbsolutePosition()
 
 			--------------------------------------------------------------------------------
 			-- Get centre of button:
@@ -10073,7 +10041,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put it back:
 			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
+			hs.mouse.setAbsolutePosition(originalMousePosition)
 
 		else
 			displayErrorMessage("Unable to locate Generator.\n\nError occured in generatorsShortcut().")
@@ -10084,7 +10052,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		hs.timer.doAfter(0.1, function()
 
 			--------------------------------------------------------------------------------
 			-- Make sure there's nothing in the search box:
@@ -10187,7 +10155,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Settings:
 		--------------------------------------------------------------------------------
-		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+		local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
 
 		--------------------------------------------------------------------------------
 		-- Toggle Touch Bar:
@@ -10198,7 +10166,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
+		hs.settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
 
 	end
 
@@ -10240,7 +10208,7 @@ end
 	--------------------------------------------------------------------------------
 	function moveToPlayhead()
 
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		local enableClipboardHistory = hs.settings.get("fcpxHacks.enableClipboardHistory") or false
 
 		if enableClipboardHistory then clipboard.stopWatching() end
 
@@ -10462,7 +10430,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Used for debugging:
 		--------------------------------------------------------------------------------
-		--ax.log.level = 4
+		--mod.ax.log.level = 4
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
@@ -10472,7 +10440,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
+		local sw = mod.ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Single Screen:
@@ -10590,7 +10558,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
+		sw = mod.ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Single Screen:
@@ -10642,7 +10610,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
+		sw = mod.ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Find Color Button:
@@ -10761,7 +10729,7 @@ function getFinalCutProActiveCommandSet()
 	if activeCommandSetResult == nil then
 		return nil
 	else
-		if fs.attributes(activeCommandSetResult) == nil then
+		if hs.fs.attributes(activeCommandSetResult) == nil then
 			return nil
 		else
 			return activeCommandSetResult
@@ -10797,7 +10765,7 @@ function readShortcutKeysFromPlist()
 		displayErrorMessage("Could not retreieve the Active Command Set from Final Cut Pro's plist.")
 		return "Failed"
 	else
-		if fs.attributes(trim(executeResult)) == nil then
+		if hs.fs.attributes(trim(executeResult)) == nil then
 			displayErrorMessage("The Active Command Set in Final Cut Pro's plist could not be found.")
 			return "Failed"
 		else
@@ -11017,7 +10985,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
+	fcpxElements = mod.ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
 	-- Which AXMenuBar:
@@ -11054,7 +11022,7 @@ function checkScrollingTimelinePress()
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
 	local fcpx 				= finalCutProApplication()
-	local fcpxElements 		= ax.applicationElement(fcpx)
+	local fcpxElements 		= mod.ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
 	-- Don't activate scrollbar in fullscreen mode:
@@ -11103,7 +11071,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Check mouse is in timeline area:
 	--------------------------------------------------------------------------------
-	local mouseLocation = mouse.getAbsolutePosition()
+	local mouseLocation = hs.mouse.getAbsolutePosition()
 	local timelinePosition = timelineScrollArea:attributeValue("AXPosition")
 	local timelineSize = timelineScrollArea:attributeValue("AXSize")
 	local isMouseInTimelineArea = true
@@ -11165,14 +11133,14 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
 	if displayHighlightColour == nil then 		displayHighlightColour = "Red" 												end
 	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
@@ -11183,21 +11151,21 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
     -- Highlight the FCPX Browser Playhead:
     --------------------------------------------------------------------------------
    	if displayHighlightShape == "Rectangle" then
-		browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		browserHighlight = hs.drawing.rectangle(hs.geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
 		browserHighlight:show()
 	end
 	if displayHighlightShape == "Circle" then
-		browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
+		browserHighlight = hs.drawing.circle(hs.geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
 		browserHighlight:show()
 	end
 	if displayHighlightShape == "Diamond" then
-		browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		browserHighlight = hs.drawing.circle(hs.geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
 		browserHighlight:setStrokeColor(displayHighlightColour)
 		browserHighlight:setFill(false)
 		browserHighlight:setStrokeWidth(5)
@@ -11207,7 +11175,7 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 	--------------------------------------------------------------------------------
     -- Set a timer to delete the circle after 3 seconds:
     --------------------------------------------------------------------------------
-    browserHighlightTimer = timer.doAfter(3, function() browserHighlight:delete() end)
+    browserHighlightTimer = hs.timer.doAfter(3, function() browserHighlight:delete() end)
 
 end
 
@@ -11263,7 +11231,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
+	fcpxElements = mod.ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
 	-- Which AXMenuBar:
@@ -11404,7 +11372,7 @@ end
 		-- Check if we need to show the Touch Bar:
 		--------------------------------------------------------------------------------
 		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then touchBarWindow:show() end
 		end
 	end
@@ -11427,7 +11395,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Settings:
 		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+		local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 
 		--------------------------------------------------------------------------------
 		-- Show Touch Bar at Mouse Pointer Position:
@@ -11460,7 +11428,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Save last Touch Bar Location to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+		hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
 	end
 
@@ -11475,7 +11443,7 @@ end
 		if finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
 		if finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
 		if next(finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-		eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
+		hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	hs.keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
 		return true
 	end
 
@@ -11486,10 +11454,10 @@ end
 
 		local match = true
 
-		if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-		if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-		if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-		if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
+		if hs.fnutils.contains(inputA, "ctrl") and not hs.fnutils.contains(inputB, "ctrl") then match = false end
+		if hs.fnutils.contains(inputA, "alt") and not hs.fnutils.contains(inputB, "alt") then match = false end
+		if hs.fnutils.contains(inputA, "cmd") and not hs.fnutils.contains(inputB, "cmd") then match = false end
+		if hs.fnutils.contains(inputA, "shift") and not hs.fnutils.contains(inputB, "shift") then match = false end
 
 		return match
 
@@ -11624,10 +11592,10 @@ end
 		}
 
 		if englishKeyCodes[input] == nil then
-			if keycodes.map[input] == nil then
+			if hs.keycodes.map[input] == nil then
 				return ""
 			else
-				return keycodes.map[input]
+				return hs.keycodes.map[input]
 			end
 		else
 			return englishKeyCodes[input]
@@ -11740,21 +11708,21 @@ end
 	-- DOUBLE LEFT CLICK:
 	--------------------------------------------------------------------------------
 	function doubleLeftClick(point)
-		local clickState = eventtap.event.properties.mouseEventClickState
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-		timer.usleep(1000)
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
+		local clickState = hs.eventtap.event.properties.mouseEventClickState
+		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
+		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
+		hs.timer.usleep(1000)
+		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
+		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
 	end
 
 	--------------------------------------------------------------------------------
 	-- NINJA MOUSE CLICK:
 	--------------------------------------------------------------------------------
 	function ninjaMouseClick(position)
-			local originalMousePoint = mouse.getAbsolutePosition()
-			eventtap.leftClick(position)
-			mouse.setAbsolutePosition(originalMousePoint)
+			local originalMousePoint = hs.mouse.getAbsolutePosition()
+			hs.eventtap.leftClick(position)
+			hs.mouse.setAbsolutePosition(originalMousePoint)
 	end
 
 --------------------------------------------------------------------------------
@@ -11790,7 +11758,7 @@ end
 			end repeat
 			return usersInput
 		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
 		if returnToFinalCutPro then launchFinalCutPro() end
 		return result
 	end
@@ -11834,7 +11802,7 @@ end
 			end repeat
 			return response
 		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
 		if returnToFinalCutPro then launchFinalCutPro() end
 		return result
 	end
@@ -11855,7 +11823,7 @@ end
 				return false
 			end try
 		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 		if returnToFinalCutPro then launchFinalCutPro() end
 		return result
 	end
@@ -11870,7 +11838,7 @@ end
 			tell me to activate
 			display dialog whatMessage buttons {"OK"} with icon stop
 		]]
-		osascript.applescript(appleScriptA .. appleScriptB)
+		hs.osascript.applescript(appleScriptA .. appleScriptB)
 		if returnToFinalCutPro then launchFinalCutPro() end
 	end
 
@@ -11898,7 +11866,7 @@ end
 				return false
 			end if
 		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
 		--------------------------------------------------------------------------------
 		-- Send bug report:
@@ -11918,7 +11886,7 @@ end
 			tell me to activate
 			display dialog whatMessage buttons {"OK"} with icon fcpxIcon
 		]]
-		osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 		if returnToFinalCutPro then launchFinalCutPro() end
 	end
 
@@ -11938,7 +11906,7 @@ end
 				return false
 			end if
 		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 		if returnToFinalCutPro then launchFinalCutPro() end
 		return result
 
@@ -11947,25 +11915,6 @@ end
 --------------------------------------------------------------------------------
 -- GENERAL TOOLS:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- WRITE TO CONSOLE:
-	--------------------------------------------------------------------------------
-	function writeToConsole(value, overrideLabel)
-
-		if value ~= nil then
-			if type(value) == "table" then value = inspect(value) end
-			if overrideLabel == nil then value = "> " .. value end
-
-			local consoleStyledText = styledtext.new(value, {
-				color = drawing.color.definedCollections.hammerspoon["blue"],
-				font = { name = "Menlo", size = 12 },
-			})
-
-			hs.console.printStyledtext(consoleStyledText)
-		end
-
-	end
 
 	--------------------------------------------------------------------------------
 	-- DEBUG MESSAGE:
@@ -11992,7 +11941,7 @@ end
 			end try
 		]]
 
-		ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+		ok,result = hs.osascript.applescript(appleScriptA .. appleScriptB)
 		return result
 	end
 
@@ -12042,7 +11991,7 @@ end
 	-- DOES DIRECTORY EXIST:
 	--------------------------------------------------------------------------------
 	function doesDirectoryExist(path)
-		local attr = fs.attributes(path)
+		local attr = hs.fs.attributes(path)
 		return attr and attr.mode == 'directory'
 	end
 
@@ -12078,7 +12027,7 @@ end
 		local errorMessage = nil
 
 		prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
-		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
+		httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
 
 		if string.match(httpBody, "success") then
 			result = true
@@ -12095,9 +12044,9 @@ end
 	-- EMAIL BUG REPORT:
 	--------------------------------------------------------------------------------
 	function emailBugReport()
-		mailer = sharing.newShare("com.apple.share.Mail.compose")
+		mailer = hs.sharing.newShare("com.apple.share.Mail.compose")
 		mailer:subject("[FCPX Hacks " .. scriptVersion .. "] Bug Report"):recipients({bugReportEmail})
-		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",hs.console.getConsole(true), screen.mainScreen():snapshot()})
+		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",hs.console.getConsole(true), hs.screen.mainScreen():snapshot()})
 	end
 
 	--------------------------------------------------------------------------------
@@ -12120,11 +12069,11 @@ end
 	--------------------------------------------------------------------------------
 	function checkForUpdates()
 
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
+		local enableCheckForUpdates = hs.settings.get("fcpxHacks.enableCheckForUpdates")
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
+			updateResponse, updateBody, updateHeader = hs.http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
 			if updateResponse == 200 then
 				if updateBody:sub(1,8) == "LATEST: " then
 					--------------------------------------------------------------------------------
@@ -12137,7 +12086,7 @@ end
 					--------------------------------------------------------------------------------
 					if not shownUpdateNotification then
 						if latestScriptVersion > scriptVersion then
-							updateNotification = hs.notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+							updateNotification = hs.notify.new(function() getScriptUpdate() end):setIdImage(hs.image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -12176,11 +12125,11 @@ end
 -- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS RESIZED:
 --------------------------------------------------------------------------------
 function finalCutProResizeWatcher()
-	finalCutProWindowFilter = window.filter.new{"Final Cut Pro"}
-	finalCutProWindowFilter:subscribe(window.filter.windowMoved, function()
+	finalCutProWindowFilter = hs.window.filter.new{"Final Cut Pro"}
+	finalCutProWindowFilter:subscribe(hs.window.filter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
 	end)
@@ -12210,7 +12159,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Full Screen Keyboard Watcher:
 				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
 					fullscreenKeyboardWatcherUp:start()
 					fullscreenKeyboardWatcherDown:start()
 				end
@@ -12218,7 +12167,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Disable Scrolling Timeline Watcher:
 				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
 					if scrollingTimelineWatcherUp ~= nil then
 						scrollingTimelineWatcherUp:start()
 						scrollingTimelineWatcherDown:start()
@@ -12238,7 +12187,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Full Screen Keyboard Watcher:
 				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
 					fullscreenKeyboardWatcherUp:stop()
 					fullscreenKeyboardWatcherDown:stop()
 				end
@@ -12246,7 +12195,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				-- Disable Scrolling Timeline Watcher:
 				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
 					if scrollingTimelineWatcherUp ~= nil then
 						scrollingTimelineWatcherUp:stop()
 						scrollingTimelineWatcherDown:stop()
@@ -12309,7 +12258,7 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
     	if lastCommandSet ~= getFinalCutProActiveCommandSet() then
     		if not isCommandEditorOpen then
-	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
+	    		hs.timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
 
@@ -12331,9 +12280,9 @@ end
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
 	local commandEditorID = nil
-	local filter = window.filter.new(true)
+	local filter = hs.window.filter.new(true)
 	filter:subscribe(
-	  window.filter.windowCreated,
+	  hs.window.filter.windowCreated,
 	  (function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:title() == 'Command Editor') then
@@ -12365,7 +12314,7 @@ function commandEditorWatcher()
 	  true
 	)
 	filter:subscribe(
-	  window.filter.windowDestroyed,
+	  hs.window.filter.windowDestroyed,
 	  (function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:id() == commandEditorID) then
@@ -12387,7 +12336,7 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				-- Refresh Keyboard Shortcuts:
 				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
+				hs.timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 				--------------------------------------------------------------------------------
 
 			end
@@ -12403,10 +12352,10 @@ end
 --------------------------------------------------------------------------------
 function fullscreenKeyboardWatcher()
 	fullscreenKeyboardWatcherWorking = false
-	fullscreenKeyboardWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
+	fullscreenKeyboardWatcherUp = hs.eventtap.new({ hs.eventtap.event.types.keyUp }, function(event)
 		fullscreenKeyboardWatcherWorking = false
 	end)
-	fullscreenKeyboardWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
+	fullscreenKeyboardWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
 
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
@@ -12418,7 +12367,7 @@ function fullscreenKeyboardWatcher()
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
 		local fcpx = finalCutProApplication()
-		local fcpxElements = ax.applicationElement(fcpx)
+		local fcpxElements = mod.ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
 		-- Only Continue if in Full Screen Playback Mode:
@@ -12441,10 +12390,10 @@ function fullscreenKeyboardWatcher()
 						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
 								if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									hs.eventtap.keyStroke({""}, "escape")
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), hs.keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), hs.keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), hs.keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 									return true
 								end
 							end
@@ -12475,10 +12424,10 @@ function fullscreenKeyboardWatcher()
 							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 								if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
 									if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-										eventtap.keyStroke({""}, "escape")
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+										hs.eventtap.keyStroke({""}, "escape")
+										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), hs.keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), hs.keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
+										hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), hs.keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 										return true
 									end
 								end
@@ -12498,8 +12447,8 @@ end
 --------------------------------------------------------------------------------
 function mediaImportWatcher()
 
-	newDeviceMounted = fs.volume.new(function(event, table)
-		if event == fs.volume.didMount then
+	newDeviceMounted = hs.fs.volume.new(function(event, table)
+		if event == hs.fs.volume.didMount then
 
 			debugMessage("Media Inserted.")
 
@@ -12511,12 +12460,12 @@ function mediaImportWatcher()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
-			mediaImportTimer = timer.doUntil(function() return stopMediaImportTimer end, function()
+			mediaImportTimer = hs.timer.doUntil(function() return stopMediaImportTimer end, function()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
 					local fcpx = finalCutProApplication()
-					local fcpxElements = ax.applicationElement(fcpx)
+					local fcpxElements = mod.ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
 							if mediaImportCount == 0 then
@@ -12552,14 +12501,14 @@ function scrollingTimelineWatcher()
 	--------------------------------------------------------------------------------
 	-- Key Press Up Watcher:
 	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
+	scrollingTimelineWatcherUp = hs.eventtap.new({ hs.eventtap.event.types.keyUp }, function(event)
 		scrollingTimelineWatcherWorking = false
 	end)
 
 	--------------------------------------------------------------------------------
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
+	scrollingTimelineWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
 
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
@@ -12591,7 +12540,7 @@ function scrollingTimelineWatcher()
 					--------------------------------------------------------------------------------
 					if scrollingTimelineSpacebarPressed then
 						scrollingTimelineSpacebarCheck = true
-						timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
+						hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
 					else
 						if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
 						if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
@@ -12611,20 +12560,20 @@ function notificationWatcher()
 	--------------------------------------------------------------------------------
 	-- USED FOR DEVELOPMENT:
 	--------------------------------------------------------------------------------
-	--foo = distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, inspect(userInfo))) end)
+	--foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
 	--foo:start()
 
 	--------------------------------------------------------------------------------
 	-- SHARE SUCCESSFUL NOTIFICATION WATCHER:
 	--------------------------------------------------------------------------------
 	-- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
-	shareSuccessNotificationWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
+	shareSuccessNotificationWatcher = hs.distributednotifications.new(notificationWatcherAction, "uploadSuccess")
 	shareSuccessNotificationWatcher:start()
 
 	--------------------------------------------------------------------------------
 	-- SHARE UNSUCCESSFUL NOTIFICATION WATCHER:
 	--------------------------------------------------------------------------------
-	shareFailedNotificationWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
+	shareFailedNotificationWatcher = hs.distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
 	shareFailedNotificationWatcher:start()
 
 end
@@ -12634,18 +12583,18 @@ end
 	--------------------------------------------------------------------------------
 	function notificationWatcherAction(name, object, userInfo)
 
-		local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+		local prowlAPIKey = hs.settings.get("fcpxHacks.prowlAPIKey") or nil
 		if prowlAPIKey ~= nil then
 
-			local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
-			local prowlEvent = http.encodeForQuery("")
+			local prowlApplication = hs.http.encodeForQuery("FINAL CUT PRO")
+			local prowlEvent = hs.http.encodeForQuery("")
 			local prowlDescription = nil
 
-			if name == "uploadSuccess" then prowlDescription = http.encodeForQuery("Share Successful") end
-			if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery("Share Failed") end
+			if name == "uploadSuccess" then prowlDescription = hs.http.encodeForQuery("Share Successful") end
+			if name == "ProTranscoderDidFailNotification" then prowlDescription = hs.http.encodeForQuery("Share Failed") end
 
 			local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
-			httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
+			httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
 
 			if not string.match(httpBody, "success") then
 				local xml = slaxdom:dom(tostring(httpBody))
@@ -12676,8 +12625,8 @@ function sharedXMLFileWatcher(files)
 			if testFile ~= nil then
 				testFile:close()
 				if not string.find(file, "(" .. hostname ..")") then
-					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = hs.notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+					local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
+					sharedXMLNotification = hs.notify.new(sharedXMLNotificationAction):setIdImage(hs.image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 														   						   :title("New XML Recieved")
 														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
 														   						   :informativeText("FCPX Hacks has recieved a new XML file.")
@@ -12734,8 +12683,8 @@ function xmlDropboxFileWatcher(files)
 				--------------------------------------------------------------------------------
 				-- Get Settings:
 				--------------------------------------------------------------------------------
-				local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-				local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
+				local xmlSharingPath = hs.settings.get("fcpxHacks.xmlSharingPath")
+				local xmlSharingDropboxPath = hs.settings.get("fcpxHacks.xmlSharingDropboxPath")
 
 				--------------------------------------------------------------------------------
 				-- Get only the needed XML content:
@@ -12789,7 +12738,7 @@ function touchbarWatcher(obj, message)
 	    --------------------------------------------------------------------------------
         touchBarWindow:movable(false)
         touchBarWindow:acceptsMouseEvents(true)
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+		hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
     end
 
