@@ -1,29 +1,54 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---  Support libary for handling clipboard/pasteboard data.                    --
+--           P A S T E B O A R D     S U P P O R T     L I B R A R Y          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- Module created by David Peterson (https://github.com/randomeizer).
+--
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local log										= hs.logger.new("clipboard")
+--------------------------------------------------------------------------------
+-- STANDARD EXTENSIONS:
+--------------------------------------------------------------------------------
 
-local plist 									= require("hs.fcpx-hacks.plister")
-local protect 									= require("hs.fcpx-hacks.protect")
+local log										= require("hs.logger").new("clipboard")
+local plist 									= require("hs.plist")
+local protect 									= require("hs.fcpxhacks.modules.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
 local inspect									= require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- LOCAL VARIABLES:
+--------------------------------------------------------------------------------
+
+local clipboardTimer							= nil									-- Clipboard Watcher Timer
+local clipboardLastChange 						= pasteboard.changeCount()				-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+local clipboardHistory							= {}									-- Clipboard History
+local clipboardWatcherFrequency 				= 0.5									-- Clipboard Watcher Update Frequency
+local clipboardHistoryMaximumSize 				= 5										-- Maximum Size of Clipboard History
+local hostname									= host.localizedName()					-- Hostname
+
 local CLIPBOARD = protect({
-	-- Standard types
+	--------------------------------------------------------------------------------
+	-- Standard types:
+	--------------------------------------------------------------------------------
 	ARRAY 										= "NSMutableArray",
 	SET 										= "NSMutableSet",
 	OBJECTS 									= "NS.objects",
 
-	-- Dictionary
+	--------------------------------------------------------------------------------
+	-- Dictionary:
+	--------------------------------------------------------------------------------
 	DICTIONARY									= "NSDictionary",
 	KEYS										= "NS.keys",
 	VALUES										= "NS.objects",
 
-	-- FCPX Types
+	--------------------------------------------------------------------------------
+	-- FCPX Types:
+	--------------------------------------------------------------------------------
 	ANCHORED_ANGLE 								= "FFAnchoredAngle",
 	ANCHORED_COLLECTION 						= "FFAnchoredCollection",
 	ANCHORED_SEQUENCE 							= "FFAnchoredSequence",
@@ -31,31 +56,21 @@ local CLIPBOARD = protect({
 	GENERATOR									= "FFAnchoredGeneratorComponent",
 	TIMERANGE_AND_OBJECT 						= "FigTimeRangeAndObject",
 
-	-- The default name used when copying from the Timeline
+	--------------------------------------------------------------------------------
+	-- The default name used when copying from the Timeline:
+	--------------------------------------------------------------------------------
 	TIMELINE_DISPLAY_NAME 						= "__timelineContainerClip",
 
-	-- The pasteboard/clipboard property containing the copied clips
+	--------------------------------------------------------------------------------
+	-- The pasteboard/clipboard property containing the copied clips:
+	--------------------------------------------------------------------------------
 	PASTEBOARD_OBJECT 							= "ffpasteboardobject",
 	UTI 										= "com.apple.flexo.proFFPasteboardUTI"
 })
 
--- Clipboard Watcher Timer
-local clipboardTimer							= nil
--- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-local clipboardLastChange 						= pasteboard.changeCount()
-
--- Clipboard History
-local clipboardHistory							= {}
-
--- Clipboard Watcher Update Frequency
-local clipboardWatcherFrequency 				= 0.5
--- Maximum Size of Clipboard History
-local clipboardHistoryMaximumSize 				= 5
-
--- Hostname
-local hostname									= host.localizedName()
-
--- Gets the specified object, looking up the reference object if necessary.
+--------------------------------------------------------------------------------
+-- GETS THE SPECIFIED OBJECT, LOOKING UP THE REFERENCE OBJECT IF NECESSARY:
+--------------------------------------------------------------------------------
 function _get(data, objects)
 	if type(data) == 'table' and data["CF$UID"] then
 		-- it's a reference
@@ -65,8 +80,12 @@ function _get(data, objects)
 	end
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS OBJECT:
+--------------------------------------------------------------------------------
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
@@ -101,12 +120,15 @@ function processObject(data, objects)
 	return nil, 0
 end
 
-
+--------------------------------------------------------------------------------
+-- PROCESS MUTABLE COLLECTION:
+--------------------------------------------------------------------------------
 -- Processes the 'NSDictionary' object
 -- Params:
 --		* data: 	The data object to process
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
@@ -123,11 +145,15 @@ function processMutableCollection(data, objects)
 	return name, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS DICTIONARY:
+--------------------------------------------------------------------------------
 -- Processes the 'NSMutableArray' object
 -- Params:
 --		* data: 	The data object to process
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processDictionary(data, objects)
 	local name = nil
 	local count = 0
@@ -150,8 +176,12 @@ function processDictionary(data, objects)
 	return name, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS ANCHORED COLLECTION:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredCollection' objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processAnchoredCollection(data, objects)
 	local displayName = _get(data.displayName, objects)
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
@@ -163,8 +193,12 @@ function processAnchoredCollection(data, objects)
 	end
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS GAP:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredGapGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processGap(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 0
@@ -174,8 +208,12 @@ function processGap(data, objects)
 	return displayName, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS GENERATOR:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processGenerator(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 1
@@ -187,32 +225,51 @@ function processGenerator(data, objects)
 	return displayName, count
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS ANCHORED ANGLE:
+--------------------------------------------------------------------------------
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processAnchoredAngle(data, objects)
 	local _, count = processObject(data.anchoredItems, objects)
 	return _get(data.displayName, objects), count + 1
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS ANCHORED SEQUENCE:
+--------------------------------------------------------------------------------
 -- Process 'FFAnchoredSequence' objects
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processAnchoredSequence(data, objects)
 	return _get(data.displayName, objects), 1
 end
 
+--------------------------------------------------------------------------------
+-- PROCESS TIME RANGE AND OBJECT:
+--------------------------------------------------------------------------------
 -- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
 -- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
 function processTimeRangeAndObject(data, objects)
 	return processObject(data.object, objects)
 end
 
+--------------------------------------------------------------------------------
+-- START MODULE:
+--------------------------------------------------------------------------------
 local mod = {}
 
+--------------------------------------------------------------------------------
+-- FIND CLIP NAME:
+--------------------------------------------------------------------------------
 -- Searches the Plist XML data for the first clip name, and returns it, along with the
 -- total number of clips that have been copied.
 -- Returns the 'default' value and 0 if the data could not be interpreted.
 -- Example use:
 --	 local name = findClipName(myXmlData, "Unknown")
+--------------------------------------------------------------------------------
 function mod.findClipName(fcpxTable, default)
 
 	local top = fcpxTable['$top']
@@ -239,7 +296,7 @@ function mod.startWatching()
 	--------------------------------------------------------------------------------
 	-- Used for debugging:
 	--------------------------------------------------------------------------------
-	--if debugMode then print("[FCPX Hacks] Starting Clipboard Watcher.") end
+	debugMessage("Starting Clipboard Watcher.")
 
 	--------------------------------------------------------------------------------
 	-- Get Clipboard History from Settings:
@@ -339,6 +396,9 @@ function mod.startWatching()
 
 end
 
+--------------------------------------------------------------------------------
+-- STOP WATCHING THE CLIPBOARD:
+--------------------------------------------------------------------------------
 function mod.stopWatching()
 	if clipboardTimer then
 		clipboardTimer:stop()
@@ -346,14 +406,23 @@ function mod.stopWatching()
 	end
 end
 
+--------------------------------------------------------------------------------
+-- IS THIS MODULE WATCHING THE CLIPBOARD:
+-------------------------------------------------------------------------------
 function mod.isWatching()
 	return clipboardTimer or false
 end
 
+--------------------------------------------------------------------------------
+-- GET CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
 function mod.getHistory()
 	return clipboardHistory
 end
 
+--------------------------------------------------------------------------------
+-- CLEAR CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
 function mod.clearHistory()
 	clipboardHistory = {}
 	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)

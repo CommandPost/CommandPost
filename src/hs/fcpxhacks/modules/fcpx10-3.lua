@@ -43,45 +43,6 @@
 -- THE SOFTWARE.
 --
 --------------------------------------------------------------------------------
---  FEATURE WISH LIST:
---------------------------------------------------------------------------------
---
---  > Change Keyframe Colour from Yellow to Red
---  > Shortcut to add a Keyframe and Automatically Select it
---  > Automate a cross dissolve: Use the select left edge/select
---    ridge edge commands along with the toggle default fade commands?
---    (suggested by Patrick Southern)
---  > Cancel All Background Tasks
---  > Move Storyline Up & Down Shortcut
---  > Add Custom Audio Fade Handles Shortcut
---  > Save/Restore User Settings
---  > "Activate all audio tracks on all selected multicam clips" shortcut.
---  > Remember Last Project & Layout when restarting FCPX
---  > Shortcut to go to full screen mode without playing
---  > Timeline Index HUD on Mouseover
---  > Watch Folders for Compressor
---  > Favourites folder for Effects, Transitions, Titles, Generators & Themes
---  > Mouse Rewind History (as someone suggested on FCPX Grill)
---  > Automatically add markers based on music beats (suggested by Ilyas Akhmedov)
---  > Turn a viewer into a skimmable item. For example, open event viewer and by
---    mousing over the window with a key command down, it would skim as though it
---    was a tile in the browser (suggested by Michael Matzdorff)
---
---------------------------------------------------------------------------------
---  BUGS & ISSUES:
---------------------------------------------------------------------------------
---
---  > Rewrite GUI Scripting code for Final Cut Pro 10.3:
---		  >  selectClipAtLane()
---		  >  singleMatchFrame()
---		  >  batchExportToCompressor()
---
---  > Finish getClipNameFromFinalCutProClipboard()
---  > multicamMatchFrame() needs to somehow detect which angle is selected in timeline
---  > changeTimelineClipHeight() doesn't trigger shortcut for some reason?
---  > bindKeyboardShortcuts() is now VERY slow. Need to re-think plist reading.
---
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 local mod = {}
@@ -134,18 +95,16 @@ window.filter									= require("hs.window.filter")
 --------------------------------------------------------------------------------
 
 ax 												= require("hs._asm.axuielement")
-slaxdom 										= require("hs.slaxml.slaxdom")
-slaxml 											= require("hs.slaxml")
 touchbar 										= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-clipboard										= require("hs.fcpx-hacks.clipboard")
+clipboard										= require("hs.fcpxhacks.modules.clipboard")
 
 --------------------------------------------------------------------------------
--- HARDCODED SETTINGS:
+-- CONSTANTS:
 --------------------------------------------------------------------------------
 
 bugReportEmail									= "chris@latenitefilms.com"
@@ -157,10 +116,10 @@ finalCutProLanguages 							= {"de", "en", "es", "fr", "ja", "zh_CN"}
 
 commonErrorMessageStart 						= "I'm sorry, but the following error has occurred:\n\n"
 commonErrorMessageEnd 							= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
-commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx-hacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
 --------------------------------------------------------------------------------
--- GLOBAL VARIABLES:
+-- VARIABLES:
 --------------------------------------------------------------------------------
 
 execute											= hs.execute									-- Execute!
@@ -394,13 +353,15 @@ function loadScript()
 			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
-				sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-			else
-				writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.enableXMLSharing", false)
+				if doesDirectoryExist(xmlSharingDropboxPath) and doesDirectoryExist(xmlSharingPath) then
+					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
+				else
+					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
+					settings.set("fcpxHacks.xmlSharingPath", nil)
+					settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
+					settings.set("fcpxHacks.enableXMLSharing", false)
+				end
 			end
 		end
 
@@ -543,9 +504,9 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-function fcpxApplication()
-	return application("com.apple.FinalCut")
-end
+
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -562,63 +523,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
-
-end
-
---------------------------------------------------------------------------------
--- FRAME.IO PASTE:
---------------------------------------------------------------------------------
-function frameioPaste()
-
-	--[[
-	FRAME.IO TEST:
-
-	THE-SWELL-005-CHRIS-R1.mp4
-	Version 1 - Chris Hocking - 4:33PM May 22nd, 2015
-
-	000 - Chris Hocking - 2:51PM October 26th, 2016
-	00:00:00:00 - This is a test
-
-	001 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:02:09 - This is another test
-
-	002 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:35:21 - Yet another test
-	--]]
-end
-
---------------------------------------------------------------------------------
--- GET UI ELEMENT CURRENTLY UNDER MOUSE:
---------------------------------------------------------------------------------
-function getElementUnderMouse()
-	underMouse = ax.systemElementAtPosition(mouse.getAbsolutePosition())
-	--print_r(underMouse:path())
-	for i=1, #underMouse:attributeNames() do
-		--print(underMouse:attributeNames()[i] .. ": " .. underMouse:attributeValue(underMouse:attributeNames()[i]))
-		local description = tostring(underMouse:attributeNames()[i])
-		local result = tostring(underMouse:attributeValue(underMouse:attributeNames()[i]))
-		print(description .. ": " .. result)
-
-	end
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO APPLICATION UI TREE:
---------------------------------------------------------------------------------
-function getFinalCutProApplicationTree()
-
-	ax = require("hs._asm.axuielement")
-	inspect = require("hs.inspect")
-	timestamp = function(date)
-	    date = date or require"hs.timer".secondsSinceEpoch()
-	    return os.date("%F %T" .. ((tostring(date):match("(%.%d+)$")) or ""), math.floor(date))
-    end
-
-    print(timestamp())
-	s = ax.applicationElement(fcpxApplication())
-	print(inspect(s:buildTree()))
-	print(timestamp())
 
 end
 
@@ -1245,13 +1149,13 @@ function updateKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		try
 			tell me to activate
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
@@ -1260,19 +1164,19 @@ function updateKeyboardShortcuts()
 		set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
 		repeat with whichLanguage in finalCutProLanguages
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
@@ -4636,13 +4540,13 @@ end
 				--------------------------------------------------------------------------------
 				try
 					tell me to activate
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 				on error
 					display dialog commonErrorMessageStart & "Failed to restore NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 					return "Failed"
 				end try
 				try
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 				on error
 					display dialog commonErrorMessageStart & "Failed to restore NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 					return "Failed"
@@ -4652,19 +4556,19 @@ end
 				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
 				repeat with whichLanguage in finalCutProLanguages
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to restore Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to restore NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to restore NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
@@ -4689,13 +4593,13 @@ end
 				--------------------------------------------------------------------------------
 				try
 					tell me to activate
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 				on error
 					display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 					return "Failed"
 				end try
 				try
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 				on error
 					display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 					return "Failed"
@@ -4704,19 +4608,19 @@ end
 				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
 				repeat with whichLanguage in finalCutProLanguages
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 					on error
 						display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 						return "Failed"
@@ -5035,7 +4939,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5140,7 +5044,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5245,7 +5149,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5350,7 +5254,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5459,7 +5363,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5651,7 +5555,7 @@ end
 	--------------------------------------------------------------------------------
 	function updateMenubarIcon()
 
-		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.png")
+		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
 		local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
 		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
 		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
@@ -5734,12 +5638,12 @@ end
 				--------------------------------------------------------------------------------
 				try
 					tell me to activate
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 				on error
 					return "Failed"
 				end try
 				try
-					do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+					do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 				on error
 					return "Failed"
 				end try
@@ -5747,17 +5651,17 @@ end
 				set finalCutProLanguages to {"de", "en", "es", "fr", "ja", "zh_CN"}
 				repeat with whichLanguage in finalCutProLanguages
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 					on error
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 					on error
 						return "Failed"
 					end try
 					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx-hacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+						do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 					on error
 						return "Failed"
 					end try
@@ -5871,12 +5775,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx 				= fcpxApplication()
+		local fcpx 				= finalCutProApplication()
 
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpxApplication())[1]
+		fcpxElements = ax.applicationElement(finalCutProApplication())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
@@ -6122,7 +6026,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = fcpxWhichBrowserMode()
+		local fcpxBrowserMode = getFinalCutProBrowserMode()
 		if (fcpxBrowserMode == "Failed") then -- Error Checking:
 			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 			return
@@ -6131,7 +6035,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxApplication()
+		fcpx = finalCutProApplication()
 		fcpxElements = ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
@@ -7484,7 +7388,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = fcpxWhichBrowserMode()
+		local fcpxBrowserMode = getFinalCutProBrowserMode()
 
 		-- Error Checking:
 		if (fcpxBrowserMode == "Failed") then
@@ -7495,7 +7399,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxApplication()
+		fcpx = finalCutProApplication()
 		fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -7955,7 +7859,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -8072,7 +7976,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -10779,6 +10683,13 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- RETURNS THE FINAL CUT PRO APPLICATION:
+--------------------------------------------------------------------------------
+function finalCutProApplication()
+	return application(finalCutProBundleID)
+end
+
+--------------------------------------------------------------------------------
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
@@ -10790,12 +10701,12 @@ end
 --------------------------------------------------------------------------------
 function restartFinalCutPro()
 
-	if fcpxApplication() ~= nil then
+	if finalCutProApplication() ~= nil then
 
 		--------------------------------------------------------------------------------
 		-- Kill Final Cut Pro:
 		--------------------------------------------------------------------------------
-		fcpxApplication():kill()
+		finalCutProApplication():kill()
 
 		--------------------------------------------------------------------------------
 		-- Wait until Final Cut Pro is Closed:
@@ -11047,7 +10958,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 	if fcpx == nil then
 		return false
 	else
@@ -11061,7 +10972,7 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 	if fcpx == nil then
 		return false
 	else
@@ -11088,7 +10999,7 @@ end
 --
 -- TO DO: This is currently broken in Final Cut Pro 10.3, and probably no longer needed.
 --
-function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
+function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 
 --[[
 THUMBNAIL VIEW (PRIMARY MONITOR):
@@ -11108,7 +11019,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -11122,11 +11033,11 @@ AXScrollArea (scroll area 1)
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
 				whichMenuBar = i
-				goto fcpxWhichBrowserModeWhichMenuBarExit
+				goto getFinalCutProBrowserModeWhichMenuBarExit
 			end
 	end
 	if whichMenuBar == nil then	return "Failed"	end
-	::fcpxWhichBrowserModeWhichMenuBarExit::
+	::getFinalCutProBrowserModeWhichMenuBarExit::
 
 	--------------------------------------------------------------------------------
 	-- Which option is ticked?
@@ -11149,7 +11060,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= fcpxApplication()
+	local fcpx 				= finalCutProApplication()
 	local fcpxElements 		= ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -11354,7 +11265,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxApplication()
+	local fcpx = finalCutProApplication()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -12233,7 +12144,7 @@ end
 					--------------------------------------------------------------------------------
 					if not shownUpdateNotification then
 						if latestScriptVersion > scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.icns"))
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -12513,7 +12424,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxApplication()
+		local fcpx = finalCutProApplication()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -12603,7 +12514,7 @@ function mediaImportWatcher()
 			stopMediaImportTimer = false
 			currentApplication = application.frontmostApplication()
 
-			local fcpx = fcpxApplication()
+			local fcpx = finalCutProApplication()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
@@ -12611,7 +12522,7 @@ function mediaImportWatcher()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
-					local fcpx = fcpxApplication()
+					local fcpx = finalCutProApplication()
 					local fcpxElements = ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
@@ -12773,7 +12684,7 @@ function sharedXMLFileWatcher(files)
 				testFile:close()
 				if not string.find(file, "(" .. hostname ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpx-hacks/assets/fcpxhacks.icns"))
+					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 														   						   :title("New XML Recieved")
 														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
 														   						   :informativeText("FCPX Hacks has recieved a new XML file.")
