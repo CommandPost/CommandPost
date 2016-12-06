@@ -57,10 +57,6 @@ local mod = {}
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
-alert 											= require("hs.alert")
-application 									= require("hs.application")
-chooser											= require("hs.chooser")
-console 										= require("hs.console")
 distributednotifications						= require("hs.distributednotifications")
 drawing 										= require("hs.drawing")
 eventtap										= require("hs.eventtap")
@@ -76,7 +72,6 @@ json  											= require("hs.json")
 keycodes										= require("hs.keycodes")
 menubar											= require("hs.menubar")
 mouse											= require("hs.mouse")
-notify											= require("hs.notify")
 osascript 										= require("hs.osascript")
 pasteboard 										= require("hs.pasteboard")
 pathwatcher										= require("hs.pathwatcher")
@@ -187,7 +182,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
-	console.titleVisibility("hidden")
+	hs.console.titleVisibility("hidden")
 	hotkey.setLogLevel("warning")
 	window.filter.setLogLevel(1)
 	window.filter.ignoreAlways['System Events'] = true
@@ -247,7 +242,7 @@ function loadScript()
 		settings.set("fcpxHacks.lastVersion", scriptVersion)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxHacks.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = isFinalCutProRunning()
 				if finalCutProRunning then
@@ -319,7 +314,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Create and start the application event watcher:
 		--------------------------------------------------------------------------------
-		watcher = application.watcher.new(finalCutProWatcher):start()
+		watcher = hs.application.watcher.new(finalCutProWatcher):start()
 
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
@@ -468,7 +463,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Set Tool Tip:
 		--------------------------------------------------------------------------------
-		fcpxMenubar:setTooltip("FCPX Hacks Version " .. scriptVersion)
+		fcpxMenubar:setTooltip("FCPX Hacks Version " .. fcpxHacks.scriptVersion)
 
 		--------------------------------------------------------------------------------
 		-- Work out Menubar Display Mode:
@@ -489,8 +484,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	alert.closeAll(0)
-	alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded")
+	fcpxHacks.sendNotification("FCPX Hacks", "Version " .. fcpxHacks.scriptVersion .. " has loaded")
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -522,7 +516,7 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	-- Clear Console:
 	--------------------------------------------------------------------------------
-	--console.clearConsole()
+	--hs.console.clearConsole()
 
 end
 
@@ -1126,8 +1120,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Let user know that keyboard shortcuts have loaded:
 	--------------------------------------------------------------------------------
-	alert.closeAll(0)
-	alert.show("FCPX Hacks Keyboard Shortcuts Updated")
+	fcpxHacks.sendNotification("FCPX Hacks", "Keyboard Shortcuts Updated")
 
 end
 
@@ -1206,7 +1199,7 @@ end
 --------------------------------------------------------------------------------
 function setupChooser()
 
-	fcpxChooser = chooser.new(chooserAction):bgDark(true)
+	fcpxChooser = hs.chooser.new(chooserAction):bgDark(true)
 											:fgColor(drawing.color.x11.snow)
 											:subTextColor(drawing.color.x11.snow)
 											:rightClickCallback(chooserRightClick)
@@ -2186,7 +2179,7 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Trash FCPX Hacks Preferences", 													fn = resetSettings },
     	{ title = "-" },
     	{ title = "Created by LateNite Films", 														fn = gotoLateNiteSite },
-  	    { title = "Script Version " .. scriptVersion, 																																												disabled = true },
+  	    { title = "Script Version " .. fcpxHacks.scriptVersion, 																																												disabled = true },
 	}
 	local settingsEffectsShortcutsTable = {
 		{ title = "Update Effects List", 															fn = updateEffectsList, 																										disabled = not fcpxRunning },
@@ -3692,7 +3685,7 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
 
-		effectChooser = chooser.new(effectChooserAction):bgDark(true)
+		effectChooser = hs.chooser.new(effectChooserAction):bgDark(true)
 														:fgColor(hs.drawing.color.x11.snow)
 														:subTextColor(hs.drawing.color.x11.snow)
 														:choices(effectChooserChoices)
@@ -3796,7 +3789,7 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
 
-		transitionChooser = chooser.new(transitionsChooserAction):bgDark(true)
+		transitionChooser = hs.chooser.new(transitionsChooserAction):bgDark(true)
 																 :fgColor(hs.drawing.color.x11.snow)
 																 :subTextColor(hs.drawing.color.x11.snow)
 																 :choices(transitionChooserChoices)
@@ -3900,7 +3893,7 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
 
-		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
+		titlesChooser = hs.chooser.new(titlesChooserAction):bgDark(true)
 													    :fgColor(hs.drawing.color.x11.snow)
 													    :subTextColor(hs.drawing.color.x11.snow)
 														:choices(titlesChooserChoices)
@@ -4004,7 +3997,7 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(generatorsChooserChoices, function(a, b) return a.text < b.text end)
 
-		generatorsChooser = chooser.new(generatorsChooserAction):bgDark(true)
+		generatorsChooser = hs.chooser.new(generatorsChooserAction):bgDark(true)
 																:fgColor(hs.drawing.color.x11.snow)
 																:subTextColor(hs.drawing.color.x11.snow)
 																:choices(generatorsChooserChoices)
@@ -5602,7 +5595,7 @@ end
 	-- QUIT FCPX HACKS:
 	--------------------------------------------------------------------------------
 	function quitFCPXHacks()
-		application("Hammerspoon"):kill()
+		hs.application("Hammerspoon"):kill()
 	end
 
 	--------------------------------------------------------------------------------
@@ -7370,7 +7363,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		fcpx = application.get("Final Cut Pro")
+		fcpx = hs.application.get("Final Cut Pro")
 
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
@@ -7940,8 +7933,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Saved:
 		--------------------------------------------------------------------------------
-		alert.closeAll(0)
-		alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton))
+		hs.alert.closeAll(0)
+		hs.alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton))
 
 	end
 
@@ -8058,8 +8051,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Successfully Restored:
 		--------------------------------------------------------------------------------
-		alert.closeAll(0)
-		alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton))
+		hs.alert.closeAll(0)
+		hs.alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton))
 
 	end
 
@@ -8102,8 +8095,8 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			alert.closeAll(0)
-			alert.show("Scrolling Timeline Deactivated")
+			hs.alert.closeAll(0)
+			hs.alert.show("Scrolling Timeline Deactivated")
 		else
 			--------------------------------------------------------------------------------
 			-- Update Settings:
@@ -8126,8 +8119,8 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			alert.closeAll(0)
-			alert.show("Scrolling Timeline Activated")
+			hs.alert.closeAll(0)
+			hs.alert.show("Scrolling Timeline Activated")
 		end
 
 		--------------------------------------------------------------------------------
@@ -10479,7 +10472,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local sw = ax.applicationElement(application.get("Final Cut Pro"))
+		local sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Single Screen:
@@ -10597,7 +10590,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(application.get("Final Cut Pro"))
+		sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Single Screen:
@@ -10649,7 +10642,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(application.get("Final Cut Pro"))
+		sw = ax.applicationElement(hs.application.get("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Find Color Button:
@@ -10686,14 +10679,14 @@ end
 -- RETURNS THE FINAL CUT PRO APPLICATION:
 --------------------------------------------------------------------------------
 function finalCutProApplication()
-	return application(finalCutProBundleID)
+	return hs.application(finalCutProBundleID)
 end
 
 --------------------------------------------------------------------------------
 -- LAUNCH FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function launchFinalCutPro()
-	application.launchOrFocusByBundleID("com.apple.FinalCut")
+	hs.application.launchOrFocusByBundleID("com.apple.FinalCut")
 end
 
 --------------------------------------------------------------------------------
@@ -11969,7 +11962,7 @@ end
 				font = { name = "Menlo", size = 12 },
 			})
 
-			console.printStyledtext(consoleStyledText)
+			hs.console.printStyledtext(consoleStyledText)
 		end
 
 	end
@@ -12104,7 +12097,7 @@ end
 	function emailBugReport()
 		mailer = sharing.newShare("com.apple.share.Mail.compose")
 		mailer:subject("[FCPX Hacks " .. scriptVersion .. "] Bug Report"):recipients({bugReportEmail})
-		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
+		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",hs.console.getConsole(true), screen.mainScreen():snapshot()})
 	end
 
 	--------------------------------------------------------------------------------
@@ -12144,7 +12137,7 @@ end
 					--------------------------------------------------------------------------------
 					if not shownUpdateNotification then
 						if latestScriptVersion > scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+							updateNotification = hs.notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -12199,7 +12192,7 @@ end
 function finalCutProWatcher(appName, eventType, appObject)
 
 	if (appName == "Final Cut Pro") then
-		if (eventType == application.watcher.activated) then
+		if (eventType == hs.application.watcher.activated) then
 			--------------------------------------------------------------------------------
 	  		-- Final Cut Pro Activated:
 	  		--------------------------------------------------------------------------------
@@ -12237,7 +12230,7 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				showTouchbar()
 
-		elseif (eventType == application.watcher.deactivated) or (eventType == application.watcher.terminated) then
+		elseif (eventType == hs.application.watcher.deactivated) or (eventType == hs.application.watcher.terminated) then
 			--------------------------------------------------------------------------------
 			-- Final Cut Pro Lost Focus:
 			--------------------------------------------------------------------------------
@@ -12512,7 +12505,7 @@ function mediaImportWatcher()
 
 			mediaImportCount = 0
 			stopMediaImportTimer = false
-			currentApplication = application.frontmostApplication()
+			currentApplication = hs.application.frontmostApplication()
 
 			local fcpx = finalCutProApplication()
 			local fcpxHidden = true
@@ -12534,7 +12527,7 @@ function mediaImportWatcher()
 							else
 								fcpxElements[1][11]:performAction("AXPress")
 								if fcpxHidden then fcpx:hide() end
-								application.launchOrFocus(currentApplication:name())
+								hs.application.launchOrFocus(currentApplication:name())
 								stopMediaImportTimer = true
 							end
 						end
@@ -12684,7 +12677,7 @@ function sharedXMLFileWatcher(files)
 				testFile:close()
 				if not string.find(file, "(" .. hostname ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+					sharedXMLNotification = hs.notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 														   						   :title("New XML Recieved")
 														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
 														   						   :informativeText("FCPX Hacks has recieved a new XML file.")

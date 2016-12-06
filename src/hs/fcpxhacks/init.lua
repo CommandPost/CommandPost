@@ -99,27 +99,11 @@ mod.finalCutProBundleID = "com.apple.FinalCut"
 --------------------------------------------------------------------------------
 
 
-
-
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                   T H E    M A I N    S C R I P T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
---------------------------------------------------------------------------------
-
-mod.application 				= require("hs.application")
-mod.console 					= require("hs.console")
-mod.drawing 					= require("hs.drawing")
-mod.fs 							= require("hs.fs")
-mod.inspect 					= require("hs.inspect")
-mod.osascript 					= require("hs.osascript")
-mod.styledtext 					= require("hs.styledtext")
-mod.keycodes					= require("hs.keycodes")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -129,7 +113,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
 	--------------------------------------------------------------------------------
-	mod.console.clearConsole()
+	hs.console.clearConsole()
 
 	--------------------------------------------------------------------------------
 	-- Display Welcome Message In The Console:
@@ -202,12 +186,12 @@ function mod.init()
 		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings" }
 	local checkFailed = false
 	for i=1, #requiredFiles do
-		if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
+		if hs.fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
 	end
 	if checkFailed then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
 		displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
-		application.get("Hammerspoon"):kill()
+		hs.application.get("Hammerspoon"):kill()
 	end
 
 	--------------------------------------------------------------------------------
@@ -219,9 +203,9 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 									end
-	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))							end
-	if mod.keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(mod.keycodes.currentLayout())) 		end
+	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion)) 									end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))							end
+	if hs.keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(hs.keycodes.currentLayout())) 		end
 	
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
@@ -235,7 +219,7 @@ function mod.init()
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
 		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
-		mod.application.get("Hammerspoon"):kill()
+		hs.application.get("Hammerspoon"):kill()
 	end
 
 end
@@ -249,7 +233,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                     C O M M O N    F U N C T I O N S                       --
+--             C O M M O N    G L O B A L    F U N C T I O N S                --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -259,11 +243,11 @@ end
 print = function(value)
 	if type(value) == "table" then value = inspect(value) end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
-		local consoleStyledText = mod.styledtext.new(value, {
-			color = mod.drawing.color.definedCollections.hammerspoon["red"],
+		local consoleStyledText = hs.styledtext.new(value, {
+			color = hs.drawing.color.definedCollections.hammerspoon["red"],
 			font = { name = "Menlo", size = 12 },
 		})
-		mod.console.printStyledtext(consoleStyledText)
+		hs.console.printStyledtext(consoleStyledText)
 	end
 end
 
@@ -288,14 +272,14 @@ function displayAlertMessage(whatMessage)
 		tell me to activate
 		display dialog whatMessage buttons {"OK"} with icon stop
 	]]
-	mod.osascript.applescript(appleScriptA .. appleScriptB)
+	hs.osascript.applescript(appleScriptA .. appleScriptB)
 end
 
 --------------------------------------------------------------------------------
 -- IS FINAL CUT PRO INSTALLED:
 --------------------------------------------------------------------------------
 function mod.isFinalCutProInstalled()
-	local path = mod.application.pathForBundleID(mod.finalCutProBundleID)
+	local path = hs.application.pathForBundleID(mod.finalCutProBundleID)
 	return mod.doesDirectoryExist(path)
 end
 
@@ -305,7 +289,7 @@ end
 function mod.finalCutProVersion()
 	local version = nil
 	if mod.isFinalCutProInstalled() then
-		ok,version = mod.osascript.applescript('return version of application id "'..mod.finalCutProBundleID..'"')
+		ok,version = hs.osascript.applescript('return version of application id "'..mod.finalCutProBundleID..'"')
 	end
 	return version or "Not Installed"
 end
@@ -324,9 +308,23 @@ end
 -- DOES DIRECTORY EXIST:
 --------------------------------------------------------------------------------
 function mod.doesDirectoryExist(path)
-    local attr = mod.fs.attributes(path)
+    local attr = hs.fs.attributes(path)
     return attr and attr.mode == 'directory'
 end
+
+--------------------------------------------------------------------------------
+-- SEND USER NOTIFICATION:
+--------------------------------------------------------------------------------
+function mod.sendNotification(title, subTitle, information)
+	local notification = hs.notify.new({
+		title = title or "",
+		subTitle = subTitle or "",
+		informationText = information or ""
+	})
+	notification:setIdImage("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns")
+	notification:send()
+end
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
