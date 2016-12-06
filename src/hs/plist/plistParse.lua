@@ -116,6 +116,8 @@ local function plistParse(s)
 
     while label ~= "plist" do
         ni, i, label, version = string.find(s, "<([%w:]+)(.-)>", i+1)
+
+        -- BUG: Something is going funky here with complex plist's:
         assert(ni)
     end
 

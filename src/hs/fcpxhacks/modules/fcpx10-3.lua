@@ -105,6 +105,7 @@ touchbar 										= require("hs._asm.touchbar")
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
+fcp												= require("hs.finalcutpro")
 clipboard										= require("hs.fcpxhacks.modules.clipboard")
 
 --------------------------------------------------------------------------------
@@ -10800,19 +10801,43 @@ end
 -- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
 --------------------------------------------------------------------------------
 function readShortcutKeysFromPlist()
+
 	--------------------------------------------------------------------------------
 	-- Get plist values for 'Active Command Set':
 	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set'")
-	if executeStatus == nil then
-		displayErrorMessage("Could not retreieve the Active Command Set from Final Cut Pro's plist.")
+	local activeCommandSetPath = fcp.getActiveCommandSetPath()
+
+	if activeCommandSetPath == nil then
+		displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
 		return "Failed"
 	else
-		if fs.attributes(trim(executeResult)) == nil then
-			displayErrorMessage("The Active Command Set in Final Cut Pro's plist could not be found.")
+		if fs.attributes(activeCommandSetPath) == nil then
+			displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
 			return "Failed"
 		else
-			local activeCommandSet = trim(executeResult)
+
+			--[[
+			TO DO: Need to debug 'plistParser' and get this working...
+
+			local activeCommandSetTable = fcp.getActiveCommandSetAsTable()
+			if activeCommandSetTable == nil then
+				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
+				return "Failed"
+			end
+			--writeToConsole(activeCommandSetTable)
+
+
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+				if activeCommandSetTable[k] ~= nil then
+					writeToConsole(k)
+					writeToConsole(v)
+				else
+					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				end
+			end
+			--]]
+
 			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
@@ -11390,6 +11415,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	return "Done"
 
 end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
