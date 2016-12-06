@@ -244,7 +244,7 @@ print = function(value)
 	if type(value) == "table" then value = inspect(value) end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
 		local consoleStyledText = hs.styledtext.new(value, {
-			color = hs.drawing.color.definedCollections.hammerspoon["red"],
+			color = hs.drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },
 		})
 		hs.console.printStyledtext(consoleStyledText)
