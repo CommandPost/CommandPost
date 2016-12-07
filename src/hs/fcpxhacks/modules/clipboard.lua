@@ -19,6 +19,7 @@ local protect 									= require("hs.fcpxhacks.modules.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
 local inspect									= require("hs.inspect")
+local host										= require("hs.host")
 
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
