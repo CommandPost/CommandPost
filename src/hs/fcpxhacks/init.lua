@@ -87,13 +87,25 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+
+--------------------------------------------------------------------------------
+-- THE MODULE:
+--------------------------------------------------------------------------------
+
 local mod = {}
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-mod.scriptVersion = "0.70"
+mod.scriptVersion 		= "0.70"
+mod.bugReportEmail		= "chris@latenitefilms.com"
+mod.developerURL		= "https://latenitefilms.com/blog/final-cut-pro-hacks/"
+mod.updateURL			= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -110,16 +122,17 @@ mod.scriptVersion = "0.70"
 --------------------------------------------------------------------------------
 
 local fcp 						= require("hs.finalcutpro")
+local tools						= require("hs.fcpxhacks.modules.tools")
+local dialog					= require("hs.fcpxhacks.modules.dialog")
+
 local application 				= require("hs.application")
 local console 					= require("hs.console")
 local drawing					= require("hs.drawing")
 local fs						= require("hs.fs")
-local host						= require("hs.host")
 local keycodes					= require("hs.keycodes")
-local notify					= require("hs.notify")
-local osascript					= require("hs.osascript")
 local styledtext				= require("hs.styledtext")
 local inspect					= require("hs.inspect")
+local settings					= require("hs.settings")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -206,7 +219,7 @@ function mod.init()
 	end
 	if checkFailed then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
-		displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
@@ -214,7 +227,7 @@ function mod.init()
 	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
 	local fcpVersion = fcp.version()
-	local osVersion = mod.macOSVersion()
+	local osVersion = tools.macOSVersion()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
@@ -234,7 +247,7 @@ function mod.init()
 	end
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
@@ -281,36 +294,22 @@ function writeToConsole(value, overrideLabel)
 end
 
 --------------------------------------------------------------------------------
--- DISPLAY ALERT MESSAGE:
+-- DEBUG MESSAGE:
 --------------------------------------------------------------------------------
-function displayAlertMessage(whatMessage)
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon stop
-	]]
-	osascript.applescript(appleScriptA .. appleScriptB)
-end
-
--------------------------------------------------------------------------------
--- RETURNS MACOS VERSION:
--------------------------------------------------------------------------------
-function mod.macOSVersion()
-	local osVersion = host.operatingSystemVersion()
-	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
-	return osVersionString
-end
-
---------------------------------------------------------------------------------
--- DOES DIRECTORY EXIST:
---------------------------------------------------------------------------------
-function mod.doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.mode == 'directory'
+function debugMessage(value)
+	if value ~= nil then
+		if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+		if settings.get("fcpxHacks.debugMode") then writeToConsole(value) end
+	end
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+
+
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -318,8 +317,8 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Assign our mod to the global 'fcpxHacks' object
-fcpxHacks = mod
+-- Assign our mod to the global 'fcpxhacks' object
+fcpxhacks = mod
 
 -- Kick it off!
 return mod.init()
