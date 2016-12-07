@@ -11,16 +11,67 @@ local finalcutpro = {}
 local finalCutProBundleID 					= "com.apple.FinalCut"
 local finalCutProClipboardUTI 				= "com.apple.flexo.proFFPasteboardUTI"
 local finalCutProPreferencesPlistPath 		= "~/Library/Preferences/com.apple.FinalCut.plist"
+local finalCutProLanguages 					= {"de", "en", "es", "fr", "ja", "zh_CN"}
+local finalCutProFlexoLanguages				= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
 local plist 								= require("hs.plist")
 local application 							= require("hs.application")
 local osascript 							= require("hs.osascript")
 local fs 									= require("hs.fs")
+local ax 									= require("hs._asm.axuielement")
 
+--- hs.finalcutpro.flexoLanguages() -> table
+--- Function
+--- Returns a table of languages Final Cut Pro's Flexo Framework supports
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of languages Final Cut Pro supports
+---
+function finalcutpro.flexoLanguages()
+	return finalCutProFlexoLanguages
+end
+
+--- hs.finalcutpro.languages() -> table
+--- Function
+--- Returns a table of languages Final Cut Pro supports
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of languages Final Cut Pro supports
+---
+function finalcutpro.languages()
+	return finalCutProLanguages
+end
+
+--- hs.finalcutpro.clipboardUTI() -> string
+--- Function
+--- Returns the Final Cut Pro Bundle ID
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing the Final Cut Pro Bundle ID
+---
 function finalcutpro.bundleID()
 	return finalCutProBundleID
 end
 
+--- hs.finalcutpro.clipboardUTI() -> string
+--- Function
+--- Returns the Final Cut Pro Clipboard UTI
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing the Final Cut Pro Clipboard UTI
+---
 function finalcutpro.clipboardUTI()
 	return finalCutProClipboardUTI
 end
@@ -59,6 +110,35 @@ function finalcutpro.getPreference(value)
 	end
 
 	return result
+end
+
+--- hs.finalcutpro.setPreference(key, value) -> boolean
+--- Function
+--- Sets an individual Final Cut Pro preference
+---
+--- Parameters:
+---  * key - The preference you want to change
+---  * value - The value you want to set for that preference
+---
+--- Returns:
+---  * True if executed successfully otherwise False
+---
+function finalcutpro.setPreference(key, value)
+
+	local executeResult, executeStatus
+
+	if type(value) == "boolean" then
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -bool " .. tostring(value))
+	else
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -string '" .. value .. "'")
+	end
+
+	if executeStatus == nil then
+		return false
+	else
+		return true
+	end
+
 end
 
 --- hs.finalcutpro.getActiveCommandSetPath() -> string or nil
@@ -245,6 +325,253 @@ function finalcutpro.frontmost()
 	else
 		return fcpx:isFrontmost()
 	end
+
+end
+
+--- hs.finalcutpro.getTimelineSplitGroup() -> axuielementObject or nil
+--- Function
+--- Get Timeline Split Group
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Timeline Split Group or nil if failed
+---
+function finalcutpro.getTimelineSplitGroup()
+
+	--------------------------------------------------------------------------------
+	-- Which Split Group:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup = nil
+
+	--------------------------------------------------------------------------------
+	-- Define Final Cut Pro:
+	--------------------------------------------------------------------------------
+	local sw = ax.applicationElement(finalcutpro.application())
+
+	--------------------------------------------------------------------------------
+	-- Single Screen:
+	--------------------------------------------------------------------------------
+	whichSplitGroup = sw:searchPath({
+		{ role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
+		{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
+		{ role = "AXGroup", },													    -- AXGroup (group 1)
+		{ role = "AXSplitGroup", },												    -- AXSplitGroup (splitter group 1)
+		{ role = "AXGroup", },												        -- AXGroup (group 2)
+		{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
+		{ role = "AXGroup", },														-- AXGroup (group 1)
+		{ role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
+	}, 1)
+
+	--------------------------------------------------------------------------------
+	-- Dual Screen:
+	--------------------------------------------------------------------------------
+	if whichSplitGroup == nil then
+
+		whichSplitGroup = sw:searchPath({
+			{ role = "AXWindow", Title = "Final Cut Pro"},							-- AXWindow "Final Cut Pro" (window 2)
+			{ role = "AXSplitGroup", },											 	-- AXSplitGroup (splitter group 1)
+			{ role = "AXGroup", },												    -- AXGroup (group 1)
+			{ role = "AXSplitGroup", },											    -- AXSplitGroup (splitter group 1)
+			{ role = "AXGroup", },											        -- AXGroup (group 2)
+			{ role = "AXSplitGroup", Identifier = "_NS:237"},					 	-- AXSplitGroup (splitter group 1)
+		}, 1)
+
+	end
+
+	return whichSplitGroup
+
+end
+
+--- hs.finalcutpro.getTimelineScrollArea() -> axuielementObject or nil
+--- Function
+--- Gets Timeline Scroll Area
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Timeline Scroll Area or nil if failed
+---
+function finalcutpro.getTimelineScrollArea()
+
+	--------------------------------------------------------------------------------
+	-- Which Split Group
+	--------------------------------------------------------------------------------
+	local finalCutProTimelineScrollArea = nil
+	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
+
+	--------------------------------------------------------------------------------
+	-- Get last scroll area:
+	--------------------------------------------------------------------------------
+	if finalCutProTimelineSplitGroup ~= nil then
+
+		local whichScrollArea = nil
+		for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
+			if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+				whichScrollArea = i
+			end
+		end
+		if whichScrollArea == nil then
+			return nil
+		end
+		finalCutProTimelineScrollArea = finalCutProTimelineSplitGroup[whichScrollArea]
+
+	end
+
+	return finalCutProTimelineScrollArea
+
+end
+
+--- hs.finalcutpro.getTimelineButtonBar() -> axuielementObject or nil
+--- Function
+--- Gets Timeline Button Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Timeline Button Bar or nil if failed
+---
+function finalcutpro.getTimelineButtonBar()
+
+	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
+	return finalCutProTimelineSplitGroup:attributeValue("AXParent")[2]
+
+end
+
+--- hs.finalcutpro.getEffectsTransitionsBrowserGroup() -> axuielementObject or nil
+--- Function
+--- Gets Effects/Transitions Browser Group
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Effects/Transitions Browser Group or nil if failed
+---
+function finalcutpro.getEffectsTransitionsBrowserGroup()
+
+	--------------------------------------------------------------------------------
+	-- Get Timeline Split Group:
+	--------------------------------------------------------------------------------
+	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
+		if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
+			return finalCutProTimelineSplitGroup[i]
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If things get to here it's failed:
+	--------------------------------------------------------------------------------
+	return nil
+
+end
+
+--- hs.finalcutpro.getBrowserSplitGroup() -> axuielementObject or nil
+--- Function
+--- Gets Browser Split Group
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Browser Split Group or nil if failed
+---
+function finalcutpro.getBrowserSplitGroup()
+
+	--------------------------------------------------------------------------------
+	-- Define Final Cut Pro:
+	--------------------------------------------------------------------------------
+	sw = ax.applicationElement(finalcutpro.application())
+
+	--------------------------------------------------------------------------------
+	-- Single Screen:
+	--------------------------------------------------------------------------------
+	local browserSplitGroup = sw:searchPath({
+		{ role = "AXWindow", Title = "Final Cut Pro"},
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:344"},
+	}, 1)
+
+	--------------------------------------------------------------------------------
+	-- Dual Screen:
+	--------------------------------------------------------------------------------
+	if browserSplitGroup == nil then
+		browserSplitGroup = sw:searchPath({
+			{ role = "AXWindow", Title = "Events"},
+			{ role = "AXSplitGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup", Identifier = "_NS:344"},
+		}, 1)
+	end
+
+	return browserSplitGroup
+
+end
+
+--- hs.finalcutpro.getBrowserButtonBar() -> axuielementObject or nil
+--- Function
+--- Gets Browser Button Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Browser Button Bar or nil if failed
+---
+function finalcutpro.getBrowserButtonBar()
+	local finalCutProBrowserSplitGroup = finalcutpro.getBrowserSplitGroup()
+	if finalCutProBrowserSplitGroup ~= nil then
+		return finalCutProBrowserSplitGroup:attributeValue("AXParent")
+	else
+		return nil
+	end
+end
+
+--- hs.finalcutpro.getColorBoardRadioGroup() -> axuielementObject or nil
+--- Function
+--- Gets the Color Board Radio Group
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Color Board Radio Group or nil if failed
+---
+function finalcutpro.getColorBoardRadioGroup()
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro:
+	--------------------------------------------------------------------------------
+	sw = ax.applicationElement(finalcutpro.application())
+
+	--------------------------------------------------------------------------------
+	-- Find Color Button:
+	--------------------------------------------------------------------------------
+	local result = sw:searchPath({
+		{ role = "AXWindow", Title = "Final Cut Pro"},
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXRadioGroup", Identifier = "_NS:128"},
+	}, 1)
+
+	return result
 
 end
 
