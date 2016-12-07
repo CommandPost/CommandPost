@@ -59,54 +59,54 @@
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
-alert 											= require("hs.alert")
-appfinder 										= require("hs.appfinder")
-application 									= require("hs.application")
-base64 											= require("hs.base64")
-chooser											= require("hs.chooser")
-console 										= require("hs.console")
-distributednotifications						= require("hs.distributednotifications")
-drawing 										= require("hs.drawing")
-eventtap										= require("hs.eventtap")
-fnutils 										= require("hs.fnutils")
-fs												= require("hs.fs")
-geometry										= require("hs.geometry")
-host											= require("hs.host")
-hotkey 											= require("hs.hotkey")
-http											= require("hs.http")
-image											= require("hs.image")
-inspect											= require("hs.inspect")
-json  											= require("hs.json")
-keycodes										= require("hs.keycodes")
-menubar											= require("hs.menubar")
-mouse											= require("hs.mouse")
-notify											= require("hs.notify")
-osascript 										= require("hs.osascript")
-pasteboard 										= require("hs.pasteboard")
-pathwatcher										= require("hs.pathwatcher")
-screen											= require("hs.screen")
-settings										= require("hs.settings")
-sharing											= require("hs.sharing")
-styledtext										= require("hs.styledtext")
-timer											= require("hs.timer")
-uielement 										= require("hs.uielement")
-utf8											= require("hs.utf8")
-window											= require("hs.window")
+local alert 									= require("hs.alert")
+local appfinder 								= require("hs.appfinder")
+local application 								= require("hs.application")
+local base64 									= require("hs.base64")
+local chooser									= require("hs.chooser")
+local console 									= require("hs.console")
+local distributednotifications					= require("hs.distributednotifications")
+local drawing 									= require("hs.drawing")
+local eventtap									= require("hs.eventtap")
+local fnutils 									= require("hs.fnutils")
+local fs										= require("hs.fs")
+local geometry									= require("hs.geometry")
+local host										= require("hs.host")
+local hotkey 									= require("hs.hotkey")
+local http										= require("hs.http")
+local image										= require("hs.image")
+local inspect									= require("hs.inspect")
+local json  									= require("hs.json")
+local keycodes									= require("hs.keycodes")
+local menubar									= require("hs.menubar")
+local mouse										= require("hs.mouse")
+local notify									= require("hs.notify")
+local osascript 								= require("hs.osascript")
+local pasteboard 								= require("hs.pasteboard")
+local pathwatcher								= require("hs.pathwatcher")
+local screen									= require("hs.screen")
+local settings									= require("hs.settings")
+local sharing									= require("hs.sharing")
+local styledtext								= require("hs.styledtext")
+local timer										= require("hs.timer")
+local uielement 								= require("hs.uielement")
+local utf8										= require("hs.utf8")
+local window									= require("hs.window")
 window.filter									= require("hs.window.filter")
 
 --------------------------------------------------------------------------------
 -- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-ax 												= require("hs._asm.axuielement")
-touchbar 										= require("hs._asm.touchbar")
+local ax 										= require("hs._asm.axuielement")
+local touchbar 									= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-fcp												= require("hs.finalcutpro")
-clipboard										= require("hs.fcpxhacks.modules.clipboard")
+local fcp										= require("hs.finalcutpro")
+local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -411,7 +411,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
 	--------------------------------------------------------------------------------
-	lastCommandSet = getFinalCutProActiveCommandSet()
+	lastCommandSet = fcp.getActiveCommandSetPath()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
@@ -1783,6 +1783,15 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	if refreshPlistValues == nil then refreshPlistValues = false end
 	if refreshPlistValues == true then
+
+		--------------------------------------------------------------------------------
+		-- Read Final Cut Pro Preferences:
+		--------------------------------------------------------------------------------
+		local preferences = fcp.getPreferencesAsTable()
+		if preferences == nil then
+			displayErrorMessage("Failed to read Final Cut Pro Preferences")
+			return "Fail"
+		end
 
 		--------------------------------------------------------------------------------
 		-- Used for debugging:
@@ -10748,10 +10757,7 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 	local proxyOnIcon = "🔴"
 	local proxyOffIcon = "🔵"
 
-	local FFPlayerQuality = nil
-	if getFinalCutProPlistValue("FFPlayerQuality") ~= nil then
-		FFPlayerQuality = getFinalCutProPlistValue("FFPlayerQuality")
-	end
+	local FFPlayerQuality = fcp.getPreference("FFPlayerQuality")
 
 	if FFPlayerQuality == "4" then
 		result = proxyOnIcon 		-- Proxy (4)
@@ -10760,40 +10766,6 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 	end
 
 	return result
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO'S ACTIVE COMMAND SET FROM PLIST:
---------------------------------------------------------------------------------
-function getFinalCutProActiveCommandSet()
-
-	local activeCommandSetResult = getFinalCutProPlistValue("Active Command Set")
-
-	if activeCommandSetResult == nil then
-		return nil
-	else
-		if fs.attributes(activeCommandSetResult) == nil then
-			return nil
-		else
-			return activeCommandSetResult
-		end
-	end
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO PLIST VALUE:
---------------------------------------------------------------------------------
-function getFinalCutProPlistValue(value) -- Returns Result or Nil
-
-	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist '" .. tostring(value) .. "'")
-
-	if executeStatus == nil then
-		return nil
-	else
-		return trim(executeResult)
-	end
 
 end
 
@@ -10816,16 +10788,17 @@ function readShortcutKeysFromPlist()
 			return "Failed"
 		else
 
-			--[[
-			TO DO: Need to debug 'plistParser' and get this working...
+			-- TO DO: Need to debug 'plistParser' and get this working...
 
 			local activeCommandSetTable = fcp.getActiveCommandSetAsTable()
+
+			--[[
+
 			if activeCommandSetTable == nil then
 				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
 				return "Failed"
 			end
 			--writeToConsole(activeCommandSetTable)
-
 
 			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 				if activeCommandSetTable[k] ~= nil then
@@ -10836,6 +10809,7 @@ function readShortcutKeysFromPlist()
 					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 				end
 			end
+
 			--]]
 
 			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
@@ -12344,7 +12318,7 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
-    	if lastCommandSet ~= getFinalCutProActiveCommandSet() then
+    	if lastCommandSet ~= fcp.getActiveCommandSetPath() then
     		if not isCommandEditorOpen then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end

@@ -117,8 +117,16 @@ local function plistParse(s)
     while label ~= "plist" do
         ni, i, label, version = string.find(s, "<([%w:]+)(.-)>", i+1)
 
+
         -- BUG: Something is going funky here with complex plist's:
-        assert(ni)
+
+        if ni == nil then
+        	print("Fatal Error: Something has gone wrong in plistParse. Giving up.")
+        	return nil
+        else
+        	assert(ni)
+        end
+
     end
 
     ni, i, _, label, empty = plp.nextTag(s, i)
