@@ -118,49 +118,45 @@ mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path
 
 local execute									= hs.execute									-- Execute!
 local clock 									= os.clock										-- Used for sleep()
-touchBarSupported						 		= touchbar.supported()							-- Touch Bar Supported?
-hostname										= host.localizedName()							-- Hostname
+local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
+local hostname									= host.localizedName()							-- Hostname
 
-debugMode 										= false											-- Debug Mode is off by default.
-scrollingTimelineSpacebarPressed				= false											-- Was spacebar pressed?
-scrollingTimelineWatcherWorking 				= false											-- Is Scrolling Timeline Spacebar Held Down?
-isCommandEditorOpen 							= false 										-- Is Command Editor Open?
-releaseColorBoardDown							= false											-- Color Board Shortcut Currently Being Pressed
-releaseMouseColorBoardDown 						= false											-- Color Board Mouse Shortcut Currently Being Pressed
-changeTimelineClipHeightAlreadyInProgress 		= false											-- Change Timeline Clip Height Already In Progress
-releaseChangeTimelineClipHeightDown				= false											-- Change Timeline Clip Height Currently Being Pressed
-stopMediaImportTimer 							= false											-- Stop Media Import Timer
-fcpxChooserActive								= false											-- Chooser Active?
-mouseInsideTouchbar								= false											-- Mouse Inside Touch Bar?
-shownUpdateNotification			 				= false											-- Shown Update Notification Already?
+mod.debugMode									= false											-- Debug Mode is off by default.
+mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
+mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
+mod.isCommandEditorOpen 						= false 										-- Is Command Editor Open?
+mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
+mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
+mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
+mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
 
-changeAppearanceButtonLocation 					= {}											-- Change Timeline Appearance Button Location
-fcpxChooserChoices 								= {}											-- Chooser Choices
+mod.fcpxChooserActive							= false											-- Chooser Active?
+mod.fcpxChooserChoices							= {}											-- Chooser Choices
+mod.fcpxChooser									= nil											-- Chooser
 
-mediaImportCount 								= 0												-- Media Import Count
+mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
-fcpxChooser										= nil											-- Chooser
-touchBarWindow 									= nil			 								-- Touch Bar Window
-browserHighlight 								= nil											-- Used for Highlight Browser Playhead
-browserHighlightTimer 							= nil											-- Used for Highlight Browser Playhead
-scrollingTimelineTimer							= nil											-- Scrolling Timeline Timer
-scrollingTimelineScrollbarTimer					= nil											-- Scrolling Timeline Scrollbar Timer
-finalCutProShortcutKey 							= nil											-- Table of all Final Cut Pro Shortcuts
-finalCutProShortcutKeyPlaceholders 				= nil											-- Table of all needed Final Cut Pro Shortcuts
-newDeviceMounted 								= nil											-- New Device Mounted Volume Watcher
-currentApplication 								= nil											-- Current Application (used by Media Import Watcher)
-lastCommandSet									= nil											-- Last Keyboard Shortcut Command Set
-colorBoardMousePuckOriginalPosition				= nil											-- Color Board Mouse Puck Original Position
-FFImportCreateProxyMedia 						= nil											-- Used in refreshMenuBar
-allowMovingMarkers 								= nil											-- Used in refreshMenuBar
-FFPeriodicBackupInterval 						= nil											-- Used in refreshMenuBar
-FFSuspendBGOpsDuringPlay 						= nil											-- Used in refreshMenuBar
-FFEnableGuards 									= nil											-- Used in refreshMenuBar
-FFCreateOptimizedMediaForMulticamClips 			= nil											-- Used in refreshMenuBar
-FFAutoStartBGRender 							= nil											-- Used in refreshMenuBar
-FFAutoRenderDelay 								= nil											-- Used in refreshMenuBar
-FFImportCopyToMediaFolder 						= nil											-- Used in refreshMenuBar
-FFImportCreateOptimizeMedia 					= nil											-- Used in refreshMenuBar
+mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
+mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
+mod.browserHighlight							= nil											-- Scrolling Timeline Timer
+
+mod.scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
+mod.scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
+
+mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
+mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
+mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
+mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
+mod.FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
+mod.allowMovingMarkers							= nil											-- Used in refreshMenuBar
+mod.FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
+mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
+mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
+mod.FFCreateOptimizedMediaForMulticamClips 		= nil											-- Used in refreshMenuBar
+mod.FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
+mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
+mod.FFImportCopyToMediaFolder 					= nil											-- Used in refreshMenuBar
+mod.FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -170,7 +166,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMode = settings.get("fcpxHacks.debugMode") or false
+	mod.debugMode = settings.get("fcpxHacks.debugMode") or false
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
@@ -271,34 +267,34 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
-		touchBarWindow = touchbar.new()
+		mod.touchBarWindow = touchbar.new()
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Watcher:
 		--------------------------------------------------------------------------------
-		touchBarWindow:setCallback(touchbarWatcher)
+		mod.touchBarWindow:setCallback(touchbarWatcher)
 
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
 		local lastTouchBarLocation = settings.get("fcpxHacks.lastTouchBarLocation")
-		if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
+		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
 		-- Draggable Touch Bar:
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mouseInsideTouchbar then
+			if mod.mouseInsideTouchbar then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-					touchBarWindow:backgroundColor{ red = 1 }
-								  :movable(true)
-								  :acceptsMouseEvents(false)
+					mod.touchBarWindow:backgroundColor{ red = 1 }
+								  	:movable(true)
+								  	:acceptsMouseEvents(false)
 				elseif ev:getType() ~= events.leftMouseDown then
-					touchBarWindow:backgroundColor{ white = 0 }
+					mod.touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+					settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -400,7 +396,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
 	--------------------------------------------------------------------------------
-	lastCommandSet = getFinalCutProActiveCommandSet()
+	mod.lastCommandSet = getFinalCutProActiveCommandSet()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
@@ -591,10 +587,10 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Get Shortcut Keys from plist:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKey = nil
-		finalCutProShortcutKey = {}
-		finalCutProShortcutKeyPlaceholders = nil
-		finalCutProShortcutKeyPlaceholders =
+		mod.finalCutProShortcutKey = nil
+		mod.finalCutProShortcutKey = {}
+		mod.finalCutProShortcutKeyPlaceholders = nil
+		mod.finalCutProShortcutKeyPlaceholders =
 		{
 			FCPXHackLaunchFinalCutPro 									= { characterString = "", 							modifiers = {}, 									fn = function() fcpxHacks.launchFinalCutPro() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = "", 							modifiers = {}, 									fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
@@ -822,7 +818,7 @@ function bindKeyboardShortcuts()
 		-- Merge Above Table with Built-in Final Cut Pro Shortcuts Table:
 		--------------------------------------------------------------------------------
 		for k, v in pairs(requiredBuiltInShortcuts) do
-			finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
+			mod.finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
 		end
 
 		if readShortcutKeysFromPlist() ~= "Done" then
@@ -836,8 +832,8 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKey = nil
-		finalCutProShortcutKey =
+		mod.finalCutProShortcutKey = nil
+		mod.finalCutProShortcutKey =
 		{
 			FCPXHackLaunchFinalCutPro 									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxHacks.launchFinalCutPro() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
@@ -1062,7 +1058,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Get Values of Shortcuts built into Final Cut Pro:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
+		mod.finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
 		readShortcutKeysFromPlist()
 
 	end
@@ -1088,18 +1084,18 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Enable Hotkeys Loop:
 	--------------------------------------------------------------------------------
-	for k, v in pairs(finalCutProShortcutKey) do
-		if finalCutProShortcutKey[k]['characterString'] ~= "" and finalCutProShortcutKey[k]['fn'] ~= nil then
-			if finalCutProShortcutKey[k]['global'] == true then
+	for k, v in pairs(mod.finalCutProShortcutKey) do
+		if mod.finalCutProShortcutKey[k]['characterString'] ~= "" and mod.finalCutProShortcutKey[k]['fn'] ~= nil then
+			if mod.finalCutProShortcutKey[k]['global'] == true then
 				--------------------------------------------------------------------------------
 				-- Global Shortcut:
 				--------------------------------------------------------------------------------
-				hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
+				hotkey.bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
 			else
 				--------------------------------------------------------------------------------
 				-- Final Cut Pro Specific Shortcut:
 				--------------------------------------------------------------------------------
-				hotkeys:bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
+				hotkeys:bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
 			end
 		end
 	end
@@ -1107,7 +1103,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Development Shortcut:
 	--------------------------------------------------------------------------------
-	if debugMode then
+	if mod.debugMode then
 		hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
 	end
 
@@ -1197,7 +1193,7 @@ end
 --------------------------------------------------------------------------------
 function setupChooser()
 
-	fcpxChooser = chooser.new(chooserAction):bgDark(true)
+	mod.fcpxChooser = chooser.new(chooserAction):bgDark(true)
 											:fgColor(drawing.color.x11.snow)
 											:subTextColor(drawing.color.x11.snow)
 											:rightClickCallback(chooserRightClick)
@@ -1209,8 +1205,8 @@ end
 -- SHOW CHOOSER:
 --------------------------------------------------------------------------------
 function showChooser()
-	fcpxChooserActive = true
-	fcpxChooser:show()
+	mod.fcpxChooserActive = true
+	mod.fcpxChooser:show()
 end
 
 --------------------------------------------------------------------------------
@@ -1226,8 +1222,8 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Reset Choices:
 	--------------------------------------------------------------------------------
-	fcpxChooserChoices = nil
-	fcpxChooserChoices = {}
+	mod.fcpxChooserChoices = nil
+	mod.fcpxChooserChoices = {}
 
 	--------------------------------------------------------------------------------
 	-- Settings:
@@ -1523,9 +1519,9 @@ function chooserChoices()
 		},
 	}
 
-	if chooserShowAutomation then fnutils.concat(fcpxChooserChoices, chooserAutomation) end
-	if chooserShowShortcuts then fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
-	if chooserShowHacks then fnutils.concat(fcpxChooserChoices, chooserHacks) end
+	if chooserShowAutomation then fnutils.concat(mod.fcpxChooserChoices, chooserAutomation) end
+	if chooserShowShortcuts then fnutils.concat(mod.fcpxChooserChoices, chooserShortcuts) end
+	if chooserShowHacks then fnutils.concat(mod.fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
@@ -1542,7 +1538,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1562,7 +1558,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1582,7 +1578,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1602,7 +1598,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1622,7 +1618,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1630,12 +1626,12 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(fcpxChooserChoices, function(a, b) return a.text < b.text end)
+	table.sort(mod.fcpxChooserChoices, function(a, b) return a.text < b.text end)
 
 	--------------------------------------------------------------------------------
 	-- Return Choices:
 	--------------------------------------------------------------------------------
-	return fcpxChooserChoices
+	return mod.fcpxChooserChoices
 
 end
 
@@ -1647,7 +1643,7 @@ function chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Hide Chooser:
 	--------------------------------------------------------------------------------
-	fcpxChooser:hide()
+	mod.fcpxChooser:hide()
 
 	--------------------------------------------------------------------------------
 	-- Perform Specific Function:
@@ -1664,8 +1660,8 @@ function chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Re-activate the Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	fcpxChooserActive = false
-	scrollingTimelineWatcherWorking = false
+	mod.fcpxChooserActive = false
+	mod.scrollingTimelineWatcherWorking = false
 
 end
 
@@ -1713,7 +1709,7 @@ function chooserRightClick()
      		settings.set("fcpxHacks.chooserShowTransitions", false)
      		settings.set("fcpxHacks.chooserShowTitles", false)
      		settings.set("fcpxHacks.chooserShowGenerators", false)
-     		fcpxChooser:refreshChoicesCallback()
+     		mod.fcpxChooser:refreshChoicesCallback()
      	end },
      	{ title = "Show All", 				checked = chooserShowAll,	fn = function()
      		settings.set("fcpxHacks.chooserShowAutomation", true)
@@ -1724,16 +1720,16 @@ function chooserRightClick()
      		settings.set("fcpxHacks.chooserShowTransitions", true)
      		settings.set("fcpxHacks.chooserShowTitles", true)
      		settings.set("fcpxHacks.chooserShowGenerators", true)
-     		fcpxChooser:refreshChoicesCallback()
+     		mod.fcpxChooser:refreshChoicesCallback()
      	end },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				fcpxChooser:refreshChoicesCallback() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				mod.fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			mod.fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
 	fcpxRightClickMenubar:popupMenu(mouse.getAbsolutePosition())
@@ -1778,76 +1774,76 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Default Values:
 		--------------------------------------------------------------------------------
-		FFImportCreateProxyMedia 					= false
-		allowMovingMarkers 							= false
-		FFPeriodicBackupInterval 					= "15"
-		FFSuspendBGOpsDuringPlay 					= false
-		FFEnableGuards 								= false
-		FFCreateOptimizedMediaForMulticamClips 		= true
-		FFAutoStartBGRender 						= true
-		FFAutoRenderDelay 							= "0.3"
-		FFImportCopyToMediaFolder 					= true
-		FFImportCreateOptimizeMedia 				= false
+		mod.FFImportCreateProxyMedia 					= false
+		mod.allowMovingMarkers 							= false
+		mod.FFPeriodicBackupInterval 					= "15"
+		mod.FFSuspendBGOpsDuringPlay 					= false
+		mod.FFEnableGuards 								= false
+		mod.FFCreateOptimizedMediaForMulticamClips 		= true
+		mod.FFAutoStartBGRender 						= true
+		mod.FFAutoRenderDelay 							= "0.3"
+		mod.FFImportCopyToMediaFolder 					= true
+		mod.FFImportCreateOptimizeMedia 				= false
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if trim(executeResult) == "true" then allowMovingMarkers = true end
+		if trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = trim(executeResult) end
+		if trim(executeResult) ~= "" then mod.FFPeriodicBackupInterval = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
-		if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
+		if trim(executeResult) == "1" then mod.FFSuspendBGOpsDuringPlay = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFEnableGuards:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
-		if trim(executeResult) == "1" then FFEnableGuards = true end
+		if trim(executeResult) == "1" then mod.FFEnableGuards = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
-		if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
+		if trim(executeResult) == "0" then mod.FFCreateOptimizedMediaForMulticamClips = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoStartBGRender:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
-		if trim(executeResult) == "0" then FFAutoStartBGRender = false end
+		if trim(executeResult) == "0" then mod.FFAutoStartBGRender = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoRenderDelay")
-		if executeStatus == true then FFAutoRenderDelay = trim(executeResult) end
+		if executeStatus == true then mod.FFAutoRenderDelay = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCopyToMediaFolder:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
-		if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
+		if trim(executeResult) == "0" then mod.FFImportCopyToMediaFolder = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateOptimizeMedia:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
-		if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
+		if trim(executeResult) == "1" then mod.FFImportCreateOptimizeMedia = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateProxyMedia:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
-		if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
+		if trim(executeResult) == "1" then mod.FFImportCreateProxyMedia = true end
 
 	end
 
@@ -2173,7 +2169,7 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Hammerspoon", 																	menu = settingsHammerspoonSettings},
       	{ title = "-" },
       	{ title = "Check for Updates", 																fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
-      	{ title = "Enable Debug Mode", 																fn = toggleDebugMode, 												checked = debugMode},
+      	{ title = "Enable Debug Mode", 																fn = toggleDebugMode, 												checked = mod.debugMode},
 		{ title = "Trash FCPX Hacks Preferences", 													fn = resetSettings },
     	{ title = "-" },
     	{ title = "Created by LateNite Films", 														fn = gotoLateNiteSite },
@@ -2221,11 +2217,11 @@ function refreshMenuBar(refreshPlistValues)
 	}
 	local shortcutsTable = {
    	    { title = "SHORTCUTS:", 																																																	disabled = true },
-	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not FFImportCreateOptimizeMedia) end, 												checked = FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
-	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not FFCreateOptimizedMediaForMulticamClips) end, 							checked = FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
-	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not FFImportCreateProxyMedia) end, 														checked = FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
-	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(FFImportCopyToMediaFolder) end, 																checked = not FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
-	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not FFAutoStartBGRender) end, 															checked = FFAutoStartBGRender, 								disabled = not fcpxRunning },
+	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not mod.FFImportCreateOptimizeMedia) end, 												checked = mod.FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
+	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not mod.FFCreateOptimizedMediaForMulticamClips) end, 							checked = mod.FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
+	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not mod.FFImportCreateProxyMedia) end, 														checked = mod.FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
+	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(mod.FFImportCopyToMediaFolder) end, 																checked = not mod.FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
+	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
    	    { title = "-" },
 	}
 	local automationTable = {
@@ -2253,10 +2249,10 @@ function refreshMenuBar(refreshPlistValues)
 	local hacksTable = {
    	    { title = "HACKS:", 																																																		disabled = true },
    		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
-   		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = FFEnableGuards },
-	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = allowMovingMarkers },
-       	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not FFSuspendBGOpsDuringPlay },
-        { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
+   		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
+	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
+       	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
+        { title = "Change Backup Interval (" .. tostring(mod.FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
    	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
         { title = "-" },
     }
@@ -2677,7 +2673,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Update Chooser:
 			--------------------------------------------------------------------------------
-			fcpxChooser:refreshChoicesCallback()
+			mod.fcpxChooser:refreshChoicesCallback()
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2963,7 +2959,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3267,7 +3263,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3588,7 +3584,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -4089,9 +4085,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		FFPeriodicBackupInterval = 15
+		mod.FFPeriodicBackupInterval = 15
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = executeResult end
+		if trim(executeResult) ~= "" then mod.FFPeriodicBackupInterval = executeResult end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
@@ -4108,7 +4104,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Ask user what to set the backup interval to:
 		--------------------------------------------------------------------------------
-		local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
+		local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", mod.FFPeriodicBackupInterval)
 		if not userSelectedBackupInterval then
 			return "Cancel"
 		end
@@ -4208,8 +4204,8 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		debugMode = not debugMode
-		settings.set("fcpxHacks.debugMode", debugMode)
+		mod.debugMode = not mod.debugMode
+		settings.set("fcpxHacks.debugMode", mod.debugMode)
 		refreshMenuBar()
 	end
 
@@ -4239,7 +4235,7 @@ end
 		if not enableMediaImportWatcher then
 			mediaImportWatcher()
 		else
-			newDeviceMounted:stop()
+			mod.newDeviceMounted:stop()
 		end
 		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
 		refreshMenuBar()
@@ -4693,9 +4689,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		allowMovingMarkers = false
+		mod.allowMovingMarkers = false
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if trim(executeResult) == "true" then allowMovingMarkers = true end
+		if trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
@@ -4712,7 +4708,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if allowMovingMarkers then
+		if mod.allowMovingMarkers then
 			local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				displayErrorMessage("Failed to write to plist.")
@@ -4759,9 +4755,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		FFSuspendBGOpsDuringPlay = false
+		mod.FFSuspendBGOpsDuringPlay = false
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
-		if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
+		if trim(executeResult) == "1" then mod.FFSuspendBGOpsDuringPlay = true end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
@@ -4779,7 +4775,7 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if FFSuspendBGOpsDuringPlay then
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool false")
+			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist mod.FFSuspendBGOpsDuringPlay -bool false")
 			if executeStatus == nil then
 				displayErrorMessage("Failed to write to plist.")
 				return "Failed"
@@ -4825,9 +4821,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		FFEnableGuards = false
+		mod.FFEnableGuards = false
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
-		if trim(executeResult) == "1" then FFEnableGuards = true end
+		if trim(executeResult) == "1" then mod.FFEnableGuards = true end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
@@ -4844,7 +4840,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if FFEnableGuards then
+		if mod.FFEnableGuards then
 			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool false")
 			if executeStatus == nil then
 				displayErrorMessage("Failed to write to plist.")
@@ -7769,10 +7765,10 @@ end
 		local showError = false
 		local event = eventtap.event
 
-		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
-		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
-		increaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
-		decreaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
+		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
+		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
+		increaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
+		decreaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
 
 		--------------------------------------------------------------------------------
 		-- ERROR DETECTION:
@@ -8080,13 +8076,13 @@ end
 			--------------------------------------------------------------------------------
 			-- Stop Scrolling Timeline Loops:
 			--------------------------------------------------------------------------------
-			if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
-			if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
+			if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
+			if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
 
 			--------------------------------------------------------------------------------
 			-- Turn off variable:
 			--------------------------------------------------------------------------------
-			scrollingTimelineSpacebarPressed = false
+			mod.scrollingTimelineSpacebarPressed = false
 
 			--------------------------------------------------------------------------------
 			-- Display Notification:
@@ -8132,7 +8128,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Scrollbar Check Timer:
 		--------------------------------------------------------------------------------
-		scrollingTimelineScrollbarTimer = timer.new(0.001, function()
+		mod.scrollingTimelineScrollbarTimer = timer.new(0.001, function()
 			if timelineScrollArea[2] ~= nil then
 				performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 				scrollbarSearchLoopActivated = false
@@ -8143,7 +8139,7 @@ end
 		-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
 		--------------------------------------------------------------------------------
 		if timelineScrollArea[2] == nil then
-			scrollingTimelineScrollbarTimer:start()
+			mod.scrollingTimelineScrollbarTimer:start()
 			return "Fail"
 		end
 
@@ -8166,7 +8162,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define the Loop of Death:
 		--------------------------------------------------------------------------------
-		scrollingTimelineTimer = timer.new(0.000001, function()
+		mod.scrollingTimelineTimer = timer.new(0.000001, function()
 
 			--------------------------------------------------------------------------------
 			-- Does the scrollbar still exist?
@@ -8214,7 +8210,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Begin the Loop of Death:
 		--------------------------------------------------------------------------------
-		scrollingTimelineTimer:start()
+		mod.scrollingTimelineTimer:start()
 
 	end
 
@@ -8326,10 +8322,10 @@ end
 		-- Make sure Nudge Shortcuts are allocated:
 		--------------------------------------------------------------------------------
 		local nudgeShortcutMissing = false
-		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
 		if nudgeShortcutMissing then
 			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
 			return "Failed"
@@ -8411,25 +8407,25 @@ end
 			--------------------------------------------------------------------------------
 			-- Get shortcut key from plist, press and hold if required:
 			--------------------------------------------------------------------------------
-			releaseColorBoardDown = false
-			timer.doUntil(function() return releaseColorBoardDown end, function()
+			mod.releaseColorBoardDown = false
+			timer.doUntil(function() return mod.releaseColorBoardDown end, function()
 				if whichDirection == "up" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckUp")
 					end
 				end
 				if whichDirection == "down" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckDown")
 					end
 				end
 				if whichDirection == "left" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
 					end
 				end
 				if whichDirection == "right" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckRight")
 					end
 				end
@@ -8453,10 +8449,10 @@ end
 		-- Make sure Nudge Shortcuts are allocated:
 		--------------------------------------------------------------------------------
 		local nudgeShortcutMissing = false
-		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
 		if nudgeShortcutMissing then
 			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
 			return "Failed"
@@ -8533,8 +8529,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Get shortcut key from plist, press and hold if required:
 		--------------------------------------------------------------------------------
-		releaseMouseColorBoardDown = false
-		timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+		mod.releaseMouseColorBoardDown = false
+		timer.doUntil(function() return mod.releaseMouseColorBoardDown end, function()
 
 			local currentMousePoint = mouse.getAbsolutePosition()
 
@@ -8566,14 +8562,14 @@ end
 	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
 	--------------------------------------------------------------------------------
 	function colorBoardMousePuckRelease()
-		releaseMouseColorBoardDown = true
+		mod.releaseMouseColorBoardDown = true
 	end
 
 	--------------------------------------------------------------------------------
 	-- COLOR BOARD - RELEASE KEYPRESS:
 	--------------------------------------------------------------------------------
 	function colorBoardSelectPuckRelease()
-		releaseColorBoardDown = true
+		mod.releaseColorBoardDown = true
 	end
 
 --------------------------------------------------------------------------------
@@ -10187,7 +10183,7 @@ end
 		-- Toggle Touch Bar:
 		--------------------------------------------------------------------------------
 		setTouchBarLocation()
-		touchBarWindow:toggle()
+		mod.touchBarWindow:toggle()
 
 		--------------------------------------------------------------------------------
 		-- Update Settings:
@@ -10782,7 +10778,7 @@ function readShortcutKeysFromPlist()
 			return "Failed"
 		else
 			local activeCommandSet = trim(executeResult)
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
 				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
@@ -10794,8 +10790,8 @@ function readShortcutKeysFromPlist()
 					if executeType ~= "exit" then
 						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 					end
-					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+					local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					mod.finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -10822,8 +10818,8 @@ function readShortcutKeysFromPlist()
 						--------------------------------------------------------------------------------
 						-- Insert Blank Placeholder
 						--------------------------------------------------------------------------------
-						local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 
 						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
 						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
@@ -10833,7 +10829,7 @@ function readShortcutKeysFromPlist()
 								--------------------------------------------------------------------------------
 								-- Assuming that the plist was read fine, but contained no value:
 								--------------------------------------------------------------------------------
-								finalCutProShortcutKey[k .. addToK]['characterString'] = ""
+								mod.finalCutProShortcutKey[k .. addToK]['characterString'] = ""
 							else
 								displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
 								return "Failed"
@@ -10848,13 +10844,13 @@ function readShortcutKeysFromPlist()
 							end
 							::escape::
 
-							finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
+							mod.finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
 						end
 
 					end
 				end
 			end
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
 				local executeResult,executeStatus = execute(executeCommand)
@@ -10865,7 +10861,7 @@ function readShortcutKeysFromPlist()
 					if executeType ~= "exit" then
 						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 					end
-					finalCutProShortcutKey[k]['modifiers'] = {}
+					mod.finalCutProShortcutKey[k]['modifiers'] = {}
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -10903,20 +10899,20 @@ function readShortcutKeysFromPlist()
 										--------------------------------------------------------------------------------
 										-- Assuming that the plist was read fine, but contained no value:
 										--------------------------------------------------------------------------------
-										finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
+										mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
 									else
 										displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
 										return "Failed"
 									end
 								else
-									finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
+									mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
 								end
 							else
 								displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
 								return "Failed"
 							end
 						else
-							finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
+							mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
 						end
 					end
 				end
@@ -11163,31 +11159,31 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
     -- Highlight the FCPX Browser Playhead:
     --------------------------------------------------------------------------------
    	if displayHighlightShape == "Rectangle" then
-		browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 	if displayHighlightShape == "Circle" then
-		browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 	if displayHighlightShape == "Diamond" then
-		browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 
 	--------------------------------------------------------------------------------
     -- Set a timer to delete the circle after 3 seconds:
     --------------------------------------------------------------------------------
-    browserHighlightTimer = timer.doAfter(3, function() browserHighlight:delete() end)
+    mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
 
 end
 
@@ -11385,7 +11381,7 @@ end
 		--------------------------------------------------------------------------------
 		if touchBarSupported then
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then touchBarWindow:show() end
+			if displayTouchBar then mod.touchBarWindow:show() end
 		end
 	end
 
@@ -11396,7 +11392,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
 		--------------------------------------------------------------------------------
-		if touchBarSupported then touchBarWindow:hide() end
+		if touchBarSupported then mod.touchBarWindow:hide() end
 	end
 
 	--------------------------------------------------------------------------------
@@ -11417,7 +11413,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Mouse Pointer Location:
 			--------------------------------------------------------------------------------
-			touchBarWindow:atMousePosition()
+			mod.touchBarWindow:atMousePosition()
 
 		end
 
@@ -11431,16 +11427,16 @@ end
 			--------------------------------------------------------------------------------
 			local timelineScrollArea = getFinalCutProTimelineScrollArea()
 			local timelineScrollAreaPosition = {}
-			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
+			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
 			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-			touchBarWindow:topLeft(timelineScrollAreaPosition)
+			mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
 
 		end
 
 		--------------------------------------------------------------------------------
 		-- Save last Touch Bar Location to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
 	end
 
@@ -11452,10 +11448,10 @@ end
 	-- PERFORM KEYSTROKE FROM PLIST DATA:
 	--------------------------------------------------------------------------------
 	function keyStrokeFromPlist(whichShortcut)
-		if finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
-		if finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
-		if next(finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-		eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
+		if mod.finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
+		if mod.finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
+		if next(mod.finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and mod.finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
+		eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
 		return true
 	end
 
@@ -11934,7 +11930,7 @@ end
 	function debugMessage(value)
 		if value ~= nil then
 			if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-			if debugMode then writeToConsole(value) end
+			if mod.debugMode then writeToConsole(value) end
 		end
 	end
 
@@ -12068,10 +12064,10 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete FCPX Browser Highlight:
 		--------------------------------------------------------------------------------
-		if browserHighlight then
-			browserHighlight:delete()
-			if browserHighlightTimer then
-				browserHighlightTimer:stop()
+		if mod.browserHighlight then
+			mod.browserHighlight:delete()
+			if mod.browserHighlightTimer then
+				mod.browserHighlightTimer:stop()
 			end
 		end
 	end
@@ -12096,7 +12092,7 @@ end
 					--------------------------------------------------------------------------------
 					-- macOS Notification:
 					--------------------------------------------------------------------------------
-					if not shownUpdateNotification then
+					if not mod.shownUpdateNotification then
 						if latestScriptVersion > fcpxHacks.scriptVersion then
 							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 																:title("FCPX Hacks Update Available")
@@ -12106,7 +12102,7 @@ end
 																:actionButtonTitle("Install")
 																:otherButtonTitle("Not Yet")
 																:send()
-							shownUpdateNotification = true
+							mod.shownUpdateNotification = true
 						end
 					end
 
@@ -12268,8 +12264,8 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
-    	if lastCommandSet ~= getFinalCutProActiveCommandSet() then
-    		if not isCommandEditorOpen then
+    	if mod.lastCommandSet ~= getFinalCutProActiveCommandSet() then
+    		if not mod.isCommandEditorOpen then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
@@ -12303,7 +12299,7 @@ function commandEditorWatcher()
 				-- Command Editor is Open:
 				--------------------------------------------------------------------------------
 				commandEditorID = window:id()
-				isCommandEditorOpen = true
+				mod.isCommandEditorOpen = true
 				debugMessage("Command Editor Opened.")
 				--------------------------------------------------------------------------------
 
@@ -12335,7 +12331,7 @@ function commandEditorWatcher()
 				-- Command Editor is Closed:
 				--------------------------------------------------------------------------------
 				commandEditorID = nil
-				isCommandEditorOpen = false
+				mod.isCommandEditorOpen = false
 				debugMessage("Command Editor Closed.")
 				--------------------------------------------------------------------------------
 
@@ -12398,14 +12394,14 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					if finalCutProShortcutKey[whichShortcutKey] ~= nil then
-						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-								if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
+						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 									return true
 								end
 							end
@@ -12433,13 +12429,13 @@ function fullscreenKeyboardWatcher()
 						--------------------------------------------------------------------------------
 						local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 						for x, whichShortcutKey in pairs(fullscreenKeys) do
-							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-								if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-									if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+									if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 										eventtap.keyStroke({""}, "escape")
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 										return true
 									end
 								end
@@ -12458,50 +12454,58 @@ end
 -- MEDIA IMPORT WINDOW WATCHER:
 --------------------------------------------------------------------------------
 function mediaImportWatcher()
-
-	newDeviceMounted = fs.volume.new(function(event, table)
+	debugMessage("Watching for new media...")
+	mod.newDeviceMounted = fs.volume.new(function(event, table)
 		if event == fs.volume.didMount then
 
 			debugMessage("Media Inserted.")
 
-			mediaImportCount = 0
-			stopMediaImportTimer = false
-			currentApplication = application.frontmostApplication()
+			local mediaImportCount = 0
+			local stopMediaImportTimer = false
+			local currentApplication = application.frontmostApplication()
+			debugMessage("Currently using '"..currentApplication:name().."'")
 
 			local fcpx = fcpxHacks.finalCutProApplication()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
-			mediaImportTimer = timer.doUntil(function() return stopMediaImportTimer end, function()
-				if not isFinalCutProRunning() then
-					stopMediaImportTimer = true
-				else
-					local fcpx = fcpxHacks.finalCutProApplication()
-					local fcpxElements = ax.applicationElement(fcpx)
-					if fcpxElements[1] ~= nil then
-						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
-							if mediaImportCount == 0 then
-								--------------------------------------------------------------------------------
-								-- Media Import Window was already open:
-								--------------------------------------------------------------------------------
-								stopMediaImportTimer = true
-							else
-								fcpxElements[1][11]:performAction("AXPress")
-								if fcpxHidden then fcpx:hide() end
-								application.launchOrFocus(currentApplication:name())
+			mediaImportTimer = timer.doUntil(
+				function() 
+					return stopMediaImportTimer 
+				end, 
+				function()
+					if not isFinalCutProRunning() then
+						debugMessage("FCPX is not running. Stop watching.")
+						stopMediaImportTimer = true
+					else
+						local fcpx = fcpxHacks.finalCutProApplication()
+						local fcpxElements = ax.applicationElement(fcpx)
+						if fcpxElements[1] ~= nil then
+							if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
+								if mediaImportCount ~= 0 then
+									--------------------------------------------------------------------------------
+									-- Media Import Window was not open:
+									--------------------------------------------------------------------------------
+									fcpxElements[1][11]:performAction("AXPress")
+									if fcpxHidden then fcpx:hide() end
+									application.launchOrFocus(currentApplication:name())
+									debugMessage("Hid FCPX and returned to '"..currentApplication:name().."'.")
+								end
 								stopMediaImportTimer = true
 							end
 						end
+						mediaImportCount = mediaImportCount + 1
+						if mediaImportCount == 500 then
+							debugMessage("Gave up watching for the Media Import window after 5 seconds.")
+							stopMediaImportTimer = true
+						end
 					end
-					mediaImportCount = mediaImportCount + 1
-					if mediaImportCount == 500 then
-						stopMediaImportTimer = true
-					end
-				end
-			end, 0.01)
+				end, 
+				0.01
+			)
 		end
 	end)
-	newDeviceMounted:start()
+	mod.newDeviceMounted:start()
 
 end
 
@@ -12514,7 +12518,7 @@ function scrollingTimelineWatcher()
 	-- Key Press Up Watcher:
 	--------------------------------------------------------------------------------
 	scrollingTimelineWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
-		scrollingTimelineWatcherWorking = false
+		mod.scrollingTimelineWatcherWorking = false
 	end)
 
 	--------------------------------------------------------------------------------
@@ -12525,13 +12529,13 @@ function scrollingTimelineWatcher()
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
 		--------------------------------------------------------------------------------
-		if scrollingTimelineWatcherWorking then
+		if mod.scrollingTimelineWatcherWorking then
 			return false
 		else
 			--------------------------------------------------------------------------------
 			-- Prevent Key Being Held Down:
 			--------------------------------------------------------------------------------
-			scrollingTimelineWatcherWorking = true
+			mod.scrollingTimelineWatcherWorking = true
 
 			--------------------------------------------------------------------------------
 			-- Spacebar Pressed:
@@ -12540,22 +12544,22 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not isCommandEditorOpen and not fcpxChooserActive then
+				if not mod.isCommandEditorOpen and not mod.fcpxChooserActive then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
 					--------------------------------------------------------------------------------
-					scrollingTimelineSpacebarPressed = not scrollingTimelineSpacebarPressed
+					mod.scrollingTimelineSpacebarPressed = not mod.scrollingTimelineSpacebarPressed
 
 					--------------------------------------------------------------------------------
 					-- Either stop or start the Scrolling Timeline:
 					--------------------------------------------------------------------------------
-					if scrollingTimelineSpacebarPressed then
+					if mod.scrollingTimelineSpacebarPressed then
 						scrollingTimelineSpacebarCheck = true
 						timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
 					else
-						if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
-						if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
+						if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
+						if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
 					end
 
 				end
@@ -12741,16 +12745,16 @@ end
 function touchbarWatcher(obj, message)
 
 	if message == "didEnter" then
-        mouseInsideTouchbar = true
+        mod.mouseInsideTouchbar = true
     elseif message == "didExit" then
-        mouseInsideTouchbar = false
+        mod.mouseInsideTouchbar = false
 
         --------------------------------------------------------------------------------
 	    -- Just in case we got here before the eventtap returned the Touch Bar to normal:
 	    --------------------------------------------------------------------------------
-        touchBarWindow:movable(false)
-        touchBarWindow:acceptsMouseEvents(true)
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+        mod.touchBarWindow:movable(false)
+        mod.touchBarWindow:acceptsMouseEvents(true)
+		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
     end
 
