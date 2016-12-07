@@ -1785,6 +1785,7 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
+		allowMovingMarkers = false
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
@@ -12446,9 +12447,9 @@ function mediaImportWatcher()
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
 			mediaImportTimer = timer.doUntil(
-				function() 
-					return stopMediaImportTimer 
-				end, 
+				function()
+					return stopMediaImportTimer
+				end,
 				function()
 					if not fcp.prunning() then
 						debugMessage("FCPX is not running. Stop watching.")
@@ -12476,7 +12477,7 @@ function mediaImportWatcher()
 							stopMediaImportTimer = true
 						end
 					end
-				end, 
+				end,
 				0.01
 			)
 		end
