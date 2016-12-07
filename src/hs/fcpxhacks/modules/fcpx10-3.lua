@@ -57,6 +57,7 @@ local mod = {}
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local alert										= require("hs.alert")
 local application								= require("hs.application")
 local chooser									= require("hs.chooser")
 local console									= require("hs.console")
@@ -113,8 +114,6 @@ mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path
 -- VARIABLES:
 --------------------------------------------------------------------------------
 
-local flexoLanguages 							= fcp.flexoLanguages()
-local finalCutProLanguages 						= fcp.languages()
 local execute									= hs.execute									-- Execute!
 local clock 									= os.clock										-- Used for sleep()
 local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
@@ -478,7 +477,8 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	fcpxHacks.sendNotification("Version ".. fcpxHacks.scriptVersion .. " loaded")
+	alert.closeAll(0)
+	alert.show("FCPX Hacks (v" .. fcpxHacks.scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -1114,7 +1114,9 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Let user know that keyboard shortcuts have loaded:
 	--------------------------------------------------------------------------------
-	fcpxHacks.sendNotification("Keyboard Shortcuts Updated")
+	alert.closeAll(0)
+	alert.show("Keyboard Shortcuts Updated")
+
 end
 
 --------------------------------------------------------------------------------
@@ -1176,6 +1178,193 @@ function updateKeyboardShortcuts()
 	]]
 	ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 	return toggleEnableHacksShortcutsInFinalCutProResult
+end
+
+--------------------------------------------------------------------------------
+-- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
+--------------------------------------------------------------------------------
+function readShortcutKeysFromPlist()
+
+	--------------------------------------------------------------------------------
+	-- Get 'Active Command Set' Path:
+	--------------------------------------------------------------------------------
+	local activeCommandSetPath = fcp.getActiveCommandSetPath()
+
+	if activeCommandSetPath == nil then
+		displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
+		return "Failed"
+	else
+		if fs.attributes(activeCommandSetPath) == nil then
+			displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
+			return "Failed"
+		else
+
+			-- TO DO: Need to debug 'plistParser' and get this working...
+
+			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
+
+			--[[
+
+			if activeCommandSetTable == nil then
+				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
+				return "Failed"
+			end
+			--writeToConsole(activeCommandSetTable)
+
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+				if activeCommandSetTable[k] ~= nil then
+					writeToConsole(k)
+					writeToConsole(v)
+				else
+					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				end
+			end
+
+			--]]
+
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
+				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+
+				if executeStatus == nil then
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					if executeType ~= "exit" then
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					end
+					local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					mod.finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				else
+					local x, lastDict = string.gsub(executeResult, "Dict {", "")
+					lastDict = lastDict - 1
+					local currentDict = ""
+
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
+
+						if lastDict ~= 0 then
+							if whichDict == 0 then
+								addToK = ""
+								currentDict = ":" .. tostring(whichDict)
+							else
+								currentDict = ":" .. tostring(whichDict)
+								addToK = tostring(whichDict)
+							end
+						else
+							currentDict = ""
+							addToK = ""
+						end
+
+						--------------------------------------------------------------------------------
+						-- Insert Blank Placeholder
+						--------------------------------------------------------------------------------
+						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Assuming that the plist was read fine, but contained no value:
+								--------------------------------------------------------------------------------
+								mod.finalCutProShortcutKey[k .. addToK]['characterString'] = ""
+							else
+								displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
+								return "Failed"
+							end
+						else
+							--------------------------------------------------------------------------------
+							-- We only want the first line of the executeResult:
+							--------------------------------------------------------------------------------
+							for line in executeResult:gmatch"(.-)\n" do
+								executeResult = line
+								goto escape
+							end
+							::escape::
+
+							mod.finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
+						end
+
+					end
+				end
+			end
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
+				local executeResult,executeStatus = execute(executeCommand)
+				if executeStatus == nil then
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					if executeType ~= "exit" then
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					end
+					mod.finalCutProShortcutKey[k]['modifiers'] = {}
+				else
+					local x, lastDict = string.gsub(executeResult, "Dict {", "")
+					lastDict = lastDict - 1
+					local currentDict = ""
+
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
+
+						if lastDict ~= 0 then
+							if whichDict == 0 then
+								addToK = ""
+								currentDict = ":" .. tostring(whichDict)
+							else
+								currentDict = ":" .. tostring(whichDict)
+								addToK = tostring(whichDict)
+							end
+						else
+							currentDict = ""
+							addToK = ""
+						end
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Try modifierMask Instead!
+								--------------------------------------------------------------------------------
+								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
+								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+								if executeStatus == nil then
+									if executeType == "exit" then
+										--------------------------------------------------------------------------------
+										-- Assuming that the plist was read fine, but contained no value:
+										--------------------------------------------------------------------------------
+										mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
+									else
+										displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
+										return "Failed"
+									end
+								else
+									mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
+								end
+							else
+								displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
+								return "Failed"
+							end
+						else
+							mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
+						end
+					end
+				end
+			end
+			return "Done"
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -2406,9 +2595,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2464,7 +2653,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2505,7 +2694,7 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -2739,9 +2928,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2797,7 +2986,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2838,7 +3027,7 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -3029,9 +3218,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using getFinalCutProBrowserButtonBar().")
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3328,9 +3517,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using getFinalCutProBrowserButtonBar().")
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -4202,11 +4391,11 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist for every Flexo language:
 		--------------------------------------------------------------------------------
-		for k, v in pairs(mod.flexoLanguages) do
-			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. mod.flexoLanguages[k] .. ".lproj/FFLocalizable.strings'")
+		for k, v in pairs(fcp.flexoLanguages()) do
+			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'")
 			if executeStatus == nil then
-				writeToConsole("Failed to write to '" .. mod.flexoLanguages[k] .. ".lproj' plist.")
-				displayErrorMessage("Failed to write to '" .. mod.flexoLanguages[k] .. ".lproj' plist.")
+				writeToConsole("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
+				displayErrorMessage("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
 				return "Failed"
 			end
 		end
@@ -4975,8 +5164,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
 			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
@@ -5082,8 +5271,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
 			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
@@ -5189,8 +5378,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
 			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
@@ -5296,8 +5485,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
 			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
@@ -5407,8 +5596,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
 			displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
@@ -6409,8 +6598,8 @@ end
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				viewAsListResult = performFinalCutProMenuItem({"View", "Browser", "as List"})
-				if viewAsListResult == "Failed" then
+				viewAsListResult = fcp.selectMenuItem({"View", "Browser", "as List"})
+				if viewAsListResult == nil then
 					displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
@@ -6418,8 +6607,8 @@ end
 				--------------------------------------------------------------------------------
 				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				groupClipsByResult = performFinalCutProMenuItem({"View", "Browser", "Group Clips By", "None"})
-				if groupClipsByResult == "Failed" then
+				groupClipsByResult = fcp.selectMenuItem({"View", "Browser", "Group Clips By", "None"})
+				if groupClipsByResult == nil then
 					displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
@@ -7415,8 +7604,8 @@ end
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
 		local resultRevealInBrowser = nil
-		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-		if resultRevealInBrowser == "Failed" then
+		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if resultRevealInBrowser == nil then
 			--------------------------------------------------------------------------------
 			-- Error:
 			--------------------------------------------------------------------------------
@@ -7979,7 +8168,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Saved:
 		--------------------------------------------------------------------------------
-		fcpxHacks.sendNotification("Your Keywords have been saved to Preset " .. tostring(whichButton))
+		alert.closeAll(0)
+		alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton))
 
 	end
 
@@ -8096,7 +8286,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Successfully Restored:
 		--------------------------------------------------------------------------------
-		fcpxHacks.sendNotification("Your Keywords have been restored to Preset " .. tostring(whichButton))
+		alert.closeAll(0)
+		alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton))
 
 	end
 
@@ -8139,7 +8330,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			fcpxHacks.sendNotification("Scrolling Timeline Deactivated")
+			alert.closeAll(0)
+			alert.show("Scrolling Timeline Deactivated")
+
 		else
 			--------------------------------------------------------------------------------
 			-- Update Settings:
@@ -8162,7 +8355,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			fcpxHacks.sendNotification("Scrolling Timeline Activated")
+			alert.closeAll(0)
+			alert.show("Scrolling Timeline Activated")
+
 		end
 
 		--------------------------------------------------------------------------------
@@ -8289,8 +8484,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		local openInAngleEditorResult = performFinalCutProMenuItem({"Clip", "Open in Angle Editor"})
-		if openInAngleEditorResult == "Failed" then
+		local openInAngleEditorResult = fcp.selectMenuItem({"Clip", "Open in Angle Editor"})
+		if openInAngleEditorResult == nil then
 			displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
@@ -8298,8 +8493,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		local goToTimelineResult = performFinalCutProMenuItem({"Window", "Go To", "Timeline"})
-		if goToTimelineResult == "Failed" then
+		local goToTimelineResult = fcp.selectMenuItem({"Window", "Go To", "Timeline"})
+		if goToTimelineResult == nil then
 			displayErrorMessage("Unable to return to timeline.")
 			return
 		end
@@ -8307,8 +8502,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
-		local revealInBrowserResult = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-		if revealInBrowserResult == "Failed" then
+		local revealInBrowserResult = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if revealInBrowserResult == nil then
 			displayErrorMessage("Unable to Reveal in Browser.")
 			return
 		end
@@ -8317,8 +8512,8 @@ end
 		-- Go back to original timeline if appropriate:
 		--------------------------------------------------------------------------------
 		if goBackToTimeline then
-			local timelineHistoryBackResult = performFinalCutProMenuItem({"View", "Timeline History Back"})
-			if timelineHistoryBackResult == "Failed" then
+			local timelineHistoryBackResult = fcp.selectMenuItem({"View", "Timeline History Back"})
+			if timelineHistoryBackResult == nil then
 				displayErrorMessage("Unable to go back to previous timeline.")
 				return
 			end
@@ -8343,7 +8538,11 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
+		local result = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if result == nil then
+			displayErrorMessage("Failed to 'Reveal in Browser'.")
+			return "Fail"
+		end
 
 		--------------------------------------------------------------------------------
 		-- If it worked then...
@@ -8396,19 +8595,22 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Final Cut Pro Color Board Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 		if finalCutProColorBoardRadioGroup == nil then
 
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-
+			local result = fcp.selectMenuItem({"Window", "Go To", "Color Board"})
+			if result == nil then
+				displayErrorMessage("Failed to goto Color Board.")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Try again:
 			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 
 		end
 		if finalCutProColorBoardRadioGroup == nil then
@@ -8523,19 +8725,22 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Final Cut Pro Color Board Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 		if finalCutProColorBoardRadioGroup == nil then
 
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-
+			local result = fcp.selectMenuItem({"Window", "Go To", "Color Board"})
+			if result == nil then
+				displayErrorMessage("Failed to goto Color Board.")
+				return "Fail"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Try again:
 			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 
 		end
 		if finalCutProColorBoardRadioGroup == nil then
@@ -8657,9 +8862,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -8715,7 +8920,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -8756,7 +8961,7 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -9031,9 +9236,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9089,7 +9294,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -9130,7 +9335,7 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -9405,9 +9610,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9811,9 +10016,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -10316,7 +10521,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Split Group:
 		--------------------------------------------------------------------------------
-		browserSplitGroup = getFinalCutProBrowserSplitGroup()
+		browserSplitGroup = fcp.getBrowserSplitGroup()
 		if browserSplitGroup == nil then
 			writeToConsole("ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
 			return "Fail"
@@ -10488,231 +10693,6 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---         F I N A L    C U T    P R O     G U I     S C R I P T I N G        --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- TIMELINE:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO TIMELINE SPLIT GROUP:
-	--------------------------------------------------------------------------------
-	function getFinalCutProTimelineSplitGroup()
-
-		--------------------------------------------------------------------------------
-		-- Used for debugging:
-		--------------------------------------------------------------------------------
-		--ax.log.level = 4
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-		local whichSplitGroup = nil
-
-		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local sw = ax.applicationElement(application.get("Final Cut Pro"))
-
-		--------------------------------------------------------------------------------
-		-- Single Screen:
-		--------------------------------------------------------------------------------
-		whichSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
-			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },													    -- AXGroup (group 1)
-			{ role = "AXSplitGroup", },												    -- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },												        -- AXGroup (group 2)
-			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },														-- AXGroup (group 1)
-			{ role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
-		}, 1)
-
-		--------------------------------------------------------------------------------
-		-- Dual Screen:
-		--------------------------------------------------------------------------------
-		if whichSplitGroup == nil then
-
-			whichSplitGroup = sw:searchPath({
-				{ role = "AXWindow", Title = "Final Cut Pro"},							-- AXWindow "Final Cut Pro" (window 2)
-				{ role = "AXSplitGroup", },											 	-- AXSplitGroup (splitter group 1)
-				{ role = "AXGroup", },												    -- AXGroup (group 1)
-				{ role = "AXSplitGroup", },											    -- AXSplitGroup (splitter group 1)
-				{ role = "AXGroup", },											        -- AXGroup (group 2)
-				{ role = "AXSplitGroup", Identifier = "_NS:237"},					 	-- AXSplitGroup (splitter group 1)
-			}, 1)
-
-		end
-
-		return whichSplitGroup
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO TIMELINE SCROLL AREA:
-		--------------------------------------------------------------------------------
-		function getFinalCutProTimelineScrollArea()
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group
-			--------------------------------------------------------------------------------
-			local finalCutProTimelineScrollArea = nil
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-
-			--------------------------------------------------------------------------------
-			-- Get last scroll area:
-			--------------------------------------------------------------------------------
-			if finalCutProTimelineSplitGroup ~= nil then
-
-				local whichScrollArea = nil
-				for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-					if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-						whichScrollArea = i
-					end
-				end
-				if whichScrollArea == nil then
-					writeToConsole("ERROR: Unable to find scroll area in getFinalCutProTimelineScrollArea().")
-					return "Failed"
-				end
-				finalCutProTimelineScrollArea = finalCutProTimelineSplitGroup[whichScrollArea]
-
-			end
-
-			return finalCutProTimelineScrollArea
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO TIMELINE BUTTON BAR:
-		--------------------------------------------------------------------------------
-		function getFinalCutProTimelineButtonBar()
-
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-			return finalCutProTimelineSplitGroup:attributeValue("AXParent")[2]
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO EFFECTS/TRANSITIONS BROWSER GROUP:
-		--------------------------------------------------------------------------------
-		function getFinalCutProEffectsTransitionsBrowserGroup()
-
-			--------------------------------------------------------------------------------
-			-- Get Timeline Split Group:
-			--------------------------------------------------------------------------------
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-
-			--------------------------------------------------------------------------------
-			-- Which Group:
-			--------------------------------------------------------------------------------
-			for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-				if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
-					return finalCutProTimelineSplitGroup[i]
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- If things get to here it's failed:
-			--------------------------------------------------------------------------------
-			return nil
-
-		end
-
---------------------------------------------------------------------------------
--- BROWSER:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO BROWSER SPLIT GROUP:
-	--------------------------------------------------------------------------------
-	function getFinalCutProBrowserSplitGroup()
-
-		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(application.get("Final Cut Pro"))
-
-		--------------------------------------------------------------------------------
-		-- Single Screen:
-		--------------------------------------------------------------------------------
-		local browserSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
-		}, 1)
-
-		--------------------------------------------------------------------------------
-		-- Dual Screen:
-		--------------------------------------------------------------------------------
-		if browserSplitGroup == nil then
-			browserSplitGroup = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-			}, 1)
-		end
-
-		return browserSplitGroup
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO BROWSER BUTTON BAR:
-		--------------------------------------------------------------------------------
-		function getFinalCutProBrowserButtonBar()
-			local finalCutProBrowserSplitGroup = getFinalCutProBrowserSplitGroup()
-			return finalCutProBrowserSplitGroup:attributeValue("AXParent")
-		end
-
---------------------------------------------------------------------------------
--- INSPECTOR:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO COLOR BOARD BUTTON BAR:
-	--------------------------------------------------------------------------------
-	function getFinalCutProColorBoardRadioGroup()
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro:
-		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(fcpxHacks.finalCutProApplication())
-
-		--------------------------------------------------------------------------------
-		-- Find Color Button:
-		--------------------------------------------------------------------------------
-		local result = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", Identifier = "_NS:128"},
-		}, 1)
-
-		return result
-
-	end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --      C O M M O N     F I N A L    C U T    P R O     F U N C T I O N S     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -10740,226 +10720,12 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 end
 
 --------------------------------------------------------------------------------
--- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
---------------------------------------------------------------------------------
-function readShortcutKeysFromPlist()
-
-	--------------------------------------------------------------------------------
-	-- Get 'Active Command Set' Path:
-	--------------------------------------------------------------------------------
-	local activeCommandSetPath = fcp.getActiveCommandSetPath()
-
-	if activeCommandSetPath == nil then
-		displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
-		return "Failed"
-	else
-		if fs.attributes(activeCommandSetPath) == nil then
-			displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
-			return "Failed"
-		else
-
-			-- TO DO: Need to debug 'plistParser' and get this working...
-
-			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
-
-			--[[
-
-			if activeCommandSetTable == nil then
-				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
-				return "Failed"
-			end
-			--writeToConsole(activeCommandSetTable)
-
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
-				if activeCommandSetTable[k] ~= nil then
-					writeToConsole(k)
-					writeToConsole(v)
-				else
-					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				end
-			end
-
-			--]]
-
-			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
-
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					mod.finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
-
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
-
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
-
-						--------------------------------------------------------------------------------
-						-- Insert Blank Placeholder
-						--------------------------------------------------------------------------------
-						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Assuming that the plist was read fine, but contained no value:
-								--------------------------------------------------------------------------------
-								mod.finalCutProShortcutKey[k .. addToK]['characterString'] = ""
-							else
-								displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
-								return "Failed"
-							end
-						else
-							--------------------------------------------------------------------------------
-							-- We only want the first line of the executeResult:
-							--------------------------------------------------------------------------------
-							for line in executeResult:gmatch"(.-)\n" do
-								executeResult = line
-								goto escape
-							end
-							::escape::
-
-							mod.finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
-						end
-
-					end
-				end
-			end
-			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
-
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus = execute(executeCommand)
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					mod.finalCutProShortcutKey[k]['modifiers'] = {}
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
-
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
-
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
-
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Try modifierMask Instead!
-								--------------------------------------------------------------------------------
-								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
-								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-								if executeStatus == nil then
-									if executeType == "exit" then
-										--------------------------------------------------------------------------------
-										-- Assuming that the plist was read fine, but contained no value:
-										--------------------------------------------------------------------------------
-										mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
-									else
-										displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
-										return "Failed"
-									end
-								else
-									mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
-								end
-							else
-								displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
-								return "Failed"
-							end
-						else
-							mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
-						end
-					end
-				end
-			end
-			return "Done"
-		end
-	end
-end
-
---------------------------------------------------------------------------------
--- OPEN FINAL CUT PRO KEYWORD EDITOR:
---------------------------------------------------------------------------------
-function openFinalCutProKeywordEditor() -- Returns "Done" or "Failed"
-
-	local newresult = "Failed"
-	result = keyStrokeFromPlist("ToggleKeywordEditor")
-	if result == true then newresult = "Done" end
-	return newresult
-
-end
-
---------------------------------------------------------------------------------
 -- WHICH BROWSER MODE IS ACTIVE IN FINAL CUT PRO?
 --------------------------------------------------------------------------------
 --
 -- TO DO: This is currently broken in Final Cut Pro 10.3, and probably no longer needed.
 --
 function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
-
---[[
-THUMBNAIL VIEW (PRIMARY MONITOR):
-AXApplication "Final Cut Pro"
-AXWindow "Final Cut Pro" (window 2)
-AXSplitGroup (splitter group 1)
-AXGroup (group 1)
-AXSplitGroup (splitter group 1)
-AXGroup (group 2)
-AXSplitGroup (splitter group 1)
-AXGroup (group 4)
-AXSplitGroup (splitter group 1)
-AXGroup (group 2)
-AXScrollArea (scroll area 1)
---]]
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -11046,7 +10812,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Get Timeline Scroll Area:
 	--------------------------------------------------------------------------------
-	local timelineScrollArea = getFinalCutProTimelineScrollArea()
+	local timelineScrollArea = fcp.getTimelineScrollArea()
 	if timelineScrollArea == nil then
 		writeToConsole("ERROR: Could not find Timeline Scroll Area.")
 		return "Stop"
@@ -11164,175 +10930,6 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 end
 
 --------------------------------------------------------------------------------
--- PERFORM FINAL CUT PRO MENU ITEM:
---------------------------------------------------------------------------------
-function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"View", "Browser", "as List"} ), Returns "Done" or "Failed"
-
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichMenuBar 		= nil
-	local whichMenuOne 		= nil
-	local whichMenuTwo 		= nil
-	local whichMenuThree 	= nil
-
-	--------------------------------------------------------------------------------
-	-- Hardcoded Values (for system other than English):
-	--------------------------------------------------------------------------------
-	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
-	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
-		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
-		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
-	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
-	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
-	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
-	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
-	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
-		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
-	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
-	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
-		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
-		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
-	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
-		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
-			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
-			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
-	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
-
-	--------------------------------------------------------------------------------
-	-- TO DO: Commenting this stuff out will have definitely broken something:
-	--------------------------------------------------------------------------------
-	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
-	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
-	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
-	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp.application()
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which AXMenuBar:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
-				whichMenuBar = i
-				goto performFinalCutProMenuItemWhichMenuBarExit
-			end
-	end
-	if whichMenuBar == nil then	return "Failed"	end
-	::performFinalCutProMenuItemWhichMenuBarExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Menu One:
-	--------------------------------------------------------------------------------
-	if whichMenuOne == nil then
-		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[1] then
-				whichMenuOne = i
-				goto performFinalCutProMenuItemWhichMenuOneExit
-			end
-		end
-		if whichMenuOne == nil then	return "Failed"	end
-		::performFinalCutProMenuItemWhichMenuOneExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Menu Two:
-	--------------------------------------------------------------------------------
-	if whichMenuTwo == nil then
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[2] then
-					whichMenuTwo = i
-					goto performFinalCutProMenuItemWhichMenuTwoExit
-				end
-		end
-		if whichMenuTwo == nil then	return "Failed"	end
-		::performFinalCutProMenuItemWhichMenuTwoExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 1:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 2 then fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress") end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 2:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 3 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 3:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 4 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Four:
-		--------------------------------------------------------------------------------
-		if whichMenuFour == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuFour = i
-						goto performFinalCutProMenuItemWhichMenuFourExit
-					end
-			end
-			if whichMenuFour == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuFourExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
-
-	end
-
-	return "Done"
-
-end
-
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -11402,7 +10999,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
-			local timelineScrollArea = getFinalCutProTimelineScrollArea()
+			local timelineScrollArea = fcp.getTimelineScrollArea()
 			local timelineScrollAreaPosition = {}
 			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
 			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20

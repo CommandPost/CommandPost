@@ -92,8 +92,8 @@ local mod = {}
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
+
 mod.scriptVersion = "0.70"
-mod.finalCutProBundleID = "com.apple.FinalCut"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -106,9 +106,10 @@ mod.finalCutProBundleID = "com.apple.FinalCut"
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
+-- EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local fcp 						= require("hs.finalcutpro")
 local application 				= require("hs.application")
 local console 					= require("hs.console")
 local drawing					= require("hs.drawing")
@@ -118,6 +119,7 @@ local keycodes					= require("hs.keycodes")
 local notify					= require("hs.notify")
 local osascript					= require("hs.osascript")
 local styledtext				= require("hs.styledtext")
+local inspect					= require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -211,16 +213,16 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
-	local fcpVersion = mod.finalCutProVersion()
+	local fcpVersion = fcp.version()
 	local osVersion = mod.macOSVersion()
-	
+
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion)) 									end
-	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))							end
+	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
 	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
-	
+
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
 		validFinalCutProVersion = true
@@ -290,38 +292,6 @@ function displayAlertMessage(whatMessage)
 	osascript.applescript(appleScriptA .. appleScriptB)
 end
 
--- RETURNS THE FINAL CUT PRO APPLICATION:
---------------------------------------------------------------------------------
-function mod.finalCutProApplication()
-	return hs.application(mod.finalCutProBundleID)
-end
-
---------------------------------------------------------------------------------
--- LAUNCH FINAL CUT PRO:
---------------------------------------------------------------------------------
-function mod.launchFinalCutPro()
-	hs.application.launchOrFocusByBundleID(mod.finalCutProBundleID)
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO INSTALLED:
---------------------------------------------------------------------------------
-function mod.isFinalCutProInstalled()
-	local path = application.pathForBundleID(mod.finalCutProBundleID)
-	return mod.doesDirectoryExist(path)
-end
-
---------------------------------------------------------------------------------
--- RETURNS FCPX VERSION:
---------------------------------------------------------------------------------
-function mod.finalCutProVersion()
-	local version = nil
-	if mod.isFinalCutProInstalled() then
-		ok,version = osascript.applescript('return version of application id "'..mod.finalCutProBundleID..'"')
-	end
-	return version or "Not Installed"
-end
-
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
 -------------------------------------------------------------------------------
@@ -331,7 +301,6 @@ function mod.macOSVersion()
 	return osVersionString
 end
 
-
 --------------------------------------------------------------------------------
 -- DOES DIRECTORY EXIST:
 --------------------------------------------------------------------------------
@@ -339,19 +308,6 @@ function mod.doesDirectoryExist(path)
     local attr = fs.attributes(path)
     return attr and attr.mode == 'directory'
 end
-
---------------------------------------------------------------------------------
--- SEND USER NOTIFICATION:
---------------------------------------------------------------------------------
-function mod.sendNotification(message)
-	local notification = notify.new({
-		title = "FCPX Hacks",
-		subTitle = message or ""
-	})
-	notification:setIdImage("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns")
-	notification:send()
-end
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -364,7 +320,7 @@ end
 
 -- Assign our mod to the global 'fcpxHacks' object
 fcpxHacks = mod
-	
+
 -- Kick it off!
 return mod.init()
 
