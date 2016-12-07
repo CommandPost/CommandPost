@@ -88,21 +88,27 @@
 --------------------------------------------------------------------------------
 
 
+--------------------------------------------------------------------------------
+-- THE MODULE:
+--------------------------------------------------------------------------------
 
+local mod = {}
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-scriptVersion 				= "0.70"
-finalCutProBundleID 		= "com.apple.FinalCut"
+mod.scriptVersion 		= "0.70"
+mod.bugReportEmail		= "chris@latenitefilms.com"
+mod.developerURL		= "https://latenitefilms.com/blog/final-cut-pro-hacks/"
+mod.updateURL			= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
-
-
 
 
 --------------------------------------------------------------------------------
@@ -112,22 +118,26 @@ finalCutProBundleID 		= "com.apple.FinalCut"
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
+-- EXTENSIONS:
 --------------------------------------------------------------------------------
 
-application 				= require("hs.application")
-console 					= require("hs.console")
-drawing 					= require("hs.drawing")
-fs 							= require("hs.fs")
-inspect 					= require("hs.inspect")
-osascript 					= require("hs.osascript")
-styledtext 					= require("hs.styledtext")
-keycodes					= require("hs.keycodes")
+local fcp 						= require("hs.finalcutpro")
+local tools						= require("hs.fcpxhacks.modules.tools")
+local dialog					= require("hs.fcpxhacks.modules.dialog")
+
+local application 				= require("hs.application")
+local console 					= require("hs.console")
+local drawing					= require("hs.drawing")
+local fs						= require("hs.fs")
+local keycodes					= require("hs.keycodes")
+local styledtext				= require("hs.styledtext")
+local inspect					= require("hs.inspect")
+local settings					= require("hs.settings")
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
-function loadScript()
+function mod.init()
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -138,7 +148,7 @@ function loadScript()
 	-- Display Welcome Message In The Console:
 	--------------------------------------------------------------------------------
 	writeToConsole("-----------------------------", true)
-	writeToConsole("| FCPX Hacks v" .. scriptVersion .. "          |", true)
+	writeToConsole("| FCPX Hacks v" .. mod.scriptVersion .. "          |", true)
 	writeToConsole("| Created by LateNite Films |", true)
 	writeToConsole("-----------------------------", true)
 
@@ -209,22 +219,22 @@ function loadScript()
 	end
 	if checkFailed then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
-		displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
 	--------------------------------------------------------------------------------
 	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
-	local fcpVersion = finalCutProVersion()
-	local osVersion = macOSVersion()
+	local fcpVersion = fcp.version()
+	local osVersion = tools.macOSVersion()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if osVersion ~= nil then 						writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
-	if fcpVersion ~= nil then						writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
-	if keycodes.currentLayout() ~= nil then 		writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
+	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion)) 								end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion))						end
+	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout())) 		end
 
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then
@@ -237,10 +247,11 @@ function loadScript()
 	end
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 or above is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application.get("Hammerspoon"):kill()
 	end
 
+	return self
 end
 
 --------------------------------------------------------------------------------
@@ -263,7 +274,7 @@ print = function(value)
 	if type(value) == "table" then value = inspect(value) end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
 		local consoleStyledText = styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["red"],
+			color = drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },
 		})
 		console.printStyledtext(consoleStyledText)
@@ -275,67 +286,26 @@ end
 --------------------------------------------------------------------------------
 function writeToConsole(value, overrideLabel)
 	if value ~= nil then
-		if type(value) == "table" then value = inspect(value) end
-		if overrideLabel == nil then value = "> " .. value end
-		local consoleStyledText = styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["blue"],
-			font = { name = "Menlo", size = 12 },
-		})
-		console.printStyledtext(consoleStyledText)
+		if not overrideLabel then
+			value = "> "..value
+		end
+		print(value)
 	end
 end
 
 --------------------------------------------------------------------------------
--- DISPLAY ALERT MESSAGE:
+-- DEBUG MESSAGE:
 --------------------------------------------------------------------------------
-function displayAlertMessage(whatMessage)
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon stop
-	]]
-	osascript.applescript(appleScriptA .. appleScriptB)
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO INSTALLED:
---------------------------------------------------------------------------------
-function isFinalCutProInstalled()
-	local path = application.pathForBundleID(finalCutProBundleID)
-	return doesDirectoryExist(path)
-end
-
---------------------------------------------------------------------------------
--- RETURNS FCPX VERSION:
---------------------------------------------------------------------------------
-function finalCutProVersion()
-	local version = nil
-	if isFinalCutProInstalled() then
-		ok,version = osascript.applescript('return version of application id "'..finalCutProBundleID..'"')
+function debugMessage(value)
+	if value ~= nil then
+		if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+		if settings.get("fcpxHacks.debugMode") then writeToConsole(value) end
 	end
-	return version or "Not Installed"
-end
-
--------------------------------------------------------------------------------
--- RETURNS MACOS VERSION:
--------------------------------------------------------------------------------
-function macOSVersion()
-	local osVersion = hs.host.operatingSystemVersion()
-	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
-	return osVersionString
-end
-
-
---------------------------------------------------------------------------------
--- DOES DIRECTORY EXIST:
---------------------------------------------------------------------------------
-function doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.mode == 'directory'
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
 
 
 
@@ -347,7 +317,11 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-loadScript()
+-- Assign our mod to the global 'fcpxhacks' object
+fcpxhacks = mod
+
+-- Kick it off!
+return mod.init()
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

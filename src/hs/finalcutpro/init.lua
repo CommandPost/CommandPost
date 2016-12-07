@@ -20,6 +20,197 @@ local osascript 							= require("hs.osascript")
 local fs 									= require("hs.fs")
 local ax 									= require("hs._asm.axuielement")
 
+--- doesDirectoryExist() -> boolean
+--- Internal Function
+--- Returns true if Directory Exists else False
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * True is Directory Exists otherwise False
+---
+local function doesDirectoryExist(path)
+    local attr = fs.attributes(path)
+    return attr and attr.mode == 'directory'
+end
+
+--- hs.finalcutpro.selectMenuItem() -> table
+--- Function
+--- Selects a Final Cut Pro Menu Item
+---
+--- Parameters:
+---  * table - A table of the menu item you'd like to activate, for example: {"View", "Browser", "as List"}
+---
+--- Returns:
+---  * True is successful otherwise Nil
+---
+function finalcutpro.selectMenuItem(menuItemTable)
+
+	--------------------------------------------------------------------------------
+	-- Variables:
+	--------------------------------------------------------------------------------
+	local whichMenuBar 		= nil
+	local whichMenuOne 		= nil
+	local whichMenuTwo 		= nil
+	local whichMenuThree 	= nil
+
+	--------------------------------------------------------------------------------
+	-- Hardcoded Values (for system other than English):
+	--------------------------------------------------------------------------------
+	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
+	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
+		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
+		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
+	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
+	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
+	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
+	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
+	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
+		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
+	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
+	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
+		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
+		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
+	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
+		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
+			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
+			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
+	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
+
+	--------------------------------------------------------------------------------
+	-- TO DO: Commenting this stuff out will have definitely broken something:
+	--------------------------------------------------------------------------------
+	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
+	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
+	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
+	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local fcpx = finalcutpro.application()
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpxElements = ax.applicationElement(fcpx)
+
+	--------------------------------------------------------------------------------
+	-- Which AXMenuBar:
+	--------------------------------------------------------------------------------
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
+				whichMenuBar = i
+				goto performFinalCutProMenuItemWhichMenuBarExit
+			end
+	end
+	if whichMenuBar == nil then	return nil end
+	::performFinalCutProMenuItemWhichMenuBarExit::
+
+	--------------------------------------------------------------------------------
+	-- Which Menu One:
+	--------------------------------------------------------------------------------
+	if whichMenuOne == nil then
+		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichMenuBar]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[1] then
+				whichMenuOne = i
+				goto performFinalCutProMenuItemWhichMenuOneExit
+			end
+		end
+		if whichMenuOne == nil then	return nil end
+		::performFinalCutProMenuItemWhichMenuOneExit::
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Menu Two:
+	--------------------------------------------------------------------------------
+	if whichMenuTwo == nil then
+		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
+				if fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[2] then
+					whichMenuTwo = i
+					goto performFinalCutProMenuItemWhichMenuTwoExit
+				end
+		end
+		if whichMenuTwo == nil then	return nil end
+		::performFinalCutProMenuItemWhichMenuTwoExit::
+	end
+
+	--------------------------------------------------------------------------------
+	-- Select Menu Item 1:
+	--------------------------------------------------------------------------------
+	if #menuItemTable == 2 then fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress") end
+
+	--------------------------------------------------------------------------------
+	-- Select Menu Item 2:
+	--------------------------------------------------------------------------------
+	if #menuItemTable == 3 then
+
+		--------------------------------------------------------------------------------
+		-- Which Menu Three:
+		--------------------------------------------------------------------------------
+		if whichMenuThree == nil then
+			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+						whichMenuThree = i
+						goto performFinalCutProMenuItemWhichMenuThreeExit
+					end
+			end
+			if whichMenuThree == nil then return nil end
+			::performFinalCutProMenuItemWhichMenuThreeExit::
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Menu Item:
+		--------------------------------------------------------------------------------
+		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- Select Menu Item 3:
+	--------------------------------------------------------------------------------
+	if #menuItemTable == 4 then
+
+		--------------------------------------------------------------------------------
+		-- Which Menu Three:
+		--------------------------------------------------------------------------------
+		if whichMenuThree == nil then
+			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+						whichMenuThree = i
+						goto performFinalCutProMenuItemWhichMenuThreeExit
+					end
+			end
+			if whichMenuThree == nil then return nil end
+			::performFinalCutProMenuItemWhichMenuThreeExit::
+		end
+
+		--------------------------------------------------------------------------------
+		-- Which Menu Four:
+		--------------------------------------------------------------------------------
+		if whichMenuFour == nil then
+			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+						whichMenuFour = i
+						goto performFinalCutProMenuItemWhichMenuFourExit
+					end
+			end
+			if whichMenuFour == nil then return nil end
+			::performFinalCutProMenuItemWhichMenuFourExit::
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Menu Item:
+		--------------------------------------------------------------------------------
+		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
+
+	end
+
+	return true
+
+end
+
 --- hs.finalcutpro.flexoLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
@@ -200,7 +391,7 @@ function finalcutpro.installed()
 	return doesDirectoryExist(path)
 end
 
---- hs.finalcutpro.installed() -> string or nil
+--- hs.finalcutpro.version() -> string or nil
 --- Function
 --- Version of Final Cut Pro
 ---
@@ -340,19 +531,13 @@ end
 ---
 function finalcutpro.getTimelineSplitGroup()
 
-	--------------------------------------------------------------------------------
 	-- Which Split Group:
-	--------------------------------------------------------------------------------
 	local whichSplitGroup = nil
 
-	--------------------------------------------------------------------------------
 	-- Define Final Cut Pro:
-	--------------------------------------------------------------------------------
 	local sw = ax.applicationElement(finalcutpro.application())
 
-	--------------------------------------------------------------------------------
 	-- Single Screen:
-	--------------------------------------------------------------------------------
 	whichSplitGroup = sw:searchPath({
 		{ role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
 		{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
@@ -364,9 +549,7 @@ function finalcutpro.getTimelineSplitGroup()
 		{ role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
 	}, 1)
 
-	--------------------------------------------------------------------------------
 	-- Dual Screen:
-	--------------------------------------------------------------------------------
 	if whichSplitGroup == nil then
 
 		whichSplitGroup = sw:searchPath({
@@ -396,15 +579,11 @@ end
 ---
 function finalcutpro.getTimelineScrollArea()
 
-	--------------------------------------------------------------------------------
-	-- Which Split Group
-	--------------------------------------------------------------------------------
+	-- Which Split Group:
 	local finalCutProTimelineScrollArea = nil
 	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
 
-	--------------------------------------------------------------------------------
 	-- Get last scroll area:
-	--------------------------------------------------------------------------------
 	if finalCutProTimelineSplitGroup ~= nil then
 
 		local whichScrollArea = nil
@@ -453,23 +632,17 @@ end
 ---
 function finalcutpro.getEffectsTransitionsBrowserGroup()
 
-	--------------------------------------------------------------------------------
 	-- Get Timeline Split Group:
-	--------------------------------------------------------------------------------
 	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
 
-	--------------------------------------------------------------------------------
 	-- Which Group:
-	--------------------------------------------------------------------------------
 	for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
 		if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
 			return finalCutProTimelineSplitGroup[i]
 		end
 	end
 
-	--------------------------------------------------------------------------------
 	-- If things get to here it's failed:
-	--------------------------------------------------------------------------------
 	return nil
 
 end
@@ -486,14 +659,10 @@ end
 ---
 function finalcutpro.getBrowserSplitGroup()
 
-	--------------------------------------------------------------------------------
 	-- Define Final Cut Pro:
-	--------------------------------------------------------------------------------
 	sw = ax.applicationElement(finalcutpro.application())
 
-	--------------------------------------------------------------------------------
 	-- Single Screen:
-	--------------------------------------------------------------------------------
 	local browserSplitGroup = sw:searchPath({
 		{ role = "AXWindow", Title = "Final Cut Pro"},
 		{ role = "AXSplitGroup", },
@@ -505,9 +674,7 @@ function finalcutpro.getBrowserSplitGroup()
 		{ role = "AXSplitGroup", Identifier = "_NS:344"},
 	}, 1)
 
-	--------------------------------------------------------------------------------
 	-- Dual Screen:
-	--------------------------------------------------------------------------------
 	if browserSplitGroup == nil then
 		browserSplitGroup = sw:searchPath({
 			{ role = "AXWindow", Title = "Events"},
@@ -552,14 +719,11 @@ end
 ---
 function finalcutpro.getColorBoardRadioGroup()
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro:
-	--------------------------------------------------------------------------------
+
+	-- Define Final Cut Pro:
 	sw = ax.applicationElement(finalcutpro.application())
 
-	--------------------------------------------------------------------------------
 	-- Find Color Button:
-	--------------------------------------------------------------------------------
 	local result = sw:searchPath({
 		{ role = "AXWindow", Title = "Final Cut Pro"},
 		{ role = "AXSplitGroup", },
@@ -573,12 +737,6 @@ function finalcutpro.getColorBoardRadioGroup()
 
 	return result
 
-end
-
--- Internal function: Does directory exist?
-local function doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.finalcutproe == 'directory'
 end
 
 return finalcutpro

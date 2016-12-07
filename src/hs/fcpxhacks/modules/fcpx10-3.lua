@@ -45,9 +45,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-
-
-
+local mod = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -59,12 +57,10 @@
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local alert 									= require("hs.alert")
-local appfinder 								= require("hs.appfinder")
-local application 								= require("hs.application")
-local base64 									= require("hs.base64")
+local alert										= require("hs.alert")
+local application								= require("hs.application")
 local chooser									= require("hs.chooser")
-local console 									= require("hs.console")
+local console									= require("hs.console")
 local distributednotifications					= require("hs.distributednotifications")
 local drawing 									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
@@ -72,25 +68,20 @@ local fnutils 									= require("hs.fnutils")
 local fs										= require("hs.fs")
 local geometry									= require("hs.geometry")
 local host										= require("hs.host")
-local hotkey 									= require("hs.hotkey")
+local hotkey									= require("hs.hotkey")
 local http										= require("hs.http")
 local image										= require("hs.image")
-local inspect									= require("hs.inspect")
-local json  									= require("hs.json")
 local keycodes									= require("hs.keycodes")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
-local osascript 								= require("hs.osascript")
-local pasteboard 								= require("hs.pasteboard")
+local osascript									= require("hs.osascript")
+local pasteboard								= require("hs.pasteboard")
 local pathwatcher								= require("hs.pathwatcher")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
-local styledtext								= require("hs.styledtext")
 local timer										= require("hs.timer")
-local uielement 								= require("hs.uielement")
-local utf8										= require("hs.utf8")
 local window									= require("hs.window")
 window.filter									= require("hs.window.filter")
 
@@ -107,69 +98,60 @@ local touchbar 									= require("hs._asm.touchbar")
 
 local fcp										= require("hs.finalcutpro")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
+local dialog									= require("hs.fcpxhacks.modules.dialog")
+local tools										= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
-bugReportEmail									= "chris@latenitefilms.com"
-updateURL										= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
-
-commonErrorMessageStart 						= "I'm sorry, but the following error has occurred:\n\n"
-commonErrorMessageEnd 							= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
-commonErrorMessageAppleScript 					= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+mod.commonErrorMessageStart 					= "I'm sorry, but the following error has occurred:\n\n"
+mod.commonErrorMessageEnd 						= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
+mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. mod.commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. mod.commonErrorMessageEnd .. '"\n'
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
 
-flexoLanguages 									= fcp.flexoLanguages()
-finalCutProLanguages 							= fcp.languages()
-execute											= hs.execute									-- Execute!
-clock 											= os.clock										-- Used for sleep()
-touchBarSupported						 		= touchbar.supported()							-- Touch Bar Supported?
-hostname										= host.localizedName()							-- Hostname
+local execute									= hs.execute									-- Execute!
+local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
 
-debugMode 										= false											-- Debug Mode is off by default.
-scrollingTimelineSpacebarPressed				= false											-- Was spacebar pressed?
-scrollingTimelineWatcherWorking 				= false											-- Is Scrolling Timeline Spacebar Held Down?
-isCommandEditorOpen 							= false 										-- Is Command Editor Open?
-releaseColorBoardDown							= false											-- Color Board Shortcut Currently Being Pressed
-releaseMouseColorBoardDown 						= false											-- Color Board Mouse Shortcut Currently Being Pressed
-changeTimelineClipHeightAlreadyInProgress 		= false											-- Change Timeline Clip Height Already In Progress
-releaseChangeTimelineClipHeightDown				= false											-- Change Timeline Clip Height Currently Being Pressed
-stopMediaImportTimer 							= false											-- Stop Media Import Timer
-fcpxChooserActive								= false											-- Chooser Active?
-mouseInsideTouchbar								= false											-- Mouse Inside Touch Bar?
-shownUpdateNotification			 				= false											-- Shown Update Notification Already?
+mod.debugMode									= false											-- Debug Mode is off by default.
+mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
+mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
+mod.isCommandEditorOpen 						= false 										-- Is Command Editor Open?
+mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
+mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
+mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
+mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
 
-changeAppearanceButtonLocation 					= {}											-- Change Timeline Appearance Button Location
-fcpxChooserChoices 								= {}											-- Chooser Choices
+mod.fcpxChooserActive							= false											-- Chooser Active?
+mod.fcpxChooserChoices							= {}											-- Chooser Choices
+mod.fcpxChooser									= nil											-- Chooser
 
-mediaImportCount 								= 0												-- Media Import Count
+mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
-fcpxChooser										= nil											-- Chooser
-touchBarWindow 									= nil			 								-- Touch Bar Window
-browserHighlight 								= nil											-- Used for Highlight Browser Playhead
-browserHighlightTimer 							= nil											-- Used for Highlight Browser Playhead
-scrollingTimelineTimer							= nil											-- Scrolling Timeline Timer
-scrollingTimelineScrollbarTimer					= nil											-- Scrolling Timeline Scrollbar Timer
-finalCutProShortcutKey 							= nil											-- Table of all Final Cut Pro Shortcuts
-finalCutProShortcutKeyPlaceholders 				= nil											-- Table of all needed Final Cut Pro Shortcuts
-newDeviceMounted 								= nil											-- New Device Mounted Volume Watcher
-currentApplication 								= nil											-- Current Application (used by Media Import Watcher)
-lastCommandSet									= nil											-- Last Keyboard Shortcut Command Set
-colorBoardMousePuckOriginalPosition				= nil											-- Color Board Mouse Puck Original Position
-FFImportCreateProxyMedia 						= nil											-- Used in refreshMenuBar
-allowMovingMarkers 								= nil											-- Used in refreshMenuBar
-FFPeriodicBackupInterval 						= nil											-- Used in refreshMenuBar
-FFSuspendBGOpsDuringPlay 						= nil											-- Used in refreshMenuBar
-FFEnableGuards 									= nil											-- Used in refreshMenuBar
-FFCreateOptimizedMediaForMulticamClips 			= nil											-- Used in refreshMenuBar
-FFAutoStartBGRender 							= nil											-- Used in refreshMenuBar
-FFAutoRenderDelay 								= nil											-- Used in refreshMenuBar
-FFImportCopyToMediaFolder 						= nil											-- Used in refreshMenuBar
-FFImportCreateOptimizeMedia 					= nil											-- Used in refreshMenuBar
+mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
+mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
+mod.browserHighlight							= nil											-- Scrolling Timeline Timer
+
+mod.scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
+mod.scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
+
+mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
+mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
+mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
+mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
+mod.FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
+mod.allowMovingMarkers							= nil											-- Used in refreshMenuBar
+mod.FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
+mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
+mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
+mod.FFCreateOptimizedMediaForMulticamClips 		= nil											-- Used in refreshMenuBar
+mod.FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
+mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
+mod.FFImportCopyToMediaFolder 					= nil											-- Used in refreshMenuBar
+mod.FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -179,7 +161,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMode = settings.get("fcpxHacks.debugMode") or false
+	mod.debugMode = settings.get("fcpxHacks.debugMode") or false
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
@@ -247,29 +229,29 @@ function loadScript()
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.lastVersion") == nil then
-		settings.set("fcpxHacks.lastVersion", scriptVersion)
+		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxhacks.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = fcp.running()
 				if finalCutProRunning then
-					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
+					dialog.displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
 					updateKeyboardShortcuts()
 					if not fcp.restart() then
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
-						displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+						dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 						return "Failed"
 					end
 				else
-					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.")
+					dialog.displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.")
 					updateKeyboardShortcuts()
 				end
 			end
 		end
-		settings.set("fcpxHacks.lastVersion", scriptVersion)
+		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
 	end
 
 	--------------------------------------------------------------------------------
@@ -280,34 +262,34 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
-		touchBarWindow = touchbar.new()
+		mod.touchBarWindow = touchbar.new()
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Watcher:
 		--------------------------------------------------------------------------------
-		touchBarWindow:setCallback(touchbarWatcher)
+		mod.touchBarWindow:setCallback(touchbarWatcher)
 
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
 		local lastTouchBarLocation = settings.get("fcpxHacks.lastTouchBarLocation")
-		if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
+		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
 		-- Draggable Touch Bar:
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mouseInsideTouchbar then
+			if mod.mouseInsideTouchbar then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-					touchBarWindow:backgroundColor{ red = 1 }
-								  :movable(true)
-								  :acceptsMouseEvents(false)
+					mod.touchBarWindow:backgroundColor{ red = 1 }
+								  	:movable(true)
+								  	:acceptsMouseEvents(false)
 				elseif ev:getType() ~= events.leftMouseDown then
-					touchBarWindow:backgroundColor{ white = 0 }
+					mod.touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+					settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -339,7 +321,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 		if sharedClipboardPath ~= nil then
-			if doesDirectoryExist(sharedClipboardPath) then
+			if tools.doesDirectoryExist(sharedClipboardPath) then
 				sharedClipboardWatcher = pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
 			else
 				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
@@ -356,7 +338,7 @@ function loadScript()
 			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				if doesDirectoryExist(xmlSharingDropboxPath) and doesDirectoryExist(xmlSharingPath) then
+				if tools.doesDirectoryExist(xmlSharingDropboxPath) and tools.doesDirectoryExist(xmlSharingPath) then
 					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
 					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 				else
@@ -409,7 +391,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
 	--------------------------------------------------------------------------------
-	lastCommandSet = fcp.getActiveCommandSetPath()
+	mod.lastCommandSet = fcp.getActiveCommandSetPath()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
@@ -471,7 +453,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Set Tool Tip:
 		--------------------------------------------------------------------------------
-		fcpxMenubar:setTooltip("FCPX Hacks Version " .. scriptVersion)
+		fcpxMenubar:setTooltip("FCPX Hacks Version " .. fcpxhacks.scriptVersion)
 
 		--------------------------------------------------------------------------------
 		-- Work out Menubar Display Mode:
@@ -493,7 +475,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
 	alert.closeAll(0)
-	alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded")
+	alert.show("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -601,10 +583,10 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Get Shortcut Keys from plist:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKey = nil
-		finalCutProShortcutKey = {}
-		finalCutProShortcutKeyPlaceholders = nil
-		finalCutProShortcutKeyPlaceholders =
+		mod.finalCutProShortcutKey = nil
+		mod.finalCutProShortcutKey = {}
+		mod.finalCutProShortcutKeyPlaceholders = nil
+		mod.finalCutProShortcutKeyPlaceholders =
 		{
 			FCPXHackLaunchFinalCutPro									= { characterString = "", 							modifiers = {}, 									fn = function() fcp.launch() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = "", 							modifiers = {}, 									fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
@@ -832,11 +814,11 @@ function bindKeyboardShortcuts()
 		-- Merge Above Table with Built-in Final Cut Pro Shortcuts Table:
 		--------------------------------------------------------------------------------
 		for k, v in pairs(requiredBuiltInShortcuts) do
-			finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
+			mod.finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
 		end
 
 		if readShortcutKeysFromPlist() ~= "Done" then
-			displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
+			dialog.displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
 			writeToConsole("ERROR: Something went wrong during the plist reading process. Falling back to default shortcut keys.")
 			enableHacksShortcutsInFinalCutPro = false
 		end
@@ -846,8 +828,8 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKey = nil
-		finalCutProShortcutKey =
+		mod.finalCutProShortcutKey = nil
+		mod.finalCutProShortcutKey =
 		{
 			FCPXHackLaunchFinalCutPro									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
@@ -1072,7 +1054,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Get Values of Shortcuts built into Final Cut Pro:
 		--------------------------------------------------------------------------------
-		finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
+		mod.finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
 		readShortcutKeysFromPlist()
 
 	end
@@ -1098,18 +1080,18 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Enable Hotkeys Loop:
 	--------------------------------------------------------------------------------
-	for k, v in pairs(finalCutProShortcutKey) do
-		if finalCutProShortcutKey[k]['characterString'] ~= "" and finalCutProShortcutKey[k]['fn'] ~= nil then
-			if finalCutProShortcutKey[k]['global'] == true then
+	for k, v in pairs(mod.finalCutProShortcutKey) do
+		if mod.finalCutProShortcutKey[k]['characterString'] ~= "" and mod.finalCutProShortcutKey[k]['fn'] ~= nil then
+			if mod.finalCutProShortcutKey[k]['global'] == true then
 				--------------------------------------------------------------------------------
 				-- Global Shortcut:
 				--------------------------------------------------------------------------------
-				hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
+				hotkey.bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
 			else
 				--------------------------------------------------------------------------------
 				-- Final Cut Pro Specific Shortcut:
 				--------------------------------------------------------------------------------
-				hotkeys:bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], finalCutProShortcutKey[k]['releasedFn'], finalCutProShortcutKey[k]['repeatFn'])
+				hotkeys:bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
 			end
 		end
 	end
@@ -1117,7 +1099,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Development Shortcut:
 	--------------------------------------------------------------------------------
-	if debugMode then
+	if mod.debugMode then
 		hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
 	end
 
@@ -1130,7 +1112,7 @@ function bindKeyboardShortcuts()
 	-- Let user know that keyboard shortcuts have loaded:
 	--------------------------------------------------------------------------------
 	alert.closeAll(0)
-	alert.show("FCPX Hacks Keyboard Shortcuts Updated")
+	alert.show("Keyboard Shortcuts Updated")
 
 end
 
@@ -1143,7 +1125,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
 	if result == false then
-		displayErrorMessage("Failed to reset the Active Command Set.")
+		dialog.displayErrorMessage("Failed to reset the Active Command Set.")
 		return "Failed"
 	end
 
@@ -1191,8 +1173,195 @@ function updateKeyboardShortcuts()
 		end repeat
 		return "Done"
 	]]
-	ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+	ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 	return toggleEnableHacksShortcutsInFinalCutProResult
+end
+
+--------------------------------------------------------------------------------
+-- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
+--------------------------------------------------------------------------------
+function readShortcutKeysFromPlist()
+
+	--------------------------------------------------------------------------------
+	-- Get 'Active Command Set' Path:
+	--------------------------------------------------------------------------------
+	local activeCommandSetPath = fcp.getActiveCommandSetPath()
+
+	if activeCommandSetPath == nil then
+		dialog.displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
+		return "Failed"
+	else
+		if fs.attributes(activeCommandSetPath) == nil then
+			dialog.displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
+			return "Failed"
+		else
+
+			-- TO DO: Need to debug 'plistParser' and get this working...
+
+			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
+
+			--[[
+
+			if activeCommandSetTable == nil then
+				dialog.displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
+				return "Failed"
+			end
+			--writeToConsole(activeCommandSetTable)
+
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+				if activeCommandSetTable[k] ~= nil then
+					writeToConsole(k)
+					writeToConsole(v)
+				else
+					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				end
+			end
+
+			--]]
+
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
+				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+
+				if executeStatus == nil then
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					if executeType ~= "exit" then
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					end
+					local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					mod.finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				else
+					local x, lastDict = string.gsub(executeResult, "Dict {", "")
+					lastDict = lastDict - 1
+					local currentDict = ""
+
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
+
+						if lastDict ~= 0 then
+							if whichDict == 0 then
+								addToK = ""
+								currentDict = ":" .. tostring(whichDict)
+							else
+								currentDict = ":" .. tostring(whichDict)
+								addToK = tostring(whichDict)
+							end
+						else
+							currentDict = ""
+							addToK = ""
+						end
+
+						--------------------------------------------------------------------------------
+						-- Insert Blank Placeholder
+						--------------------------------------------------------------------------------
+						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Assuming that the plist was read fine, but contained no value:
+								--------------------------------------------------------------------------------
+								mod.finalCutProShortcutKey[k .. addToK]['characterString'] = ""
+							else
+								dialog.displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
+								return "Failed"
+							end
+						else
+							--------------------------------------------------------------------------------
+							-- We only want the first line of the executeResult:
+							--------------------------------------------------------------------------------
+							for line in executeResult:gmatch"(.-)\n" do
+								executeResult = line
+								goto escape
+							end
+							::escape::
+
+							mod.finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
+						end
+
+					end
+				end
+			end
+			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
+				local executeResult,executeStatus = execute(executeCommand)
+				if executeStatus == nil then
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					if executeType ~= "exit" then
+						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					end
+					mod.finalCutProShortcutKey[k]['modifiers'] = {}
+				else
+					local x, lastDict = string.gsub(executeResult, "Dict {", "")
+					lastDict = lastDict - 1
+					local currentDict = ""
+
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
+
+						if lastDict ~= 0 then
+							if whichDict == 0 then
+								addToK = ""
+								currentDict = ":" .. tostring(whichDict)
+							else
+								currentDict = ":" .. tostring(whichDict)
+								addToK = tostring(whichDict)
+							end
+						else
+							currentDict = ""
+							addToK = ""
+						end
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Try modifierMask Instead!
+								--------------------------------------------------------------------------------
+								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
+								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+								if executeStatus == nil then
+									if executeType == "exit" then
+										--------------------------------------------------------------------------------
+										-- Assuming that the plist was read fine, but contained no value:
+										--------------------------------------------------------------------------------
+										mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
+									else
+										dialog.displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
+										return "Failed"
+									end
+								else
+									mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(tools.trim(executeResult))
+								end
+							else
+								dialog.displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
+								return "Failed"
+							end
+						else
+							mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
+						end
+					end
+				end
+			end
+			return "Done"
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -1213,7 +1382,7 @@ end
 --------------------------------------------------------------------------------
 function setupChooser()
 
-	fcpxChooser = chooser.new(chooserAction):bgDark(true)
+	mod.fcpxChooser = chooser.new(chooserAction):bgDark(true)
 											:fgColor(drawing.color.x11.snow)
 											:subTextColor(drawing.color.x11.snow)
 											:rightClickCallback(chooserRightClick)
@@ -1225,8 +1394,8 @@ end
 -- SHOW CHOOSER:
 --------------------------------------------------------------------------------
 function showChooser()
-	fcpxChooserActive = true
-	fcpxChooser:show()
+	mod.fcpxChooserActive = true
+	mod.fcpxChooser:show()
 end
 
 --------------------------------------------------------------------------------
@@ -1242,8 +1411,8 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Reset Choices:
 	--------------------------------------------------------------------------------
-	fcpxChooserChoices = nil
-	fcpxChooserChoices = {}
+	mod.fcpxChooserChoices = nil
+	mod.fcpxChooserChoices = {}
 
 	--------------------------------------------------------------------------------
 	-- Settings:
@@ -1539,9 +1708,9 @@ function chooserChoices()
 		},
 	}
 
-	if chooserShowAutomation then fnutils.concat(fcpxChooserChoices, chooserAutomation) end
-	if chooserShowShortcuts then fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
-	if chooserShowHacks then fnutils.concat(fcpxChooserChoices, chooserHacks) end
+	if chooserShowAutomation then fnutils.concat(mod.fcpxChooserChoices, chooserAutomation) end
+	if chooserShowShortcuts then fnutils.concat(mod.fcpxChooserChoices, chooserShortcuts) end
+	if chooserShowHacks then fnutils.concat(mod.fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
@@ -1558,7 +1727,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1578,7 +1747,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1598,7 +1767,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1618,7 +1787,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1638,7 +1807,7 @@ function chooserChoices()
 					["function2"] = "",
 					["function3"] = "",
 				}
-				table.insert(fcpxChooserChoices, 1, individualEffect)
+				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
 			end
 		end
 	end
@@ -1646,12 +1815,12 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(fcpxChooserChoices, function(a, b) return a.text < b.text end)
+	table.sort(mod.fcpxChooserChoices, function(a, b) return a.text < b.text end)
 
 	--------------------------------------------------------------------------------
 	-- Return Choices:
 	--------------------------------------------------------------------------------
-	return fcpxChooserChoices
+	return mod.fcpxChooserChoices
 
 end
 
@@ -1663,7 +1832,7 @@ function chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Hide Chooser:
 	--------------------------------------------------------------------------------
-	fcpxChooser:hide()
+	mod.fcpxChooser:hide()
 
 	--------------------------------------------------------------------------------
 	-- Perform Specific Function:
@@ -1680,8 +1849,8 @@ function chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Re-activate the Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	fcpxChooserActive = false
-	scrollingTimelineWatcherWorking = false
+	mod.fcpxChooserActive = false
+	mod.scrollingTimelineWatcherWorking = false
 
 end
 
@@ -1729,7 +1898,7 @@ function chooserRightClick()
      		settings.set("fcpxHacks.chooserShowTransitions", false)
      		settings.set("fcpxHacks.chooserShowTitles", false)
      		settings.set("fcpxHacks.chooserShowGenerators", false)
-     		fcpxChooser:refreshChoicesCallback()
+     		mod.fcpxChooser:refreshChoicesCallback()
      	end },
      	{ title = "Show All", 				checked = chooserShowAll,	fn = function()
      		settings.set("fcpxHacks.chooserShowAutomation", true)
@@ -1740,16 +1909,16 @@ function chooserRightClick()
      		settings.set("fcpxHacks.chooserShowTransitions", true)
      		settings.set("fcpxHacks.chooserShowTitles", true)
      		settings.set("fcpxHacks.chooserShowGenerators", true)
-     		fcpxChooser:refreshChoicesCallback()
+     		mod.fcpxChooser:refreshChoicesCallback()
      	end },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				fcpxChooser:refreshChoicesCallback() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				mod.fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					mod.fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			mod.fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
 	fcpxRightClickMenubar:popupMenu(mouse.getAbsolutePosition())
@@ -1795,95 +1964,96 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		local preferences = fcp.getPreferencesAsTable()
 		if preferences == nil then
-			displayErrorMessage("Failed to read Final Cut Pro Preferences")
+			dialog.displayErrorMessage("Failed to read Final Cut Pro Preferences")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
+		allowMovingMarkers = false
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if trim(executeResult) == "true" then allowMovingMarkers = true end
+		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
 		if preferences["FFPeriodicBackupInterval"] == nil then
-			FFPeriodicBackupInterval = "15"
+			mod.FFPeriodicBackupInterval = "15"
 		else
-			FFPeriodicBackupInterval = preferences["FFPeriodicBackupInterval"]
+			mod.FFPeriodicBackupInterval = preferences["FFPeriodicBackupInterval"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
 		--------------------------------------------------------------------------------
 		if preferences["FFSuspendBGOpsDuringPlay"] == nil then
-			FFSuspendBGOpsDuringPlay = false
+			mod.FFSuspendBGOpsDuringPlay = false
 		else
-			FFSuspendBGOpsDuringPlay = preferences["FFSuspendBGOpsDuringPlay"]
+			mod.FFSuspendBGOpsDuringPlay = preferences["FFSuspendBGOpsDuringPlay"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFEnableGuards:
 		--------------------------------------------------------------------------------
 		if preferences["FFEnableGuards"] == nil then
-			FFEnableGuards = false
+			mod.FFEnableGuards = false
 		else
-			FFEnableGuards = preferences["FFEnableGuards"]
+			mod.FFEnableGuards = preferences["FFEnableGuards"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 		--------------------------------------------------------------------------------
 		if preferences["FFCreateOptimizedMediaForMulticamClips"] == nil then
-			FFCreateOptimizedMediaForMulticamClips = true
+			mod.FFCreateOptimizedMediaForMulticamClips = true
 		else
-			FFCreateOptimizedMediaForMulticamClips = preferences["FFCreateOptimizedMediaForMulticamClips"]
+			mod.FFCreateOptimizedMediaForMulticamClips = preferences["FFCreateOptimizedMediaForMulticamClips"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoStartBGRender:
 		--------------------------------------------------------------------------------
 		if preferences["FFAutoStartBGRender"] == nil then
-			FFAutoStartBGRender = true
+			mod.FFAutoStartBGRender = true
 		else
-			FFAutoStartBGRender = preferences["FFAutoStartBGRender"]
+			mod.FFAutoStartBGRender = preferences["FFAutoStartBGRender"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
 		if preferences["FFAutoRenderDelay"] == nil then
-			FFAutoRenderDelay = "0.3"
+			mod.FFAutoRenderDelay = "0.3"
 		else
-			FFAutoRenderDelay = preferences["FFAutoRenderDelay"]
+			mod.FFAutoRenderDelay = preferences["FFAutoRenderDelay"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCopyToMediaFolder:
 		--------------------------------------------------------------------------------
 		if preferences["FFImportCopyToMediaFolder"] == nil then
-			FFImportCopyToMediaFolder = true
+			mod.FFImportCopyToMediaFolder = true
 		else
-			FFImportCopyToMediaFolder = preferences["FFImportCopyToMediaFolder"]
+			mod.FFImportCopyToMediaFolder = preferences["FFImportCopyToMediaFolder"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateOptimizeMedia:
 		--------------------------------------------------------------------------------
 		if preferences["FFImportCreateOptimizeMedia"] == nil then
-			FFImportCreateOptimizeMedia = false
+			mod.FFImportCreateOptimizeMedia = false
 		else
-			FFImportCreateOptimizeMedia = preferences["FFImportCreateOptimizeMedia"]
+			mod.FFImportCreateOptimizeMedia = preferences["FFImportCreateOptimizeMedia"]
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateProxyMedia:
 		--------------------------------------------------------------------------------
 		if preferences["FFImportCreateProxyMedia"] == nil then
-			FFImportCreateProxyMedia = false
+			mod.FFImportCreateProxyMedia = false
 		else
-			FFImportCreateProxyMedia = preferences["FFImportCreateProxyMedia"]
+			mod.FFImportCreateProxyMedia = preferences["FFImportCreateProxyMedia"]
 		end
 
 	end
@@ -2210,11 +2380,11 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Hammerspoon", 																	menu = settingsHammerspoonSettings},
       	{ title = "-" },
       	{ title = "Check for Updates", 																fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
-      	{ title = "Enable Debug Mode", 																fn = toggleDebugMode, 												checked = debugMode},
+      	{ title = "Enable Debug Mode", 																fn = toggleDebugMode, 												checked = mod.debugMode},
 		{ title = "Trash FCPX Hacks Preferences", 													fn = resetSettings },
     	{ title = "-" },
     	{ title = "Created by LateNite Films", 														fn = gotoLateNiteSite },
-  	    { title = "Script Version " .. scriptVersion, 																																												disabled = true },
+  	    { title = "Script Version " .. fcpxhacks.scriptVersion, 																																												disabled = true },
 	}
 	local settingsEffectsShortcutsTable = {
 		{ title = "Update Effects List", 															fn = updateEffectsList, 																										disabled = not fcpxRunning },
@@ -2258,11 +2428,11 @@ function refreshMenuBar(refreshPlistValues)
 	}
 	local shortcutsTable = {
    	    { title = "SHORTCUTS:", 																																																	disabled = true },
-	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not FFImportCreateOptimizeMedia) end, 												checked = FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
-	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not FFCreateOptimizedMediaForMulticamClips) end, 							checked = FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
-	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not FFImportCreateProxyMedia) end, 														checked = FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
-	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(FFImportCopyToMediaFolder) end, 																checked = not FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
-	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not FFAutoStartBGRender) end, 															checked = FFAutoStartBGRender, 								disabled = not fcpxRunning },
+	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not mod.FFImportCreateOptimizeMedia) end, 												checked = mod.FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
+	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not mod.FFCreateOptimizedMediaForMulticamClips) end, 							checked = mod.FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
+	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not mod.FFImportCreateProxyMedia) end, 														checked = mod.FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
+	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(mod.FFImportCopyToMediaFolder) end, 																checked = not mod.FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
+	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
    	    { title = "-" },
 	}
 	local automationTable = {
@@ -2293,10 +2463,10 @@ function refreshMenuBar(refreshPlistValues)
 	local hacksTable = {
    	    { title = "HACKS:", 																																																		disabled = true },
    		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
-   		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = FFEnableGuards },
-	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = allowMovingMarkers },
-       	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not FFSuspendBGOpsDuringPlay },
-        { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
+   		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
+	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
+       	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
+        { title = "Change Backup Interval (" .. tostring(mod.FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
    	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
         { title = "-" },
     }
@@ -2322,7 +2492,7 @@ function refreshMenuBar(refreshPlistValues)
 	-- Check for Updates:
 	--------------------------------------------------------------------------------
 	if latestScriptVersion ~= nil then
-		if latestScriptVersion > scriptVersion then
+		if latestScriptVersion > fcpxhacks.scriptVersion then
 			table.insert(menuTable, 1, { title = "UPDATE AVAILABLE (Version " .. latestScriptVersion .. ")", fn = getScriptUpdate})
 			table.insert(menuTable, 2, { title = "-" })
 		end
@@ -2343,7 +2513,7 @@ function displayShortcutList()
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
-		displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
+		dialog.displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
 	else
 		local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
 
@@ -2391,7 +2561,7 @@ CONTROL+SHIFT:
 -----------------------------------------
 1-5 = Apply Effect]]
 
-		displayMessage(whatMessage)
+		dialog.displayMessage(whatMessage)
 	end
 end
 
@@ -2417,14 +2587,14 @@ end
 		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
-		displayMessage("Depending on how many Effects you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+		dialog.displayMessage("Depending on how many Effects you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2441,7 +2611,7 @@ end
 			end
 		end
 		if whichRadioGroup == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
 			return "Failed"
 		end
 
@@ -2462,13 +2632,13 @@ end
 			if effectsBrowserButton:attributeValue("AXValue") == 0 then
 				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
 				if presseffectsBrowserButtonResult == nil then
-					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.")
 					showTouchbar()
 					return "Fail"
 				end
 			end
 		else
-			displayErrorMessage("Unable to activate Video Effects Panel.")
+			dialog.displayErrorMessage("Unable to activate Video Effects Panel.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2480,7 +2650,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2494,7 +2664,7 @@ end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
 				return "Failed"
 			end
 
@@ -2510,7 +2680,7 @@ end
 				end
 			end
 			if whichEffectsBrowserPopupButton == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
 				return "Failed"
 			end
 
@@ -2521,12 +2691,12 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2543,7 +2713,7 @@ end
 		if effectsSearchCancelButton ~= nil then
 			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2575,7 +2745,7 @@ end
 					effectsBrowserSidebar:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2596,7 +2766,7 @@ end
 			if allVideoAndAudioButton ~= nil then
 				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 			else
-				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2605,7 +2775,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay...
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Video Effects:
@@ -2617,7 +2787,7 @@ end
 				allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
 			end
 		else
-			displayErrorMessage("Unable to get list of all effects.")
+			dialog.displayErrorMessage("Unable to get list of all effects.")
 			return "Fail"
 		end
 
@@ -2643,7 +2813,7 @@ end
 			end
 			allAudioButton[whichAudioButton]:setAttributeValue("AXSelected", true)
 		else
-			displayErrorMessage("Unable to locate 'All Audio' button.")
+			dialog.displayErrorMessage("Unable to locate 'All Audio' button.")
 			return "Fail"
 		end
 
@@ -2657,7 +2827,7 @@ end
 				allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
 			end
 		else
-			displayErrorMessage("Unable to get list of all effects.")
+			dialog.displayErrorMessage("Unable to get list of all effects.")
 			return "Fail"
 		end
 
@@ -2678,7 +2848,7 @@ end
 			if effectsSearchCancelButton ~= nil then
 				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 				if effectsSearchCancelButtonResult == nil then
-					displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+					dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -2704,7 +2874,7 @@ end
 		-- All done!
 		--------------------------------------------------------------------------------
 		if #allVideoEffects == 0 or #allAudioEffects == 0 then
-			displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
+			dialog.displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
 			return "Fail"
 		else
 			--------------------------------------------------------------------------------
@@ -2717,7 +2887,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Update Chooser:
 			--------------------------------------------------------------------------------
-			fcpxChooser:refreshChoicesCallback()
+			mod.fcpxChooser:refreshChoicesCallback()
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2727,7 +2897,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Let the user know everything's good:
 			--------------------------------------------------------------------------------
-			displayMessage("Effects List updated successfully.")
+			dialog.displayMessage("Effects List updated successfully.")
 		end
 
 	end
@@ -2750,14 +2920,14 @@ end
 		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
-		displayMessage("Depending on how many Transitions you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+		dialog.displayMessage("Depending on how many Transitions you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2774,7 +2944,7 @@ end
 			end
 		end
 		if whichRadioGroup == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
 			return "Failed"
 		end
 
@@ -2795,13 +2965,13 @@ end
 			if effectsBrowserButton:attributeValue("AXValue") == 0 then
 				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
 				if presseffectsBrowserButtonResult == nil then
-					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.")
 					showTouchbar()
 					return "Fail"
 				end
 			end
 		else
-			displayErrorMessage("Unable to activate Video Effects Panel.")
+			dialog.displayErrorMessage("Unable to activate Video Effects Panel.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2813,7 +2983,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2827,7 +2997,7 @@ end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
 				return "Failed"
 			end
 
@@ -2843,7 +3013,7 @@ end
 				end
 			end
 			if whichEffectsBrowserPopupButton == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
 				return "Failed"
 			end
 
@@ -2854,12 +3024,12 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2876,7 +3046,7 @@ end
 		if effectsSearchCancelButton ~= nil then
 			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2908,7 +3078,7 @@ end
 					effectsBrowserSidebar:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2929,7 +3099,7 @@ end
 			if allVideoAndAudioButton ~= nil then
 				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 			else
-				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -2938,7 +3108,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
@@ -2950,7 +3120,7 @@ end
 				allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
 			end
 		else
-			displayErrorMessage("Unable to get list of all transitions.")
+			dialog.displayErrorMessage("Unable to get list of all transitions.")
 			return "Fail"
 		end
 
@@ -2958,14 +3128,14 @@ end
 		-- Check to make sure it all worked:
 		--------------------------------------------------------------------------------
 		if #allTransitions == 0 or #allTransitions == 0 then
-			displayMessage("Unfortunately the Transitions List was not successfully updated.\n\nPlease try again.")
+			dialog.displayMessage("Unfortunately the Transitions List was not successfully updated.\n\nPlease try again.")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay:
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
@@ -2979,7 +3149,7 @@ end
 		if effectsSearchCancelButton ~= nil then
 			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3003,7 +3173,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3013,7 +3183,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
-		displayMessage("Transitions List updated successfully.")
+		dialog.displayMessage("Transitions List updated successfully.")
 
 		--------------------------------------------------------------------------------
 		-- Show the Touch Bar:
@@ -3040,14 +3210,14 @@ end
 		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
-		displayMessage("Depending on how many Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+		dialog.displayMessage("Depending on how many Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using getFinalCutProBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3085,7 +3255,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3104,7 +3274,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3122,7 +3292,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3141,7 +3311,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3152,7 +3322,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			displayErrorMessage("Unable to select Titles from List.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3170,7 +3340,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3182,14 +3352,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3212,7 +3382,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3230,7 +3400,7 @@ end
 		-- No Titles Found:
 		--------------------------------------------------------------------------------
 		if next(allTitles) == nil then
-			displayMessage("Unfortunately the Titles List was not successfully updated.\n\nPlease try again.")
+			dialog.displayMessage("Unfortunately the Titles List was not successfully updated.\n\nPlease try again.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3265,7 +3435,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3276,7 +3446,7 @@ end
 		if whichBrowserPanelWasOpen == "Library" then
 			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 			if result == nil then
-				displayMessage("Unable to press Libraries Button.\n\nError occured in updateTitlesList().")
+				dialog.displayMessage("Unable to press Libraries Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3284,7 +3454,7 @@ end
 		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 			if result == nil then
-				displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateTitlesList().")
+				dialog.displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3292,7 +3462,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3307,7 +3477,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3317,7 +3487,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
-		displayMessage("Titles List updated successfully.")
+		dialog.displayMessage("Titles List updated successfully.")
 
 	end
 
@@ -3339,14 +3509,14 @@ end
 		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
-		displayMessage("Depending on how many Generators you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+		dialog.displayMessage("Depending on how many Generators you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
 
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using getFinalCutProBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3384,7 +3554,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3403,7 +3573,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3421,7 +3591,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3440,7 +3610,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3463,7 +3633,7 @@ end
 		end
 		::generatorsRowExit::
 		if generatorsRow == nil then
-			displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3473,7 +3643,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3491,7 +3661,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3503,14 +3673,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Generators" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateGeneratorsList().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3533,7 +3703,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3551,7 +3721,7 @@ end
 		-- No Titles Found:
 		--------------------------------------------------------------------------------
 		if next(allGenerators) == nil then
-			displayMessage("Unfortunately the Generators List was not successfully updated.\n\nPlease try again.")
+			dialog.displayMessage("Unfortunately the Generators List was not successfully updated.\n\nPlease try again.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3586,7 +3756,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3597,7 +3767,7 @@ end
 		if whichBrowserPanelWasOpen == "Library" then
 			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 			if result == nil then
-				displayMessage("Unable to press Libraries Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayMessage("Unable to press Libraries Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3605,7 +3775,7 @@ end
 		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 			if result == nil then
-				displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayMessage("Unable to press Photos & Audio Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3613,7 +3783,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -3628,7 +3798,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		fcpxChooser:refreshChoicesCallback()
+		mod.fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3638,7 +3808,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
-		displayMessage("Generators List updated successfully.")
+		dialog.displayMessage("Generators List updated successfully.")
 
 	end
 
@@ -3667,15 +3837,15 @@ end
 		-- Error Checking:
 		--------------------------------------------------------------------------------
 		if not effectsListUpdated then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 		if allVideoEffects == nil or allAudioEffects == nil then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 		if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 
@@ -3724,8 +3894,8 @@ end
 		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
 
 		effectChooser = chooser.new(effectChooserAction):bgDark(true)
-														:fgColor(hs.drawing.color.x11.snow)
-														:subTextColor(hs.drawing.color.x11.snow)
+														:fgColor(drawing.color.x11.snow)
+														:subTextColor(drawing.color.x11.snow)
 														:choices(effectChooserChoices)
 														:show()
 
@@ -3790,15 +3960,15 @@ end
 		-- Error Checking:
 		--------------------------------------------------------------------------------
 		if not transitionsListUpdated then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 		if allTransitions == nil then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 		if next(allTransitions) == nil then
-			displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+			dialog.displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 			return "Failed"
 		end
 
@@ -3828,8 +3998,8 @@ end
 		table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
 
 		transitionChooser = chooser.new(transitionsChooserAction):bgDark(true)
-																 :fgColor(hs.drawing.color.x11.snow)
-																 :subTextColor(hs.drawing.color.x11.snow)
+																 :fgColor(drawing.color.x11.snow)
+																 :subTextColor(drawing.color.x11.snow)
 																 :choices(transitionChooserChoices)
 																 :show()
 
@@ -3894,15 +4064,15 @@ end
 		-- Error Checking:
 		--------------------------------------------------------------------------------
 		if not titlesListUpdated then
-			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			dialog.displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
 			return "Failed"
 		end
 		if allTitles == nil then
-			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			dialog.displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
 			return "Failed"
 		end
 		if next(allTitles) == nil then
-			displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
+			dialog.displayMessage("The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.")
 			return "Failed"
 		end
 
@@ -3932,8 +4102,8 @@ end
 		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
 
 		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
-													    :fgColor(hs.drawing.color.x11.snow)
-													    :subTextColor(hs.drawing.color.x11.snow)
+													    :fgColor(drawing.color.x11.snow)
+													    :subTextColor(drawing.color.x11.snow)
 														:choices(titlesChooserChoices)
 														:show()
 
@@ -3998,15 +4168,15 @@ end
 		-- Error Checking:
 		--------------------------------------------------------------------------------
 		if not generatorsListUpdated then
-			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			dialog.displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
 			return "Failed"
 		end
 		if allGenerators == nil then
-			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			dialog.displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
 			return "Failed"
 		end
 		if next(allGenerators) == nil then
-			displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
+			dialog.displayMessage("The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.")
 			return "Failed"
 		end
 
@@ -4036,8 +4206,8 @@ end
 		table.sort(generatorsChooserChoices, function(a, b) return a.text < b.text end)
 
 		generatorsChooser = chooser.new(generatorsChooserAction):bgDark(true)
-																:fgColor(hs.drawing.color.x11.snow)
-																:subTextColor(hs.drawing.color.x11.snow)
+																:fgColor(drawing.color.x11.snow)
+																:subTextColor(drawing.color.x11.snow)
 																:choices(generatorsChooserChoices)
 																:show()
 
@@ -4130,9 +4300,9 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		if fcp.getPreference("FFPeriodicBackupInterval") == nil then
-			FFPeriodicBackupInterval = 15
+			mod.FFPeriodicBackupInterval = 15
 		else
-			FFPeriodicBackupInterval = fcp.getPreference("FFPeriodicBackupInterval")
+			mod.FFPeriodicBackupInterval = fcp.getPreference("FFPeriodicBackupInterval")
 		end
 
 		--------------------------------------------------------------------------------
@@ -4140,7 +4310,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion("Changing the Backup Interval requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion("Changing the Backup Interval requires Final Cut Pro to restart.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
@@ -4150,7 +4320,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Ask user what to set the backup interval to:
 		--------------------------------------------------------------------------------
-		local userSelectedBackupInterval = displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", FFPeriodicBackupInterval)
+		local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage("What would you like to set your Final Cut Pro Backup Interval to (in minutes)?", "The backup interval you entered is not valid. Please enter a value in minutes.", mod.FFPeriodicBackupInterval)
 		if not userSelectedBackupInterval then
 			return "Cancel"
 		end
@@ -4160,7 +4330,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = fcp.setPreference("FFPeriodicBackupInterval", userSelectedBackupInterval)
 		if result == nil then
-			displayErrorMessage("Failed to write Backup Interval to the Final Cut Pro Preferences file.")
+			dialog.displayErrorMessage("Failed to write Backup Interval to the Final Cut Pro Preferences file.")
 			return "Failed"
 		end
 
@@ -4172,7 +4342,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
-				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 				return "Failed"
 			end
 		end
@@ -4193,14 +4363,14 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
-		if trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
+		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion("Changing the Smart Collections Label requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion("Changing the Smart Collections Label requires Final Cut Pro to restart.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
@@ -4210,7 +4380,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Ask user what to set the backup interval to:
 		--------------------------------------------------------------------------------
-		local userSelectedSmartCollectionsLabel = displayTextBoxMessage("What would you like to set your Smart Collections Label to:", "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.", trim(FFOrganizerSmartCollections))
+		local userSelectedSmartCollectionsLabel = dialog.displayTextBoxMessage("What would you like to set your Smart Collections Label to:", "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.", tools.trim(FFOrganizerSmartCollections))
 		if not userSelectedSmartCollectionsLabel then
 			return "Cancel"
 		end
@@ -4218,11 +4388,11 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist for every Flexo language:
 		--------------------------------------------------------------------------------
-		for k, v in pairs(flexoLanguages) do
-			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. flexoLanguages[k] .. ".lproj/FFLocalizable.strings'")
+		for k, v in pairs(fcp.flexoLanguages()) do
+			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'")
 			if executeStatus == nil then
-				writeToConsole("Failed to write to '" .. flexoLanguages[k] .. ".lproj' plist.")
-				displayErrorMessage("Failed to write to '" .. flexoLanguages[k] .. ".lproj' plist.")
+				writeToConsole("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
+				dialog.displayErrorMessage("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
 				return "Failed"
 			end
 		end
@@ -4235,7 +4405,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
-				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 				return "Failed"
 			end
 		end
@@ -4250,8 +4420,8 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		debugMode = not debugMode
-		settings.set("fcpxHacks.debugMode", debugMode)
+		mod.debugMode = not mod.debugMode
+		settings.set("fcpxHacks.debugMode", mod.debugMode)
 		refreshMenuBar()
 	end
 
@@ -4281,7 +4451,7 @@ end
 		if not enableMediaImportWatcher then
 			mediaImportWatcher()
 		else
-			newDeviceMounted:stop()
+			mod.newDeviceMounted:stop()
 		end
 		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
 		refreshMenuBar()
@@ -4310,7 +4480,7 @@ end
 
 		if not enableSharedClipboard then
 
-			result = displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
+			result = dialog.displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
 
 			if result ~= false then
 				debugMessage("Enabled Shared Clipboard Path: " .. tostring(result))
@@ -4350,7 +4520,7 @@ end
 
 		if not enableXMLSharing then
 
-			xmlSharingDropboxPath = displayChooseFolder("Which folder would you like to use as the local Drop Box?")
+			xmlSharingDropboxPath = dialog.displayChooseFolder("Which folder would you like to use as the local Drop Box?")
 
 			if xmlSharingDropboxPath ~= false then
 				settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
@@ -4360,7 +4530,7 @@ end
 				return "Cancelled"
 			end
 
-			xmlSharingPath = displayChooseFolder("Which folder would you like to use for XML Sharing?")
+			xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
 			if xmlSharingPath ~= false then
 				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
@@ -4442,7 +4612,7 @@ end
 				end repeat
 				return response
 			]]
-			a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+			a,result = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 			if result == false then
 				return "Cancel"
 			end
@@ -4453,7 +4623,7 @@ end
 				notificationWatcher()
 				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
 			else
-				displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
+				dialog.displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
 				goto retryProwlAPIKeyEntry
 			end
 		else
@@ -4543,13 +4713,13 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
 			end
 		else
-			if not displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password.\n\nDo you want to continue?") then
+			if not dialog.displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password.\n\nDo you want to continue?") then
 				return "Done"
 			end
 		end
@@ -4564,7 +4734,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
-				displayErrorMessage("Failed to revert back to default Active Command Set.")
+				dialog.displayErrorMessage("Failed to revert back to default Active Command Set.")
 				return "Failed"
 			end
 
@@ -4613,7 +4783,7 @@ end
 				end repeat
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
 		else
 			--------------------------------------------------------------------------------
@@ -4621,7 +4791,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
-				displayErrorMessage("Failed to revert back to default Active Command Set.")
+				dialog.displayErrorMessage("Failed to revert back to default Active Command Set.")
 				return "Failed"
 			end
 
@@ -4669,7 +4839,7 @@ end
 				end repeat
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
 		end
 
@@ -4690,7 +4860,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Failed to restart Final Cut Pro:
 					--------------------------------------------------------------------------------
-					displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+					dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 					return "Failed"
 				end
 			end
@@ -4743,16 +4913,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		allowMovingMarkers = false
+		mod.allowMovingMarkers = false
 		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if trim(executeResult) == "true" then allowMovingMarkers = true end
+		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion("Toggling Moving Markers requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion("Toggling Moving Markers requires Final Cut Pro to restart.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
@@ -4762,16 +4932,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if allowMovingMarkers then
-			local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+		if mod.allowMovingMarkers then
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		else
-			local executeStatus = executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		end
@@ -4784,7 +4954,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
-				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 				return "Failed"
 			end
 		end
@@ -4810,9 +4980,9 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		if fcp.getPreference("FFSuspendBGOpsDuringPlay") == nil then
-			FFSuspendBGOpsDuringPlay = false
+			mod.FFSuspendBGOpsDuringPlay = false
 		else
-			FFSuspendBGOpsDuringPlay = fcp.getPreference("FFSuspendBGOpsDuringPlay")
+			mod.FFSuspendBGOpsDuringPlay = fcp.getPreference("FFSuspendBGOpsDuringPlay")
 		end
 
 		--------------------------------------------------------------------------------
@@ -4820,7 +4990,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion("Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion("Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
@@ -4833,13 +5003,13 @@ end
 		if FFSuspendBGOpsDuringPlay then
 			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", false)
 			if result == nil then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		else
 			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", true)
 			if result == nil then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		end
@@ -4852,7 +5022,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
-				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 				return "Failed"
 			end
 		end
@@ -4878,9 +5048,9 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		if fcp.getPreference("FFEnableGuards") == nil then
-			FFEnableGuards = false
+			mod.FFEnableGuards = false
 		else
-			FFEnableGuards = fcp.getPreference("FFEnableGuards")
+			mod.FFEnableGuards = fcp.getPreference("FFEnableGuards")
 		end
 
 		--------------------------------------------------------------------------------
@@ -4888,7 +5058,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if displayYesNoQuestion("Toggling Timecode Overlays requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+			if dialog.displayYesNoQuestion("Toggling Timecode Overlays requires Final Cut Pro to restart.\n\nDo you want to continue?") then
 				restartStatus = true
 			else
 				return "Done"
@@ -4898,16 +5068,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if FFEnableGuards then
+		if mod.FFEnableGuards then
 			local result = fcp.setPreference("FFEnableGuards", false)
 			if result == nil then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		else
 			local result = fcp.setPreference("FFEnableGuards", true)
 			if result == nil then
-				displayErrorMessage("Failed to write to plist.")
+				dialog.displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		end
@@ -4920,7 +5090,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
-				displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
 				return "Failed"
 			end
 		end
@@ -4991,9 +5161,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
-			displayErrorMessage("Failed to open Preferences Panel.")
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
+			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
 
@@ -5013,10 +5183,10 @@ end
 		if whichToolbar == nil then
 			timeoutCount = timeoutCount + 1
 			if timeoutCount == 10 then
-				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
-			sleep(0.2)
+			timer.usleep(200000)
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
@@ -5026,7 +5196,7 @@ end
 		--------------------------------------------------------------------------------
 		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
 		if pressPlaybackButton == nil then
-			displayErrorMessage("Failed to open Import Preferences.")
+			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
 
@@ -5041,7 +5211,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
 		::foundGroup::
@@ -5056,7 +5226,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[2]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to close Preferences window.")
+			dialog.displayErrorMessage("Unable to close Preferences window.")
 			return "Failed"
 		end
 
@@ -5098,9 +5268,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
-			displayErrorMessage("Failed to open Preferences Panel.")
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
+			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
 
@@ -5120,10 +5290,10 @@ end
 		if whichToolbar == nil then
 			timeoutCount = timeoutCount + 1
 			if timeoutCount == 10 then
-				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
-			sleep(0.2)
+			timer.usleep(200000)
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
@@ -5133,7 +5303,7 @@ end
 		--------------------------------------------------------------------------------
 		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
 		if pressPlaybackButton == nil then
-			displayErrorMessage("Failed to open Import Preferences.")
+			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
 
@@ -5148,7 +5318,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
 		::foundGroup::
@@ -5163,7 +5333,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[2]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to close Preferences window.")
+			dialog.displayErrorMessage("Unable to close Preferences window.")
 			return "Failed"
 		end
 
@@ -5205,9 +5375,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
-			displayErrorMessage("Failed to open Preferences Panel.")
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
+			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
 
@@ -5227,10 +5397,10 @@ end
 		if whichToolbar == nil then
 			timeoutCount = timeoutCount + 1
 			if timeoutCount == 10 then
-				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
-			sleep(0.2)
+			timer.usleep(200000)
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
@@ -5240,7 +5410,7 @@ end
 		--------------------------------------------------------------------------------
 		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
 		if pressPlaybackButton == nil then
-			displayErrorMessage("Failed to open Import Preferences.")
+			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
 
@@ -5255,7 +5425,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
 		::foundGroup::
@@ -5270,7 +5440,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[2]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to close Preferences window.")
+			dialog.displayErrorMessage("Unable to close Preferences window.")
 			return "Failed"
 		end
 
@@ -5312,9 +5482,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
-			displayErrorMessage("Failed to open Preferences Panel.")
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
+			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
 
@@ -5334,10 +5504,10 @@ end
 		if whichToolbar == nil then
 			timeoutCount = timeoutCount + 1
 			if timeoutCount == 10 then
-				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
-			sleep(0.2)
+			timer.usleep(200000)
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
@@ -5347,7 +5517,7 @@ end
 		--------------------------------------------------------------------------------
 		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
 		if pressPlaybackButton == nil then
-			displayErrorMessage("Failed to open Import Preferences.")
+			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
 
@@ -5362,7 +5532,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
 		::foundGroup::
@@ -5381,7 +5551,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[2]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to close Preferences window.")
+			dialog.displayErrorMessage("Unable to close Preferences window.")
 			return "Failed"
 		end
 
@@ -5423,9 +5593,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = performFinalCutProMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == "Failed" then
-			displayErrorMessage("Failed to open Preferences Panel.")
+		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		if activatePreferencesResult == nil then
+			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
 
@@ -5445,10 +5615,10 @@ end
 		if whichToolbar == nil then
 			timeoutCount = timeoutCount + 1
 			if timeoutCount == 10 then
-				displayErrorMessage("Unable to locate Preferences Toolbar.")
+				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
 				return "Failed"
 			end
-			sleep(0.2)
+			timer.usleep(200000)
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
@@ -5458,7 +5628,7 @@ end
 		--------------------------------------------------------------------------------
 		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
 		if pressPlaybackButton == nil then
-			displayErrorMessage("Failed to open Playback Preferences.")
+			dialog.displayErrorMessage("Failed to open Playback Preferences.")
 			return "Failed"
 		end
 
@@ -5473,7 +5643,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
+			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
 		::foundGroup::
@@ -5483,7 +5653,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[whichGroup][1][1]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to toggle Background Render option.")
+			dialog.displayErrorMessage("Unable to toggle Background Render option.")
 			return "Failed"
 		end
 
@@ -5492,7 +5662,7 @@ end
 		--------------------------------------------------------------------------------
 		local buttonResult = fcpxElements[2]:performAction("AXPress")
 		if buttonResult == nil then
-			displayErrorMessage("Unable to close Preferences window.")
+			dialog.displayErrorMessage("Unable to close Preferences window.")
 			return "Failed"
 		end
 
@@ -5519,7 +5689,7 @@ end
 		--------------------------------------------------------------------------------
 		fcp.launch()
 		if not keyStrokeFromPlist("Paste") then
-			displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 			return "Failed"
 		end
 
@@ -5537,7 +5707,7 @@ end
 
 				local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
 				if file == nil then
-					displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
+					dialog.displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
 					return "Fail"
 				end
 				currentClipboardData = file:read("*all")
@@ -5555,7 +5725,7 @@ end
 				--------------------------------------------------------------------------------
 				fcp.launch()
 				if not keyStrokeFromPlist("Paste") then
-					displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 					return "Failed"
 				end
 
@@ -5681,7 +5851,7 @@ end
 			resetMessage = resetMessage .. "\n\nThis will require your Administrator password."
 		end
 
-		if displayYesNoQuestion(resetMessage) then
+		if dialog.displayYesNoQuestion(resetMessage) then
 
 			--------------------------------------------------------------------------------
 			-- Remove Hacks Shortcut in Final Cut Pro:
@@ -5724,9 +5894,9 @@ end
 
 				return "Done"
 			]]
-			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			ok,toggleEnableHacksShortcutsInFinalCutProResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 			if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
-				displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
+				dialog.displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
 			else
 				removeHacksResult = true
 			end
@@ -5750,7 +5920,7 @@ end
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
-						displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
+						dialog.displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
 					end
 				end
 
@@ -5760,21 +5930,21 @@ end
 				hs.reload()
 
 			end --removeHacksResult
-		end -- displayYesNoQuestion(resetMessage)
+		end -- dialog.displayYesNoQuestion(resetMessage)
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET SCRIPT UPDATE:
 	--------------------------------------------------------------------------------
 	function getScriptUpdate()
-		os.execute('open "' .. updateURL .. '"')
+		os.execute('open "' .. fcpxhacks.updateURL .. '"')
 	end
 
 	--------------------------------------------------------------------------------
 	-- GO TO LATENITE FILMS SITE:
 	--------------------------------------------------------------------------------
 	function gotoLateNiteSite()
-		os.execute('open "https://latenitefilms.com/blog/final-cut-pro-hacks/"')
+		os.execute('open "' .. fcpxhacks.developerURL .. '"')
 	end
 
 	--------------------------------------------------------------------------------
@@ -5824,7 +5994,7 @@ end
 		--------------------------------------------------------------------------------
 		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however you can use the new built-in 'Select Above/Below' shortcuts as a workaround.")
+		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however you can use the new built-in 'Select Above/Below' shortcuts as a workaround.")
 		if 1==1 then return end
 
 		--------------------------------------------------------------------------------
@@ -5878,7 +6048,7 @@ end
 				end
 			end
 			if whichSplitGroup == nil then
-				displayErrorMessage("Unable to locate Split Group.")
+				dialog.displayErrorMessage("Unable to locate Split Group.")
 				return "Failed"
 			end
 			::selectClipAtLaneSplitGroupExit::
@@ -5900,7 +6070,7 @@ end
 				end
 			end
 			if whichGroup == nil then
-				displayErrorMessage("Unable to locate Group.")
+				dialog.displayErrorMessage("Unable to locate Group.")
 				return "Failed"
 			end
 			::selectClipAtLaneGroupExit::
@@ -5925,7 +6095,7 @@ end
 			end
 		end
 		if whichScrollArea == nil then
-			displayErrorMessage("Unable to locate Scroll Area.")
+			dialog.displayErrorMessage("Unable to locate Scroll Area.")
 			return "Failed"
 		end
 		::performScrollingTimelineWatcherScrollAreaExit::
@@ -5944,7 +6114,7 @@ end
 			end
 		end
 		if whichValueIndicator == nil then
-			displayErrorMessage("Unable to locate Value Indicator.")
+			dialog.displayErrorMessage("Unable to locate Value Indicator.")
 			return "Failed"
 		end
 		::selectClipAtLaneValueIndicatorExit::
@@ -5997,7 +6167,7 @@ end
 			end
 		end
 
-		local howManyClips = tableCount(whichLayoutItems)
+		local howManyClips = tools.tableCount(whichLayoutItems)
 		if next(whichLayoutItems) == nil or howManyClips < whichLane then
 			writeToConsole("ERROR: Couldn't find any clips at selected lane (selectClipAtLane).")
 			return "Fail"
@@ -6023,7 +6193,7 @@ end
 		clipCentrePosition['x'] = timelinePlayheadXPosition
 		clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
 
-		ninjaMouseClick(clipCentrePosition)
+		tools.ninjaMouseClick(clipCentrePosition)
 
 	end
 
@@ -6038,7 +6208,7 @@ end
 		--------------------------------------------------------------------------------
 		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
 		if 1==1 then return end
 
 		--------------------------------------------------------------------------------
@@ -6051,7 +6221,7 @@ end
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFShareDestinationsDefaultDestinationIndex")
 		if executeStatus == nil then
-			displayErrorMessage("Failed to access the Final Cut Pro preferences when trying to work out Default Share Destination.")
+			dialog.displayErrorMessage("Failed to access the Final Cut Pro preferences when trying to work out Default Share Destination.")
 			return "Failed"
 		end
 		if tonumber(executeResult) > 10000 then
@@ -6064,7 +6234,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+			local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 			return "Failed"
 		end
 
@@ -6073,17 +6243,17 @@ end
 		--------------------------------------------------------------------------------
 		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist NSNavLastRootDirectory -string")
 		if executeStatus == nil then
-			displayErrorMessage("We could not determine the last place you exported a file to. If this is the first time you've used Final Cut Pro, please do a test export prior to using this tool.")
+			dialog.displayErrorMessage("We could not determine the last place you exported a file to. If this is the first time you've used Final Cut Pro, please do a test export prior to using this tool.")
 			return "Failed"
 		end
-		local lastSavePath = trim(executeResult)
+		local lastSavePath = tools.trim(executeResult)
 
 		--------------------------------------------------------------------------------
 		-- Filmstrip or List Mode?
 		--------------------------------------------------------------------------------
 		local fcpxBrowserMode = getFinalCutProBrowserMode()
 		if (fcpxBrowserMode == "Failed") then -- Error Checking:
-			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
+			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 			return
 		end
 
@@ -6105,7 +6275,7 @@ end
 			end
 		end
 		if whichSplitGroup == nil then
-			displayErrorMessage("Unable to locate Split Group.")
+			dialog.displayErrorMessage("Unable to locate Split Group.")
 			return "Failed"
 		end
 
@@ -6153,7 +6323,7 @@ end
 						end tell
 					end tell
 				]]
-				local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+				local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA)
 				return "Failed"
 			end
 
@@ -6171,7 +6341,7 @@ end
 			end
 			::listSplitGroupTwo::
 			if whichSplitGroupTwo == nil then
-				displayErrorMessage("Unable to locate Split Group Two.")
+				dialog.displayErrorMessage("Unable to locate Split Group Two.")
 				return "Failed"
 			end
 
@@ -6189,7 +6359,7 @@ end
 			end
 			::listSplitGroupThree::
 			if whichSplitGroupThree == nil then
-				displayErrorMessage("Unable to locate Split Group Three.")
+				dialog.displayErrorMessage("Unable to locate Split Group Three.")
 				return "Failed"
 			end
 
@@ -6203,7 +6373,7 @@ end
 				end
 			end
 			if whichScrollArea == nil then
-				displayErrorMessage("Unable to locate Scroll Area.")
+				dialog.displayErrorMessage("Unable to locate Scroll Area.")
 				return "Failed"
 			end
 
@@ -6217,7 +6387,7 @@ end
 				end
 			end
 			if whichOutline == nil then
-				displayErrorMessage("Unable to locate Outline.")
+				dialog.displayErrorMessage("Unable to locate Outline.")
 				return "Failed"
 			end
 
@@ -6268,7 +6438,7 @@ end
 			end
 			::filmstripGroupDone::
 			if whichGroup == nil then
-				displayErrorMessage("Unable to locate Group.")
+				dialog.displayErrorMessage("Unable to locate Group.")
 				return "Failed"
 			end
 
@@ -6286,7 +6456,7 @@ end
 			end
 			::filmstripSplitGroupTwoDone::
 			if whichSplitGroupTwo == nil then
-				displayErrorMessage("Unable to locate Split Group Two.")
+				dialog.displayErrorMessage("Unable to locate Split Group Two.")
 				return "Failed"
 			end
 
@@ -6300,7 +6470,7 @@ end
 				end
 			end
 			if whichScrollArea == nil then
-				displayErrorMessage("Unable to locate Scroll Area.")
+				dialog.displayErrorMessage("Unable to locate Scroll Area.")
 				return "Failed"
 			end
 
@@ -6314,7 +6484,7 @@ end
 				end
 			end
 			if whichGroupTwo == nil then
-				displayErrorMessage("Unable to locate Group Two.")
+				dialog.displayErrorMessage("Unable to locate Group Two.")
 				return "Failed"
 			end
 
@@ -6360,7 +6530,7 @@ end
 				end
 			end
 			if whichLibraryScrollArea == nil then
-				displayErrorMessage("Unable to locate Library Scroll Area.")
+				dialog.displayErrorMessage("Unable to locate Library Scroll Area.")
 				return "Failed"
 			end
 
@@ -6381,7 +6551,7 @@ end
 			end
 
 			if #whichLibraryRows == 0 then
-				displayErrorMessage("Unable to locate Library Role.")
+				dialog.displayErrorMessage("Unable to locate Library Role.")
 				return "Failed"
 			end
 
@@ -6410,7 +6580,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+			local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
 
 			--------------------------------------------------------------------------------
 			-- Abort when Cancel is pressed:
@@ -6425,18 +6595,18 @@ end
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				viewAsListResult = performFinalCutProMenuItem({"View", "Browser", "as List"})
-				if viewAsListResult == "Failed" then
-					displayErrorMessage("Failed to switch to list mode.")
+				viewAsListResult = fcp.selectMenuItem({"View", "Browser", "as List"})
+				if viewAsListResult == nil then
+					dialog.displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
 
 				--------------------------------------------------------------------------------
 				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				groupClipsByResult = performFinalCutProMenuItem({"View", "Browser", "Group Clips By", "None"})
-				if groupClipsByResult == "Failed" then
-					displayErrorMessage("Failed to switch to Group Clips by None.")
+				groupClipsByResult = fcp.selectMenuItem({"View", "Browser", "Group Clips By", "None"})
+				if groupClipsByResult == nil then
+					dialog.displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
 
@@ -6470,7 +6640,7 @@ end
 				end
 				::listGroupDoneA::
 				if whichGroup == nil then
-					displayErrorMessage("Unable to locate Group.")
+					dialog.displayErrorMessage("Unable to locate Group.")
 					return "Failed"
 				end
 
@@ -6488,7 +6658,7 @@ end
 				end
 				::listSplitGroupTwoA::
 				if whichSplitGroupTwo == nil then
-					displayErrorMessage("Unable to locate Split Group Two.")
+					dialog.displayErrorMessage("Unable to locate Split Group Two.")
 					return "Failed"
 				end
 
@@ -6506,7 +6676,7 @@ end
 				end
 				::listSplitGroupThreeA::
 				if whichSplitGroupThree == nil then
-					displayErrorMessage("Unable to locate Split Group Three.")
+					dialog.displayErrorMessage("Unable to locate Split Group Three.")
 					return "Failed"
 				end
 
@@ -6520,7 +6690,7 @@ end
 					end
 				end
 				if whichScrollArea == nil then
-					displayErrorMessage("Unable to locate Scroll Area.")
+					dialog.displayErrorMessage("Unable to locate Scroll Area.")
 					return "Failed"
 				end
 
@@ -6534,7 +6704,7 @@ end
 					end
 				end
 				if whichOutline == nil then
-					displayErrorMessage("Unable to locate Outline.")
+					dialog.displayErrorMessage("Unable to locate Outline.")
 					return "Failed"
 				end
 
@@ -6570,7 +6740,7 @@ end
 				end
 
 				if #whichRows == 0 then
-					displayErrorMessage("Nothing in the selected item.")
+					dialog.displayErrorMessage("Nothing in the selected item.")
 					return "Failed"
 				end
 
@@ -6596,7 +6766,7 @@ end
 					-- Trigger CMD+E (Export Using Default Share)
 					--------------------------------------------------------------------------------
 					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
 
@@ -6626,10 +6796,10 @@ end
 					if exportWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 10 then
-							displayErrorMessage("It took too long for Export Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto waitForExportWindowA
 						end
 					end
@@ -6646,7 +6816,7 @@ end
 						end
 					end
 					if whichNextButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -6655,7 +6825,7 @@ end
 					--------------------------------------------------------------------------------
 					pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
 					if pressNextButtonResult == nil then
-						displayErrorMessage("Unable to press Next Button.")
+						dialog.displayErrorMessage("Unable to press Next Button.")
 						return "Failed"
 					end
 
@@ -6677,17 +6847,17 @@ end
 						end
 					end
 					if whichSaveSheet == nil then
-						displayErrorMessage("Unable to locate Save Window.")
+						dialog.displayErrorMessage("Unable to locate Save Window.")
 						return "Failed"
 					end
 
 					if saveWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 10 then
-							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto waitForSaveWindowA
 						end
 					end
@@ -6704,7 +6874,7 @@ end
 						end
 					end
 					if whichSaveButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -6713,7 +6883,7 @@ end
 					--------------------------------------------------------------------------------
 					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
 					if pressSaveButtonResult == nil then
-						displayErrorMessage("Unable to press Save Button.")
+						dialog.displayErrorMessage("Unable to press Save Button.")
 						return "Failed"
 					end
 
@@ -6755,7 +6925,7 @@ end
 							--------------------------------------------------------------------------------
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press Cancel Button on the Alert.")
+								dialog.displayErrorMessage("Unable to press Cancel Button on the Alert.")
 								return "Failed"
 							end
 
@@ -6771,12 +6941,12 @@ end
 								end
 							end
 							if whichCancelButton == nil then
-								displayErrorMessage("Unable to locate the cancel button.")
+								dialog.displayErrorMessage("Unable to locate the cancel button.")
 								return "Failed"
 							end
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press Cancel Button on Save Dialog.")
+								dialog.displayErrorMessage("Unable to press Cancel Button on Save Dialog.")
 								return "Failed"
 							end
 
@@ -6792,12 +6962,12 @@ end
 								end
 							end
 							if whichCancelExportButton == nil then
-								displayErrorMessage("Unable to locate Group Two.")
+								dialog.displayErrorMessage("Unable to locate Group Two.")
 								return "Failed"
 							end
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press Cancel Button on Export Window.")
+								dialog.displayErrorMessage("Unable to press Cancel Button on Export Window.")
 								return "Failed"
 							end
 
@@ -6807,10 +6977,10 @@ end
 
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 20 then
-							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto checkSaveWindowIsClosedA
 						end
 					end -- Save Sheet Closed
@@ -6847,7 +7017,7 @@ end
 					end tell
 				end tell
 			]]
-			local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
+			local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC)
 
 			--------------------------------------------------------------------------------
 			-- Abort when Cancel is pressed:
@@ -6889,7 +7059,7 @@ end
 						end
 					end
 					if whichLayoutItem == nil then
-						displayErrorMessage("Unable to locate Layout Item.")
+						dialog.displayErrorMessage("Unable to locate Layout Item.")
 						return "Failed"
 					end
 
@@ -6941,7 +7111,7 @@ end
 					-- Trigger CMD+E (Export Using Default Share):
 					--------------------------------------------------------------------------------
 					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
 
@@ -6972,10 +7142,10 @@ end
 					if exportWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 5 then
-							displayErrorMessage("It took too long (five seconds) for Export Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long (five seconds) for Export Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(1)
+							timer.usleep(1000000)
 							goto waitForExportWindowC
 						end
 					end
@@ -6992,7 +7162,7 @@ end
 						end
 					end
 					if whichNextButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -7001,7 +7171,7 @@ end
 					--------------------------------------------------------------------------------
 					local pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
 					if pressNextButtonResult == nil then
-						displayErrorMessage("Failed to press Next Button.")
+						dialog.displayErrorMessage("Failed to press Next Button.")
 						return "Failed"
 					end
 
@@ -7023,17 +7193,17 @@ end
 						end
 					end
 					if whichSaveSheet == nil then
-						displayErrorMessage("Unable to locate Save Window.")
+						dialog.displayErrorMessage("Unable to locate Save Window.")
 						return "Failed"
 					end
 
 					if saveWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 10 then
-							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto waitForSaveWindowC
 						end
 					end
@@ -7050,7 +7220,7 @@ end
 						end
 					end
 					if whichSaveButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -7059,7 +7229,7 @@ end
 					--------------------------------------------------------------------------------
 					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
 					if pressSaveButtonResult == nil then
-						displayErrorMessage("Unable to press Save Button.")
+						dialog.displayErrorMessage("Unable to press Save Button.")
 						return "Failed"
 					end
 
@@ -7102,7 +7272,7 @@ end
 							--------------------------------------------------------------------------------
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press Cancel on the Alert.")
+								dialog.displayErrorMessage("Unable to press Cancel on the Alert.")
 								return "Failed"
 							end
 
@@ -7118,12 +7288,12 @@ end
 								end
 							end
 							if whichCancelButton == nil then
-								displayErrorMessage("Unable to locate the cancel button.")
+								dialog.displayErrorMessage("Unable to locate the cancel button.")
 								return "Failed"
 							end
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press the cancel button on the save dialog.")
+								dialog.displayErrorMessage("Unable to press the cancel button on the save dialog.")
 								return "Failed"
 							end
 
@@ -7139,12 +7309,12 @@ end
 								end
 							end
 							if whichCancelExportButton == nil then
-								displayErrorMessage("Unable to locate Group Two.")
+								dialog.displayErrorMessage("Unable to locate Group Two.")
 								return "Failed"
 							end
 							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
 							if pressCancelButton == nil then
-								displayErrorMessage("Unable to press the Cancel button on the Export Window.")
+								dialog.displayErrorMessage("Unable to press the Cancel button on the Export Window.")
 								return "Failed"
 							end
 
@@ -7153,10 +7323,10 @@ end
 						end
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 20 then
-							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto checkSaveWindowIsClosedC
 						end
 					end
@@ -7178,7 +7348,7 @@ end
 					-- Trigger CMD+E (Export Using Default Share)
 					--------------------------------------------------------------------------------
 					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
+						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
 
@@ -7208,10 +7378,10 @@ end
 					if exportWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 10 then
-							displayErrorMessage("It took too long for Export Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto waitForExportWindow
 						end
 					end
@@ -7228,7 +7398,7 @@ end
 						end
 					end
 					if whichNextButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -7255,17 +7425,17 @@ end
 						end
 					end
 					if whichSaveSheet == nil then
-						displayErrorMessage("Unable to locate Save Window.")
+						dialog.displayErrorMessage("Unable to locate Save Window.")
 						return "Failed"
 					end
 
 					if saveWindowOpen == false then
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 10 then
-							displayErrorMessage("It took too long for Save Window to open so I gave up.")
+							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto waitForSaveWindow
 						end
 					end
@@ -7282,7 +7452,7 @@ end
 						end
 					end
 					if whichSaveButton == nil then
-						displayErrorMessage("Unable to locate Group Two.")
+						dialog.displayErrorMessage("Unable to locate Group Two.")
 						return "Failed"
 					end
 
@@ -7342,7 +7512,7 @@ end
 								end
 							end
 							if whichCancelButton == nil then
-								displayErrorMessage("Unable to locate the cancel button.")
+								dialog.displayErrorMessage("Unable to locate the cancel button.")
 								return "Failed"
 							end
 							fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
@@ -7359,7 +7529,7 @@ end
 								end
 							end
 							if whichCancelExportButton == nil then
-								displayErrorMessage("Unable to locate Group Two.")
+								dialog.displayErrorMessage("Unable to locate Group Two.")
 								return "Failed"
 							end
 							fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
@@ -7369,10 +7539,10 @@ end
 						end
 						timeoutCount = timeoutCount + 1
 						if timeoutCount == 20 then
-							displayErrorMessage("It took too long for the Save Window to close so I gave up.")
+							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
 							return "Failed"
 						else
-							sleep(0.5)
+							timer.usleep(500000)
 							goto checkSaveWindowIsClosed
 						end
 					end
@@ -7399,7 +7569,7 @@ end
 				end tell
 			end tell
 		]]
-		local ok,dialogBoxResult = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
 	end
 
@@ -7414,7 +7584,7 @@ end
 		--------------------------------------------------------------------------------
 		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
+		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
 		if 1==1 then return end
 
 		--------------------------------------------------------------------------------
@@ -7431,12 +7601,12 @@ end
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
 		local resultRevealInBrowser = nil
-		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-		if resultRevealInBrowser == "Failed" then
+		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if resultRevealInBrowser == nil then
 			--------------------------------------------------------------------------------
 			-- Error:
 			--------------------------------------------------------------------------------
-			displayErrorMessage("Unable to trigger Reveal in Browser.")
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 			return
 		end
 
@@ -7447,7 +7617,7 @@ end
 
 		-- Error Checking:
 		if (fcpxBrowserMode == "Failed") then
-			displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
+			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 			return
 		end
 
@@ -7487,7 +7657,7 @@ end
 		end
 		if whichWindow == nil then
 			writeToConsole("ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
-			displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
+			dialog.displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
 			return "Failed"
 		end
 		if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
@@ -7505,7 +7675,7 @@ end
 			end
 		end
 		if whichSplitGroup == nil then
-			displayErrorMessage("Unable to locate Split Group.")
+			dialog.displayErrorMessage("Unable to locate Split Group.")
 			return "Failed"
 		end
 
@@ -7544,7 +7714,7 @@ end
 			end
 			::listGroupDone::
 			if whichGroup == nil then
-				displayErrorMessage("Unable to locate Group.")
+				dialog.displayErrorMessage("Unable to locate Group.")
 				return "Failed"
 			end
 
@@ -7562,7 +7732,7 @@ end
 			end
 			::listSplitGroupTwo::
 			if whichSplitGroupTwo == nil then
-				displayErrorMessage("Unable to locate Split Group Two.")
+				dialog.displayErrorMessage("Unable to locate Split Group Two.")
 				return "Failed"
 			end
 
@@ -7580,7 +7750,7 @@ end
 			end
 			::listSplitGroupThree::
 			if whichSplitGroupThree == nil then
-				displayErrorMessage("Unable to locate Split Group Three.")
+				dialog.displayErrorMessage("Unable to locate Split Group Three.")
 				return "Failed"
 			end
 
@@ -7594,7 +7764,7 @@ end
 				end
 			end
 			if whichGroupTwo == nil then
-				displayErrorMessage("Unable to locate Group Two.")
+				dialog.displayErrorMessage("Unable to locate Group Two.")
 				return "Failed"
 			end
 
@@ -7632,7 +7802,7 @@ end
 			end
 			::searchGroupDone::
 			if whichSearchGroup == nil then
-				displayErrorMessage("Unable to locate Search Group.")
+				dialog.displayErrorMessage("Unable to locate Search Group.")
 				return "Failed"
 			end
 
@@ -7644,7 +7814,7 @@ end
 			--------------------------------------------------------------------------------
 			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
 			if searchTextFieldResult == nil then
-				displayErrorMessage("Unable to set Search Field.")
+				dialog.displayErrorMessage("Unable to set Search Field.")
 			end
 
 			--------------------------------------------------------------------------------
@@ -7652,7 +7822,7 @@ end
 			--------------------------------------------------------------------------------
 			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
 			if searchTextFieldActionResult == nil then
-				displayErrorMessage("Unable to trigger Search.")
+				dialog.displayErrorMessage("Unable to trigger Search.")
 			end
 
 			--------------------------------------------------------------------------------
@@ -7695,7 +7865,7 @@ end
 			end
 			::filmstripGroupDone::
 			if whichGroup == nil then
-				displayErrorMessage("Unable to locate Group.")
+				dialog.displayErrorMessage("Unable to locate Group.")
 				return "Failed"
 			end
 
@@ -7713,7 +7883,7 @@ end
 			end
 			::filmstripSplitGroupTwoDone::
 			if whichSplitGroupTwo == nil then
-				displayErrorMessage("Unable to locate Split Group Two.")
+				dialog.displayErrorMessage("Unable to locate Split Group Two.")
 				return "Failed"
 			end
 
@@ -7727,7 +7897,7 @@ end
 				end
 			end
 			if whichScrollArea == nil then
-				displayErrorMessage("Unable to locate Scroll Area.")
+				dialog.displayErrorMessage("Unable to locate Scroll Area.")
 				return "Failed"
 			end
 
@@ -7741,7 +7911,7 @@ end
 				end
 			end
 			if whichGroupTwo == nil then
-				displayErrorMessage("Unable to locate Group Two.")
+				dialog.displayErrorMessage("Unable to locate Group Two.")
 				return "Failed"
 			end
 
@@ -7779,7 +7949,7 @@ end
 			end
 			::searchGroupDone::
 			if whichSearchGroup == nil then
-				displayErrorMessage("Unable to locate Search Group.")
+				dialog.displayErrorMessage("Unable to locate Search Group.")
 				return "Failed"
 			end
 
@@ -7791,7 +7961,7 @@ end
 			--------------------------------------------------------------------------------
 			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
 			if searchTextFieldResult == nil then
-				displayErrorMessage("Unable to set Search Field.")
+				dialog.displayErrorMessage("Unable to set Search Field.")
 			end
 
 			--------------------------------------------------------------------------------
@@ -7799,7 +7969,7 @@ end
 			--------------------------------------------------------------------------------
 			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
 			if searchTextFieldActionResult == nil then
-				displayErrorMessage("Unable to trigger Search.")
+				dialog.displayErrorMessage("Unable to trigger Search.")
 			end
 
 			--------------------------------------------------------------------------------
@@ -7822,7 +7992,7 @@ end
 		--------------------------------------------------------------------------------
 		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use.")
+		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use.")
 		if 1==1 then return end
 
 		writeToConsole("DOWN " .. direction)
@@ -7833,10 +8003,10 @@ end
 		local showError = false
 		local event = eventtap.event
 
-		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
-		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
-		increaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
-		decreaseThumbnailSizeCharacterString = keycodes.map[finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
+		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
+		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
+		increaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
+		decreaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
 
 		--------------------------------------------------------------------------------
 		-- ERROR DETECTION:
@@ -7848,7 +8018,7 @@ end
 		if next(increaseThumbnailSizeModifiers) == nil and increaseThumbnailSizeCharacterString == "" then showError = true end
 		if next(decreaseThumbnailSizeModifiers) == nil and decreaseThumbnailSizeCharacterString == "" then showError = true end
 		if showError then
-			displayErrorMessage("The Increase/Decrease Clip Height keyboard shortcuts must be allocated in the Final Cut Pro Command Editor for this feature to work.")
+			dialog.displayErrorMessage("The Increase/Decrease Clip Height keyboard shortcuts must be allocated in the Final Cut Pro Command Editor for this feature to work.")
 			return "Fail"
 		end
 
@@ -7925,7 +8095,7 @@ end
 			end
 		end
 		if whichWindow == nil then
-			displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
+			dialog.displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
 			return
 		end
 		fcpxElements = fcpxElements[whichWindow]
@@ -7956,12 +8126,12 @@ end
 			end
 			::keywordDisclosureTriangleDone::
 			if fcpxElements[keywordDisclosureTriangle] == nil then
-				displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+				dialog.displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
 				return "Failed"
 			else
 				local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
 				if keywordDisclosureTriangleResult == nil then
-					displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+					dialog.displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
 					return "Failed"
 				end
 			end
@@ -8017,11 +8187,11 @@ end
 		local restoredKeywordValues = {}
 
 		if savedKeywords == nil then
-			displayMessage("It doesn't look like you've saved any keyword presets yet?")
+			dialog.displayMessage("It doesn't look like you've saved any keyword presets yet?")
 			return "Fail"
 		end
 		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-			displayMessage("It doesn't look like you've saved anything to this keyword preset yet?")
+			dialog.displayMessage("It doesn't look like you've saved anything to this keyword preset yet?")
 			return "Fail"
 		end
 		for i=1, 9 do
@@ -8042,7 +8212,7 @@ end
 			end
 		end
 		if whichWindow == nil then
-			displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
+			dialog.displayMessage("This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.")
 			return
 		end
 		fcpxElements = fcpxElements[whichWindow]
@@ -8076,11 +8246,11 @@ end
 			if fcpxElements[keywordDisclosureTriangle] ~= nil then
 				local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
 				if keywordDisclosureTriangleResult == nil then
-					displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
+					dialog.displayMessage("Please make sure that the Keyboard Shortcuts are visible before using this feature.")
 					return "Failed"
 				end
 			else
-				displayErrorMessage("Could not find keyword disclosure triangle.")
+				dialog.displayErrorMessage("Could not find keyword disclosure triangle.")
 				return "Failed"
 			end
 		end
@@ -8146,19 +8316,20 @@ end
 			--------------------------------------------------------------------------------
 			-- Stop Scrolling Timeline Loops:
 			--------------------------------------------------------------------------------
-			if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
-			if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
+			if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
+			if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
 
 			--------------------------------------------------------------------------------
 			-- Turn off variable:
 			--------------------------------------------------------------------------------
-			scrollingTimelineSpacebarPressed = false
+			mod.scrollingTimelineSpacebarPressed = false
 
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
 			alert.closeAll(0)
 			alert.show("Scrolling Timeline Deactivated")
+
 		else
 			--------------------------------------------------------------------------------
 			-- Update Settings:
@@ -8183,6 +8354,7 @@ end
 			--------------------------------------------------------------------------------
 			alert.closeAll(0)
 			alert.show("Scrolling Timeline Activated")
+
 		end
 
 		--------------------------------------------------------------------------------
@@ -8200,7 +8372,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define Scrollbar Check Timer:
 		--------------------------------------------------------------------------------
-		scrollingTimelineScrollbarTimer = timer.new(0.001, function()
+		mod.scrollingTimelineScrollbarTimer = timer.new(0.001, function()
 			if timelineScrollArea[2] ~= nil then
 				performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 				scrollbarSearchLoopActivated = false
@@ -8211,7 +8383,7 @@ end
 		-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
 		--------------------------------------------------------------------------------
 		if timelineScrollArea[2] == nil then
-			scrollingTimelineScrollbarTimer:start()
+			mod.scrollingTimelineScrollbarTimer:start()
 			return "Fail"
 		end
 
@@ -8234,7 +8406,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define the Loop of Death:
 		--------------------------------------------------------------------------------
-		scrollingTimelineTimer = timer.new(0.000001, function()
+		mod.scrollingTimelineTimer = timer.new(0.000001, function()
 
 			--------------------------------------------------------------------------------
 			-- Does the scrollbar still exist?
@@ -8257,7 +8429,7 @@ end
 						end
 					end
 					if whichValueIndicator == nil then
-						displayErrorMessage("Unable to locate Value Indicator.")
+						dialog.displayErrorMessage("Unable to locate Value Indicator.")
 						return "Failed"
 					end
 					::performScrollingTimelineValueIndicatorExitX::
@@ -8282,7 +8454,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Begin the Loop of Death:
 		--------------------------------------------------------------------------------
-		scrollingTimelineTimer:start()
+		mod.scrollingTimelineTimer:start()
 
 	end
 
@@ -8309,27 +8481,27 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		local openInAngleEditorResult = performFinalCutProMenuItem({"Clip", "Open in Angle Editor"})
-		if openInAngleEditorResult == "Failed" then
-			displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
+		local openInAngleEditorResult = fcp.selectMenuItem({"Clip", "Open in Angle Editor"})
+		if openInAngleEditorResult == nil then
+			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		local goToTimelineResult = performFinalCutProMenuItem({"Window", "Go To", "Timeline"})
-		if goToTimelineResult == "Failed" then
-			displayErrorMessage("Unable to return to timeline.")
+		local goToTimelineResult = fcp.selectMenuItem({"Window", "Go To", "Timeline"})
+		if goToTimelineResult == nil then
+			dialog.displayErrorMessage("Unable to return to timeline.")
 			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
-		local revealInBrowserResult = performFinalCutProMenuItem({"File", "Reveal in Browser"})
-		if revealInBrowserResult == "Failed" then
-			displayErrorMessage("Unable to Reveal in Browser.")
+		local revealInBrowserResult = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if revealInBrowserResult == nil then
+			dialog.displayErrorMessage("Unable to Reveal in Browser.")
 			return
 		end
 
@@ -8337,9 +8509,9 @@ end
 		-- Go back to original timeline if appropriate:
 		--------------------------------------------------------------------------------
 		if goBackToTimeline then
-			local timelineHistoryBackResult = performFinalCutProMenuItem({"View", "Timeline History Back"})
-			if timelineHistoryBackResult == "Failed" then
-				displayErrorMessage("Unable to go back to previous timeline.")
+			local timelineHistoryBackResult = fcp.selectMenuItem({"View", "Timeline History Back"})
+			if timelineHistoryBackResult == nil then
+				dialog.displayErrorMessage("Unable to go back to previous timeline.")
 				return
 			end
 		end
@@ -8363,7 +8535,11 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		resultRevealInBrowser = performFinalCutProMenuItem({"File", "Reveal in Browser"})
+		local result = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if result == nil then
+			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
+			return "Fail"
+		end
 
 		--------------------------------------------------------------------------------
 		-- If it worked then...
@@ -8377,7 +8553,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Error:
 			--------------------------------------------------------------------------------
-			displayErrorMessage("Unable to trigger Reveal in Browser.")
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 		end
 	end
 
@@ -8394,12 +8570,12 @@ end
 		-- Make sure Nudge Shortcuts are allocated:
 		--------------------------------------------------------------------------------
 		local nudgeShortcutMissing = false
-		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
 		if nudgeShortcutMissing then
-			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+			dialog.displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
 			return "Failed"
 		end
 
@@ -8416,23 +8592,26 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Final Cut Pro Color Board Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 		if finalCutProColorBoardRadioGroup == nil then
 
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-
+			local result = fcp.selectMenuItem({"Window", "Go To", "Color Board"})
+			if result == nil then
+				dialog.displayErrorMessage("Failed to goto Color Board.")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Try again:
 			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 
 		end
 		if finalCutProColorBoardRadioGroup == nil then
-			displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+			dialog.displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
 			return "Failed"
 		end
 
@@ -8442,7 +8621,7 @@ end
 		if whichPanel ~= nil then
 			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Could not open specific Color Board panel.")
+				dialog.displayErrorMessage("Could not open specific Color Board panel.")
 				return "Failed"
 			end
 		end
@@ -8468,7 +8647,7 @@ end
 			local colorBoardPosition = {}
 			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
 			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-			ninjaMouseClick(colorBoardPosition)
+			tools.ninjaMouseClick(colorBoardPosition)
 		end
 
 		--------------------------------------------------------------------------------
@@ -8479,25 +8658,25 @@ end
 			--------------------------------------------------------------------------------
 			-- Get shortcut key from plist, press and hold if required:
 			--------------------------------------------------------------------------------
-			releaseColorBoardDown = false
-			timer.doUntil(function() return releaseColorBoardDown end, function()
+			mod.releaseColorBoardDown = false
+			timer.doUntil(function() return mod.releaseColorBoardDown end, function()
 				if whichDirection == "up" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckUp")
 					end
 				end
 				if whichDirection == "down" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckDown")
 					end
 				end
 				if whichDirection == "left" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
 					end
 				end
 				if whichDirection == "right" then
-					if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
+					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
 						keyStrokeFromPlist("ColorBoard-NudgePuckRight")
 					end
 				end
@@ -8521,12 +8700,12 @@ end
 		-- Make sure Nudge Shortcuts are allocated:
 		--------------------------------------------------------------------------------
 		local nudgeShortcutMissing = false
-		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
 		if nudgeShortcutMissing then
-			displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+			dialog.displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
 			return "Failed"
 		end
 
@@ -8543,23 +8722,26 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Final Cut Pro Color Board Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 		if finalCutProColorBoardRadioGroup == nil then
 
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			resultRevealInBrowser = performFinalCutProMenuItem({"Window", "Go To", "Color Board"})
-
+			local result = fcp.selectMenuItem({"Window", "Go To", "Color Board"})
+			if result == nil then
+				dialog.displayErrorMessage("Failed to goto Color Board.")
+				return "Fail"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Try again:
 			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = getFinalCutProColorBoardRadioGroup()
+			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 
 		end
 		if finalCutProColorBoardRadioGroup == nil then
-			displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+			dialog.displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
 			return "Failed"
 		end
 
@@ -8569,7 +8751,7 @@ end
 		if whichPanel ~= nil then
 			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Could not open specific Color Board panel.")
+				dialog.displayErrorMessage("Could not open specific Color Board panel.")
 				return "Failed"
 			end
 		end
@@ -8595,14 +8777,14 @@ end
 			local colorBoardPosition = {}
 			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
 			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-			ninjaMouseClick(colorBoardPosition)
+			tools.ninjaMouseClick(colorBoardPosition)
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get shortcut key from plist, press and hold if required:
 		--------------------------------------------------------------------------------
-		releaseMouseColorBoardDown = false
-		timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+		mod.releaseMouseColorBoardDown = false
+		timer.doUntil(function() return mod.releaseMouseColorBoardDown end, function()
 
 			local currentMousePoint = mouse.getAbsolutePosition()
 
@@ -8634,14 +8816,14 @@ end
 	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
 	--------------------------------------------------------------------------------
 	function colorBoardMousePuckRelease()
-		releaseMouseColorBoardDown = true
+		mod.releaseMouseColorBoardDown = true
 	end
 
 	--------------------------------------------------------------------------------
 	-- COLOR BOARD - RELEASE KEYPRESS:
 	--------------------------------------------------------------------------------
 	function colorBoardSelectPuckRelease()
-		releaseColorBoardDown = true
+		mod.releaseColorBoardDown = true
 	end
 
 --------------------------------------------------------------------------------
@@ -8670,16 +8852,16 @@ end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
-			displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
+			dialog.displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -8696,7 +8878,7 @@ end
 			end
 		end
 		if whichRadioGroup == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
 			return "Failed"
 		end
 
@@ -8717,13 +8899,13 @@ end
 			if effectsBrowserButton:attributeValue("AXValue") == 0 then
 				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
 				if presseffectsBrowserButtonResult == nil then
-					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.")
 					showTouchbar()
 					return "Fail"
 				end
 			end
 		else
-			displayErrorMessage("Unable to activate Video Effects Panel.")
+			dialog.displayErrorMessage("Unable to activate Video Effects Panel.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -8735,7 +8917,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -8749,7 +8931,7 @@ end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in transitionsShortcut().")
 				return "Failed"
 			end
 
@@ -8765,7 +8947,7 @@ end
 				end
 			end
 			if whichEffectsBrowserPopupButton == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in transitionsShortcut().")
 				return "Failed"
 			end
 
@@ -8776,12 +8958,12 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -8798,7 +8980,7 @@ end
 		if effectsSearchCancelButton ~= nil then
 			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -8830,7 +9012,7 @@ end
 					effectsBrowserSidebar:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -8851,7 +9033,7 @@ end
 			if allVideoAndAudioButton ~= nil then
 				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 			else
-				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -8860,7 +9042,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay...
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Perform Search:
@@ -8871,7 +9053,7 @@ end
 			effectsSearchField:setAttributeValue("AXValue", currentShortcut)
 			effectsSearchField[1]:performAction("AXPress")
 		else
-			displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+			dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -8927,7 +9109,7 @@ end
 				effectsSearchField:setAttributeValue("AXValue", currentShortcut)
 				effectsSearchField[1]:performAction("AXPress")
 			else
-				displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -8967,7 +9149,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			doubleLeftClick(effectButtonPosition)
+			tools.tools.doubleLeftClick(effectButtonPosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -8975,7 +9157,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			displayErrorMessage("Unable to locate effect.\n\nError occured in transitionsShortcut().")
+			dialog.displayErrorMessage("Unable to locate effect.\n\nError occured in transitionsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -8997,7 +9179,7 @@ end
 			if effectsSearchCancelButton ~= nil then
 				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 				if effectsSearchCancelButtonResult == nil then
-					displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
+					dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in transitionsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -9043,7 +9225,7 @@ end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
-			displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
+			dialog.displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9051,9 +9233,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Timeline Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = getFinalCutProTimelineButtonBar()
+		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
 		if finalCutProTimelineButtonBar == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using getFinalCutProTimelineButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9070,7 +9252,7 @@ end
 			end
 		end
 		if whichRadioGroup == nil then
-			displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
 			return "Failed"
 		end
 
@@ -9091,13 +9273,13 @@ end
 			if effectsBrowserButton:attributeValue("AXValue") == 0 then
 				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
 				if presseffectsBrowserButtonResult == nil then
-					displayErrorMessage("Unable to press Effects Browser Button icon.")
+					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.")
 					showTouchbar()
 					return "Fail"
 				end
 			end
 		else
-			displayErrorMessage("Unable to activate Video Effects Panel.")
+			dialog.displayErrorMessage("Unable to activate Video Effects Panel.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9109,7 +9291,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -9123,7 +9305,7 @@ end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
 				return "Failed"
 			end
 
@@ -9139,7 +9321,7 @@ end
 				end
 			end
 			if whichEffectsBrowserPopupButton == nil then
-				displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
 				return "Failed"
 			end
 
@@ -9150,12 +9332,12 @@ end
 			if installedEffectsPopup ~= nil then
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = getFinalCutProEffectsTransitionsBrowserGroup()
+					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9172,7 +9354,7 @@ end
 		if effectsSearchCancelButton ~= nil then
 			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 			if effectsSearchCancelButtonResult == nil then
-				displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9204,7 +9386,7 @@ end
 					effectsBrowserSidebar:performAction("AXPress")
 				end
 			else
-				displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9225,7 +9407,7 @@ end
 			if allVideoAndAudioButton ~= nil then
 				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 			else
-				displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
+				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9234,7 +9416,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay...
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Perform Search:
@@ -9245,7 +9427,7 @@ end
 			effectsSearchField:setAttributeValue("AXValue", currentShortcut)
 			effectsSearchField[1]:performAction("AXPress")
 		else
-			displayErrorMessage("Unable to type search request in search box.\n\nError occured in effectsShortcut().")
+			dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in effectsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9301,7 +9483,7 @@ end
 				effectsSearchField:setAttributeValue("AXValue", currentShortcut)
 				effectsSearchField[1]:performAction("AXPress")
 			else
-				displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in transitionsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9341,7 +9523,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			doubleLeftClick(effectButtonPosition)
+			tools.doubleLeftClick(effectButtonPosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -9349,7 +9531,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			displayErrorMessage("Unable to locate effect.\n\nError occured in effectsShortcut().")
+			dialog.displayErrorMessage("Unable to locate effect.\n\nError occured in effectsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9371,7 +9553,7 @@ end
 			if effectsSearchCancelButton ~= nil then
 				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
 				if effectsSearchCancelButtonResult == nil then
-					displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
+					dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -9417,7 +9599,7 @@ end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
-			displayMessage("There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.")
+			dialog.displayMessage("There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9425,9 +9607,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9465,7 +9647,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9484,7 +9666,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9502,7 +9684,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9521,7 +9703,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9532,7 +9714,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			displayErrorMessage("Unable to select Titles from List.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9550,7 +9732,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9562,14 +9744,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9578,7 +9760,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay...
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Get Titles/Generators Group:
@@ -9597,7 +9779,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9608,7 +9790,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 		if result == nil then
-			displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9618,7 +9800,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 		if result == nil then
-			displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9652,7 +9834,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 			if result == nil then
-				displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9662,7 +9844,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9702,7 +9884,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			doubleLeftClick(selectedTitlePosition)
+			tools.doubleLeftClick(selectedTitlePosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -9710,7 +9892,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			displayErrorMessage("Unable to locate Title.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to locate Title.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9725,7 +9907,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9760,7 +9942,7 @@ end
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9771,7 +9953,7 @@ end
 			if whichBrowserPanelWasOpen == "Library" then
 				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 				if result == nil then
-					displayMessage("Unable to press Libraries Button.\n\nError occured in titlesShortcut().")
+					dialog.displayMessage("Unable to press Libraries Button.\n\nError occured in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -9779,7 +9961,7 @@ end
 			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 				if result == nil then
-					displayMessage("Unable to press Photos & Audio Button.\n\nError occured in titlesShortcut().")
+					dialog.displayMessage("Unable to press Photos & Audio Button.\n\nError occured in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -9787,7 +9969,7 @@ end
 			if titlesGeneratorsSideBarClosed then
 				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 				if result == nil then
-					displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -9823,7 +10005,7 @@ end
 		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 		if currentShortcut == nil then
-			displayMessage("There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.")
+			dialog.displayMessage("There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9831,9 +10013,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Button Bar:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = getFinalCutProBrowserButtonBar()
+		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using getFinalCutProBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9871,7 +10053,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9890,7 +10072,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9908,7 +10090,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9927,7 +10109,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -9950,7 +10132,7 @@ end
 		end
 		::generatorsRowExit::
 		if generatorsRow == nil then
-			displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9960,7 +10142,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9978,7 +10160,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -9990,14 +10172,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press First Popup Item.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -10006,7 +10188,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Add a bit of a delay...
 		--------------------------------------------------------------------------------
-		sleep(0.1)
+		timer.usleep(100000)
 
 		--------------------------------------------------------------------------------
 		-- Get Titles/Generators Group:
@@ -10025,7 +10207,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -10036,7 +10218,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 		if result == nil then
-			displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -10046,7 +10228,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 		if result == nil then
-			displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -10080,7 +10262,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 			if result == nil then
-				displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -10090,7 +10272,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -10130,7 +10312,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			doubleLeftClick(selectedTitlePosition)
+			tools.doubleLeftClick(selectedTitlePosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -10138,7 +10320,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			displayErrorMessage("Unable to locate Generator.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to locate Generator.\n\nError occured in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -10153,7 +10335,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
 			if result == nil then
-				displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -10188,7 +10370,7 @@ end
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -10199,7 +10381,7 @@ end
 			if whichBrowserPanelWasOpen == "Library" then
 				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 				if result == nil then
-					displayMessage("Unable to press Libraries Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayMessage("Unable to press Libraries Button.\n\nError occured in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -10207,7 +10389,7 @@ end
 			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 				if result == nil then
-					displayMessage("Unable to press Photos & Audio Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayMessage("Unable to press Photos & Audio Button.\n\nError occured in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -10215,7 +10397,7 @@ end
 			if titlesGeneratorsSideBarClosed then
 				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 				if result == nil then
-					displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -10242,7 +10424,7 @@ end
 		-- Check for compatibility:
 		--------------------------------------------------------------------------------
 		if not touchBarSupported then
-			displayMessage("Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.")
+			dialog.displayMessage("Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.")
 			return "Fail"
 		end
 
@@ -10255,7 +10437,7 @@ end
 		-- Toggle Touch Bar:
 		--------------------------------------------------------------------------------
 		setTouchBarLocation()
-		touchBarWindow:toggle()
+		mod.touchBarWindow:toggle()
 
 		--------------------------------------------------------------------------------
 		-- Update Settings:
@@ -10271,27 +10453,27 @@ end
 
 		if whichMode == "Audio" then
 			if not keyStrokeFromPlist("MultiAngleEditStyleAudio") then
-				displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Video" then
 			if not keyStrokeFromPlist("MultiAngleEditStyleVideo") then
-				displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Both" then
 			if not keyStrokeFromPlist("MultiAngleEditStyleAudioVideo") then
-				displayMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+				dialog.displayMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
 				return "Failed"
 			end
 		end
 
 		if not keyStrokeFromPlist("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
-			displayMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
+			dialog.displayMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.")
 			return "Failed"
 		end
 
@@ -10307,17 +10489,17 @@ end
 		if enableClipboardHistory then clipboard.stopWatching() end
 
 		if not keyStrokeFromPlist("Cut") then
-			displayErrorMessage("Failed to trigger the 'Cut' Shortcut.")
+			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.")
 			return "Failed"
 		end
 
 		if not keyStrokeFromPlist("Paste") then
-			displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 			return "Failed"
 		end
 
 		if enableClipboardHistory then
-			sleep(1) -- Not sure why this is needed, but it is.
+			timer.usleep(1000000) -- Not sure why this is needed, but it is.
 			clipboard.startWatching()
 		end
 
@@ -10336,7 +10518,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Browser Split Group:
 		--------------------------------------------------------------------------------
-		browserSplitGroup = getFinalCutProBrowserSplitGroup()
+		browserSplitGroup = fcp.getBrowserSplitGroup()
 		if browserSplitGroup == nil then
 			writeToConsole("ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
 			return "Fail"
@@ -10508,231 +10690,6 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---         F I N A L    C U T    P R O     G U I     S C R I P T I N G        --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- TIMELINE:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO TIMELINE SPLIT GROUP:
-	--------------------------------------------------------------------------------
-	function getFinalCutProTimelineSplitGroup()
-
-		--------------------------------------------------------------------------------
-		-- Used for debugging:
-		--------------------------------------------------------------------------------
-		--ax.log.level = 4
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-		local whichSplitGroup = nil
-
-		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local sw = ax.applicationElement(application.get("Final Cut Pro"))
-
-		--------------------------------------------------------------------------------
-		-- Single Screen:
-		--------------------------------------------------------------------------------
-		whichSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},								-- AXWindow "Final Cut Pro" (window 2)
-			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },													    -- AXGroup (group 1)
-			{ role = "AXSplitGroup", },												    -- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },												        -- AXGroup (group 2)
-			{ role = "AXSplitGroup", },												 	-- AXSplitGroup (splitter group 1)
-			{ role = "AXGroup", },														-- AXGroup (group 1)
-			{ role = "AXSplitGroup", Identifier = "_NS:237"},							-- AXSplitGroup (splitter group 1)
-		}, 1)
-
-		--------------------------------------------------------------------------------
-		-- Dual Screen:
-		--------------------------------------------------------------------------------
-		if whichSplitGroup == nil then
-
-			whichSplitGroup = sw:searchPath({
-				{ role = "AXWindow", Title = "Final Cut Pro"},							-- AXWindow "Final Cut Pro" (window 2)
-				{ role = "AXSplitGroup", },											 	-- AXSplitGroup (splitter group 1)
-				{ role = "AXGroup", },												    -- AXGroup (group 1)
-				{ role = "AXSplitGroup", },											    -- AXSplitGroup (splitter group 1)
-				{ role = "AXGroup", },											        -- AXGroup (group 2)
-				{ role = "AXSplitGroup", Identifier = "_NS:237"},					 	-- AXSplitGroup (splitter group 1)
-			}, 1)
-
-		end
-
-		return whichSplitGroup
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO TIMELINE SCROLL AREA:
-		--------------------------------------------------------------------------------
-		function getFinalCutProTimelineScrollArea()
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group
-			--------------------------------------------------------------------------------
-			local finalCutProTimelineScrollArea = nil
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-
-			--------------------------------------------------------------------------------
-			-- Get last scroll area:
-			--------------------------------------------------------------------------------
-			if finalCutProTimelineSplitGroup ~= nil then
-
-				local whichScrollArea = nil
-				for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-					if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-						whichScrollArea = i
-					end
-				end
-				if whichScrollArea == nil then
-					writeToConsole("ERROR: Unable to find scroll area in getFinalCutProTimelineScrollArea().")
-					return "Failed"
-				end
-				finalCutProTimelineScrollArea = finalCutProTimelineSplitGroup[whichScrollArea]
-
-			end
-
-			return finalCutProTimelineScrollArea
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO TIMELINE BUTTON BAR:
-		--------------------------------------------------------------------------------
-		function getFinalCutProTimelineButtonBar()
-
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-			return finalCutProTimelineSplitGroup:attributeValue("AXParent")[2]
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO EFFECTS/TRANSITIONS BROWSER GROUP:
-		--------------------------------------------------------------------------------
-		function getFinalCutProEffectsTransitionsBrowserGroup()
-
-			--------------------------------------------------------------------------------
-			-- Get Timeline Split Group:
-			--------------------------------------------------------------------------------
-			local finalCutProTimelineSplitGroup = getFinalCutProTimelineSplitGroup()
-
-			--------------------------------------------------------------------------------
-			-- Which Group:
-			--------------------------------------------------------------------------------
-			for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-				if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
-					return finalCutProTimelineSplitGroup[i]
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- If things get to here it's failed:
-			--------------------------------------------------------------------------------
-			return nil
-
-		end
-
---------------------------------------------------------------------------------
--- BROWSER:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO BROWSER SPLIT GROUP:
-	--------------------------------------------------------------------------------
-	function getFinalCutProBrowserSplitGroup()
-
-		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(application.get("Final Cut Pro"))
-
-		--------------------------------------------------------------------------------
-		-- Single Screen:
-		--------------------------------------------------------------------------------
-		local browserSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
-		}, 1)
-
-		--------------------------------------------------------------------------------
-		-- Dual Screen:
-		--------------------------------------------------------------------------------
-		if browserSplitGroup == nil then
-			browserSplitGroup = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-			}, 1)
-		end
-
-		return browserSplitGroup
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- GET FINAL CUT PRO BROWSER BUTTON BAR:
-		--------------------------------------------------------------------------------
-		function getFinalCutProBrowserButtonBar()
-			local finalCutProBrowserSplitGroup = getFinalCutProBrowserSplitGroup()
-			return finalCutProBrowserSplitGroup:attributeValue("AXParent")
-		end
-
---------------------------------------------------------------------------------
--- INSPECTOR:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO COLOR BOARD BUTTON BAR:
-	--------------------------------------------------------------------------------
-	function getFinalCutProColorBoardRadioGroup()
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro:
-		--------------------------------------------------------------------------------
-		sw = ax.applicationElement(application.get("Final Cut Pro"))
-
-		--------------------------------------------------------------------------------
-		-- Find Color Button:
-		--------------------------------------------------------------------------------
-		local result = sw:searchPath({
-			{ role = "AXWindow", Title = "Final Cut Pro"},
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", },
-			{ role = "AXGroup", },
-			{ role = "AXRadioGroup", Identifier = "_NS:128"},
-		}, 1)
-
-		return result
-
-	end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --      C O M M O N     F I N A L    C U T    P R O     F U N C T I O N S     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -10760,226 +10717,12 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 end
 
 --------------------------------------------------------------------------------
--- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
---------------------------------------------------------------------------------
-function readShortcutKeysFromPlist()
-
-	--------------------------------------------------------------------------------
-	-- Get 'Active Command Set' Path:
-	--------------------------------------------------------------------------------
-	local activeCommandSetPath = fcp.getActiveCommandSetPath()
-
-	if activeCommandSetPath == nil then
-		displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
-		return "Failed"
-	else
-		if fs.attributes(activeCommandSetPath) == nil then
-			displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
-			return "Failed"
-		else
-
-			-- TO DO: Need to debug 'plistParser' and get this working...
-
-			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
-
-			--[[
-
-			if activeCommandSetTable == nil then
-				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
-				return "Failed"
-			end
-			--writeToConsole(activeCommandSetTable)
-
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
-				if activeCommandSetTable[k] ~= nil then
-					writeToConsole(k)
-					writeToConsole(v)
-				else
-					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				end
-			end
-
-			--]]
-
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
-
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
-
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
-
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
-
-						--------------------------------------------------------------------------------
-						-- Insert Blank Placeholder
-						--------------------------------------------------------------------------------
-						local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Assuming that the plist was read fine, but contained no value:
-								--------------------------------------------------------------------------------
-								finalCutProShortcutKey[k .. addToK]['characterString'] = ""
-							else
-								displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
-								return "Failed"
-							end
-						else
-							--------------------------------------------------------------------------------
-							-- We only want the first line of the executeResult:
-							--------------------------------------------------------------------------------
-							for line in executeResult:gmatch"(.-)\n" do
-								executeResult = line
-								goto escape
-							end
-							::escape::
-
-							finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
-						end
-
-					end
-				end
-			end
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
-
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus = execute(executeCommand)
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					finalCutProShortcutKey[k]['modifiers'] = {}
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
-
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
-
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
-
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Try modifierMask Instead!
-								--------------------------------------------------------------------------------
-								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
-								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-								if executeStatus == nil then
-									if executeType == "exit" then
-										--------------------------------------------------------------------------------
-										-- Assuming that the plist was read fine, but contained no value:
-										--------------------------------------------------------------------------------
-										finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
-									else
-										displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
-										return "Failed"
-									end
-								else
-									finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
-								end
-							else
-								displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
-								return "Failed"
-							end
-						else
-							finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
-						end
-					end
-				end
-			end
-			return "Done"
-		end
-	end
-end
-
---------------------------------------------------------------------------------
--- OPEN FINAL CUT PRO KEYWORD EDITOR:
---------------------------------------------------------------------------------
-function openFinalCutProKeywordEditor() -- Returns "Done" or "Failed"
-
-	local newresult = "Failed"
-	result = keyStrokeFromPlist("ToggleKeywordEditor")
-	if result == true then newresult = "Done" end
-	return newresult
-
-end
-
---------------------------------------------------------------------------------
 -- WHICH BROWSER MODE IS ACTIVE IN FINAL CUT PRO?
 --------------------------------------------------------------------------------
 --
 -- TO DO: This is currently broken in Final Cut Pro 10.3, and probably no longer needed.
 --
 function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
-
---[[
-THUMBNAIL VIEW (PRIMARY MONITOR):
-AXApplication "Final Cut Pro"
-AXWindow "Final Cut Pro" (window 2)
-AXSplitGroup (splitter group 1)
-AXGroup (group 1)
-AXSplitGroup (splitter group 1)
-AXGroup (group 2)
-AXSplitGroup (splitter group 1)
-AXGroup (group 4)
-AXSplitGroup (splitter group 1)
-AXGroup (group 2)
-AXScrollArea (scroll area 1)
---]]
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -11066,7 +10809,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Get Timeline Scroll Area:
 	--------------------------------------------------------------------------------
-	local timelineScrollArea = getFinalCutProTimelineScrollArea()
+	local timelineScrollArea = fcp.getTimelineScrollArea()
 	if timelineScrollArea == nil then
 		writeToConsole("ERROR: Could not find Timeline Scroll Area.")
 		return "Stop"
@@ -11105,7 +10848,7 @@ function checkScrollingTimelinePress()
 				end
 			end
 			if whichValueIndicator == nil then
-				displayErrorMessage("Unable to locate Value Indicator.")
+				dialog.displayErrorMessage("Unable to locate Value Indicator.")
 				return "Failed"
 			end
 			::performScrollingTimelineValueIndicatorExit::
@@ -11155,200 +10898,31 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
     -- Highlight the FCPX Browser Playhead:
     --------------------------------------------------------------------------------
    	if displayHighlightShape == "Rectangle" then
-		browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 	if displayHighlightShape == "Circle" then
-		browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 	if displayHighlightShape == "Diamond" then
-		browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-		browserHighlight:setStrokeColor(displayHighlightColour)
-		browserHighlight:setFill(false)
-		browserHighlight:setStrokeWidth(5)
-		browserHighlight:show()
+		mod.browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
+		mod.browserHighlight:setStrokeColor(displayHighlightColour)
+		mod.browserHighlight:setFill(false)
+		mod.browserHighlight:setStrokeWidth(5)
+		mod.browserHighlight:show()
 	end
 
 	--------------------------------------------------------------------------------
     -- Set a timer to delete the circle after 3 seconds:
     --------------------------------------------------------------------------------
-    browserHighlightTimer = timer.doAfter(3, function() browserHighlight:delete() end)
-
-end
-
---------------------------------------------------------------------------------
--- PERFORM FINAL CUT PRO MENU ITEM:
---------------------------------------------------------------------------------
-function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"View", "Browser", "as List"} ), Returns "Done" or "Failed"
-
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichMenuBar 		= nil
-	local whichMenuOne 		= nil
-	local whichMenuTwo 		= nil
-	local whichMenuThree 	= nil
-
-	--------------------------------------------------------------------------------
-	-- Hardcoded Values (for system other than English):
-	--------------------------------------------------------------------------------
-	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
-	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
-		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
-		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
-	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
-	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
-	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
-	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
-	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
-		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
-	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
-	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
-		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
-		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
-	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
-		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
-			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
-			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
-	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
-
-	--------------------------------------------------------------------------------
-	-- TO DO: Commenting this stuff out will have definitely broken something:
-	--------------------------------------------------------------------------------
-	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
-	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
-	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
-	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp.application()
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which AXMenuBar:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
-				whichMenuBar = i
-				goto performFinalCutProMenuItemWhichMenuBarExit
-			end
-	end
-	if whichMenuBar == nil then	return "Failed"	end
-	::performFinalCutProMenuItemWhichMenuBarExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Menu One:
-	--------------------------------------------------------------------------------
-	if whichMenuOne == nil then
-		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[1] then
-				whichMenuOne = i
-				goto performFinalCutProMenuItemWhichMenuOneExit
-			end
-		end
-		if whichMenuOne == nil then	return "Failed"	end
-		::performFinalCutProMenuItemWhichMenuOneExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Menu Two:
-	--------------------------------------------------------------------------------
-	if whichMenuTwo == nil then
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[2] then
-					whichMenuTwo = i
-					goto performFinalCutProMenuItemWhichMenuTwoExit
-				end
-		end
-		if whichMenuTwo == nil then	return "Failed"	end
-		::performFinalCutProMenuItemWhichMenuTwoExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 1:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 2 then fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress") end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 2:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 3 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 3:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 4 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Four:
-		--------------------------------------------------------------------------------
-		if whichMenuFour == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuFour = i
-						goto performFinalCutProMenuItemWhichMenuFourExit
-					end
-			end
-			if whichMenuFour == nil then return "Failed" end
-			::performFinalCutProMenuItemWhichMenuFourExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
-
-	end
-
-	return "Done"
+    mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
 
 end
 
@@ -11366,6 +10940,91 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- GENERAL:
+--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- PROWL API KEY VALID:
+	--------------------------------------------------------------------------------
+	function prowlAPIKeyValid(input)
+
+		local result = false
+		local errorMessage = nil
+
+		prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
+		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
+
+		if string.match(httpBody, "success") then
+			result = true
+		else
+			local xml = slaxdom:dom(tostring(httpBody))
+			errorMessage = xml['root']['el'][1]['kids'][1]['value']
+		end
+
+		return result, errorMessage
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- DELETE ALL HIGHLIGHTS:
+	--------------------------------------------------------------------------------
+	function deleteAllHighlights()
+		--------------------------------------------------------------------------------
+		-- Delete FCPX Browser Highlight:
+		--------------------------------------------------------------------------------
+		if mod.browserHighlight then
+			mod.browserHighlight:delete()
+			if mod.browserHighlightTimer then
+				mod.browserHighlightTimer:stop()
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- CHECK FOR FCPX HACKS UPDATES:
+	--------------------------------------------------------------------------------
+	function checkForUpdates()
+
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
+		if enableCheckForUpdates then
+			debugMessage("Checking for updates.")
+			latestScriptVersion = nil
+			updateResponse, updateBody, updateHeader = http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
+			if updateResponse == 200 then
+				if updateBody:sub(1,8) == "LATEST: " then
+					--------------------------------------------------------------------------------
+					-- Update Script Version:
+					--------------------------------------------------------------------------------
+					latestScriptVersion = updateBody:sub(9)
+
+					--------------------------------------------------------------------------------
+					-- macOS Notification:
+					--------------------------------------------------------------------------------
+					if not mod.shownUpdateNotification then
+						if latestScriptVersion > fcpxhacks.scriptVersion then
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+																:title("FCPX Hacks Update Available")
+																:subTitle("Version " .. latestScriptVersion)
+																:informativeText("Do you wish to install?")
+																:hasActionButton(true)
+																:actionButtonTitle("Install")
+																:otherButtonTitle("Not Yet")
+																:send()
+							mod.shownUpdateNotification = true
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- Refresh Menubar:
+					--------------------------------------------------------------------------------
+					refreshMenuBar()
+				end
+			end
+		end
+
+	end
+
+--------------------------------------------------------------------------------
 -- TOUCH BAR RELATED:
 --------------------------------------------------------------------------------
 
@@ -11378,7 +11037,7 @@ end
 		--------------------------------------------------------------------------------
 		if touchBarSupported then
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then touchBarWindow:show() end
+			if displayTouchBar then mod.touchBarWindow:show() end
 		end
 	end
 
@@ -11389,7 +11048,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
 		--------------------------------------------------------------------------------
-		if touchBarSupported then touchBarWindow:hide() end
+		if touchBarSupported then mod.touchBarWindow:hide() end
 	end
 
 	--------------------------------------------------------------------------------
@@ -11410,7 +11069,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Mouse Pointer Location:
 			--------------------------------------------------------------------------------
-			touchBarWindow:atMousePosition()
+			mod.touchBarWindow:atMousePosition()
 
 		end
 
@@ -11422,18 +11081,18 @@ end
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
-			local timelineScrollArea = getFinalCutProTimelineScrollArea()
+			local timelineScrollArea = fcp.getTimelineScrollArea()
 			local timelineScrollAreaPosition = {}
-			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
+			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
 			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-			touchBarWindow:topLeft(timelineScrollAreaPosition)
+			mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
 
 		end
 
 		--------------------------------------------------------------------------------
 		-- Save last Touch Bar Location to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
 	end
 
@@ -11445,10 +11104,10 @@ end
 	-- PERFORM KEYSTROKE FROM PLIST DATA:
 	--------------------------------------------------------------------------------
 	function keyStrokeFromPlist(whichShortcut)
-		if finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
-		if finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
-		if next(finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-		eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[finalCutProShortcutKey[whichShortcut]['characterString']])
+		if mod.finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
+		if mod.finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
+		if next(mod.finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and mod.finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
+		eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
 		return true
 	end
 
@@ -11706,433 +11365,6 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- MOUSE RELATED:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- DOUBLE LEFT CLICK:
-	--------------------------------------------------------------------------------
-	function doubleLeftClick(point)
-		local clickState = eventtap.event.properties.mouseEventClickState
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-		timer.usleep(1000)
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
-		eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
-	end
-
-	--------------------------------------------------------------------------------
-	-- NINJA MOUSE CLICK:
-	--------------------------------------------------------------------------------
-	function ninjaMouseClick(position)
-			local originalMousePoint = mouse.getAbsolutePosition()
-			eventtap.leftClick(position)
-			mouse.setAbsolutePosition(originalMousePoint)
-	end
-
---------------------------------------------------------------------------------
--- DIALOG BOXES:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
-	--------------------------------------------------------------------------------
-	function displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-		local appleScriptD = [[
-			repeat
-				try
-					tell me to activate
-					set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} with icon fcpxIcon)
-				on error
-					-- Cancel Pressed:
-					return false
-				end try
-				try
-					set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
-					if usersInput is not equal to missing value then
-						if usersInput is not 0 then
-							exit repeat
-						end if
-					end if
-				end try
-				display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
-			end repeat
-			return usersInput
-		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-		if returnToFinalCutPro then fcp.launch() end
-		return result
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY TEXT BOX MESSAGE:
-	--------------------------------------------------------------------------------
-	function displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-		local appleScriptD = [[
-			set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
-			set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
-			set allowedAll to allowedLetters & allowedNumbers & space
-
-			repeat
-				try
-					tell me to activate
-					set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
-				on error
-					-- Cancel Pressed:
-					return false
-				end try
-				try
-					set invalidCharacters to false
-					repeat with aCharacter in response
-						if (aCharacter as text) is not in allowedAll then
-							set invalidCharacters to true
-						end if
-					end repeat
-					if length of response is 0 then
-						set invalidCharacters to true
-					end if
-					if invalidCharacters is false then
-						exit repeat
-					end
-				end try
-				display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
-			end repeat
-			return response
-		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-		if returnToFinalCutPro then fcp.launch() end
-		return result
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY CHOOSE FOLDER DIALOG:
-	--------------------------------------------------------------------------------
-	function displayChooseFolder(whatMessage)
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell me to activate
-			try
-				set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
-				return whichFolder
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcp.launch() end
-		return result
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY ALERT MESSAGE:
-	--------------------------------------------------------------------------------
-	function displayAlertMessage(whatMessage)
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell me to activate
-			display dialog whatMessage buttons {"OK"} with icon stop
-		]]
-		osascript.applescript(appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcp.launch() end
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY ERROR MESSAGE:
-	--------------------------------------------------------------------------------
-	function displayErrorMessage(whatError)
-
-		--------------------------------------------------------------------------------
-		-- Write error message to console:
-		--------------------------------------------------------------------------------
-		writeToConsole(whatError)
-
-		--------------------------------------------------------------------------------
-		-- Display Dialog Box:
-		--------------------------------------------------------------------------------
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell me to activate
-			display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {"Yes", "No"} with icon fcpxIcon
-			if the button returned of the result is "Yes" then
-				return true
-			else
-				return false
-			end if
-		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-
-		--------------------------------------------------------------------------------
-		-- Send bug report:
-		--------------------------------------------------------------------------------
-		if result then emailBugReport() end
-		if returnToFinalCutPro then fcp.launch() end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY MESSAGE:
-	--------------------------------------------------------------------------------
-	function displayMessage(whatMessage)
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell me to activate
-			display dialog whatMessage buttons {"OK"} with icon fcpxIcon
-		]]
-		osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcp.launch() end
-	end
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY YES OR NO QUESTION:
-	--------------------------------------------------------------------------------
-	function displayYesNoQuestion(whatMessage) -- returns true or false
-
-		local returnToFinalCutPro = fcp.frontmost()
-		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell me to activate
-			display dialog whatMessage buttons {"Yes", "No"} default button 1 with icon fcpxIcon
-			if the button returned of the result is "Yes" then
-				return true
-			else
-				return false
-			end if
-		]]
-		a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcp.launch() end
-		return result
-
-	end
-
---------------------------------------------------------------------------------
--- GENERAL TOOLS:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- WRITE TO CONSOLE:
-	--------------------------------------------------------------------------------
-	function writeToConsole(value, overrideLabel)
-
-		if value ~= nil then
-			if type(value) == "table" then value = inspect(value) end
-			if overrideLabel == nil then value = "> " .. value end
-
-			local consoleStyledText = styledtext.new(value, {
-				color = drawing.color.definedCollections.hammerspoon["blue"],
-				font = { name = "Menlo", size = 12 },
-			})
-
-			console.printStyledtext(consoleStyledText)
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- DEBUG MESSAGE:
-	--------------------------------------------------------------------------------
-	function debugMessage(value)
-		if value ~= nil then
-			if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-			if debugMode then writeToConsole(value) end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
-	--------------------------------------------------------------------------------
-	function executeWithAdministratorPrivileges(input)
-		local appleScriptA = 'set shellScriptInput to "' .. input .. '"\n\n'
-		local appleScriptB = [[
-			try
-				tell me to activate
-				do shell script shellScriptInput with administrator privileges
-				return true
-			on error
-				return false
-			end try
-		]]
-
-		ok,result = osascript.applescript(appleScriptA .. appleScriptB)
-		return result
-	end
-
-	--------------------------------------------------------------------------------
-	-- HOW MANY ITEMS IN A TABLE?
-	--------------------------------------------------------------------------------
-	function tableCount(table)
-		local count = 0
-	  	for _ in pairs(table) do count = count + 1 end
-	  	return count
-	end
-
-	--------------------------------------------------------------------------------
-	-- REMOVE FILENAME FROM PATH:
-	--------------------------------------------------------------------------------
-	function removeFilenameFromPath(input)
-		return (string.sub(input, 1, (string.find(input, "/[^/]*$"))))
-	end
-
-	--------------------------------------------------------------------------------
-	-- SLEEP:
-	--------------------------------------------------------------------------------
-	function sleep(n)  -- seconds
-		local t0 = clock()
-		while clock() - t0 <= n do end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CONVERT SECONDS TO TIMECODE:
-	--------------------------------------------------------------------------------
-	function secondsToTimecode(seconds, framerate)
-		local seconds = tonumber(seconds)
-		if framerate == nil then framerate = 25 end
-		if framerate <= 0 then framerate = 25 end
-		if seconds <= 0 then
-			return "00:00:00:00";
-		else
-			hours 	= string.format("%02.f", math.floor(seconds/3600));
-			mins 	= string.format("%02.f", math.floor(seconds/60 - (hours*60)));
-			secs 	= string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
-			frames 	= string.format("%02.f", (seconds % 1) * framerate);
-			return hours..":"..mins..":"..secs..":"..frames
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- DOES DIRECTORY EXIST:
-	--------------------------------------------------------------------------------
-	function doesDirectoryExist(path)
-		local attr = fs.attributes(path)
-		return attr and attr.mode == 'directory'
-	end
-
-	--------------------------------------------------------------------------------
-	-- SPLIT STRING:
-	--------------------------------------------------------------------------------
-	local function split(str, sep)
-	   local result = {}
-	   local regex = ("([^%s]+)"):format(sep)
-	   for each in str:gmatch(regex) do
-		  table.insert(result, each)
-	   end
-	   return result
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRIM STRING:
-	--------------------------------------------------------------------------------
-	function trim(s)
-	  return (s:gsub("^%s*(.-)%s*$", "%1"))
-	end
-
---------------------------------------------------------------------------------
--- MISC:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- PROWL API KEY VALID:
-	--------------------------------------------------------------------------------
-	function prowlAPIKeyValid(input)
-
-		local result = false
-		local errorMessage = nil
-
-		prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
-		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
-
-		if string.match(httpBody, "success") then
-			result = true
-		else
-			local xml = slaxdom:dom(tostring(httpBody))
-			errorMessage = xml['root']['el'][1]['kids'][1]['value']
-		end
-
-		return result, errorMessage
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- EMAIL BUG REPORT:
-	--------------------------------------------------------------------------------
-	function emailBugReport()
-		mailer = sharing.newShare("com.apple.share.Mail.compose")
-		mailer:subject("[FCPX Hacks " .. scriptVersion .. "] Bug Report"):recipients({bugReportEmail})
-		mailer:shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
-	end
-
-	--------------------------------------------------------------------------------
-	-- DELETE ALL HIGHLIGHTS:
-	--------------------------------------------------------------------------------
-	function deleteAllHighlights()
-		--------------------------------------------------------------------------------
-		-- Delete FCPX Browser Highlight:
-		--------------------------------------------------------------------------------
-		if browserHighlight then
-			browserHighlight:delete()
-			if browserHighlightTimer then
-				browserHighlightTimer:stop()
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHECK FOR FCPX HACKS UPDATES:
-	--------------------------------------------------------------------------------
-	function checkForUpdates()
-
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
-		if enableCheckForUpdates then
-			debugMessage("Checking for updates.")
-			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
-			if updateResponse == 200 then
-				if updateBody:sub(1,8) == "LATEST: " then
-					--------------------------------------------------------------------------------
-					-- Update Script Version:
-					--------------------------------------------------------------------------------
-					latestScriptVersion = updateBody:sub(9)
-
-					--------------------------------------------------------------------------------
-					-- macOS Notification:
-					--------------------------------------------------------------------------------
-					if not shownUpdateNotification then
-						if latestScriptVersion > scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
-																:title("FCPX Hacks Update Available")
-																:subTitle("Version " .. latestScriptVersion)
-																:informativeText("Do you wish to install?")
-																:hasActionButton(true)
-																:actionButtonTitle("Install")
-																:otherButtonTitle("Not Yet")
-																:send()
-							shownUpdateNotification = true
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Refresh Menubar:
-					--------------------------------------------------------------------------------
-					refreshMenuBar()
-				end
-			end
-		end
-
-	end
-
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -12280,8 +11512,8 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
-    	if lastCommandSet ~= fcp.getActiveCommandSetPath() then
-    		if not isCommandEditorOpen then
+    	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
+    		if not mod.isCommandEditorOpen then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
@@ -12315,7 +11547,7 @@ function commandEditorWatcher()
 				-- Command Editor is Open:
 				--------------------------------------------------------------------------------
 				commandEditorID = window:id()
-				isCommandEditorOpen = true
+				mod.isCommandEditorOpen = true
 				debugMessage("Command Editor Opened.")
 				--------------------------------------------------------------------------------
 
@@ -12347,7 +11579,7 @@ function commandEditorWatcher()
 				-- Command Editor is Closed:
 				--------------------------------------------------------------------------------
 				commandEditorID = nil
-				isCommandEditorOpen = false
+				mod.isCommandEditorOpen = false
 				debugMessage("Command Editor Closed.")
 				--------------------------------------------------------------------------------
 
@@ -12410,14 +11642,14 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					if finalCutProShortcutKey[whichShortcutKey] ~= nil then
-						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-								if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
+						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 									return true
 								end
 							end
@@ -12445,13 +11677,13 @@ function fullscreenKeyboardWatcher()
 						--------------------------------------------------------------------------------
 						local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 						for x, whichShortcutKey in pairs(fullscreenKeys) do
-							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-								if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-									if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+									if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 										eventtap.keyStroke({""}, "escape")
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 										return true
 									end
 								end
@@ -12470,50 +11702,58 @@ end
 -- MEDIA IMPORT WINDOW WATCHER:
 --------------------------------------------------------------------------------
 function mediaImportWatcher()
-
-	newDeviceMounted = fs.volume.new(function(event, table)
+	debugMessage("Watching for new media...")
+	mod.newDeviceMounted = fs.volume.new(function(event, table)
 		if event == fs.volume.didMount then
 
 			debugMessage("Media Inserted.")
 
-			mediaImportCount = 0
-			stopMediaImportTimer = false
-			currentApplication = application.frontmostApplication()
+			local mediaImportCount = 0
+			local stopMediaImportTimer = false
+			local currentApplication = application.frontmostApplication()
+			debugMessage("Currently using '"..currentApplication:name().."'")
 
 			local fcpx = fcp.application()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
-			mediaImportTimer = timer.doUntil(function() return stopMediaImportTimer end, function()
-				if not fcp.running() then
-					stopMediaImportTimer = true
-				else
-					local fcpx = fcp.application()
-					local fcpxElements = ax.applicationElement(fcpx)
-					if fcpxElements[1] ~= nil then
-						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
-							if mediaImportCount == 0 then
-								--------------------------------------------------------------------------------
-								-- Media Import Window was already open:
-								--------------------------------------------------------------------------------
-								stopMediaImportTimer = true
-							else
-								fcpxElements[1][11]:performAction("AXPress")
-								if fcpxHidden then fcpx:hide() end
-								application.launchOrFocus(currentApplication:name())
+			mediaImportTimer = timer.doUntil(
+				function()
+					return stopMediaImportTimer
+				end,
+				function()
+					if not fcp.prunning() then
+						debugMessage("FCPX is not running. Stop watching.")
+						stopMediaImportTimer = true
+					else
+						local fcpx = fcp.application()
+						local fcpxElements = ax.applicationElement(fcpx)
+						if fcpxElements[1] ~= nil then
+							if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
+								if mediaImportCount ~= 0 then
+									--------------------------------------------------------------------------------
+									-- Media Import Window was not open:
+									--------------------------------------------------------------------------------
+									fcpxElements[1][11]:performAction("AXPress")
+									if fcpxHidden then fcpx:hide() end
+									application.launchOrFocus(currentApplication:name())
+									debugMessage("Hid FCPX and returned to '"..currentApplication:name().."'.")
+								end
 								stopMediaImportTimer = true
 							end
 						end
+						mediaImportCount = mediaImportCount + 1
+						if mediaImportCount == 500 then
+							debugMessage("Gave up watching for the Media Import window after 5 seconds.")
+							stopMediaImportTimer = true
+						end
 					end
-					mediaImportCount = mediaImportCount + 1
-					if mediaImportCount == 500 then
-						stopMediaImportTimer = true
-					end
-				end
-			end, 0.01)
+				end,
+				0.01
+			)
 		end
 	end)
-	newDeviceMounted:start()
+	mod.newDeviceMounted:start()
 
 end
 
@@ -12526,7 +11766,7 @@ function scrollingTimelineWatcher()
 	-- Key Press Up Watcher:
 	--------------------------------------------------------------------------------
 	scrollingTimelineWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
-		scrollingTimelineWatcherWorking = false
+		mod.scrollingTimelineWatcherWorking = false
 	end)
 
 	--------------------------------------------------------------------------------
@@ -12537,13 +11777,13 @@ function scrollingTimelineWatcher()
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
 		--------------------------------------------------------------------------------
-		if scrollingTimelineWatcherWorking then
+		if mod.scrollingTimelineWatcherWorking then
 			return false
 		else
 			--------------------------------------------------------------------------------
 			-- Prevent Key Being Held Down:
 			--------------------------------------------------------------------------------
-			scrollingTimelineWatcherWorking = true
+			mod.scrollingTimelineWatcherWorking = true
 
 			--------------------------------------------------------------------------------
 			-- Spacebar Pressed:
@@ -12552,22 +11792,22 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not isCommandEditorOpen and not fcpxChooserActive then
+				if not mod.isCommandEditorOpen and not mod.fcpxChooserActive then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
 					--------------------------------------------------------------------------------
-					scrollingTimelineSpacebarPressed = not scrollingTimelineSpacebarPressed
+					mod.scrollingTimelineSpacebarPressed = not mod.scrollingTimelineSpacebarPressed
 
 					--------------------------------------------------------------------------------
 					-- Either stop or start the Scrolling Timeline:
 					--------------------------------------------------------------------------------
-					if scrollingTimelineSpacebarPressed then
+					if mod.scrollingTimelineSpacebarPressed then
 						scrollingTimelineSpacebarCheck = true
 						timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
 					else
-						if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
-						if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
+						if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
+						if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
 					end
 
 				end
@@ -12623,7 +11863,7 @@ end
 			if not string.match(httpBody, "success") then
 				local xml = slaxdom:dom(tostring(httpBody))
 				local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
-				if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. trim(tostring(errorMessage))) end
+				if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
 			end
 		end
 
@@ -12648,7 +11888,7 @@ function sharedXMLFileWatcher(files)
 			local testFile = io.open(file, "r")
 			if testFile ~= nil then
 				testFile:close()
-				if not string.find(file, "(" .. hostname ..")") then
+				if not string.find(file, "(" .. host.localizedName() ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
 														   						   :title("New XML Recieved")
@@ -12688,7 +11928,7 @@ function xmlDropboxFileWatcher(files)
 			--------------------------------------------------------------------------------
 			-- Display Text Box:
 			--------------------------------------------------------------------------------
-			local textboxResult = displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
+			local textboxResult = dialog.displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
 
 			--------------------------------------------------------------------------------
 			-- Read XML File Data:
@@ -12720,7 +11960,7 @@ function xmlDropboxFileWatcher(files)
 				-- Error Detection:
 				--------------------------------------------------------------------------------
 				if startOfXML == nil or endOfXML == nil then
-					displayErrorMessage("Something went wrong when attempting to translate the XML data from the file in the Dropbox. Please try again.\n\nError occurred in xmlDropboxFileWatcher().")
+					dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data from the file in the Dropbox. Please try again.\n\nError occurred in xmlDropboxFileWatcher().")
 					if plistFileData ~= nil then
 						debugMessage("Start of plistFileData.")
 						debugMessage(plistFileData)
@@ -12739,7 +11979,7 @@ function xmlDropboxFileWatcher(files)
 				--------------------------------------------------------------------------------
 				-- Save the XML content to the Shared XML Folder:
 				--------------------------------------------------------------------------------
-				local file = io.open(xmlSharingPath .. textboxResult .. " (" .. hostname .. ").fcpxml", "w")
+				local file = io.open(xmlSharingPath .. textboxResult .. " (" .. host.localizedName() .. ").fcpxml", "w")
 				currentClipboardData = file:write(newXML)
 				file:close()
 			end
@@ -12753,16 +11993,16 @@ end
 function touchbarWatcher(obj, message)
 
 	if message == "didEnter" then
-        mouseInsideTouchbar = true
+        mod.mouseInsideTouchbar = true
     elseif message == "didExit" then
-        mouseInsideTouchbar = false
+        mod.mouseInsideTouchbar = false
 
         --------------------------------------------------------------------------------
 	    -- Just in case we got here before the eventtap returned the Touch Bar to normal:
 	    --------------------------------------------------------------------------------
-        touchBarWindow:movable(false)
-        touchBarWindow:acceptsMouseEvents(true)
-		settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
+        mod.touchBarWindow:movable(false)
+        mod.touchBarWindow:acceptsMouseEvents(true)
+		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
     end
 

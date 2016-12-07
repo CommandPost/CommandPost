@@ -10,6 +10,12 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- THE MODULE:
+--------------------------------------------------------------------------------
+
+local clipboard = {}
+
+--------------------------------------------------------------------------------
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
@@ -19,18 +25,19 @@ local protect 									= require("hs.fcpxhacks.modules.protect")
 local pasteboard 								= require("hs.pasteboard")
 local settings									= require("hs.settings")
 local inspect									= require("hs.inspect")
+local timer										= require("hs.timer")
 local host										= require("hs.host")
 
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
 
-local clipboardTimer							= nil									-- Clipboard Watcher Timer
-local clipboardLastChange 						= pasteboard.changeCount()				-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-local clipboardHistory							= {}									-- Clipboard History
-local clipboardWatcherFrequency 				= 0.5									-- Clipboard Watcher Update Frequency
-local clipboardHistoryMaximumSize 				= 5										-- Maximum Size of Clipboard History
-local hostname									= host.localizedName()					-- Hostname
+clipboard.timer									= nil									-- Clipboard Watcher Timer
+clipboard.watcherFrequency 						= 0.5									-- Clipboard Watcher Update Frequency
+clipboard.lastChange 							= pasteboard.changeCount()				-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+clipboard.history								= {}									-- Clipboard History
+clipboard.historyMaximumSize 					= 5										-- Maximum Size of Clipboard History
+clipboard.hostname								= host.localizedName()					-- Hostname
 
 local CLIPBOARD = protect({
 	--------------------------------------------------------------------------------
@@ -72,7 +79,7 @@ local CLIPBOARD = protect({
 --------------------------------------------------------------------------------
 -- GETS THE SPECIFIED OBJECT, LOOKING UP THE REFERENCE OBJECT IF NECESSARY:
 --------------------------------------------------------------------------------
-function _get(data, objects)
+local function _get(data, objects)
 	if type(data) == 'table' and data["CF$UID"] then
 		-- it's a reference
 		return objects[data["CF$UID"]+1]
@@ -87,7 +94,7 @@ end
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processObject(data, objects)
+local function processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
 		-- inspect(data) is potentially expensive, so make sure debug is on first.
@@ -130,7 +137,7 @@ end
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processMutableCollection(data, objects)
+local function processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
 	local obs = _get(data[CLIPBOARD.OBJECTS], objects)
@@ -155,7 +162,7 @@ end
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processDictionary(data, objects)
+local function processDictionary(data, objects)
 	local name = nil
 	local count = 0
 
@@ -183,7 +190,7 @@ end
 -- Processes 'FFAnchoredCollection' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processAnchoredCollection(data, objects)
+local function processAnchoredCollection(data, objects)
 	local displayName = _get(data.displayName, objects)
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
 		log.d("Processing a copy from the Timeline")
@@ -200,7 +207,7 @@ end
 -- Processes 'FFAnchoredGapGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processGap(data, objects)
+local function processGap(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 0
 	if data.anchoredItems then
@@ -215,7 +222,7 @@ end
 -- Processes 'FFAnchoredGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processGenerator(data, objects)
+local function processGenerator(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 1
 	if data.anchoredItems then
@@ -232,7 +239,7 @@ end
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processAnchoredAngle(data, objects)
+local function processAnchoredAngle(data, objects)
 	local _, count = processObject(data.anchoredItems, objects)
 	return _get(data.displayName, objects), count + 1
 end
@@ -243,7 +250,7 @@ end
 -- Process 'FFAnchoredSequence' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processAnchoredSequence(data, objects)
+local function processAnchoredSequence(data, objects)
 	return _get(data.displayName, objects), 1
 end
 
@@ -253,14 +260,9 @@ end
 -- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function processTimeRangeAndObject(data, objects)
+local function processTimeRangeAndObject(data, objects)
 	return processObject(data.object, objects)
 end
-
---------------------------------------------------------------------------------
--- START MODULE:
---------------------------------------------------------------------------------
-local mod = {}
 
 --------------------------------------------------------------------------------
 -- FIND CLIP NAME:
@@ -271,7 +273,7 @@ local mod = {}
 -- Example use:
 --	 local name = findClipName(myXmlData, "Unknown")
 --------------------------------------------------------------------------------
-function mod.findClipName(fcpxTable, default)
+function clipboard.findClipName(fcpxTable, default)
 
 	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
@@ -292,7 +294,7 @@ end
 --------------------------------------------------------------------------------
 -- WATCH THE FINAL CUT PRO CLIPBOARD FOR CHANGES:
 --------------------------------------------------------------------------------
-function mod.startWatching()
+function clipboard.startWatching()
 
 	--------------------------------------------------------------------------------
 	-- Used for debugging:
@@ -302,22 +304,22 @@ function mod.startWatching()
 	--------------------------------------------------------------------------------
 	-- Get Clipboard History from Settings:
 	--------------------------------------------------------------------------------
-	clipboardHistory = settings.get("fcpxHacks.clipboardHistory") or {}
+	clipboard.history = settings.get("fcpxHacks.clipboardHistory") or {}
 
 	--------------------------------------------------------------------------------
 	-- Reset:
 	--------------------------------------------------------------------------------
-	clipboardCurrentChange = pasteboard.changeCount()
-	clipboardLastChange = pasteboard.changeCount()
+	local clipboardCurrentChange = pasteboard.changeCount()
+	clipboard.lastChange = pasteboard.changeCount()
 
 	--------------------------------------------------------------------------------
 	-- Watch for Clipboard Changes:
 	--------------------------------------------------------------------------------
-	clipboardTimer = hs.timer.new(clipboardWatcherFrequency, function()
+	clipboard.timer = timer.new(clipboard.watcherFrequency, function()
 
 		clipboardCurrentChange = pasteboard.changeCount()
 
-			if (clipboardCurrentChange > clipboardLastChange) then
+			if (clipboardCurrentChange > clipboard.lastChange) then
 
 		 	local clipboardContent = pasteboard.allContentTypes()
 		 	if clipboardContent[1][1] == CLIPBOARD.UTI then
@@ -338,7 +340,7 @@ function mod.startWatching()
 				local fcpxData = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
 				if fcpxData then
 					local fcpxTable = plist.base64ToTable(fcpxData)
-					currentClipboardLabel = mod.findClipName(fcpxTable, currentClipboardLabel)
+					currentClipboardLabel = clipboard.findClipName(fcpxTable, currentClipboardLabel)
 				else
 					log.e("The clipboard does not contain any data.")
 					addToClipboardHistory = false
@@ -362,7 +364,7 @@ function mod.startWatching()
 						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 						if sharedClipboardPath ~= nil then
 
-							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. hostname, "w")
+							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. clipboard.hostname, "w")
 							file:write(currentClipboardData)
 							file:close()
 
@@ -374,15 +376,15 @@ function mod.startWatching()
 					--------------------------------------------------------------------------------
 					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
 
-					while (#clipboardHistory >= clipboardHistoryMaximumSize) do
-						table.remove(clipboardHistory,1)
+					while (#(clipboard.history) >= clipboard.historyMaximumSize) do
+						table.remove(clipboard.history,1)
 					end
-					table.insert(clipboardHistory, currentClipboardItem)
+					table.insert(clipboard.history, currentClipboardItem)
 
 					--------------------------------------------------------------------------------
 					-- Update Settings:
 					--------------------------------------------------------------------------------
-					settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+					settings.set("fcpxHacks.clipboardHistory", clipboard.history)
 
 					--------------------------------------------------------------------------------
 					-- Refresh Menubar:
@@ -390,44 +392,44 @@ function mod.startWatching()
 					refreshMenuBar()
 				end
 		 	end
-			clipboardLastChange = clipboardCurrentChange
+			clipboard.lastChange = clipboardCurrentChange
 		end
 	end)
-	clipboardTimer:start()
+	clipboard.timer:start()
 
 end
 
 --------------------------------------------------------------------------------
 -- STOP WATCHING THE CLIPBOARD:
 --------------------------------------------------------------------------------
-function mod.stopWatching()
-	if clipboardTimer then
-		clipboardTimer:stop()
-		clipboardTime = nil
+function clipboard.stopWatching()
+	if clipboard.timer then
+		clipboard.timer:stop()
+		clipboard.timer = nil
 	end
 end
 
 --------------------------------------------------------------------------------
 -- IS THIS MODULE WATCHING THE CLIPBOARD:
 -------------------------------------------------------------------------------
-function mod.isWatching()
-	return clipboardTimer or false
+function clipboard.isWatching()
+	return clipboard.timer or false
 end
 
 --------------------------------------------------------------------------------
 -- GET CLIPBOARD HISTORY:
 --------------------------------------------------------------------------------
-function mod.getHistory()
-	return clipboardHistory
+function clipboard.getHistory()
+	return clipboard.history
 end
 
 --------------------------------------------------------------------------------
 -- CLEAR CLIPBOARD HISTORY:
 --------------------------------------------------------------------------------
-function mod.clearHistory()
-	clipboardHistory = {}
-	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+function clipboard.clearHistory()
+	clipboard.history = {}
+	settings.set("fcpxHacks.clipboardHistory", clipboard.history)
 	clipboardCurrentChange = pasteboard.changeCount()
 end
 
-return mod
+return clipboard
