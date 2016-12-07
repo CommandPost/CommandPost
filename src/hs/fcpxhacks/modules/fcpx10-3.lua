@@ -88,13 +88,14 @@ window.filter									= require("hs.window.filter")
 -- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local ax										= require("hs._asm.axuielement")
-local touchbar									= require("hs._asm.touchbar")
+local ax 										= require("hs._asm.axuielement")
+local touchbar 									= require("hs._asm.touchbar")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local fcp										= require("hs.finalcutpro")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 
 --------------------------------------------------------------------------------
@@ -104,10 +105,6 @@ local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 mod.bugReportEmail								= "chris@latenitefilms.com"
 mod.updateURL									= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
 
-mod.finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"
-mod.flexoLanguages 								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
-mod.finalCutProLanguages 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
-
 mod.commonErrorMessageStart 					= "I'm sorry, but the following error has occurred:\n\n"
 mod.commonErrorMessageEnd 						= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
 mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. mod.commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. mod.commonErrorMessageEnd .. '"\n'
@@ -116,6 +113,8 @@ mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path
 -- VARIABLES:
 --------------------------------------------------------------------------------
 
+local flexoLanguages 							= fcp.flexoLanguages()
+local finalCutProLanguages 						= fcp.languages()
 local execute									= hs.execute									-- Execute!
 local clock 									= os.clock										-- Used for sleep()
 local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
@@ -239,11 +238,11 @@ function loadScript()
 	else
 		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxHacks.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
-				local finalCutProRunning = isFinalCutProRunning()
+				local finalCutProRunning = fcp.running()
 				if finalCutProRunning then
 					displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
 					updateKeyboardShortcuts()
-					if not restartFinalCutPro() then
+					if not fcp.restart() then
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
@@ -396,13 +395,13 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
 	--------------------------------------------------------------------------------
-	mod.lastCommandSet = getFinalCutProActiveCommandSet()
+	mod.lastCommandSet = fcp.getActiveCommandSetPath()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
-	if isFinalCutProFrontmost() then
+	if fcp.frontmost() then
 
 		--------------------------------------------------------------------------------
 		-- Enable Final Cut Pro Shortcut Keys:
@@ -592,7 +591,7 @@ function bindKeyboardShortcuts()
 		mod.finalCutProShortcutKeyPlaceholders = nil
 		mod.finalCutProShortcutKeyPlaceholders =
 		{
-			FCPXHackLaunchFinalCutPro 									= { characterString = "", 							modifiers = {}, 									fn = function() fcpxHacks.launchFinalCutPro() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
+			FCPXHackLaunchFinalCutPro									= { characterString = "", 							modifiers = {}, 									fn = function() fcp.launch() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = "", 							modifiers = {}, 									fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
 			FCPXHackHighlightBrowserPlayhead 							= { characterString = "", 							modifiers = {}, 									fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
@@ -835,7 +834,7 @@ function bindKeyboardShortcuts()
 		mod.finalCutProShortcutKey = nil
 		mod.finalCutProShortcutKey =
 		{
-			FCPXHackLaunchFinalCutPro 									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxHacks.launchFinalCutPro() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
+			FCPXHackLaunchFinalCutPro									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
 			FCPXHackHighlightBrowserPlayhead 							= { characterString = keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
@@ -1125,7 +1124,11 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+	local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+	if result == false then
+		displayErrorMessage("Failed to reset the Active Command Set.")
+		return "Failed"
+	end
 
 	--------------------------------------------------------------------------------
 	-- Update Keyboard Settings:
@@ -1655,7 +1658,7 @@ function chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Put focus back in Final Cut Pro:
 	--------------------------------------------------------------------------------
-	fcpxHacks.launchFinalCutPro()
+	fcp.launch()
 
 	--------------------------------------------------------------------------------
 	-- Re-activate the Scrolling Timeline:
@@ -1757,13 +1760,12 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Assume FCPX is closed if not told otherwise:
 	--------------------------------------------------------------------------------
-	local fcpxActive = isFinalCutProFrontmost()
-	local fcpxRunning = isFinalCutProRunning()
+	local fcpxActive = fcp.frontmost()
+	local fcpxRunning = fcp.running()
 
 	--------------------------------------------------------------------------------
-	-- We only refresh plist's if necessary as they take time:
+	-- We only refresh plist values if necessary as this takes time:
 	--------------------------------------------------------------------------------
-	if refreshPlistValues == nil then refreshPlistValues = false end
 	if refreshPlistValues == true then
 
 		--------------------------------------------------------------------------------
@@ -1772,18 +1774,13 @@ function refreshMenuBar(refreshPlistValues)
 		debugMessage("The plist values have been updated for the menubar.")
 
 		--------------------------------------------------------------------------------
-		-- Default Values:
+		-- Read Final Cut Pro Preferences:
 		--------------------------------------------------------------------------------
-		mod.FFImportCreateProxyMedia 					= false
-		mod.allowMovingMarkers 							= false
-		mod.FFPeriodicBackupInterval 					= "15"
-		mod.FFSuspendBGOpsDuringPlay 					= false
-		mod.FFEnableGuards 								= false
-		mod.FFCreateOptimizedMediaForMulticamClips 		= true
-		mod.FFAutoStartBGRender 						= true
-		mod.FFAutoRenderDelay 							= "0.3"
-		mod.FFImportCopyToMediaFolder 					= true
-		mod.FFImportCreateOptimizeMedia 				= false
+		local preferences = fcp.getPreferencesAsTable()
+		if preferences == nil then
+			displayErrorMessage("Failed to read Final Cut Pro Preferences")
+			return "Fail"
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
@@ -1794,56 +1791,83 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-		if trim(executeResult) ~= "" then mod.FFPeriodicBackupInterval = trim(executeResult) end
+		if preferences["FFPeriodicBackupInterval"] == nil then
+			mod.FFPeriodicBackupInterval = "15"
+		else
+			mod.FFPeriodicBackupInterval = preferences["FFPeriodicBackupInterval"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
-		if trim(executeResult) == "1" then mod.FFSuspendBGOpsDuringPlay = true end
+		if preferences["FFSuspendBGOpsDuringPlay"] == nil then
+			mod.FFSuspendBGOpsDuringPlay = false
+		else
+			mod.FFSuspendBGOpsDuringPlay = preferences["FFSuspendBGOpsDuringPlay"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFEnableGuards:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
-		if trim(executeResult) == "1" then mod.FFEnableGuards = true end
+		if preferences["FFEnableGuards"] == nil then
+			mod.FFEnableGuards = false
+		else
+			mod.FFEnableGuards = preferences["FFEnableGuards"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
-		if trim(executeResult) == "0" then mod.FFCreateOptimizedMediaForMulticamClips = false end
+		if preferences["FFCreateOptimizedMediaForMulticamClips"] == nil then
+			mod.FFCreateOptimizedMediaForMulticamClips = true
+		else
+			mod.FFCreateOptimizedMediaForMulticamClips = preferences["FFCreateOptimizedMediaForMulticamClips"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoStartBGRender:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
-		if trim(executeResult) == "0" then mod.FFAutoStartBGRender = false end
+		if preferences["FFAutoStartBGRender"] == nil then
+			mod.FFAutoStartBGRender = true
+		else
+			mod.FFAutoStartBGRender = preferences["FFAutoStartBGRender"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoRenderDelay")
-		if executeStatus == true then mod.FFAutoRenderDelay = trim(executeResult) end
+		if preferences["FFAutoRenderDelay"] == nil then
+			mod.FFAutoRenderDelay = "0.3"
+		else
+			mod.FFAutoRenderDelay = preferences["FFAutoRenderDelay"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCopyToMediaFolder:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
-		if trim(executeResult) == "0" then mod.FFImportCopyToMediaFolder = false end
+		if preferences["FFImportCopyToMediaFolder"] == nil then
+			mod.FFImportCopyToMediaFolder = true
+		else
+			mod.FFImportCopyToMediaFolder = preferences["FFImportCopyToMediaFolder"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateOptimizeMedia:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
-		if trim(executeResult) == "1" then mod.FFImportCreateOptimizeMedia = true end
+		if preferences["FFImportCreateOptimizeMedia"] == nil then
+			mod.FFImportCreateOptimizeMedia = false
+		else
+			mod.FFImportCreateOptimizeMedia = preferences["FFImportCreateOptimizeMedia"]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateProxyMedia:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
-		if trim(executeResult) == "1" then mod.FFImportCreateProxyMedia = true end
+		if preferences["FFImportCreateProxyMedia"] == nil then
+			mod.FFImportCreateProxyMedia = false
+		else
+			mod.FFImportCreateProxyMedia = preferences["FFImportCreateProxyMedia"]
+		end
 
 	end
 
@@ -2212,7 +2236,7 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
 	}
 	local menuTable = {
-	   	{ title = "Open Final Cut Pro", 															fn = fcpxHacks.launchFinalCutPro },
+	   	{ title = "Open Final Cut Pro", 															fn = fcp.launch },
 		{ title = "-" },
 	}
 	local shortcutsTable = {
@@ -2235,12 +2259,15 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "Assign Generators Shortcuts", 													menu = settingsGeneratorsShortcutsTable },
       	{ title = "-" },
 	}
-	local toolsTable = {
-   	    { title = "TOOLS:", 																																																		disabled = true },
-   	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
+	local toolsSettings = {
+	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
    	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
   	  	{ title = "Enable XML Sharing", 															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
+	}
+	local toolsTable = {
+   	    { title = "TOOLS:", 																																																		disabled = true },
+   	    { title = "Options", 																		menu = toolsSettings },
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
       	{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
@@ -2363,7 +2390,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -2696,7 +2723,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -2986,7 +3013,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -3285,7 +3312,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -3610,7 +3637,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = isFinalCutProFrontmost()
+		local wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -3716,7 +3743,7 @@ end
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			if result["wasFinalCutProOpen"] then
-				fcpxHacks.launchFinalCutPro()
+				fcp.launch()
 			end
 
 			--------------------------------------------------------------------------------
@@ -3734,7 +3761,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = isFinalCutProFrontmost()
+		local wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -3820,7 +3847,7 @@ end
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			if result["wasFinalCutProOpen"] then
-				fcpxHacks.launchFinalCutPro()
+				fcp.launch()
 			end
 
 			--------------------------------------------------------------------------------
@@ -3838,7 +3865,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = isFinalCutProFrontmost()
+		local wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -3924,7 +3951,7 @@ end
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			if result["wasFinalCutProOpen"] then
-				fcpxHacks.launchFinalCutPro()
+				fcp.launch()
 			end
 
 			--------------------------------------------------------------------------------
@@ -3942,7 +3969,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = isFinalCutProFrontmost()
+		local wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -4028,7 +4055,7 @@ end
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			if result["wasFinalCutProOpen"] then
-				fcpxHacks.launchFinalCutPro()
+				fcp.launch()
 			end
 
 			--------------------------------------------------------------------------------
@@ -4085,17 +4112,19 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		mod.FFPeriodicBackupInterval = 15
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
-		if trim(executeResult) ~= "" then mod.FFPeriodicBackupInterval = executeResult end
+		if fcp.getPreference("FFPeriodicBackupInterval") == nil then
+			mod.FFPeriodicBackupInterval = 15
+		else
+			mod.FFPeriodicBackupInterval = fcp.getPreference("FFPeriodicBackupInterval")
+		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion("Changing the Backup Interval requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4112,17 +4141,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval -string '" .. userSelectedBackupInterval .. "'")
-		if executeStatus == nil then
-			displayErrorMessage("Failed to write to plist.")
+		local result = fcp.setPreference("FFPeriodicBackupInterval", userSelectedBackupInterval)
+		if result == nil then
+			displayErrorMessage("Failed to write Backup Interval to the Final Cut Pro Preferences file.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if restartFinalCutProStatus then
-			if not restartFinalCutPro() then
+		if restartStatus then
+			if not fcp.restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4152,10 +4181,10 @@ end
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion("Changing the Smart Collections Label requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4184,8 +4213,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if restartFinalCutProStatus then
-			if not restartFinalCutPro() then
+		if restartStatus then
+			if not fcp.restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4362,7 +4391,7 @@ end
 
 		if not enableMobileNotifications then
 
-			local returnToFinalCutPro = isFinalCutProFrontmost()
+			local returnToFinalCutPro = fcp.frontmost()
 			::retryProwlAPIKeyEntry::
 			local appleScriptA = 'set defaultAnswer to "' .. prowlAPIKey .. '"' .. '\n\n'
 			local appleScriptB = [[
@@ -4402,7 +4431,7 @@ end
 			end
 			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
 			if prowlAPIKeyValidResult then
-				if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+				if returnToFinalCutPro then fcp.launch() end
 				settings.set("fcpxHacks.prowlAPIKey", result)
 				notificationWatcher()
 				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
@@ -4495,10 +4524,10 @@ end
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion(enableOrDisableText .. " Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4516,7 +4545,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			if result == nil then
+				displayErrorMessage("Failed to revert back to default Active Command Set.")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Disable Hacks Shortcut in Final Cut Pro:
@@ -4569,7 +4602,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			if result == nil then
+				displayErrorMessage("Failed to revert back to default Active Command Set.")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Enable Hacks Shortcut in Final Cut Pro:
@@ -4631,8 +4668,8 @@ end
 			--------------------------------------------------------------------------------
 			-- Restart Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if restartFinalCutProStatus then
-				if not restartFinalCutPro() then
+			if restartStatus then
+				if not fcp.restart() then
 					--------------------------------------------------------------------------------
 					-- Failed to restart Final Cut Pro:
 					--------------------------------------------------------------------------------
@@ -4696,10 +4733,10 @@ end
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion("Toggling Moving Markers requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4725,8 +4762,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if restartFinalCutProStatus then
-			if not restartFinalCutPro() then
+		if restartStatus then
+			if not fcp.restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4755,17 +4792,19 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		mod.FFSuspendBGOpsDuringPlay = false
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
-		if trim(executeResult) == "1" then mod.FFSuspendBGOpsDuringPlay = true end
+		if fcp.getPreference("FFSuspendBGOpsDuringPlay") == nil then
+			mod.FFSuspendBGOpsDuringPlay = false
+		else
+			mod.FFSuspendBGOpsDuringPlay = fcp.getPreference("FFSuspendBGOpsDuringPlay")
+		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion("Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4775,14 +4814,14 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if FFSuspendBGOpsDuringPlay then
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist mod.FFSuspendBGOpsDuringPlay -bool false")
-			if executeStatus == nil then
+			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", false)
+			if result == nil then
 				displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		else
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay -bool true")
-			if executeStatus == nil then
+			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", true)
+			if result == nil then
 				displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
@@ -4791,8 +4830,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if restartFinalCutProStatus then
-			if not restartFinalCutPro() then
+		if restartStatus then
+			if not fcp.restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4821,17 +4860,19 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		mod.FFEnableGuards = false
-		local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
-		if trim(executeResult) == "1" then mod.FFEnableGuards = true end
+		if fcp.getPreference("FFEnableGuards") == nil then
+			mod.FFEnableGuards = false
+		else
+			mod.FFEnableGuards = fcp.getPreference("FFEnableGuards")
+		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
-		local restartFinalCutProStatus = false
-		if isFinalCutProRunning() then
+		local restartStatus = false
+		if fcp.running() then
 			if displayYesNoQuestion("Toggling Timecode Overlays requires Final Cut Pro to restart.\n\nDo you want to continue?") then
-				restartFinalCutProStatus = true
+				restartStatus = true
 			else
 				return "Done"
 			end
@@ -4841,14 +4882,14 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.FFEnableGuards then
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool false")
-			if executeStatus == nil then
+			local result = fcp.setPreference("FFEnableGuards", false)
+			if result == nil then
 				displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
 		else
-			local executeResult,executeStatus = execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards -bool true")
-			if executeStatus == nil then
+			local result = fcp.setPreference("FFEnableGuards", true)
+			if result == nil then
 				displayErrorMessage("Failed to write to plist.")
 				return "Failed"
 			end
@@ -4857,8 +4898,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if restartFinalCutProStatus then
-			if not restartFinalCutPro() then
+		if restartStatus then
+			if not fcp.restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4905,7 +4946,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
@@ -4915,9 +4956,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 			--------------------------------------------------------------------------------
-			local FFCreateOptimizedMediaForMulticamClips = true
-			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
-			if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
+			if fcp.getPreference("FFCreateOptimizedMediaForMulticamClips") == nil then
+				FFCreateOptimizedMediaForMulticamClips = true
+			else
+				FFCreateOptimizedMediaForMulticamClips = fcp.getPreference("FFCreateOptimizedMediaForMulticamClips")
+			end
 
 			if optionalValue == FFCreateOptimizedMediaForMulticamClips then return end
 
@@ -4926,7 +4969,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5010,7 +5053,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
@@ -5020,9 +5063,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Get plist values for FFImportCreateProxyMedia:
 			--------------------------------------------------------------------------------
-			local FFImportCreateProxyMedia = false
-			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
-			if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
+			if fcp.getPreference("FFImportCreateProxyMedia") == nil then
+				FFImportCreateProxyMedia = false
+			else
+				FFImportCreateProxyMedia = fcp.getPreference("FFImportCreateProxyMedia")
+			end
 
 			if optionalValue == FFImportCreateProxyMedia then return end
 
@@ -5031,7 +5076,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5115,7 +5160,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
@@ -5125,9 +5170,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Get plist values for FFImportCreateOptimizeMedia:
 			--------------------------------------------------------------------------------
-			local FFImportCreateOptimizeMedia = false
-			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
-			if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
+			if fcp.getPreference("FFImportCreateOptimizeMedia") == nil then
+				FFImportCreateOptimizeMedia = false
+			else
+				FFImportCreateOptimizeMedia = fcp.getPreference("FFImportCreateOptimizeMedia")
+			end
 
 			if optionalValue == FFImportCreateOptimizeMedia then return end
 
@@ -5136,7 +5183,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5220,7 +5267,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
@@ -5230,9 +5277,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Get plist values for FFImportCopyToMediaFolder:
 			--------------------------------------------------------------------------------
-			local FFImportCopyToMediaFolder = true
-			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
-			if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
+			if fcp.getPreference("FFImportCopyToMediaFolder") == nil then
+				FFImportCopyToMediaFolder = true
+			else
+				FFImportCopyToMediaFolder = fcp.getPreference("FFImportCopyToMediaFolder")
+			end
 
 			if optionalValue == not FFImportCopyToMediaFolder then return end
 
@@ -5241,7 +5290,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5329,7 +5378,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
@@ -5339,9 +5388,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Get plist values for FFAutoStartBGRender:
 			--------------------------------------------------------------------------------
-			local FFAutoStartBGRender = true
-			local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
-			if trim(executeResult) == "0" then FFAutoStartBGRender = false end
+			if fcp.getPreference("FFAutoStartBGRender") == nil then
+				FFAutoStartBGRender = true
+			else
+				FFAutoStartBGRender = fcp.getPreference("FFAutoStartBGRender")
+			end
 
 			if optionalValue == FFAutoStartBGRender then return end
 
@@ -5350,7 +5401,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
@@ -5443,13 +5494,13 @@ end
 		-- Write data back to Clipboard:
 		--------------------------------------------------------------------------------
 		clipboard.stopWatching()
-		pasteboard.writeDataForUTI(mod.finalCutProClipboardUTI, data)
+		pasteboard.writeDataForUTI(fcp.clipboardUTI(), data)
 		clipboard.startWatching()
 
 		--------------------------------------------------------------------------------
 		-- Paste in FCPX:
 		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
+		fcp.launch()
 		if not keyStrokeFromPlist("Paste") then
 			displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 			return "Failed"
@@ -5479,13 +5530,13 @@ end
 				-- Write data back to Clipboard:
 				--------------------------------------------------------------------------------
 				clipboard.stopWatching()
-				pasteboard.writeDataForUTI(mod.finalCutProClipboardUTI, currentClipboardData)
+				pasteboard.writeDataForUTI(fcp.clipboardUTI(), currentClipboardData)
 				clipboard.startWatching()
 
 				--------------------------------------------------------------------------------
 				-- Paste in FCPX:
 				--------------------------------------------------------------------------------
-				fcpxHacks.launchFinalCutPro()
+				fcp.launch()
 				if not keyStrokeFromPlist("Paste") then
 					displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
 					return "Failed"
@@ -5604,7 +5655,7 @@ end
 	--------------------------------------------------------------------------------
 	function resetSettings()
 
-		local finalCutProRunning = isFinalCutProRunning()
+		local finalCutProRunning = fcp.running()
 
 		local resetMessage = "Are you sure you want to trash the FCPX Hacks Preferences?"
 		if finalCutProRunning then
@@ -5678,7 +5729,7 @@ end
 				-- Restart Final Cut Pro if running:
 				--------------------------------------------------------------------------------
 				if finalCutProRunning then
-					if not restartFinalCutPro() then
+					if not fcp.restart() then
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
@@ -5762,12 +5813,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx 				= fcpxHacks.finalCutProApplication()
+		local fcpx 				= fcp.application()
 
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpxHacks.finalCutProApplication())[1]
+		fcpxElements = ax.applicationElement(fcp.application())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
@@ -6022,7 +6073,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxHacks.finalCutProApplication()
+		fcpx = fcp.application()
 		fcpxElements = ax.applicationElement(fcpx)[1]
 
 		--------------------------------------------------------------------------------
@@ -7386,7 +7437,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpx = fcpxHacks.finalCutProApplication()
+		fcpx = fcp.application()
 		fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -7846,7 +7897,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -7962,7 +8013,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -10666,43 +10717,6 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- RESTART FINAL CUT PRO:
---------------------------------------------------------------------------------
-function restartFinalCutPro()
-
-	if fcpxHacks.finalCutProApplication() ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Kill Final Cut Pro:
-		--------------------------------------------------------------------------------
-		fcpxHacks.finalCutProApplication():kill()
-
-		--------------------------------------------------------------------------------
-		-- Wait until Final Cut Pro is Closed:
-		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		repeat
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				return "Failed"
-			end
-			sleep(1)
-		until not isFinalCutProRunning()
-
-		--------------------------------------------------------------------------------
-		-- Launch Final Cut Pro:
-		--------------------------------------------------------------------------------
-		fcpxHacks.launchFinalCutPro()
-
-		return true
-
-	else
-		return false
-	end
-
-end
-
---------------------------------------------------------------------------------
 -- GET FINAL CUT PRO PROXY STATUS ICON:
 --------------------------------------------------------------------------------
 function getProxyStatusIcon() -- Returns Icon or Nil
@@ -10712,10 +10726,7 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 	local proxyOnIcon = "🔴"
 	local proxyOffIcon = "🔵"
 
-	local FFPlayerQuality = nil
-	if getFinalCutProPlistValue("FFPlayerQuality") ~= nil then
-		FFPlayerQuality = getFinalCutProPlistValue("FFPlayerQuality")
-	end
+	local FFPlayerQuality = fcp.getPreference("FFPlayerQuality")
 
 	if FFPlayerQuality == "4" then
 		result = proxyOnIcon 		-- Proxy (4)
@@ -10728,59 +10739,51 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 end
 
 --------------------------------------------------------------------------------
--- GET FINAL CUT PRO'S ACTIVE COMMAND SET FROM PLIST:
---------------------------------------------------------------------------------
-function getFinalCutProActiveCommandSet()
-
-	local activeCommandSetResult = getFinalCutProPlistValue("Active Command Set")
-
-	if activeCommandSetResult == nil then
-		return nil
-	else
-		if fs.attributes(activeCommandSetResult) == nil then
-			return nil
-		else
-			return activeCommandSetResult
-		end
-	end
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO PLIST VALUE:
---------------------------------------------------------------------------------
-function getFinalCutProPlistValue(value) -- Returns Result or Nil
-
-	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist '" .. tostring(value) .. "'")
-
-	if executeStatus == nil then
-		return nil
-	else
-		return trim(executeResult)
-	end
-
-end
-
---------------------------------------------------------------------------------
 -- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
 --------------------------------------------------------------------------------
 function readShortcutKeysFromPlist()
+
 	--------------------------------------------------------------------------------
-	-- Get plist values for 'Active Command Set':
+	-- Get 'Active Command Set' Path:
 	--------------------------------------------------------------------------------
-	local executeResult,executeStatus = execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set'")
-	if executeStatus == nil then
-		displayErrorMessage("Could not retreieve the Active Command Set from Final Cut Pro's plist.")
+	local activeCommandSetPath = fcp.getActiveCommandSetPath()
+
+	if activeCommandSetPath == nil then
+		displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
 		return "Failed"
 	else
-		if fs.attributes(trim(executeResult)) == nil then
-			displayErrorMessage("The Active Command Set in Final Cut Pro's plist could not be found.")
+		if fs.attributes(activeCommandSetPath) == nil then
+			displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
 			return "Failed"
 		else
-			local activeCommandSet = trim(executeResult)
+
+			-- TO DO: Need to debug 'plistParser' and get this working...
+
+			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
+
+			--[[
+
+			if activeCommandSetTable == nil then
+				displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
+				return "Failed"
+			end
+			--writeToConsole(activeCommandSetTable)
+
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
+				if activeCommandSetTable[k] ~= nil then
+					writeToConsole(k)
+					writeToConsole(v)
+				else
+					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+				end
+			end
+
+			--]]
+
 			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
 
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
 				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 
 				if executeStatus == nil then
@@ -10821,7 +10824,7 @@ function readShortcutKeysFromPlist()
 						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
 						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
 						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 
 						if executeStatus == nil then
@@ -10852,7 +10855,7 @@ function readShortcutKeysFromPlist()
 			end
 			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
 
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
+				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
 				local executeResult,executeStatus = execute(executeCommand)
 				if executeStatus == nil then
 					--------------------------------------------------------------------------------
@@ -10885,14 +10888,14 @@ function readShortcutKeysFromPlist()
 							addToK = ""
 						end
 
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSet) .. "'"
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
 						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 						if executeStatus == nil then
 							if executeType == "exit" then
 								--------------------------------------------------------------------------------
 								-- Try modifierMask Instead!
 								--------------------------------------------------------------------------------
-								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSet) .. "'"
+								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
 								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
 								if executeStatus == nil then
 									if executeType == "exit" then
@@ -10920,34 +10923,6 @@ function readShortcutKeysFromPlist()
 			return "Done"
 		end
 	end
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO FRONTMOST?
---------------------------------------------------------------------------------
-function isFinalCutProFrontmost()
-
-	local fcpx = fcpxHacks.finalCutProApplication()
-	if fcpx == nil then
-		return false
-	else
-		return fcpx:isFrontmost()
-	end
-
-end
-
---------------------------------------------------------------------------------
--- IS FINAL CUT PRO ACTIVE:
---------------------------------------------------------------------------------
-function isFinalCutProRunning()
-
-	local fcpx = fcpxHacks.finalCutProApplication()
-	if fcpx == nil then
-		return false
-	else
-		return fcpx:isRunning()
-	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -10988,7 +10963,7 @@ AXScrollArea (scroll area 1)
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxHacks.finalCutProApplication()
+	local fcpx = fcp.application()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -11029,7 +11004,7 @@ function checkScrollingTimelinePress()
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx 				= fcpxHacks.finalCutProApplication()
+	local fcpx 				= fcp.application()
 	local fcpxElements 		= ax.applicationElement(fcpx)
 
 	--------------------------------------------------------------------------------
@@ -11234,7 +11209,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = fcpxHacks.finalCutProApplication()
+	local fcpx = fcp.application()
 
 	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
@@ -11355,6 +11330,7 @@ function performFinalCutProMenuItem(menuItemTable) -- Accepts a table (i.e. {"Vi
 	return "Done"
 
 end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -11741,7 +11717,7 @@ end
 	-- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
 	--------------------------------------------------------------------------------
 	function displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
 		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
@@ -11767,7 +11743,7 @@ end
 			return usersInput
 		]]
 		a,result = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 		return result
 	end
 
@@ -11775,7 +11751,7 @@ end
 	-- DISPLAY TEXT BOX MESSAGE:
 	--------------------------------------------------------------------------------
 	function displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
 		local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
@@ -11811,7 +11787,7 @@ end
 			return response
 		]]
 		a,result = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 		return result
 	end
 
@@ -11819,7 +11795,7 @@ end
 	-- DISPLAY CHOOSE FOLDER DIALOG:
 	--------------------------------------------------------------------------------
 	function displayChooseFolder(whatMessage)
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = [[
 			tell me to activate
@@ -11832,7 +11808,7 @@ end
 			end try
 		]]
 		a,result = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 		return result
 	end
 
@@ -11840,14 +11816,14 @@ end
 	-- DISPLAY ALERT MESSAGE:
 	--------------------------------------------------------------------------------
 	function displayAlertMessage(whatMessage)
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = [[
 			tell me to activate
 			display dialog whatMessage buttons {"OK"} with icon stop
 		]]
 		osascript.applescript(appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 	end
 
 	--------------------------------------------------------------------------------
@@ -11863,7 +11839,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Display Dialog Box:
 		--------------------------------------------------------------------------------
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
 		local appleScriptB = [[
 			tell me to activate
@@ -11880,7 +11856,7 @@ end
 		-- Send bug report:
 		--------------------------------------------------------------------------------
 		if result then emailBugReport() end
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 
 	end
 
@@ -11888,14 +11864,14 @@ end
 	-- DISPLAY MESSAGE:
 	--------------------------------------------------------------------------------
 	function displayMessage(whatMessage)
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = [[
 			tell me to activate
 			display dialog whatMessage buttons {"OK"} with icon fcpxIcon
 		]]
 		osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 	end
 
 	--------------------------------------------------------------------------------
@@ -11903,7 +11879,7 @@ end
 	--------------------------------------------------------------------------------
 	function displayYesNoQuestion(whatMessage) -- returns true or false
 
-		local returnToFinalCutPro = isFinalCutProFrontmost()
+		local returnToFinalCutPro = fcp.frontmost()
 		local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 		local appleScriptB = [[
 			tell me to activate
@@ -11915,7 +11891,7 @@ end
 			end if
 		]]
 		a,result = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-		if returnToFinalCutPro then fcpxHacks.launchFinalCutPro() end
+		if returnToFinalCutPro then fcp.launch() end
 		return result
 
 	end
@@ -12264,7 +12240,7 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
-    	if mod.lastCommandSet ~= getFinalCutProActiveCommandSet() then
+    	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
     		if not mod.isCommandEditorOpen then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
@@ -12374,7 +12350,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = fcpxHacks.finalCutProApplication()
+		local fcpx = fcp.application()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -12465,7 +12441,7 @@ function mediaImportWatcher()
 			local currentApplication = application.frontmostApplication()
 			debugMessage("Currently using '"..currentApplication:name().."'")
 
-			local fcpx = fcpxHacks.finalCutProApplication()
+			local fcpx = fcp.application()
 			local fcpxHidden = true
 			if fcpx ~= nil then fcpxHidden = fcpx:isHidden() end
 
@@ -12474,11 +12450,11 @@ function mediaImportWatcher()
 					return stopMediaImportTimer 
 				end, 
 				function()
-					if not isFinalCutProRunning() then
+					if not fcp.prunning() then
 						debugMessage("FCPX is not running. Stop watching.")
 						stopMediaImportTimer = true
 					else
-						local fcpx = fcpxHacks.finalCutProApplication()
+						local fcpx = fcp.application()
 						local fcpxElements = ax.applicationElement(fcpx)
 						if fcpxElements[1] ~= nil then
 							if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
