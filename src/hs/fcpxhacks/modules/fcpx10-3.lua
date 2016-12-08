@@ -1183,6 +1183,60 @@ end
 function readShortcutKeysFromPlist()
 
 	--------------------------------------------------------------------------------
+	-- EXPERIMENTING WITH USING PLIST MODULE FOR READING COMMAND SET:
+	--------------------------------------------------------------------------------
+	local activeCommandSetTable = fcp.getActiveCommandSetAsTable()
+	if activeCommandSetTable ~= nil then
+		debugMessage("Using EXPERIMENTAL plist reader.")
+
+		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+			if activeCommandSetTable[k] ~= nil then
+
+				for x=1, #activeCommandSetTable[k] do
+
+					local tempModifiers = nil
+					local tempCharacterString = nil
+
+					if activeCommandSetTable[k][x]["characterString"] ~= nil then
+						tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
+					end
+
+					if activeCommandSetTable[k][x]["modifiers"] ~= nil then
+						tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
+					end
+
+					if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
+						tempModifiers = translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+					end
+
+					local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+
+					print(mod.finalCutProShortcutKeyPlaceholders[k])
+
+					mod.finalCutProShortcutKey[k] = {
+						characterString 	= 		tempCharacterString,
+						modifiers 			= 		tempModifiers,
+						fn 					= 		mod.finalCutProShortcutKeyPlaceholders[k]['fn'],
+						releasedFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'],
+						repeatFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'],
+						global 				= 		tempGlobalShortcut,
+					}
+
+				end
+
+			end
+		end
+
+		print("RESULT:")
+		print(mod.finalCutProShortcutKey)
+
+		return "Done"
+
+	else
+		debugMessage("Failed to use EXPERIMENTAL plist reader. Reverting back to previous version...")
+	end
+
+	--------------------------------------------------------------------------------
 	-- Get 'Active Command Set' Path:
 	--------------------------------------------------------------------------------
 	local activeCommandSetPath = fcp.getActiveCommandSetPath()
@@ -1195,31 +1249,6 @@ function readShortcutKeysFromPlist()
 			dialog.displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
 			return "Failed"
 		else
-
-			-- TO DO: Need to debug 'plistParser' and get this working...
-
-			--local activeCommandSetTable = fcp.getActiveCommandSetAsTable(activeCommandSetPath)
-
-			--[[
-
-			if activeCommandSetTable == nil then
-				dialog.displayErrorMessage("FCPX Hacks failed to read the Active Command Set.")
-				return "Failed"
-			end
-			--writeToConsole(activeCommandSetTable)
-
-			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
-				if activeCommandSetTable[k] ~= nil then
-					writeToConsole(k)
-					writeToConsole(v)
-				else
-					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				end
-			end
-
-			--]]
-
 			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
