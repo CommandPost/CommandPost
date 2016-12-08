@@ -82,17 +82,19 @@ base64 										= require("hs.base64")
 distributednotifications					= require("hs.distributednotifications")
 utf8										= require("hs.utf8")
 http										= require("hs.http")
+pasteboard 									= require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
 -- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
 ax 											= require("hs._asm.axuielement")
-pasteboard 									= require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
 -- GLOBAL VARIABLES:
 --------------------------------------------------------------------------------
+
+scriptVersion								= fcpxhacks.scriptVersion						-- Script Version
 
 debugMode 									= false											-- Debug Mode
 clock 										= os.clock										-- Used for sleep()
@@ -9000,6 +9002,15 @@ end
 --                     C O M M O N    F U N C T I O N S                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- RETURNS MACOS VERSION:
+-------------------------------------------------------------------------------
+function macOSVersion()
+	local osVersion = host.operatingSystemVersion()
+	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
+	return osVersionString
+end
 
 --------------------------------------------------------------------------------
 -- HOW MANY ITEMS IN A TABLE?

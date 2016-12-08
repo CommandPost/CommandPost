@@ -249,7 +249,7 @@ function mod.init()
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
 		dialog.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
-		application.get("Hammerspoon"):kill()
+		application("org.hammerspoon.Hammerspoon"):kill()
 	end
 
 	return self
@@ -272,7 +272,11 @@ end
 -- REPLACE THE BUILT-IN PRINT FEATURE:
 --------------------------------------------------------------------------------
 print = function(value)
-	if type(value) == "table" then value = inspect(value) end
+	if type(value) == "table" then
+		value = inspect(value)
+	else
+		value = tostring(value)
+	end
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
 		local consoleStyledText = styledtext.new(value, {
 			color = drawing.color.definedCollections.hammerspoon["blue"],
@@ -318,10 +322,14 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Assign our mod to the global 'fcpxhacks' object
+--------------------------------------------------------------------------------
+-- ASSIGN OUR MOD TO THE GLOBAL 'FCPXHACKS' OBJECT:
+--------------------------------------------------------------------------------
 fcpxhacks = mod
 
--- Kick it off!
+--------------------------------------------------------------------------------
+-- KICK IT OFF!
+--------------------------------------------------------------------------------
 return mod.init()
 
 --------------------------------------------------------------------------------
