@@ -9,7 +9,7 @@
 
 local plist = {}
 
-local log			= require("hs.logger").new("plister")
+local log			= require("hs.logger").new("plist")
 local plistParse 	= require("hs.plist.plistParse")
 local fs			= require("hs.fs")
 
@@ -107,7 +107,7 @@ function plist.binaryFileToTable(plistFileName)
 	local executeOutput 			= nil
 	local executeStatus 			= nil
 	local plistTable 				= nil
-	
+
 	if not plistFileName then
 		log.e("No plist filename was provided.")
 		return nil
@@ -185,7 +185,7 @@ function plist.xmlFileToTable(plistFileName)
 	local file = io.open(plistFileName, "r") 		-- r read mode
     if not file then
 		log.e("Unable to open '".. plistFileName .."'")
-		return nil 
+		return nil
 	end
     local content = file:read "*a" 					-- *a or *all reads the whole file
     file:close()
@@ -219,19 +219,19 @@ function plist.fileToTable(plistFileName)
 		log.e("No plistFileName was provided")
 		return nil
 	end
-	
+
 	local file = io.open(plistFileName, "r")
 	if not file then
 		log.e("Unable to open '".. plistFileName .."'")
-		return nil 
+		return nil
 	end
-	
+
 	-- Check for the marker
 	local marker = file:read(6)
 	file:close()
-	
+
 	log.d("Marker: "..marker)
-	
+
 	if marker == "bplist" then
 		-- it's a binary plist
 		return plist.binaryFileToTable(plistFileName)

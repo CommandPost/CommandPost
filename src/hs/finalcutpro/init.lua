@@ -14,11 +14,13 @@ local finalCutProPreferencesPlistPath 		= "~/Library/Preferences/com.apple.Final
 local finalCutProLanguages 					= {"de", "en", "es", "fr", "ja", "zh_CN"}
 local finalCutProFlexoLanguages				= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
-local plist 								= require("hs.plist")
-local application 							= require("hs.application")
-local osascript 							= require("hs.osascript")
-local fs 									= require("hs.fs")
 local ax 									= require("hs._asm.axuielement")
+local plist 								= require("hs.plist")
+
+local application 							= require("hs.application")
+local fs 									= require("hs.fs")
+local osascript 							= require("hs.osascript")
+local timer									= require("hs.timer")
 
 --- doesDirectoryExist() -> boolean
 --- Internal Function
@@ -361,7 +363,7 @@ function finalcutpro.getActiveCommandSetAsTable(optionalPath)
 	local result = nil
 	local activeCommandSetPath = nil
 
-	if optionalPath ~= nil then
+	if optionalPath == nil then
 		activeCommandSetPath = finalcutpro.getActiveCommandSetPath()
 	else
 		activeCommandSetPath = optionalPath
@@ -369,7 +371,7 @@ function finalcutpro.getActiveCommandSetAsTable(optionalPath)
 
 	if activeCommandSetPath ~= nil then
 		if fs.attributes(activeCommandSetPath) ~= nil then
-			result = plist.xmlFileToTable(activeCommandSetPath) or nil
+			result = plist.fileToTable(activeCommandSetPath)
 		end
 	end
 
@@ -484,7 +486,7 @@ function finalcutpro.restart()
 			if timeoutCount == 10 then
 				return false
 			end
-			sleep(1)
+			timer.usleep(1000000)
 		until not finalcutpro.running()
 
 		-- Launch Final Cut Pro:
