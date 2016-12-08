@@ -11,6 +11,7 @@ local plist = {}
 
 local log			= require("hs.logger").new("plister")
 local plistParse 	= require("hs.plist.plistParse")
+local fs			= require("hs.fs")
 
 --- hs.plist.base64ToTable(base64Data) -> table or nil
 --- Function
@@ -37,7 +38,7 @@ function plist.base64ToTable(base64Data)
 	file:close()
 
 	-- Convert the base64 file to a binary plist:
-	executeCommand = "openssl base64 -in " .. tostring(base64FileName) .. " -out " .. tostring(plistFileName) .. " -d"
+	executeCommand = 'openssl base64 -in "' .. tostring(base64FileName) .. '" -out "' .. tostring(plistFileName) .. '" -d'
 	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
 	if not executeStatus then
 		log.e("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
@@ -106,9 +107,16 @@ function plist.binaryFileToTable(plistFileName)
 	local executeOutput 			= nil
 	local executeStatus 			= nil
 	local plistTable 				= nil
+	
+	if not plistFileName then
+		log.e("No plist filename was provided.")
+		return nil
+	else
+		plistFileName = fs.pathToAbsolute(plistFileName)
+	end
 
 	local executeOutput, executeStatus, _, _ = hs.execute([[
-		plutil -convert xml1 ]] .. plistFileName .. [[ -o -
+		plutil -convert xml1 "]] .. plistFileName .. [[" -o -
 	]])
 
 	if not executeStatus then
@@ -142,7 +150,7 @@ function plist.binaryFileToXML(plistFileName)
 	local plistTable 				= nil
 
 	local executeOutput, executeStatus, _, _ = hs.execute([[
-		plutil -convert xml1 ]] .. plistFileName .. [[ -o -
+		plutil -convert xml1 "]] .. plistFileName .. [[" -o -
 	]])
 
 	if not executeStatus then
@@ -169,9 +177,16 @@ end
 --- Notes:
 ---  * None
 function plist.xmlFileToTable(plistFileName)
+	if not plistFileName then
+		log.e("No plistFileName was provided")
+		return nil
+	end
 
-	local file = io.open(plistFileName, "r") 		-- r read mode and b binary mode
-    if not file then return nil end
+	local file = io.open(plistFileName, "r") 		-- r read mode
+    if not file then
+		log.e("Unable to open '".. plistFileName .."'")
+		return nil 
+	end
     local content = file:read "*a" 					-- *a or *all reads the whole file
     file:close()
 
@@ -181,6 +196,48 @@ function plist.xmlFileToTable(plistFileName)
 	-- Return the result:
 	return plistTable
 
+end
+
+--- hs.plist.fileToTable(plistFileName) -> table or nil
+--- Function
+--- Converts plist data from a binary or XML file into a LUA Table.
+--- It will check the file prior to loading to determine which type it is.
+--- If you know which type of file you're dealing with in advance, you can use
+--- hs.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
+--- (small) file read
+---
+--- Parameters:
+---  * plistFileName - Path & Filename of the XML File
+---
+--- Returns:
+---  * A table of plist data
+---
+--- Notes:
+---  * None
+function plist.fileToTable(plistFileName)
+	if not plistFileName then
+		log.e("No plistFileName was provided")
+		return nil
+	end
+	
+	local file = io.open(plistFileName, "r")
+	if not file then
+		log.e("Unable to open '".. plistFileName .."'")
+		return nil 
+	end
+	
+	-- Check for the marker
+	local marker = file:read(6)
+	file:close()
+	
+	log.d("Marker: "..marker)
+	
+	if marker == "bplist" then
+		-- it's a binary plist
+		return plist.binaryFileToTable(plistFileName)
+	else
+		return plist.xmlFileToTable(plistFileName)
+	end
 end
 
 return plist
