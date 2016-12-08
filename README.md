@@ -1,10 +1,10 @@
 # FCPX Hacks
 
-FCPX Hacks is a free and open source Hammerspoon script that adds a mountain-load of new features to Final Cut Pro.
+FCPX Hacks is a free and open source [Hammerspoon](http://www.hammerspoon.org) script that adds a mountain-load of new features to Final Cut Pro.
 
 ## Installing
 
-1. Open a Termainal window
+1. Open a Terminal window
 2. Execute `./install`
 
 ## Building the Distribution DMG
