@@ -68,7 +68,7 @@ end
 --------------------------------------------------------------------------------
 -- DOUBLE LEFT CLICK:
 --------------------------------------------------------------------------------
-function doubleLeftClick(point)
+function tools.doubleLeftClick(point)
 	local clickState = eventtap.event.properties.mouseEventClickState
 	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
 	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
@@ -80,7 +80,7 @@ end
 --------------------------------------------------------------------------------
 -- NINJA MOUSE CLICK:
 --------------------------------------------------------------------------------
-function ninjaMouseClick(position)
+function tools.ninjaMouseClick(position)
 		local originalMousePoint = mouse.getAbsolutePosition()
 		eventtap.leftClick(position)
 		mouse.setAbsolutePosition(originalMousePoint)
@@ -89,7 +89,7 @@ end
 --------------------------------------------------------------------------------
 -- HOW MANY ITEMS IN A TABLE?
 --------------------------------------------------------------------------------
-function tableCount(table)
+function tools.tableCount(table)
 	local count = 0
 	for _ in pairs(table) do count = count + 1 end
 	return count
