@@ -97,6 +97,7 @@ local touchbar 									= require("hs._asm.touchbar")
 --------------------------------------------------------------------------------
 
 local fcp										= require("hs.finalcutpro")
+local plist										= require("hs.plist")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 local tools										= require("hs.fcpxhacks.modules.tools")
@@ -817,7 +818,7 @@ function bindKeyboardShortcuts()
 			mod.finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
 		end
 
-		if readShortcutKeysFromPlist() ~= "Done" then
+		if getShortcutsFromActiveCommandSet() ~= true then
 			dialog.displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
 			writeToConsole("ERROR: Something went wrong during the plist reading process. Falling back to default shortcut keys.")
 			enableHacksShortcutsInFinalCutPro = false
@@ -1055,8 +1056,10 @@ function bindKeyboardShortcuts()
 		-- Get Values of Shortcuts built into Final Cut Pro:
 		--------------------------------------------------------------------------------
 		mod.finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
-		readShortcutKeysFromPlist()
-
+		if getShortcutsFromActiveCommandSet() ~= true then
+			dialog.displayErrorMessage("Something went wrong whilst attempting to read the Active Command Set.")
+			return "Fail"
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -1180,38 +1183,88 @@ end
 --------------------------------------------------------------------------------
 -- READ SHORTCUT KEYS FROM FINAL CUT PRO PLIST:
 --------------------------------------------------------------------------------
-function readShortcutKeysFromPlist()
+function getShortcutsFromActiveCommandSet()
 
-	--------------------------------------------------------------------------------
-	-- EXPERIMENTING WITH USING PLIST MODULE FOR READING COMMAND SET:
-	--------------------------------------------------------------------------------
 	local activeCommandSetTable = fcp.getActiveCommandSetAsTable()
-	if activeCommandSetTable ~= nil then
-		debugMessage("Using EXPERIMENTAL plist reader.")
 
+	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+
 			if activeCommandSetTable[k] ~= nil then
 
-				for x=1, #activeCommandSetTable[k] do
+				--------------------------------------------------------------------------------
+				-- Multiple keyboard shortcuts for single function:
+				--------------------------------------------------------------------------------
+				if type(activeCommandSetTable[k][1]) == "table" then
+					for x=1, #activeCommandSetTable[k] do
+
+						local tempModifiers = nil
+						local tempCharacterString = nil
+						local keypadModifier = false
+
+						if activeCommandSetTable[k][x]["modifiers"] ~= nil then
+							if string.find(activeCommandSetTable[k][x]["modifiers"], "keypad") then keypadModifier = true end
+							tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
+						end
+
+						if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
+							tempModifiers = translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+						end
+
+						if activeCommandSetTable[k][x]["characterString"] ~= nil then
+							tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
+						end
+
+						if activeCommandSetTable[k][x]["character"] ~= nil then
+							if keypadModifier then
+								tempCharacterString = translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
+							else
+								tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
+							end
+						end
+
+						local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
+
+						mod.finalCutProShortcutKey[k .. tostring(x)] = {
+							characterString 	= 		tempCharacterString,
+							modifiers 			= 		tempModifiers,
+							fn 					= 		mod.finalCutProShortcutKeyPlaceholders[k]['fn'],
+							releasedFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'],
+							repeatFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'],
+							global 				= 		tempGlobalShortcut,
+						}
+
+					end
+				--------------------------------------------------------------------------------
+				-- Single keyboard shortcut for a single function:
+				--------------------------------------------------------------------------------
+				else
 
 					local tempModifiers = nil
 					local tempCharacterString = nil
+					local keypadModifier = false
 
-					if activeCommandSetTable[k][x]["characterString"] ~= nil then
-						tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
+					if activeCommandSetTable[k]["modifiers"] ~= nil then
+						tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k]["modifiers"])
 					end
 
-					if activeCommandSetTable[k][x]["modifiers"] ~= nil then
-						tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
+					if activeCommandSetTable[k]["modifierMask"] ~= nil then
+						tempModifiers = translateModifierMask(activeCommandSetTable[k]["modifierMask"])
 					end
 
-					if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
-						tempModifiers = translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+					if activeCommandSetTable[k]["characterString"] ~= nil then
+						tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k]["characterString"])
+					end
+
+					if activeCommandSetTable[k]["character"] ~= nil then
+						if keypadModifier then
+							tempCharacterString = translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
+						else
+							tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k]["character"])
+						end
 					end
 
 					local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-
-					print(mod.finalCutProShortcutKeyPlaceholders[k])
 
 					mod.finalCutProShortcutKey[k] = {
 						characterString 	= 		tempCharacterString,
@@ -1223,174 +1276,125 @@ function readShortcutKeysFromPlist()
 					}
 
 				end
-
 			end
 		end
-
-		print("RESULT:")
-		print(mod.finalCutProShortcutKey)
-
-		return "Done"
-
+		return true
 	else
-		debugMessage("Failed to use EXPERIMENTAL plist reader. Reverting back to previous version...")
+		return false
 	end
 
-	--------------------------------------------------------------------------------
-	-- Get 'Active Command Set' Path:
-	--------------------------------------------------------------------------------
-	local activeCommandSetPath = fcp.getActiveCommandSetPath()
+end
 
-	if activeCommandSetPath == nil then
-		dialog.displayErrorMessage("FCPX Hacks failed to retreieve the Active Command Set Path from the Final Cut Pro Preferences.")
-		return "Failed"
+--------------------------------------------------------------------------------
+-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM PLIST TO HS FORMAT:
+--------------------------------------------------------------------------------
+function translateKeyboardCharacters(input)
+
+	local result = tostring(input)
+
+	if input == " " 									then result = "space"		end
+	if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
+	if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
+	if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
+	if string.find(input, "NSF4FunctionKey") 			then result = "f4" 			end
+	if string.find(input, "NSF5FunctionKey") 			then result = "f5" 			end
+	if string.find(input, "NSF6FunctionKey") 			then result = "f6" 			end
+	if string.find(input, "NSF7FunctionKey") 			then result = "f7" 			end
+	if string.find(input, "NSF8FunctionKey") 			then result = "f8" 			end
+	if string.find(input, "NSF9FunctionKey") 			then result = "f9" 			end
+	if string.find(input, "NSF10FunctionKey") 			then result = "f10" 		end
+	if string.find(input, "NSF11FunctionKey") 			then result = "f11" 		end
+	if string.find(input, "NSF12FunctionKey") 			then result = "f12" 		end
+	if string.find(input, "NSF13FunctionKey") 			then result = "f13" 		end
+	if string.find(input, "NSF14FunctionKey") 			then result = "f14" 		end
+	if string.find(input, "NSF15FunctionKey") 			then result = "f15" 		end
+	if string.find(input, "NSF16FunctionKey") 			then result = "f16" 		end
+	if string.find(input, "NSF17FunctionKey") 			then result = "f17" 		end
+	if string.find(input, "NSF18FunctionKey") 			then result = "f18" 		end
+	if string.find(input, "NSF19FunctionKey") 			then result = "f19" 		end
+	if string.find(input, "NSF20FunctionKey") 			then result = "f20" 		end
+	if string.find(input, "NSUpArrowFunctionKey") 		then result = "up" 			end
+	if string.find(input, "NSDownArrowFunctionKey") 	then result = "down" 		end
+	if string.find(input, "NSLeftArrowFunctionKey") 	then result = "left" 		end
+	if string.find(input, "NSRightArrowFunctionKey") 	then result = "right" 		end
+	if string.find(input, "NSDeleteFunctionKey") 		then result = "delete" 		end
+	if string.find(input, "NSHomeFunctionKey") 			then result = "home" 		end
+	if string.find(input, "NSEndFunctionKey") 			then result = "end" 		end
+	if string.find(input, "NSPageUpFunctionKey") 		then result = "pageup" 		end
+	if string.find(input, "NSPageDownFunctionKey") 		then result = "pagedown" 	end
+
+	--------------------------------------------------------------------------------
+	-- Convert to lowercase:
+	--------------------------------------------------------------------------------
+	result = string.lower(result)
+
+	local convertedToKeycode = keyCodeTranslator(result)
+	if convertedToKeycode == nil then
+		writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
+		result = ""
 	else
-		if fs.attributes(activeCommandSetPath) == nil then
-			dialog.displayErrorMessage("The Active Command Set listed in the Final Cut Pro Preferences could not be found.")
-			return "Failed"
-		else
-			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+		result = convertedToKeycode
+	end
 
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+	return result
 
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-					mod.finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
+end
 
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
+--------------------------------------------------------------------------------
+-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM PLIST TO HS FORMAT:
+--------------------------------------------------------------------------------
+function translateKeyboardKeypadCharacters(input)
 
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
+	local result = nil
+	local padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "enter" }
+	for i=1, #padKeys do
+		if input == padKeys[i] then result = "pad" .. input end
+	end
 
-						--------------------------------------------------------------------------------
-						-- Insert Blank Placeholder
-						--------------------------------------------------------------------------------
-						local globalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-						mod.finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = mod.finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
+	return translateKeyboardCharacters(result)
 
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
+end
 
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Assuming that the plist was read fine, but contained no value:
-								--------------------------------------------------------------------------------
-								mod.finalCutProShortcutKey[k .. addToK]['characterString'] = ""
-							else
-								dialog.displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
-								return "Failed"
-							end
-						else
-							--------------------------------------------------------------------------------
-							-- We only want the first line of the executeResult:
-							--------------------------------------------------------------------------------
-							for line in executeResult:gmatch"(.-)\n" do
-								executeResult = line
-								goto escape
-							end
-							::escape::
+--------------------------------------------------------------------------------
+-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
+--------------------------------------------------------------------------------
+function translateKeyboardModifiers(input)
 
-							mod.finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
-						end
+	local result = {}
+	if string.find(input, "command") then result[#result + 1] = "command" end
+	if string.find(input, "control") then result[#result + 1] = "control" end
+	if string.find(input, "option") then result[#result + 1] = "option" end
+	if string.find(input, "shift") then result[#result + 1] = "shift" end
+	return result
 
-					end
-				end
-			end
-			for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+end
 
-				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSetPath) .. "'"
-				local executeResult,executeStatus = execute(executeCommand)
-				if executeStatus == nil then
-					--------------------------------------------------------------------------------
-					-- Maybe there is nothing allocated to this command in the plist?
-					--------------------------------------------------------------------------------
-					if executeType ~= "exit" then
-						debugMessage("WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-					end
-					mod.finalCutProShortcutKey[k]['modifiers'] = {}
-				else
-					local x, lastDict = string.gsub(executeResult, "Dict {", "")
-					lastDict = lastDict - 1
-					local currentDict = ""
+--------------------------------------------------------------------------------
+-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
+--------------------------------------------------------------------------------
+function translateModifierMask(value)
 
-					--------------------------------------------------------------------------------
-					-- Loop through each set of the same shortcut key:
-					--------------------------------------------------------------------------------
-					for whichDict=0, lastDict do
+	local modifiers = {
+		--AlphaShift = 1 << 16,
+		shift      = 1 << 17,
+		control    = 1 << 18,
+		option	   = 1 << 19,
+		command    = 1 << 20,
+		--NumericPad = 1 << 21,
+		--Help       = 1 << 22,
+		--Function   = 1 << 23,
+	}
 
-						if lastDict ~= 0 then
-							if whichDict == 0 then
-								addToK = ""
-								currentDict = ":" .. tostring(whichDict)
-							else
-								currentDict = ":" .. tostring(whichDict)
-								addToK = tostring(whichDict)
-							end
-						else
-							currentDict = ""
-							addToK = ""
-						end
+	local answer = {}
 
-						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSetPath) .. "'"
-						local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-						if executeStatus == nil then
-							if executeType == "exit" then
-								--------------------------------------------------------------------------------
-								-- Try modifierMask Instead!
-								--------------------------------------------------------------------------------
-								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSetPath) .. "'"
-								local executeResult,executeStatus,executeType,executeRC = execute(executeCommand)
-								if executeStatus == nil then
-									if executeType == "exit" then
-										--------------------------------------------------------------------------------
-										-- Assuming that the plist was read fine, but contained no value:
-										--------------------------------------------------------------------------------
-										mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
-									else
-										dialog.displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
-										return "Failed"
-									end
-								else
-									mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(tools.trim(executeResult))
-								end
-							else
-								dialog.displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
-								return "Failed"
-							end
-						else
-							mod.finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
-						end
-					end
-				end
-			end
-			return "Done"
+	for k, v in pairs(modifiers) do
+		if (value & v) == v then
+			table.insert(answer, k)
 		end
 	end
+
+	return answer
+
 end
 
 --------------------------------------------------------------------------------
@@ -1986,7 +1990,7 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Used for debugging:
 		--------------------------------------------------------------------------------
-		debugMessage("The plist values have been updated for the menubar.")
+		debugMessage("Menubar refreshed with latest plist values.")
 
 		--------------------------------------------------------------------------------
 		-- Read Final Cut Pro Preferences:
@@ -2000,9 +2004,17 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
-		allowMovingMarkers = false
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
+		mod.allowMovingMarkers = false
+		local result = plist.fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
+		if result ~= nil then
+			if result["TLKMarkerHandler"] ~= nil then
+				if result["TLKMarkerHandler"]["Configuration"] ~= nil then
+					if result["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] ~= nil then
+						mod.allowMovingMarkers = result["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+					end
+				end
+			end
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
@@ -11293,103 +11305,6 @@ end
 		else
 			return englishKeyCodes[input]
 		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM PLIST TO HS FORMAT:
-	--------------------------------------------------------------------------------
-	function translateKeyboardCharacters(input)
-
-		local result = tostring(input)
-
-		if input == " " 									then result = "space"		end
-		if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
-		if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
-		if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
-		if string.find(input, "NSF4FunctionKey") 			then result = "f4" 			end
-		if string.find(input, "NSF5FunctionKey") 			then result = "f5" 			end
-		if string.find(input, "NSF6FunctionKey") 			then result = "f6" 			end
-		if string.find(input, "NSF7FunctionKey") 			then result = "f7" 			end
-		if string.find(input, "NSF8FunctionKey") 			then result = "f8" 			end
-		if string.find(input, "NSF9FunctionKey") 			then result = "f9" 			end
-		if string.find(input, "NSF10FunctionKey") 			then result = "f10" 		end
-		if string.find(input, "NSF11FunctionKey") 			then result = "f11" 		end
-		if string.find(input, "NSF12FunctionKey") 			then result = "f12" 		end
-		if string.find(input, "NSF13FunctionKey") 			then result = "f13" 		end
-		if string.find(input, "NSF14FunctionKey") 			then result = "f14" 		end
-		if string.find(input, "NSF15FunctionKey") 			then result = "f15" 		end
-		if string.find(input, "NSF16FunctionKey") 			then result = "f16" 		end
-		if string.find(input, "NSF17FunctionKey") 			then result = "f17" 		end
-		if string.find(input, "NSF18FunctionKey") 			then result = "f18" 		end
-		if string.find(input, "NSF19FunctionKey") 			then result = "f19" 		end
-		if string.find(input, "NSF20FunctionKey") 			then result = "f20" 		end
-		if string.find(input, "NSUpArrowFunctionKey") 		then result = "up" 			end
-		if string.find(input, "NSDownArrowFunctionKey") 	then result = "down" 		end
-		if string.find(input, "NSLeftArrowFunctionKey") 	then result = "left" 		end
-		if string.find(input, "NSRightArrowFunctionKey") 	then result = "right" 		end
-		if string.find(input, "NSDeleteFunctionKey") 		then result = "delete" 		end
-		if string.find(input, "NSHomeFunctionKey") 			then result = "home" 		end
-		if string.find(input, "NSEndFunctionKey") 			then result = "end" 		end
-		if string.find(input, "NSPageUpFunctionKey") 		then result = "pageup" 		end
-		if string.find(input, "NSPageDownFunctionKey") 		then result = "pagedown" 	end
-
-		--------------------------------------------------------------------------------
-		-- Convert to lowercase:
-		--------------------------------------------------------------------------------
-		result = string.lower(result)
-
-		local convertedToKeycode = keyCodeTranslator(result)
-		if convertedToKeycode == nil then
-			writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
-			result = ""
-		else
-			result = convertedToKeycode
-		end
-
-		return result
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
-	--------------------------------------------------------------------------------
-	function translateKeyboardModifiers(input)
-
-		local result = {}
-		if string.find(input, "command") then result[#result + 1] = "command" end
-		if string.find(input, "control") then result[#result + 1] = "control" end
-		if string.find(input, "option") then result[#result + 1] = "option" end
-		if string.find(input, "shift") then result[#result + 1] = "shift" end
-		return result
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD MODIFIERS FROM PLIST STRING TO HS TABLE FORMAT:
-	--------------------------------------------------------------------------------
-	function translateModifierMask(value)
-
-		local modifiers = {
-			--AlphaShift = 1 << 16,
-			shift      = 1 << 17,
-			control    = 1 << 18,
-			option	   = 1 << 19,
-			command    = 1 << 20,
-			--NumericPad = 1 << 21,
-			--Help       = 1 << 22,
-			--Function   = 1 << 23,
-		}
-
-		local answer = {}
-
-		for k, v in pairs(modifiers) do
-			if (value & v) == v then
-				table.insert(answer, k)
-			end
-		end
-
-		return answer
 
 	end
 

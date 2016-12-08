@@ -371,10 +371,7 @@ function finalcutpro.getActiveCommandSetAsTable(optionalPath)
 
 	if activeCommandSetPath ~= nil then
 		if fs.attributes(activeCommandSetPath) ~= nil then
-			result = plist.xmlFileToTable(activeCommandSetPath)
-			if result == nil then
-				result = plist.binaryFileToTable(activeCommandSetPath)
-			end
+			result = plist.fileToTable(activeCommandSetPath)
 		end
 	end
 

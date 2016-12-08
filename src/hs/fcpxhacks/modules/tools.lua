@@ -15,11 +15,12 @@
 
 local tools = {}
 
-local host										= require("hs.host")
-local fs										= require("hs.fs")
 local eventtap									= require("hs.eventtap")
-local timer										= require("hs.timer")
+local fs										= require("hs.fs")
+local host										= require("hs.host")
 local mouse										= require("hs.mouse")
+local osascript									= require("hs.osascript")
+local timer										= require("hs.timer")
 
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
