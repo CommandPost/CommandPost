@@ -70,3 +70,4 @@ luac.out
 *.hex
 
 build
+temp
