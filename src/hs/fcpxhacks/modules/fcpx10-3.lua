@@ -11030,7 +11030,7 @@ end
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get("https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html", nil)
+			updateResponse, updateBody, updateHeader = http.get(fcpxhacks.checkUpdateURL, nil)
 			if updateResponse == 200 then
 				if updateBody:sub(1,8) == "LATEST: " then
 					--------------------------------------------------------------------------------
@@ -11043,7 +11043,7 @@ end
 					--------------------------------------------------------------------------------
 					if not mod.shownUpdateNotification then
 						if latestScriptVersion > fcpxhacks.scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -11834,7 +11834,7 @@ function sharedXMLFileWatcher(files)
 				testFile:close()
 				if not string.find(file, "(" .. host.localizedName() ..")") then
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"))
+					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
 														   						   :title("New XML Recieved")
 														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
 														   						   :informativeText("FCPX Hacks has recieved a new XML file.")

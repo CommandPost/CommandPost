@@ -106,6 +106,8 @@ mod.scriptVersion 		= "0.70"
 mod.bugReportEmail		= "chris@latenitefilms.com"
 mod.developerURL		= "https://latenitefilms.com/blog/final-cut-pro-hacks/"
 mod.updateURL			= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
+mod.checkUpdateURL		= "https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html"
+mod.iconPath			= "~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -160,9 +162,11 @@ function mod.init()
 		"hs/fcpxhacks/assets/fcpxhacks.icns",
 		"hs/fcpxhacks/assets/fcpxhacks.png",
 		"hs/fcpxhacks/modules/clipboard.lua",
+		"hs/fcpxhacks/modules/dialog.lua",
 		"hs/fcpxhacks/modules/fcpx10-2-3.lua",
 		"hs/fcpxhacks/modules/fcpx10-3.lua",
 		"hs/fcpxhacks/modules/protect.lua",
+		"hs/fcpxhacks/modules/tools.lua",
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommandGroups.plist",
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
 		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
@@ -220,7 +224,7 @@ function mod.init()
 	if checkFailed then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
 		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
-		application.get("Hammerspoon"):kill()
+		application("org.hammerspoon.Hammerspoon"):kill()
 	end
 
 	--------------------------------------------------------------------------------
@@ -248,7 +252,7 @@ function mod.init()
 	end
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		dialog.displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3.1 is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage("FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
 		application("org.hammerspoon.Hammerspoon"):kill()
 	end
 
