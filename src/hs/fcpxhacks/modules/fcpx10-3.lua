@@ -5323,6 +5323,9 @@ end
 			return "Failed"
 		end
 
+		debugMessage("Waiting for Preferences Panel")
+		timer.usleep(300000)
+
 		--------------------------------------------------------------------------------
 		-- Which Toolbar:
 		--------------------------------------------------------------------------------
@@ -5346,7 +5349,7 @@ end
 			goto tryToolbarAgain
 		end
 		::foundToolbar::
-
+		
 		--------------------------------------------------------------------------------
 		-- Goto Playback Preferences:
 		--------------------------------------------------------------------------------
@@ -5355,7 +5358,11 @@ end
 			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
-
+		
+		debugMessage("Waiting for Toolbar")
+		timer.usleep(300000)
+		-- do return end
+		
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
