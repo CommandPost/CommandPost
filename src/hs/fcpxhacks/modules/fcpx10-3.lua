@@ -5460,8 +5460,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local timeoutCount = 0
 		local whichGroup = nil
+		::tryGroupAgain::
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
@@ -5469,8 +5470,13 @@ end
 			end
 		end
 		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
+			timeoutCount = timeoutCount + 1
+			if timeoutCount == 10 then
+				dialog.displayErrorMessage("Unable to locate Group.")
+				return "Failed"
+			end
+			timer.usleep(200000)
+			goto tryGroupAgain
 		end
 		::foundGroup::
 
