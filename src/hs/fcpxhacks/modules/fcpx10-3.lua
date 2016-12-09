@@ -5214,7 +5214,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5244,6 +5244,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5321,7 +5322,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5351,6 +5352,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5428,7 +5430,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5455,8 +5457,6 @@ end
 			return "Failed"
 		end
 
-		--timer.usleep(300000)
-
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
@@ -5465,14 +5465,14 @@ end
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
-				--goto foundGroup
+				goto foundGroup
 			end
 		end
 		if whichGroup == nil then
 			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
-		--::foundGroup::
+		::foundGroup::
 
 		--------------------------------------------------------------------------------
 		-- Toggle Create Optimized Media:
@@ -5538,7 +5538,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5568,6 +5568,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5649,7 +5650,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5679,6 +5680,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
