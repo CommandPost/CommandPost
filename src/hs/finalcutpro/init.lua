@@ -4,7 +4,7 @@
 ---
 --- Thrown together by:
 ---   Chris Hocking (https://github.com/latenitefilms)
----
+---   David Peterson (https://randomphotons.com/)
 
 local finalcutpro = {}
 
@@ -35,6 +35,24 @@ local timer									= require("hs.timer")
 local function doesDirectoryExist(path)
     local attr = fs.attributes(path)
     return attr and attr.mode == 'directory'
+end
+
+local function applicationElement()
+	local fcp = finalcutpro.application()
+	if fcp then
+		return ax.applicationElement(fcp)
+	else
+		return nil
+	end
+end
+
+function finalcutpro.findMenuBar()
+	local app = applicationElement()
+	if app then
+		return app:searchPath({
+			{ role = "AXMenuBar" }
+		})
+	end
 end
 
 --- hs.finalcutpro.selectMenuItem() -> table
@@ -89,26 +107,12 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
 
 	--------------------------------------------------------------------------------
-	-- Define FCPX:
+	-- Get the FCPX menubar:
 	--------------------------------------------------------------------------------
-	local fcpx = finalcutpro.application()
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which AXMenuBar:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
-				whichMenuBar = i
-				goto performFinalCutProMenuItemWhichMenuBarExit
-			end
-	end
-	if whichMenuBar == nil then	return nil end
-	::performFinalCutProMenuItemWhichMenuBarExit::
+	local menuBar = finalcutpro.findMenuBar()
+	local menu = menuBar:stepPath({
+		{ title = menuItemTable[1] }
+	})
 
 	--------------------------------------------------------------------------------
 	-- Which Menu One:
