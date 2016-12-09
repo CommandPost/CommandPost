@@ -5455,6 +5455,7 @@ end
 			return "Failed"
 		end
 
+		--debugMessage("Waiting before Group lookup")
 		--timer.usleep(300000)
 
 		--------------------------------------------------------------------------------
@@ -5465,14 +5466,14 @@ end
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
-				--goto foundGroup
+				goto foundGroup
 			end
 		end
 		if whichGroup == nil then
 			dialog.displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
-		--::foundGroup::
+		::foundGroup::
 
 		--------------------------------------------------------------------------------
 		-- Toggle Create Optimized Media:
