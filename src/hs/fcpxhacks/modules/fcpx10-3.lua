@@ -5460,6 +5460,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		local timeoutCount = 0
 		local whichGroup = nil
 		::tryGroupAgain::
