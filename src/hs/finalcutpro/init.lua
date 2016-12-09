@@ -104,7 +104,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	-- Which AXMenuBar:
 	--------------------------------------------------------------------------------
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
 				whichMenuBar = i
 				goto performFinalCutProMenuItemWhichMenuBarExit
 			end
@@ -117,7 +117,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	--------------------------------------------------------------------------------
 	if whichMenuOne == nil then
 		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[1] then
+			if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == menuItemTable[1] then
 				whichMenuOne = i
 				goto performFinalCutProMenuItemWhichMenuOneExit
 			end
@@ -131,7 +131,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	--------------------------------------------------------------------------------
 	if whichMenuTwo == nil then
 		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[2] then
+				if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == menuItemTable[2] then
 					whichMenuTwo = i
 					goto performFinalCutProMenuItemWhichMenuTwoExit
 				end
@@ -157,7 +157,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		--------------------------------------------------------------------------------
 		if whichMenuThree == nil then
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
 						whichMenuThree = i
 						goto performFinalCutProMenuItemWhichMenuThreeExit
 					end
@@ -183,7 +183,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		--------------------------------------------------------------------------------
 		if whichMenuThree == nil then
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
 						whichMenuThree = i
 						goto performFinalCutProMenuItemWhichMenuThreeExit
 					end
@@ -197,7 +197,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		--------------------------------------------------------------------------------
 		if whichMenuFour == nil then
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
 						whichMenuFour = i
 						goto performFinalCutProMenuItemWhichMenuFourExit
 					end
@@ -596,7 +596,7 @@ function finalcutpro.getTimelineScrollArea()
 
 		local whichScrollArea = nil
 		for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-			if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+			if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXScrollArea" then
 				whichScrollArea = i
 			end
 		end
@@ -775,7 +775,7 @@ function finalcutpro.getBrowserPersistentPlayhead()
 	--------------------------------------------------------------------------------
 	local whichGroup = nil
 	for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-		if browserSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+		if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
 			whichGroup = i
 		end
 	end
@@ -789,7 +789,7 @@ function finalcutpro.getBrowserPersistentPlayhead()
 	--------------------------------------------------------------------------------
 	local whichScrollArea = nil
 	for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-		if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+		if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXScrollArea" then
 			whichScrollArea = i
 		end
 	end
@@ -805,8 +805,8 @@ function finalcutpro.getBrowserPersistentPlayhead()
 			--------------------------------------------------------------------------------
 			local whichSplitGroup = nil
 			for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:658" then
+				if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if browserSplitGroup[whichGroup][i]:attributeValue("AXIdentifier") == "_NS:658" then
 						whichSplitGroup = i
 						goto exitWhichSplitGroupLoop
 					end
@@ -823,8 +823,8 @@ function finalcutpro.getBrowserPersistentPlayhead()
 			--------------------------------------------------------------------------------
 			local whichGroupTwo = nil
 			for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:590" then
+				if browserSplitGroup[whichGroup][whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+					if browserSplitGroup[whichGroup][whichSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:590" then
 						whichGroupTwo = i
 						goto exitWhichGroupTwoLoop
 					end
@@ -854,8 +854,8 @@ function finalcutpro.getBrowserPersistentPlayhead()
 			--------------------------------------------------------------------------------
 			local whichGroupTwo = nil
 			for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
-				if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:39" then
+				if browserSplitGroup[whichGroup][whichScrollArea][i]:attributeValue("AXRole") == "AXGroup" then
+					if browserSplitGroup[whichGroup][whichScrollArea][i]:attributeValue("AXIdentifier") == "_NS:39" then
 						whichGroupTwo = i
 						goto exitWhichGroupTwoLoop
 					end
