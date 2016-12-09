@@ -2825,7 +2825,7 @@ end
 		local allVideoEffects = {}
 		if effectsList ~= nil then
 			for i=1, #effectsList:attributeValue("AXChildren") do
-				allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allVideoEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all effects.")
@@ -2865,7 +2865,7 @@ end
 		local allAudioEffects = {}
 		if effectsList ~= nil then
 			for i=1, #effectsList:attributeValue("AXChildren") do
-				allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allAudioEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all effects.")
@@ -3158,7 +3158,7 @@ end
 		local allTransitions = {}
 		if transitionsList ~= nil then
 			for i=1, #transitionsList:attributeValue("AXChildren") do
-				allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allTransitions[i] = transitionsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all transitions.")
@@ -5216,7 +5216,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5246,7 +5246,7 @@ end
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
 				goto foundGroup
 			end
@@ -5323,7 +5323,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5353,7 +5353,7 @@ end
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
 				goto foundGroup
 			end
@@ -5430,7 +5430,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5455,14 +5455,12 @@ end
 			return "Failed"
 		end
 
-		timer.usleep(500000)
-
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
 				goto foundGroup
 			end
@@ -5539,7 +5537,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5569,7 +5567,7 @@ end
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
 				goto foundGroup
 			end
@@ -5650,7 +5648,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5680,7 +5678,7 @@ end
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroup = i
 				goto foundGroup
 			end
@@ -6084,7 +6082,7 @@ end
 			--------------------------------------------------------------------------------
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
 				if whichSplitGroup == nil then
-					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroup = i
 						goto selectClipAtLaneSplitGroupExit
 					end
@@ -6129,8 +6127,8 @@ end
 		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
 			if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
-				if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
+				if fcpxElements[whichSplitGroup][whichGroup][1][i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][1][i]:attributeValue("AXIdentifier") == "_NS:95" then
 						whichScrollArea = i
 						goto performScrollingTimelineWatcherScrollAreaExit
 					end
@@ -6151,7 +6149,7 @@ end
 		-- Which Value Indicator:
 		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXDescription") == "Playhead" then
 				whichValueIndicator = i
 				goto selectClipAtLaneValueIndicatorExit
 			end
@@ -6177,12 +6175,12 @@ end
 				--------------------------------------------------------------------------------
 				-- Normal clips:
 				--------------------------------------------------------------------------------
-				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
-					local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
-					local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXRole") == "AXLayoutItem" then
+					local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXPosition")['x']
+					local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXSize")['w']
 
 					if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-						local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
+						local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXPosition")['y']
 						whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
 					end
 				end
@@ -6190,7 +6188,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Storylines:
 				--------------------------------------------------------------------------------
-				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXRole") == "AXGroup" then
 					for ii=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValueCount("AXChildren") do
 						if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii] ~= nil then
 							if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
@@ -6312,7 +6310,7 @@ end
 		local whichSplitGroup = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroup = i
 				end
 			end
@@ -6376,7 +6374,7 @@ end
 			whichSplitGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupTwo = i
 						goto listSplitGroupTwo
 					end
@@ -6394,7 +6392,7 @@ end
 			whichSplitGroupThree = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupThree == nil then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupThree = i
 						goto listSplitGroupThree
 					end
@@ -6411,7 +6409,7 @@ end
 			--------------------------------------------------------------------------------
 			whichScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
 					whichScrollArea = i
 				end
 			end
@@ -6425,7 +6423,7 @@ end
 			--------------------------------------------------------------------------------
 			whichOutline = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
 					whichOutline = i
 				end
 			end
@@ -6439,8 +6437,8 @@ end
 			--------------------------------------------------------------------------------
 			whichRows = {nil}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXSelected") == true then
 						whichRows[#whichRows + 1] = i
 					end
 				end
@@ -6491,7 +6489,7 @@ end
 			whichSplitGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupTwo = i
 						goto filmstripSplitGroupTwoDone
 					end
@@ -6508,7 +6506,7 @@ end
 			--------------------------------------------------------------------------------
 			whichScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXScrollArea" then
 					whichScrollArea = i
 				end
 			end
@@ -6522,7 +6520,7 @@ end
 			--------------------------------------------------------------------------------
 			whichGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][i]:attributeValue("AXRole") == "AXGroup" then
 					whichGroupTwo = i
 				end
 			end
@@ -6536,8 +6534,8 @@ end
 			--------------------------------------------------------------------------------
 			whichGroupThree = {}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXSelectedChildren")[1] ~= nil then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][i]:attributeValue("AXRole") == "AXGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][i]:attributeValue("AXSelectedChildren")[1] ~= nil then
 						whichGroupThree[#whichGroupThree + 1] = i
 					end
 				end
@@ -6566,8 +6564,8 @@ end
 			--------------------------------------------------------------------------------
 			whichLibraryScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:32" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXIdentifier") == "_NS:32" then
 						whichLibraryScrollArea = i
 					end
 				end
@@ -6586,8 +6584,8 @@ end
 			--------------------------------------------------------------------------------
 			whichLibraryRows = {}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][i]:attributeValue("AXSelected") == true then
 						whichLibraryRows[#whichLibraryRows + 1] = i
 					end
 				end
@@ -6693,7 +6691,7 @@ end
 				whichSplitGroupTwo = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 					if whichSplitGroupTwo == nil then
-						if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 							whichSplitGroupTwo = i
 							goto listSplitGroupTwoA
 						end
@@ -6711,7 +6709,7 @@ end
 				whichSplitGroupThree = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
 					if whichSplitGroupThree == nil then
-						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXSplitGroup" then
 							whichSplitGroupThree = i
 							goto listSplitGroupThreeA
 						end
@@ -6728,7 +6726,7 @@ end
 				--------------------------------------------------------------------------------
 				whichScrollArea = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
 						whichScrollArea = i
 					end
 				end
@@ -6742,7 +6740,7 @@ end
 				--------------------------------------------------------------------------------
 				whichOutline = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
 						whichOutline = i
 					end
 				end
@@ -7434,8 +7432,8 @@ end
 					--------------------------------------------------------------------------------
 					whichNextButton = nil
 					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Next…" then
+						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Next…" then
 								whichNextButton = i
 							end
 						end
@@ -7460,8 +7458,8 @@ end
 
 					::waitForSaveWindow::
 					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "save" then
+						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXSheet" then
+							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXDescription") == "save" then
 								whichSaveSheet = i
 								saveWindowOpen = true
 							end
@@ -7488,8 +7486,8 @@ end
 					--------------------------------------------------------------------------------
 					whichSaveButton = nil
 					for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Save" then
+						if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Save" then
 								whichSaveButton = i
 							end
 						end
@@ -7521,8 +7519,8 @@ end
 						whichAlertButton = nil
 						performCancel = false
 						for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "alert" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXSheet" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXDescription") == "alert" then
 									for x=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValueCount("AXChildren") do
 										if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXRole") == "AXButton" then
 											if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXTitle") == "Cancel" then
@@ -7548,8 +7546,8 @@ end
 							--------------------------------------------------------------------------------
 							whichCancelButton = nil
 							for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Cancel" then
 										whichCancelButton = i
 									end
 								end
@@ -7565,8 +7563,8 @@ end
 							--------------------------------------------------------------------------------
 							whichCancelExportButton = nil
 							for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+								if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Cancel" then
 										whichCancelExportButton = i
 									end
 								end
@@ -7742,7 +7740,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -7755,7 +7753,7 @@ end
 			--------------------------------------------------------------------------------
 			fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -7779,7 +7777,7 @@ end
 		local savedKeywordValues = {}
 		local favoriteCount = 1
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
 				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
 				favoriteCount = favoriteCount + 1
 			end
@@ -7859,7 +7857,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -7872,7 +7870,7 @@ end
 			--------------------------------------------------------------------------------
 			local keywordDisclosureTriangle = nil
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -7896,7 +7894,7 @@ end
 		--------------------------------------------------------------------------------
 		local favoriteCount = 1
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
 				currentKeywordSelection = fcpxElements[i]
 
 				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
@@ -8059,7 +8057,7 @@ end
 				--------------------------------------------------------------------------------
 				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
 					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+						if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
 							whichValueIndicator = i
 							goto performScrollingTimelineValueIndicatorExitX
 						end
@@ -10349,7 +10347,7 @@ function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 	--------------------------------------------------------------------------------
 	local whichMenuBar = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
 				whichMenuBar = i
 				goto getFinalCutProBrowserModeWhichMenuBarExit
 			end
@@ -10452,7 +10450,7 @@ function checkScrollingTimelinePress()
 			--------------------------------------------------------------------------------
 			local whichValueIndicator = nil
 			for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-				if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+				if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
 					whichValueIndicator = i
 					goto performScrollingTimelineValueIndicatorExit
 				end
