@@ -8233,8 +8233,7 @@ end
 			currentElement = currentElement:attributeValue("AXParent")
 		end
 
-		local oneElementBack = currentElement:attributeValue("AXParent")
-		local searchTerm = oneElementBack:attributeValue("AXDescription")
+		local searchTerm = currentElement:attributeValue("AXParent")[1]:attributeValue("AXValue")
 
 		if searchTerm == nil or searchTerm == "" then
 			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occured in singleMatchFrame().")
@@ -8265,11 +8264,6 @@ end
 				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occured in singleMatchFrame().")
 				return nil
 			end
-
-			--------------------------------------------------------------------------------
-			-- Add a bit of a delay:
-			--------------------------------------------------------------------------------
-			--timer.usleep(500000)
 
 			--------------------------------------------------------------------------------
 			-- Try searching for it again:
@@ -8307,11 +8301,6 @@ end
 			dialog.displayErrorMessage("Failed trigger search button.\n\nError occured in singleMatchFrame().")
 			return nil
 		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		--timer.usleep(500000)
 
 		--------------------------------------------------------------------------------
 		-- Highlight Browser Playhead:
