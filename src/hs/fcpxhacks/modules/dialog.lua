@@ -20,6 +20,7 @@ local fcp										= require("hs.finalcutpro")
 local osascript									= require("hs.osascript")
 local sharing									= require("hs.sharing")
 local console									= require("hs.console")
+local screen									= require("hs.screen")
 
 local commonErrorMessageStart 					= "I'm sorry, but the following error has occurred:\n\n"
 local commonErrorMessageEnd 					= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
