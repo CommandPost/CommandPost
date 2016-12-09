@@ -7615,413 +7615,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- FCPX SINGLE MATCH FRAME:
-	--------------------------------------------------------------------------------
-	--
-	-- TO DO: This is currently broken in Final Cut Pro 10.3.
-	--
-	function singleMatchFrame()
-
-		--------------------------------------------------------------------------------
-		-- UNDER CONSTRUCTION:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-		if 1==1 then return end
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		fcpx = application.get("Final Cut Pro")
-
-		--------------------------------------------------------------------------------
-		-- Click on 'Reveal in Browser':
-		--------------------------------------------------------------------------------
-		local resultRevealInBrowser = nil
-		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
-		if resultRevealInBrowser == nil then
-			--------------------------------------------------------------------------------
-			-- Error:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip or List Mode?
-		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = getFinalCutProBrowserMode()
-
-		-- Error Checking:
-		if (fcpxBrowserMode == "Failed") then
-			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get all FCPX UI Elements:
-		--------------------------------------------------------------------------------
-		fcpx = fcp.application()
-		fcpxElements = ax.applicationElement(fcpx)
-
-		--------------------------------------------------------------------------------
-		-- Which Window:
-		--------------------------------------------------------------------------------
-		local whichWindow = nil
-		local whichEventsWindow = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-					whichEventsWindow = i
-				end
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
-					whichWindow = i
-				end
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-					if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
-						if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
-							if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
-								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
-									if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
-										whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		if whichWindow == nil then
-			writeToConsole("ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
-			dialog.displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
-			return "Failed"
-		end
-		if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
-		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-		local whichSplitGroup = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroup = i
-				end
-			end
-		end
-		if whichSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Split Group.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- List Mode:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "List" then
-
-			--------------------------------------------------------------------------------
-			-- Which Group contains the browser:
-			--------------------------------------------------------------------------------
-			local whichGroup = nil
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroupGroup == nil then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-						--------------------------------------------------------------------------------
-						-- We now have ALL of the groups, and need to work out which group we actually want:
-						--------------------------------------------------------------------------------
-						for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-							if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-								--------------------------------------------------------------------------------
-								-- Which Split Group is it:
-								--------------------------------------------------------------------------------
-								for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
-										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
-											whichGroup = i
-											goto listGroupDone
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			::listGroupDone::
-			if whichGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Group.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Two:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupTwo = i
-						goto listSplitGroupTwo
-					end
-				end
-			end
-			::listSplitGroupTwo::
-			if whichSplitGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Three:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupThree = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupThree == nil then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupThree = i
-						goto listSplitGroupThree
-					end
-				end
-			end
-			::listSplitGroupThree::
-			if whichSplitGroupThree == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Three.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Two:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichGroupTwo = i
-				end
-			end
-			if whichGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which is Persistent Playhead?
-			--------------------------------------------------------------------------------
-			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-			--------------------------------------------------------------------------------
-			-- Get Description Based off Playhead:
-			--------------------------------------------------------------------------------
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-			if currentElement:attributeValue("AXRole") == "AXHandle" then
-				currentElement = currentElement:attributeValue("AXParent")
-			end
-
-			oneElementBack = currentElement:attributeValue("AXParent")
-
-			local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-			local whichSearchGroup = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSearchGroup == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						whichSearchGroup = i
-						goto searchGroupDone
-					end
-				end
-			end
-			::searchGroupDone::
-			if whichSearchGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Search Group.")
-				return "Failed"
-			end
-
-			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
-
-			--------------------------------------------------------------------------------
-			-- Set the search field to Title of the Selected Clip:
-			--------------------------------------------------------------------------------
-			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-			if searchTextFieldResult == nil then
-				dialog.displayErrorMessage("Unable to set Search Field.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger the search:
-			--------------------------------------------------------------------------------
-			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-			if searchTextFieldActionResult == nil then
-				dialog.displayErrorMessage("Unable to trigger Search.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Highlight Browser Playhead:
-			--------------------------------------------------------------------------------
-			highlightFCPXBrowserPlayhead()
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip Mode:
-		--------------------------------------------------------------------------------
-		elseif fcpxBrowserMode == "Filmstrip" then
-
-			--------------------------------------------------------------------------------
-			-- Which Group contains the browser:
-			--------------------------------------------------------------------------------
-			local whichGroup = nil
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroupGroup == nil then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-						--------------------------------------------------------------------------------
-						-- We now have ALL of the groups, and need to work out which group we actually want:
-						--------------------------------------------------------------------------------
-						for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-							if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-								--------------------------------------------------------------------------------
-								-- Which Split Group is it:
-								--------------------------------------------------------------------------------
-								for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
-										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
-											whichGroup = i
-											goto filmstripGroupDone
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			::filmstripGroupDone::
-			if whichGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Group.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Two:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupTwo = i
-						goto filmstripSplitGroupTwoDone
-					end
-				end
-			end
-			::filmstripSplitGroupTwoDone::
-			if whichSplitGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Scroll Area:
-			--------------------------------------------------------------------------------
-			local whichScrollArea = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					whichScrollArea = i
-				end
-			end
-			if whichScrollArea == nil then
-				dialog.displayErrorMessage("Unable to locate Scroll Area.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Two:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichGroupTwo = i
-				end
-			end
-			if whichGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which is Persistent Playhead:
-			--------------------------------------------------------------------------------
-			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-			--------------------------------------------------------------------------------
-			-- Get Description Based off Playhead:
-			--------------------------------------------------------------------------------
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-			if currentElement:attributeValue("AXRole") == "AXHandle" then
-				currentElement = currentElement:attributeValue("AXParent")
-			end
-
-			oneElementBack = currentElement:attributeValue("AXParent")
-
-			local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-			local whichSearchGroup = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSearchGroup == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						whichSearchGroup = i
-						goto searchGroupDone
-					end
-				end
-			end
-			::searchGroupDone::
-			if whichSearchGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Search Group.")
-				return "Failed"
-			end
-
-			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
-
-			--------------------------------------------------------------------------------
-			-- Set the search field to Title of the Selected Clip:
-			--------------------------------------------------------------------------------
-			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-			if searchTextFieldResult == nil then
-				dialog.displayErrorMessage("Unable to set Search Field.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger the search:
-			--------------------------------------------------------------------------------
-			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-			if searchTextFieldActionResult == nil then
-				dialog.displayErrorMessage("Unable to trigger Search.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Highlight Browser Playhead:
-			--------------------------------------------------------------------------------
-			highlightFCPXBrowserPlayhead()
-
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- CHANGE TIMELINE CLIP HEIGHT:
 	--------------------------------------------------------------------------------
 	--
@@ -8596,6 +8189,124 @@ end
 			--------------------------------------------------------------------------------
 			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- FCPX SINGLE MATCH FRAME:
+	--------------------------------------------------------------------------------
+	function singleMatchFrame()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Click on 'Reveal in Browser':
+		--------------------------------------------------------------------------------
+		local resultRevealInBrowser = nil
+		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if resultRevealInBrowser == nil then
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Persistent Playhead:
+		--------------------------------------------------------------------------------
+ 		local browserPersistentPlayhead = fcp.getBrowserPersistentPlayhead()
+		if browserPersistentPlayhead == nil then
+			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Description Based off Playhead:
+		--------------------------------------------------------------------------------
+		local persistentPlayheadPosition = browserPersistentPlayhead:attributeValue("AXPosition")
+
+		persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
+		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
+
+		local currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+		if currentElement:attributeValue("AXRole") == "AXHandle" then
+			currentElement = currentElement:attributeValue("AXParent")
+		end
+
+		local searchTerm = currentElement:attributeValue("AXParent")[1]:attributeValue("AXValue")
+
+		if searchTerm == nil or searchTerm == "" then
+			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check to see if Search Bar is already visible:
+		--------------------------------------------------------------------------------
+		local browserSplitGroup = fcp.getBrowserSplitGroup()
+		local searchTextFieldID = nil
+		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+			if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
+				if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
+					searchTextFieldID = i
+				end
+			end
+		end
+		if searchTextFieldID == nil then
+
+			--------------------------------------------------------------------------------
+			-- Maybe the search bar is not visible?
+			--------------------------------------------------------------------------------
+			browserSearchButton = fcp.getBrowserSearchButton()
+			local result = browserSearchButton:performAction("AXPress")
+
+			if result == nil then
+				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occured in singleMatchFrame().")
+				return nil
+			end
+
+			--------------------------------------------------------------------------------
+			-- Try searching for it again:
+			--------------------------------------------------------------------------------
+			browserSplitGroup = fcp.getBrowserSplitGroup()
+			for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+				if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
+					if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
+						searchTextFieldID = i
+					end
+				end
+			end
+
+			if searchTextFieldID == nil then
+				dialog.displayErrorMessage("Failed to find Search Text Box.\n\nError occured in singleMatchFrame().")
+				return nil
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enter in search value:
+		--------------------------------------------------------------------------------
+		local result = browserSplitGroup[searchTextFieldID]:setAttributeValue("AXValue", searchTerm)
+		if result == nil then
+			dialog.displayErrorMessage("Failed enter value into the Search Text Field.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Press search button:
+		--------------------------------------------------------------------------------
+		local result = browserSplitGroup[searchTextFieldID][1]:performAction("AXPress")
+		if result == nil then
+			dialog.displayErrorMessage("Failed trigger search button.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Highlight Browser Playhead:
+		--------------------------------------------------------------------------------
+		highlightFCPXBrowserPlayhead()
+
 	end
 
 --------------------------------------------------------------------------------
@@ -10556,155 +10267,11 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		--------------------------------------------------------------------------------
-		-- Get Browser Split Group:
-		--------------------------------------------------------------------------------
-		browserSplitGroup = fcp.getBrowserSplitGroup()
-		if browserSplitGroup == nil then
-			writeToConsole("ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
-			return "Fail"
-		end
 
 		--------------------------------------------------------------------------------
-		-- Which Group:
+		-- Get Browser Persistent Playhead:
 		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-			if browserSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-			end
-		end
-		if whichGroup == nil then
-			writeToConsole("ERROR: Unable to locate Group in highlightFCPXBrowserPlayhead().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Scroll Area:
-		--------------------------------------------------------------------------------
-		local whichScrollArea = nil
-		for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-			if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				whichScrollArea = i
-			end
-		end
-
-		if whichScrollArea == nil then
-
-			--------------------------------------------------------------------------------
-			-- LIST VIEW:
-			--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Which Split Group:
-				--------------------------------------------------------------------------------
-				local whichSplitGroup = nil
-				for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:658" then
-							whichSplitGroup = i
-							goto exitWhichSplitGroupLoop
-						end
-					end
-				end
-				::exitWhichSplitGroupLoop::
-				if whichSplitGroup == nil then
-					writeToConsole("ERROR: Unable to locate Split Group in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Group 2:
-				--------------------------------------------------------------------------------
-				local whichGroupTwo = nil
-				for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:590" then
-							whichGroupTwo = i
-							goto exitWhichGroupTwoLoop
-						end
-					end
-				end
-				::exitWhichGroupTwoLoop::
-				if whichGroupTwo == nil then
-					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Value Indicator:
-				--------------------------------------------------------------------------------
-				local whichValueIndicator = nil
-				whichValueIndicator = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-				persistentPlayhead = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo][whichValueIndicator]
-
-		else
-
-			--------------------------------------------------------------------------------
-			-- FILMSTRIP VIEW:
-			--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Which Group 2:
-				--------------------------------------------------------------------------------
-				local whichGroupTwo = nil
-				for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:39" then
-							whichGroupTwo = i
-							goto exitWhichGroupTwoLoop
-						end
-					end
-				end
-				::exitWhichGroupTwoLoop::
-				if whichGroupTwo == nil then
-					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Value Indicator:
-				--------------------------------------------------------------------------------
-				local whichValueIndicator = nil
-				whichValueIndicator = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-				persistentPlayhead = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichValueIndicator]
-
-		end
-
-		--[[
-		if persistentPlayhead == nil then
-			--------------------------------------------------------------------------------
-			-- Browser on Second Screen (Filmstrip View):
-			--------------------------------------------------------------------------------
-			persistentPlayhead = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-				{ role = "AXGroup", },
-				{ role = "AXScrollArea", Identifier = "_NS:33"},
-				{ role = "AXGroup", Identifier = "_NS:39"},
-				{ role = "AXValueIndicator", Description = "persistent playhead" },
-			}, 1)
-		end
-
-		if persistentPlayhead == nil then
-			--------------------------------------------------------------------------------
-			-- Browser on Second Screen (List View):
-			--------------------------------------------------------------------------------
-			persistentPlayhead = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup",},
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:658"},
-				{ role = "AXGroup", Identifier = "_NS:590"},
-				{ role = "AXValueIndicator", Description = "persistent playhead" },
-			}, 1)
-		end
-		--]]
-
+		local persistentPlayhead = fcp.getBrowserPersistentPlayhead()
 		if persistentPlayhead ~= nil then
 
 			--------------------------------------------------------------------------------
