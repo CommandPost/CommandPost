@@ -211,7 +211,7 @@ end
 -- EMAIL BUG REPORT:
 --------------------------------------------------------------------------------
 function dialog.emailBugReport()
-	local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxHacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
+	local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxhacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
 															       :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
 end
 
