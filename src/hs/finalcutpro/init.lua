@@ -88,6 +88,8 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
 	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
 
+	local result = nil
+
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
 	--------------------------------------------------------------------------------
@@ -141,7 +143,9 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	--------------------------------------------------------------------------------
 	-- Select Menu Item 1:
 	--------------------------------------------------------------------------------
-	if #menuItemTable == 2 then fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress") end
+	if #menuItemTable == 2 then
+		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress")
+	end
 
 	--------------------------------------------------------------------------------
 	-- Select Menu Item 2:
@@ -165,7 +169,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		--------------------------------------------------------------------------------
 		-- Select Menu Item:
 		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
+		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
 
 	end
 
@@ -205,11 +209,13 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		--------------------------------------------------------------------------------
 		-- Select Menu Item:
 		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
+		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
 
 	end
 
-	return true
+	if type(result) == "userdata" then result = true else result = false end
+
+	return result
 
 end
 

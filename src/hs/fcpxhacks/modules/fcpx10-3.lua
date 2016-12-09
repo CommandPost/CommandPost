@@ -5430,7 +5430,7 @@ end
 		::tryToolbarAgain::
 		fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
 				goto foundToolbar
 			end
@@ -5454,8 +5454,6 @@ end
 			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
-
-		timer.usleep(500000)
 
 		--------------------------------------------------------------------------------
 		-- Which Group:
