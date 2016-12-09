@@ -8229,6 +8229,11 @@ end
 		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
 
 		local currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+		if currentElement == nil then
+			dialog.displayErrorMessage("FCPX Hacks was unable to find the clip name. This can sometimes happen when Final Cut Pro fails to 'Reveal in Browser' properly, so it's worth trying again.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
 		if currentElement:attributeValue("AXRole") == "AXHandle" then
 			currentElement = currentElement:attributeValue("AXParent")
 		end
