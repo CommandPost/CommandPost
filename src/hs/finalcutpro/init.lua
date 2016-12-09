@@ -428,7 +428,12 @@ end
 ---  * The Final Cut Pro application (as hs.application) or nil if an error occurred
 ---
 function finalcutpro.application()
-	local result = application(finalCutProBundleID) or nil
+	local result = application.applicationsForBundleID(finalCutProBundleID) or nil
+	if next(result) == nil then
+		return nil
+	else
+		return result[1]
+	end
 	return result
 end
 

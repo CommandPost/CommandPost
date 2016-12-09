@@ -5214,7 +5214,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5244,6 +5244,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5321,7 +5322,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5351,6 +5352,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5428,7 +5430,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5454,9 +5456,6 @@ end
 			dialog.displayErrorMessage("Failed to open Import Preferences.")
 			return "Failed"
 		end
-
-		--debugMessage("Waiting before Group lookup")
-		--timer.usleep(300000)
 
 		--------------------------------------------------------------------------------
 		-- Which Group:
@@ -5539,7 +5538,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5569,6 +5568,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
@@ -5650,7 +5650,7 @@ end
 		local timeoutCount = 0
 		local whichToolbar = nil
 		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		local fcpxElements = ax.applicationElement(fcpx)[1]
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXToolbar" then
 				whichToolbar = i
@@ -5680,6 +5680,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
 		local whichGroup = nil
 		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
 			if fcpxElements[i]:attributeValue("AXRole") == "AXGroup" then
