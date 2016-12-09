@@ -5208,6 +5208,9 @@ end
 			return "Failed"
 		end
 
+		debugMessage("Waiting for Preferences Panel")
+		timer.usleep(300000)
+
 		--------------------------------------------------------------------------------
 		-- Which Toolbar:
 		--------------------------------------------------------------------------------
@@ -5359,10 +5362,6 @@ end
 			return "Failed"
 		end
 		
-		debugMessage("Waiting for Toolbar")
-		timer.usleep(300000)
-		-- do return end
-		
 		--------------------------------------------------------------------------------
 		-- Which Group:
 		--------------------------------------------------------------------------------
@@ -5444,6 +5443,9 @@ end
 			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
+		
+		debugMessage("Waiting for Preferences Panel")
+		timer.usleep(300000)
 
 		--------------------------------------------------------------------------------
 		-- Which Toolbar:
@@ -5559,6 +5561,9 @@ end
 			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
+
+		debugMessage("Waiting for Preferences Panel")
+		timer.usleep(300000)
 
 		--------------------------------------------------------------------------------
 		-- Which Toolbar:
@@ -5678,6 +5683,9 @@ end
 			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end
+
+		debugMessage("Waiting for Preferences Panel")
+		timer.usleep(300000)
 
 		--------------------------------------------------------------------------------
 		-- Which Toolbar:
