@@ -79,6 +79,7 @@ function finalcutpro.getMenuMap()
 			local content = file:read("*all")
 			file:close()
 			finalcutpro._menuMap = json.decode(content)
+			log.d("Loaded menu map from '"..menuMapFile.."'")
 		else
 			finalcutpro._menuMap = {}
 		end
@@ -675,7 +676,7 @@ function finalcutpro._generateMenuMap()
 	file = io.open(menuMapFile, "w")
 
 	if file then
-		file:write(json.encode(menuMap, true))
+		file:write(json.encode(menuMap))
 		file:close()
 		return true
 	end
