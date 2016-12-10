@@ -94,7 +94,7 @@ end
 -- Processes the provided data object, which should have a '$class' property.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processObject(data, objects)
+function clipboard.processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
 		-- inspect(data) is potentially expensive, so make sure debug is on first.
@@ -106,21 +106,21 @@ local function processObject(data, objects)
 			local classname = _get(class["$classname"], objects)
 			log.d("$classname: "..classname)
 			if classname == CLIPBOARD.ARRAY or classname == CLIPBOARD.SET then
-				return processMutableCollection(data, objects)
+				return clipboard.processMutableCollection(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_ANGLE then
-				return processAnchoredAngle(data, objects)
+				return clipboard.processAnchoredAngle(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_COLLECTION then
-				return processAnchoredCollection(data, objects)
+				return clipboard.processAnchoredCollection(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_SEQUENCE then
-				return processAnchoredSequence(data, objects)
+				return clipboard.processAnchoredSequence(data, objects)
 			elseif classname == CLIPBOARD.TIMERANGE_AND_OBJECT then
-				return processTimeRangeAndObject(data, objects)
+				return clipboard.processTimeRangeAndObject(data, objects)
 			elseif classname == CLIPBOARD.DICTIONARY then
-				return processDictionary(data, objects)
+				return clipboard.processDictionary(data, objects)
 			elseif classname == CLIPBOARD.GAP then
-				return processGap(data, objects)
+				return clipboard.processGap(data, objects)
 			elseif classname == CLIPBOARD.GENERATOR then
-				return processGenerator(data, objects)
+				return clipboard.processGenerator(data, objects)
 			end
 			log.d("Unsupported classname: "..classname)
 		end
@@ -137,14 +137,14 @@ end
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processMutableCollection(data, objects)
+function clipboard.processMutableCollection(data, objects)
 	local name = nil
 	local count = 0
 	local obs = _get(data[CLIPBOARD.OBJECTS], objects)
 	for k,v in ipairs(obs) do
 		log.d("processing item #"..k)
 		v = _get(v, objects)
-		local n,c = processObject(v, objects)
+		local n,c = clipboard.processObject(v, objects)
 		if name == nil then
 			name = n
 		end
@@ -162,7 +162,7 @@ end
 --		* objects:	The table of objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processDictionary(data, objects)
+function clipboard.processDictionary(data, objects)
 	local name = nil
 	local count = 0
 
@@ -174,7 +174,7 @@ local function processDictionary(data, objects)
 		local value = _get(values[i], objects)
 
 		if key == "objects" then
-			local n,c = processObject(value, objects)
+			local n,c = clipboard.processObject(value, objects)
 			if name == nil then
 				name = n
 			end
@@ -190,13 +190,13 @@ end
 -- Processes 'FFAnchoredCollection' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processAnchoredCollection(data, objects)
+function clipboard.processAnchoredCollection(data, objects)
 	local displayName = _get(data.displayName, objects)
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
 		log.d("Processing a copy from the Timeline")
-		return processObject(data.containedItems, objects)
+		return clipboard.processObject(data.containedItems, objects)
 	else
-		local _, count = processObject(data.anchoredItems, objects)
+		local _, count = clipboard.processObject(data.anchoredItems, objects)
 		return displayName, count + 1
 	end
 end
@@ -207,11 +207,11 @@ end
 -- Processes 'FFAnchoredGapGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processGap(data, objects)
+function clipboard.processGap(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 0
 	if data.anchoredItems then
-		displayName, count = processObject(data.anchoredItems, objects)
+		displayName, count = clipboard.processObject(data.anchoredItems, objects)
 	end
 	return displayName, count
 end
@@ -222,11 +222,11 @@ end
 -- Processes 'FFAnchoredGeneratorComponent' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processGenerator(data, objects)
+function clipboard.processGenerator(data, objects)
 	local displayName = _get(data.displayName, objects)
 	local count = 1
 	if data.anchoredItems then
-		local n, c = processObject(data.anchoredItems, objects)
+		local n, c = clipboard.processObject(data.anchoredItems, objects)
 		displayName = displayName or n
 		count = count + c
 	end
@@ -239,8 +239,8 @@ end
 -- Processes 'FFAnchoredAngle' objects.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processAnchoredAngle(data, objects)
-	local _, count = processObject(data.anchoredItems, objects)
+function clipboard.processAnchoredAngle(data, objects)
+	local _, count = clipboard.processObject(data.anchoredItems, objects)
 	return _get(data.displayName, objects), count + 1
 end
 
@@ -250,7 +250,7 @@ end
 -- Process 'FFAnchoredSequence' objects
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processAnchoredSequence(data, objects)
+function clipboard.processAnchoredSequence(data, objects)
 	return _get(data.displayName, objects), 1
 end
 
@@ -260,8 +260,8 @@ end
 -- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-local function processTimeRangeAndObject(data, objects)
-	return processObject(data.object, objects)
+function clipboard.processTimeRangeAndObject(data, objects)
+	return clipboard.processObject(data.object, objects)
 end
 
 --------------------------------------------------------------------------------
@@ -278,7 +278,7 @@ function clipboard.findClipName(fcpxTable, default)
 	local top = fcpxTable['$top']
 	local objects = fcpxTable['$objects']
 
-	local name, count = processObject(top.root, objects)
+	local name, count = clipboard.processObject(top.root, objects)
 
 	if name then
 		if count > 1 then
