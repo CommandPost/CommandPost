@@ -7,6 +7,7 @@
 
 local ax 									= require("hs._asm.axuielement")
 local log									= require("hs.logger").new("fcpui")
+local inspect								= require("hs.inspect")
 
 UI = {}
     
@@ -44,11 +45,9 @@ end
 ---
 function UI:childAt(index)
 	if self:childCount() >= index then
-		local element = self.element:attributeValue("AXChildren")[index]
-		if #element == 1 then
-			element = element[1]
-		end
-		return UI:new(element)
+		local child = self.element[index]
+		-- log.d("child: role="..inspect(child:attributeValue("AXRole")).."; #="..inspect(#child))
+		return UI:new(child)
 	end
 	return nil	
 end
@@ -67,7 +66,10 @@ end
 function UI:childWith(attrName, attrValue)
 	local childCount = self:childCount()
 	for i=1, childCount do
-		local child = self.element:attributeValue("AXChildren")[i]
+		local child = self.element[i]
+		if #child == 1 then
+			child = child[1]
+		end
 		if child:attributeValue(attrName) == attrValue then
 			return UI:new(child)
 		end

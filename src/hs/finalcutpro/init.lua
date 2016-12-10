@@ -21,6 +21,7 @@ local application 							= require("hs.application")
 local fs 									= require("hs.fs")
 local osascript 							= require("hs.osascript")
 local timer									= require("hs.timer")
+local json									= require("hs.json")
 
 local UI									= require("hs.finalcutpro.ui")
 
@@ -149,7 +150,10 @@ function finalcutpro.selectMenuItem(menuItemTable)
 		
 		if menuUI then
 			menuUI:press()
+			-- Assign the contained menu to the menuUI
+			menuUI = menuUI:childAt(1)
 		else
+			log.d("Unable to find a menu called '"..step.."'.")
 			return nil
 		end
 	end
@@ -683,6 +687,59 @@ function finalcutpro.getColorBoardRadioGroup()
 
 	return result
 
+end
+
+--- hs.finalcutpro._generateMenuMap() -> Table
+--- Function
+--- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * True is successful otherwise Nil
+---
+function finalcutpro._generateMenuMap()
+	local menuBar = finalcutpro.findMenuBar()
+	local menuMap = finalcutpro._processMenuItems(menuBar)
+	
+	-- Opens a file in append mode
+	file = io.open("hs/finalcutpro/menumap.json", "w")
+
+	if file then
+		file:write(json.encode(menuMap, true))
+		file:close()
+		return true
+	end
+
+	return nil
+end
+
+function finalcutpro._processMenuItems(menu)
+	local count = menu:childCount()
+	-- log.d("Count: "..count)
+	if count then
+		local items = {}
+		for i = 1,count do
+			local child = menu:childAt(i)
+			local title = child:attribute("AXTitle")
+			-- log.d("Title: "..inspect(title))
+			if title and title ~= "" then
+				local item = {id = i}
+				local submenu = child:childAt(1)
+				if submenu and submenu:attribute("AXRole") == "AXMenu" then
+					local children = finalcutpro._processMenuItems(submenu)
+					if children then
+						item.items = children
+					end
+				end
+				items[title] = item
+			end
+		end
+		return items
+	else
+		return nil
+	end
 end
 
 return finalcutpro
