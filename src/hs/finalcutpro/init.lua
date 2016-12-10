@@ -28,54 +28,8 @@ local UI									= require("hs.finalcutpro.ui")
 local log									= require("hs.logger").new("fcp")
 local inspect								= require("hs.inspect")
 
-local menuBarMap							= {
-	["Apple"]								= {id = 1,
-	items = {
-		["About This Mac"] 					= {id = 1},
-		["System Preferences"]				= {id = 3},
-		["Location"]						= {id = 4}
-	}},
-	["Final Cut Pro"]						= {id = 2,
-	items = {
-		["About Final Cut Pro"]				= {id = 1},
-		["Preferences…"]					= {id = 3},
-		["Commands"]						= {id = 4}
-		}
-	},
-	["File"]								= {id = 3,
-	items = {
-		["New"]								= {id = 1,
-		items = {
-			["Project…"]					= {id = 1},
-			["Event…"]						= {id = 2},
-			["Library…"]					= {id = 3}
-		}},
-		["Reveal in Browser"]				= {id = 23}
-	}
-	},
-	["Edit"]								= {id = 4},
-	["Trim"]								= {id = 5},
-	["Mark"]								= {id = 6},
-	["Clip"]								= {id = 7,
-	items = {
-		["Open in Angle Editor"]			= {id = 4}
-	}},
-	["Modify"]								= {id = 8},
-	["View"]								= {id = 9,
-	items = {
-		["Timeline History Back"]			= {id = 16},
-		["Zoom to Fit"]						= {id = 22}
-	}},
-	["Window"]								= {id = 10,
-	items = {
-		["Go To"]							= {id = 6,
-		items = {
-			["Timeline"]					= {id = 7},
-			["Color Board"]					= {id = 9}
-		}}
-	}},
-	["Help"]								= {id = 11}
-}
+local menuMapFile							= "hs/finalcutpro/menumap.json"
+
 
 --- doesDirectoryExist() -> boolean
 --- Internal Function
@@ -118,6 +72,20 @@ function finalcutpro.findMenuBar()
 	end
 end
 
+function finalcutpro.getMenuMap()
+	if not finalcutpro._menuMap then
+		local file = io.open(menuMapFile, "r")
+		if file then
+			local content = file:read("*all")
+			file:close()
+			finalcutpro._menuMap = json.decode(content)
+		else
+			finalcutpro._menuMap = {}
+		end
+	end
+	return finalcutpro._menuMap
+end
+
 --- hs.finalcutpro.selectMenuItem(table) -> boolean
 --- Function
 --- Selects a Final Cut Pro Menu Item
@@ -136,7 +104,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	local menuBar = finalcutpro.findMenuBar()
 	
 	-- Start at the top of the menu bar list
-	local menuMap = menuBarMap
+	local menuMap = finalcutpro.getMenuMap()
 	local menuUI = menuBar
 	
 	for i,step in pairs(menuItemTable) do
@@ -704,7 +672,7 @@ function finalcutpro._generateMenuMap()
 	local menuMap = finalcutpro._processMenuItems(menuBar)
 	
 	-- Opens a file in append mode
-	file = io.open("hs/finalcutpro/menumap.json", "w")
+	file = io.open(menuMapFile, "w")
 
 	if file then
 		file:write(json.encode(menuMap, true))
