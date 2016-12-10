@@ -448,8 +448,27 @@ end
 ---  * True if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
 ---
 function finalcutpro.launch()
-	local result = application.launchOrFocusByBundleID(finalCutProBundleID)
+
+	local result = nil
+
+	local fcpx = finalcutpro.application()
+
+	if fcpx == nil then
+		-- Final Cut Pro is Closed:
+		result = application.launchOrFocusByBundleID(finalCutProBundleID)
+	else
+		-- Final Cut Pro is Open:
+		if not fcpx:isFrontmost() then
+			-- Open by not Active:
+			result = application.launchOrFocusByBundleID(finalCutProBundleID)
+		else
+			-- Already frontmost:
+			return true
+		end
+	end
+
 	return result
+
 end
 
 --- hs.finalcutpro.running() -> boolean
