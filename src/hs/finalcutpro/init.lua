@@ -22,6 +22,60 @@ local fs 									= require("hs.fs")
 local osascript 							= require("hs.osascript")
 local timer									= require("hs.timer")
 
+local UI									= require("hs.finalcutpro.ui")
+
+local log									= require("hs.logger").new("fcp")
+local inspect								= require("hs.inspect")
+
+local menuBarMap							= {
+	["Apple"]								= {id = 1,
+	items = {
+		["About This Mac"] 					= {id = 1},
+		["System Preferences"]				= {id = 3},
+		["Location"]						= {id = 4}
+	}},
+	["Final Cut Pro"]						= {id = 2,
+	items = {
+		["About Final Cut Pro"]				= {id = 1},
+		["Preferences…"]					= {id = 3},
+		["Commands"]						= {id = 4}
+		}
+	},
+	["File"]								= {id = 3,
+	items = {
+		["New"]								= {id = 1,
+		items = {
+			["Project…"]					= {id = 1},
+			["Event…"]						= {id = 2},
+			["Library…"]					= {id = 3}
+		}},
+		["Reveal in Browser"]				= {id = 23}
+	}
+	},
+	["Edit"]								= {id = 4},
+	["Trim"]								= {id = 5},
+	["Mark"]								= {id = 6},
+	["Clip"]								= {id = 7,
+	items = {
+		["Open in Angle Editor"]			= {id = 4}
+	}},
+	["Modify"]								= {id = 8},
+	["View"]								= {id = 9,
+	items = {
+		["Timeline History Back"]			= {id = 16},
+		["Zoom to Fit"]						= {id = 22}
+	}},
+	["Window"]								= {id = 10,
+	items = {
+		["Go To"]							= {id = 6,
+		items = {
+			["Timeline"]					= {id = 7},
+			["Color Board"]					= {id = 9}
+		}}
+	}},
+	["Help"]								= {id = 11}
+}
+
 --- doesDirectoryExist() -> boolean
 --- Internal Function
 --- Returns true if Directory Exists else False
@@ -37,25 +91,33 @@ local function doesDirectoryExist(path)
     return attr and attr.mode == 'directory'
 end
 
-local function applicationElement()
+local function applicationUI()
 	local fcp = finalcutpro.application()
 	if fcp then
-		return ax.applicationElement(fcp)
+		return UI:new(ax.applicationElement(fcp))
 	else
 		return nil
 	end
 end
 
+--- hs.finalcutpro.findMenuBar() -> UI
+--- Function
+--- Finds the application menu bar UI element.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * The menu bar UI, or nil if the application is not running.
+---
 function finalcutpro.findMenuBar()
-	local app = applicationElement()
+	local app = applicationUI()
 	if app then
-		return app:searchPath({
-			{ role = "AXMenuBar" }
-		})
+		return app:childWithRole("AXMenuBar")
 	end
 end
 
---- hs.finalcutpro.selectMenuItem() -> table
+--- hs.finalcutpro.selectMenuItem(table) -> boolean
 --- Function
 --- Selects a Final Cut Pro Menu Item
 ---
@@ -68,153 +130,31 @@ end
 function finalcutpro.selectMenuItem(menuItemTable)
 
 	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichMenuBar 		= nil
-	local whichMenuOne 		= nil
-	local whichMenuTwo 		= nil
-	local whichMenuThree 	= nil
-
-	--------------------------------------------------------------------------------
-	-- Hardcoded Values (for system other than English):
-	--------------------------------------------------------------------------------
-	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
-	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
-		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
-		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
-	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
-	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
-	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
-	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
-	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
-		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
-	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
-	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
-		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
-		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
-	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
-		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
-			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
-			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
-	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
-
-	--------------------------------------------------------------------------------
-	-- TO DO: Commenting this stuff out will have definitely broken something:
-	--------------------------------------------------------------------------------
-	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
-	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
-	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
-	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
-
-	--------------------------------------------------------------------------------
 	-- Get the FCPX menubar:
 	--------------------------------------------------------------------------------
 	local menuBar = finalcutpro.findMenuBar()
-	local menu = menuBar:stepPath({
-		{ title = menuItemTable[1] }
-	})
-
-	--------------------------------------------------------------------------------
-	-- Which Menu One:
-	--------------------------------------------------------------------------------
-	if whichMenuOne == nil then
-		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[1] then
-				whichMenuOne = i
-				goto performFinalCutProMenuItemWhichMenuOneExit
-			end
+	
+	-- Start at the top of the menu bar list
+	local menuMap = menuBarMap
+	local menuUI = menuBar
+	
+	for i,step in pairs(menuItemTable) do
+		if menuMap and menuMap[step] then
+			local item = menuMap[step]
+			menuUI = menuUI:childAt(item.id)
+			menuMap = item.items
+		else
+			menuUI = menuUI:childWithTitle(step)
 		end
-		if whichMenuOne == nil then	return nil end
-		::performFinalCutProMenuItemWhichMenuOneExit::
+		
+		if menuUI then
+			menuUI:press()
+		else
+			return nil
+		end
 	end
-
-	--------------------------------------------------------------------------------
-	-- Which Menu Two:
-	--------------------------------------------------------------------------------
-	if whichMenuTwo == nil then
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[2] then
-					whichMenuTwo = i
-					goto performFinalCutProMenuItemWhichMenuTwoExit
-				end
-		end
-		if whichMenuTwo == nil then	return nil end
-		::performFinalCutProMenuItemWhichMenuTwoExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 1:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 2 then fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress") end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 2:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 3 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 3:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 4 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Four:
-		--------------------------------------------------------------------------------
-		if whichMenuFour == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuFour = i
-						goto performFinalCutProMenuItemWhichMenuFourExit
-					end
-			end
-			if whichMenuFour == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuFourExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
-
-	end
-
+	
 	return true
-
 end
 
 --- hs.finalcutpro.flexoLanguages() -> table
