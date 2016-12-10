@@ -121,6 +121,7 @@ function finalcutpro.selectMenuItem(menuItemTable)
 			menuUI:press()
 			-- Assign the contained menu to the menuUI
 			menuUI = menuUI:childAt(1)
+			assert(not menuUI or menuUI:attribute("AXRole") == "AXMenu")
 		else
 			log.d("Unable to find a menu called '"..step.."'.")
 			return nil
