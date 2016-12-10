@@ -459,6 +459,7 @@ function hacksconsole.choices()
 										["function1"] = i,
 										["function2"] = x,
 										["function3"] = "",
+										["function4"] = "",
 									}
 									table.insert(chooserMenuItems, 1, individualEffect)
 									table.insert(hacksconsole.chooserChoices, 1, individualEffect)
@@ -474,6 +475,7 @@ function hacksconsole.choices()
 												["function1"] = i,
 												["function2"] = x,
 												["function3"] = y,
+												["function4"] = "",
 											}
 											table.insert(chooserMenuItems, 1, individualEffect)
 											table.insert(hacksconsole.chooserChoices, 1, individualEffect)
@@ -489,6 +491,7 @@ function hacksconsole.choices()
 														["function1"] = i,
 														["function2"] = x,
 														["function3"] = y,
+														["function4"] = z,
 													}
 													table.insert(chooserMenuItems, 1, individualEffect)
 													table.insert(hacksconsole.chooserChoices, 1, individualEffect)
@@ -527,6 +530,7 @@ function hacksconsole.choices()
 						["function1"] = allVideoEffects[i],
 						["function2"] = "",
 						["function3"] = "",
+						["function4"] = "",
 					}
 					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
 				end
@@ -547,6 +551,7 @@ function hacksconsole.choices()
 						["function1"] = allAudioEffects[i],
 						["function2"] = "",
 						["function3"] = "",
+						["function4"] = "",
 					}
 					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
 				end
@@ -567,6 +572,7 @@ function hacksconsole.choices()
 						["function1"] = allTransitions[i],
 						["function2"] = "",
 						["function3"] = "",
+						["function4"] = "",
 					}
 					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
 				end
@@ -587,6 +593,7 @@ function hacksconsole.choices()
 						["function1"] = allTitles[i],
 						["function2"] = "",
 						["function3"] = "",
+						["function4"] = "",
 					}
 					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
 				end
@@ -607,6 +614,7 @@ function hacksconsole.choices()
 						["function1"] = allGenerators[i],
 						["function2"] = "",
 						["function3"] = "",
+						["function4"] = "",
 					}
 					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
 				end
@@ -671,7 +679,7 @@ function hacksconsole.completionAction(result)
 		--------------------------------------------------------------------------------
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
+		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"], result["function4"]) end )
 
 	--------------------------------------------------------------------------------
 	-- Remove Mode:

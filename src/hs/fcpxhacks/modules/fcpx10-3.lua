@@ -9682,6 +9682,41 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- MENU ITEM SHORTCUT:
+	--------------------------------------------------------------------------------
+	function menuItemShortcut(i, x, y, z)
+
+		print("do stuff")
+		print(i)
+		print(x)
+		print(y)
+		print(z)
+
+		local fcpxElements = ax.applicationElement(fcp.application())
+
+		local whichMenuBar = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+				whichMenuBar = i
+			end
+		end
+
+		if whichMenuBar == nil then
+			displayErrorMessage("Failed to find menu bar.\n\nError occured in menuItemShortcut().")
+			return
+		end
+
+		if i ~= "" and x ~= "" and y == "" and z == "" then
+			fcpxElements[whichMenuBar][i][1][x]:performAction("AXPress")
+		elseif i ~= "" and x ~= "" and y ~= "" and z == "" then
+			fcpxElements[whichMenuBar][i][1][x][1][y]:performAction("AXPress")
+		elseif i ~= "" and x ~= "" and y ~= "" and z ~= "" then
+			fcpxElements[whichMenuBar][i][1][x][1][y][1][z]:performAction("AXPress")
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE TOUCH BAR:
 	--------------------------------------------------------------------------------
 	function toggleTouchBar()
