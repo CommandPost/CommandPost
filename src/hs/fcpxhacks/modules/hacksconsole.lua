@@ -36,11 +36,19 @@ hacksconsole.mode 								= "normal"	-- normal, remove, restore
 --------------------------------------------------------------------------------
 function hacksconsole.new()
 
+	--------------------------------------------------------------------------------
+	-- Setup Chooser:
+	--------------------------------------------------------------------------------
 	hacksconsole.hacksChooser = chooser.new(hacksconsole.completionAction):bgDark(true)
 											         				 	  :fgColor(drawing.color.x11.snow)
 											         					  :subTextColor(drawing.color.x11.snow)
 											           				 	  :rightClickCallback(hacksconsole.rightClickAction)
 											        				 	  :choices(hacksconsole.choices)
+
+	--------------------------------------------------------------------------------
+	-- If Final Cut Pro is running, lets preemptively refresh the choices:
+	--------------------------------------------------------------------------------
+	if fcp.running() then timer.doAfter(3, hacksconsole.refresh) end
 
 end
 

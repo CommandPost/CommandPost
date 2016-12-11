@@ -9686,12 +9686,6 @@ end
 	--------------------------------------------------------------------------------
 	function menuItemShortcut(i, x, y, z)
 
-		print("do stuff")
-		print(i)
-		print(x)
-		print(y)
-		print(z)
-
 		local fcpxElements = ax.applicationElement(fcp.application())
 
 		local whichMenuBar = nil
