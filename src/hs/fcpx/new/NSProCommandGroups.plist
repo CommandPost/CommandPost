@@ -8,6 +8,8 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackChangeTimelineClipHeightUp</string>
+			<string>FCPXHackChangeTimelineClipHeightDown</string>
 			<string>FCPXHackColorPuckOne</string>
 			<string>FCPXHackColorPuckTwo</string>
 			<string>FCPXHackColorPuckThree</string>
