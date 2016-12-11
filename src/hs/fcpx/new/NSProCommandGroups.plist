@@ -8,6 +8,54 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackCutSwitchAngle01Video</string>
+			<string>FCPXHackCutSwitchAngle02Video</string>
+			<string>FCPXHackCutSwitchAngle03Video</string>
+			<string>FCPXHackCutSwitchAngle04Video</string>
+			<string>FCPXHackCutSwitchAngle05Video</string>
+			<string>FCPXHackCutSwitchAngle06Video</string>
+			<string>FCPXHackCutSwitchAngle07Video</string>
+			<string>FCPXHackCutSwitchAngle08Video</string>
+			<string>FCPXHackCutSwitchAngle09Video</string>
+			<string>FCPXHackCutSwitchAngle10Video</string>
+			<string>FCPXHackCutSwitchAngle11Video</string>
+			<string>FCPXHackCutSwitchAngle12Video</string>
+			<string>FCPXHackCutSwitchAngle13Video</string>
+			<string>FCPXHackCutSwitchAngle14Video</string>
+			<string>FCPXHackCutSwitchAngle15Video</string>
+			<string>FCPXHackCutSwitchAngle16Video</string>
+			<string>FCPXHackCutSwitchAngle01Audio</string>
+			<string>FCPXHackCutSwitchAngle02Audio</string>
+			<string>FCPXHackCutSwitchAngle03Audio</string>
+			<string>FCPXHackCutSwitchAngle04Audio</string>
+			<string>FCPXHackCutSwitchAngle05Audio</string>
+			<string>FCPXHackCutSwitchAngle06Audio</string>
+			<string>FCPXHackCutSwitchAngle07Audio</string>
+			<string>FCPXHackCutSwitchAngle08Audio</string>
+			<string>FCPXHackCutSwitchAngle09Audio</string>
+			<string>FCPXHackCutSwitchAngle10Audio</string>
+			<string>FCPXHackCutSwitchAngle11Audio</string>
+			<string>FCPXHackCutSwitchAngle12Audio</string>
+			<string>FCPXHackCutSwitchAngle13Audio</string>
+			<string>FCPXHackCutSwitchAngle14Audio</string>
+			<string>FCPXHackCutSwitchAngle15Audio</string>
+			<string>FCPXHackCutSwitchAngle16Audio</string>
+			<string>FCPXHackCutSwitchAngle01Both</string>
+			<string>FCPXHackCutSwitchAngle02Both</string>
+			<string>FCPXHackCutSwitchAngle03Both</string>
+			<string>FCPXHackCutSwitchAngle04Both</string>
+			<string>FCPXHackCutSwitchAngle05Both</string>
+			<string>FCPXHackCutSwitchAngle06Both</string>
+			<string>FCPXHackCutSwitchAngle07Both</string>
+			<string>FCPXHackCutSwitchAngle08Both</string>
+			<string>FCPXHackCutSwitchAngle09Both</string>
+			<string>FCPXHackCutSwitchAngle10Both</string>
+			<string>FCPXHackCutSwitchAngle11Both</string>
+			<string>FCPXHackCutSwitchAngle12Both</string>
+			<string>FCPXHackCutSwitchAngle13Both</string>
+			<string>FCPXHackCutSwitchAngle14Both</string>
+			<string>FCPXHackCutSwitchAngle15Both</string>
+			<string>FCPXHackCutSwitchAngle16Both</string>
 			<string>FCPXHackMoveToPlayhead</string>
 			<string>FCPXHackColorPuckOneMouse</string>
 			<string>FCPXHackColorPuckTwoMouse</string>
