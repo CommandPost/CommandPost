@@ -85,6 +85,8 @@
 --  FEATURE WISH LIST:
 --------------------------------------------------------------------------------
 --
+--  > "Activate all audio tracks on all selected multicam clips" shortcut.
+--  > Move Storyline Up & Down Shortcut
 --  > Add Audio Fade Handles Shortcut
 --  > Remember Last Project & Layout when restarting FCPX
 --  > Shortcut to go to full screen mode without playing
@@ -99,14 +101,13 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > "Activate all audio tracks on all selected multicam clips" shortcut.
---  > Move Storyline Up & Down Shortcut
+--  > Re-write findMenuItem and selectMenuItem code so works in multiple languages
+--  > Color Board Puck bug on LateNite Bravo?
 --
 --------------------------------------------------------------------------------
 --  LOW PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > Re-write findMenuItem code so works in multiple languages
 --  > clipboardWatcher() needs better way to find clipboard label
 --  > updateEffectsList() needs to be faster
 --  > translateKeyboardCharacters() could be done better
@@ -121,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.49"
+local scriptVersion = "0.50"
 --------------------------------------------------------------------------------
 
 
@@ -250,7 +251,7 @@ local changeTimelineClipHeightGroupCache 		= nil											-- Change Timeline Cl
 local clipboardTimer							= nil											-- Clipboard Watcher Timer
 
 local clipboardLastChange						= nil											-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-if not disablePasteboard then clipboardLastChange = pasteboard.changeCount() end
+if not disablePasteboard then clipboardLastChange = pasteboard.changeCount() end				-- PASTEBOARD ONLY CURRENTLY WORKS ON MACOS 10.11 AND ABOVE
 
 local clipboardHistory							= {}											-- Clipboard History
 local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
@@ -6906,7 +6907,7 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	local useCache = false
 	if colorBoardSelectPuckSplitGroupCache ~= nil and colorBoardSelectPuckGroupCache ~= nil then
 		if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
-			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXTitle") == "Color" then
+			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXDescription") == "Color" then
 				useCache = true
 				whichSplitGroup = colorBoardSelectPuckSplitGroupCache
 				whichGroup = colorBoardSelectPuckGroupCache
@@ -6941,7 +6942,7 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 						whichGroup = i
 						goto colorBoardSelectPuckGroupExit
 					end
@@ -6965,7 +6966,7 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 							whichGroup = i
 							goto colorBoardSelectPuckGroupExit
 						end
@@ -7112,7 +7113,7 @@ function colorBoardMousePuck(whichPuck, whichPanel)
 	local useCache = false
 	if colorBoardSelectPuckSplitGroupCache ~= nil and colorBoardSelectPuckGroupCache ~= nil then
 		if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
-			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXTitle") == "Color" then
+			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXDescription") == "Color" then
 				useCache = true
 				whichSplitGroup = colorBoardSelectPuckSplitGroupCache
 				whichGroup = colorBoardSelectPuckGroupCache
@@ -7147,7 +7148,7 @@ function colorBoardMousePuck(whichPuck, whichPanel)
 		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 						whichGroup = i
 						goto colorBoardSelectPuckGroupExit
 					end
@@ -7171,7 +7172,7 @@ function colorBoardMousePuck(whichPuck, whichPanel)
 			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 							whichGroup = i
 							goto colorBoardSelectPuckGroupExit
 						end
@@ -7328,7 +7329,7 @@ function colorBoardMousePuckWIP(whichPuck, whichPanel)
 		if fcpxElements[colorBoardSelectPuckSplitGroupCache] ~= nil then
 			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache] ~= nil then
 				if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
-					if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXTitle") == "Color" then
+					if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXDescription") == "Color" then
 						print("[FCPX Hacks] colorBoardMousePuck using cache.")
 						useCache = true
 						whichSplitGroup = colorBoardSelectPuckSplitGroupCache
@@ -7369,7 +7370,7 @@ function colorBoardMousePuckWIP(whichPuck, whichPanel)
 		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 						whichGroup = i
 						goto colorBoardSelectPuckGroupExit
 					end
@@ -7393,7 +7394,7 @@ function colorBoardMousePuckWIP(whichPuck, whichPanel)
 			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
 				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
 					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
-						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXDescription") == "Color" then
 							whichGroup = i
 							goto colorBoardSelectPuckGroupExit
 						end
