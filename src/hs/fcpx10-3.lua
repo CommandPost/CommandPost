@@ -64,7 +64,8 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > Fix highlightFCPXBrowserPlayhead in multi-screen mode
+--  > highlightFCPXBrowserPlayhead() needs support for dual screen
+--  > updateEffectsList() needs support for dual screen
 --
 --------------------------------------------------------------------------------
 --  LOW PRIORITY LIST:
@@ -86,7 +87,7 @@
 --------------------------------------------------------------------------------
 -- ENABLE DEBUG MODE:
 --------------------------------------------------------------------------------
-local debugMode = true
+local debugMode = false
 --------------------------------------------------------------------------------
 
 
@@ -212,6 +213,8 @@ local fcpxChooserActive							= false											-- Chooser Active?
 
 local touchBarSupported						 	= touchbar.supported()							-- Touch Bar Supported?
 local touchBarWindow 							= nil			 								-- Touch Bar Window
+
+local fcpxChooserChoices 						= {}											-- Chooser Choices
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -378,12 +381,12 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			-- Watch For Hammerspoon Script Updates:
 			--------------------------------------------------------------------------------
-			hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+			hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Watch for Final Cut Pro plist changes:
 			--------------------------------------------------------------------------------
-			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsPlistChanged):start()
+			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Full Screen Keyboard Watcher:
@@ -552,6 +555,8 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--hs.console.clearConsole()
+
+	fcpxChooser:refreshChoicesCallback()
 
 end
 
@@ -1182,7 +1187,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---     C H O O S E R    ( T H E   F C P X   H A C K S   C O N S O L E  )      --
+--     C H O O S E R    (  T H E   F C P X   H A C K S   C O N S O L E  )     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -1215,9 +1220,28 @@ end
 function chooserChoices()
 
 	--------------------------------------------------------------------------------
+	-- Debug Mode:
+	--------------------------------------------------------------------------------
+	if debugMode then print("[FCPX Hacks] Updating Chooser Choices.") end
+
+	--------------------------------------------------------------------------------
+	-- Reset Choices:
+	--------------------------------------------------------------------------------
+	fcpxChooserChoices = nil
+	fcpxChooserChoices = {}
+
+	--------------------------------------------------------------------------------
+	-- Settings:
+	--------------------------------------------------------------------------------
+	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
+	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
+	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
+	local chooserShowEffects = hs.settings.get("fcpxHacks.chooserShowEffects") and true
+
+	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
 	--------------------------------------------------------------------------------
-	local fcpxChooserChoices = {
+	local chooserAutomation = {
 		{
 			["text"] = "Toggle Scrolling Timeline",
 			["subText"] = "Automation",
@@ -1239,86 +1263,6 @@ function chooserChoices()
 			["subText"] = "Automation",
 			["function"] = "matchFrameThenHighlightFCPXBrowserPlayhead",
 			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Optimized Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateOptimizedMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Optimized Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateOptimizedMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Multicam Optimized Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateMulticamOptimizedMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Multicam Optimized Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateMulticamOptimizedMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Proxy Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateProxyMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Proxy Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateProxyMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Leave Files In Place On Import (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleLeaveInPlace",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Leave Files In Place On Import (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleLeaveInPlace",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Background Render (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleBackgroundRender",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Background Render (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleBackgroundRender",
-			["function1"] = false,
 			["function2"] = nil,
 			["function3"] = nil,
 		},
@@ -1427,38 +1371,6 @@ function chooserChoices()
 			["function3"] = nil,
 		},
 		{
-			["text"] = "Change Backup Interval",
-			["subText"] = "Hack",
-			["function"] = "changeBackupInterval",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Timecode Overlay",
-			["subText"] = "Hack",
-			["function"] = "toggleTimecodeOverlay",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Moving Markers",
-			["subText"] = "Hack",
-			["function"] = "toggleMovingMarkers",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Enable Rendering During Playback",
-			["subText"] = "Hack",
-			["function"] = "togglePerformTasksDuringPlayback",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
 			["text"] = "Select Color Board Puck 1",
 			["subText"] = "Automation",
 			["function"] = "colorBoardSelectPuck",
@@ -1491,22 +1403,144 @@ function chooserChoices()
 			["function3"] = nil,
 		},
 	}
+	local chooserShortcuts = {
+		{
+			["text"] = "Create Optimized Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateOptimizedMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Optimized Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateOptimizedMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Multicam Optimized Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateMulticamOptimizedMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Multicam Optimized Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateMulticamOptimizedMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Proxy Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateProxyMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Proxy Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateProxyMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Leave Files In Place On Import (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleLeaveInPlace",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Leave Files In Place On Import (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleLeaveInPlace",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Background Render (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleBackgroundRender",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Background Render (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleBackgroundRender",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+	}
+	local chooserHacks = {
+		{
+			["text"] = "Change Backup Interval",
+			["subText"] = "Hack",
+			["function"] = "changeBackupInterval",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Timecode Overlay",
+			["subText"] = "Hack",
+			["function"] = "toggleTimecodeOverlay",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Moving Markers",
+			["subText"] = "Hack",
+			["function"] = "toggleMovingMarkers",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Enable Rendering During Playback",
+			["subText"] = "Hack",
+			["function"] = "togglePerformTasksDuringPlayback",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+	}
+
+	if chooserShowAutomation then hs.fnutils.concat(fcpxChooserChoices, chooserAutomation) end
+	if chooserShowShortcuts then hs.fnutils.concat(fcpxChooserChoices, chooserShortcuts) end
+	if chooserShowHacks then hs.fnutils.concat(fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
 	-- Effects List:
 	--------------------------------------------------------------------------------
-	local allEffects = hs.settings.get("fcpxHacks.allEffects")
-	if allEffects ~= nil and next(allEffects) ~= nil then
-		for i=1, #allEffects do
-			individualEffect = {
-				["text"] = allEffects[i],
-				["subText"] = "Effect",
-				["function"] = "effectsShortcut",
-				["function1"] = allEffects[i],
-				["function2"] = "",
-				["function3"] = "",
-			}
-			table.insert(fcpxChooserChoices, 1, individualEffect)
+	if chooserShowEffects then
+		local allEffects = hs.settings.get("fcpxHacks.allEffects")
+		if allEffects ~= nil and next(allEffects) ~= nil then
+			for i=1, #allEffects do
+				individualEffect = {
+					["text"] = allEffects[i],
+					["subText"] = "Effect",
+					["function"] = "effectsShortcut",
+					["function1"] = allEffects[i],
+					["function2"] = "",
+					["function3"] = "",
+				}
+				table.insert(fcpxChooserChoices, 1, individualEffect)
+			end
 		end
 	end
 
@@ -1557,9 +1591,27 @@ end
 --------------------------------------------------------------------------------
 function chooserRightClick()
 
+	--------------------------------------------------------------------------------
+	-- Settings:
+	--------------------------------------------------------------------------------
+	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
+	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
+	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
+	local chooserShowEffects = hs.settings.get("fcpxHacks.chooserShowEffects") and true
+
+	--------------------------------------------------------------------------------
+	-- Menubar:
+	--------------------------------------------------------------------------------
 	fcpxRightClickMenubar = hs.menubar.new(false)
 	local rightClickMenu = {
-       { title = "Selected Row " .. fcpxChooser:selectedRow(), disabled = true },
+		{ title = "Favourite Selected Item", disabled = true },
+		{ title = "Hide Selected Item", 	 disabled = true },
+     	{ title = "-" },
+     	{ title = "DISPLAY OPTIONS:",	 	disabled = true },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() hs.settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 	fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Effects", 			checked = chooserShowEffects,		fn = function() hs.settings.set("fcpxHacks.chooserShowEffects", not chooserShowEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() hs.settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() hs.settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 	fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
 	fcpxRightClickMenubar:popupMenu(hs.mouse.getAbsolutePosition())
@@ -2254,16 +2306,7 @@ end
 --------------------------------------------------------------------------------
 -- GET LIST OF EFFECTS:
 --------------------------------------------------------------------------------
---
--- >>> NEEDS UPDATING <<<
---
 function updateEffectsList()
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
 
 	--------------------------------------------------------------------------------
 	-- Warning message:
@@ -2280,18 +2323,27 @@ function updateEffectsList()
 	--------------------------------------------------------------------------------
 	-- PATH:
 	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 1)
+	-- AXWindow "Final Cut Pro" (window 2)
 	-- AXSplitGroup (splitter group 1)
-	-- AXGroup (group 3)
-	-- AXRadioGroup (radio group 3)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXGroup (group 1)
+	-- AXRadioGroup (radio group 1)
 	-- AXRadioButton (radio button 1)
-	-- AXHelp = "Show or hide the Effects Browser - ⌘5"
 	effectsBrowserButton = sw:searchPath({
-		{ role = "AXWindow"},
+		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
-		{ role = "AXRadioGroup" },
-		{ role = "AXRadioButton", Help = "Show or hide the Effects Browser - ⌘5"}
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+		{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
 	}, 1)
 	if effectsBrowserButton ~= nil then
 		if effectsBrowserButton:attributeValue("AXValue") == 0 then
@@ -2307,19 +2359,83 @@ function updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
+	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
+	-- PATH:
 	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 1)
+	-- AXWindow "Final Cut Pro" (window 2)
 	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXPopUpButton (pop up button 1)
+	installedEffectsPopup = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+	}, 1)
+	if installedEffectsPopup ~= nil then
+		if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+			installedEffectsPopup:performAction("AXPress")
+			installedEffectsPopupMenuItem = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+				{ role = "AXMenu", },
+				{ role = "AXMenuItem", AXTitle = "Installed Effects"},
+			}, 1)
+			installedEffectsPopupMenuItem:performAction("AXPress")
+		end
+	else
+		displayErrorMessage("Unable to find 'Installed Effects' popup.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure there's nothing in the search box:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
 	-- AXTextField (text field 1)
-	-- AXButton (button 2)
 	effectsSearchCancelButton = sw:searchPath({
 		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
 		{ role = "AXGroup", },
 		{ role = "AXTextField", Description = "Effect Library Search Field" },
 		{ role = "AXButton", Description = "cancel"},
@@ -2333,30 +2449,36 @@ function updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Make sure scroll bar is all the way to the top:
+	-- Make sure Effects Browser Sidebar is Visible:
 	--------------------------------------------------------------------------------
 	-- PATH:
 	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 1)
+	-- AXWindow "Final Cut Pro" (window 2)
 	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
 	-- AXSplitGroup (splitter group 1)
-	-- AXScrollArea (scroll area 1)
-	-- AXScrollBar (scroll bar 1)
-	-- AXValueIndicator (value indicator 1)
-	effectsScrollbar = sw:searchPath({
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXCheckBox (checkbox 1)
+	effectsBrowserSidebar = sw:searchPath({
 		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup" },
-		{ role = "AXGroup", _id=1},
-		{ role = "AXSplitGroup", Identifier = "_NS:11" },
-		{ role = "AXScrollArea", Identifier = "_NS:19" },
-		{ role = "AXScrollBar" },
-		{ role = "AXValueIndicator" }
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup" },
+		{ role = "AXCheckBox", Identifier = "_NS:85" },
 	}, 1)
-	if effectsScrollbar ~= nil then
-		effectsScrollbarResult = effectsScrollbar:setAttributeValue("AXValue", 0)
+	if effectsBrowserSidebar ~= nil then
+		if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+			effectsBrowserSidebar:performAction("AXPress")
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -2364,151 +2486,71 @@ function updateEffectsList()
 	--------------------------------------------------------------------------------
 	-- PATH:
 	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 1)
+	-- AXWindow "Final Cut Pro" (window 2)
 	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
 	-- AXSplitGroup (splitter group 1)
 	-- AXScrollArea (scroll area 1)
-	-- AXOutline (outline 1)
-	-- AXRow (row 31)
-	-- AXStaticText (static text 1)
-	-- AXDescription = All Video & Audio
-	allVideoAndAudioText = sw:searchPath({
+	-- AXTable (table 1)
+	-- AXRow (row 1)
+	allVideoAndAudioButton = sw:searchPath({
 		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
-		{ role = "AXGroup", _id=1},
-		{ role = "AXSplitGroup", Identifier = "_NS:11" },
-		{ role = "AXScrollArea", Identifier = "_NS:19" },
-		{ role = "AXOutline", Description = "outline"},
-		{ role = "AXRow", Description = "All Video & Audio" }
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:66" },
+		{ role = "AXTable", Identifier = "_NS:9" },
+		{ role = "AXRow", _id=1 },
 	}, 1)
-	if allVideoAndAudioText ~= nil then
-
-		local originalMousePoint = hs.mouse.getAbsolutePosition()
-		local allVideoAndAudioTextPosition = allVideoAndAudioText:attributeValue("AXPosition")
-		local allVideoAndAudioTextSize = allVideoAndAudioText:attributeValue("AXSize")
-
-		allVideoAndAudioTextPosition['x'] = allVideoAndAudioTextPosition['x'] + (allVideoAndAudioTextSize['w']/2)
-		allVideoAndAudioTextPosition['y'] = allVideoAndAudioTextPosition['y'] + (allVideoAndAudioTextSize['h']/2)
-
-		--------------------------------------------------------------------------------
-		-- Click twice:
-		--------------------------------------------------------------------------------
-		hs.eventtap.leftClick(allVideoAndAudioTextPosition)
-		hs.eventtap.leftClick(allVideoAndAudioTextPosition)
-
-		--------------------------------------------------------------------------------
-		-- Move mouse back as if nothing ever happened:
-		--------------------------------------------------------------------------------
-		hs.mouse.setAbsolutePosition(originalMousePoint)
-
-
+	if allVideoAndAudioButton ~= nil then
+		allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 	else
-	--------------------------------------------------------------------------------
-	-- Left Panel might not be visible:
-	--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Make sure scroll bar is all the way to the top:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXGroup (group 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXScrollArea (scroll area 1)
-		-- AXScrollBar (scroll bar 1)
-		-- AXValueIndicator (value indicator 1)
-		effectsScrollbar = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup" },
-			{ role = "AXGroup", _id=1},
-			{ role = "AXSplitGroup", Identifier = "_NS:11" },
-			{ role = "AXScrollArea", Identifier = "_NS:19" },
-			{ role = "AXScrollBar" },
-			{ role = "AXValueIndicator" }
-		}, 1)
-		if effectsScrollbar ~= nil then
-			effectsScrollbarResult = effectsScrollbar:setAttributeValue("AXValue", 0)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Left Panel might not be visible:
-		--------------------------------------------------------------------------------
-		-- PATH:
-		-- AXApplication "Final Cut Pro"
-		-- AXWindow "Final Cut Pro" (window 1)
-		-- AXSplitGroup (splitter group 1)
-		-- AXGroup (group 1)
-		-- AXGroup (group 1)
-		-- AXGroup (group 1)
-		-- AXButton (button 1)
-		leftPanelButton = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXGroup", _id=1},
-			{ role = "AXGroup", },
-			{ role = "AXButton", Help = "Show/Hide" }
-		}, 1)
-		if leftPanelButton ~= nil then
-			leftPanelButton:performAction("AXPress")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Video & Audio':
-		--------------------------------------------------------------------------------
-		allVideoAndAudioText = sw:searchPath({
-			{ role = "AXWindow", title = "Final Cut Pro"},
-			{ role = "AXSplitGroup" },
-			{ role = "AXGroup", },
-			{ role = "AXGroup", _id=1},
-			{ role = "AXSplitGroup", Identifier = "_NS:11" },
-			{ role = "AXScrollArea", Identifier = "_NS:19" },
-			{ role = "AXOutline", Description = "outline"},
-			{ role = "AXRow", Description = "All Video & Audio" }
-		}, 1)
-		if allVideoAndAudioText ~= nil then
-			local originalMousePoint = hs.mouse.getAbsolutePosition()
-			local allVideoAndAudioTextPosition = allVideoAndAudioText:attributeValue("AXPosition")
-
-			allVideoAndAudioTextPosition['x'] = allVideoAndAudioTextPosition['x'] + 5
-			allVideoAndAudioTextPosition['y'] = allVideoAndAudioTextPosition['y'] + 5
-
-			hs.eventtap.leftClick(allVideoAndAudioTextPosition)
-			hs.mouse.setAbsolutePosition(originalMousePoint)
-		else
-			displayErrorMessage("Unable to select All Video & Audio.")
-			return "Fail"
-		end
+		displayErrorMessage("Unable to locate 'All Video & Audio' button.")
+		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
 	-- Get list of all effects:
 	--------------------------------------------------------------------------------
-	-- VIDEO EFFECTS PATH:
+	-- PATH:
 	-- AXApplication "Final Cut Pro"
-	-- AXWindow "Final Cut Pro" (window 1)
+	-- AXWindow "Final Cut Pro" (window 2)
 	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
 	-- AXGroup (group 1)
 	-- AXSplitGroup (splitter group 1)
 	-- AXScrollArea (scroll area 2)
 	-- AXGrid (UI element 1)
-	-- AXImage "Color Correction" (image 2)
 	effectsList = sw:searchPath({
-		{ role = "AXWindow"},
+		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
 		{ role = "AXSplitGroup" },
-		{ role = "AXScrollArea" },
-		{ role = "AXGrid" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:9" },
+		{ role = "AXGrid", Identifier = "_NS:16" },
 	}, 1)
 	local allEffects = {}
 	if effectsList ~= nil then
@@ -2524,7 +2566,7 @@ function updateEffectsList()
 	-- All done!
 	--------------------------------------------------------------------------------
 	if #allEffects == 0 then
-		displayErrorMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
+		displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
 		return "Fail"
 	else
 		--------------------------------------------------------------------------------
@@ -2554,16 +2596,7 @@ end
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS SHORTCUT:
 --------------------------------------------------------------------------------
---
--- >>> NEEDS UPDATING <<<
---
 function assignEffectsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
 
 	local wasFinalCutProOpen = isFinalCutProFrontmost()
 
@@ -3868,37 +3901,6 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Set Touch Bar Location:
---------------------------------------------------------------------------------
-function setTouchBarLocation()
-
-	--------------------------------------------------------------------------------
-	-- Get Settings:
-	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-
-	--------------------------------------------------------------------------------
-	-- Show Touch Bar at Mouse Pointer Position:
-	--------------------------------------------------------------------------------
-	if displayTouchBarLocation == "Mouse" then
-		touchBarWindow:atMousePosition()
-	end
-
-	--------------------------------------------------------------------------------
-	-- Show Touch Bar at Top Centre of Timeline:
-	--------------------------------------------------------------------------------
-	if displayTouchBarLocation == "TimelineTopCentre" then
-		local timelineScrollArea = getFinalCutProTimelineScrollArea()
-		local timelineScrollAreaPosition = {}
-		timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
-		timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-
-		touchBarWindow:topLeft(timelineScrollAreaPosition)
-	end
-
-end
-
---------------------------------------------------------------------------------
 -- TOGGLE TOUCH BAR:
 --------------------------------------------------------------------------------
 function toggleTouchBar()
@@ -4365,16 +4367,7 @@ end
 --------------------------------------------------------------------------------
 -- EFFECTS SHORTCUT PRESSED:
 --------------------------------------------------------------------------------
---
--- >>> NEEDS UPDATING <<<
---
 function effectsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- UNDER CONSTRUCTION:
-	--------------------------------------------------------------------------------
-	displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-	if 1==1 then return end
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
@@ -4393,471 +4386,420 @@ function effectsShortcut(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
+	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which Window:
-	--------------------------------------------------------------------------------
-	local whichWindow = nil
-	local whichEventsWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		print("[FCPX Hacks] ERROR: Unable to find whichWindow in effectsShortcut.")
-		displayMessage("We weren't able to find the Final Cut Pro Window, so aborting.")
-		return "Failed"
-	end
-	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-	--------------------------------------------------------------------------------
-	-- Which Split Group:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-				goto effectsShortcutSplitGroupExit
-			end
-		end
-	end
-	::effectsShortcutSplitGroupExit::
-	if whichSplitGroup == nil then
-		displayErrorMessage("Unable to locate Split Group.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group One:
-	--------------------------------------------------------------------------------
-	local whichGroupOne = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:382" then
-					whichGroupOne = i
-					goto effectsShortcutGroupOneExit
-				end
-			end
-		end
-	end
-	::effectsShortcutGroupOneExit::
-	if whichGroupOne == nil then
-		displayErrorMessage("Unable to locate Group One.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Radio Group:
-	--------------------------------------------------------------------------------
-	local whichRadioGroup = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupOne]:attributeValueCount("AXChildren") do
-		if whichRadioGroup == nil then
-			if fcpxElements[whichSplitGroup][whichGroupOne]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Media Browser Palette" then
-				whichRadioGroup = i
-				goto effectsShortcutRadioGroupExit
-			end
-		end
-	end
-	::effectsShortcutRadioGroupExit::
-	if whichRadioGroup == nil then
-		displayErrorMessage("Unable to locate Radio Group.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- NOTE: AXRadioButton is 1
-	--------------------------------------------------------------------------------
+	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
 
 	--------------------------------------------------------------------------------
 	-- Make sure Video Effects panel is open:
 	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroupOne][whichRadioGroup][1] ~= nil then
-		if fcpxElements[whichSplitGroup][whichGroupOne][whichRadioGroup][1]:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = fcpxElements[whichSplitGroup][whichGroupOne][whichRadioGroup][1]:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					displayErrorMessage("Unable to press Video Effects icon.")
-					return "Fail"
-				end
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXGroup (group 1)
+	-- AXRadioGroup (radio group 1)
+	-- AXRadioButton (radio button 1)
+	effectsBrowserButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+		{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
+	}, 1)
+	local wasEffectsPanelClosed = false
+	if effectsBrowserButton ~= nil then
+		if effectsBrowserButton:attributeValue("AXValue") == 0 then
+			wasEffectsPanelClosed = true
+			local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
+			if presseffectsBrowserButtonResult == nil then
+				displayErrorMessage("Unable to press Video Effects icon.")
+				return "Fail"
+			end
 		end
 	else
-		displayErrorMessage("Unable to find Video Effects icon.")
+		displayErrorMessage("Unable to activate Video Effects Panel.")
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Which Group Two:
+	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	local whichGroupTwo = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][2] ~= nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][2][1] ~= nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][2][1]:attributeValue("AXRole") == "AXButton" then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][2][1]:attributeValue("AXIdentifier") == "_NS:63" then
-							whichGroupTwo = i
-							goto effectsShortcutGroupTwoExit
-						end
-					end
-				end
-			end
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXPopUpButton (pop up button 1)
+	installedEffectsPopup = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+	}, 1)
+	if installedEffectsPopup ~= nil then
+		if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
+			installedEffectsPopup:performAction("AXPress")
+			installedEffectsPopupMenuItem = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+				{ role = "AXMenu", },
+				{ role = "AXMenuItem", AXTitle = "Installed Effects"},
+			}, 1)
+			installedEffectsPopupMenuItem:performAction("AXPress")
 		end
-	end
-	::effectsShortcutGroupTwoExit::
-	if whichGroupTwo == nil then
-		displayErrorMessage("Unable to locate Group 2.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Group Three:
-	--------------------------------------------------------------------------------
-	local whichGroupThree = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-			if fcpxElements[whichSplitGroup][whichGroupTwo]:attributeValue("AXChildren")[i][1] ~= nil then
-				if fcpxElements[whichSplitGroup][whichGroupTwo]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXStaticText" then
-					if fcpxElements[whichSplitGroup][whichGroupTwo]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:74" then
-						whichGroupThree = i
-						goto effectsShortcutGroupThreeExit
-					end
-				end
-			end
-		end
-	end
-	::effectsShortcutGroupThreeExit::
-	if whichGroupThree == nil then
-		displayErrorMessage("Unable to locate Group 3.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Split Group Two:
-	--------------------------------------------------------------------------------
-	local whichSplitGroupTwo = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-			whichSplitGroupTwo = i
-			goto effectsShortcutSplitGroupTwo
-		end
-	end
-	::effectsShortcutSplitGroupTwo::
-	if whichSplitGroupTwo == nil then
-		displayErrorMessage("Unable to locate Split Group 2.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Scroll Area:
-	--------------------------------------------------------------------------------
-	local whichScrollArea = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-			if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:19" then
-				whichScrollArea = i
-				goto effectsShortcutScrollArea
-			end
-		end
-	end
-	::effectsShortcutScrollArea::
-
-	--------------------------------------------------------------------------------
-	-- Left Panel May Be Hidden?
-	--------------------------------------------------------------------------------
-	if whichScrollArea == nil then
-
-		--------------------------------------------------------------------------------
-		-- Which Group Four:
-		--------------------------------------------------------------------------------
-		local whichGroupFour = nil
-		for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroupFour = i
-				goto effectsShortcutGroupFour
-			end
-		end
-		::effectsShortcutGroupFour::
-		if whichGroupFour == nil then
-			displayErrorMessage("Unable to locate Group Four.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- NOTE: AXButton is 1
-		--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Click Show/Hide:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichGroupFour][1]:performAction("AXPress")
-
-		--------------------------------------------------------------------------------
-		-- Try Which Scroll Area Again:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1] -- Reload
-		whichScrollArea = nil -- Not local as we need it below.
-		for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:19" then
-					whichScrollArea = i
-					goto effectsShortcutScrollAreaTakeTwo
-				end
-			end
-		end
-		::effectsShortcutScrollAreaTakeTwo::
-		if whichScrollArea == nil then
-			displayErrorMessage("Unable to locate Scroll Area for a second time.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Which Scroll Bar:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx) -- Reload
-
-	--------------------------------------------------------------------------------
-	-- Which Window:
-	--------------------------------------------------------------------------------
-	local whichWindow = nil
-	local whichEventsWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		print("[FCPX Hacks] ERROR: Unable to find whichWindow in effectsShortcut.")
-		displayMessage("We weren't able to find the Final Cut Pro Window, so aborting.")
-		return "Failed"
-	end
-	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-	local whichScrollBar = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollBar" then
-			whichScrollBar = i
-			goto effectsShortcutScrollBar
-		end
-	end
-	::effectsShortcutScrollBar::
-	if whichScrollBar == nil then
-		displayErrorMessage("Unable to locate Scroll Bar.")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- NOTE: AXValueIndicator = 1
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Make sure scroll bar is all the way to the top (if there is one):
-	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichScrollBar][1] ~= nil then
-		effectsScrollbarResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichScrollBar][1]:setAttributeValue("AXValue", 0)
-		if effectsScrollbarResult == nil then
-			displayErrorMessage("Failed to put scroll bar all the way to the top.")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Search for the effect we need:
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Which Search Text Field:
-	--------------------------------------------------------------------------------
-	local whichSearchTextField = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXTextField" then
-			if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Effect Library Search Field" then
-				whichSearchTextField = i
-				goto effectsShortcutSearchTextField
-			end
-		end
-	end
-	::effectsShortcutSearchTextField::
-
-	--------------------------------------------------------------------------------
-	-- Perform Search:
-	--------------------------------------------------------------------------------
-	enterSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField]:setAttributeValue("AXValue", currentShortcut)
-	if enterSearchResult == nil then
-		displayErrorMessage("Unable to Effect Name into search box.")
-		return "Fail"
-	end
-	pressSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField][1]:performAction("AXPress")
-	if pressSearchResult == nil then
-		displayErrorMessage("Failed to press search button.")
+	else
+		displayErrorMessage("Unable to find 'Installed Effects' popup.")
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Which Outline:
+	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	local whichOutline = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
-			whichOutline = i
-			goto effectsShortcutOutlineExit
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	effectsSearchCancelButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+		{ role = "AXButton", Description = "cancel"},
+	}, 1)
+	if effectsSearchCancelButton ~= nil then
+		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+		if effectsSearchCancelButtonResult == nil then
+			displayErrorMessage("Unable to cancel effects search.")
+			return "Fail"
 		end
-	end
-	::effectsShortcutOutlineExit::
-	if whichOutline == nil then
-		displayErrorMessage("Unable to locate Scroll Area.")
-		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Which Row:
+	-- Make sure Effects Browser Sidebar is Visible:
 	--------------------------------------------------------------------------------
-	local whichRow = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "All Video & Audio" then
-			whichRow = i
-			goto effectsShortcutRowExit
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXCheckBox (checkbox 1)
+	effectsBrowserSidebar = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup" },
+		{ role = "AXCheckBox", Identifier = "_NS:85" },
+	}, 1)
+	if effectsBrowserSidebar ~= nil then
+		if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
+			effectsBrowserSidebar:performAction("AXPress")
 		end
-	end
-	::effectsShortcutRowExit::
-	if whichRow == nil then
-		displayErrorMessage("Unable to locate Row.")
-		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
 	-- Click 'All Video & Audio':
 	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline][whichRow] ~= nil then
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline][whichRow]:attributeValue("AXSelected") == false then -- Only need to click if not already clicked!
-
-			local originalMousePoint = hs.mouse.getAbsolutePosition()
-			local allVideoAndAudioTextPosition = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline][whichRow]:attributeValue("AXPosition")
-			local allVideoAndAudioTextSize = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline][whichRow]:attributeValue("AXSize")
-
-			allVideoAndAudioTextPosition['x'] = allVideoAndAudioTextPosition['x'] + 30 --(allVideoAndAudioTextSize['w'] / 2)
-			allVideoAndAudioTextPosition['y'] = allVideoAndAudioTextPosition['y'] + 10 --(allVideoAndAudioTextSize['h'] / 2)
-
-			doubleLeftClick(allVideoAndAudioTextPosition)
-			hs.mouse.setAbsolutePosition(originalMousePoint) -- Move mouse back.
-
-			--------------------------------------------------------------------------------
-			-- Wait for effects to load:
-			--------------------------------------------------------------------------------
-			for i=1, 500 do
-				if ax.applicationElement(fcpx)[1][whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea][whichOutline][whichRow]:attributeValue("AXSelected") == true then
-					--------------------------------------------------------------------------------
-					-- Loaded!
-					--------------------------------------------------------------------------------
-					goto exitClickAllAudioAndVideoLoop
-				else
-					--------------------------------------------------------------------------------
-					-- Still Loading...
-					--------------------------------------------------------------------------------
-					sleep(0.01)
-					hs.eventtap.leftClick(allVideoAndAudioTextPosition)
-					hs.mouse.setAbsolutePosition(originalMousePoint) -- Move mouse back.
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- If we get to here, something's gone wrong:
-			--------------------------------------------------------------------------------
-			displayErrorMessage("Failed to click 'All Video & Audio' After 5 seconds, so something must have gone wrong.")
-			return "Failed"
-
-		end
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 1)
+	-- AXTable (table 1)
+	-- AXRow (row 1)
+	allVideoAndAudioButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:66" },
+		{ role = "AXTable", Identifier = "_NS:9" },
+		{ role = "AXRow", _id=1 },
+	}, 1)
+	if allVideoAndAudioButton ~= nil then
+		allVideoAndAudioButton:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to find 'All Video & Audio' row.")
+		displayErrorMessage("Unable to locate 'All Video & Audio' button.")
 		return "Fail"
 	end
-	::exitClickAllAudioAndVideoLoop::
 
 	--------------------------------------------------------------------------------
-	-- Make sure the scroll bar is at the top (if it's visible):
+	-- Perform Search:
 	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][2] ~= nil then
-		scrollBarResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][2][1]:setAttributeValue("AXValue", 0)
-		if scrollBarResult == nil then
-			displayErrorMessage("Failed to adjust Video Effects scroll bar.")
-			return "Fail"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Check if the search result actually found anything:
-	--------------------------------------------------------------------------------
-	local pressEffectsButton = false
-	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1] == nil then
-		--------------------------------------------------------------------------------
-		-- Re-perform Search Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
-		print("currentShortcut: " .. currentShortcut)
-		enterSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField]:setAttributeValue("AXValue", currentShortcut)
-		if enterSearchResult == nil then
-			displayErrorMessage("Unable to Effect Name into search box.")
-			return "Fail"
-		end
-		pressSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField][1]:performAction("AXPress")
-		if pressSearchResult == nil then
-			displayErrorMessage("Failed to press search button.")
-			return "Fail"
-		end
-
-		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1] == nil then
-			displayErrorMessage("Failed to find effect.")
-			return "Fail"
-		end
-		pressEffectsButton = true
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	effectsSearchField = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+	}, 1)
+	if effectsSearchField ~= nil then
+		effectsSearchField:setAttributeValue("AXValue", currentShortcut)
+		effectsSearchField[1]:performAction("AXPress")
 	else
-		pressEffectsButton = true
+		displayErrorMessage("Unable to type search request in search box.")
+		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Apply the effect by double clicking:
+	-- Make sure scroll bar is at top:
 	--------------------------------------------------------------------------------
-	if pressEffectsButton then
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXScrollBar (scroll bar 1)
+	-- AXValueIndicator (value indicator 1)
+	effectsScrollBar = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
+		{ role = "AXScrollBar", AXIdentifier = "_NS:34" },
+		{ role = "AXValueIndicator" },
+	}, 1)
+	if effectsScrollBar ~= nil then
+		effectsScrollBar:setAttributeValue("AXValue", 0)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Double click on effect:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXGrid (UI element 1)
+	-- AXImage "Blur" (image 1)
+	effectButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
+		{ role = "AXGrid", AXIdentifier = "_NS:16" },
+		{ role = "AXImage", _id=1 },
+	}, 1)
+	if effectButton ~= nil then
 
 		--------------------------------------------------------------------------------
-		-- Locations:
+		-- Original Mouse Position:
 		--------------------------------------------------------------------------------
-		local originalMousePoint = hs.mouse.getAbsolutePosition()
-		local effectPosition = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1]:attributeValue("AXPosition")
-		local effectSize = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1]:attributeValue("AXSize")
+		local originalMousePosition = hs.mouse.getAbsolutePosition()
 
 		--------------------------------------------------------------------------------
 		-- Get centre of button:
 		--------------------------------------------------------------------------------
-		effectPosition['x'] = effectPosition['x'] + (effectSize['w'] / 2)
-		effectPosition['y'] = effectPosition['y'] + (effectSize['h'] / 2)
+		local effectButtonPosition = {}
+		effectButtonPosition['x'] = effectButton:attributeValue("AXPosition")['x'] + (effectButton:attributeValue("AXSize")['w'] / 2)
+		effectButtonPosition['y'] = effectButton:attributeValue("AXPosition")['y'] + (effectButton:attributeValue("AXSize")['h'] / 2)
 
 		--------------------------------------------------------------------------------
 		-- Double Click:
 		--------------------------------------------------------------------------------
-		doubleLeftClick(effectPosition)
+		doubleLeftClick(effectButtonPosition)
 
 		--------------------------------------------------------------------------------
 		-- Put it back:
 		--------------------------------------------------------------------------------
-		hs.mouse.setAbsolutePosition(originalMousePoint)
+		hs.mouse.setAbsolutePosition(originalMousePosition)
 
+	else
+		displayErrorMessage("Unable to locate effect.")
+		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Clear Search Field:
+	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	hs.timer.doAfter(0.1, function() fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField][2]:performAction("AXPress") end )
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	effectsSearchCancelButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+		{ role = "AXButton", Description = "cancel"},
+	}, 1)
+	if effectsSearchCancelButton ~= nil then
+		effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
+		if effectsSearchCancelButtonResult == nil then
+			displayErrorMessage("Unable to cancel effects search.")
+			return "Fail"
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If the effects panel was originally closed, let's close it again:
+	--------------------------------------------------------------------------------
+	if wasEffectsPanelClosed then
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXGroup (group 1)
+		-- AXRadioGroup (radio group 1)
+		-- AXRadioButton (radio button 1)
+		effectsBrowserButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+			{ role = "AXRadioButton", AXHelp = "Show or hide the Effects Browser - ⌘5"}
+		}, 1)
+		if effectsBrowserButton ~= nil then
+			effectsBrowserButton:performAction("AXPress")
+		else
+			displayErrorMessage("Unable to close Video Effects Panel.")
+			return "Fail"
+		end
+	end
 
 end
 
@@ -8808,6 +8750,37 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- SET TOUCH BAR LOCATION:
+--------------------------------------------------------------------------------
+function setTouchBarLocation()
+
+	--------------------------------------------------------------------------------
+	-- Get Settings:
+	--------------------------------------------------------------------------------
+	local displayTouchBarLocation = hs.settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+
+	--------------------------------------------------------------------------------
+	-- Show Touch Bar at Mouse Pointer Position:
+	--------------------------------------------------------------------------------
+	if displayTouchBarLocation == "Mouse" then
+		touchBarWindow:atMousePosition()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Show Touch Bar at Top Centre of Timeline:
+	--------------------------------------------------------------------------------
+	if displayTouchBarLocation == "TimelineTopCentre" then
+		local timelineScrollArea = getFinalCutProTimelineScrollArea()
+		local timelineScrollAreaPosition = {}
+		timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
+		timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
+
+		touchBarWindow:topLeft(timelineScrollAreaPosition)
+	end
+
+end
+
+--------------------------------------------------------------------------------
 -- HOW MANY ITEMS IN A TABLE?
 --------------------------------------------------------------------------------
 function tableCount(table)
@@ -9556,7 +9529,7 @@ end
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY RELOAD THIS CONFIG FILE WHEN UPDATED:
 --------------------------------------------------------------------------------
-function reloadConfig(files)
+function hammerspoonConfigWatcher(files)
     doReload = false
     for _,file in pairs(files) do
         if file:sub(-4) == ".lua" then
@@ -9571,7 +9544,7 @@ end
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY DO THINGS WHEN FCPX PLIST IS UPDATED:
 --------------------------------------------------------------------------------
-function finalCutProSettingsPlistChanged(files)
+function finalCutProSettingsWatcher(files)
     doReload = false
     for _,file in pairs(files) do
         if file:sub(-24) == "com.apple.FinalCut.plist" then
