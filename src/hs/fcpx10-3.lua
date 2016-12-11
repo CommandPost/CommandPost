@@ -277,6 +277,13 @@ function loadScript()
 		if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
 		if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
 
+		if hs.settings.get("fcpxHacks.chooserShowAutomation") == nil then hs.settings.set("fcpxHacks.chooserShowAutomation", true) end
+		if hs.settings.get("fcpxHacks.chooserShowShortcuts") == nil then hs.settings.set("fcpxHacks.chooserShowShortcuts", true) end
+		if hs.settings.get("fcpxHacks.chooserShowHacks") == nil then hs.settings.set("fcpxHacks.chooserShowHacks", true) end
+		if hs.settings.get("fcpxHacks.chooserShowVideoEffects") == nil then hs.settings.set("fcpxHacks.chooserShowVideoEffects", true) end
+		if hs.settings.get("fcpxHacks.chooserShowAudioEffects") == nil then hs.settings.set("fcpxHacks.chooserShowAudioEffects", true) end
+		if hs.settings.get("fcpxHacks.chooserShowTransitions") == nil then hs.settings.set("fcpxHacks.chooserShowTransitions", true) end
+
 		--------------------------------------------------------------------------------
 		-- Useful Debugging Information:
 		--------------------------------------------------------------------------------
@@ -463,6 +470,7 @@ function loadScript()
     	--------------------------------------------------------------------------------
     	displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
 		print("[FCPX Hacks] ERROR: Final Cut Pro could not be found so giving up.")
+		return "fail"
 	end
 
 	-------------------------------------------------------------------------------
@@ -521,6 +529,8 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--hs.console.clearConsole()
+
+	print(displayChooseFolder("Which folder would you like to use for the Shared Clipboard?"))
 
 end
 
@@ -1209,12 +1219,12 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
-	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
-	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
-	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects") and true
-	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects") and true
-	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions") and true
+	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation")
+	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts")
+	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks")
+	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects")
+	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects")
+	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions")
 
 	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
@@ -1815,11 +1825,6 @@ function refreshMenuBar(refreshPlistValues)
 	scrollingTimelineActive = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 	--------------------------------------------------------------------------------
-	-- Enable Clipboard History:
-	--------------------------------------------------------------------------------
-	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-	--------------------------------------------------------------------------------
 	-- Enable Mobile Notifications:
 	--------------------------------------------------------------------------------
 	enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
@@ -1837,6 +1842,16 @@ function refreshMenuBar(refreshPlistValues)
 	if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
 	local displayTouchBarLocationTimelineTopCentre = false
 	if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
+
+	--------------------------------------------------------------------------------
+	-- Enable Clipboard History:
+	--------------------------------------------------------------------------------
+	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+	--------------------------------------------------------------------------------
+	-- Enable Shared Clipboard:
+	--------------------------------------------------------------------------------
+	enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
 
 	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
@@ -1968,6 +1983,8 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "TOOLS:", 																																																		disabled = true },
    	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
+   	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
+   	    { title = "Paste from Shared Clipboard", 													fn = pasteFromSharedClipboard, 									    															disabled = not enableSharedClipboard},
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "-" },
    	    { title = "HACKS:", 																																																		disabled = true },
@@ -2105,6 +2122,33 @@ function toggleEnableClipboardHistory()
 	end
 	settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
 	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE SHARED CLIPBOARD:
+--------------------------------------------------------------------------------
+function toggleEnableSharedClipboard()
+
+	local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+
+	if not enableSharedClipboard then
+
+		result = displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
+
+		if result ~= false then
+			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Path: " .. tostring(result)) end
+			settings.set("fcpxHacks.sharedClipboardPath", result)
+		else
+			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Choose Path Cancelled.") end
+			settings.set("fcpxHacks.sharedClipboardPath", nil)
+			return "failed"
+		end
+
+	end
+
+	settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
+	refreshMenuBar()
+
 end
 
 --------------------------------------------------------------------------------
@@ -4466,6 +4510,40 @@ function finalCutProPasteFromClipboardHistory(data)
 end
 
 --------------------------------------------------------------------------------
+-- PASTE FROM SHARED CLIPBOARD:
+--------------------------------------------------------------------------------
+function pasteFromSharedClipboard()
+
+	local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
+	if enableSharedClipboard then
+		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+		if sharedClipboardPath ~= nil then
+
+			local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard", "r")
+			currentClipboardData = file:read("*all")
+			file:close()
+
+			--------------------------------------------------------------------------------
+			-- Write data back to Clipboard:
+			--------------------------------------------------------------------------------
+			clipboardTimer:stop()
+			pasteboard.writeDataForUTI(finalCutProClipboardUTI, currentClipboardData)
+			clipboardWatcher()
+
+			--------------------------------------------------------------------------------
+			-- Paste in FCPX:
+			--------------------------------------------------------------------------------
+			launchFinalCutPro()
+			if not keyStrokeFromPlist("Paste") then
+				displayErrorMessage("Failed to trigger the 'Paste' Shortcut.")
+				return "Failed"
+			end
+
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
 -- CLEAR CLIPBOARD HISTORY:
 --------------------------------------------------------------------------------
 function clearClipboardHistory()
@@ -4909,7 +4987,8 @@ function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, 
 		--------------------------------------------------------------------------------
 		-- Does the scrollbar still exist?
 		--------------------------------------------------------------------------------
-		if timelineScrollArea[2] ~= nil then
+		if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
+
 			local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
 			local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
 
@@ -4945,6 +5024,7 @@ function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, 
 			local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
 			timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
 		end
+
 	end)
 
 	--------------------------------------------------------------------------------
@@ -10307,6 +10387,27 @@ function displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
 end
 
 --------------------------------------------------------------------------------
+-- DISPLAY CHOOSE FOLDER DIALOG:
+--------------------------------------------------------------------------------
+function displayChooseFolder(whatMessage)
+	local returnToFinalCutPro = isFinalCutProFrontmost()
+	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
+	local appleScriptB = [[
+		tell me to activate
+		try
+			set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
+			return whichFolder
+		on error
+			-- Cancel Pressed:
+			return false
+		end try
+	]]
+	a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	if returnToFinalCutPro then launchFinalCutPro() end
+	return result
+end
+
+--------------------------------------------------------------------------------
 -- DISPLAY ALERT MESSAGE:
 --------------------------------------------------------------------------------
 function displayAlertMessage(whatMessage)
@@ -10975,6 +11076,18 @@ function clipboardWatcher()
 					-- Used for debugging:
 					--------------------------------------------------------------------------------
 					if debugMode then print("[FCPX Hacks] Something has been added to FCPX's Clipboard.") end
+
+					local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
+					if enableSharedClipboard then
+						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+						if sharedClipboardPath ~= nil then
+
+							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard", "w")
+							file:write(currentClipboardData)
+							file:close()
+
+						end
+					end
 
 					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
 
