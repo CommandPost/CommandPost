@@ -122,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.56"
+local scriptVersion = "0.57"
 --------------------------------------------------------------------------------
 
 
@@ -4413,16 +4413,29 @@ function effectsShortcut(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = hs.application("Final Cut Pro")
-	sw = ax.windowElement(fcpx:mainWindow())
-
-	--------------------------------------------------------------------------------
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
 	local fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
+	fcpxElements = ax.applicationElement(fcpx)
+
+	--------------------------------------------------------------------------------
+	-- Which Window:
+	--------------------------------------------------------------------------------
+	local whichWindow = nil
+	local whichEventsWindow = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+				whichWindow = i
+			end
+		end
+	end
+	if whichWindow == nil then
+		print("[FCPX Hacks] ERROR: Unable to find whichWindow in effectsShortcut.")
+		displayMessage("We weren't able to find the Final Cut Pro Window, so aborting.")
+		return "Failed"
+	end
+	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
 
 	--------------------------------------------------------------------------------
 	-- Which Split Group:
@@ -4629,7 +4642,27 @@ function effectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Which Scroll Bar:
 	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)[1] -- Reload
+	fcpxElements = ax.applicationElement(fcpx) -- Reload
+
+	--------------------------------------------------------------------------------
+	-- Which Window:
+	--------------------------------------------------------------------------------
+	local whichWindow = nil
+	local whichEventsWindow = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+				whichWindow = i
+			end
+		end
+	end
+	if whichWindow == nil then
+		print("[FCPX Hacks] ERROR: Unable to find whichWindow in effectsShortcut.")
+		displayMessage("We weren't able to find the Final Cut Pro Window, so aborting.")
+		return "Failed"
+	end
+	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
+
 	local whichScrollBar = nil
 	for i=1, fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren") do
 		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollBar" then
@@ -4858,6 +4891,19 @@ function highlightFCPXBrowserPlayhead()
 			end
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
 				whichWindow = i
+			end
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+				if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
+					if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
+						if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
+							if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
+								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
+									whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
+								end
+							end
+						end
+					end
+				end
 			end
 		end
 	end
@@ -6538,6 +6584,19 @@ function multicamMatchFrame(goBackToTimeline)
 				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
 					whichWindow = i
 				end
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+					if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
+						if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
+							if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
+								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
+									if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
+										whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
+									end
+								end
+							end
+						end
+					end
+				end
 			end
 		end
 		if whichWindow == nil then
@@ -6849,7 +6908,6 @@ function multicamMatchFrame(goBackToTimeline)
 	for i=1, (fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren")) do
 		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXStaticText" then
 			whichTimecodeText = i
-			print("whichTimecodeText: " .. whichTimecodeText)
 		end
 	end
 	if whichTimecodeText ~= nil then
@@ -7014,6 +7072,19 @@ function singleMatchFrame()
 			end
 			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
 				whichWindow = i
+			end
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+				if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
+					if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
+						if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
+							if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
+								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
+									whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
+								end
+							end
+						end
+					end
+				end
 			end
 		end
 	end
@@ -9920,14 +9991,16 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-							if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-								hs.eventtap.keyStroke({""}, "escape")
-								hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["GoToOrganizer"]['modifiers']), keycodes.map[finalCutProShortcutKey["GoToOrganizer"]['characterString']])
-								hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
-								hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-								return true
+					if finalCutProShortcutKey[whichShortcutKey] ~= nil then
+						if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+							if finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+								if whichKey == finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+									hs.eventtap.keyStroke({""}, "escape")
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["GoToOrganizer"]['modifiers']), keycodes.map[finalCutProShortcutKey["GoToOrganizer"]['characterString']])
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									return true
+								end
 							end
 						end
 					end
