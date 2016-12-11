@@ -54,6 +54,7 @@
 --
 --  > http://www.hammerspoon.org/go/
 --  > https://github.com/asmagill/hs._asm.axuielement
+--  > https://github.com/asmagill/hammerspoon_asm/tree/master/touchbar
 --  > https://github.com/Hammerspoon/hammerspoon/issues/272
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1021#issuecomment-251827969
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1027#issuecomment-252024969
@@ -65,6 +66,7 @@
 --  > Aaron Magill (https://github.com/asmagill)
 --  > Chris Jones (https://github.com/cmsj)
 --  > Bill Cheeseman (http://pfiddlesoft.com)
+--  > David Peterson (https://github.com/randomeizer)
 --  > Yvan Koenig (http://macscripter.net/viewtopic.php?id=45148)
 --  > Tim Webb (https://twitter.com/_timwebb_)
 --
@@ -81,6 +83,8 @@
 --  > Isaac J. Terronez (https://twitter.com/ijterronez)
 --  > Shahin Shokoui, Ilyas Akhmedov & Tim Webb
 --
+--  Latest credits at: https://latenitefilms.com/blog/final-cut-pro-hacks/
+--
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -91,7 +95,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-scriptVersion = "0.66"
+scriptVersion = "0.67"
 --------------------------------------------------------------------------------
 
 
@@ -127,6 +131,8 @@ print("====================================================")
 -- BUILT-IN:
 
 	osascript 					= require("hs.osascript")
+	fs 							= require("hs.fs")
+	application 				= require("hs.application")
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -155,7 +161,9 @@ function loadScript()
 		require("hs.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
+		print("[FCPX Hacks] FATAL ERROR: Could not find '/Applications/Final Cut Pro.app'.")
+		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3 or 10.3 is installed in the root of the Applications folder and hasn't been renamed.\n\nHammerspoon will now quit.")
+		application.get("Hammerspoon"):kill()
 	end
 
 end
@@ -177,14 +185,12 @@ end
 -- DISPLAY ALERT MESSAGE:
 --------------------------------------------------------------------------------
 function displayAlertMessage(whatMessage)
-	local returnToFinalCutPro = isFinalCutProFrontmost()
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
 		display dialog whatMessage buttons {"OK"} with icon stop
 	]]
-	hs.osascript.applescript(appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then launchFinalCutPro() end
+	osascript.applescript(appleScriptA .. appleScriptB)
 end
 
 --------------------------------------------------------------------------------
@@ -199,7 +205,7 @@ end
 --------------------------------------------------------------------------------
 function finalCutProVersion()
 	if isFinalCutProInstalled() then
-		ok,appleScriptFinalCutProVersion = hs.osascript.applescript('return version of application "Final Cut Pro"')
+		ok,appleScriptFinalCutProVersion = osascript.applescript('return version of application "Final Cut Pro"')
 		return appleScriptFinalCutProVersion
 	else
 		return "Not Installed"
@@ -210,7 +216,7 @@ end
 -- DOES DIRECTORY EXIST:
 --------------------------------------------------------------------------------
 function doesDirectoryExist(path)
-    local attr = hs.fs.attributes(path)
+    local attr = fs.attributes(path)
     return attr and attr.mode == 'directory'
 end
 
