@@ -121,7 +121,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.47"
+local scriptVersion = "0.48"
 --------------------------------------------------------------------------------
 
 
@@ -203,7 +203,7 @@ print("====================================================")
 	local disablePasteboard = true
 	if tonumber(hs.host.operatingSystemVersion()["minor"]) >= 11 then
 		pasteboard 					= require("hs.pasteboard")
-		disablePasteboard = false
+		disablePasteboard 			= false
 	end
 
 --------------------------------------------------------------------------------
@@ -239,6 +239,7 @@ local colorBoardSelectPuckSplitGroupCache 		= nil											-- Color Board Selec
 local colorBoardSelectPuckGroupCache 			= nil											-- Color Board Select Puck Group Cache
 
 local releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
+local releaseMouseColorBoardDown 				= false											-- Color Board Mouse Shortcut Currently Being Pressed
 
 local changeTimelineClipHeightAlreadyInProgress = false											-- Change Timeline Clip Height Already In Progress
 local releaseChangeTimelineClipHeightDown		= false											-- Change Timeline Clip Height Currently Being Pressed
@@ -254,8 +255,17 @@ local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- F
 local clipboardWatcherFrequency 				= 0.5											-- Clipboard Watcher Update Frequency
 local clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
 
-local selectSecondaryStorylineSplitGroupCache 	= nil											-- Select Secondary Storyline Split Group Cache
-local selectSecondaryStorylineGroupCache 		= nil											-- Select Secondary Storyline Group Cache
+local selectClipAtLaneSplitGroupCache 			= nil											-- Select Secondary Storyline Split Group Cache
+local selectClipAtLaneGroupCache 				= nil											-- Select Secondary Storyline Group Cache
+
+local newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
+local mediaImportCount 							= 0												-- Media Import Count
+local stopMediaImportTimer 						= false											-- Stop Media Import Timer
+local currentApplication 						= nil											-- Current Application (used by Media Import Watcher)
+
+local lastCommandSet							= nil											-- Last Keyboard Shortcut Command Set
+
+local colorBoardMousePuckOriginalPosition		= nil											-- Color Board Mouse Puck Original Position
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -317,9 +327,14 @@ function loadScript()
 		local settingsDebug16 = hs.settings.get("fcpxHacks.lastVersion") or ""
 		local settingsDebug17 = hs.settings.get("fcpxHacks.enableClipboardHistory") or ""
 		local settingsDebug18 = hs.settings.get("fcpxHacks.clipboardHistory") or ""
-		local settingsDebug19 = hs.settings.get("fcpxHacks.prowlAPIKey") or ""
+		if hs.settings.get("fcpxHacks.prowlAPIKey") ~= nil then
+			local settingsDebug19 = "APIKey"
+		else
+			local settingsDebug19 = ""
+		end
 		local settingsDebug20 = hs.settings.get("fcpxHacks.enableMobileNotifications") or ""
-		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ";" .. tostring(settingsDebug17) .. ";" .. tostring(settingsDebug18) .. ";" .. tostring(settingsDebug19) .. ";" .. tostring(settingsDebug20) .. ".")
+		local settingsDebug21 = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or ""
+		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ";" .. tostring(settingsDebug17) .. ";" .. tostring(settingsDebug18) .. ";" .. tostring(settingsDebug19) .. ";" .. tostring(settingsDebug20) .. ";" .. tostring(settingsDebug21) .. ".")
 
 		-------------------------------------------------------------------------------
 		-- Common Error Messages:
@@ -420,9 +435,16 @@ function loadScript()
 			local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
 			if enableMobileNotifications then notificationWatcher() end
 
+			--------------------------------------------------------------------------------
+			-- Media Import Watcher:
+			--------------------------------------------------------------------------------
+			local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+			if enableMediaImportWatcher then mediaImportWatcher() end
+
 		--------------------------------------------------------------------------------
 		-- Bind Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
+		lastCommandSet = getFinalCutProActiveCommandSet()
 		bindKeyboardShortcuts()
 
 		--------------------------------------------------------------------------------
@@ -527,8 +549,6 @@ function testingGround()
 
 	-- Clear Console During Development:
 	hs.console.clearConsole()
-
-	selectSecondaryStoryline(1)
 
 end
 
@@ -764,11 +784,31 @@ function bindKeyboardShortcuts()
 
 			FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 							modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackSelectSecondaryStorylineClipOne						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipTwo						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(2) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipThree					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipFour					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipFive					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneOne									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(1) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneTwo									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(2) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneThree								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(3) end,							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneFour								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(4) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneFive								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(5) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneSix									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(6) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneSeven								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(7) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneEight								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(8) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneNine								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(9) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneTen									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(10) end, 							releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+
+			FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckThreeMouse							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+
+			FCPXHackExposurePuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		}
 
@@ -911,11 +951,31 @@ function bindKeyboardShortcuts()
 
 			FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 							modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackSelectSecondaryStorylineClipOne						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(1) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipTwo						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(2) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipThree					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(3) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipFour					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(4) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackSelectSecondaryStorylineClipFive					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(5) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneOne									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(1) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneTwo									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(2) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneThree								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(3) end,							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneFour								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(4) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneFive								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(5) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneSix									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(6) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneSeven								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(7) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneEight								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(8) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneNine								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(9) end, 							releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectClipAtLaneTen									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(10) end, 							releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+
+			FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckThreeMouse							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackSaturationPuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+
+			FCPXHackExposurePuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+			FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },x
 
 		}
 
@@ -1160,6 +1220,11 @@ function refreshMenuBar(refreshPlistValues)
 	enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
 
 	--------------------------------------------------------------------------------
+	-- Enable Media Import Watcher:
+	--------------------------------------------------------------------------------
+	enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+
+	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
 	--------------------------------------------------------------------------------
 	local settingsClipboardHistoryTable = {}
@@ -1208,6 +1273,8 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback},
 	   	{ title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory, 							disabled = disablePasteboard},
 	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
+	   	{ title = "-" },
+	   	{ title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
 	   	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", 														menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", 														menu = settingsShapeMenuTable},
@@ -1336,6 +1403,20 @@ CONTROL+SHIFT:
 
 		displayMessage(whatMessage)
 	end
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE MEDIA IMPORT WATCHER:
+--------------------------------------------------------------------------------
+function toggleMediaImportWatcher()
+	local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+	if not enableMediaImportWatcher then
+		mediaImportWatcher()
+	else
+		newDeviceMounted:stop()
+	end
+	settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
+	refreshMenuBar()
 end
 
 --------------------------------------------------------------------------------
@@ -3140,9 +3221,9 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- SELECT SECONDARY STORYLINE:
+-- SELECT CLIP AT LANE:
 --------------------------------------------------------------------------------
-function selectSecondaryStoryline(whichStoryline)
+function selectClipAtLane(whichLane)
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -3165,13 +3246,13 @@ function selectSecondaryStoryline(whichStoryline)
 	-- Cache:
 	--------------------------------------------------------------------------------
 	local useCache = false
-	if fcpxElements[selectSecondaryStorylineSplitGroupCache] ~= nil then
-		if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache] ~= nil then
-			if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
-				if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
+	if fcpxElements[selectClipAtLaneSplitGroupCache] ~= nil then
+		if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache] ~= nil then
+			if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
 					useCache = true
-					whichSplitGroup = selectSecondaryStorylineSplitGroupCache
-					whichGroup = selectSecondaryStorylineGroupCache
+					whichSplitGroup = selectClipAtLaneSplitGroupCache
+					whichGroup = selectClipAtLaneGroupCache
 				end
 			end
 		end
@@ -3189,7 +3270,7 @@ function selectSecondaryStoryline(whichStoryline)
 			if whichSplitGroup == nil then
 				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroup = i
-					goto selectSecondaryStorylineSplitGroupExit
+					goto selectClipAtLaneSplitGroupExit
 				end
 			end
 		end
@@ -3197,8 +3278,8 @@ function selectSecondaryStoryline(whichStoryline)
 			displayErrorMessage("Unable to locate Split Group.")
 			return "Failed"
 		end
-		::selectSecondaryStorylineSplitGroupExit::
-		selectSecondaryStorylineSplitGroupCache = whichSplitGroup
+		::selectClipAtLaneSplitGroupExit::
+		selectClipAtLaneSplitGroupCache = whichSplitGroup
 
 		--------------------------------------------------------------------------------
 		-- Which Group:
@@ -3209,7 +3290,7 @@ function selectSecondaryStoryline(whichStoryline)
 					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
 						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
 							whichGroup = i
-							goto selectSecondaryStorylineGroupExit
+							goto selectClipAtLaneGroupExit
 						end
 					end
 				end
@@ -3219,8 +3300,8 @@ function selectSecondaryStoryline(whichStoryline)
 			displayErrorMessage("Unable to locate Group.")
 			return "Failed"
 		end
-		::selectSecondaryStorylineGroupExit::
-		selectSecondaryStorylineGroupCache = whichGroup
+		::selectClipAtLaneGroupExit::
+		selectClipAtLaneGroupCache = whichGroup
 	end
 
 	--------------------------------------------------------------------------------
@@ -3235,14 +3316,14 @@ function selectSecondaryStoryline(whichStoryline)
 	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
 		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
 			whichValueIndicator = i
-			goto selectSecondaryStorylineValueIndicatorExit
+			goto selectClipAtLaneValueIndicatorExit
 		end
 	end
 	if whichValueIndicator == nil then
 		displayErrorMessage("Unable to locate Value Indicator.")
 		return "Failed"
 	end
-	::selectSecondaryStorylineValueIndicatorExit::
+	::selectClipAtLaneValueIndicatorExit::
 
 	--------------------------------------------------------------------------------
 	-- Timeline Playhead Position:
@@ -3255,22 +3336,45 @@ function selectSecondaryStoryline(whichStoryline)
 	local whichLayoutItems = {}
 	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
 		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i] ~= nil then
-			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
 
+			--------------------------------------------------------------------------------
+			-- Normal clips:
+			--------------------------------------------------------------------------------
+			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
 				local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
 				local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
 
 				if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
 					local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
-					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY }
+					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
 				end
+			end
 
+			--------------------------------------------------------------------------------
+			-- Storylines:
+			--------------------------------------------------------------------------------
+			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				for ii=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1][i]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichSplitGroup][whichGroup][1][2][1][i][ii] ~= nil then
+						if fcpxElements[whichSplitGroup][whichGroup][1][2][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
+
+							local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][2][1][i][ii]:attributeValue("AXPosition")['x']
+							local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][2][1][i][ii]:attributeValue("AXSize")['w']
+
+							if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
+								local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][2][1][i][ii]:attributeValue("AXPosition")['y']
+								whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH }
+							end
+
+						end
+					end
+				end -- ii loop
 			end
 		end
 	end
 
 	local howManyClips = tableCount(whichLayoutItems)
-	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips <= whichStoryline then
+	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips < whichLane then
 		print("[FCPX Hacks] ERROR: We couldn't find any clips on the Secondary Storyline at your current playhead position.")
 		return "Fail"
 	end
@@ -3283,7 +3387,7 @@ function selectSecondaryStoryline(whichStoryline)
 	--------------------------------------------------------------------------------
 	-- Which clip to we need:
 	--------------------------------------------------------------------------------
-	local whichClip = whichLayoutItems[whichStoryline + 1][1]
+	local whichClip = whichLayoutItems[whichLane][1]
 
 	--------------------------------------------------------------------------------
 	-- Click the clip:
@@ -6697,6 +6801,41 @@ function fcpxRestoreKeywordSearches(whichButton)
 end
 
 --------------------------------------------------------------------------------
+-- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
+--------------------------------------------------------------------------------
+function matchFrameThenHighlightFCPXBrowserPlayhead()
+	--------------------------------------------------------------------------------
+	-- Delete Any Highlights:
+	--------------------------------------------------------------------------------
+	deleteAllHighlights()
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	fcpx = hs.appfinder.appFromName("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Click on 'Reveal in Browser':
+	--------------------------------------------------------------------------------
+	resultRevealInBrowser = fcpx:selectMenuItem({"File", "Reveal in Browser"})
+
+	--------------------------------------------------------------------------------
+	-- If it worked then...
+	--------------------------------------------------------------------------------
+	if resultRevealInBrowser then
+		--------------------------------------------------------------------------------
+		-- Highlight FCPX Browser Playhead:
+		--------------------------------------------------------------------------------
+		highlightFCPXBrowserPlayhead()
+	else
+		--------------------------------------------------------------------------------
+		-- Error:
+		--------------------------------------------------------------------------------
+		displayErrorMessage("Unable to trigger Reveal in Browser.")
+	end
+end
+
+--------------------------------------------------------------------------------
 -- FCPX COLOR BOARD PUCK SELECTION:
 --------------------------------------------------------------------------------
 function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
@@ -6733,6 +6872,7 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	end
 	if nudgeShortcutMissing then
 		displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
@@ -6874,11 +7014,6 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Perform a direction shortcut if required:
-	--------------------------------------------------------------------------------
-
-
-	--------------------------------------------------------------------------------
 	-- If a Direction is specified:
 	--------------------------------------------------------------------------------
 	if whichDirection ~= nil then
@@ -6922,38 +7057,447 @@ function colorBoardSelectPuckRelease()
 end
 
 --------------------------------------------------------------------------------
--- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
+-- FCPX COLOR BOARD PUCK CONTROL VIA MOUSE:
 --------------------------------------------------------------------------------
-function matchFrameThenHighlightFCPXBrowserPlayhead()
+function colorBoardMousePuck(whichPuck, whichPanel)
+
 	--------------------------------------------------------------------------------
-	-- Delete Any Highlights:
+	-- Local Variables:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup = nil
+	local whichGroup = nil
+	local colorBoardOriginalMousePoint = hs.mouse.getAbsolutePosition()
+
+	--------------------------------------------------------------------------------
+	-- Make sure Nudge Shortcuts are allocated:
+	--------------------------------------------------------------------------------
+	local nudgeShortcutMissing = false
+	if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+	if nudgeShortcutMissing then
+		displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+		return "Failed"
+	end
+
+	--------------------------------------------------------------------------------
+	-- The first button is actually the reset button:
+	--------------------------------------------------------------------------------
+	whichPuck = whichPuck + 1
+
+	--------------------------------------------------------------------------------
+	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
 	deleteAllHighlights()
 
 	--------------------------------------------------------------------------------
-	-- Define FCPX:
+	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
-	fcpx = hs.appfinder.appFromName("Final Cut Pro")
+	fcpx = hs.application("Final Cut Pro")
+	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
-	-- Click on 'Reveal in Browser':
+	-- Check for cached value:
 	--------------------------------------------------------------------------------
-	resultRevealInBrowser = fcpx:selectMenuItem({"File", "Reveal in Browser"})
-
-	--------------------------------------------------------------------------------
-	-- If it worked then...
-	--------------------------------------------------------------------------------
-	if resultRevealInBrowser then
-		--------------------------------------------------------------------------------
-		-- Highlight FCPX Browser Playhead:
-		--------------------------------------------------------------------------------
-		highlightFCPXBrowserPlayhead()
-	else
-		--------------------------------------------------------------------------------
-		-- Error:
-		--------------------------------------------------------------------------------
-		displayErrorMessage("Unable to trigger Reveal in Browser.")
+	local useCache = false
+	if colorBoardSelectPuckSplitGroupCache ~= nil and colorBoardSelectPuckGroupCache ~= nil then
+		if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
+			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXTitle") == "Color" then
+				useCache = true
+				whichSplitGroup = colorBoardSelectPuckSplitGroupCache
+				whichGroup = colorBoardSelectPuckGroupCache
+			end
+		end
 	end
+
+	--------------------------------------------------------------------------------
+	-- Find these values if not already in the cache:
+	--------------------------------------------------------------------------------
+	if not useCache then
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group:
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				whichSplitGroup = i
+				goto colorBoardSelectPuckSplitGroupExit
+			end
+		end
+		if whichSplitGroup == nil then
+			displayErrorMessage("Unable to locate Split Group.")
+			return "Failed"
+		end
+		::colorBoardSelectPuckSplitGroupExit::
+		colorBoardSelectPuckSplitGroupCache = whichSplitGroup -- Used for caching.
+
+		--------------------------------------------------------------------------------
+		-- Which Group?
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
+				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+						whichGroup = i
+						goto colorBoardSelectPuckGroupExit
+					end
+				end
+			end
+		end
+		if whichGroup == nil then
+			--------------------------------------------------------------------------------
+			-- If we can't find the group, maybe it's not open?
+			--------------------------------------------------------------------------------
+			local pressColorBoard = fcpx:selectMenuItem({"Window", "Go To", "Color Board"})
+			if pressColorBoard == nil then
+				displayErrorMessage("Unable to open Color Board.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Try Which Group Again:
+			--------------------------------------------------------------------------------
+			whichGroup = nil
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+							whichGroup = i
+							goto colorBoardSelectPuckGroupExit
+						end
+					end
+				end
+			end
+			if whichGroup == nil then
+				displayMessage("This feature only works when you have a single clip selected in the timeline.\n\nPlease select a clip and try again.")
+				return "Failed"
+			end
+		end
+		::colorBoardSelectPuckGroupExit::
+		colorBoardSelectPuckGroupCache = whichGroup -- Used for caching.
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Panel?
+	--------------------------------------------------------------------------------
+	if whichPanel ~= nil then
+		if fcpxElements[whichSplitGroup][whichGroup][whichPanel]:attributeValue("AXValue") == 0 then
+			fcpxElements[whichSplitGroup][whichGroup][whichPanel]:performAction("AXPress")
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Puck?
+	--------------------------------------------------------------------------------
+	local whichPuckCount = 1
+	for i=1, fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+			if whichPuckCount == whichPuck then
+				whichPuckButton = i
+				goto colorBoardSelectPuckPuckButtonExit
+			else
+				whichPuckCount = whichPuckCount + 1
+			end
+		end
+	end
+	if whichPuckButton == nil then
+		displayErrorMessage("Unable to locate Puck.")
+		return "Failed"
+	end
+	::colorBoardSelectPuckPuckButtonExit::
+
+	--------------------------------------------------------------------------------
+	-- Click on the Puck:
+	--------------------------------------------------------------------------------
+	if not fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXFocused") then
+		local originalMousePoint = hs.mouse.getAbsolutePosition()
+		local colorBoardPosition = {}
+		colorBoardPosition['x'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['x'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['w'] / 2)
+		colorBoardPosition['y'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['y'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['h'] / 2)
+		hs.eventtap.leftClick(colorBoardPosition)
+		hs.mouse.setAbsolutePosition(originalMousePoint)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get shortcut key from plist, press and hold if required:
+	--------------------------------------------------------------------------------
+	releaseMouseColorBoardDown = false
+	hs.timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+
+		local currentMousePoint = hs.mouse.getAbsolutePosition()
+
+		if currentMousePoint['y'] < colorBoardOriginalMousePoint['y'] then
+			keyStrokeFromPlist("ColorBoard-NudgePuckUp")
+			colorBoardOriginalMousePoint = currentMousePoint
+		end
+		if currentMousePoint['y'] > colorBoardOriginalMousePoint['y'] then
+			keyStrokeFromPlist("ColorBoard-NudgePuckDown")
+			colorBoardOriginalMousePoint = currentMousePoint
+		end
+
+		if whichPanel == 1 then
+			if currentMousePoint['x'] < colorBoardOriginalMousePoint['x'] then
+				keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
+				colorBoardOriginalMousePoint = currentMousePoint
+			end
+			if currentMousePoint['x'] > colorBoardOriginalMousePoint['x'] then
+				keyStrokeFromPlist("ColorBoard-NudgePuckRight")
+				colorBoardOriginalMousePoint = currentMousePoint
+			end
+		end
+
+	end, 0.00001)
+
+end
+
+--------------------------------------------------------------------------------
+-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+--------------------------------------------------------------------------------
+function colorBoardMousePuckRelease()
+	releaseMouseColorBoardDown = true
+end
+
+--------------------------------------------------------------------------------
+-- FCPX COLOR BOARD PUCK CONTROL VIA MOUSE:
+--------------------------------------------------------------------------------
+function colorBoardMousePuckWIP(whichPuck, whichPanel)
+
+	--------------------------------------------------------------------------------
+	-- Local Variables:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup = nil
+	local whichGroup = nil
+
+	--------------------------------------------------------------------------------
+	-- Save current mouse position:
+	--------------------------------------------------------------------------------
+	colorBoardMousePuckOriginalPosition = hs.mouse.getAbsolutePosition()
+
+	--------------------------------------------------------------------------------
+	-- Make sure Nudge Shortcuts are allocated:
+	--------------------------------------------------------------------------------
+	local nudgeShortcutMissing = false
+	if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
+	if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
+	if nudgeShortcutMissing then
+		displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
+		return "Failed"
+	end
+
+	--------------------------------------------------------------------------------
+	-- The first button is actually the reset button:
+	--------------------------------------------------------------------------------
+	whichPuck = whichPuck + 1
+
+	--------------------------------------------------------------------------------
+	-- Delete any pre-existing highlights:
+	--------------------------------------------------------------------------------
+	deleteAllHighlights()
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpx = hs.application("Final Cut Pro")
+	fcpxElements = ax.applicationElement(fcpx)
+
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXMenuBar") == "AXMenuBar" then
+			whichWindow = i
+		end
+	end
+	print(whichWindow)
+	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
+
+	--------------------------------------------------------------------------------
+	-- Check for cached value:
+	--------------------------------------------------------------------------------
+	local useCache = false
+	if colorBoardSelectPuckSplitGroupCache ~= nil and colorBoardSelectPuckGroupCache ~= nil then
+		if fcpxElements[colorBoardSelectPuckSplitGroupCache] ~= nil then
+			if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache] ~= nil then
+				if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1] ~= nil then
+					if fcpxElements[colorBoardSelectPuckSplitGroupCache][colorBoardSelectPuckGroupCache][1]:attributeValue("AXTitle") == "Color" then
+						print("[FCPX Hacks] colorBoardMousePuck using cache.")
+						useCache = true
+						whichSplitGroup = colorBoardSelectPuckSplitGroupCache
+						whichGroup = colorBoardSelectPuckGroupCache
+					end
+				end
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Find these values if not already in the cache:
+	--------------------------------------------------------------------------------
+	if not useCache then
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group:
+		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(fcpx)[1]
+		print_r(ax.applicationElement(fcpx):attributeValue("AXChildren"))
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				whichSplitGroup = i
+				goto colorBoardSelectPuckSplitGroupExit
+			end
+		end
+		if whichSplitGroup == nil then
+
+			print("[FCPX Hacks] colorBoardMousePuck unable to locate split group.")
+			return "Failed"
+		end
+		::colorBoardSelectPuckSplitGroupExit::
+		colorBoardSelectPuckSplitGroupCache = whichSplitGroup -- Used for caching.
+
+		--------------------------------------------------------------------------------
+		-- Which Group?
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
+				if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+						whichGroup = i
+						goto colorBoardSelectPuckGroupExit
+					end
+				end
+			end
+		end
+		if whichGroup == nil then
+			--------------------------------------------------------------------------------
+			-- If we can't find the group, maybe it's not open?
+			--------------------------------------------------------------------------------
+			local pressColorBoard = fcpx:selectMenuItem({"Window", "Go To", "Color Board"})
+			if pressColorBoard == nil then
+				print("[FCPX Hacks] colorBoardMousePuck unable to open Color Board.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Try Which Group Again:
+			--------------------------------------------------------------------------------
+			whichGroup = nil
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") ~= 0 then
+					if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXRole") == "AXCheckBox" then
+						if fcpxElements[whichSplitGroup][i]:attributeValue("AXChildren")[1]:attributeValue("AXTitle") == "Color" then
+							whichGroup = i
+							goto colorBoardSelectPuckGroupExit
+						end
+					end
+				end
+			end
+			if whichGroup == nil then
+				displayMessage("This feature only works when you have a single clip selected in the timeline.\n\nPlease select a clip and try again.")
+				return "Failed"
+			end
+		end
+		::colorBoardSelectPuckGroupExit::
+		colorBoardSelectPuckGroupCache = whichGroup -- Used for caching.
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Panel?
+	--------------------------------------------------------------------------------
+	if whichPanel ~= nil then
+		if fcpxElements[whichSplitGroup][whichGroup][whichPanel]:attributeValue("AXValue") == 0 then
+			fcpxElements[whichSplitGroup][whichGroup][whichPanel]:performAction("AXPress")
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Puck?
+	--------------------------------------------------------------------------------
+	local whichPuckCount = 1
+	for i=1, fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
+			if whichPuckCount == whichPuck then
+				whichPuckButton = i
+				goto colorBoardSelectPuckPuckButtonExit
+			else
+				whichPuckCount = whichPuckCount + 1
+			end
+		end
+	end
+	if whichPuckButton == nil then
+		print("[FCPX Hacks] colorBoardMousePuck unable to locate puck.")
+		return "Failed"
+	end
+	::colorBoardSelectPuckPuckButtonExit::
+
+	--------------------------------------------------------------------------------
+	-- Click on the Puck:
+	--------------------------------------------------------------------------------
+	if not fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXFocused") then
+		local originalMousePoint = hs.mouse.getAbsolutePosition()
+		local colorBoardPosition = {}
+		colorBoardPosition['x'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['x'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['w'] / 2)
+		colorBoardPosition['y'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['y'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['h'] / 2)
+		hs.eventtap.leftClick(colorBoardPosition)
+		hs.mouse.setAbsolutePosition(originalMousePoint)
+	end
+
+	whichPuck = whichPuck - 1
+
+	local whichTextField = nil
+
+	if whichPanel == 2 then
+		if whichPuck == 1 then whichTextField = 10 end
+		if whichPuck == 2 then whichTextField = 13 end
+		if whichPuck == 3 then whichTextField = 16 end
+		if whichPuck == 4 then whichTextField = 19 end
+	end
+
+	local controlPosition = fcpxElements[whichSplitGroup][whichGroup][whichTextField]:attributeValue("AXPosition")
+	local controlSize = fcpxElements[whichSplitGroup][whichGroup][whichTextField]:attributeValue("AXSize")
+	local controlLocation = {}
+
+	controlLocation['x'] = controlPosition['x'] + controlSize['w'] - 5
+	controlLocation['y'] = controlPosition['y'] + ( controlSize['h'] / 2 )
+
+	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseDown"], controlLocation):post()
+
+	--------------------------------------------------------------------------------
+	-- Get shortcut key from plist, press and hold if required:
+	--------------------------------------------------------------------------------
+	--[[
+	releaseMouseColorBoardDown = false
+	hs.timer.doUntil(function() return releaseMouseColorBoardDown end, function()
+		print("WORKING")
+
+		local clickState = hs.eventtap.event.properties.mouseEventClickState
+		hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["mouseMoved"], hs.mouse.getAbsolutePosition()):setProperty(clickState, 1):post()
+
+	end, 0.5)
+	--]]
+
+end
+
+--------------------------------------------------------------------------------
+-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+--------------------------------------------------------------------------------
+function colorBoardMousePuckReleaseWIP()
+	--------------------------------------------------------------------------------
+	-- Stop Loop:
+	--------------------------------------------------------------------------------
+	print("[FCPX Hacks] Stop Mouse Loop.")
+	releaseMouseColorBoardDown = true
+
+	--------------------------------------------------------------------------------
+	-- Release Mouse:
+	--------------------------------------------------------------------------------
+	local clickState = hs.eventtap.event.properties.mouseEventClickState
+	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types["leftMouseUp"], hs.mouse.getAbsolutePosition()):setProperty(clickState, 1):post()
+
+	--------------------------------------------------------------------------------
+	-- Move back to original position:
+	--------------------------------------------------------------------------------
+	hs.mouse.setAbsolutePosition(colorBoardMousePuckOriginalPosition)
+
 end
 
 --------------------------------------------------------------------------------
@@ -8325,6 +8869,18 @@ function finalCutProSettingsPlistChanged(files)
         end
     end
     if doReload then
+
+		--------------------------------------------------------------------------------
+		-- Refresh Keyboard Shortcuts if changed:
+		--------------------------------------------------------------------------------
+    	if lastCommandSet ~= getFinalCutProActiveCommandSet() then
+			local doOnce = true
+			hs.timer.waitUntil(function() return doOnce end, function()
+				bindKeyboardShortcuts()
+				doOnce = false
+			end, 0.00000001)
+		end
+
     	--------------------------------------------------------------------------------
     	-- Refresh Menubar:
     	--------------------------------------------------------------------------------
@@ -8669,6 +9225,48 @@ function clipboardWatcher()
 end
 
 --------------------------------------------------------------------------------
+-- MEDIA IMPORT WINDOW WATCHER (NOT YET IMPLEMENTED):
+--------------------------------------------------------------------------------
+function mediaImportWatcher()
+
+	newDeviceMounted = hs.fs.volume.new(function(event, table)
+		if event == hs.fs.volume.didMount then
+			mediaImportCount = 0
+			stopMediaImportTimer = false
+			currentApplication = hs.application.frontmostApplication()
+			mediaImportTimer = hs.timer.doUntil(function() return stopMediaImportTimer end, function()
+				if not isFinalCutProRunning() then
+					stopMediaImportTimer = true
+				else
+					local fcpx = hs.application("Final Cut Pro")
+					local fcpxElements = ax.applicationElement(fcpx)
+					if fcpxElements[1] ~= nil then
+						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
+							if mediaImportCount == 0 then
+								--------------------------------------------------------------------------------
+								-- Media Import Window was already open:
+								--------------------------------------------------------------------------------
+								stopMediaImportTimer = true
+							else
+								fcpxElements[1][1]:performAction("AXPress")
+								hs.application.launchOrFocus(currentApplication:name())
+								stopMediaImportTimer = true
+							end
+						end
+					end
+					mediaImportCount = mediaImportCount + 1
+					if mediaImportCount == 500 then
+						stopMediaImportTimer = true
+					end
+				end
+			end, 0.01)
+		end
+	end)
+	newDeviceMounted:start()
+
+end
+
+--------------------------------------------------------------------------------
 -- FCPX SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
@@ -8730,6 +9328,12 @@ end
 -- NOTIFICATION WATCHER:
 --------------------------------------------------------------------------------
 function notificationWatcher()
+
+	--------------------------------------------------------------------------------
+	-- USED FOR DEVELOPMENT:
+	--------------------------------------------------------------------------------
+	--foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
+	--foo:start()
 
 	--------------------------------------------------------------------------------
 	-- SHARE SUCCESSFUL NOTIFICATION WATCHER:

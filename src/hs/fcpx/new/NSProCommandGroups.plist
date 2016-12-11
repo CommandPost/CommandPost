@@ -8,11 +8,28 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
-			<string>FCPXHackSelectSecondaryStorylineClipOne</string>
-			<string>FCPXHackSelectSecondaryStorylineClipTwo</string>
-			<string>FCPXHackSelectSecondaryStorylineClipThree</string>
-			<string>FCPXHackSelectSecondaryStorylineClipFour</string>
-			<string>FCPXHackSelectSecondaryStorylineClipFive</string>
+			<string>FCPXHackColorPuckOneMouse</string>
+			<string>FCPXHackColorPuckTwoMouse</string>
+			<string>FCPXHackColorPuckThreeMouse</string>
+			<string>FCPXHackColorPuckFourMouse</string>
+			<string>FCPXHackSaturationPuckOneMouse</string>
+			<string>FCPXHackSaturationPuckTwoMouse</string>
+			<string>FCPXHackSaturationPuckThreeMouse</string>
+			<string>FCPXHackSaturationPuckFourMouse</string>
+			<string>FCPXHackExposurePuckOneMouse</string>
+			<string>FCPXHackExposurePuckTwoMouse</string>
+			<string>FCPXHackExposurePuckThreeMouse</string>
+			<string>FCPXHackExposurePuckFourMouse</string>
+			<string>FCPXHackSelectClipAtLaneOne</string>
+			<string>FCPXHackSelectClipAtLaneTwo</string>
+			<string>FCPXHackSelectClipAtLaneThree</string>
+			<string>FCPXHackSelectClipAtLaneFour</string>
+			<string>FCPXHackSelectClipAtLaneFive</string>
+			<string>FCPXHackSelectClipAtLaneSix</string>
+			<string>FCPXHackSelectClipAtLaneSeven</string>
+			<string>FCPXHackSelectClipAtLaneEight</string>
+			<string>FCPXHackSelectClipAtLaneNine</string>
+			<string>FCPXHackSelectClipAtLaneTen</string>
 			<string>FCPXHackChangeSmartCollectionsLabel</string>
 			<string>FCPXHackCreateOptimizedMediaOn</string>
 			<string>FCPXHackCreateOptimizedMediaOff</string>

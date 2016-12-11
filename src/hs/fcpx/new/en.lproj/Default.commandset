@@ -2,35 +2,154 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FCPXHackSelectSecondaryStorylineClipOne</key>
+	<key>FCPXHackColorPuckOneMouse</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipTwo</key>
+	<key>FCPXHackColorPuckTwoMouse</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipThree</key>
+	<key>FCPXHackColorPuckThreeMouse</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipFour</key>
+	<key>FCPXHackColorPuckFourMouse</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipFive</key>
+	<key>FCPXHackSaturationPuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFive</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSix</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSeven</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneEight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneNine</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTen</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>

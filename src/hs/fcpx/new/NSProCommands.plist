@@ -2,40 +2,159 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FCPXHackSelectSecondaryStorylineClipOne</key>
+	<key>FCPXHackColorPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectSecondaryStorylineClipOne:</string>
+		<string>FCPXHackColorPuckOneMouse:</string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipTwo</key>
+	<key>FCPXHackColorPuckTwoMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectSecondaryStorylineClipTwo:</string>
+		<string>FCPXHackColorPuckTwoMouse:</string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipThree</key>
+	<key>FCPXHackColorPuckThreeMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectSecondaryStorylineClipThree:</string>
+		<string>FCPXHackColorPuckThreeMouse:</string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipFour</key>
+	<key>FCPXHackColorPuckFourMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectSecondaryStorylineClipFour:</string>
+		<string>FCPXHackColorPuckFourMouse:</string>
 	</dict>
-	<key>FCPXHackSelectSecondaryStorylineClipFive</key>
+	<key>FCPXHackSaturationPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectSecondaryStorylineClipFive:</string>
+		<string>FCPXHackSaturationPuckOneMouse:</string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSaturationPuckTwoMouse:</string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSaturationPuckThreeMouse:</string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSaturationPuckFourMouse:</string>
+	</dict>
+	<key>FCPXHackExposurePuckOneMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackExposurePuckOneMouse:</string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackExposurePuckTwoMouse:</string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackExposurePuckThreeMouse:</string>
+	</dict>
+	<key>FCPXHackExposurePuckFourMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackExposurePuckFourMouse:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneOne</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneOne:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTwo</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneTwo:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneThree</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneThree:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFour</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneFour:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFive</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneFive:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSix</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneSix:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSeven</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneSeven:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneEight</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneEight:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneNine</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneNine:</string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTen</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectClipAtLaneTen:</string>
 	</dict>
 	<key>FCPXHackChangeSmartCollectionsLabel</key>
 	<dict>
