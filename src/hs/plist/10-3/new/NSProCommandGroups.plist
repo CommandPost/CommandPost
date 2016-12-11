@@ -8,6 +8,11 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackTransitionsOne</string>
+			<string>FCPXHackTransitionsTwo</string>
+			<string>FCPXHackTransitionsThree</string>
+			<string>FCPXHackTransitionsFour</string>
+			<string>FCPXHackTransitionsFive</string>
 			<string>FCPXHackToggleTouchBar</string>
 			<string>FCPXHackConsole</string>
 			<string>FCPXHackCutSwitchAngle01Video</string>

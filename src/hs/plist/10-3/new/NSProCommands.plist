@@ -2,6 +2,41 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackTransitionsOne</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackTransitionsOne:</string>
+	</dict>
+	<key>FCPXHackTransitionsTwo</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackTransitionsTwo:</string>
+	</dict>
+	<key>FCPXHackTransitionsThree</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackTransitionsThree:</string>
+	</dict>
+	<key>FCPXHackTransitionsFour</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackTransitionsFour:</string>
+	</dict>
+	<key>FCPXHackTransitionsFive</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackTransitionsFive:</string>
+	</dict>
 	<key>FCPXHackToggleTouchBar</key>
 	<dict>
 		<key>downRepeats</key>

@@ -2,6 +2,41 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackTransitionsOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackTransitionsTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackTransitionsThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackTransitionsFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackTransitionsFive</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
 	<key>FCPXHackToggleTouchBar</key>
 	<dict>
 		<key>characterString</key>

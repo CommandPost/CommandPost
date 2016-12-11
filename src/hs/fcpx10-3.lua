@@ -283,38 +283,6 @@ function loadScript()
 		if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
 		if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
 		if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
-		local settingsDebug1 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
-		local settingsDebug2 = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or ""
-		local settingsDebug3 = hs.settings.get("fcpxHacks.allEffects") or ""
-		local settingsDebug4 = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or ""
-		local settingsDebug5 = hs.settings.get("fcpxHacks.effectsListUpdated") or ""
-		local settingsDebug6 = hs.settings.get("fcpxHacks.displayHighlightShape") or ""
-		local settingsDebug7 = hs.settings.get("fcpxHacks.displayHighlightColour") or ""
-		local settingsDebug8 = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or ""
-		local settingsDebug9 = hs.settings.get("fcpxHacks.effectsShortcutOne") or ""
-		local settingsDebug10 = hs.settings.get("fcpxHacks.effectsShortcutTwo") or ""
-		local settingsDebug11 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
-		local settingsDebug12 = hs.settings.get("fcpxHacks.effectsShortcutFour") or ""
-		local settingsDebug13 = hs.settings.get("fcpxHacks.effectsShortcutFive") or ""
-		local settingsDebug14 = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or ""
-		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineActive") or ""
-		local settingsDebug16 = hs.settings.get("fcpxHacks.lastVersion") or ""
-		local settingsDebug17 = hs.settings.get("fcpxHacks.enableClipboardHistory") or ""
-		local settingsDebug18 = nil
-		if hs.settings.get("fcpxHacks.clipboardHistory") ~= nil then
-			settingsDebug18 = "X"
-		else
-			settingsDebug18 = ""
-		end
-		local settingsDebug19 = nil
-		if hs.settings.get("fcpxHacks.prowlAPIKey") ~= nil then
-			settingsDebug19 = "X"
-		else
-			settingsDebug19 = ""
-		end
-		local settingsDebug20 = hs.settings.get("fcpxHacks.enableMobileNotifications") or ""
-		local settingsDebug21 = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or ""
-		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ";" .. tostring(settingsDebug17) .. ";" .. tostring(settingsDebug18) .. ";" .. tostring(settingsDebug19) .. ";" .. tostring(settingsDebug20) .. ";" .. tostring(settingsDebug21) .. ".")
 
 		-------------------------------------------------------------------------------
 		-- Common Error Messages:
@@ -366,7 +334,17 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Setup Touch Bar:
 		--------------------------------------------------------------------------------
-		if touchBarSupported then touchBarWindow = touchbar.new() end
+		if touchBarSupported then
+
+			touchBarWindow = touchbar.new()
+
+			--------------------------------------------------------------------------------
+			-- Get last Touch Bar Location from Settings:
+			--------------------------------------------------------------------------------
+			local lastTouchBarLocation = hs.settings.get("fcpxHacks.lastTouchBarLocation")
+			if lastTouchBarLocation ~= nil then	touchBarWindow:topLeft(lastTouchBarLocation) end
+
+		end
 
 		--------------------------------------------------------------------------------
 		-- Setup Watches:
@@ -375,8 +353,7 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			-- Create and start the application event watcher:
 			--------------------------------------------------------------------------------
-			watcher = hs.application.watcher.new(finalCutProWatcher)
-			watcher:start()
+			watcher = hs.application.watcher.new(finalCutProWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Watch For Hammerspoon Script Updates:
@@ -457,18 +434,6 @@ function loadScript()
 				scrollingTimelineWatcherUp:start()
 				scrollingTimelineWatcherDown:start()
 			end
-
-			--------------------------------------------------------------------------------
-			-- Check if we need to show the Touch Bar:
-			--------------------------------------------------------------------------------
-			if touchBarSupported then
-				local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
-				if displayTouchBar then
-					setTouchBarLocation()
-					touchBarWindow:toggle()
-				end
-			end
-
 		else
 			--------------------------------------------------------------------------------
 			-- Disable Final Cut Pro Shortcut Keys:
@@ -529,6 +494,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	print("[FCPX Hacks] Successfully loaded.")
+	hs.alert.closeAll(0)
 	hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
 
 end
@@ -555,8 +521,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--hs.console.clearConsole()
-
-	fcpxChooser:refreshChoicesCallback()
 
 end
 
@@ -738,6 +702,12 @@ function bindKeyboardShortcuts()
 			FCPXHackEffectsThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsFour			 								= { characterString = "", 							modifiers = {}, 									fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsFive			 								= { characterString = "", 							modifiers = {}, 									fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackTransitionsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(1) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(2) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackScrollingTimeline	 								= { characterString = "", 							modifiers = {}, 									fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
@@ -961,6 +931,12 @@ function bindKeyboardShortcuts()
 			FCPXHackEffectsThree			 							= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsFour			 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
 			FCPXHackEffectsFive			 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackTransitionsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(1) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(2) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackTransitionsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
@@ -1236,7 +1212,9 @@ function chooserChoices()
 	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
 	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
 	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
-	local chooserShowEffects = hs.settings.get("fcpxHacks.chooserShowEffects") and true
+	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects") and true
+	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects") and true
+	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions") and true
 
 	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
@@ -1525,17 +1503,57 @@ function chooserChoices()
 	if chooserShowHacks then hs.fnutils.concat(fcpxChooserChoices, chooserHacks) end
 
 	--------------------------------------------------------------------------------
-	-- Effects List:
+	-- Video Effects List:
 	--------------------------------------------------------------------------------
-	if chooserShowEffects then
-		local allEffects = hs.settings.get("fcpxHacks.allEffects")
-		if allEffects ~= nil and next(allEffects) ~= nil then
-			for i=1, #allEffects do
+	if chooserShowVideoEffects then
+		local allVideoEffects = hs.settings.get("fcpxHacks.allVideoEffects")
+		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
+			for i=1, #allVideoEffects do
 				individualEffect = {
-					["text"] = allEffects[i],
-					["subText"] = "Effect",
+					["text"] = allVideoEffects[i],
+					["subText"] = "Video Effect",
 					["function"] = "effectsShortcut",
-					["function1"] = allEffects[i],
+					["function1"] = allVideoEffects[i],
+					["function2"] = "",
+					["function3"] = "",
+				}
+				table.insert(fcpxChooserChoices, 1, individualEffect)
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Audio Effects List:
+	--------------------------------------------------------------------------------
+	if chooserShowAudioEffects then
+		local allAudioEffects = hs.settings.get("fcpxHacks.allAudioEffects")
+		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
+			for i=1, #allAudioEffects do
+				individualEffect = {
+					["text"] = allAudioEffects[i],
+					["subText"] = "Audio Effect",
+					["function"] = "effectsShortcut",
+					["function1"] = allAudioEffects[i],
+					["function2"] = "",
+					["function3"] = "",
+				}
+				table.insert(fcpxChooserChoices, 1, individualEffect)
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Transitions List:
+	--------------------------------------------------------------------------------
+	if chooserShowTransitions then
+		local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
+		if allTransitions ~= nil and next(allTransitions) ~= nil then
+			for i=1, #allTransitions do
+				individualEffect = {
+					["text"] = allTransitions[i],
+					["subText"] = "Transition",
+					["function"] = "transitionsShortcut",
+					["function1"] = allTransitions[i],
 					["function2"] = "",
 					["function3"] = "",
 				}
@@ -1591,13 +1609,17 @@ end
 --------------------------------------------------------------------------------
 function chooserRightClick()
 
+	--print(fcpxChooser:selectedRow())
+
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
 	local chooserShowAutomation = hs.settings.get("fcpxHacks.chooserShowAutomation") and true
 	local chooserShowShortcuts = hs.settings.get("fcpxHacks.chooserShowShortcuts") and true
 	local chooserShowHacks = hs.settings.get("fcpxHacks.chooserShowHacks") and true
-	local chooserShowEffects = hs.settings.get("fcpxHacks.chooserShowEffects") and true
+	local chooserShowVideoEffects = hs.settings.get("fcpxHacks.chooserShowVideoEffects") and true
+	local chooserShowAudioEffects = hs.settings.get("fcpxHacks.chooserShowAudioEffects") and true
+	local chooserShowTransitions = hs.settings.get("fcpxHacks.chooserShowTransitions") and true
 
 	--------------------------------------------------------------------------------
 	-- Menubar:
@@ -1608,10 +1630,12 @@ function chooserRightClick()
 		{ title = "Hide Selected Item", 	 disabled = true },
      	{ title = "-" },
      	{ title = "DISPLAY OPTIONS:",	 	disabled = true },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() hs.settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 	fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Effects", 			checked = chooserShowEffects,		fn = function() hs.settings.set("fcpxHacks.chooserShowEffects", not chooserShowEffects); 		fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() hs.settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 			fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() hs.settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 	fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() hs.settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() hs.settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 					fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() hs.settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 			fcpxChooser:refreshChoicesCallback() end },
+     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() hs.settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		fcpxChooser:refreshChoicesCallback() end },
+       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() hs.settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 		fcpxChooser:refreshChoicesCallback() end },
 	}
 	fcpxRightClickMenubar:setMenu(rightClickMenu)
 	fcpxRightClickMenubar:popupMenu(hs.mouse.getAbsolutePosition())
@@ -1773,11 +1797,6 @@ function refreshMenuBar(refreshPlistValues)
 	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 	--------------------------------------------------------------------------------
-	-- Get Effects List Updated from Settings:
-	--------------------------------------------------------------------------------
-	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
-
-	--------------------------------------------------------------------------------
 	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
 	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or false
@@ -1840,6 +1859,36 @@ function refreshMenuBar(refreshPlistValues)
 	end
 
 	--------------------------------------------------------------------------------
+	-- Effects Shortcuts:
+	--------------------------------------------------------------------------------
+	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
+	local effectsShortcutOne 	= hs.settings.get("fcpxHacks.effectsShortcutOne")
+	local effectsShortcutTwo 	= hs.settings.get("fcpxHacks.effectsShortcutTwo")
+	local effectsShortcutThree 	= hs.settings.get("fcpxHacks.effectsShortcutThree")
+	local effectsShortcutFour 	= hs.settings.get("fcpxHacks.effectsShortcutFour")
+	local effectsShortcutFive 	= hs.settings.get("fcpxHacks.effectsShortcutFive")
+	if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. string.format("%.20s", effectsShortcutOne) .. ")" end
+	if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. string.format("%.20s", effectsShortcutTwo) .. ")" end
+	if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. string.format("%.20s", effectsShortcutThree) .. ")" end
+	if effectsShortcutFour == nil then 		effectsShortcutFour = " (Unassigned)" 		else effectsShortcutFour = " (" .. string.format("%.20s", effectsShortcutFour) .. ")" end
+	if effectsShortcutFive == nil then 		effectsShortcutFive = " (Unassigned)" 		else effectsShortcutFive = " (" .. string.format("%.20s", effectsShortcutFive) .. ")" end
+
+	--------------------------------------------------------------------------------
+	-- Transition Shortcuts:
+	--------------------------------------------------------------------------------
+	local transitionsListUpdated = hs.settings.get("fcpxHacks.transitionsListUpdated") or false
+	local transitionsShortcutOne 	= hs.settings.get("fcpxHacks.transitionsShortcutOne")
+	local transitionsShortcutTwo 	= hs.settings.get("fcpxHacks.transitionsShortcutTwo")
+	local transitionsShortcutThree 	= hs.settings.get("fcpxHacks.transitionsShortcutThree")
+	local transitionsShortcutFour 	= hs.settings.get("fcpxHacks.transitionsShortcutFour")
+	local transitionsShortcutFive 	= hs.settings.get("fcpxHacks.transitionsShortcutFive")
+	if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. string.format("%.20s", transitionsShortcutOne) .. ")" 	end
+	if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. string.format("%.20s", transitionsShortcutTwo) .. ")" 	end
+	if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. string.format("%.20s", transitionsShortcutThree) .. ")"	end
+	if transitionsShortcutFour == nil then 		transitionsShortcutFour = " (Unassigned)" 		else transitionsShortcutFour 	= " (" .. string.format("%.20s", transitionsShortcutFour) .. ")" 	end
+	if transitionsShortcutFive == nil then 		transitionsShortcutFive = " (Unassigned)" 		else transitionsShortcutFive 	= " (" .. string.format("%.20s", transitionsShortcutFive) .. ")" 	end
+
+	--------------------------------------------------------------------------------
 	-- Setup Menu:
 	--------------------------------------------------------------------------------
 	local settingsShapeMenuTable = {
@@ -1884,11 +1933,20 @@ function refreshMenuBar(refreshPlistValues)
 	local settingsEffectsShortcutsTable = {
 		{ title = "Update Effects List", 															fn = updateEffectsList, 																										disabled = not fcpxRunning },
 		{ title = "-" },
-		{ title = "Assign Effects Shortcut 1", 														fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 2", 														fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 3", 														fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 4", 														fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 5", 														fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 1" .. effectsShortcutOne, 										fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 2" .. effectsShortcutTwo, 										fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 3" .. effectsShortcutThree, 									fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 4" .. effectsShortcutFour, 										fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
+		{ title = "Effect Shortcut 5" .. effectsShortcutFive, 										fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
+	}
+	local settingsTransitionsShortcutsTable = {
+		{ title = "Update Transitions List", 														fn = updateTransitionsList, 																									disabled = not fcpxRunning },
+		{ title = "-" },
+		{ title = "Transition Shortcut 1" .. transitionsShortcutOne, 								fn = function() assignTransitionsShortcut(1) end,																				disabled = not transitionsListUpdated },
+		{ title = "Transition Shortcut 2" .. transitionsShortcutTwo, 								fn = function() assignTransitionsShortcut(2) end, 																				disabled = not transitionsListUpdated },
+		{ title = "Transition Shortcut 3" .. transitionsShortcutThree, 								fn = function() assignTransitionsShortcut(3) end, 																				disabled = not transitionsListUpdated },
+		{ title = "Transition Shortcut 4" .. transitionsShortcutFour, 								fn = function() assignTransitionsShortcut(4) end, 																				disabled = not transitionsListUpdated },
+		{ title = "Transition Shortcut 5" .. transitionsShortcutFive, 								fn = function() assignTransitionsShortcut(5) end, 																				disabled = not transitionsListUpdated },
 	}
 	local menuTable = {
 	   	{ title = "Open Final Cut Pro", 															fn = launchFinalCutPro },
@@ -1904,7 +1962,8 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
    	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
    	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
-   	    { title = "Effects Shortcuts", 																menu = settingsEffectsShortcutsTable },
+   	    { title = "Assign Effects Shortcuts", 														menu = settingsEffectsShortcutsTable },
+   	    { title = "Assign Transitions Shortcuts", 													menu = settingsTransitionsShortcutsTable },
       	{ title = "-" },
    	    { title = "TOOLS:", 																																																		disabled = true },
    	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
@@ -2011,6 +2070,12 @@ end
 --------------------------------------------------------------------------------
 function changeTouchBarLocation(value)
 	hs.settings.set("fcpxHacks.displayTouchBarLocation", value)
+
+	if touchBarSupported then
+		local displayTouchBar = hs.settings.get("fcpxHacks.displayTouchBar") or false
+		if displayTouchBar then setTouchBarLocation() end
+	end
+
 	refreshMenuBar()
 end
 
@@ -2304,6 +2369,403 @@ function resetSettings()
 end
 
 --------------------------------------------------------------------------------
+-- GET LIST OF TRANSITIONS:
+--------------------------------------------------------------------------------
+function updateTransitionsList()
+
+	--------------------------------------------------------------------------------
+	-- Warning message:
+	--------------------------------------------------------------------------------
+	displayMessage("Depending on how many transitions you have installed this might take a while.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.")
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
+
+	--------------------------------------------------------------------------------
+	-- Make sure Transitions panel is open:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXGroup (group 1)
+	-- AXRadioGroup (radio group 1)
+	-- AXRadioButton (radio button 2)
+	transitionsBrowserButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+		{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
+	}, 1)
+	if transitionsBrowserButton ~= nil then
+		if transitionsBrowserButton:attributeValue("AXValue") == 0 then
+			local pressTransitionsBrowserButtonResult = transitionsBrowserButton:performAction("AXPress")
+			if pressTransitionsBrowserButtonResult == nil then
+				displayErrorMessage("Unable to press Transitions icon.")
+				return "Fail"
+			end
+		end
+	else
+		displayErrorMessage("Unable to activate Transitions Panel.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure "Installed Transitions" is selected:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXPopUpButton (pop up button 1)
+	installedTransitionsPopup = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+	}, 1)
+	if installedTransitionsPopup ~= nil then
+		if installedTransitionsPopup:attributeValue("AXValue") ~= "Installed Transitions" then
+			installedTransitionsPopup:performAction("AXPress")
+			installedTransitionsPopupMenuItem = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+				{ role = "AXMenu", },
+				{ role = "AXMenuItem", AXTitle = "Installed Transitions"},
+			}, 1)
+			installedTransitionsPopupMenuItem:performAction("AXPress")
+		end
+	else
+		displayErrorMessage("Unable to find 'Installed Transitions' popup.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure there's nothing in the search box:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	transitionsSearchCancelButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+		{ role = "AXButton", Description = "cancel"},
+	}, 1)
+	if transitionsSearchCancelButton ~= nil then
+		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
+		if transitionsSearchCancelButtonResult == nil then
+			displayErrorMessage("Unable to cancel existing Transitions search.")
+			return "Fail"
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure Transitions Browser Sidebar is Visible:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXCheckBox (checkbox 1)
+	transitionsBrowserSidebar = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup" },
+		{ role = "AXCheckBox", Identifier = "_NS:85" },
+	}, 1)
+	if transitionsBrowserSidebar ~= nil then
+		if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
+			transitionsBrowserSidebar:performAction("AXPress")
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Click 'All Transitions':
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 1)
+	-- AXTable (table 1)
+	-- AXRow (row 1)
+	allTransitionsButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:66" },
+		{ role = "AXTable", Identifier = "_NS:9" }
+	}, 1)
+	if allTransitionsButton ~= nil then
+		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
+	else
+		displayErrorMessage("Unable to locate 'All Transitions' button.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get list of All Transitions:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXGrid (UI element 1)
+	transitionsList = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:9" },
+		{ role = "AXGrid", Identifier = "_NS:16" },
+	}, 1)
+	local allTransitions = {}
+	if transitionsList ~= nil then
+		for i=1, #transitionsList:attributeValue("AXChildren") do
+			allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+		end
+	else
+		displayErrorMessage("Unable to get list of all transitions.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- All done!
+	--------------------------------------------------------------------------------
+	if #allTransitions == 0 or #allTransitions == 0 then
+		displayMessage("Unfortunately the Transitions List was not successfully updated.\n\nPlease try again.")
+		return "Fail"
+	else
+		--------------------------------------------------------------------------------
+		-- Save Results to Settings:
+		--------------------------------------------------------------------------------
+		hs.settings.set("fcpxHacks.allTransitions", allTransitions)
+		hs.settings.set("fcpxHacks.transitionsListUpdated", true)
+
+		--------------------------------------------------------------------------------
+		-- Update Chooser:
+		--------------------------------------------------------------------------------
+		fcpxChooser:refreshChoicesCallback()
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
+		--------------------------------------------------------------------------------
+		-- Let the user know everything's good:
+		--------------------------------------------------------------------------------
+		displayMessage("Transitions List updated successfully.")
+	end
+
+end
+
+--------------------------------------------------------------------------------
+-- ASSIGN TRANSITIONS SHORTCUT:
+--------------------------------------------------------------------------------
+function assignTransitionsShortcut(whichShortcut)
+
+	--------------------------------------------------------------------------------
+	-- Was Final Cut Pro Open?
+	--------------------------------------------------------------------------------
+	local wasFinalCutProOpen = isFinalCutProFrontmost()
+
+	--------------------------------------------------------------------------------
+	-- Get settings:
+	--------------------------------------------------------------------------------
+	local transitionsListUpdated = hs.settings.get("fcpxHacks.transitionsListUpdated")
+	local allTransitions = hs.settings.get("fcpxHacks.allTransitions")
+
+	--------------------------------------------------------------------------------
+	-- Error Checking:
+	--------------------------------------------------------------------------------
+	if not transitionsListUpdated then
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+		return "Failed"
+	end
+	if allTransitions == nil then
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+		return "Failed"
+	end
+	if next(allTransitions) == nil then
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+		return "Failed"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Video Effects List:
+	--------------------------------------------------------------------------------
+	local transitionChooserChoices = {}
+	if allTransitions ~= nil and next(allTransitions) ~= nil then
+		for i=1, #allTransitions do
+			individualEffect = {
+				["text"] = allTransitions[i],
+				["subText"] = "Transition",
+				["function"] = "transitionsShortcut",
+				["function1"] = allTransitions[i],
+				["function2"] = "",
+				["function3"] = "",
+				["whichShortcut"] = whichShortcut,
+				["wasFinalCutProOpen"] = wasFinalCutProOpen,
+			}
+			table.insert(transitionChooserChoices, 1, individualEffect)
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Sort everything:
+	--------------------------------------------------------------------------------
+	table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
+
+	transitionChooser = hs.chooser.new(transitionsChooserAction)
+
+	transitionChooser:bgDark(true)
+	transitionChooser:fgColor(hs.drawing.color.x11.snow)
+	transitionChooser:subTextColor(hs.drawing.color.x11.snow)
+
+	transitionChooser:choices(transitionChooserChoices)
+
+	transitionChooser:show()
+
+end
+
+--------------------------------------------------------------------------------
+-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
+--------------------------------------------------------------------------------
+function transitionsChooserAction(result)
+
+	--------------------------------------------------------------------------------
+	-- Hide Chooser:
+	--------------------------------------------------------------------------------
+	transitionChooser:hide()
+
+	--------------------------------------------------------------------------------
+	-- Perform Specific Function:
+	--------------------------------------------------------------------------------
+	if result ~= nil then
+		--------------------------------------------------------------------------------
+		-- Save the selection:
+		--------------------------------------------------------------------------------
+		whichShortcut = result["whichShortcut"]
+		if whichShortcut == 1 then hs.settings.set("fcpxHacks.transitionsShortcutOne", 		result["text"]) end
+		if whichShortcut == 2 then hs.settings.set("fcpxHacks.transitionsShortcutTwo", 		result["text"]) end
+		if whichShortcut == 3 then hs.settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
+		if whichShortcut == 4 then hs.settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
+		if whichShortcut == 5 then hs.settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Put focus back in Final Cut Pro:
+	--------------------------------------------------------------------------------
+	if result["wasFinalCutProOpen"] then
+		launchFinalCutPro()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Refresh Menubar:
+	--------------------------------------------------------------------------------
+	refreshMenuBar()
+
+end
+
+--------------------------------------------------------------------------------
 -- GET LIST OF EFFECTS:
 --------------------------------------------------------------------------------
 function updateEffectsList()
@@ -2482,7 +2944,7 @@ function updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Click 'All Video & Audio':
+	-- Click 'All Video':
 	--------------------------------------------------------------------------------
 	-- PATH:
 	-- AXApplication "Final Cut Pro"
@@ -2499,7 +2961,7 @@ function updateEffectsList()
 	-- AXScrollArea (scroll area 1)
 	-- AXTable (table 1)
 	-- AXRow (row 1)
-	allVideoAndAudioButton = sw:searchPath({
+	allVideoButton = sw:searchPath({
 		{ role = "AXWindow", title = "Final Cut Pro"},
 		{ role = "AXSplitGroup" },
 		{ role = "AXGroup", },
@@ -2511,18 +2973,17 @@ function updateEffectsList()
 		{ role = "AXGroup", },
 		{ role = "AXSplitGroup", Identifier = "_NS:452" },
 		{ role = "AXScrollArea", Identifier = "_NS:66" },
-		{ role = "AXTable", Identifier = "_NS:9" },
-		{ role = "AXRow", _id=1 },
+		{ role = "AXTable", Identifier = "_NS:9" }
 	}, 1)
-	if allVideoAndAudioButton ~= nil then
-		allVideoAndAudioButton:setAttributeValue("AXSelected", true)
+	if allVideoButton ~= nil then
+		allVideoButton[3]:setAttributeValue("AXSelected", true)
 	else
-		displayErrorMessage("Unable to locate 'All Video & Audio' button.")
+		displayErrorMessage("Unable to locate 'All Video' button.")
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Get list of all effects:
+	-- Get list of All Video Effects:
 	--------------------------------------------------------------------------------
 	-- PATH:
 	-- AXApplication "Final Cut Pro"
@@ -2552,10 +3013,105 @@ function updateEffectsList()
 		{ role = "AXScrollArea", Identifier = "_NS:9" },
 		{ role = "AXGrid", Identifier = "_NS:16" },
 	}, 1)
-	local allEffects = {}
+	local allVideoEffects = {}
 	if effectsList ~= nil then
 		for i=1, #effectsList:attributeValue("AXChildren") do
-			allEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+			allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+		end
+	else
+		displayErrorMessage("Unable to get list of all effects.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Click 'All Audio':
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 1)
+	-- AXTable (table 1)
+	-- AXRow (row 1)
+	allAudioButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:66" },
+		{ role = "AXTable", Identifier = "_NS:9" }
+	}, 1)
+	local secondAll = false
+	local whichAudioButton = nil
+	if allAudioButton ~= nil then
+		for i=1, #allAudioButton:attributeValue("AXChildren") do
+			if allAudioButton[i][1] ~= nil then
+				if allAudioButton[i][1][1] ~= nil then
+					if allAudioButton[i][1][1]:attributeValue("AXValue") == "All" then
+						if secondAll then
+							whichAudioButton = i
+						else
+							secondAll = true
+						end
+					end
+				end
+			end
+		end
+		allAudioButton[whichAudioButton]:setAttributeValue("AXSelected", true)
+	else
+		displayErrorMessage("Unable to locate 'All Audio' button.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get list of All Audio Effects:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXGrid (UI element 1)
+	effectsList = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:9" },
+		{ role = "AXGrid", Identifier = "_NS:16" },
+	}, 1)
+	local allAudioEffects = {}
+	if effectsList ~= nil then
+		for i=1, #effectsList:attributeValue("AXChildren") do
+			allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
 		end
 	else
 		displayErrorMessage("Unable to get list of all effects.")
@@ -2565,14 +3121,15 @@ function updateEffectsList()
 	--------------------------------------------------------------------------------
 	-- All done!
 	--------------------------------------------------------------------------------
-	if #allEffects == 0 then
+	if #allVideoEffects == 0 or #allAudioEffects == 0 then
 		displayMessage("Unfortunately the Effects List was not successfully updated.\n\nPlease try again.")
 		return "Fail"
 	else
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.allEffects", allEffects)
+		hs.settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
+		hs.settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
 		hs.settings.set("fcpxHacks.effectsListUpdated", true)
 
 		--------------------------------------------------------------------------------
@@ -2598,38 +3155,64 @@ end
 --------------------------------------------------------------------------------
 function assignEffectsShortcut(whichShortcut)
 
+	--------------------------------------------------------------------------------
+	-- Was Final Cut Pro Open?
+	--------------------------------------------------------------------------------
 	local wasFinalCutProOpen = isFinalCutProFrontmost()
 
 	--------------------------------------------------------------------------------
-	-- Just in case...
+	-- Get settings:
 	--------------------------------------------------------------------------------
 	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated")
-	local allEffects = hs.settings.get("fcpxHacks.allEffects")
+	local allVideoEffects = hs.settings.get("fcpxHacks.allVideoEffects")
+	local allAudioEffects = hs.settings.get("fcpxHacks.allAudioEffects")
 
+	--------------------------------------------------------------------------------
+	-- Error Checking:
+	--------------------------------------------------------------------------------
 	if not effectsListUpdated then
-		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 		return "Failed"
 	end
-	if allEffects == nil then
-		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+	if allVideoEffects == nil or allAudioEffects == nil then
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 		return "Failed"
 	end
-	if next(allEffects) == nil then
-		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+	if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
+		displayMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Effects List:
+	-- Video Effects List:
 	--------------------------------------------------------------------------------
 	local effectChooserChoices = {}
-	if allEffects ~= nil and next(allEffects) ~= nil then
-		for i=1, #allEffects do
+	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
+		for i=1, #allVideoEffects do
 			individualEffect = {
-				["text"] = allEffects[i],
-				["subText"] = "Effect",
+				["text"] = allVideoEffects[i],
+				["subText"] = "Video Effect",
 				["function"] = "effectsShortcut",
-				["function1"] = allEffects[i],
+				["function1"] = allVideoEffects[i],
+				["function2"] = "",
+				["function3"] = "",
+				["whichShortcut"] = whichShortcut,
+				["wasFinalCutProOpen"] = wasFinalCutProOpen,
+			}
+			table.insert(effectChooserChoices, 1, individualEffect)
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Audio Effects List:
+	--------------------------------------------------------------------------------
+	if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
+		for i=1, #allAudioEffects do
+			individualEffect = {
+				["text"] = allAudioEffects[i],
+				["subText"] = "Audio Effect",
+				["function"] = "effectsShortcut",
+				["function1"] = allAudioEffects[i],
 				["function2"] = "",
 				["function3"] = "",
 				["whichShortcut"] = whichShortcut,
@@ -2687,6 +3270,11 @@ function effectChooserAction(result)
 	if result["wasFinalCutProOpen"] then
 		launchFinalCutPro()
 	end
+
+	--------------------------------------------------------------------------------
+	-- Refresh Menubar:
+	--------------------------------------------------------------------------------
+	refreshMenuBar()
 
 end
 
@@ -4239,6 +4827,7 @@ function toggleScrollingTimeline()
 		--------------------------------------------------------------------------------
 		-- Display Notification:
 		--------------------------------------------------------------------------------
+		hs.alert.closeAll(0)
 		hs.alert.show("Scrolling Timeline Deactivated")
 	else
 		--------------------------------------------------------------------------------
@@ -4262,6 +4851,7 @@ function toggleScrollingTimeline()
 		--------------------------------------------------------------------------------
 		-- Display Notification:
 		--------------------------------------------------------------------------------
+		hs.alert.closeAll(0)
 		hs.alert.show("Scrolling Timeline Activated")
 	end
 
@@ -4361,6 +4951,444 @@ function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, 
 	-- Begin the Loop of Death:
 	--------------------------------------------------------------------------------
 	scrollingTimelineTimer:start()
+
+end
+
+--------------------------------------------------------------------------------
+-- TRANSITIONS SHORTCUT PRESSED:
+--------------------------------------------------------------------------------
+function transitionsShortcut(whichShortcut)
+
+	--------------------------------------------------------------------------------
+	-- Get settings:
+	--------------------------------------------------------------------------------
+	local currentShortcut = nil
+	if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutOne") end
+	if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutTwo") end
+	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutThree") end
+	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFour") end
+	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.transitionsShortcutFive") end
+	if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+
+	if currentShortcut == nil then
+		displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
+
+	--------------------------------------------------------------------------------
+	-- Make sure Transitions panel is open:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXGroup (group 1)
+	-- AXRadioGroup (radio group 1)
+	-- AXRadioButton (radio button 2)
+	transitionsBrowserButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXGroup", },
+		{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+		{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
+	}, 1)
+	local wasTransitionsPanelClosed = false
+	if transitionsBrowserButton ~= nil then
+		if transitionsBrowserButton:attributeValue("AXValue") == 0 then
+			wasTransitionsPanelClosed = true
+			local pressTransitionsBrowserButtonResult = transitionsBrowserButton:performAction("AXPress")
+			if pressTransitionsBrowserButtonResult == nil then
+				displayErrorMessage("Unable to press Transitions icon.")
+				return "Fail"
+			end
+		end
+	else
+		displayErrorMessage("Unable to activate Transitions Panel.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure "Installed Transitions" is selected:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXPopUpButton (pop up button 1)
+	installedTransitionsPopup = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+	}, 1)
+	if installedTransitionsPopup ~= nil then
+		if installedTransitionsPopup:attributeValue("AXValue") ~= "Installed Transitions" then
+			installedTransitionsPopup:performAction("AXPress")
+			installedTransitionsPopupMenuItem = sw:searchPath({
+				{ role = "AXWindow", title = "Final Cut Pro"},
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+				{ role = "AXGroup", },
+				{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+				{ role = "AXPopUpButton", AXIdentifier = "_NS:45"},
+				{ role = "AXMenu", },
+				{ role = "AXMenuItem", AXTitle = "Installed Transitions"},
+			}, 1)
+			installedTransitionsPopupMenuItem:performAction("AXPress")
+		end
+	else
+		displayErrorMessage("Unable to find 'Installed Transitions' popup.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure there's nothing in the search box:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	transitionsSearchCancelButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+		{ role = "AXButton", Description = "cancel"},
+	}, 1)
+	if transitionsSearchCancelButton ~= nil then
+		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
+		if transitionsSearchCancelButtonResult == nil then
+			displayErrorMessage("Unable to cancel existing Transitions search.")
+			return "Fail"
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure Transitions Browser Sidebar is Visible:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXCheckBox (checkbox 1)
+	transitionsBrowserSidebar = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup" },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup" },
+		{ role = "AXCheckBox", Identifier = "_NS:85" },
+	}, 1)
+	if transitionsBrowserSidebar ~= nil then
+		if transitionsBrowserSidebar:attributeValue("AXValue") == 1 then
+			transitionsBrowserSidebar:performAction("AXPress")
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Click 'All Transitions':
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 1)
+	-- AXTable (table 1)
+	-- AXRow (row 1)
+	allTransitionsButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", Identifier = "_NS:452" },
+		{ role = "AXScrollArea", Identifier = "_NS:66" },
+		{ role = "AXTable", Identifier = "_NS:9" }
+	}, 1)
+	if allTransitionsButton ~= nil then
+		allTransitionsButton[1]:setAttributeValue("AXSelected", true)
+	else
+		displayErrorMessage("Unable to locate 'All Transitions' button.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Perform Search:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	transitionsSearchField = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+	}, 1)
+	if transitionsSearchField ~= nil then
+		transitionsSearchField:setAttributeValue("AXValue", currentShortcut)
+		transitionsSearchField[1]:performAction("AXPress")
+	else
+		displayErrorMessage("Unable to type search request in search box.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure scroll bar is at top:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXScrollBar (scroll bar 1)
+	-- AXValueIndicator (value indicator 1)
+	transitionsScrollBar = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
+		{ role = "AXScrollBar", AXIdentifier = "_NS:34" },
+		{ role = "AXValueIndicator" },
+	}, 1)
+	if transitionsScrollBar ~= nil then
+		transitionsScrollBar:setAttributeValue("AXValue", 0)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Double click on effect:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXScrollArea (scroll area 2)
+	-- AXGrid (UI element 1)
+	-- AXImage "Blur" (image 1)
+	transitionsButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:452" },
+		{ role = "AXScrollArea", AXIdentifier = "_NS:9" },
+		{ role = "AXGrid", AXIdentifier = "_NS:16" },
+		{ role = "AXImage", _id=1 },
+	}, 1)
+	if transitionsButton ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Original Mouse Position:
+		--------------------------------------------------------------------------------
+		local originalMousePosition = hs.mouse.getAbsolutePosition()
+
+		--------------------------------------------------------------------------------
+		-- Get centre of button:
+		--------------------------------------------------------------------------------
+		local transitionsButtonPosition = {}
+		transitionsButtonPosition['x'] = transitionsButton:attributeValue("AXPosition")['x'] + (transitionsButton:attributeValue("AXSize")['w'] / 2)
+		transitionsButtonPosition['y'] = transitionsButton:attributeValue("AXPosition")['y'] + (transitionsButton:attributeValue("AXSize")['h'] / 2)
+
+		--------------------------------------------------------------------------------
+		-- Double Click:
+		--------------------------------------------------------------------------------
+		doubleLeftClick(transitionsButtonPosition)
+
+		--------------------------------------------------------------------------------
+		-- Put it back:
+		--------------------------------------------------------------------------------
+		hs.mouse.setAbsolutePosition(originalMousePosition)
+
+	else
+		displayErrorMessage("Unable to locate selected Transition.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Make sure there's nothing in the search box:
+	--------------------------------------------------------------------------------
+	-- PATH:
+	-- AXApplication "Final Cut Pro"
+	-- AXWindow "Final Cut Pro" (window 2)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXSplitGroup (splitter group 1)
+	-- AXGroup (group 1)
+	-- AXTextField (text field 1)
+	transitionsSearchCancelButton = sw:searchPath({
+		{ role = "AXWindow", title = "Final Cut Pro"},
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup" },
+		{ role = "AXGroup", },
+		{ role = "AXSplitGroup", AXIdentifier = "_NS:237" },
+		{ role = "AXGroup", },
+		{ role = "AXTextField", Description = "Effect Library Search Field" },
+		{ role = "AXButton", Description = "cancel"},
+	}, 1)
+	if transitionsSearchCancelButton ~= nil then
+		transitionsSearchCancelButtonResult = transitionsSearchCancelButton:performAction("AXPress")
+		if transitionsSearchCancelButtonResult == nil then
+			displayErrorMessage("Unable to clear Transitions search.")
+			return "Fail"
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If the effects panel was originally closed, let's close it again:
+	--------------------------------------------------------------------------------
+	if wasTransitionsPanelClosed then
+		-- PATH:
+		-- AXApplication "Final Cut Pro"
+		-- AXWindow "Final Cut Pro" (window 2)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXSplitGroup (splitter group 1)
+		-- AXGroup (group 1)
+		-- AXGroup (group 1)
+		-- AXRadioGroup (radio group 1)
+		-- AXRadioButton (radio button 1)
+		transitionsBrowserButton = sw:searchPath({
+			{ role = "AXWindow", title = "Final Cut Pro"},
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXSplitGroup" },
+			{ role = "AXGroup", },
+			{ role = "AXGroup", },
+			{ role = "AXRadioGroup", AXDescription = "Media Browser Palette" },
+			{ role = "AXRadioButton", AXHelp = "Show or hide the Transitions Browser - ⇧⌘5"}
+		}, 1)
+		if transitionsBrowserButton ~= nil then
+			transitionsBrowserButton:performAction("AXPress")
+		else
+			displayErrorMessage("Unable to close Transitions Panel.")
+			return "Fail"
+		end
+	end
 
 end
 
@@ -7358,6 +8386,7 @@ function fcpxSaveKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Saved:
 	--------------------------------------------------------------------------------
+	hs.alert.closeAll(0)
 	hs.alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton) .. ".")
 
 end
@@ -7460,6 +8489,7 @@ function fcpxRestoreKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Successfully Restored:
 	--------------------------------------------------------------------------------
+	hs.alert.closeAll(0)
 	hs.alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton) .. ".")
 
 end
@@ -8763,20 +9793,34 @@ function setTouchBarLocation()
 	-- Show Touch Bar at Mouse Pointer Position:
 	--------------------------------------------------------------------------------
 	if displayTouchBarLocation == "Mouse" then
+
+		--------------------------------------------------------------------------------
+		-- Position Touch Bar to Mouse Pointer Location:
+		--------------------------------------------------------------------------------
 		touchBarWindow:atMousePosition()
+
 	end
 
 	--------------------------------------------------------------------------------
 	-- Show Touch Bar at Top Centre of Timeline:
 	--------------------------------------------------------------------------------
 	if displayTouchBarLocation == "TimelineTopCentre" then
+
+		--------------------------------------------------------------------------------
+		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
+		--------------------------------------------------------------------------------
 		local timelineScrollArea = getFinalCutProTimelineScrollArea()
 		local timelineScrollAreaPosition = {}
 		timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (touchBarWindow:getFrame()['w'] / 2)
 		timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-
 		touchBarWindow:topLeft(timelineScrollAreaPosition)
+
 	end
+
+	--------------------------------------------------------------------------------
+	-- Save last Touch Bar Location to Settings:
+	--------------------------------------------------------------------------------
+	hs.settings.set("fcpxHacks.lastTouchBarLocation", touchBarWindow:topLeft())
 
 end
 
