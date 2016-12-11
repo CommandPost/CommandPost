@@ -122,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.57"
+local scriptVersion = "0.58"
 --------------------------------------------------------------------------------
 
 
@@ -1223,7 +1223,11 @@ end
 function setupChooser()
 
 	fcpxChooser = hs.chooser.new(chooserAction)
-	fcpxChooser:bgDark(false)
+
+	fcpxChooser:bgDark(true)
+	fcpxChooser:fgColor(hs.drawing.color.x11.snow)
+	fcpxChooser:subTextColor(hs.drawing.color.x11.snow)
+
 	fcpxChooser:choices(chooserChoices)
 
 end
@@ -4815,12 +4819,39 @@ function effectsShortcut(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
+	-- Check if the search result actually found anything:
+	--------------------------------------------------------------------------------
+	local pressEffectsButton = false
+	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1] == nil then
+		--------------------------------------------------------------------------------
+		-- Re-perform Search Without Text Before First Dash:
+		--------------------------------------------------------------------------------
+		currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+		print("currentShortcut: " .. currentShortcut)
+		enterSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField]:setAttributeValue("AXValue", currentShortcut)
+		if enterSearchResult == nil then
+			displayErrorMessage("Unable to Effect Name into search box.")
+			return "Fail"
+		end
+		pressSearchResult = fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSearchTextField][1]:performAction("AXPress")
+		if pressSearchResult == nil then
+			displayErrorMessage("Failed to press search button.")
+			return "Fail"
+		end
+
+		if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1] == nil then
+			displayErrorMessage("Failed to find effect.")
+			return "Fail"
+		end
+		pressEffectsButton = true
+	else
+		pressEffectsButton = true
+	end
+
+	--------------------------------------------------------------------------------
 	-- Apply the effect by double clicking:
 	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroupTwo][whichGroupThree][whichSplitGroupTwo][3][1][1] == nil then
-		displayErrorMessage("Failed to find effect.")
-		return "Fail"
-	else
+	if pressEffectsButton then
 
 		--------------------------------------------------------------------------------
 		-- Locations:
