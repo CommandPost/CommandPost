@@ -8,6 +8,19 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackColorPuckOne</string>
+			<string>FCPXHackColorPuckTwo</string>
+			<string>FCPXHackColorPuckThree</string>
+			<string>FCPXHackColorPuckFour</string>
+			<string>FCPXHackSaturationPuckOne</string>
+			<string>FCPXHackSaturationPuckTwo</string>
+			<string>FCPXHackSaturationPuckThree</string>
+			<string>FCPXHackSaturationPuckFour</string>
+			<string>FCPXHackExposurePuckOne</string>
+			<string>FCPXHackExposurePuckTwo</string>
+			<string>FCPXHackExposurePuckThree</string>
+			<string>FCPXHackExposurePuckFour</string>
+			<string>FCPXHackColorPuckOneUp</string>
 			<string>FCPXHackScrollingTimeline</string>
 			<string>FCPXHackEffectsOne</string>
 			<string>FCPXHackEffectsTwo</string>

@@ -66,6 +66,8 @@
 --  VERY SPECIAL THANKS TO THESE AWESOME TESTERS & SUPPORTERS:
 --------------------------------------------------------------------------------
 --
+--  > The always incredible Karen Hocking!
+--  > Daniel Daperis & David Hocking
 --  > Андрей Смирнов
 --  > FCPX Editors InSync Facebook Group
 --  > Alex Gollner (http://alex4d.com)
@@ -93,6 +95,9 @@
 --  BUGS & ISSUES TO-DO LIST:
 --------------------------------------------------------------------------------
 --
+--  > Additional Color Board Shortcuts for each panel.
+--  > Activate all audio tracks on multicam clip in timeline shortcut.
+--
 --  > Rewrite bindKeyboardShortcuts() to use smarter loops and arrays.
 --  > updateEffectsList() needs to be faster.
 --  > translateKeyboardCharacters() could be done better.
@@ -109,7 +114,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.37"
+local scriptVersion = "0.38"
 --------------------------------------------------------------------------------
 
 
@@ -157,9 +162,12 @@ ax 							= require("hs._asm.axuielement")
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
-local browserHighlight 		= nil
-local browserHighlightTimer = nil
-local clock 				= os.clock
+local clock 									= os.clock
+local browserHighlight 							= nil
+local browserHighlightTimer 					= nil
+local scrollingTimelinePressed 					= false
+local scrollingTimelineLoopActivated 			= false
+local scrollingTimelineAdjustmentLoopActivated 	= false
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -324,6 +332,24 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
+		-- Check if we need to update the Final Cut Pro Shortcut Files:
+		--------------------------------------------------------------------------------
+		if hs.settings.get("fcpxHacks.lastVersion") == nil then
+			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+		else
+			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+					local dialogBoxResult = displayYesNoQuestion("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, you'll need to run 'Enable Hacks Shortcuts in Final Cut Pro' again from the FCPX Hacks settings menubar.\n\nWould you like to do this now?")
+					if dialogBoxResult then
+						hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+						toggleEnableHacksShortcutsInFinalCutPro()
+					end
+				end
+			end
+			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+		end
+
+		--------------------------------------------------------------------------------
 		-- All loaded!
 		--------------------------------------------------------------------------------
 		print("[FCPX Hacks] Successfully loaded.")
@@ -360,7 +386,9 @@ end
 function testingGround()
 
 	-- Clear Console During Development:
-	hs.console.clearConsole()
+	--hs.console.clearConsole()
+
+	colorBoardSelectPuck(3, 3, "up")
 
 end
 
@@ -395,7 +423,15 @@ end
 --------------------------------------------------------------------------------
 function getElementUnderMouse()
 	underMouse = ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
-	print(underMouse:path())
+	--print_r(underMouse:path())
+	for i=1, #underMouse:attributeNames() do
+		--print(underMouse:attributeNames()[i] .. ": " .. underMouse:attributeValue(underMouse:attributeNames()[i]))
+		local description = tostring(underMouse:attributeNames()[i])
+		local result = tostring(underMouse:attributeValue(underMouse:attributeNames()[i]))
+		print(description .. ": " .. result)
+
+	end
+
 end
 
 --------------------------------------------------------------------------------
@@ -488,6 +524,68 @@ function bindKeyboardShortcuts()
 			FCPXHackEffectsFour			 								= { characterString = "", modifiers = {} },
 			FCPXHackEffectsFive			 								= { characterString = "", modifiers = {} },
 			FCPXHackScrollingTimeline	 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {} },
+			--[[
+			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourLeft	 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeRight		 					= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourRight	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourLeft	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourRight	 							= { characterString = "", modifiers = {} },
+			--]]
 		}
 		if readShortcutKeysFromPlist() ~= "Done" then
 			displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
@@ -544,6 +642,68 @@ function bindKeyboardShortcuts()
 			FCPXHackEffectsFour			 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"} },
 			FCPXHackEffectsFive			 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"} },
 			FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"} },
+			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {} },
+			--[[
+			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {} },
+			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourLeft	 							= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckOneRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckTwoRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckThreeRight		 					= { characterString = "", modifiers = {} },
+			FCPXHackSaturationPuckFourRight	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoLeft		 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeLeft		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourLeft	 							= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckOneRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckTwoRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckThreeRight		 						= { characterString = "", modifiers = {} },
+			FCPXHackExposurePuckFourRight	 							= { characterString = "", modifiers = {} },
+			--]]
 		}
 	end
 
@@ -588,6 +748,54 @@ function bindKeyboardShortcuts()
 		-- Create a modal hotkey object with an absurd triggering hotkey:
 		--------------------------------------------------------------------------------
 		hotkeys = hs.hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
+
+		--------------------------------------------------------------------------------
+		-- Advanced Color Board Shortcuts:
+		--------------------------------------------------------------------------------
+		-- colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
+
+		if finalCutProShortcutKey['FCPXHackColorPuckOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckOne']['characterString'], function() colorBoardSelectPuck(2, 1) end)
+		end
+		if finalCutProShortcutKey['FCPXHackColorPuckTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckTwo']['characterString'], function() colorBoardSelectPuck(3, 1) end)
+		end
+		if finalCutProShortcutKey['FCPXHackColorPuckThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckThree']['characterString'], function() colorBoardSelectPuck(4, 1) end)
+		end
+		if finalCutProShortcutKey['FCPXHackColorPuckFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckFour']['characterString'], function() colorBoardSelectPuck(5, 1) end)
+		end
+
+		if finalCutProShortcutKey['FCPXHackSaturationPuckOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckOne']['characterString'], function() colorBoardSelectPuck(2, 2) end)
+		end
+		if finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['characterString'], function() colorBoardSelectPuck(3, 2) end)
+		end
+		if finalCutProShortcutKey['FCPXHackSaturationPuckThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckThree']['characterString'], function() colorBoardSelectPuck(4, 2) end)
+		end
+		if finalCutProShortcutKey['FCPXHackSaturationPuckFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckFour']['characterString'], function() colorBoardSelectPuck(5, 2) end)
+		end
+
+		if finalCutProShortcutKey['FCPXHackExposurePuckOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckOne']['characterString'], function() colorBoardSelectPuck(2, 3) end)
+		end
+		if finalCutProShortcutKey['FCPXHackExposurePuckTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckTwo']['characterString'], function() colorBoardSelectPuck(3, 3) end)
+		end
+		if finalCutProShortcutKey['FCPXHackExposurePuckThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckThree']['characterString'], function() colorBoardSelectPuck(4, 3) end)
+		end
+		if finalCutProShortcutKey['FCPXHackExposurePuckFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckFour']['characterString'], function() colorBoardSelectPuck(5, 3) end)
+		end
+
+		if finalCutProShortcutKey['FCPXHackColorPuckOneUp']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckOneUp']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckOneUp']['characterString'], function() colorBoardSelectPuck(2, 1, "up") end, nil, function() colorBoardSelectPuck(2, 1, "up") end )
+		end
 
 		--------------------------------------------------------------------------------
 		-- Help:
@@ -1022,8 +1230,6 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Enable Hacks Shortcuts in Final Cut Pro", fn = toggleEnableHacksShortcutsInFinalCutPro, checked = enableHacksShortcutsInFinalCutPro},
 	   	{ title = "Enable Shortcuts During Fullscreen Playback", fn = toggleEnableShortcutsDuringFullscreenPlayback, checked = enableShortcutsDuringFullscreenPlayback},
 	   	{ title = "-" },
-	   	{ title = "Adjust Scrolling Timeline Offset", fn = adjustScrollingTimelineOffset },
-	   	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", menu = settingsShapeMenuTable},
        	{ title = "-" },
@@ -1138,25 +1344,6 @@ function toggleCheckforHammerspoonUpdates()
 	local originalValue = hs.automaticallyCheckForUpdates()
 	hs.automaticallyCheckForUpdates(not originalValue)
 	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- ADJUST SCROLLING TIMELINE OFFSET:
---------------------------------------------------------------------------------
-function adjustScrollingTimelineOffset()
-
-	local scrollingTimelineOffset
-	if hs.settings.get("fcpxHacks.scrollingTimelineOffset") == nil then
-		scrollingTimelineOffset = "1"
-	else
-		scrollingTimelineOffset = hs.settings.get("fcpxHacks.scrollingTimelineOffset")
-	end
-
-	local scrollingTimelineOffsetSelection = displaySmallNumberTextBoxMessage("Please enter a number below as the Scrolling Timeline Offset.\n\nThis number should be above zero but below 1 or 2. If the timeline is going too fast, try a value like 0.02. If the timeline is going too slow, try a value like 1.1. If you want no off-set applied, then enter 1.\n\nYou'll have to experiment! Good luck!", "What you entered looks incorrect.\n\nPlease try again.", scrollingTimelineOffset)
-	if scrollingTimelineOffsetSelection ~= false then
-		hs.settings.set("fcpxHacks.scrollingTimelineOffset", scrollingTimelineOffsetSelection)
-	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -1301,7 +1488,6 @@ function resetSettings()
 			hs.settings.set("fcpxHacks.effectsShortcutFive", nil)
 			hs.settings.set("fcpxHacks.enableProxyMenuIcon", nil)
 			hs.settings.set("fcpxHacks.scrollingTimelineStatus", nil)
-			hs.settings.set("fcpxHacks.scrollingTimelineOffset", nil)
 
 			--------------------------------------------------------------------------------
 			-- Reload Hammerspoon:
@@ -2772,6 +2958,13 @@ function activateScrollingTimeline()
 	-- Toggle Scrolling Timeline Watcher:
 	--------------------------------------------------------------------------------
 	if scrollingTimelineWatcherUp:isEnabled() then
+
+		--------------------------------------------------------------------------------
+		-- Disable just in case they're still going:
+		--------------------------------------------------------------------------------
+		scrollingTimelineLoopActivated 				= false
+		scrollingTimelineAdjustmentLoopActivated 	= false
+
 		hs.settings.set("fcpxHacks.scrollingTimelineStatus", false)
 		scrollingTimelineWatcherUp:stop()
 		scrollingTimelineWatcherDown:stop()
@@ -2788,9 +2981,7 @@ end
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE FUNCTION:
 --------------------------------------------------------------------------------
-function performScrollingTimeline()
-
-	if not scrollingTimelineActivated then return end
+function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2803,283 +2994,8 @@ function performScrollingTimeline()
 	fcpxElements = ax.applicationElement(fcpx)[1]
 
 	--------------------------------------------------------------------------------
-	-- Which Split Group:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-				goto performScrollingTimelineSplitGroupExit
-			end
-		end
-	end
-	if whichSplitGroup == nil then
-		displayErrorMessage("Unable to locate Split Group.")
-		return "Failed"
-	end
-	::performScrollingTimelineSplitGroupExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if whichGroup == nil then
-			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-						whichGroup = i
-						goto performScrollingTimelineGroupExit
-					end
-				end
-			end
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::performScrollingTimelineGroupExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Zoom Slider:
-	--------------------------------------------------------------------------------
-	local whichZoomSlider = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXHelp") == "Adjust the Timeline zoom level" then
-			whichZoomSlider = i
-			goto performScrollingTimelineZoomSliderExit
-		end
-	end
-	if whichZoomSlider == nil then
-		displayErrorMessage("Unable to locate Zoom Slider.")
-		return "Failed"
-	end
-	::performScrollingTimelineZoomSliderExit::
-
-	--------------------------------------------------------------------------------
-	-- TIMELINE PLAYHEAD PATH:
-	-- 	Which Split Group = 1
-	-- 	Which Scroll Area = 2
-	-- 	Which Layout Area = 1
-	-- 	Which Value Indicator = 2
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TIMELINE SCROLLBAR PATH:
-	-- 	Which Split Group = 1
-	-- 	Which Scroll Area = 2
-	-- 	Which Scroll Bar = 2
-	-- 	Which Value Indicator = 1
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Check mouse is in timeline area:
-	--------------------------------------------------------------------------------
-	local mouseLocation = hs.mouse.getAbsolutePosition()
-	local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
-	local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
-
-	local isMouseInTimelineArea = true
-	if (mouseLocation['y'] < timelinePosition['y']) then
-		-- Too High:
-		isMouseInTimelineArea = false
-	end
-	if (mouseLocation['y'] > (timelinePosition['y']+timelineSize['h'])) then
-		-- Too Low:
-		isMouseInTimelineArea = false
-	end
-	if (mouseLocation['x'] < timelinePosition['x']) then
-		-- Too Left:
-		isMouseInTimelineArea = false
-	end
-	if (mouseLocation['x'] > (timelinePosition['x']+timelineSize['w'])) then
-		-- Too Right:
-		isMouseInTimelineArea = false
-	end
-
-	if not isMouseInTimelineArea then
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Zoom Slider Value:
-	--------------------------------------------------------------------------------
-	local zoomSliderValue = fcpxElements[whichSplitGroup][whichZoomSlider]:attributeValue("AXValue") -- 0 to 10
-
-	--------------------------------------------------------------------------------
-	-- Timeline is full width so there's no scroll bar!
-	--------------------------------------------------------------------------------
-	if zoomSliderValue == 0 then return end
-
-	--------------------------------------------------------------------------------
-	-- Get UI Values:
-	--------------------------------------------------------------------------------
-    local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
-	local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][2]
-    local initialTimelinePlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
-	local initialTimelineScrollbarValue = timelineScrollbar:attributeValue("AXValue")
-
-	--------------------------------------------------------------------------------
-	-- Because I'm not smart enough to do maths I'll do this manually...
-	--------------------------------------------------------------------------------
-	-- ZOOM: 				1 to 10
-	-- SCROLL BAR: 			0 to 1
-
-	local manualAdjustmentValue
-	if zoomSliderValue > 0 and zoomSliderValue < 1 then
-		--print("0 to 1")
-		manualAdjustmentValue = 0.000005
-	end
-	if zoomSliderValue > 1 and zoomSliderValue < 2 then
-		--print("1 to 2")
-		manualAdjustmentValue = 0.000005
-	end
-	if zoomSliderValue > 2 and zoomSliderValue < 3 then
-		--print("2 to 3")
-		manualAdjustmentValue = 0.000005
-	end
-	if zoomSliderValue > 3 and zoomSliderValue < 4 then
-		--print("3 to 4")
-		manualAdjustmentValue = 0.000005
-	end
-	if zoomSliderValue > 4 and zoomSliderValue < 5 then
-		--print("4 to 5")
-		manualAdjustmentValue = 0.000004
-	end
-	if zoomSliderValue > 5 and zoomSliderValue < 6 then
-		--print("5 to 6")
-		manualAdjustmentValue = 0.000004
-	end
-	if zoomSliderValue > 6 and zoomSliderValue < 7 then
-		--print("6 to 7")
-		manualAdjustmentValue = 0.00000114
-	end
-	if zoomSliderValue > 7 and zoomSliderValue < 8 then
-		--print("7 to 8")
-		manualAdjustmentValue = 0.00000110
-	end
-	if zoomSliderValue > 8 and zoomSliderValue < 8.5 then
-		--print("8 to 8.5")
-		manualAdjustmentValue = 0.0000012
-	end
-	if zoomSliderValue > 8.5 and zoomSliderValue < 9 then
-		--print("8.5 to 9")
-		manualAdjustmentValue = 0.000003
-	end
-	if zoomSliderValue > 9 and zoomSliderValue < 9.5 then
-		--print("9 to 9.5")
-		manualAdjustmentValue = 0.00002
-	end
-	if zoomSliderValue > 9.5 and zoomSliderValue < 10 then
-		--print("9.5 to 10")
-		manualAdjustmentValue = 0.00002
-	end
-
-	--------------------------------------------------------------------------------
-	-- Apply an Offset if Applicable:
-	--------------------------------------------------------------------------------
-	if hs.settings.get("fcpxHacks.scrollingTimelineOffset") ~= nil then
-		manualAdjustmentValue = manualAdjustmentValue * hs.settings.get("fcpxHacks.scrollingTimelineOffset")
-	end
-
-	--------------------------------------------------------------------------------
-	-- Scrolling Timeline Loop:
-	--------------------------------------------------------------------------------
-	local timelineAdjustmentValue = initialTimelineScrollbarValue
-	hs.timer.doWhile(function() return scrollingTimelineActivated end, function()
-
-		timelineAdjustmentValue = (timelineAdjustmentValue + manualAdjustmentValue)
-		--timelineAdjustmentValue = timelineAdjustmentValue
-		timelineScrollbar:setAttributeValue("AXValue", timelineAdjustmentValue)
-
-	end, 0.000001)
-
-end
-function performScrollingTimelineWIP()
-
-	if not scrollingTimelineActivated then return end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- Which Split Group:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				whichSplitGroup = i
-				goto performScrollingTimelineSplitGroupExit
-			end
-		end
-	end
-	if whichSplitGroup == nil then
-		displayErrorMessage("Unable to locate Split Group.")
-		return "Failed"
-	end
-	::performScrollingTimelineSplitGroupExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Group:
-	--------------------------------------------------------------------------------
-	local whichGroup = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if whichGroup == nil then
-			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-						whichGroup = i
-						goto performScrollingTimelineGroupExit
-					end
-				end
-			end
-		end
-	end
-	if whichGroup == nil then
-		displayErrorMessage("Unable to locate Group.")
-		return "Failed"
-	end
-	::performScrollingTimelineGroupExit::
-
-	--------------------------------------------------------------------------------
-	-- Which Zoom Slider:
-	--------------------------------------------------------------------------------
-	local whichZoomSlider = nil
-	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXHelp") == "Adjust the Timeline zoom level" then
-			whichZoomSlider = i
-			goto performScrollingTimelineZoomSliderExit
-		end
-	end
-	if whichZoomSlider == nil then
-		displayErrorMessage("Unable to locate Zoom Slider.")
-		return "Failed"
-	end
-	::performScrollingTimelineZoomSliderExit::
-
-	--------------------------------------------------------------------------------
-	-- TIMELINE PLAYHEAD PATH:
-	-- 	Which Split Group = 1
-	-- 	Which Scroll Area = 2
-	-- 	Which Layout Area = 1
-	-- 	Which Value Indicator = 2
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TIMELINE SCROLLBAR PATH:
-	-- 	Which Split Group = 1
-	-- 	Which Scroll Area = 2
-	-- 	Which Scroll Bar = 2
+	-- NOTE: Which Split Group calculated on Watcher.
+	-- NOTE: Which Group calculated on Watcher.
 	--------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -3099,34 +3015,20 @@ function performScrollingTimelineWIP()
 	::performScrollingTimelineValueIndicatorExit::
 
 	--------------------------------------------------------------------------------
-	-- Check mouse is in timeline area:
+	-- Which Zoom Slider:
 	--------------------------------------------------------------------------------
-	local mouseLocation = hs.mouse.getAbsolutePosition()
-	local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
-	local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
-
-	local isMouseInTimelineArea = true
-	if (mouseLocation['y'] < timelinePosition['y']) then
-		-- Too High:
-		isMouseInTimelineArea = false
+	local whichZoomSlider = nil
+	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXHelp") == "Adjust the Timeline zoom level" then
+			whichZoomSlider = i
+			goto performScrollingTimelineZoomSliderExit
+		end
 	end
-	if (mouseLocation['y'] > (timelinePosition['y']+timelineSize['h'])) then
-		-- Too Low:
-		isMouseInTimelineArea = false
+	if whichZoomSlider == nil then
+		displayErrorMessage("Unable to locate Zoom Slider.")
+		return "Failed"
 	end
-	if (mouseLocation['x'] < timelinePosition['x']) then
-		-- Too Left:
-		isMouseInTimelineArea = false
-	end
-	if (mouseLocation['x'] > (timelinePosition['x']+timelineSize['w'])) then
-		-- Too Right:
-		isMouseInTimelineArea = false
-	end
-
-	if not isMouseInTimelineArea then
-		print("OUTSIDE")
-		return false
-	end
+	::performScrollingTimelineZoomSliderExit::
 
 	--------------------------------------------------------------------------------
 	-- Zoom Slider Value:
@@ -3139,42 +3041,61 @@ function performScrollingTimelineWIP()
 	if zoomSliderValue == 0 then return end
 
 	--------------------------------------------------------------------------------
-	-- Get UI Values:
+	-- UI Elements:
 	--------------------------------------------------------------------------------
-    local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
+	local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
 	local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]
 
-    local initialTimelinePlayheadPosition = timelinePlayhead:attributeValue("AXPosition")['x']
-	local initialTimelineScrollbarValue = timelineScrollbar:attributeValue("AXValue")
-	local initialTimelineMax = timelinePosition['x'] + timelineSize['w']
-
-	print("initialTimelinePlayheadPosition: " .. tostring(initialTimelinePlayheadPosition))
-	print("timelineMax: " .. tostring(timelineMax))
+	--------------------------------------------------------------------------------
+	-- Initial Playhead X Position:
+	--------------------------------------------------------------------------------
+	local initialPlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
 
 	--------------------------------------------------------------------------------
-	-- Apply an Offset if Applicable:
+	-- The loop of death:
 	--------------------------------------------------------------------------------
-	--if hs.settings.get("fcpxHacks.scrollingTimelineOffset") ~= nil then
-	--	manualAdjustmentValue = manualAdjustmentValue * hs.settings.get("fcpxHacks.scrollingTimelineOffset")
-	--end
+	scrollingTimelineLoopActivated = true
 
-	--------------------------------------------------------------------------------
-	-- Scrolling Timeline Loop:
-	--------------------------------------------------------------------------------
-	local timelineAdjustmentValue = initialTimelineScrollbarValue
-	hs.timer.doWhile(function() return scrollingTimelineActivated end, function()
+	hs.timer.doWhile(function() return scrollingTimelineLoopActivated end, function()
 
-		local currentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
-		local howMuchPlayheadHasMoved = (currentPlayheadPosition - initialTimelinePlayheadPosition)
+		scrollingTimelineAdjustmentLoopActivated = true
 
-		local howMuchToAdjustScrollBar = (howMuchPlayheadHasMoved / hs.screen.mainScreen():fullFrame()['w']) / (zoomSliderValue/10)
+		local scrollDirection = 1
 
-		--print("currentPlayheadPosition: " .. tostring(currentPlayheadPosition))
-		--print("howMuchToAdjustScrollBar: " .. tostring(howMuchToAdjustScrollBar))
+		--------------------------------------------------------------------------------
+		-- Yet another loop of death:
+		--------------------------------------------------------------------------------
+		hs.timer.doWhile(function() return scrollingTimelineAdjustmentLoopActivated end, function()
 
-		timelineScrollbar:setAttributeValue("AXValue", initialTimelineScrollbarValue + howMuchToAdjustScrollBar)
+			--------------------------------------------------------------------------------
+			-- Setup Scrollbar Steps based on Zoom Value:
+			--------------------------------------------------------------------------------
+			local zoomSliderValue = fcpxElements[whichSplitGroup][whichZoomSlider]:attributeValue("AXValue") -- 0 to 10
+			scrollbarStep = 0.0000004 * (zoomSliderValue)
 
-	end, 0.000001)
+			--------------------------------------------------------------------------------
+			-- Move Scrollbar:
+			--------------------------------------------------------------------------------
+			local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
+			local currentScrollbarValue = timelineScrollbar:attributeValue("AXValue")
+			fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
+
+			--------------------------------------------------------------------------------
+			-- Get new playhead position:
+			--------------------------------------------------------------------------------
+			local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]
+			local currentPlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
+
+			--------------------------------------------------------------------------------
+			-- If current playhead is less than the initial playhead then exit loop:
+			--------------------------------------------------------------------------------
+			if currentPlayheadXPosition < initialPlayheadXPosition then
+				scrollingTimelineAdjustmentLoopActivated = false
+			end
+
+		end, 0.0025)
+
+	end, 0.01)
 
 end
 
@@ -6192,7 +6113,7 @@ end
 --------------------------------------------------------------------------------
 -- FCPX COLOR BOARD PUCK SELECTION:
 --------------------------------------------------------------------------------
-function colorBoardSelectPuck(whichPuck)
+function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
@@ -6266,6 +6187,15 @@ function colorBoardSelectPuck(whichPuck)
 	::colorBoardSelectPuckGroupExit::
 
 	--------------------------------------------------------------------------------
+	-- Which Panel?
+	--------------------------------------------------------------------------------
+	if whichPanel ~= nil then
+		if fcpxElements[whichSplitGroup][whichGroup][whichPanel]:attributeValue("AXValue") == 0 then
+			fcpxElements[whichSplitGroup][whichGroup][whichPanel]:performAction("AXPress")
+		end
+	end
+
+	--------------------------------------------------------------------------------
 	-- Which Puck?
 	--------------------------------------------------------------------------------
 	local whichPuckCount = 1
@@ -6288,12 +6218,21 @@ function colorBoardSelectPuck(whichPuck)
 	--------------------------------------------------------------------------------
 	-- Click on the Puck:
 	--------------------------------------------------------------------------------
-	local originalMousePoint = hs.mouse.getAbsolutePosition()
-	local colorBoardPosition = {}
-	colorBoardPosition['x'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['x'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['w'] / 2)
-	colorBoardPosition['y'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['y'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-	hs.eventtap.leftClick(colorBoardPosition)
-	hs.mouse.setAbsolutePosition(originalMousePoint)
+	if not fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXFocused") then
+		local originalMousePoint = hs.mouse.getAbsolutePosition()
+		local colorBoardPosition = {}
+		colorBoardPosition['x'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['x'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['w'] / 2)
+		colorBoardPosition['y'] = fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXPosition")['y'] + (fcpxElements[whichSplitGroup][whichGroup][whichPuckButton]:attributeValue("AXSize")['h'] / 2)
+		hs.eventtap.leftClick(colorBoardPosition)
+		hs.mouse.setAbsolutePosition(originalMousePoint)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Perform a direction shortcut if required:
+	--------------------------------------------------------------------------------
+	if whichDirection ~= nil then
+		if whichDirection == "up" then eventtap.keyStroke({'ctrl', 'alt', 'cmd', 'shift'}, "v") end
+	end
 
 end
 
@@ -6474,7 +6413,7 @@ function readShortcutKeysFromPlist()
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					finalCutProShortcutKey[k]['characterString'] = ""
-					print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					--print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -6508,7 +6447,7 @@ function readShortcutKeysFromPlist()
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					finalCutProShortcutKey[k]['modifiers'] = {}
-					print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					--print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -7268,7 +7207,7 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- DEFINE A CALLBACK FUNCTION TO BE CALLED WHEN APPLICATION EVENTS HAPPEN:
+-- AUTOMATICALLY DO THINGS WHEN FCPX IS LAUNCHED, CLOSED OR HIDDEN:
 --------------------------------------------------------------------------------
 function finalCutProWatcher(appName, eventType, appObject)
 	if (appName == "Final Cut Pro") then
@@ -7314,7 +7253,6 @@ function finalCutProWatcher(appName, eventType, appObject)
 				if scrollingTimelineWatcherUp ~= nil then
 					scrollingTimelineWatcherUp:stop()
 					scrollingTimelineWatcherDown:stop()
-					--print("Disabled Timeline Watcher as FCPX lost focus.")
 				end
 			end
 
@@ -7388,7 +7326,7 @@ function finalCutProActiveCommandSetChanged(files)
 end
 
 --------------------------------------------------------------------------------
--- DISABLE SHORTCUTS WHEN COMMAND EDITOR IS OPEN:
+-- DISABLE SHORTCUTS WHEN FCPX COMMAND EDITOR IS OPEN:
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
 
@@ -7451,7 +7389,7 @@ function commandEditorWatcher()
 end
 
 --------------------------------------------------------------------------------
--- ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
+-- ENABLE SHORTCUTS DURING FCPX FULLSCREEN PLAYBACK:
 --------------------------------------------------------------------------------
 function fullscreenKeyboardWatcher()
 	fullscreenKeyboardWatcherWorking = false
@@ -7459,7 +7397,6 @@ function fullscreenKeyboardWatcher()
 		fullscreenKeyboardWatcherWorking = false
 	end)
 	fullscreenKeyboardWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
-
 		--------------------------------------------------------------------------------
 		-- Just in case...
 		--------------------------------------------------------------------------------
@@ -7554,7 +7491,7 @@ function fullscreenKeyboardWatcher()
 end
 
 --------------------------------------------------------------------------------
--- SCROLLING TIMELINE WATCHER:
+-- FCPX SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
 
@@ -7588,23 +7525,93 @@ function scrollingTimelineWatcher()
 		local whichKey = event:getKeyCode()		-- EXAMPLE: keyCodeTranslator(whichKey) == "c"
 
 		--------------------------------------------------------------------------------
-		-- Space Bar Pressed:
+		-- If Space Bar is Pressed:
 		--------------------------------------------------------------------------------
 		if whichKey == 49 then
 
-			if scrollingTimelineActivated == nil then
-				scrollingTimelineActivated = true
-			else
-				scrollingTimelineActivated = not scrollingTimelineActivated
+			--------------------------------------------------------------------------------
+			-- Define FCPX:
+			--------------------------------------------------------------------------------
+			fcpx = hs.application("Final Cut Pro")
+
+			--------------------------------------------------------------------------------
+			-- Get all FCPX UI Elements:
+			--------------------------------------------------------------------------------
+			fcpxElements = ax.applicationElement(fcpx)[1]
+
+			--------------------------------------------------------------------------------
+			-- Which Split Group:
+			--------------------------------------------------------------------------------
+			local whichSplitGroup = nil
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if whichSplitGroup == nil then
+					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						whichSplitGroup = i
+						goto scrollingTimelineWatcherSplitGroupExit
+					end
+				end
 			end
+			if whichSplitGroup == nil then
+				displayErrorMessage("Unable to locate Split Group.")
+				return "Failed"
+			end
+			::scrollingTimelineWatcherSplitGroupExit::
 
 			--------------------------------------------------------------------------------
-			-- Let's do this!
+			-- Which Group:
 			--------------------------------------------------------------------------------
-			performScrollingTimeline()
+			local whichGroup = nil
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if whichGroup == nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+								whichGroup = i
+								goto performScrollingTimelineWatcherGroupExit
+							end
+						end
+					end
+				end
+			end
+			if whichGroup == nil then
+				displayErrorMessage("Unable to locate Group.")
+				return "Failed"
+			end
+			::performScrollingTimelineWatcherGroupExit::
 
+			--------------------------------------------------------------------------------
+			-- Check mouse is in timeline area:
+			--------------------------------------------------------------------------------
+			local mouseLocation = hs.mouse.getAbsolutePosition()
+			local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
+			local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
+			local isMouseInTimelineArea = true
+			if (mouseLocation['y'] < timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
+			if (mouseLocation['y'] > (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
+			if (mouseLocation['x'] < timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
+			if (mouseLocation['x'] > (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
+			if isMouseInTimelineArea then
+
+				--------------------------------------------------------------------------------
+				-- Mouse is in the timeline area when spacebar pressed:
+				--------------------------------------------------------------------------------
+				if scrollingTimelinePressed then
+					scrollingTimelineLoopActivated = false
+					scrollingTimelineAdjustmentLoopActivated = false
+					scrollingTimelinePressed = false
+				else
+					scrollingTimelinePressed = true
+					performScrollingTimelineLoops(whichSplitGroup, whichGroup)
+				end
+			else
+				--------------------------------------------------------------------------------
+				-- Mouse is outside the timeline area when spacebar pressed:
+				--------------------------------------------------------------------------------
+				scrollingTimelineLoopActivated = false
+				scrollingTimelineAdjustmentLoopActivated = false
+				scrollingTimelinePressed = false
+			end
 		end
-
 	end)
 end
 
