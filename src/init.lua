@@ -101,6 +101,8 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
+--  > fcpxRestoreKeywordSearches() needs more testing
+--  > Fix all: ax.applicationElement(fcpx)[1]
 --  > Fix clipboardWatcher() so it correctly labels clipboard items by name
 --  > Fix Color Board Mouse functions speed
 --
@@ -121,7 +123,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.52"
+local scriptVersion = "0.53"
 --------------------------------------------------------------------------------
 
 
@@ -219,6 +221,7 @@ local scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timel
 local scrollingTimelineTimer					= nil											-- Scrolling Timeline Timer
 local scrollingTimelineScrollbarTimer			= nil											-- Scrolling Timeline Scrollbar Timer
 
+local scrollingTimelineWindowCache				= nil											-- Scrolling Timeline Window Cache
 local scrollingTimelineSplitGroupCache 			= nil											-- Scrolling Timeline Split Group Cache
 local scrollingTimelineGroupCache 				= nil											-- Scrolling Timeline Group Cache
 
@@ -3894,23 +3897,13 @@ end
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE FUNCTION:
 --------------------------------------------------------------------------------
-function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollArea, whichValueIndicator, initialPlayheadXPosition)
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	fcpx = hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)[1]
+function performScrollingTimelineLoops(fcpx, fcpxElements, whichWindow, whichSplitGroup, whichGroup, whichScrollArea, whichValueIndicator, initialPlayheadXPosition)
 
 	--------------------------------------------------------------------------------
 	-- Define Scrollbar Check Timer:
 	--------------------------------------------------------------------------------
 	scrollingTimelineScrollbarTimer = hs.timer.new(0.001, function()
-		if fcpxElements[whichSplitGroup][whichGroup][1][2][2] ~= nil then
+		if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][2][2] ~= nil then
 			performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 			scrollbarSearchLoopActivated = false
 		end
@@ -3919,7 +3912,7 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollA
 	--------------------------------------------------------------------------------
 	-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
 	--------------------------------------------------------------------------------
-	if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2] == nil then
+	if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2] == nil then
 		scrollingTimelineScrollbarTimer:start()
 		return "Fail"
 	end
@@ -3927,18 +3920,18 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollA
 	--------------------------------------------------------------------------------
 	-- Make sure Playhead is actually visible:
 	--------------------------------------------------------------------------------
-	local scrollAreaX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXPosition")['x']
-	local scrollAreaW = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")['w']
+	local scrollAreaX = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXPosition")['x']
+	local scrollAreaW = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")['w']
 	local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
 	if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
-		local timelineWidth = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")['w']
+		local timelineWidth = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")['w']
 		initialPlayheadXPosition = (timelineWidth / 2)
 	end
 
 	--------------------------------------------------------------------------------
 	-- Initial Scrollbar Value:
 	--------------------------------------------------------------------------------
-	local initialScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXValue")
+	local initialScrollbarValue = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXValue")
 
 	--------------------------------------------------------------------------------
 	-- Define the Loop of Death:
@@ -3948,18 +3941,18 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollA
 		--------------------------------------------------------------------------------
 		-- Does the scrollbar still exist?
 		--------------------------------------------------------------------------------
-		if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2] ~= nil then
-			local scrollbarWidth = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXSize")['w']
-			local timelineWidth = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXSize")['w']
+		if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2] ~= nil then
+			local scrollbarWidth = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXSize")['w']
+			local timelineWidth = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXSize")['w']
 
 			local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
 
 			--------------------------------------------------------------------------------
 			-- If you change the edit the location of the Value Indicator will change:
 			--------------------------------------------------------------------------------
-			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
-				for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
+				for i=1, fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
 						whichValueIndicator = i
 						goto performScrollingTimelineValueIndicatorExitX
 					end
@@ -3971,7 +3964,7 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollA
 				::performScrollingTimelineValueIndicatorExitX::
 			end
 
-			local currentPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+			local currentPlayheadXPosition = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
 
 			initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
 			currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
@@ -3981,8 +3974,8 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollA
 
 			scrollbarStep = y - x
 
-			local currentScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXValue")
-			fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
+			local currentScrollbarValue = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:attributeValue("AXValue")
+			fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
 		end
 	end)
 
@@ -4433,11 +4426,9 @@ function highlightFCPXBrowserPlayhead()
 	deleteAllHighlights()
 
 	--------------------------------------------------------------------------------
-	-- Filmstrip or List Mode?
+	-- Filmstrip or List Mode:
 	--------------------------------------------------------------------------------
 	local fcpxBrowserMode = fcpxWhichBrowserMode()
-
-	-- Error Checking:
 	if (fcpxBrowserMode == "Failed") then
 		displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
 		return
@@ -4447,15 +4438,37 @@ function highlightFCPXBrowserPlayhead()
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
 	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
+	fcpxElements = ax.applicationElement(fcpx)
+
+	--------------------------------------------------------------------------------
+	-- Which Window:
+	--------------------------------------------------------------------------------
+	local whichWindow = nil
+	local whichEventsWindow = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+				whichEventsWindow = i
+			end
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+				whichWindow = i
+			end
+		end
+	end
+	if whichWindow == nil then
+		print("[FCPX Hacks] ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
+		displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
+		return "Failed"
+	end
+	if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
 
 	--------------------------------------------------------------------------------
 	-- Which Split Group:
 	--------------------------------------------------------------------------------
 	local whichSplitGroup = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+	for i=1, fcpxElements[whichWindow]:attributeValueCount("AXChildren") do
 		if whichSplitGroup == nil then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+			if fcpxElements[whichWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 				whichSplitGroup = i
 			end
 		end
@@ -4475,20 +4488,20 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Group contains the browser:
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		for i=1, fcpxElements[whichWindow][whichSplitGroup]:attributeValueCount("AXChildren") do
 			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichWindow][whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
 					--------------------------------------------------------------------------------
 					-- We now have ALL of the groups, and need to work out which group we actually want:
 					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
+					for x=1, fcpxElements[whichWindow][whichSplitGroup][i]:attributeValueCount("AXChildren") do
+						if fcpxElements[whichWindow][whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
 							--------------------------------------------------------------------------------
 							-- Which Split Group is it:
 							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
+							for y=1, fcpxElements[whichWindow][whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
+								if fcpxElements[whichWindow][whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
+									if fcpxElements[whichWindow][whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
 										whichGroup = i
 										goto listGroupDone
 									end
@@ -4510,9 +4523,9 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Split Group Two:
 		--------------------------------------------------------------------------------
 		local whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[whichWindow][whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroupTwo = i
 					goto listSplitGroupTwo
 				end
@@ -4529,9 +4542,9 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Split Group Three:
 		--------------------------------------------------------------------------------
 		local whichSplitGroupThree = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
 			if whichSplitGroupThree == nil then
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroupThree = i
 					goto listSplitGroupThree
 				end
@@ -4548,8 +4561,8 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Group Two:
 		--------------------------------------------------------------------------------
 		local whichGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
+			if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroupTwo = i
 			end
 		end
@@ -4562,18 +4575,18 @@ function highlightFCPXBrowserPlayhead()
 		--------------------------------------------------------------------------------
 		-- Which is Persistent Playhead?
 		--------------------------------------------------------------------------------
-		local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
+		local whichPersistentPlayhead = (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
 
 		--------------------------------------------------------------------------------
 		-- Let's highlight it at long last!
 		--------------------------------------------------------------------------------
-		if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead] == nil then
+		if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead] == nil then
 			print("[FCPX Hacks] ERROR: Unable to find whichPersistentPlayhead in highlightFCPXBrowserPlayhead.")
 			displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
 			return "Failed"
 		else
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-			persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
+			persistentPlayheadPosition = fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+			persistentPlayheadSize = fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
 			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
 		end
 
@@ -4586,20 +4599,20 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Group contains the browser:
 		--------------------------------------------------------------------------------
 		local whichGroup = nil
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		for i=1, fcpxElements[whichWindow][whichSplitGroup]:attributeValueCount("AXChildren") do
 			if whichGroupGroup == nil then
-				if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichWindow][whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
 					--------------------------------------------------------------------------------
 					-- We now have ALL of the groups, and need to work out which group we actually want:
 					--------------------------------------------------------------------------------
-					for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
+					for x=1, fcpxElements[whichWindow][whichSplitGroup][i]:attributeValueCount("AXChildren") do
+						if fcpxElements[whichWindow][whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
 							--------------------------------------------------------------------------------
 							-- Which Split Group is it:
 							--------------------------------------------------------------------------------
-							for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
+							for y=1, fcpxElements[whichWindow][whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
+								if fcpxElements[whichWindow][whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
+									if fcpxElements[whichWindow][whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
 										whichGroup = i
 										goto filmstripGroupDone
 									end
@@ -4621,9 +4634,9 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Split Group Two:
 		--------------------------------------------------------------------------------
 		local whichSplitGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 			if whichSplitGroupTwo == nil then
-				if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[whichWindow][whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroupTwo = i
 					goto filmstripSplitGroupTwoDone
 				end
@@ -4640,8 +4653,8 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Scroll Area:
 		--------------------------------------------------------------------------------
 		local whichScrollArea = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
+			if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
 				whichScrollArea = i
 			end
 		end
@@ -4655,8 +4668,8 @@ function highlightFCPXBrowserPlayhead()
 		-- Which Group Two:
 		--------------------------------------------------------------------------------
 		local whichGroupTwo = nil
-		for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-			if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+		for i=1, (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
+			if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
 				whichGroupTwo = i
 			end
 		end
@@ -4669,18 +4682,18 @@ function highlightFCPXBrowserPlayhead()
 		--------------------------------------------------------------------------------
 		-- Which is Persistent Playhead?
 		--------------------------------------------------------------------------------
-		local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
+		local whichPersistentPlayhead = (fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
 
 		--------------------------------------------------------------------------------
 		-- Let's highlight it at long last!
 		--------------------------------------------------------------------------------
-		if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead] == nil then
+		if fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead] == nil then
 			print("[FCPX Hacks] ERROR: Unable to find whichPersistentPlayhead in highlightFCPXBrowserPlayhead.")
 			displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
 			return "Failed"
 		else
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-			persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
+			persistentPlayheadPosition = fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+			persistentPlayheadSize = fcpxElements[whichWindow][whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
 			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
 		end
 	end
@@ -6104,7 +6117,33 @@ function multicamMatchFrame(goBackToTimeline)
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1]
+		fcpxElements = ax.applicationElement(fcpx)
+
+		--------------------------------------------------------------------------------
+		-- Which Window:
+		--------------------------------------------------------------------------------
+		local whichWindow = nil
+		local whichEventsWindow = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+					whichEventsWindow = i
+				end
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+					whichWindow = i
+				end
+			end
+		end
+		if whichWindow == nil then
+			print("[FCPX Hacks] ERROR: Unable to find whichWindow in multicamMatchFrame.")
+			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
+			return "Failed"
+		end
+		if whichEventsWindow ~= nil then
+			fcpxElements = ax.applicationElement(fcpx)[whichEventsWindow]
+		else
+			fcpxElements = ax.applicationElement(fcpx)[whichWindow]
+		end
 
 		--------------------------------------------------------------------------------
 		-- Which Split Group:
@@ -6355,6 +6394,48 @@ function multicamMatchFrame(goBackToTimeline)
 	end
 
 	--------------------------------------------------------------------------------
+	-- Is using dual screens:
+	--------------------------------------------------------------------------------
+	if whichEventsWindow ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Which Window:
+		--------------------------------------------------------------------------------
+		whichWindow = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+					whichWindow = i
+				end
+			end
+		end
+		if whichWindow == nil then
+			print("[FCPX Hacks] ERROR: Unable to find whichWindow in multicamMatchFrame.")
+			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
+			return "Failed"
+		end
+		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
+
+		--------------------------------------------------------------------------------
+		-- Which Split Group:
+		--------------------------------------------------------------------------------
+		whichSplitGroup = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if whichSplitGroup == nil then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					whichSplitGroup = i
+				end
+			end
+		end
+		if whichSplitGroup == nil then
+			print("[FCPX Hacks] ERROR: Unable to find whichSplitGroup in multicamMatchFrame.")
+			displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
+			return "Failed"
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- Which Timecode Text:
 	--------------------------------------------------------------------------------
 	local timecodeValue = 25 -- Assume 25fps by default.
@@ -6362,6 +6443,7 @@ function multicamMatchFrame(goBackToTimeline)
 	for i=1, (fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren")) do
 		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXStaticText" then
 			whichTimecodeText = i
+			print("whichTimecodeText: " .. whichTimecodeText)
 		end
 	end
 	if whichTimecodeText ~= nil then
@@ -6512,7 +6594,30 @@ function singleMatchFrame()
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
 	fcpx = hs.application("Final Cut Pro")
-	fcpxElements = ax.applicationElement(fcpx)[1]
+	fcpxElements = ax.applicationElement(fcpx)
+
+	--------------------------------------------------------------------------------
+	-- Which Window:
+	--------------------------------------------------------------------------------
+	local whichWindow = nil
+	local whichEventsWindow = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
+				whichEventsWindow = i
+			end
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+				whichWindow = i
+			end
+		end
+	end
+	if whichWindow == nil then
+		print("[FCPX Hacks] ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
+		displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
+		return "Failed"
+	end
+	if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
+	fcpxElements = ax.applicationElement(fcpx)[whichWindow]
 
 	--------------------------------------------------------------------------------
 	-- Which Split Group:
@@ -7014,6 +7119,7 @@ function fcpxRestoreKeywordSearches(whichButton)
 			setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
 			keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
 			hs.eventtap.keyStroke({""}, "return")
+			sleep(0.2)
 
 			favoriteCount = favoriteCount + 1
 		end
@@ -7034,11 +7140,6 @@ function matchFrameThenHighlightFCPXBrowserPlayhead()
 	-- Delete Any Highlights:
 	--------------------------------------------------------------------------------
 	deleteAllHighlights()
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	fcpx = hs.appfinder.appFromName("Final Cut Pro")
 
 	--------------------------------------------------------------------------------
 	-- Click on 'Reveal in Browser':
@@ -7869,11 +7970,13 @@ function readShortcutKeysFromPlist()
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
-						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-						--print("executeResult: " .. tostring(executeResult))
-						--print("executeStatus: " .. tostring(executeStatus))
-						--print("executeType: " .. tostring(executeType))
-						--print("executeRC: " .. tostring(executeRC))
+						if debugMode then
+							print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+							--print("executeResult: " .. tostring(executeResult))
+							--print("executeStatus: " .. tostring(executeStatus))
+							--print("executeType: " .. tostring(executeType))
+							--print("executeRC: " .. tostring(executeRC))
+						end
 					end
 					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
 					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
@@ -7935,12 +8038,14 @@ function readShortcutKeysFromPlist()
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
-						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-						--print("executeCommand: " .. tostring(executeCommand))
-						--print("executeResult: " .. tostring(executeResult))
-						--print("executeStatus: " .. tostring(executeStatus))
-						--print("executeType: " .. tostring(executeType))
-						--print("executeRC: " .. tostring(executeRC))
+						if debugMode then
+							print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+							--print("executeCommand: " .. tostring(executeCommand))
+							--print("executeResult: " .. tostring(executeResult))
+							--print("executeStatus: " .. tostring(executeStatus))
+							--print("executeType: " .. tostring(executeType))
+							--print("executeRC: " .. tostring(executeRC))
+						end
 					end
 					finalCutProShortcutKey[k]['modifiers'] = {}
 				else
@@ -8104,42 +8209,15 @@ function fcpxWhichBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 end
 
 --------------------------------------------------------------------------------
--- IS FCPX IN SINGLE MONITOR MODE?
--------------------------------------------------------------------------------
-function fcpxIsSingleMonitor() -- Returns "Yes", "No" or "Failed"
-
-	local result = "No"
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
-	if fcpx == nil then return "Failed" end
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	local fcpxElements = ax.applicationElement(fcpx)
-	if fcpxElements == nil then return "Failed" end
-
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-				return "Yes"
-			end
-		end
-	end
-
-end
-
---------------------------------------------------------------------------------
 -- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
 --------------------------------------------------------------------------------
 function checkScrollingTimelinePress()
+
 	--------------------------------------------------------------------------------
 	-- Variables:
 	--------------------------------------------------------------------------------
 	local useCache 			= false
+	local whichWindow 		= nil
 	local whichGroup 		= nil
 	local whichSplitGroup 	= nil
 	local whichScrollArea	= nil
@@ -8187,19 +8265,21 @@ function checkScrollingTimelinePress()
 		--------------------------------------------------------------------------------
 		-- Get all FCPX UI Elements:
 		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
+		fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))
 
 		--------------------------------------------------------------------------------
 		-- Check to see if the cache works, otherwise re-find the interface elements:
 		--------------------------------------------------------------------------------
-		if scrollingTimelineSplitGroupCache ~= nil and scrollingTimelineGroupCache ~= nil then
-			if fcpxElements[scrollingTimelineSplitGroupCache] ~= nil then
-				if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache] ~= nil then
-					if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2] ~= nil then
-						if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2]:attributeValue("AXIdentifier") == "_NS:95" then
+		if scrollingTimelineWindowCache ~= nil and scrollingTimelineSplitGroupCache ~= nil and scrollingTimelineGroupCache ~= nil then
+			if fcpxElements[scrollingTimelineWindowCache][scrollingTimelineSplitGroupCache] ~= nil then
+				if fcpxElements[scrollingTimelineWindowCache][scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache] ~= nil then
+					if fcpxElements[scrollingTimelineWindowCache][scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1] ~= nil then
+						if fcpxElements[scrollingTimelineWindowCache][scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
+							whichWindow = scrollingTimelineWindowCache
 							whichSplitGroup = scrollingTimelineSplitGroupCache
 							whichGroup = scrollingTimelineGroupCache
 							useCache = true
+							if debugMode then print("[FCPX Hacks] Using Scrolling Timeline Cache.") end
 						end
 					end
 				end
@@ -8210,12 +8290,30 @@ function checkScrollingTimelinePress()
 		-- Cache failed - so need to re-gather interface elements:
 		--------------------------------------------------------------------------------
 		if not useCache then
+
+			--------------------------------------------------------------------------------
+			-- Which Window:
+			--------------------------------------------------------------------------------
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
+					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
+						whichWindow = i
+					end
+				end
+			end
+			if whichWindow == nil then
+				print("[FCPX Hacks] ERROR: Unable to find whichWindow in checkScrollingTimelinePress.")
+				displayMessage("We weren't able to find the Final Cut Pro window, so aborting.")
+				return "Failed"
+			end
+			scrollingTimelineWindowCache = whichWindow
+
 			--------------------------------------------------------------------------------
 			-- Which Split Group:
 			--------------------------------------------------------------------------------
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			for i=1, fcpxElements[whichWindow]:attributeValueCount("AXChildren") do
 				if whichSplitGroup == nil then
-					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroup = i
 						goto scrollingTimelineWatcherSplitGroupExit
 					end
@@ -8231,11 +8329,11 @@ function checkScrollingTimelinePress()
 			--------------------------------------------------------------------------------
 			-- Which Group:
 			--------------------------------------------------------------------------------
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			for i=1, fcpxElements[whichWindow][whichSplitGroup]:attributeValueCount("AXChildren") do
 				if whichGroup == nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+					if fcpxElements[whichWindow][whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+						if fcpxElements[whichWindow][whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+							if fcpxElements[whichWindow][whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
 								whichGroup = i
 								goto performScrollingTimelineWatcherGroupExit
 							end
@@ -8257,10 +8355,10 @@ function checkScrollingTimelinePress()
 		--------------------------------------------------------------------------------
 		-- Which Scroll Area:
 		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
-				if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
+		for i=1, fcpxElements[whichWindow][whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
+				if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
 						whichScrollArea = i
 						goto performScrollingTimelineWatcherScrollAreaExit
 					end
@@ -8277,8 +8375,8 @@ function checkScrollingTimelinePress()
 		-- Check mouse is in timeline area:
 		--------------------------------------------------------------------------------
 		local mouseLocation = hs.mouse.getAbsolutePosition()
-		local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXPosition")
-		local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")
+		local timelinePosition = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXPosition")
+		local timelineSize = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea]:attributeValue("AXSize")
 		local isMouseInTimelineArea = true
 		if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
 		if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
@@ -8293,8 +8391,8 @@ function checkScrollingTimelinePress()
 				-- Which Value Indicator:
 				--------------------------------------------------------------------------------
 				local whichValueIndicator = nil
-				for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+				for i=1, fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
 						whichValueIndicator = i
 						goto performScrollingTimelineValueIndicatorExit
 					end
@@ -8305,9 +8403,9 @@ function checkScrollingTimelinePress()
 				end
 				::performScrollingTimelineValueIndicatorExit::
 
-				local initialPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+				local initialPlayheadXPosition = fcpxElements[whichWindow][whichSplitGroup][whichGroup][1][whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
 
-				performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichScrollArea, whichValueIndicator, initialPlayheadXPosition)
+				performScrollingTimelineLoops(fcpx, fcpxElements, whichWindow, whichSplitGroup, whichGroup, whichScrollArea, whichValueIndicator, initialPlayheadXPosition)
 		end --isMouseInTimelineArea
 	end -- fullscreenActive
 end
