@@ -121,7 +121,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.48"
+local scriptVersion = "0.49"
 --------------------------------------------------------------------------------
 
 
@@ -248,7 +248,10 @@ local changeTimelineClipHeightSplitGroupCache 	= nil											-- Change Timelin
 local changeTimelineClipHeightGroupCache 		= nil											-- Change Timeline Clip Height Group Cache
 
 local clipboardTimer							= nil											-- Clipboard Watcher Timer
-local clipboardLastChange 						= pasteboard.changeCount() 						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+
+local clipboardLastChange						= nil											-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+if not disablePasteboard then clipboardLastChange = pasteboard.changeCount() end
+
 local clipboardHistory							= {}											-- Clipboard History
 local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
 
@@ -326,11 +329,17 @@ function loadScript()
 		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineActive") or ""
 		local settingsDebug16 = hs.settings.get("fcpxHacks.lastVersion") or ""
 		local settingsDebug17 = hs.settings.get("fcpxHacks.enableClipboardHistory") or ""
-		local settingsDebug18 = hs.settings.get("fcpxHacks.clipboardHistory") or ""
-		if hs.settings.get("fcpxHacks.prowlAPIKey") ~= nil then
-			local settingsDebug19 = "APIKey"
+		local settingsDebug18 = nil
+		if hs.settings.get("fcpxHacks.clipboardHistory") ~= nil then
+			settingsDebug18 = "X"
 		else
-			local settingsDebug19 = ""
+			settingsDebug18 = ""
+		end
+		local settingsDebug19 = nil
+		if hs.settings.get("fcpxHacks.prowlAPIKey") ~= nil then
+			settingsDebug19 = "X"
+		else
+			settingsDebug19 = ""
 		end
 		local settingsDebug20 = hs.settings.get("fcpxHacks.enableMobileNotifications") or ""
 		local settingsDebug21 = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or ""
