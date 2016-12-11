@@ -10087,12 +10087,13 @@ function clipboardWatcher()
 					--------------------------------------------------------------------------------
 					-- Define Temporary Files:
 					--------------------------------------------------------------------------------
-					local temporaryFileName 		= os.tmpname()
+					--local temporaryFileName 		= os.tmpname()
 					--local temporaryFileNameTwo	 	= os.tmpname()
 
 					--------------------------------------------------------------------------------
 					-- Write Clipboard Data to Temporary File:
 					--------------------------------------------------------------------------------
+					--[[
 					local temporaryFile = io.open(temporaryFileName, "w")
 					temporaryFile:write(currentClipboardData)
 					temporaryFile:close()
@@ -10102,6 +10103,7 @@ function clipboardWatcher()
 					executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileName))
 
 					print("temporaryFileName: " .. temporaryFileName)
+					--]]
 
 					--------------------------------------------------------------------------------
 					-- Convert binary plist to XML then return in JSON:

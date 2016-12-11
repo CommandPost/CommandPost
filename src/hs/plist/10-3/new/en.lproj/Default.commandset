@@ -2,6 +2,1317 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackToggleTouchBar</key>
+	<dict>
+		<key>characterString</key>
+		<string>z</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackConsole</key>
+	<dict>
+		<key>character</key>
+		<string> </string>
+		<key>characterString</key>
+		<string> </string>
+		<key>modifierMask</key>
+		<integer>262144</integer>
+	</dict>
+	<key>FCPXHackCutSwitchAngle01Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle02Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle03Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle04Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle05Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle06Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle07Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle08Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle09Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle10Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle11Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle12Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle13Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle14Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle15Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle16Video</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle01Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle02Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle03Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle04Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle05Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle06Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle07Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle08Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle09Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle10Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle11Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle12Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle13Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle14Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle15Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle16Audio</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle01Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle02Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle03Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle04Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle05Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle06Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle07Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle08Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle09Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle10Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle11Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle12Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle13Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle14Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle15Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCutSwitchAngle16Both</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackMoveToPlayhead</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneFive</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSix</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneSeven</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneEight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneNine</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSelectClipAtLaneTen</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackChangeSmartCollectionsLabel</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateOptimizedMediaOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateOptimizedMediaOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateMulticamOptimizedMediaOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateMulticamOptimizedMediaOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateProxyMediaOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateProxyMediaOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackLeaveInPlaceOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackLeaveInPlaceOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackBackgroundRenderOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackBackgroundRenderOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackChangeTimelineClipHeightUp</key>
+	<dict>
+		<key>characterString</key>
+		<string>=</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackChangeTimelineClipHeightDown</key>
+	<dict>
+		<key>characterString</key>
+		<string>-</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackColorPuckOneUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwoUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThreeUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFourUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOneDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwoDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThreeDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFourDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOneLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwoLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThreeLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFourLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOneRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwoRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThreeRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFourRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOneUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOneDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOneLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOneRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwoRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThreeRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFourRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourDown</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourLeft</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOneRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwoRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThreeRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFourRight</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackSaturationPuckFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckOne</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckThree</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackExposurePuckFour</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackColorPuckOneUp</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackScrollingTimeline</key>
+	<dict>
+		<key>characterString</key>
+		<string>w</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackEffectsOne</key>
+	<dict>
+		<key>characterString</key>
+		<string>1</string>
+		<key>modifiers</key>
+		<string>control shift</string>
+	</dict>
+	<key>FCPXHackEffectsTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string>2</string>
+		<key>modifiers</key>
+		<string>control shift</string>
+	</dict>
+	<key>FCPXHackEffectsThree</key>
+	<dict>
+		<key>characterString</key>
+		<string>3</string>
+		<key>modifiers</key>
+		<string>control shift</string>
+	</dict>
+	<key>FCPXHackEffectsFour</key>
+	<dict>
+		<key>characterString</key>
+		<string>4</string>
+		<key>modifiers</key>
+		<string>control shift</string>
+	</dict>
+	<key>FCPXHackEffectsFive</key>
+	<dict>
+		<key>characterString</key>
+		<string>5</string>
+		<key>modifiers</key>
+		<string>control shift</string>
+	</dict>
+	<key>FCPXHackLaunchFinalCutPro</key>
+	<dict>
+		<key>characterString</key>
+		<string>l</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackShowListOfShortcutKeys</key>
+	<dict>
+		<key>characterString</key>
+		<string>NSF1FunctionKey</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackHighlightBrowserPlayhead</key>
+	<dict>
+		<key>characterString</key>
+		<string>h</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRevealInBrowserAndHighlight</key>
+	<dict>
+		<key>characterString</key>
+		<string>f</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSingleMatchFrameAndHighlight</key>
+	<dict>
+		<key>characterString</key>
+		<string>s</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRevealMulticamClipInBrowserAndHighlight</key>
+	<dict>
+		<key>characterString</key>
+		<string>d</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRevealMulticamClipInAngleEditorAndHighlight</key>
+	<dict>
+		<key>characterString</key>
+		<string>g</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackBatchExportFromBrowser</key>
+	<dict>
+		<key>characterString</key>
+		<string>e</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackChangeBackupInterval</key>
+	<dict>
+		<key>characterString</key>
+		<string>b</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackToggleTimecodeOverlays</key>
+	<dict>
+		<key>characterString</key>
+		<string>t</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackToggleMovingMarkers</key>
+	<dict>
+		<key>characterString</key>
+		<string>y</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackAllowTasksDuringPlayback</key>
+	<dict>
+		<key>characterString</key>
+		<string>p</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSelectColorBoardPuckOne</key>
+	<dict>
+		<key>characterString</key>
+		<string>m</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSelectColorBoardPuckTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string>,</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSelectColorBoardPuckThree</key>
+	<dict>
+		<key>characterString</key>
+		<string>.</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSelectColorBoardPuckFour</key>
+	<dict>
+		<key>characterString</key>
+		<string>/</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetOne</key>
+	<dict>
+		<key>characterString</key>
+		<string>1</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string>2</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetThree</key>
+	<dict>
+		<key>characterString</key>
+		<string>3</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetFour</key>
+	<dict>
+		<key>characterString</key>
+		<string>4</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetFive</key>
+	<dict>
+		<key>characterString</key>
+		<string>5</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetSix</key>
+	<dict>
+		<key>characterString</key>
+		<string>6</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetSeven</key>
+	<dict>
+		<key>characterString</key>
+		<string>7</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetEight</key>
+	<dict>
+		<key>characterString</key>
+		<string>8</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackRestoreKeywordPresetNine</key>
+	<dict>
+		<key>characterString</key>
+		<string>9</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetOne</key>
+	<dict>
+		<key>characterString</key>
+		<string>1</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetTwo</key>
+	<dict>
+		<key>characterString</key>
+		<string>2</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetThree</key>
+	<dict>
+		<key>characterString</key>
+		<string>3</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetFour</key>
+	<dict>
+		<key>characterString</key>
+		<string>4</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetFive</key>
+	<dict>
+		<key>characterString</key>
+		<string>5</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetSix</key>
+	<dict>
+		<key>characterString</key>
+		<string>6</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetSeven</key>
+	<dict>
+		<key>characterString</key>
+		<string>7</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetEight</key>
+	<dict>
+		<key>characterString</key>
+		<string>8</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
+	<key>FCPXHackSaveKeywordPresetNine</key>
+	<dict>
+		<key>characterString</key>
+		<string>9</string>
+		<key>modifiers</key>
+		<string>control option command shift</string>
+	</dict>
 	<key>AddAndEditMarker</key>
 	<dict>
 		<key>characterString</key>
@@ -387,7 +1698,7 @@
 			<key>modifiers</key>
 			<string>shift</string>
 		</dict>
-	</array>	
+	</array>
 	<key>AppendWithSelectedMedia</key>
 	<array>
 		<dict>
@@ -567,7 +1878,7 @@
 		<string></string>
 	</dict>
 	<key>ReplaceWithGap</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>NSDeleteCharacter</string>
@@ -594,7 +1905,7 @@
 		<string>r</string>
 		<key>modifiers</key>
 		<string>option</string>
-	</dict>	
+	</dict>
 	<key>DeleteMarker</key>
 	<dict>
 		<key>characterString</key>
@@ -680,7 +1991,7 @@
 		<string>command</string>
 	</dict>
 	<key>GoToBackgroundTasks</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>9</string>
@@ -702,7 +2013,7 @@
 		<string>shift</string>
 	</dict>
 	<key>GoToInspector</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>4</string>
@@ -717,7 +2028,7 @@
 		</dict>
 	</array>
 	<key>ToggleEventLibraryBrowser</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>1</string>
@@ -769,7 +2080,7 @@
 		<string>shift</string>
 	</dict>
 	<key>GoToTimeline</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>2</string>
@@ -781,10 +2092,10 @@
 			<string>2</string>
 			<key>modifiers</key>
 			<string>command keypad</string>
-		</dict>	
+		</dict>
 	</array>
 	<key>GoToViewer</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -799,7 +2110,7 @@
 		</dict>
 	</array>
     <key>GoToEventViewer</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -814,7 +2125,7 @@
 		</dict>
 	</array>
 	<key>ToggleEventViewer</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -850,7 +2161,7 @@
 		<string>command</string>
 	</dict>
 	<key>IncreaseThumbnailSize</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>=</string>
@@ -863,7 +2174,7 @@
 			<key>modifiers</key>
 			<string>command shift keypad</string>
 		</dict>
-	</array>	
+	</array>
 	<key>InsertMedia</key>
 	<dict>
 		<key>characterString</key>
@@ -1338,7 +2649,7 @@
 		<string>v</string>
 		<key>modifiers</key>
 		<string>option</string>
-	</dict>	
+	</dict>
 	<key>PlayAroundCurrentFrame</key>
 	<dict>
 		<key>characterString</key>
@@ -2152,7 +3463,7 @@
 		<string>p</string>
 		<key>modifiers</key>
 		<string>control</string>
-	</dict>		
+	</dict>
 	<key>ShowTimecodeEntryMinusDelta</key>
 	<array>
 		<dict>
@@ -2160,14 +3471,14 @@
 			<string>-</string>
 			<key>modifiers</key>
 			<string></string>
-		</dict>	
+		</dict>
 		<dict>
 			<key>characterString</key>
 			<string>-</string>
 			<key>modifiers</key>
 			<string>keypad</string>
 		</dict>
-	</array>	
+	</array>
 	<key>ShowTimecodeEntryPlusDelta</key>
 	<array>
 		<dict>
@@ -2203,7 +3514,7 @@
 		<string>control</string>
 	</dict>
 	<key>AVEditModeBoth</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>1</string>
@@ -2218,7 +3529,7 @@
 		</dict>
 	</array>
 	<key>AVEditModeVideo</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>2</string>
@@ -2233,7 +3544,7 @@
 		</dict>
 	</array>
 	<key>AVEditModeAudio</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -2390,7 +3701,7 @@
 		<string>control option</string>
 	</dict>
 	<key>GoToColorBoard</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>6</string>
@@ -2419,7 +3730,7 @@
 		<string>command option</string>
 	</dict>
 	<key>ToggleInspector</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>4</string>
@@ -2434,7 +3745,7 @@
 		</dict>
 	</array>
 	<key>ToggleMediaEffectsBrowser</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>5</string>
@@ -2485,7 +3796,7 @@
 		<string></string>
 	</dict>
 	<key>ToggleVideoScopes</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>7</string>
@@ -2500,7 +3811,7 @@
 		</dict>
 	</array>
 	<key>ShowMultiangleViewer</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>7</string>
@@ -2515,21 +3826,21 @@
 		</dict>
 	</array>
 	<key>ToggleHistogram</key>
-	<dict>	
+	<dict>
 		<key>characterString</key>
 		<string>h</string>
 		<key>modifiers</key>
 		<string>command control</string>
 	</dict>
 	<key>ToggleWaveform</key>
-	<dict>	
+	<dict>
 		<key>characterString</key>
 		<string>w</string>
 		<key>modifiers</key>
 		<string>command control</string>
 	</dict>
 	<key>ToggleVectorscope</key>
-	<dict>	
+	<dict>
 		<key>characterString</key>
 		<string>v</string>
 		<key>modifiers</key>
@@ -2592,7 +3903,7 @@
 		<string>control</string>
 	</dict>
 	<key>VolumeUp</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>=</string>
@@ -2605,7 +3916,7 @@
 			<key>modifiers</key>
 			<string>control keypad</string>
 		</dict>
-	</array>	
+	</array>
 	<key>AdjustVolumeRelative</key>
     <dict>
         <key>characterString</key>
@@ -2621,7 +3932,7 @@
         <string>control option</string>
     </dict>
 	<key>ZoomIn</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>=</string>
@@ -2640,9 +3951,9 @@
 			<key>modifiers</key>
 			<string>command keypad</string>
 		</dict>
-	</array>	
+	</array>
 	<key>ZoomOut</key>
-	<array>	
+	<array>
 		<dict>
 			<key>characterString</key>
 			<string>-</string>
