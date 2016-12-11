@@ -8,6 +8,7 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackMoveToPlayhead</string>
 			<string>FCPXHackColorPuckOneMouse</string>
 			<string>FCPXHackColorPuckTwoMouse</string>
 			<string>FCPXHackColorPuckThreeMouse</string>
