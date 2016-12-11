@@ -226,7 +226,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Version:
 	--------------------------------------------------------------------------------
-	print("[FCPX Hacks] Loading Final Cut Pro 10.3 Script.")
+	print("[FCPX Hacks] Loading Final Cut Pro 10.3 Features.")
 
 	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
@@ -316,7 +316,7 @@ function loadScript()
 		-------------------------------------------------------------------------------
 		commonErrorMessageStart = "I'm sorry, but the following error has occurred:\n\n"
 		commonErrorMessageEnd = "\n\nmacOS Version: " .. macOSVersion() .. "\nFCPX Version: " .. finalCutProVersion() .. "\nScript Version: " .. scriptVersion .. "\n\nPlease take a screenshot of your entire screen and email it to the below address so that we can try and come up with a fix:\n\nchris@latenitefilms.com\n\nThank you for testing!"
-		commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+		commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
@@ -325,7 +325,6 @@ function loadScript()
 			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
 			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 		else
-			--[[
 			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
 				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 					local finalCutProRunning = isFinalCutProRunning()
@@ -345,7 +344,6 @@ function loadScript()
 					end
 				end
 			end
-			--]]
 			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
 		end
 
@@ -1827,7 +1825,7 @@ function refreshMenuBar(refreshPlistValues)
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "-" },
    	    { title = "HACKS:", 																																																		disabled = true },
-   		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro, disabled = true},
+   		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
 	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = allowMovingMarkers },
        	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not FFSuspendBGOpsDuringPlay, disabled = true },
         { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval, disabled = true },
@@ -2029,31 +2027,31 @@ function updateKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		try
 			tell me to activate
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
 		on error
 			display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 			return "Failed"
@@ -2141,27 +2139,27 @@ function resetSettings()
 			--------------------------------------------------------------------------------
 			try
 				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
 			on error
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
 			on error
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
 			on error
 				return "Failed"
 			end try
@@ -2503,6 +2501,8 @@ end
 --------------------------------------------------------------------------------
 function assignEffectsShortcut(whichShortcut)
 
+	local wasFinalCutProOpen = isFinalCutProFrontmost()
+
 	--------------------------------------------------------------------------------
 	-- Just in case...
 	--------------------------------------------------------------------------------
@@ -2517,35 +2517,78 @@ function assignEffectsShortcut(whichShortcut)
 		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
 		return "Failed"
 	end
+	if next(allEffects) == nil then
+		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
+		return "Failed"
+	end
 
 	--------------------------------------------------------------------------------
-	-- Display List:
+	-- Effects List:
 	--------------------------------------------------------------------------------
-	local appleScriptA = "set allEffects to {"
-	for i=1, #allEffects do
-		if i == #allEffects then
-			appleScriptA = appleScriptA .. '"' .. tostring(allEffects[i]) .. '"}\n'
-		else
-			appleScriptA = appleScriptA .. '"' .. tostring(allEffects[i]) .. '", '
+	local effectChooserChoices = {}
+	if allEffects ~= nil and next(allEffects) ~= nil then
+		for i=1, #allEffects do
+			individualEffect = {
+				["text"] = allEffects[i],
+				["subText"] = "Effect",
+				["function"] = "effectsShortcut",
+				["function1"] = allEffects[i],
+				["function2"] = "",
+				["function3"] = "",
+				["whichShortcut"] = whichShortcut,
+				["wasFinalCutProOpen"] = wasFinalCutProOpen,
+			}
+			table.insert(effectChooserChoices, 1, individualEffect)
 		end
 	end
 
-	local appleScriptB = [[
-		tell me to activate
-		set listResult to (choose from list allEffects with prompt "Which effect would you like to assign?")
-		return listResult
-	]]
-	local ok,dialogBoxResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	--------------------------------------------------------------------------------
+	-- Sort everything:
+	--------------------------------------------------------------------------------
+	table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
+
+	effectChooser = hs.chooser.new(effectChooserAction)
+
+	effectChooser:bgDark(true)
+	effectChooser:fgColor(hs.drawing.color.x11.snow)
+	effectChooser:subTextColor(hs.drawing.color.x11.snow)
+
+	effectChooser:choices(effectChooserChoices)
+
+	effectChooser:show()
+
+end
+
+--------------------------------------------------------------------------------
+-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
+--------------------------------------------------------------------------------
+function effectChooserAction(result)
 
 	--------------------------------------------------------------------------------
-	-- Save the selection:
+	-- Hide Chooser:
 	--------------------------------------------------------------------------------
-	if dialogBoxResult ~= false then
-		if whichShortcut == 1 then hs.settings.set("fcpxHacks.effectsShortcutOne", 		dialogBoxResult[1]) end
-		if whichShortcut == 2 then hs.settings.set("fcpxHacks.effectsShortcutTwo", 		dialogBoxResult[1]) end
-		if whichShortcut == 3 then hs.settings.set("fcpxHacks.effectsShortcutThree", 	dialogBoxResult[1]) end
-		if whichShortcut == 4 then hs.settings.set("fcpxHacks.effectsShortcutFour", 	dialogBoxResult[1]) end
-		if whichShortcut == 5 then hs.settings.set("fcpxHacks.effectsShortcutFive", 	dialogBoxResult[1]) end
+	effectChooser:hide()
+
+	--------------------------------------------------------------------------------
+	-- Perform Specific Function:
+	--------------------------------------------------------------------------------
+	if result ~= nil then
+		--------------------------------------------------------------------------------
+		-- Save the selection:
+		--------------------------------------------------------------------------------
+		whichShortcut = result["whichShortcut"]
+		if whichShortcut == 1 then hs.settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
+		if whichShortcut == 2 then hs.settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
+		if whichShortcut == 3 then hs.settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
+		if whichShortcut == 4 then hs.settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
+		if whichShortcut == 5 then hs.settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Put focus back in Final Cut Pro:
+	--------------------------------------------------------------------------------
+	if result["wasFinalCutProOpen"] then
+		launchFinalCutPro()
 	end
 
 end
@@ -2572,7 +2615,7 @@ end
 --------------------------------------------------------------------------------
 function updateMenubarIcon()
 
-	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/fcpx/assets/fcpxhacks.png")
+	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/assets/fcpxhacks.png")
 	local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
 	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
 	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
@@ -2667,31 +2710,31 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 			--------------------------------------------------------------------------------
 			try
 				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to restore NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to restore NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to restore Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to restore NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to restore NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
@@ -2716,31 +2759,31 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 			--------------------------------------------------------------------------------
 			try
 				tell me to activate
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/plist/10-3/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
 			on error
 				display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
 				return "Failed"
