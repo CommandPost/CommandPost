@@ -109,7 +109,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.36"
+local scriptVersion = "0.37"
 --------------------------------------------------------------------------------
 
 
@@ -132,11 +132,34 @@ local enableDevelopmentShortcut = false
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- LOAD EXTENSIONS:
+--------------------------------------------------------------------------------
+fs							= require("hs.fs")
+host						= require("hs.host")
+settings					= require("hs.settings")
+http						= require("hs.http")
+menubar						= require("hs.menubar")
+eventtap					= require("hs.eventtap")
+window						= require("hs.window")
+window.filter				= require("hs.window.filter")
+pathwatcher					= require("hs.pathwatcher")
+alert 						= require("hs.alert")
+hotkey 						= require("hs.hotkey")
+application 				= require("hs.application")
+uielement 					= require("hs.uielement")
+appfinder 					= require("hs.appfinder")
+osascript 					= require("hs.osascript")
+drawing 					= require("hs.drawing")
+fnutils 					= require("hs.fnutils")
+keycodes					= require("hs.keycodes")
+ax 							= require("hs._asm.axuielement")
+
+--------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
-local browserHighlight = nil
+local browserHighlight 		= nil
 local browserHighlightTimer = nil
-local clock = os.clock
+local clock 				= os.clock
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -169,46 +192,16 @@ function loadScript()
 	print("")
 
 	--------------------------------------------------------------------------------
-	-- Load Extensions:
-	--------------------------------------------------------------------------------
-	hs.require = require
-
-		--------------------------------------------------------------------------------
-		-- Built in extensions:
-		--------------------------------------------------------------------------------
-		pathwatcher			= require("hs.pathwatcher")
-		alert 				= require("hs.alert")
-		hotkey 				= require("hs.hotkey")
-		application 		= require("hs.application")
-		uielement 			= require("hs.uielement")
-		appfinder 			= require("hs.appfinder")
-		osascript 			= require("hs.osascript")
-		drawing 			= require("hs.drawing")
-		fnutils 			= require("hs.fnutils")
-		keycodes			= require("hs.keycodes")
-
-		--------------------------------------------------------------------------------
-		-- Custom Extensions:
-		--------------------------------------------------------------------------------
-		ax 					= require("hs._asm.axuielement")
-
-	--------------------------------------------------------------------------------
 	-- Is Final Cut Pro Installed:
 	--------------------------------------------------------------------------------
 	if isFinalCutProInstalled() then
 
 		--------------------------------------------------------------------------------
-		-- USEFUL DEBUGGING INFORMATION:
+		-- Useful Debugging Information:
 		--------------------------------------------------------------------------------
-		if macOSVersion() ~= nil then
-			print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion()))
-		end
-		if finalCutProVersion() ~= nil then
-			print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))
-		end
-		if hs.keycodes.currentLayout() ~= nil then
-			print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout()))
-		end
+		if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
+		if finalCutProVersion() ~= nil then	print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))	end
+		if hs.keycodes.currentLayout() ~= nil then print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout())) end
 		local settingsDebug1 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
 		local settingsDebug2 = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or ""
 		local settingsDebug3 = hs.settings.get("fcpxHacks.allEffects") or ""
@@ -335,12 +328,14 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		print("[FCPX Hacks] Successfully loaded.")
 		hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
+
 	else
 
     	--------------------------------------------------------------------------------
     	-- Final Cut Pro couldn't be found so giving up:
     	--------------------------------------------------------------------------------
     	displayAlertMessage("Opps! Unfortunately we couldn't find Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.\n\nIf it is installed, please contact chris@lateniefilms.com to troubleshoot.\n\nThanks for testing!")
+		print("[FCPX Hacks] ERROR: Final Cut Pro could not be found so giving up.")
 
 	end
 end
@@ -572,7 +567,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Launch Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if (finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'] ~= nil) and (finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'] ~= nil) then
+		if finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'] ~= "" then
 			hs.hotkey.bind(finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'], finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'], function() hs.application.launchOrFocus("Final Cut Pro") end)
 		else
 			print("[FCPX Hacks] WARNING: Failed to load FCPXHackLaunchFinalCutPro keyboard shortcut.")
@@ -597,7 +592,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Help:
 		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'] ~= nil then
+		if finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'] ~= "" then
 			hotkeys:bind(finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['modifiers'], finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'], function() displayShortcutList() end)
 		else
 			print("[FCPX Hacks] WARNING: Failed to load FCPXHackShowListOfShortcutKeys keyboard shortcut.")
@@ -606,7 +601,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'] ~= nil then
+		if finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'] ~= "" then
 			hotkeys:bind(finalCutProShortcutKey['FCPXHackScrollingTimeline']['modifiers'], finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'], function() activateScrollingTimeline() end)
 		else
 			print("[FCPX Hacks] WARNING: Failed to load FCPXHackScrollingTimeline keyboard shortcut.")
@@ -1956,6 +1951,11 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 				return "Failed"
 			end
 		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh the Keyboard Shortcuts:
+		--------------------------------------------------------------------------------
+		bindKeyboardShortcuts()
 
 		--------------------------------------------------------------------------------
 		-- Refresh the Menu Bar:
@@ -3747,10 +3747,14 @@ function highlightFCPXBrowserPlayhead()
 		--------------------------------------------------------------------------------
 		-- Let's highlight it at long last!
 		--------------------------------------------------------------------------------
-		persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-		persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
-
-		mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+		if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead] == nil then
+			displayErrorMessage("Unable to locate Persistent Playhead.")
+			return "Failed"
+		else
+			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+			persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
+			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+		end
 
 	--------------------------------------------------------------------------------
 	-- Filmstrip Mode:
@@ -3845,10 +3849,14 @@ function highlightFCPXBrowserPlayhead()
 		--------------------------------------------------------------------------------
 		-- Let's highlight it at long last!
 		--------------------------------------------------------------------------------
-		persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-		persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
-
-		mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+		if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead] == nil then
+			displayErrorMessage("Unable to locate Persistent Playhead.")
+			return "Failed"
+		else
+			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
+			persistentPlayheadSize = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXSize")
+			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+		end
 	end
 end
 
