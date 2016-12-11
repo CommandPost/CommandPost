@@ -216,6 +216,8 @@ local touchBarWindow 							= nil			 								-- Touch Bar Window
 
 local fcpxChooserChoices 						= {}											-- Chooser Choices
 
+local hostname									= host.localizedName()							-- Hostname
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -368,9 +370,23 @@ function loadScript()
 			hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
 
 			--------------------------------------------------------------------------------
-			-- Watch for Final Cut Pro plist changes:
+			-- Watch for Final Cut Pro plist Changes:
 			--------------------------------------------------------------------------------
 			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
+
+			--------------------------------------------------------------------------------
+			-- Watch for Shared Clipboard Changes:
+			--------------------------------------------------------------------------------
+			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+			if sharedClipboardPath ~= nil then
+				if doesDirectoryExist(sharedClipboardPath) then
+					sharedClipboardWatcher = hs.pathwatcher.new(sharedClipboardPath, function() if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end; refreshMenuBar() end):start()
+				else
+					print("[FCPX Hacks] The Shared Clipboard Directory could not be found, so disabling.")
+					settings.set("fcpxHacks.sharedClipboardPath", nil)
+					settings.set("fcpxHacks.enableSharedClipboard", false)
+				end
+			end
 
 			--------------------------------------------------------------------------------
 			-- Full Screen Keyboard Watcher:
@@ -529,8 +545,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--hs.console.clearConsole()
-
-	print(displayChooseFolder("Which folder would you like to use for the Shared Clipboard?"))
 
 end
 
@@ -1874,6 +1888,46 @@ function refreshMenuBar(refreshPlistValues)
 	end
 
 	--------------------------------------------------------------------------------
+	-- Shared Clipboard Menu:
+	--------------------------------------------------------------------------------
+	local settingsSharedClipboardTable = {}
+
+	if enableSharedClipboard and enableClipboardHistory then
+
+		--------------------------------------------------------------------------------
+		-- Get list of files:
+		--------------------------------------------------------------------------------
+		local sharedClipboardFiles = {}
+		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+		for file in hs.fs.dir(sharedClipboardPath) do
+			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
+				sharedClipboardFiles[#sharedClipboardFiles + 1] = file:sub(36)
+			 end
+		end
+
+		if next(sharedClipboardFiles) == nil then
+			--------------------------------------------------------------------------------
+			-- Nothing in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			table.insert(settingsSharedClipboardTable, { title = "Empty", disabled = true })
+		else
+			--------------------------------------------------------------------------------
+			-- Something in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			for i=1, #sharedClipboardFiles do
+				table.insert(settingsSharedClipboardTable, {title = sharedClipboardFiles[i], fn = function() pasteFromSharedClipboard(sharedClipboardFiles[i]) end, disabled = not fcpxActive})
+			end
+			table.insert(settingsSharedClipboardTable, { title = "-" })
+			table.insert(settingsSharedClipboardTable, { title = "Clear Shared Clipboard History", fn = clearSharedClipboardHistory })
+		end
+	else
+		--------------------------------------------------------------------------------
+		-- Shared Clipboard Disabled:
+		--------------------------------------------------------------------------------
+		table.insert(settingsSharedClipboardTable, { title = "Disabled in Settings", disabled = true })
+	end
+
+	--------------------------------------------------------------------------------
 	-- Effects Shortcuts:
 	--------------------------------------------------------------------------------
 	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
@@ -1984,8 +2038,8 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
    	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
-   	    { title = "Paste from Shared Clipboard", 													fn = pasteFromSharedClipboard, 									    															disabled = not enableSharedClipboard},
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
+      	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
       	{ title = "-" },
    	    { title = "HACKS:", 																																																		disabled = true },
    		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
@@ -2138,11 +2192,24 @@ function toggleEnableSharedClipboard()
 		if result ~= false then
 			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Path: " .. tostring(result)) end
 			settings.set("fcpxHacks.sharedClipboardPath", result)
+
+			--------------------------------------------------------------------------------
+			-- Watch for Shared Clipboard Changes:
+			--------------------------------------------------------------------------------
+			sharedClipboardWatcher = hs.pathwatcher.new(result, function() if debugMode then print("[FCPX Hacks] Refreshing Shared Clipboard.") end; refreshMenuBar() end):start()
+
 		else
 			if debugMode then print("[FCPX Hacks] Enabled Shared Clipboard Choose Path Cancelled.") end
 			settings.set("fcpxHacks.sharedClipboardPath", nil)
 			return "failed"
 		end
+
+	else
+
+		--------------------------------------------------------------------------------
+		-- Stop Watching for Shared Clipboard Changes:
+		--------------------------------------------------------------------------------
+		sharedClipboardWatcher:stop()
 
 	end
 
@@ -4512,14 +4579,18 @@ end
 --------------------------------------------------------------------------------
 -- PASTE FROM SHARED CLIPBOARD:
 --------------------------------------------------------------------------------
-function pasteFromSharedClipboard()
+function pasteFromSharedClipboard(whichClipboard)
 
 	local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
 	if enableSharedClipboard then
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 		if sharedClipboardPath ~= nil then
 
-			local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard", "r")
+			local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
+			if file == nil then
+				displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
+				return "Fail"
+			end
 			currentClipboardData = file:read("*all")
 			file:close()
 
@@ -4551,6 +4622,19 @@ function clearClipboardHistory()
 	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
 	clipboardCurrentChange = pasteboard.changeCount()
 	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- CLEAR SHARED CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
+function clearSharedClipboardHistory()
+	local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
+	for file in hs.fs.dir(sharedClipboardPath) do
+		 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
+			os.remove(sharedClipboardPath .. file)
+		 end
+		 refreshMenuBar()
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -11082,7 +11166,7 @@ function clipboardWatcher()
 						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 						if sharedClipboardPath ~= nil then
 
-							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard", "w")
+							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. hostname, "w")
 							file:write(currentClipboardData)
 							file:close()
 

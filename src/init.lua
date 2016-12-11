@@ -91,7 +91,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-scriptVersion = "0.65"
+scriptVersion = "0.66"
 --------------------------------------------------------------------------------
 
 
@@ -145,14 +145,17 @@ function loadScript()
 
 	finalCutProVersion = finalCutProVersion()
 
-	if finalCutProVersion == nil then
-		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
-	end
+	local validFinalCutProVersion = false
 	if finalCutProVersion == "10.2.3" then
+		validFinalCutProVersion = true
 		require("hs.fcpx10-2-3")
 	end
 	if finalCutProVersion == "10.3" then
+		validFinalCutProVersion = true
 		require("hs.fcpx10-3")
+	end
+	if not validFinalCutProVersion then
+		displayAlertMessage("We couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure it's installed in the Applications folder and hasn't been renamed.")
 	end
 
 end
