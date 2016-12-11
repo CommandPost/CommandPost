@@ -94,6 +94,7 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
+-- 	> Custom Keyboard shortcuts for "Shortcuts" menubar items
 --  > Select clip on Secondary Storyline Shortcut
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --  > Move Storyline Up & Down Shortcut
@@ -116,7 +117,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.43"
+local scriptVersion = "0.44"
 --------------------------------------------------------------------------------
 
 
@@ -289,6 +290,31 @@ function loadScript()
 		-- Check Final Cut Pro Version Compatibility:
 		-------------------------------------------------------------------------------
 		if finalCutProVersion() ~= "10.2.3" then displayMessage("Please be aware that this script has only been tested on Final Cut Pro 10.2.3 and MAY not work correctly on other versions.") end
+
+		--------------------------------------------------------------------------------
+		-- Check Keyboard Layout before we begin:
+		--------------------------------------------------------------------------------
+		if hs.keycodes.currentLayout() ~= nil then
+			local currentKeyboardLayout = hs.keycodes.currentLayout()
+			local supportedKeyboardLayout = false
+			if currentKeyboardLayout == "ABC" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "ABC Extended" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Australian" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "British" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "British - PC" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Canadian English" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Colemak" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Dvorak" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Dvorak - Left" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Dvorak - Qwerty ⌘" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Dvorak - Right" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "Irish" then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "U.S." then supportedKeyboardLayout = true end
+			if currentKeyboardLayout == "U.S. International - PC" then supportedKeyboardLayout = true end
+			if supportedKeyboardLayout == false then
+				displayMessage("Unfortunately your current keyboard layout (" .. tostring(currentKeyboardLayout) .. ") hasn't yet been tested in FCPX Hacks.\n\nIdeally to use customised keyboard shortcuts, you should use a Standard English QWERTY keyboard layout.\n\nOur suggestion would be to switch layouts, however you're welcome to try keep your current laytout and just see what happens! Good luck!")
+			end
+		end
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
@@ -1800,32 +1826,6 @@ end
 -- ENABLE HACKS SHORTCUTS IN FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function toggleEnableHacksShortcutsInFinalCutPro()
-
-	--------------------------------------------------------------------------------
-	-- Check Keyboard Layout before we begin:
-	--------------------------------------------------------------------------------
-	if hs.keycodes.currentLayout() ~= nil then
-		local currentKeyboardLayout = hs.keycodes.currentLayout()
-		local supportedKeyboardLayout = false
-		if currentKeyboardLayout == "ABC" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "ABC Extended" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Australian" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "British" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "British - PC" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Canadian English" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Colemak" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Dvorak" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Dvorak - Left" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Dvorak - Qwerty ⌘" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Dvorak - Right" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "Irish" then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "U.S." then supportedKeyboardLayout = true end
-		if currentKeyboardLayout == "U.S. International - PC" then supportedKeyboardLayout = true end
-		if supportedKeyboardLayout == false then
-			displayMessage("I'm sorry, but your current keyboard layout (" .. tostring(currentKeyboardLayout) .. ") isn't supported by this feature.\n\nTo use this feature, you'll need to use a Standard English keyboard layout.\n\nIf this is not possible, please email the below address to request support for your preferred keyboard layout:\n\nchris@latenitefilms.com")
-			return "Failed"
-		end
-	end
 
 	--------------------------------------------------------------------------------
 	-- Get current value from settings:
