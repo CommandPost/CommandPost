@@ -196,11 +196,12 @@ function loadScript()
 	window.filter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
-	-- First time running 10.3? Trash settings:
+	-- First time running 10.3? If so, let's trash the settings incase there's
+	-- compatibility issues with an older version of FCPX Hacks:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
 
-		writeToConsole("First time running Final Cut Pro 10.3.")
+		writeToConsole("First time running Final Cut Pro 10.3. Trashing settings.")
 
 		--------------------------------------------------------------------------------
 		-- Trash all FCPX Hacks Settings:
@@ -213,6 +214,19 @@ function loadScript()
 
 		settings.set("fcpxHacks.firstTimeRunning103", false)
 
+	end
+
+	--------------------------------------------------------------------------------
+	-- Check for Final Cut Pro Updates:
+	--------------------------------------------------------------------------------
+	local lastFinalCutProVersion = settings.get("fcpxHacks.lastFinalCutProVersion")
+	if lastFinalCutProVersion == nil then
+		settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+	else
+		if lastFinalCutProVersion ~= fcp.version() then
+			settings.set("fcpxHacks.chooserMenuItems", nil) -- Reset Chooser Menu Items.
+			settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -1396,21 +1410,6 @@ function translateModifierMask(value)
 	return answer
 
 end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     C H O O S E R    /  C O N S O L E                      --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
