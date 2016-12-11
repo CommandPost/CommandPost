@@ -92,7 +92,6 @@
 --  > Timeline Index HUD on Mouseover
 --  > Watch Folders for Compressor
 --  > Favourites folder for Effects, Transitions, Titles, Generators & Themes
---  > Clipboard History (https://github.com/victorso/.hammerspoon/blob/master/tools/clipboard.lua)
 --  > Mouse Rewind History (as someone suggested on FCPX Grill)
 --  > Automatically add markers based on music beats (suggested by Ilyas Akhmedov)
 --
@@ -100,10 +99,6 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > Rethink findMenuItem
---  > Fix Scrolling Timeline Bugs
---  > Add Scrolling Timeline Cache
---  > Select clip on Secondary Storyline Shortcut
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --  > Move Storyline Up & Down Shortcut
 --
@@ -111,9 +106,10 @@
 --  LOW PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > updateEffectsList() needs to be faster.
---  > translateKeyboardCharacters() could be done way better.
---  > Custom shortcuts for languages other than English.
+--  > Re-write findMenuItem code so works in multiple languages
+--  > clipboardWatcher() needs better way to find clipboard label
+--  > updateEffectsList() needs to be faster
+--  > translateKeyboardCharacters() could be done better
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -125,7 +121,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.45"
+local scriptVersion = "0.46"
 --------------------------------------------------------------------------------
 
 
@@ -141,6 +137,7 @@ local debugMode = false
 
 
 
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                   T H E    M A I N    S C R I P T                          --
@@ -150,25 +147,40 @@ local debugMode = false
 --------------------------------------------------------------------------------
 -- LOAD EXTENSIONS:
 --------------------------------------------------------------------------------
-fs							= require("hs.fs")
-host						= require("hs.host")
-settings					= require("hs.settings")
-http						= require("hs.http")
-menubar						= require("hs.menubar")
-eventtap					= require("hs.eventtap")
-window						= require("hs.window")
-window.filter				= require("hs.window.filter")
-pathwatcher					= require("hs.pathwatcher")
-alert 						= require("hs.alert")
-hotkey 						= require("hs.hotkey")
-application 				= require("hs.application")
-uielement 					= require("hs.uielement")
-appfinder 					= require("hs.appfinder")
-osascript 					= require("hs.osascript")
-drawing 					= require("hs.drawing")
-fnutils 					= require("hs.fnutils")
-keycodes					= require("hs.keycodes")
-ax 							= require("hs._asm.axuielement")
+
+-- BUILT-IN:
+
+	fs							= require("hs.fs")
+	host						= require("hs.host")
+	settings					= require("hs.settings")
+	http						= require("hs.http")
+	menubar						= require("hs.menubar")
+	eventtap					= require("hs.eventtap")
+	window						= require("hs.window")
+	window.filter				= require("hs.window.filter")
+	pathwatcher					= require("hs.pathwatcher")
+	alert 						= require("hs.alert")
+	hotkey 						= require("hs.hotkey")
+	application 				= require("hs.application")
+	uielement 					= require("hs.uielement")
+	appfinder 					= require("hs.appfinder")
+	osascript 					= require("hs.osascript")
+	drawing 					= require("hs.drawing")
+	fnutils 					= require("hs.fnutils")
+	keycodes					= require("hs.keycodes")
+	json  						= require("hs.json")
+	base64 						= require("hs.base64")
+	distributednotifications	= require("hs.distributednotifications")
+	utf8						= require("hs.utf8")
+	http						= require("hs.http")
+
+
+-- THIRD PARTY:
+
+	ax 							= require("hs._asm.axuielement")
+	pasteboard 					= require("hs.pasteboard")
+	slaxml 						= require("hs.slaxml")
+	slaxdom 					= require("hs.slaxml.slaxdom")
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -180,35 +192,43 @@ ax 							= require("hs._asm.axuielement")
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
-local clock 									= os.clock		-- Used for sleep()
+local clock 									= os.clock										-- Used for sleep()
 
-local browserHighlight 							= nil			-- Used for Highlight Browser Playhead
-local browserHighlightTimer 					= nil			-- Used for Highlight Browser Playhead
+local browserHighlight 							= nil											-- Used for Highlight Browser Playhead
+local browserHighlightTimer 					= nil											-- Used for Highlight Browser Playhead
 
-local scrollingTimelineSpacebarPressed   		= false			-- Was spacebar pressed?
-local scrollingTimelineWatcherWorking 			= false			-- Is Scrolling Timeline Spacebar Held Down?
+local scrollingTimelineSpacebarPressed   		= false											-- Was spacebar pressed?
+local scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
 
-local scrollingTimelineTimer					= nil			-- Scrolling Timeline Timer
-local scrollingTimelineScrollbarTimer			= nil			-- Scrolling Timeline Scrollbar Timer
+local scrollingTimelineTimer					= nil											-- Scrolling Timeline Timer
+local scrollingTimelineScrollbarTimer			= nil											-- Scrolling Timeline Scrollbar Timer
 
-local scrollingTimelineSplitGroupCache 			= nil			-- Scrolling Timeline Split Group Cache
-local scrollingTimelineGroupCache 				= nil			-- Scrolling Timeline Group Cache
+local scrollingTimelineSplitGroupCache 			= nil											-- Scrolling Timeline Split Group Cache
+local scrollingTimelineGroupCache 				= nil											-- Scrolling Timeline Group Cache
 
-local finalCutProShortcutKey 					= nil			-- Table of all Final Cut Pro Shortcuts
-local finalCutProShortcutKeyPlaceholders 		= nil			-- Table of all needed Final Cut Pro Shortcuts
+local finalCutProShortcutKey 					= nil											-- Table of all Final Cut Pro Shortcuts
+local finalCutProShortcutKeyPlaceholders 		= nil											-- Table of all needed Final Cut Pro Shortcuts
 
-local isCommandEditorOpen 						= false 		-- Is Command Editor Open?
+local isCommandEditorOpen 						= false 										-- Is Command Editor Open?
 
-local colorBoardSelectPuckSplitGroupCache 		= nil			-- Color Board Select Puck Split Group Cache
-local colorBoardSelectPuckGroupCache 			= nil			-- Color Board Select Puck Group Cache
+local colorBoardSelectPuckSplitGroupCache 		= nil											-- Color Board Select Puck Split Group Cache
+local colorBoardSelectPuckGroupCache 			= nil											-- Color Board Select Puck Group Cache
 
-local releaseColorBoardDown						= false			-- Color Board Shortcut Currently Being Pressed
+local releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 
-local changeTimelineClipHeightAlreadyInProgress = false			-- Change Timeline Clip Height Already In Progress
-local releaseChangeTimelineClipHeightDown		= false			-- Change Timeline Clip Height Currently Being Pressed
-local changeAppearanceButtonLocation 			= {}			-- Change Timeline Appearance Button Location
-local changeTimelineClipHeightSplitGroupCache 	= nil			-- Change Timeline Clip Height Split Group Cache
-local changeTimelineClipHeightGroupCache 		= nil			-- Change Timeline Clip Height Group Cache
+local changeTimelineClipHeightAlreadyInProgress = false											-- Change Timeline Clip Height Already In Progress
+local releaseChangeTimelineClipHeightDown		= false											-- Change Timeline Clip Height Currently Being Pressed
+local changeAppearanceButtonLocation 			= {}											-- Change Timeline Appearance Button Location
+local changeTimelineClipHeightSplitGroupCache 	= nil											-- Change Timeline Clip Height Split Group Cache
+local changeTimelineClipHeightGroupCache 		= nil											-- Change Timeline Clip Height Group Cache
+
+local clipboardTimer							= nil											-- Clipboard Watcher Timer
+local clipboardLastChange 						= pasteboard.changeCount() 						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+local clipboardHistory							= {}											-- Clipboard History
+local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
+
+local clipboardWatcherFrequency 				= 0.5											-- Clipboard Watcher Update Frequency
+local clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -283,9 +303,12 @@ function loadScript()
 		local settingsDebug13 = hs.settings.get("fcpxHacks.effectsShortcutFive") or ""
 		local settingsDebug14 = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or ""
 		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineActive") or ""
-		local settingsDebug16 = hs.settings.get("fcpxHacks.scrollingTimelineOffget") or ""
-		local settingsDebug17 = hs.settings.get("fcpxHacks.lastVersion") or ""
-		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. tostring(settingsDebug17) .. ".")
+		local settingsDebug16 = hs.settings.get("fcpxHacks.lastVersion") or ""
+		local settingsDebug17 = hs.settings.get("fcpxHacks.enableClipboardHistory") or ""
+		local settingsDebug18 = hs.settings.get("fcpxHacks.clipboardHistory") or ""
+		local settingsDebug19 = hs.settings.get("fcpxHacks.prowlAPIKey") or ""
+		local settingsDebug20 = hs.settings.get("fcpxHacks.enableMobileNotifications") or ""
+		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ";" .. tostring(settingsDebug17) .. ";" .. tostring(settingsDebug18) .. ";" .. tostring(settingsDebug19) .. ";" .. tostring(settingsDebug20) .. ".")
 
 		-------------------------------------------------------------------------------
 		-- Common Error Messages:
@@ -297,34 +320,7 @@ function loadScript()
 		-------------------------------------------------------------------------------
 		-- Check Final Cut Pro Version Compatibility:
 		-------------------------------------------------------------------------------
-		if finalCutProVersion() ~= "10.2.3" then displayMessage("Please be aware that this script has only been tested on Final Cut Pro 10.2.3 and MAY not work correctly on other versions.") end
-
-		--------------------------------------------------------------------------------
-		-- Check Keyboard Layout before we begin:
-		--------------------------------------------------------------------------------
-		--[[
-		if hs.keycodes.currentLayout() ~= nil then
-			local currentKeyboardLayout = hs.keycodes.currentLayout()
-			local supportedKeyboardLayout = false
-			if currentKeyboardLayout == "ABC" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "ABC Extended" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Australian" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "British" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "British - PC" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Canadian English" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Colemak" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Dvorak" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Dvorak - Left" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Dvorak - Qwerty ⌘" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Dvorak - Right" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "Irish" then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "U.S." then supportedKeyboardLayout = true end
-			if currentKeyboardLayout == "U.S. International - PC" then supportedKeyboardLayout = true end
-			if supportedKeyboardLayout == false then
-				displayMessage("Unfortunately your current keyboard layout (" .. tostring(currentKeyboardLayout) .. ") hasn't yet been tested in FCPX Hacks.\n\nIdeally to use customised keyboard shortcuts, you should use a Standard English QWERTY keyboard layout.\n\nOur suggestion would be to switch layouts, however you're welcome to try keep your current laytout and just see what happens! Good luck!")
-			end
-		end
-		--]]
+		if finalCutProVersion() ~= "10.2.3" then displayMessage("Please be aware that FCPX Hacks has ONLY been tested on Final Cut Pro 10.2.3 and MAY not work correctly on other versions.\n\nWe strongly recommend you do NOT use FCPX on newer versions of Final Cut Pro.") end
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
@@ -386,7 +382,6 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsPlistChanged):start()
 
-
 			--------------------------------------------------------------------------------
 			-- Full Screen Keyboard Watcher:
 			--------------------------------------------------------------------------------
@@ -398,9 +393,21 @@ function loadScript()
 			commandEditorWatcher()
 
 			--------------------------------------------------------------------------------
-			-- Scrolling Timeline Watcher
+			-- Scrolling Timeline Watcher:
 			--------------------------------------------------------------------------------
 			scrollingTimelineWatcher()
+
+			--------------------------------------------------------------------------------
+			-- Clipboard Watcher:
+			--------------------------------------------------------------------------------
+			local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+			if enableClipboardHistory then clipboardWatcher() end
+
+			--------------------------------------------------------------------------------
+			-- Notification Watcher:
+			--------------------------------------------------------------------------------
+			local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+			if enableMobileNotifications then notificationWatcher() end
 
 		--------------------------------------------------------------------------------
 		-- Bind Keyboard Shortcuts:
@@ -508,9 +515,172 @@ end
 function testingGround()
 
 	-- Clear Console During Development:
-	--hs.console.clearConsole()
+	hs.console.clearConsole()
 
-	--toggleBackgroundRender(true)
+	selectSecondaryStoryline(1)
+
+end
+
+--------------------------------------------------------------------------------
+-- SELECT SECONDARY STORYLINE:
+--------------------------------------------------------------------------------
+local selectSecondaryStorylineSplitGroupCache = nil
+local selectSecondaryStorylineGroupCache = nil
+
+function selectSecondaryStoryline(whichStoryline)
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local fcpx 				= hs.application("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
+
+	--------------------------------------------------------------------------------
+	-- Variables:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup 			= nil
+	local whichGroup 				= nil
+	local whichValueIndicator 		= nil
+
+	--------------------------------------------------------------------------------
+	-- Cache:
+	--------------------------------------------------------------------------------
+	local useCache = false
+	if fcpxElements[selectSecondaryStorylineSplitGroupCache] ~= nil then
+		if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache] ~= nil then
+			if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
+					useCache = true
+					whichSplitGroup = selectSecondaryStorylineSplitGroupCache
+					whichGroup = selectSecondaryStorylineGroupCache
+				end
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If Cache didn't work:
+	--------------------------------------------------------------------------------
+	if not useCache then
+		--------------------------------------------------------------------------------
+		-- Which Split Group:
+		--------------------------------------------------------------------------------
+
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if whichSplitGroup == nil then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					whichSplitGroup = i
+					goto selectSecondaryStorylineSplitGroupExit
+				end
+			end
+		end
+		if whichSplitGroup == nil then
+			displayErrorMessage("Unable to locate Split Group.")
+			return "Failed"
+		end
+		::selectSecondaryStorylineSplitGroupExit::
+		selectSecondaryStorylineSplitGroupCache = whichSplitGroup
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			if whichGroup == nil then
+				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+							whichGroup = i
+							goto selectSecondaryStorylineGroupExit
+						end
+					end
+				end
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::selectSecondaryStorylineGroupExit::
+		selectSecondaryStorylineGroupCache = whichGroup
+	end
+
+	--------------------------------------------------------------------------------
+	-- Split Group = 1
+	-- Scroll Area = 2
+	-- Layout Area = 1
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- Which Value Indicator:
+	--------------------------------------------------------------------------------
+	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			whichValueIndicator = i
+			goto selectSecondaryStorylineValueIndicatorExit
+		end
+	end
+	if whichValueIndicator == nil then
+		displayErrorMessage("Unable to locate Value Indicator.")
+		return "Failed"
+	end
+	::selectSecondaryStorylineValueIndicatorExit::
+
+	--------------------------------------------------------------------------------
+	-- Timeline Playhead Position:
+	--------------------------------------------------------------------------------
+	local timelinePlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+	--------------------------------------------------------------------------------
+	-- Which Layout Items (Selected Timeline Clip):
+	--------------------------------------------------------------------------------
+	local whichLayoutItems = {}
+	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i] ~= nil then
+			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
+
+				local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
+				local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
+
+				if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
+					local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
+					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY }
+				end
+
+			end
+		end
+	end
+
+	local howManyClips = tableCount(whichLayoutItems)
+	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips <= whichStoryline then
+		print("[FCPX Hacks] ERROR: We couldn't find any clips on the Secondary Storyline at your current playhead position.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Sort the table:
+	--------------------------------------------------------------------------------
+	table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
+
+	--------------------------------------------------------------------------------
+	-- Which clip to we need:
+	--------------------------------------------------------------------------------
+	local whichClip = whichLayoutItems[whichStoryline + 1][1]
+
+	--------------------------------------------------------------------------------
+	-- Click the clip:
+	--------------------------------------------------------------------------------
+	local clipCentrePosition = {}
+	local clipPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXPosition")
+	local clipSize = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXSize")
+
+	clipCentrePosition['x'] = timelinePlayheadXPosition
+	clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
+
+	ninjaMouseClick(clipCentrePosition)
 
 end
 
@@ -617,6 +787,7 @@ function bindKeyboardShortcuts()
 			["PlayFullscreen"]											= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["ShowTimecodeEntryPlayhead"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 			["ShareDefaultDestination"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
+			["Paste"]													= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
 	}
 
 	if enableHacksShortcutsInFinalCutPro then
@@ -738,10 +909,18 @@ function bindKeyboardShortcuts()
 			FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateProxyMediaOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateProxyMediaOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 					releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 							modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackSelectSecondaryStorylineClipOne						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipTwo						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(2) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipThree					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipFour					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipFive					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(5) end, 					releasedFn = nil, 														repeatFn = nil },
 
 		}
 
@@ -877,10 +1056,18 @@ function bindKeyboardShortcuts()
 			FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateProxyMediaOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateProxyMediaOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
-			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 				releasedFn = nil, 														repeatFn = nil },
-			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 						releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 					releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 							modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackSelectSecondaryStorylineClipOne						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(1) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipTwo						= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(2) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipThree					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(3) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipFour					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(4) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackSelectSecondaryStorylineClipFive					= { characterString = "", 							modifiers = {}, 									fn = function() selectSecondaryStoryline(5) end, 					releasedFn = nil, 														repeatFn = nil },
 
 		}
 
@@ -1051,9 +1238,7 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Menubar Display Mode from Settings:
 	--------------------------------------------------------------------------------
-	local displayMenubarAsIcon = nil
-	displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
-	if displayMenubarAsIcon == nil then displayMenubarAsIcon = false end
+	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
@@ -1086,26 +1271,22 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Enable Shortcuts During Fullscreen Playback from Settings:
 	--------------------------------------------------------------------------------
-	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
-	if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
+	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Effects List Updated from Settings:
 	--------------------------------------------------------------------------------
-	effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated")
-	if effectsListUpdated == nil then effectsListUpdated = false end
+	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
-	if enableProxyMenuIcon == nil then enableProxyMenuIcon = false end
+	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Hammerspoon Settings:
@@ -1119,6 +1300,36 @@ function refreshMenuBar(refreshPlistValues)
 	-- Scrolling Timeline:
 	--------------------------------------------------------------------------------
 	scrollingTimelineActive = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
+
+	--------------------------------------------------------------------------------
+	-- Enable Clipboard History:
+	--------------------------------------------------------------------------------
+	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+	--------------------------------------------------------------------------------
+	-- Enable Mobile Notifications:
+	--------------------------------------------------------------------------------
+	enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+
+	--------------------------------------------------------------------------------
+	-- Clipboard History Menu:
+	--------------------------------------------------------------------------------
+	local settingsClipboardHistoryTable = {}
+	if enableClipboardHistory then
+		if clipboardHistory ~= nil then
+			if #clipboardHistory ~= 0 then
+				for i=#clipboardHistory, 1, -1 do
+					table.insert(settingsClipboardHistoryTable, {title = clipboardHistory[i][2], fn = function() finalCutProPasteFromClipboardHistory(clipboardHistory[i][1]) end, disabled = not fcpxActive})
+				end
+				table.insert(settingsClipboardHistoryTable, { title = "-" })
+				table.insert(settingsClipboardHistoryTable, { title = "Clear Clipboard History", fn = clearClipboardHistory })
+			else
+				table.insert(settingsClipboardHistoryTable, { title = "Empty", disabled = true })
+			end
+		end
+	else
+		table.insert(settingsClipboardHistoryTable, { title = "Disabled in Settings", disabled = true })
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Menu:
@@ -1147,6 +1358,8 @@ function refreshMenuBar(refreshPlistValues)
 	local settingsMenuTable = {
 		{ title = "Enable Hacks Shortcuts in Final Cut Pro", fn = toggleEnableHacksShortcutsInFinalCutPro, checked = enableHacksShortcutsInFinalCutPro},
 	   	{ title = "Enable Shortcuts During Fullscreen Playback", fn = toggleEnableShortcutsDuringFullscreenPlayback, checked = enableShortcutsDuringFullscreenPlayback},
+	   	{ title = "Enable Clipboard History", fn = toggleEnableClipboardHistory, checked = enableClipboardHistory},
+	   	{ title = "Enable Mobile Notifications", fn = toggleEnableMobileNotifications, checked = enableMobileNotifications},
 	   	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", menu = settingsShapeMenuTable},
@@ -1181,6 +1394,9 @@ function refreshMenuBar(refreshPlistValues)
  	    { title = "AUTOMATION:", disabled = true },
    	    { title = "Enable Scrolling Timeline", fn = toggleScrollingTimeline, checked = scrollingTimelineActive },
    	    { title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
+      	{ title = "-" },
+   	    { title = "TOOLS:", disabled = true },
+      	{ title = "Paste from Clipboard History", menu = settingsClipboardHistoryTable },
       	{ title = "-" },
    	    { title = "HACKS:", disabled = true },
    	    { title = "Enable Timecode Overlay", fn = toggleTimecodeOverlay, checked = FFEnableGuards },
@@ -1275,9 +1491,96 @@ CONTROL+SHIFT:
 end
 
 --------------------------------------------------------------------------------
+-- TOGGLE CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
+function toggleEnableClipboardHistory()
+	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	if not enableClipboardHistory then
+		clipboardWatcher()
+	else
+		clipboardTimer:stop()
+	end
+	settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE MOBILE NOTIFICATIONS:
+--------------------------------------------------------------------------------
+function toggleEnableMobileNotifications()
+	local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
+	local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
+
+	if not enableMobileNotifications then
+
+		local returnToFinalCutPro = isFinalCutProFrontmost()
+		::retryProwlAPIKeyEntry::
+		local appleScriptA = 'set defaultAnswer to "' .. prowlAPIKey .. '"' .. '\n\n'
+		local appleScriptB = [[
+			set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
+			set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
+			set allowedAll to allowedLetters & allowedNumbers
+
+			repeat
+				try
+					tell me to activate
+					set response to text returned of (display dialog "Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com." default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+				try
+					set invalidCharacters to false
+					repeat with aCharacter in response
+						if (aCharacter as text) is not in allowedAll then
+							set invalidCharacters to true
+						end if
+					end repeat
+					if length of response is 0 then
+						set invalidCharacters to true
+					end if
+					if invalidCharacters is false then
+						exit repeat
+					end
+				end try
+				display dialog "The Prowl API Key you entered is not valid.\n\nPlease try again." buttons {"OK"} with icon fcpxIcon
+			end repeat
+			return response
+		]]
+		a,result = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+		if result == false then
+			return "Cancel"
+		end
+		local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
+		if prowlAPIKeyValidResult then
+			if returnToFinalCutPro then launchFinalCutPro() end
+			settings.set("fcpxHacks.prowlAPIKey", result)
+			notificationWatcher()
+			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+		else
+			displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
+			goto retryProwlAPIKeyEntry
+		end
+	else
+		shareSuccessNotificationWatcher:stop()
+		shareFailedNotificationWatcher:stop()
+		settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+	end
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
 -- UPDATE KEYBOARD SHORTCUTS:
 --------------------------------------------------------------------------------
 function updateKeyboardShortcuts()
+	--------------------------------------------------------------------------------
+	-- Revert back to default keyboard layout:
+	--------------------------------------------------------------------------------
+	local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
+	--------------------------------------------------------------------------------
+	-- Update Keyboard Settings:
+	--------------------------------------------------------------------------------
 	local appleScriptA = [[
 		--------------------------------------------------------------------------------
 		-- Replace Files:
@@ -1433,25 +1736,13 @@ function resetSettings()
 		if removeHacksResult then
 
 			--------------------------------------------------------------------------------
-			-- Trash settings:
+			-- Trash all FCPX Hacks Settings:
 			--------------------------------------------------------------------------------
-			hs.settings.set("fcpxHacks.effectsShortcutThree", nil)
-			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", nil)
-			hs.settings.set("fcpxHacks.allEffects", nil)
-			hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", nil)
-			hs.settings.set("fcpxHacks.effectsListUpdated", nil)
-			hs.settings.set("fcpxHacks.displayHighlightShape", nil)
-			hs.settings.set("fcpxHacks.displayHighlightColour", nil)
-			hs.settings.set("fcpxHacks.displayMenubarAsIcon", nil)
-			hs.settings.set("fcpxHacks.effectsShortcutOne", nil)
-			hs.settings.set("fcpxHacks.effectsShortcutTwo", nil)
-			hs.settings.set("fcpxHacks.effectsShortcutThree", nil)
-			hs.settings.set("fcpxHacks.effectsShortcutFour", nil)
-			hs.settings.set("fcpxHacks.effectsShortcutFive", nil)
-			hs.settings.set("fcpxHacks.enableProxyMenuIcon", nil)
-			hs.settings.set("fcpxHacks.scrollingTimelineActive", nil)
-			hs.settings.set("fcpxHacks.lastVersion", nil)
-			--------------------------------------------------------------------------------
+			for i, v in ipairs(hs.settings.getKeys()) do
+				if (v:sub(1,10)) == "fcpxHacks." then
+					hs.settings.set(v, nil)
+				end
+			end
 
 			--------------------------------------------------------------------------------
 			-- Restart Final Cut Pro if running:
@@ -1464,7 +1755,6 @@ function resetSettings()
 					displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
 				end
 			end
-			--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
 			-- Reload Hammerspoon:
@@ -1922,6 +2212,11 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 	local saveSettings = false
 	if enableHacksShortcutsInFinalCutPro then
 		--------------------------------------------------------------------------------
+		-- Revert back to default keyboard layout:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
+		--------------------------------------------------------------------------------
 		-- Disable Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
 		local appleScriptA = [[
@@ -1965,6 +2260,11 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 		ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
 		if toggleEnableHacksShortcutsInFinalCutProResult == "Done" then saveSettings = true end
 	else
+		--------------------------------------------------------------------------------
+		-- Revert back to default keyboard layout:
+		--------------------------------------------------------------------------------
+		local executeResult,executeStatus = hs.execute("defaults write ~/Library/Preferences/com.apple.FinalCut.plist 'Active Command Set' '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'")
+
 		--------------------------------------------------------------------------------
 		-- Enable Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
@@ -2974,6 +3274,36 @@ function changeSmartCollectionsLabel()
 end
 
 --------------------------------------------------------------------------------
+-- PASTE FROM CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
+function finalCutProPasteFromClipboardHistory(data)
+
+	--------------------------------------------------------------------------------
+	-- Write data back to Clipboard:
+	--------------------------------------------------------------------------------
+	clipboardTimer:stop()
+	pasteboard.writePListForUTI(finalCutProClipboardUTI, data)
+	clipboardCurrentChange = pasteboard.changeCount()
+	clipboardTimer:start()
+
+	--------------------------------------------------------------------------------
+	-- Paste in FCPX:
+	--------------------------------------------------------------------------------
+	keyStrokeFromPlist("Paste")
+
+end
+
+--------------------------------------------------------------------------------
+-- CLEAR CLIPBOARD HISTORY:
+--------------------------------------------------------------------------------
+function clearClipboardHistory()
+	clipboardHistory = {}
+	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+	clipboardCurrentChange = pasteboard.changeCount()
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -3262,7 +3592,7 @@ end
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE FUNCTION:
 --------------------------------------------------------------------------------
-function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
+function performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichValueIndicator, initialPlayheadXPosition)
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -3273,27 +3603,6 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	-- Get all FCPX UI Elements:
 	--------------------------------------------------------------------------------
 	fcpxElements = ax.applicationElement(fcpx)[1]
-
-	--------------------------------------------------------------------------------
-	-- NOTE: Which Split Group calculated on Watcher.
-	-- NOTE: Which Group calculated on Watcher.
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Which Value Indicator:
-	--------------------------------------------------------------------------------
-	local whichValueIndicator = nil
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
-			whichValueIndicator = i
-			goto performScrollingTimelineValueIndicatorExit
-		end
-	end
-	if whichValueIndicator == nil then
-		displayErrorMessage("Unable to locate Value Indicator.")
-		return "Failed"
-	end
-	::performScrollingTimelineValueIndicatorExit::
 
 	--------------------------------------------------------------------------------
 	-- Define Scrollbar Check Timer:
@@ -3314,11 +3623,15 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	end
 
 	--------------------------------------------------------------------------------
-	-- End of Timeline X Position:
+	-- Make sure Playhead is actually visible:
 	--------------------------------------------------------------------------------
-	local scrollAreaX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXPosition")['x']
-	local scrollAreaW = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXSize")['w']
+	local scrollAreaX = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")['x']
+	local scrollAreaW = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")['w']
 	local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
+	if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
+		local timelineWidth = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")['w']
+		initialPlayheadXPosition = (timelineWidth / 2)
+	end
 
 	--------------------------------------------------------------------------------
 	-- Initial Scrollbar Value:
@@ -3326,14 +3639,10 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	local initialScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:attributeValue("AXValue")
 
 	--------------------------------------------------------------------------------
-	-- Initial Playhead X Position:
-	--------------------------------------------------------------------------------
-	local initialPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-	--------------------------------------------------------------------------------
 	-- Define the Loop of Death:
 	--------------------------------------------------------------------------------
 	scrollingTimelineTimer = hs.timer.new(0.000001, function()
+
 		--------------------------------------------------------------------------------
 		-- Does the scrollbar still exist?
 		--------------------------------------------------------------------------------
@@ -3343,6 +3652,23 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 
 			local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
 
+			--------------------------------------------------------------------------------
+			-- If you change the edit the location of the Value Indicator will change:
+			--------------------------------------------------------------------------------
+			if fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
+				for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+						whichValueIndicator = i
+						goto performScrollingTimelineValueIndicatorExitX
+					end
+				end
+				if whichValueIndicator == nil then
+					displayErrorMessage("Unable to locate Value Indicator.")
+					return "Failed"
+				end
+				::performScrollingTimelineValueIndicatorExitX::
+			end
+
 			local currentPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
 
 			initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
@@ -3351,9 +3677,7 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 			x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
 			y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
 
-			differenceBetweenInitialPlayheadPercentageAndCurrent = y - x
-
-			scrollbarStep = differenceBetweenInitialPlayheadPercentageAndCurrent
+			scrollbarStep = y - x
 
 			local currentScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:attributeValue("AXValue")
 			fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
@@ -6931,10 +7255,11 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	if hs.appfinder.appFromName("Final Cut Pro") == nil then
+	local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+	if fcpx == nil then
 		return false
 	else
-		return hs.appfinder.appFromName("Final Cut Pro"):isFrontmost()
+		return fcpx:isFrontmost()
 	end
 
 end
@@ -6944,10 +7269,11 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	if hs.appfinder.appFromName("Final Cut Pro") == nil then
+	local fcpx = hs.appfinder.appFromName("Final Cut Pro")
+	if fcpx == nil then
 		return false
 	else
-		return hs.appfinder.appFromName("Final Cut Pro"):isRunning()
+		return fcpx:isRunning()
 	end
 
 end
@@ -7069,6 +7395,37 @@ end
 --                     C O M M O N    F U N C T I O N S                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- HOW MANY ITEMS IN A TABLE?
+--------------------------------------------------------------------------------
+function tableCount(table)
+  local count = 0
+  for _ in pairs(table) do count = count + 1 end
+  return count
+end
+
+--------------------------------------------------------------------------------
+-- PROWL API KEY VALID:
+--------------------------------------------------------------------------------
+function prowlAPIKeyValid(input)
+
+	local result = false
+	local errorMessage = nil
+
+	prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
+	httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
+
+	if string.match(httpBody, "success") then
+		result = true
+	else
+		local xml = slaxdom:dom(tostring(httpBody))
+		errorMessage = xml['root']['el'][1]['kids'][1]['value']
+	end
+
+	return result, errorMessage
+
+end
 
 --------------------------------------------------------------------------------
 -- NINJA MOUSE CLICK:
@@ -7696,6 +8053,195 @@ function print_r ( t )
 end
 
 --------------------------------------------------------------------------------
+-- NOTIFICATION WATCHER ACTIONS:
+--------------------------------------------------------------------------------
+function notificationWatcherAction(name, object, userInfo)
+
+	local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+	if prowlAPIKey ~= nil then
+
+		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
+		local prowlEvent = http.encodeForQuery("")
+		local prowlDescription = nil
+
+		if name == "uploadSuccess" then prowlDescription = http.encodeForQuery("Share Successful") end
+		if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery("Share Failed") end
+
+		local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
+		httpResponse, httpBody, httpHeader = hs.http.get(prowlAction, nil)
+
+		if not string.match(httpBody, "success") then
+			local xml = slaxdom:dom(tostring(httpBody))
+			local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
+			if errorMessage ~= nil then print("[FCPX Hacks] PROWL ERROR: " .. trim(tostring(errorMessage))) end
+		end
+	end
+
+end
+
+--------------------------------------------------------------------------------
+-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
+--------------------------------------------------------------------------------
+function checkScrollingTimelinePress()
+	--------------------------------------------------------------------------------
+	-- Variables:
+	--------------------------------------------------------------------------------
+	local useCache 			= false
+	local whichGroup 		= nil
+	local whichSplitGroup 	= nil
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local fcpx 				= hs.application("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Don't activate scrollbar in fullscreen mode (no player controls visible):
+	--------------------------------------------------------------------------------
+	local fullscreenActive = false
+	local fcpxElements = ax.applicationElement(fcpx)
+	if fcpxElements[1][1] ~= nil then
+		if fcpxElements[1][1]:attributeValue("AXDescription") == "Display Area" then
+			if whichKey == 49 then
+				if debugMode then print("[FCPX Hacks] Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.") end
+				fullscreenActive = true
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Don't activate scrollbar in fullscreen mode (player controls visible):
+	--------------------------------------------------------------------------------
+	if fcpxElements[1][1] ~= nil then
+		if fcpxElements[1][1][1] ~= nil then
+			if fcpxElements[1][1][1][1] ~= nil then
+				if fcpxElements[1][1][1][1]:attributeValue("AXDescription") == "Play Pause" then
+					if whichKey == 49 then
+						if debugMode then print("[FCPX Hacks] Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.") end
+						fullscreenActive = true
+					end
+				end
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If not in fullscreen mode:
+	--------------------------------------------------------------------------------
+	if not fullscreenActive then
+
+		--------------------------------------------------------------------------------
+		-- Get all FCPX UI Elements:
+		--------------------------------------------------------------------------------
+		fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
+
+		--------------------------------------------------------------------------------
+		-- Check to see if the cache works, otherwise re-find the interface elements:
+		--------------------------------------------------------------------------------
+		if scrollingTimelineSplitGroupCache ~= nil and scrollingTimelineGroupCache ~= nil then
+			if fcpxElements[scrollingTimelineSplitGroupCache] ~= nil then
+				if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache] ~= nil then
+					if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2] ~= nil then
+						if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2]:attributeValue("AXIdentifier") == "_NS:95" then
+							whichSplitGroup = scrollingTimelineSplitGroupCache
+							whichGroup = scrollingTimelineGroupCache
+							useCache = true
+						end
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Cache failed - so need to re-gather interface elements:
+		--------------------------------------------------------------------------------
+		if not useCache then
+			--------------------------------------------------------------------------------
+			-- Which Split Group:
+			--------------------------------------------------------------------------------
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if whichSplitGroup == nil then
+					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						whichSplitGroup = i
+						goto scrollingTimelineWatcherSplitGroupExit
+					end
+				end
+			end
+			if whichSplitGroup == nil then
+				displayErrorMessage("Unable to locate Split Group.")
+				return "Failed"
+			end
+			::scrollingTimelineWatcherSplitGroupExit::
+			scrollingTimelineSplitGroupCache = whichSplitGroup
+
+			--------------------------------------------------------------------------------
+			-- Which Group:
+			--------------------------------------------------------------------------------
+			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+				if whichGroup == nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+								whichGroup = i
+								goto performScrollingTimelineWatcherGroupExit
+							end
+						end
+					end
+				end
+			end
+			if whichGroup == nil then
+				--------------------------------------------------------------------------------
+				-- Can't find group so assuming we're in fullscreen mode:
+				--------------------------------------------------------------------------------
+				return "Failed"
+			end
+			::performScrollingTimelineWatcherGroupExit::
+			scrollingTimelineGroupCache = whichGroup
+		end -- useCache
+
+		--------------------------------------------------------------------------------
+		-- Check mouse is in timeline area:
+		--------------------------------------------------------------------------------
+		local mouseLocation = hs.mouse.getAbsolutePosition()
+		local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
+		local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
+		local isMouseInTimelineArea = true
+		if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
+		if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
+		if (mouseLocation['x'] <= timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
+		if (mouseLocation['x'] >= (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
+		if isMouseInTimelineArea then
+
+			--------------------------------------------------------------------------------
+			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			--------------------------------------------------------------------------------
+
+				--------------------------------------------------------------------------------
+				-- Which Value Indicator:
+				--------------------------------------------------------------------------------
+				local whichValueIndicator = nil
+				for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+					if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+						whichValueIndicator = i
+						goto performScrollingTimelineValueIndicatorExit
+					end
+				end
+				if whichValueIndicator == nil then
+					displayErrorMessage("Unable to locate Value Indicator.")
+					return "Failed"
+				end
+				::performScrollingTimelineValueIndicatorExit::
+
+				local initialPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+				performScrollingTimelineLoops(whichSplitGroup, whichGroup, whichValueIndicator, initialPlayheadXPosition)
+
+
+		end --isMouseInTimelineArea
+	end -- fullscreenActive
+end
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -7967,6 +8513,179 @@ function fullscreenKeyboardWatcher()
 end
 
 --------------------------------------------------------------------------------
+-- WATCH THE FINAL CUT PRO CLIPBOARD FOR CHANGES:
+--------------------------------------------------------------------------------
+function clipboardWatcher()
+
+	--------------------------------------------------------------------------------
+	-- Get Clipboard History from Settings:
+	--------------------------------------------------------------------------------
+	clipboardHistory = settings.get("fcpxHacks.clipboardHistory") or {}
+
+	--------------------------------------------------------------------------------
+	-- Watch for Clipboard Changes:
+	--------------------------------------------------------------------------------
+	clipboardTimer = hs.timer.new(clipboardWatcherFrequency, function()
+		clipboardCurrentChange = pasteboard.changeCount()
+  		if (clipboardCurrentChange > clipboardLastChange) then
+
+		 	local clipboardContent = pasteboard.allContentTypes()
+		 	if clipboardContent[1][1] == finalCutProClipboardUTI then
+
+		 		if debugMode then print("[FCPX Hacks] Something has been added to FCPX's Clipboard.") end
+
+				--------------------------------------------------------------------------------
+				-- Set Up Variables:
+				--------------------------------------------------------------------------------
+				local executeOutput 			= nil
+				local executeStatus 			= nil
+				local executeType 				= nil
+				local executeRC 				= nil
+				local addToClipboardHistory 	= true
+
+				--------------------------------------------------------------------------------
+				-- Save Clipboard Data:
+				--------------------------------------------------------------------------------
+				local currentClipboardData 		= pasteboard.readDataForUTI(finalCutProClipboardUTI)
+
+				--------------------------------------------------------------------------------
+				-- Define Temporary Files:
+				--------------------------------------------------------------------------------
+				local temporaryFileName 		= os.tmpname()
+				local temporaryFileNameTwo	 	= os.tmpname()
+
+				--------------------------------------------------------------------------------
+				-- Write Clipboard Data to Temporary File:
+				--------------------------------------------------------------------------------
+				local temporaryFile = io.open(temporaryFileName, "w")
+				temporaryFile:write(currentClipboardData)
+				temporaryFile:close()
+
+				--------------------------------------------------------------------------------
+				-- Convert binary plist to XML then return in JSON:
+				--------------------------------------------------------------------------------
+				local executeOutput, executeStatus, executeType, executeRC = hs.execute([[
+					plutil -convert xml1 ]] .. temporaryFileName .. [[ -o - |
+					sed 's/data>/string>/g' |
+					plutil -convert json - -o -
+				]])
+				if not executeStatus then
+					print("[FCPX Hacks] ERROR: Failed to convert binary plist to XML.")
+					addToClipboardHistory = false
+				end
+
+				--------------------------------------------------------------------------------
+				-- Get data from 'ffpasteboardobject':
+				--------------------------------------------------------------------------------
+				local file = io.open(temporaryFileName, "w")
+				file:write(json.decode(executeOutput)["ffpasteboardobject"])
+				file:close()
+
+				--------------------------------------------------------------------------------
+				-- Convert base64 data to human readable:
+				--------------------------------------------------------------------------------
+				executeCommand = "openssl base64 -in " .. tostring(temporaryFileName) .. " -out " .. tostring(temporaryFileNameTwo) .. " -d"
+				executeOutput, executeStatus, executeType, executeRC = hs.execute(executeCommand)
+				if not executeStatus then
+					print("[FCPX Hacks] ERROR: Failed to convert base64 data to human readable.")
+					addToClipboardHistory = false
+				end
+
+				--------------------------------------------------------------------------------
+				-- Convert from binary plist to human readable:
+				--------------------------------------------------------------------------------
+				executeOutput, executeStatus, executeType, executeRC = hs.execute("plutil -convert xml1 " .. tostring(temporaryFileNameTwo))
+				if not executeStatus then
+					print("[FCPX Hacks] ERROR: Failed to convert from binary plist to human readable.")
+					addToClipboardHistory = false
+				end
+
+				--------------------------------------------------------------------------------
+				-- Bring XML data into Hammerspoon:
+				--------------------------------------------------------------------------------
+				executeOutput, executeStatus, executeType, executeRC = hs.execute("cat " .. tostring(temporaryFileNameTwo))
+				if not executeStatus then
+					print("[FCPX Hacks] ERROR: Failed to cat the plist.")
+					addToClipboardHistory = false
+				end
+
+				--------------------------------------------------------------------------------
+				-- XML fun times!
+				--------------------------------------------------------------------------------
+				local xml = slaxdom:dom(tostring(executeOutput))
+				local currentClipboardLabel = nil
+
+					--------------------------------------------------------------------------------
+					-- TO-DO: Work out the structure of the clipboard data then rewrite this:
+					--------------------------------------------------------------------------------
+
+					--------------------------------------------------------------------------------
+					-- Clip copied from Primary Storyline:
+					--------------------------------------------------------------------------------
+					if xml['root']['kids'][2]['kids'][8]['kids'][24]['kids'][1]['value'] == "metadataImportToApp" then
+						currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][20]['kids'][1]['value']
+					end
+
+					--------------------------------------------------------------------------------
+					-- Clip copied from Secondary Storyline:
+					--------------------------------------------------------------------------------
+					if xml['kids'][2]['el'][1]['el'][4]['el'][17]['kids'][1]['value'] == "metadataImportToApp" then
+						currentClipboardLabel = xml['kids'][2]['el'][1]['el'][4]['el'][15]['kids'][1]['value']
+					end
+
+					--------------------------------------------------------------------------------
+					-- Clip copied from Browser:
+					--------------------------------------------------------------------------------
+					if xml['root']['kids'][2]['kids'][8]['kids'][30]['kids'][1]['value'] == "metadataImportToApp" then
+						currentClipboardLabel = xml['root']['kids'][2]['kids'][8]['kids'][18]['kids'][1]['value']
+					end
+
+					--------------------------------------------------------------------------------
+					-- Unknown item in clipboard:
+					--------------------------------------------------------------------------------
+					if currentClipboardLabel == nil then
+						currentClipboardLabel = os.date()
+					end
+
+				--------------------------------------------------------------------------------
+				-- Clean up temporary files:
+				--------------------------------------------------------------------------------
+				executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileName))
+				executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileNameTwo))
+
+				--------------------------------------------------------------------------------
+				-- If all is good then...
+				--------------------------------------------------------------------------------
+				if addToClipboardHistory then
+
+					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
+
+					while (#clipboardHistory >= clipboardHistoryMaximumSize) do
+						table.remove(clipboardHistory,1)
+					end
+					table.insert(clipboardHistory, currentClipboardItem)
+
+					--------------------------------------------------------------------------------
+					-- Update Settings:
+					--------------------------------------------------------------------------------
+					settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+
+					--------------------------------------------------------------------------------
+					-- Refresh Menubar:
+					--------------------------------------------------------------------------------
+					refreshMenuBar()
+
+				end
+		 	end
+  			clipboardLastChange = clipboardCurrentChange
+  		end
+
+	end)
+	clipboardTimer:start()
+
+end
+
+--------------------------------------------------------------------------------
 -- FCPX SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
@@ -8012,7 +8731,7 @@ function scrollingTimelineWatcher()
 					--------------------------------------------------------------------------------
 					if scrollingTimelineSpacebarPressed then
 						scrollingTimelineSpacebarCheck = true
-						hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
+						hs.timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
 					else
 						if scrollingTimelineTimer ~= nil then scrollingTimelineTimer:stop() end
 						if scrollingTimelineScrollbarTimer ~= nil then scrollingTimelineScrollbarTimer:stop() end
@@ -8025,146 +8744,23 @@ function scrollingTimelineWatcher()
 end
 
 --------------------------------------------------------------------------------
--- Check to see if we should actually turn on the scrolling timeline:
+-- NOTIFICATION WATCHER:
 --------------------------------------------------------------------------------
-function checkScrollingTimelinePress()
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local useCache 			= false
-	local whichGroup 		= nil
-	local whichSplitGroup 	= nil
+function notificationWatcher()
 
 	--------------------------------------------------------------------------------
-	-- Define FCPX:
+	-- SHARE SUCCESSFUL NOTIFICATION WATCHER:
 	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Don't activate scrollbar in fullscreen mode (no player controls visible):
-	--------------------------------------------------------------------------------
-	local fullscreenActive = false
-	local fcpxElements = ax.applicationElement(fcpx)
-	if fcpxElements[1][1] ~= nil then
-		if fcpxElements[1][1]:attributeValue("AXDescription") == "Display Area" then
-			if whichKey == 49 then
-				if debugMode then print("[FCPX Hacks] Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.") end
-				fullscreenActive = true
-			end
-		end
-	end
+	-- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
+	shareSuccessNotificationWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
+	shareSuccessNotificationWatcher:start()
 
 	--------------------------------------------------------------------------------
-	-- Don't activate scrollbar in fullscreen mode (player controls visible):
+	-- SHARE UNSUCCESSFUL NOTIFICATION WATCHER:
 	--------------------------------------------------------------------------------
-	if fcpxElements[1][1] ~= nil then
-		if fcpxElements[1][1][1] ~= nil then
-			if fcpxElements[1][1][1][1] ~= nil then
-				if fcpxElements[1][1][1][1]:attributeValue("AXDescription") == "Play Pause" then
-					if whichKey == 49 then
-						if debugMode then print("[FCPX Hacks] Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.") end
-						fullscreenActive = true
-					end
-				end
-			end
-		end
-	end
+	shareFailedNotificationWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
+	shareFailedNotificationWatcher:start()
 
-	--------------------------------------------------------------------------------
-	-- If not in fullscreen mode:
-	--------------------------------------------------------------------------------
-	if not fullscreenActive then
-
-		--------------------------------------------------------------------------------
-		-- Get all FCPX UI Elements:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
-
-		--------------------------------------------------------------------------------
-		-- Check to see if the cache works, otherwise re-find the interface elements:
-		--------------------------------------------------------------------------------
-		if scrollingTimelineSplitGroupCache ~= nil and scrollingTimelineGroupCache ~= nil then
-			if fcpxElements[scrollingTimelineSplitGroupCache] ~= nil then
-				if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache] ~= nil then
-					if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2] ~= nil then
-						if fcpxElements[scrollingTimelineSplitGroupCache][scrollingTimelineGroupCache][1][2]:attributeValue("AXIdentifier") == "_NS:95" then
-							whichSplitGroup = scrollingTimelineSplitGroupCache
-							whichGroup = scrollingTimelineGroupCache
-							useCache = true
-						end
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Cache failed - so need to re-gather interface elements:
-		--------------------------------------------------------------------------------
-		if not useCache then
-			--------------------------------------------------------------------------------
-			-- Which Split Group:
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if whichSplitGroup == nil then
-					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroup = i
-						goto scrollingTimelineWatcherSplitGroupExit
-					end
-				end
-			end
-			if whichSplitGroup == nil then
-				displayErrorMessage("Unable to locate Split Group.")
-				return "Failed"
-			end
-			::scrollingTimelineWatcherSplitGroupExit::
-			scrollingTimelineSplitGroupCache = whichSplitGroup
-
-			--------------------------------------------------------------------------------
-			-- Which Group:
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroup == nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-								whichGroup = i
-								goto performScrollingTimelineWatcherGroupExit
-							end
-						end
-					end
-				end
-			end
-			if whichGroup == nil then
-				--------------------------------------------------------------------------------
-				-- Can't find group so assuming we're in fullscreen mode:
-				--------------------------------------------------------------------------------
-				return "Failed"
-			end
-			::performScrollingTimelineWatcherGroupExit::
-			scrollingTimelineGroupCache = whichGroup
-		end -- useCache
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = hs.mouse.getAbsolutePosition()
-		local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
-		local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
-		local isMouseInTimelineArea = true
-		if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
-		if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
-		if (mouseLocation['x'] <= timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
-		if (mouseLocation['x'] >= (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
-		if isMouseInTimelineArea then
-
-			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-			--------------------------------------------------------------------------------
-			performScrollingTimelineLoops(whichSplitGroup, whichGroup)
-
-
-		end --isMouseInTimelineArea
-	end -- fullscreenActive
 end
 
 --------------------------------------------------------------------------------

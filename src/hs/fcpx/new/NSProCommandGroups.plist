@@ -8,6 +8,12 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackSelectSecondaryStorylineClipOne</string>
+			<string>FCPXHackSelectSecondaryStorylineClipTwo</string>
+			<string>FCPXHackSelectSecondaryStorylineClipThree</string>
+			<string>FCPXHackSelectSecondaryStorylineClipFour</string>
+			<string>FCPXHackSelectSecondaryStorylineClipFive</string>
+			<string>FCPXHackChangeSmartCollectionsLabel</string>
 			<string>FCPXHackCreateOptimizedMediaOn</string>
 			<string>FCPXHackCreateOptimizedMediaOff</string>
 			<string>FCPXHackCreateMulticamOptimizedMediaOn</string>

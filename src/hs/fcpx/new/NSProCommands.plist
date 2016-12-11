@@ -2,6 +2,48 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackSelectSecondaryStorylineClipOne</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectSecondaryStorylineClipOne:</string>
+	</dict>
+	<key>FCPXHackSelectSecondaryStorylineClipTwo</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectSecondaryStorylineClipTwo:</string>
+	</dict>
+	<key>FCPXHackSelectSecondaryStorylineClipThree</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectSecondaryStorylineClipThree:</string>
+	</dict>
+	<key>FCPXHackSelectSecondaryStorylineClipFour</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectSecondaryStorylineClipFour:</string>
+	</dict>
+	<key>FCPXHackSelectSecondaryStorylineClipFive</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectSecondaryStorylineClipFive:</string>
+	</dict>
+	<key>FCPXHackChangeSmartCollectionsLabel</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackChangeSmartCollectionLabel:</string>
+	</dict>
 	<key>FCPXHackCreateOptimizedMediaOn</key>
 	<dict>
 		<key>downRepeats</key>
