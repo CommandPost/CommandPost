@@ -109,7 +109,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.35"
+local scriptVersion = "0.36"
 --------------------------------------------------------------------------------
 
 
@@ -2991,7 +2991,188 @@ function performScrollingTimeline()
 	hs.timer.doWhile(function() return scrollingTimelineActivated end, function()
 
 		timelineAdjustmentValue = (timelineAdjustmentValue + manualAdjustmentValue)
+		--timelineAdjustmentValue = timelineAdjustmentValue
 		timelineScrollbar:setAttributeValue("AXValue", timelineAdjustmentValue)
+
+	end, 0.000001)
+
+end
+function performScrollingTimelineWIP()
+
+	if not scrollingTimelineActivated then return end
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	fcpx = hs.application("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpxElements = ax.applicationElement(fcpx)[1]
+
+	--------------------------------------------------------------------------------
+	-- Which Split Group:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if whichSplitGroup == nil then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				whichSplitGroup = i
+				goto performScrollingTimelineSplitGroupExit
+			end
+		end
+	end
+	if whichSplitGroup == nil then
+		displayErrorMessage("Unable to locate Split Group.")
+		return "Failed"
+	end
+	::performScrollingTimelineSplitGroupExit::
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	local whichGroup = nil
+	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		if whichGroup == nil then
+			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+						whichGroup = i
+						goto performScrollingTimelineGroupExit
+					end
+				end
+			end
+		end
+	end
+	if whichGroup == nil then
+		displayErrorMessage("Unable to locate Group.")
+		return "Failed"
+	end
+	::performScrollingTimelineGroupExit::
+
+	--------------------------------------------------------------------------------
+	-- Which Zoom Slider:
+	--------------------------------------------------------------------------------
+	local whichZoomSlider = nil
+	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXHelp") == "Adjust the Timeline zoom level" then
+			whichZoomSlider = i
+			goto performScrollingTimelineZoomSliderExit
+		end
+	end
+	if whichZoomSlider == nil then
+		displayErrorMessage("Unable to locate Zoom Slider.")
+		return "Failed"
+	end
+	::performScrollingTimelineZoomSliderExit::
+
+	--------------------------------------------------------------------------------
+	-- TIMELINE PLAYHEAD PATH:
+	-- 	Which Split Group = 1
+	-- 	Which Scroll Area = 2
+	-- 	Which Layout Area = 1
+	-- 	Which Value Indicator = 2
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TIMELINE SCROLLBAR PATH:
+	-- 	Which Split Group = 1
+	-- 	Which Scroll Area = 2
+	-- 	Which Scroll Bar = 2
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- Which Value Indicator:
+	--------------------------------------------------------------------------------
+	local whichValueIndicator = nil
+	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			whichValueIndicator = i
+			goto performScrollingTimelineValueIndicatorExit
+		end
+	end
+	if whichValueIndicator == nil then
+		displayErrorMessage("Unable to locate Value Indicator.")
+		return "Failed"
+	end
+	::performScrollingTimelineValueIndicatorExit::
+
+	--------------------------------------------------------------------------------
+	-- Check mouse is in timeline area:
+	--------------------------------------------------------------------------------
+	local mouseLocation = hs.mouse.getAbsolutePosition()
+	local timelinePosition = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXPosition")
+	local timelineSize = fcpxElements[whichSplitGroup][whichGroup][1][2]:attributeValue("AXSize")
+
+	local isMouseInTimelineArea = true
+	if (mouseLocation['y'] < timelinePosition['y']) then
+		-- Too High:
+		isMouseInTimelineArea = false
+	end
+	if (mouseLocation['y'] > (timelinePosition['y']+timelineSize['h'])) then
+		-- Too Low:
+		isMouseInTimelineArea = false
+	end
+	if (mouseLocation['x'] < timelinePosition['x']) then
+		-- Too Left:
+		isMouseInTimelineArea = false
+	end
+	if (mouseLocation['x'] > (timelinePosition['x']+timelineSize['w'])) then
+		-- Too Right:
+		isMouseInTimelineArea = false
+	end
+
+	if not isMouseInTimelineArea then
+		print("OUTSIDE")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Zoom Slider Value:
+	--------------------------------------------------------------------------------
+	local zoomSliderValue = fcpxElements[whichSplitGroup][whichZoomSlider]:attributeValue("AXValue") -- 0 to 10
+
+	--------------------------------------------------------------------------------
+	-- Timeline is full width so there's no scroll bar!
+	--------------------------------------------------------------------------------
+	if zoomSliderValue == 0 then return end
+
+	--------------------------------------------------------------------------------
+	-- Get UI Values:
+	--------------------------------------------------------------------------------
+    local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
+	local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]
+
+    local initialTimelinePlayheadPosition = timelinePlayhead:attributeValue("AXPosition")['x']
+	local initialTimelineScrollbarValue = timelineScrollbar:attributeValue("AXValue")
+	local initialTimelineMax = timelinePosition['x'] + timelineSize['w']
+
+	print("initialTimelinePlayheadPosition: " .. tostring(initialTimelinePlayheadPosition))
+	print("timelineMax: " .. tostring(timelineMax))
+
+	--------------------------------------------------------------------------------
+	-- Apply an Offset if Applicable:
+	--------------------------------------------------------------------------------
+	--if hs.settings.get("fcpxHacks.scrollingTimelineOffset") ~= nil then
+	--	manualAdjustmentValue = manualAdjustmentValue * hs.settings.get("fcpxHacks.scrollingTimelineOffset")
+	--end
+
+	--------------------------------------------------------------------------------
+	-- Scrolling Timeline Loop:
+	--------------------------------------------------------------------------------
+	local timelineAdjustmentValue = initialTimelineScrollbarValue
+	hs.timer.doWhile(function() return scrollingTimelineActivated end, function()
+
+		local currentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+		local howMuchPlayheadHasMoved = (currentPlayheadPosition - initialTimelinePlayheadPosition)
+
+		local howMuchToAdjustScrollBar = (howMuchPlayheadHasMoved / hs.screen.mainScreen():fullFrame()['w']) / (zoomSliderValue/10)
+
+		--print("currentPlayheadPosition: " .. tostring(currentPlayheadPosition))
+		--print("howMuchToAdjustScrollBar: " .. tostring(howMuchToAdjustScrollBar))
+
+		timelineScrollbar:setAttributeValue("AXValue", initialTimelineScrollbarValue + howMuchToAdjustScrollBar)
 
 	end, 0.000001)
 
