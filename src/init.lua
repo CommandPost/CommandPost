@@ -47,8 +47,8 @@
 --------------------------------------------------------------------------------
 --
 --  > http://www.hammerspoon.org/go/
---  > https://github.com/Hammerspoon/hammerspoon/issues/272
 --  > https://github.com/asmagill/hs._asm.axuielement
+--  > https://github.com/Hammerspoon/hammerspoon/issues/272
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1021#issuecomment-251827969
 --  > https://github.com/Hammerspoon/hammerspoon/issues/1027#issuecomment-252024969
 --
@@ -76,10 +76,10 @@
 --  > Shahin Shokoui, Ilyas Akhmedov & Tim Webb
 --
 --------------------------------------------------------------------------------
---  FEATURE TO-DO LIST:
+--  FEATURE WISH LIST:
 --------------------------------------------------------------------------------
 --
---  > Shortcut to go to full screen mode.
+--  > Shortcut to go to full screen mode without playing
 --  > Move Storyline Up & Down Shortcut
 --  > Add Audio Fade Handles Shortcut
 --  > Select clip on Secondary Storyline Shortcut
@@ -92,17 +92,19 @@
 --  > Mouse Rewind History (as someone suggested on FCPX Grill)
 --
 --------------------------------------------------------------------------------
---  BUGS & ISSUES TO-DO LIST:
+--  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
---  > Additional Color Board Shortcuts for each panel.
---  > Activate all audio tracks on multicam clip in timeline shortcut.
+--  > FIX SCROLLING TIMELINE!!!
+--  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --
---  > Rewrite bindKeyboardShortcuts() to use smarter loops and arrays.
+--------------------------------------------------------------------------------
+--  LOW PRIORITY LIST:
+--------------------------------------------------------------------------------
+--
 --  > updateEffectsList() needs to be faster.
---  > translateKeyboardCharacters() could be done better.
+--  > translateKeyboardCharacters() could be done way better.
 --  > Work out a way to allow custom shortcuts for languages other than English.
---  > Scrolling Timeline should do some proper maths instead of bad guesses.
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -114,7 +116,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.38"
+local scriptVersion = "0.39"
 --------------------------------------------------------------------------------
 
 
@@ -165,9 +167,10 @@ ax 							= require("hs._asm.axuielement")
 local clock 									= os.clock
 local browserHighlight 							= nil
 local browserHighlightTimer 					= nil
-local scrollingTimelinePressed 					= false
 local scrollingTimelineLoopActivated 			= false
-local scrollingTimelineAdjustmentLoopActivated 	= false
+local finalCutProShortcutKey 					= nil
+local finalCutProShortcutKeyPlaceholders 		= nil
+local lastSelectedColorBoardDirection			= nil
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -469,6 +472,7 @@ end
 --------------------------------------------------------------------------------
 -- BIND KEYBOARD SHORTCUTS:
 --------------------------------------------------------------------------------
+
 function bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
@@ -482,110 +486,118 @@ function bindKeyboardShortcuts()
 		-- Get Shortcut Keys from plist:
 		--------------------------------------------------------------------------------
 		finalCutProShortcutKey = nil
-		finalCutProShortcutKey =
+		finalCutProShortcutKey = {}
+		finalCutProShortcutKeyPlaceholders = nil
+		finalCutProShortcutKeyPlaceholders =
 		{
-			FCPXHackLaunchFinalCutPro 									= { characterString = "", modifiers = {} },
-			FCPXHackShowListOfShortcutKeys 								= { characterString = "", modifiers = {} },
-			FCPXHackHighlightBrowserPlayhead 							= { characterString = "", modifiers = {} },
-			FCPXHackRevealInBrowserAndHighlight 						= { characterString = "", modifiers = {} },
-			FCPXHackSingleMatchFrameAndHighlight 						= { characterString = "", modifiers = {} },
-			FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = "", modifiers = {} },
-			FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = "", modifiers = {} },
-			FCPXHackBatchExportFromBrowser 								= { characterString = "", modifiers = {} },
-			FCPXHackChangeBackupInterval 								= { characterString = "", modifiers = {} },
-			FCPXHackToggleTimecodeOverlays 								= { characterString = "", modifiers = {} },
-			FCPXHackToggleMovingMarkers 								= { characterString = "", modifiers = {} },
-			FCPXHackAllowTasksDuringPlayback 							= { characterString = "", modifiers = {} },
-			FCPXHackSelectColorBoardPuckOne 							= { characterString = "", modifiers = {} },
-			FCPXHackSelectColorBoardPuckTwo 							= { characterString = "", modifiers = {} },
-			FCPXHackSelectColorBoardPuckThree 							= { characterString = "", modifiers = {} },
-			FCPXHackSelectColorBoardPuckFour 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetOne 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetTwo 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetThree 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetFour 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetFive 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetSix 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetSeven 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetEight 							= { characterString = "", modifiers = {} },
-			FCPXHackRestoreKeywordPresetNine 							= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetOne 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetTwo 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetThree 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetFour 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetFive 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetSix 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetSeven 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetEight 								= { characterString = "", modifiers = {} },
-			FCPXHackSaveKeywordPresetNine 								= { characterString = "", modifiers = {} },
-			FCPXHackEffectsOne			 								= { characterString = "", modifiers = {} },
-			FCPXHackEffectsTwo			 								= { characterString = "", modifiers = {} },
-			FCPXHackEffectsThree			 							= { characterString = "", modifiers = {} },
-			FCPXHackEffectsFour			 								= { characterString = "", modifiers = {} },
-			FCPXHackEffectsFive			 								= { characterString = "", modifiers = {} },
-			FCPXHackScrollingTimeline	 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {} },
-			--[[
-			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourLeft	 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeRight		 					= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourRight	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourLeft	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourRight	 							= { characterString = "", modifiers = {} },
-			--]]
+			FCPXHackLaunchFinalCutPro 									= { characterString = "", modifiers = {}, fn = function() launchFinalCutPro() end, repeatFn = nil },
+			FCPXHackShowListOfShortcutKeys 								= { characterString = "", modifiers = {}, fn = function() displayShortcutList() end, repeatFn = nil },
+			FCPXHackHighlightBrowserPlayhead 							= { characterString = "", modifiers = {}, fn = function() highlightFCPXBrowserPlayhead() end, repeatFn = nil },
+			FCPXHackRevealInBrowserAndHighlight 						= { characterString = "", modifiers = {}, fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, repeatFn = nil },
+			FCPXHackSingleMatchFrameAndHighlight 						= { characterString = "", modifiers = {}, fn = function() singleMatchFrame() end, repeatFn = nil },
+			FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = "", modifiers = {}, fn = function() multicamMatchFrame(true) end, repeatFn = nil },
+			FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = "", modifiers = {}, fn = function() multicamMatchFrame(false) end, repeatFn = nil },
+			FCPXHackBatchExportFromBrowser 								= { characterString = "", modifiers = {}, fn = function() batchExportToCompressor() end, repeatFn = nil },
+			FCPXHackChangeBackupInterval 								= { characterString = "", modifiers = {}, fn = function() changeBackupInterval() end, repeatFn = nil },
+			FCPXHackToggleTimecodeOverlays 								= { characterString = "", modifiers = {}, fn = function() toggleTimecodeOverlay() end, repeatFn = nil },
+			FCPXHackToggleMovingMarkers 								= { characterString = "", modifiers = {}, fn = function() toggleMovingMarkers() end, repeatFn = nil },
+			FCPXHackAllowTasksDuringPlayback 							= { characterString = "", modifiers = {}, fn = function() togglePerformTasksDuringPlayback() end, repeatFn = nil },
+
+			FCPXHackSelectColorBoardPuckOne 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckTwo 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckThree 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckFour 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4) end, repeatFn = nil },
+
+			FCPXHackRestoreKeywordPresetOne 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(1) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetTwo 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(2) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetThree 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(3) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFour 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(4) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFive 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(5) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSix 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(6) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSeven 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(7) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetEight 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(8) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetNine 							= { characterString = "", modifiers = {}, fn = function() fcpxRestoreKeywordSearches(9) end, repeatFn = nil },
+
+			FCPXHackSaveKeywordPresetOne 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(1) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetTwo 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(2) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetThree 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(3) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetFour 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(4) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetFive 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(5) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetSix 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(6) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetSeven 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(7) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetEight 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(8) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetNine 								= { characterString = "", modifiers = {}, fn = function() fcpxSaveKeywordSearches(9) end, repeatFn = nil },
+
+			FCPXHackEffectsOne			 								= { characterString = "", modifiers = {}, fn = function() effectsShortcut(1) end, repeatFn = nil },
+			FCPXHackEffectsTwo			 								= { characterString = "", modifiers = {}, fn = function() effectsShortcut(2) end, repeatFn = nil },
+			FCPXHackEffectsThree			 							= { characterString = "", modifiers = {}, fn = function() effectsShortcut(3) end, repeatFn = nil },
+			FCPXHackEffectsFour			 								= { characterString = "", modifiers = {}, fn = function() effectsShortcut(4) end, repeatFn = nil },
+			FCPXHackEffectsFive			 								= { characterString = "", modifiers = {}, fn = function() effectsShortcut(5) end, repeatFn = nil },
+
+			FCPXHackScrollingTimeline	 								= { characterString = "", modifiers = {}, fn = function() activateScrollingTimeline() end, repeatFn = nil },
+
+			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1) end, repeatFn = nil },
+			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1) end, repeatFn = nil },
+			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1) end, repeatFn = nil },
+			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1) end, repeatFn = nil },
+
+			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2) end, repeatFn = nil },
+
+			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3) end, repeatFn = nil },
+
+			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			["ColorBoard-NudgePuckUp"]									= { characterString = "", modifiers = {}, fn = nil, repeatFn = nil },
+			["ColorBoard-NudgePuckDown"]								= { characterString = "", modifiers = {}, fn = nil, repeatFn = nil },
+			["ColorBoard-NudgePuckLeft"]								= { characterString = "", modifiers = {}, fn = nil, repeatFn = nil },
+			["ColorBoard-NudgePuckRight"]								= { characterString = "", modifiers = {}, fn = nil, repeatFn = nil },
+
 		}
 		if readShortcutKeysFromPlist() ~= "Done" then
 			displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
@@ -598,112 +610,111 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
 		--------------------------------------------------------------------------------
-
 		finalCutProShortcutKey = nil
 		finalCutProShortcutKey =
 		{
-			FCPXHackLaunchFinalCutPro 									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackHighlightBrowserPlayhead 							= { characterString = keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRevealInBrowserAndHighlight 						= { characterString = keyCodeTranslator("f"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSingleMatchFrameAndHighlight 						= { characterString = keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackBatchExportFromBrowser 								= { characterString = keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackChangeBackupInterval 								= { characterString = keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackToggleTimecodeOverlays 								= { characterString = keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackToggleMovingMarkers 								= { characterString = keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackAllowTasksDuringPlayback 							= { characterString = keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSelectColorBoardPuckOne 							= { characterString = keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSelectColorBoardPuckTwo 							= { characterString = keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetThree 							= { characterString = keyCodeTranslator("3"),		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetFour 							= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetFive 							= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetSix 							= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetSeven 							= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetEight 							= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackRestoreKeywordPresetNine 							= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackSaveKeywordPresetOne 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetTwo 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetThree 								= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetFour 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetFive 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetSix 								= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetSeven 								= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetEight 								= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackSaveKeywordPresetNine 								= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"} },
-			FCPXHackEffectsOne			 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"} },
-			FCPXHackEffectsTwo			 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"} },
-			FCPXHackEffectsThree			 							= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"} },
-			FCPXHackEffectsFour			 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"} },
-			FCPXHackEffectsFive			 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"} },
-			FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"} },
-			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {} },
-			--[[
-			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {} },
-			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourLeft	 							= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckOneRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckTwoRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckThreeRight		 					= { characterString = "", modifiers = {} },
-			FCPXHackSaturationPuckFourRight	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoLeft		 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeLeft		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourLeft	 							= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckOneRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckTwoRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckThreeRight		 						= { characterString = "", modifiers = {} },
-			FCPXHackExposurePuckFourRight	 							= { characterString = "", modifiers = {} },
-			--]]
+			FCPXHackLaunchFinalCutPro 									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() launchFinalCutPro() end, 			global = true, repeatFn = nil },
+			FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 			global = true, repeatFn = nil },
+
+			FCPXHackHighlightBrowserPlayhead 							= { characterString = keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, repeatFn = nil },
+			FCPXHackRevealInBrowserAndHighlight 						= { characterString = keyCodeTranslator("f"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, repeatFn = nil },
+			FCPXHackSingleMatchFrameAndHighlight 						= { characterString = keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, repeatFn = nil },
+			FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, repeatFn = nil },
+			FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, repeatFn = nil },
+			FCPXHackBatchExportFromBrowser 								= { characterString = keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, repeatFn = nil },
+			FCPXHackChangeBackupInterval 								= { characterString = keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, repeatFn = nil },
+			FCPXHackToggleTimecodeOverlays 								= { characterString = keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end},
+			FCPXHackToggleMovingMarkers 								= { characterString = keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, repeatFn = nil },
+			FCPXHackAllowTasksDuringPlayback 							= { characterString = keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, repeatFn = nil },
+
+			FCPXHackSelectColorBoardPuckOne 							= { characterString = keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(1) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckTwo 							= { characterString = keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(2) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(3) end, repeatFn = nil },
+			FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(4) end, repeatFn = nil },
+
+			FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(1) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(2) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetThree 							= { characterString = keyCodeTranslator("3"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(3) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFour 							= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(4) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetFive 							= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(5) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSix 							= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(6) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetSeven 							= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(7) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetEight 							= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(8) end, repeatFn = nil },
+			FCPXHackRestoreKeywordPresetNine 							= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcpxRestoreKeywordSearches(9) end, repeatFn = nil },
+
+			FCPXHackSaveKeywordPresetOne 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(1) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetTwo 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(2) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetThree 								= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(3) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetFour 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(4) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetFive 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(5) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetSix 								= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(6) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetSeven 								= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(7) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetEight 								= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(8) end, repeatFn = nil },
+			FCPXHackSaveKeywordPresetNine 								= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() fcpxSaveKeywordSearches(9) end, repeatFn = nil },
+
+			FCPXHackEffectsOne			 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, repeatFn = nil },
+			FCPXHackEffectsTwo			 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, repeatFn = nil },
+			FCPXHackEffectsThree			 							= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, repeatFn = nil },
+			FCPXHackEffectsFour			 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, repeatFn = nil },
+			FCPXHackEffectsFive			 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, repeatFn = nil },
+
+			FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() activateScrollingTimeline() end, repeatFn = nil },
+
+			FCPXHackColorPuckOne			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1) end, repeatFn = nil },
+			FCPXHackColorPuckTwo			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1) end, repeatFn = nil },
+			FCPXHackColorPuckThree			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1) end, repeatFn = nil },
+			FCPXHackColorPuckFour			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1) end, repeatFn = nil },
+
+			FCPXHackSaturationPuckOne			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckTwo			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckThree			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2) end, repeatFn = nil },
+			FCPXHackSaturationPuckFour			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2) end, repeatFn = nil },
+
+			FCPXHackExposurePuckOne			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckTwo			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckThree			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3) end, repeatFn = nil },
+			FCPXHackExposurePuckFour			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3) end, repeatFn = nil },
+
+			FCPXHackColorPuckOneUp			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoUp			 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourUp		 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourDown	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeLeft		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourLeft	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "left") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackColorPuckOneRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckTwoRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckThreeRight		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackColorPuckFourRight	 								= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 1, "right") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackSaturationPuckOneUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckTwoUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckThreeUp		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckFourUp		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackSaturationPuckOneDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckTwoDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckThreeDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackSaturationPuckFourDown	 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 2, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackExposurePuckOneUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckTwoUp			 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckThreeUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckFourUp		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3, "up") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
+			FCPXHackExposurePuckOneDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(1, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckTwoDown		 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(2, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckThreeDown		 						= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(3, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+			FCPXHackExposurePuckFourDown	 							= { characterString = "", modifiers = {}, fn = function() colorBoardSelectPuck(4, 3, "down") end, repeatFn = function() colorBoardSelectPuckRepeat() end },
+
 		}
 	end
 
@@ -721,317 +732,42 @@ function bindKeyboardShortcuts()
 	end
 
 	--------------------------------------------------------------------------------
-	--  Global Shortcut Keys:
+	-- Create a modal hotkey object with an absurd triggering hotkey:
 	--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Launch Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'] ~= "" then
-			hs.hotkey.bind(finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'], finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'], function() hs.application.launchOrFocus("Final Cut Pro") end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackLaunchFinalCutPro keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Used for development:
-		--------------------------------------------------------------------------------
-		if enableDevelopmentShortcut then
-			hs.hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
-		end
+	hotkeys = hs.hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
 
 	--------------------------------------------------------------------------------
-	-- Final Cut Pro Specific Shortcut Keys:
+	-- Enable Hotkeys Loop:
 	--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Create a modal hotkey object with an absurd triggering hotkey:
-		--------------------------------------------------------------------------------
-		hotkeys = hs.hotkey.modal.new({"command", "shift", "alt", "control"}, "F19")
-
-		--------------------------------------------------------------------------------
-		-- Advanced Color Board Shortcuts:
-		--------------------------------------------------------------------------------
-		-- colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
-
-		if finalCutProShortcutKey['FCPXHackColorPuckOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckOne']['characterString'], function() colorBoardSelectPuck(2, 1) end)
+	for k, v in pairs(finalCutProShortcutKey) do
+		if finalCutProShortcutKey[k]['characterString'] ~= "" and finalCutProShortcutKey[k]['fn'] ~= nil then
+			if finalCutProShortcutKey[k]['global'] == true then
+				--------------------------------------------------------------------------------
+				-- Global Shortcut:
+				--------------------------------------------------------------------------------
+				hs.hotkey.bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'])
+			else
+				--------------------------------------------------------------------------------
+				-- Final Cut Pro Specific Shortcut:
+				--------------------------------------------------------------------------------
+				-- hs.hotkey.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
+				hotkeys:bind(finalCutProShortcutKey[k]['modifiers'], finalCutProShortcutKey[k]['characterString'], finalCutProShortcutKey[k]['fn'], nil, finalCutProShortcutKey[k]['repeatFn'])
+			end
 		end
-		if finalCutProShortcutKey['FCPXHackColorPuckTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckTwo']['characterString'], function() colorBoardSelectPuck(3, 1) end)
-		end
-		if finalCutProShortcutKey['FCPXHackColorPuckThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckThree']['characterString'], function() colorBoardSelectPuck(4, 1) end)
-		end
-		if finalCutProShortcutKey['FCPXHackColorPuckFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckFour']['characterString'], function() colorBoardSelectPuck(5, 1) end)
-		end
-
-		if finalCutProShortcutKey['FCPXHackSaturationPuckOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckOne']['characterString'], function() colorBoardSelectPuck(2, 2) end)
-		end
-		if finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckTwo']['characterString'], function() colorBoardSelectPuck(3, 2) end)
-		end
-		if finalCutProShortcutKey['FCPXHackSaturationPuckThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckThree']['characterString'], function() colorBoardSelectPuck(4, 2) end)
-		end
-		if finalCutProShortcutKey['FCPXHackSaturationPuckFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaturationPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackSaturationPuckFour']['characterString'], function() colorBoardSelectPuck(5, 2) end)
-		end
-
-		if finalCutProShortcutKey['FCPXHackExposurePuckOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckOne']['characterString'], function() colorBoardSelectPuck(2, 3) end)
-		end
-		if finalCutProShortcutKey['FCPXHackExposurePuckTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckTwo']['characterString'], function() colorBoardSelectPuck(3, 3) end)
-		end
-		if finalCutProShortcutKey['FCPXHackExposurePuckThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckThree']['characterString'], function() colorBoardSelectPuck(4, 3) end)
-		end
-		if finalCutProShortcutKey['FCPXHackExposurePuckFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackExposurePuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackExposurePuckFour']['characterString'], function() colorBoardSelectPuck(5, 3) end)
-		end
-
-		if finalCutProShortcutKey['FCPXHackColorPuckOneUp']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackColorPuckOneUp']['modifiers'], finalCutProShortcutKey['FCPXHackColorPuckOneUp']['characterString'], function() colorBoardSelectPuck(2, 1, "up") end, nil, function() colorBoardSelectPuck(2, 1, "up") end )
-		end
-
-		--------------------------------------------------------------------------------
-		-- Help:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['modifiers'], finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'], function() displayShortcutList() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackShowListOfShortcutKeys keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackScrollingTimeline']['modifiers'], finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'], function() activateScrollingTimeline() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackScrollingTimeline keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Match Frame Commands:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['modifiers'], finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['characterString'], function() highlightFCPXBrowserPlayhead() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackBatchExportFromBrowser keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['characterString'], function() matchFrameThenHighlightFCPXBrowserPlayhead() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealInBrowserAndHighlight keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['characterString'], function() singleMatchFrame() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealInBrowserAndHighlight keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['characterString'], function() multicamMatchFrame(true) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealMulticamClipInBrowserAndHighlight keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['characterString'], function() multicamMatchFrame(false) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealMulticamClipInAngleEditorAndHighlight keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Export Tools:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['modifiers'], finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['characterString'], function() batchExportToCompressor() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackBatchExportFromBrowser keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Plist Modification Features:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackChangeBackupInterval']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackChangeBackupInterval']['modifiers'], finalCutProShortcutKey['FCPXHackChangeBackupInterval']['characterString'], function() changeBackupInterval() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackChangeBackupInterval keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['modifiers'], finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['characterString'], function() toggleTimecodeOverlay() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleTimecodeOverlays keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['modifiers'], finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['characterString'], function() toggleMovingMarkers() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleMovingMarkers keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['modifiers'], finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['characterString'], function() togglePerformTasksDuringPlayback() end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleMovingMarkers keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Color Board Selectors:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['characterString'], function() colorBoardSelectPuck(2) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetOne keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['characterString'], function() colorBoardSelectPuck(3) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckTwo keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['characterString'], function() colorBoardSelectPuck(4) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckThree keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['characterString'], function() colorBoardSelectPuck(5) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckThree keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Keyword Searches:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['characterString'], function() fcpxRestoreKeywordSearches(1) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetOne keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['characterString'], function() fcpxRestoreKeywordSearches(2) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetTwo keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['characterString'], function() fcpxRestoreKeywordSearches(3) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetThree keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['characterString'], function() fcpxRestoreKeywordSearches(4) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetFour keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['characterString'], function() fcpxRestoreKeywordSearches(5) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetFive keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['characterString'], function() fcpxRestoreKeywordSearches(6) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetSix keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['characterString'], function() fcpxRestoreKeywordSearches(7) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetSeven keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['characterString'], function() fcpxRestoreKeywordSearches(8) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetEight keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['characterString'], function() fcpxRestoreKeywordSearches(9) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetNine keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save Keyword Searches:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['characterString'], function() fcpxSaveKeywordSearches(1) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetOne keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['characterString'], function() fcpxSaveKeywordSearches(2) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetTwo keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['characterString'], function() fcpxSaveKeywordSearches(3) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetThree keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['characterString'], function() fcpxSaveKeywordSearches(4) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetFour keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['characterString'], function() fcpxSaveKeywordSearches(5) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetFive keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['characterString'], function() fcpxSaveKeywordSearches(6) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetSix keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['characterString'], function() fcpxSaveKeywordSearches(7) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetSeven keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['characterString'], function() fcpxSaveKeywordSearches(8) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetEight keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['characterString'], function() fcpxSaveKeywordSearches(9) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetNine keyboard shortcut.")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects Shortcuts:
-		--------------------------------------------------------------------------------
-		if finalCutProShortcutKey['FCPXHackEffectsOne']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsOne']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsOne']['characterString'], function() effectsShortcut(1) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsOne keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackEffectsTwo']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsTwo']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsTwo']['characterString'], function() effectsShortcut(2) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsTwo keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackEffectsThree']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsThree']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsThree']['characterString'], function() effectsShortcut(3) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsThree keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackEffectsFour']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFour']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFour']['characterString'], function() effectsShortcut(4) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsFour keyboard shortcut.")
-		end
-		if finalCutProShortcutKey['FCPXHackEffectsFive']['characterString'] ~= "" then
-			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFive']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFive']['characterString'], function() effectsShortcut(5) end)
-		else
-			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsFive keyboard shortcut.")
-		end
+	end
 
 	--------------------------------------------------------------------------------
-	-- Enable Hotkeys!
+	-- Development Shortcut:
+	--------------------------------------------------------------------------------
+	if enableDevelopmentShortcut then
+		hs.hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Enable Hotkeys:
 	--------------------------------------------------------------------------------
 	hotkeys:enter()
+
 end
 
 --------------------------------------------------------------------------------
@@ -1229,6 +965,8 @@ function refreshMenuBar(refreshPlistValues)
 	local settingsMenuTable = {
 		{ title = "Enable Hacks Shortcuts in Final Cut Pro", fn = toggleEnableHacksShortcutsInFinalCutPro, checked = enableHacksShortcutsInFinalCutPro},
 	   	{ title = "Enable Shortcuts During Fullscreen Playback", fn = toggleEnableShortcutsDuringFullscreenPlayback, checked = enableShortcutsDuringFullscreenPlayback},
+  	   	{ title = "-" },
+  	   	{ title = "Adjust Scrolling Timeline Offset", fn = adjustScrollingTimelineOffset },
 	   	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", menu = settingsShapeMenuTable},
@@ -1237,6 +975,9 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Display This Menu As Icon", fn = toggleMenubarDisplayMode, checked = displayMenubarAsIcon},
       	{ title = "-" },
 		{ title = "Factory Reset FCPX Hacks", 	fn = resetSettings },
+    	{ title = "-" },
+  	    { title = "Script Version " .. scriptVersion, disabled = true },
+  	    { title = "Thrown Together by LateNite Films", disabled = true },
 	}
 	local settingsEffectsShortcutsTable = {
 		{ title = "Update Effects List", 	fn = updateEffectsList, disabled = not fcpxActive },
@@ -1272,9 +1013,6 @@ function refreshMenuBar(refreshPlistValues)
       	{ title = "Hammerspoon Settings", menu = settingsHammerspoonSettings},
     	{ title = "-" },
     	{ title = "Quit FCPX Hacks", fn = quitFCPXHacks},
-    	{ title = "-" },
-  	    { title = "Script Version " .. scriptVersion, disabled = true },
-  	    { title = "Thrown Together by LateNite Films", disabled = true },
 	}
 
 	--------------------------------------------------------------------------------
@@ -2932,6 +2670,25 @@ function toggleTimecodeOverlay()
 end
 
 --------------------------------------------------------------------------------
+-- ADJUST SCROLLING TIMELINE OFFSET:
+--------------------------------------------------------------------------------
+function adjustScrollingTimelineOffset()
+
+	local scrollingTimelineOffset
+	if hs.settings.get("fcpxHacks.scrollingTimelineOffset") == nil then
+		scrollingTimelineOffset = "1"
+	else
+		scrollingTimelineOffset = hs.settings.get("fcpxHacks.scrollingTimelineOffset")
+	end
+
+	local scrollingTimelineOffsetSelection = displaySmallNumberTextBoxMessage("Please enter a number below as the Scrolling Timeline Offset.\n\nThis number should be above zero but below 1 or 2. If the timeline is going too fast, try a value like 0.02. If the timeline is going too slow, try a value like 1.1. If you want no off-set applied, then enter 1.\n\nYou'll have to experiment! Good luck!", "What you entered looks incorrect.\n\nPlease try again.", scrollingTimelineOffset)
+	if scrollingTimelineOffsetSelection ~= false then
+		hs.settings.set("fcpxHacks.scrollingTimelineOffset", scrollingTimelineOffsetSelection)
+	end
+
+end
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -2950,6 +2707,11 @@ end
 function activateScrollingTimeline()
 
 	--------------------------------------------------------------------------------
+	-- Disable just in case they're still going:
+	--------------------------------------------------------------------------------
+	scrollingTimelineLoopActivated = false
+
+	--------------------------------------------------------------------------------
 	-- Setup Scrolling Timeline Watcher:
 	--------------------------------------------------------------------------------
 	if scrollingTimelineWatcherUp == nil then scrollingTimelineWatcher() end
@@ -2958,13 +2720,6 @@ function activateScrollingTimeline()
 	-- Toggle Scrolling Timeline Watcher:
 	--------------------------------------------------------------------------------
 	if scrollingTimelineWatcherUp:isEnabled() then
-
-		--------------------------------------------------------------------------------
-		-- Disable just in case they're still going:
-		--------------------------------------------------------------------------------
-		scrollingTimelineLoopActivated 				= false
-		scrollingTimelineAdjustmentLoopActivated 	= false
-
 		hs.settings.set("fcpxHacks.scrollingTimelineStatus", false)
 		scrollingTimelineWatcherUp:stop()
 		scrollingTimelineWatcherDown:stop()
@@ -2981,7 +2736,12 @@ end
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE FUNCTION:
 --------------------------------------------------------------------------------
-function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
+function performScrollingTimelineLoopsWIP(whichSplitGroup, whichGroup)
+
+	--------------------------------------------------------------------------------
+	-- Clear Console During Development:
+	--------------------------------------------------------------------------------
+	hs.console.clearConsole()
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -3015,6 +2775,111 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	::performScrollingTimelineValueIndicatorExit::
 
 	--------------------------------------------------------------------------------
+	-- End of Timeline X Position:
+	--------------------------------------------------------------------------------
+	local scrollAreaX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXPosition")['x']
+	local scrollAreaW = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXSize")['w']
+	local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
+
+	--------------------------------------------------------------------------------
+	-- Initial Scrollbar Value:
+	--------------------------------------------------------------------------------
+	local initialScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:attributeValue("AXValue")
+
+	local scrollbarWidth = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:attributeValue("AXSize")['w']
+
+	--------------------------------------------------------------------------------
+	-- Initial Playhead X Position:
+	--------------------------------------------------------------------------------
+	local initialPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+	--------------------------------------------------------------------------------
+	-- The Loop of Death:
+	--------------------------------------------------------------------------------
+	hs.timer.doWhile(function() return scrollingTimelineLoopActivated end, function()
+
+		-- scroll bar at start of 1sec clip 	0.4531122827050863
+		-- scroll bar at end of 1sec clip		0.4545761002927635
+		-- 0.001463817588 (ZOOM: 9.585216757433233)
+
+		--------------------------------------------------------------------------------
+		-- Get Current Playhead Position
+		--------------------------------------------------------------------------------
+		local currentPlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+		distanceBetweenInitialAndCurrent = currentPlayheadXPosition - initialScrollbarValue
+		print("distanceBetweenInitialAndCurrent: " .. distanceBetweenInitialAndCurrent)
+
+		scrollbarStep = (distanceBetweenInitialAndCurrent / scrollbarWidth)/10000 -- 0.001463817588
+		print("scrollbarStep: " .. scrollbarStep)
+
+
+		--------------------------------------------------------------------------------
+		-- Move Scrollbar A Calculated Step Forward:
+		--------------------------------------------------------------------------------
+		local currentScrollbarValue = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:attributeValue("AXValue")
+		fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
+
+	end, 1)
+
+end
+
+--------------------------------------------------------------------------------
+-- SCROLLING TIMELINE FUNCTION:
+--------------------------------------------------------------------------------
+function performScrollingTimelineLoops()
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	fcpx = hs.application("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpxElements = ax.applicationElement(fcpx)[1]
+
+	--------------------------------------------------------------------------------
+	-- Which Split Group:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup = nil
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if whichSplitGroup == nil then
+			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				whichSplitGroup = i
+				goto performScrollingTimelineSplitGroupExit
+			end
+		end
+	end
+	if whichSplitGroup == nil then
+		displayErrorMessage("Unable to locate Split Group.")
+		return "Failed"
+	end
+	::performScrollingTimelineSplitGroupExit::
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	local whichGroup = nil
+	for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+		if whichGroup == nil then
+			if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+						whichGroup = i
+						goto performScrollingTimelineGroupExit
+					end
+				end
+			end
+		end
+	end
+	if whichGroup == nil then
+		displayErrorMessage("Unable to locate Group.")
+		return "Failed"
+	end
+	::performScrollingTimelineGroupExit::
+
+	--------------------------------------------------------------------------------
 	-- Which Zoom Slider:
 	--------------------------------------------------------------------------------
 	local whichZoomSlider = nil
@@ -3031,6 +2896,22 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	::performScrollingTimelineZoomSliderExit::
 
 	--------------------------------------------------------------------------------
+	-- TIMELINE PLAYHEAD PATH:
+	-- 	Which Split Group = 1
+	-- 	Which Scroll Area = 2
+	-- 	Which Layout Area = 1
+	-- 	Which Value Indicator = 2
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TIMELINE SCROLLBAR PATH:
+	-- 	Which Split Group = 1
+	-- 	Which Scroll Area = 2
+	-- 	Which Scroll Bar = 2
+	-- 	Which Value Indicator = 1
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
 	-- Zoom Slider Value:
 	--------------------------------------------------------------------------------
 	local zoomSliderValue = fcpxElements[whichSplitGroup][whichZoomSlider]:attributeValue("AXValue") -- 0 to 10
@@ -3041,61 +2922,86 @@ function performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 	if zoomSliderValue == 0 then return end
 
 	--------------------------------------------------------------------------------
-	-- UI Elements:
+	-- Get UI Values:
 	--------------------------------------------------------------------------------
-	local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
-	local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]
+    local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
+	local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][2]
+    local initialTimelinePlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
+	local initialTimelineScrollbarValue = timelineScrollbar:attributeValue("AXValue")
 
 	--------------------------------------------------------------------------------
-	-- Initial Playhead X Position:
+	-- Because I'm not smart enough to do maths I'll do this manually...
 	--------------------------------------------------------------------------------
-	local initialPlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
+	-- ZOOM: 				1 to 10
+	-- SCROLL BAR: 			0 to 1
+
+	local manualAdjustmentValue
+	if zoomSliderValue > 0 and zoomSliderValue < 1 then
+		--print("0 to 1")
+		manualAdjustmentValue = 0.000005
+	end
+	if zoomSliderValue > 1 and zoomSliderValue < 2 then
+		--print("1 to 2")
+		manualAdjustmentValue = 0.000005
+	end
+	if zoomSliderValue > 2 and zoomSliderValue < 3 then
+		--print("2 to 3")
+		manualAdjustmentValue = 0.000005
+	end
+	if zoomSliderValue > 3 and zoomSliderValue < 4 then
+		--print("3 to 4")
+		manualAdjustmentValue = 0.000005
+	end
+	if zoomSliderValue > 4 and zoomSliderValue < 5 then
+		--print("4 to 5")
+		manualAdjustmentValue = 0.000004
+	end
+	if zoomSliderValue > 5 and zoomSliderValue < 6 then
+		--print("5 to 6")
+		manualAdjustmentValue = 0.000004
+	end
+	if zoomSliderValue > 6 and zoomSliderValue < 7 then
+		--print("6 to 7")
+		manualAdjustmentValue = 0.00000114
+	end
+	if zoomSliderValue > 7 and zoomSliderValue < 8 then
+		--print("7 to 8")
+		manualAdjustmentValue = 0.00000110
+	end
+	if zoomSliderValue > 8 and zoomSliderValue < 8.5 then
+		--print("8 to 8.5")
+		manualAdjustmentValue = 0.0000012
+	end
+	if zoomSliderValue > 8.5 and zoomSliderValue < 9 then
+		--print("8.5 to 9")
+		manualAdjustmentValue = 0.000003
+	end
+	if zoomSliderValue > 9 and zoomSliderValue < 9.5 then
+		--print("9 to 9.5")
+		manualAdjustmentValue = 0.00002
+	end
+	if zoomSliderValue > 9.5 and zoomSliderValue < 10 then
+		--print("9.5 to 10")
+		manualAdjustmentValue = 0.00002
+	end
 
 	--------------------------------------------------------------------------------
-	-- The loop of death:
+	-- Apply an Offset if Applicable:
 	--------------------------------------------------------------------------------
-	scrollingTimelineLoopActivated = true
+	if hs.settings.get("fcpxHacks.scrollingTimelineOffset") ~= nil then
+		manualAdjustmentValue = manualAdjustmentValue * hs.settings.get("fcpxHacks.scrollingTimelineOffset")
+	end
 
+	--------------------------------------------------------------------------------
+	-- Scrolling Timeline Loop:
+	--------------------------------------------------------------------------------
+	local timelineAdjustmentValue = initialTimelineScrollbarValue
 	hs.timer.doWhile(function() return scrollingTimelineLoopActivated end, function()
 
-		scrollingTimelineAdjustmentLoopActivated = true
+		timelineAdjustmentValue = (timelineAdjustmentValue + manualAdjustmentValue)
+		timelineScrollbar:setAttributeValue("AXValue", timelineAdjustmentValue)
 
-		local scrollDirection = 1
-
-		--------------------------------------------------------------------------------
-		-- Yet another loop of death:
-		--------------------------------------------------------------------------------
-		hs.timer.doWhile(function() return scrollingTimelineAdjustmentLoopActivated end, function()
-
-			--------------------------------------------------------------------------------
-			-- Setup Scrollbar Steps based on Zoom Value:
-			--------------------------------------------------------------------------------
-			local zoomSliderValue = fcpxElements[whichSplitGroup][whichZoomSlider]:attributeValue("AXValue") -- 0 to 10
-			scrollbarStep = 0.0000004 * (zoomSliderValue)
-
-			--------------------------------------------------------------------------------
-			-- Move Scrollbar:
-			--------------------------------------------------------------------------------
-			local timelineScrollbar = fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]
-			local currentScrollbarValue = timelineScrollbar:attributeValue("AXValue")
-			fcpxElements[whichSplitGroup][whichGroup][1][2][2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
-
-			--------------------------------------------------------------------------------
-			-- Get new playhead position:
-			--------------------------------------------------------------------------------
-			local timelinePlayhead = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]
-			local currentPlayheadXPosition = timelinePlayhead:attributeValue("AXPosition")['x']
-
-			--------------------------------------------------------------------------------
-			-- If current playhead is less than the initial playhead then exit loop:
-			--------------------------------------------------------------------------------
-			if currentPlayheadXPosition < initialPlayheadXPosition then
-				scrollingTimelineAdjustmentLoopActivated = false
-			end
-
-		end, 0.0025)
-
-	end, 0.01)
+	end, 0.000001)
 
 end
 
@@ -6005,7 +5911,7 @@ function fcpxSaveKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Saved:
 	--------------------------------------------------------------------------------
-	displayMessage("Your Keywords have been saved to Preset " .. tostring(whichButton) .. ".")
+	hs.alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton) .. ".")
 
 end
 
@@ -6106,7 +6012,8 @@ function fcpxRestoreKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Successfully Restored:
 	--------------------------------------------------------------------------------
-	displayMessage("Your Keywords have been restored to Preset " .. tostring(whichButton) .. ".")
+	hs.alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton) .. ".")
+
 
 end
 
@@ -6114,6 +6021,17 @@ end
 -- FCPX COLOR BOARD PUCK SELECTION:
 --------------------------------------------------------------------------------
 function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
+
+	--------------------------------------------------------------------------------
+	-- Save Direction for later incase the key is held down...
+	--------------------------------------------------------------------------------
+	lastSelectedColorBoardDirection = whichDirection
+
+	--------------------------------------------------------------------------------
+	-- The first button is actually the reset button:
+	--------------------------------------------------------------------------------
+	whichPuck = whichPuck + 1
+
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
@@ -6231,9 +6149,68 @@ function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
 	-- Perform a direction shortcut if required:
 	--------------------------------------------------------------------------------
 	if whichDirection ~= nil then
-		if whichDirection == "up" then eventtap.keyStroke({'ctrl', 'alt', 'cmd', 'shift'}, "v") end
+
+		--------------------------------------------------------------------------------
+		-- Get shortcut key from plist and press:
+		--------------------------------------------------------------------------------
+		if whichDirection == "up" then
+			if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
+				hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['modifiers']), 		keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString']])
+			end
+		end
+		if whichDirection == "down" then
+			if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
+				hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString']])
+			end
+		end
+		if whichDirection == "left" then
+			if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
+				hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString']])
+			end
+		end
+		if whichDirection == "right" then
+			if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
+				hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString']])
+			end
+		end
+
 	end
 
+end
+
+--------------------------------------------------------------------------------
+-- FCPX COLOR BOARD PUCK SELECTION KEY HELD DOWN:
+--------------------------------------------------------------------------------
+function colorBoardSelectPuckRepeat()
+
+	--------------------------------------------------------------------------------
+	-- Get Direction from Previous Key Press:
+	--------------------------------------------------------------------------------
+	whichDirection = lastSelectedColorBoardDirection
+
+	--------------------------------------------------------------------------------
+	-- Get shortcut key from plist and press:
+	--------------------------------------------------------------------------------
+	if whichDirection == "up" then
+		if finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
+			hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['modifiers']), 		keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString']])
+		end
+	end
+	if whichDirection == "down" then
+		if finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
+			hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString']])
+		end
+	end
+	if whichDirection == "left" then
+		if finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
+			hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString']])
+		end
+	end
+	if whichDirection == "right" then
+		if finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
+			hs.eventtap.keyStroke(convertModifiersKeysForEventTap(finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['modifiers']), 	keycodes.map[finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString']])
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -6404,41 +6381,67 @@ function readShortcutKeysFromPlist()
 			return "Failed"
 		else
 			local activeCommandSet = trim(executeResult)
-			for k, v in pairs(finalCutProShortcutKey) do
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
-				local executeResult,executeStatus = hs.execute(executeCommand)
+				local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+
 				if executeStatus == nil then
 					--------------------------------------------------------------------------------
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
-					finalCutProShortcutKey[k]['characterString'] = ""
-					--print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+					if executeType ~= "exit" then
+						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+						print("executeResult: " .. tostring(executeResult))
+						print("executeStatus: " .. tostring(executeStatus))
+						print("executeType: " .. tostring(executeType))
+						print("executeRC: " .. tostring(executeRC))
+					end
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'] }
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
 					local currentDict = ""
-					if lastDict ~= 0 then currentDict = ":0" end -- Always use the first entry.
 
-					local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
-					local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
 
-					if executeStatus == nil then
-						if executeType == "exit" then
-							--------------------------------------------------------------------------------
-							-- Assuming that the plist was read fine, but contained no value:
-							--------------------------------------------------------------------------------
-							finalCutProShortcutKey[k]['characterString'] = ""
+						if lastDict ~= 0 then
+							currentDict = ":" .. tostring(whichDict)
+							addToK = tostring(whichDict)
 						else
-							displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
-							return "Failed"
+							currentDict = ""
+							addToK = ""
 						end
-					else
-						finalCutProShortcutKey[k]['characterString'] = translateKeyboardCharacters(trim(executeResult))
+
+						--------------------------------------------------------------------------------
+						-- Insert Blank Placeholder
+						--------------------------------------------------------------------------------
+						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'] }
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Assuming that the plist was read fine, but contained no value:
+								--------------------------------------------------------------------------------
+								finalCutProShortcutKey[k .. addToK]['characterString'] = ""
+							else
+								displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
+								return "Failed"
+							end
+						else
+							finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(trim(executeResult))
+						end
+
 					end
 				end
 			end
-			for k, v in pairs(finalCutProShortcutKey) do
+			for k, v in pairs(finalCutProShortcutKeyPlaceholders) do
 
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
 				local executeResult,executeStatus = hs.execute(executeCommand)
@@ -6446,42 +6449,61 @@ function readShortcutKeysFromPlist()
 					--------------------------------------------------------------------------------
 					-- Maybe there is nothing allocated to this command in the plist?
 					--------------------------------------------------------------------------------
+					if executeType ~= "exit" then
+						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
+						print("executeResult: " .. tostring(executeResult))
+						print("executeStatus: " .. tostring(executeStatus))
+						print("executeType: " .. tostring(executeType))
+						print("executeRC: " .. tostring(executeRC))
+					end
 					finalCutProShortcutKey[k]['modifiers'] = {}
-					--print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
 					local currentDict = ""
-					if lastDict ~= 0 then currentDict = ":0" end -- Always use the first entry.
 
-					local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSet) .. "'"
-					local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
-					if executeStatus == nil then
-						if executeType == "exit" then
-							--------------------------------------------------------------------------------
-							-- Try modifierMask Instead!
-							--------------------------------------------------------------------------------
-							local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSet) .. "'"
-							local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
-							if executeStatus == nil then
-								if executeType == "exit" then
-									--------------------------------------------------------------------------------
-									-- Assuming that the plist was read fine, but contained no value:
-									--------------------------------------------------------------------------------
-									finalCutProShortcutKey[k]['modifiers'] = {}
+					--------------------------------------------------------------------------------
+					-- Loop through each set of the same shortcut key:
+					--------------------------------------------------------------------------------
+					for whichDict=0, lastDict do
+
+						if lastDict ~= 0 then
+							currentDict = ":" .. tostring(whichDict)
+							addToK = tostring(whichDict)
+						else
+							currentDict = ""
+							addToK = ""
+						end
+
+						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifiers\" '" .. tostring(activeCommandSet) .. "'"
+						local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+						if executeStatus == nil then
+							if executeType == "exit" then
+								--------------------------------------------------------------------------------
+								-- Try modifierMask Instead!
+								--------------------------------------------------------------------------------
+								local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":modifierMask\" '" .. tostring(activeCommandSet) .. "'"
+								local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
+								if executeStatus == nil then
+									if executeType == "exit" then
+										--------------------------------------------------------------------------------
+										-- Assuming that the plist was read fine, but contained no value:
+										--------------------------------------------------------------------------------
+										finalCutProShortcutKey[k .. addToK]['modifiers'] = {}
+									else
+										displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
+										return "Failed"
+									end
 								else
-									displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
-									return "Failed"
+									finalCutProShortcutKey[k .. addToK]['modifiers'] = translateModifierMask(trim(executeResult))
 								end
 							else
-								finalCutProShortcutKey[k]['modifiers'] = translateModifierMask(trim(executeResult))
+								displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
+								return "Failed"
 							end
 						else
-							displayErrorMessage("Could not read the plist correctly when retrieving modifiers information.")
-							return "Failed"
+							finalCutProShortcutKey[k .. addToK]['modifiers'] = translateKeyboardModifiers(executeResult)
 						end
-					else
-						finalCutProShortcutKey[k]['modifiers'] = translateKeyboardModifiers(executeResult)
 					end
 				end
 			end
@@ -6635,6 +6657,25 @@ end
 --                     C O M M O N    F U N C T I O N S                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CONVERTS MODIFIERS KEYS INTO SOMETHING EVENTTAP CAN UNDERSTAND:
+--------------------------------------------------------------------------------
+function convertModifiersKeysForEventTap(input)
+
+	for i in pairs(input) do
+		if input[i] == "control" 	then input[i] = "ctrl" end
+		if input[i] == "option" 	then input[i] = "alt" end
+		if input[i] == "command" 	then input[i] = "cmd" end
+		if input[i] == "⌃" 			then input[i] = "ctrl" end
+		if input[i] == "⌥" 			then input[i] = "alt" end
+		if input[i] == "⌘" 			then input[i] = "cmd" end
+		if input[i] == "⇧" 			then input[i] = "shift" end
+	end
+
+	return input
+
+end
 
 --------------------------------------------------------------------------------
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
@@ -7591,25 +7632,21 @@ function scrollingTimelineWatcher()
 			if (mouseLocation['x'] < timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
 			if (mouseLocation['x'] > (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
 			if isMouseInTimelineArea then
-
 				--------------------------------------------------------------------------------
 				-- Mouse is in the timeline area when spacebar pressed:
 				--------------------------------------------------------------------------------
-				if scrollingTimelinePressed then
+				if scrollingTimelineLoopActivated then
 					scrollingTimelineLoopActivated = false
-					scrollingTimelineAdjustmentLoopActivated = false
-					scrollingTimelinePressed = false
 				else
-					scrollingTimelinePressed = true
+					scrollingTimelineLoopActivated = true
 					performScrollingTimelineLoops(whichSplitGroup, whichGroup)
 				end
+
 			else
 				--------------------------------------------------------------------------------
 				-- Mouse is outside the timeline area when spacebar pressed:
 				--------------------------------------------------------------------------------
 				scrollingTimelineLoopActivated = false
-				scrollingTimelineAdjustmentLoopActivated = false
-				scrollingTimelinePressed = false
 			end
 		end
 	end)

@@ -21,6 +21,37 @@
 			<string>FCPXHackExposurePuckThree</string>
 			<string>FCPXHackExposurePuckFour</string>
 			<string>FCPXHackColorPuckOneUp</string>
+			<string>FCPXHackColorPuckTwoUp</string>
+			<string>FCPXHackColorPuckThreeUp</string>
+			<string>FCPXHackColorPuckFourUp</string>
+			<string>FCPXHackColorPuckOneDown</string>
+			<string>FCPXHackColorPuckTwoDown</string>
+			<string>FCPXHackColorPuckThreeDown</string>
+			<string>FCPXHackColorPuckFourDown</string>
+			<string>FCPXHackColorPuckOneLeft</string>
+			<string>FCPXHackColorPuckTwoLeft</string>
+			<string>FCPXHackColorPuckThreeLeft</string>
+			<string>FCPXHackColorPuckFourLeft</string>
+			<string>FCPXHackColorPuckOneRight</string>
+			<string>FCPXHackColorPuckTwoRight</string>
+			<string>FCPXHackColorPuckThreeRight</string>
+			<string>FCPXHackColorPuckFourRight</string>
+			<string>FCPXHackSaturationPuckOneUp</string>
+			<string>FCPXHackSaturationPuckTwoUp</string>
+			<string>FCPXHackSaturationPuckThreeUp</string>
+			<string>FCPXHackSaturationPuckFourUp</string>
+			<string>FCPXHackSaturationPuckOneDown</string>
+			<string>FCPXHackSaturationPuckTwoDown</string>
+			<string>FCPXHackSaturationPuckThreeDown</string>
+			<string>FCPXHackSaturationPuckFourDown</string>
+			<string>FCPXHackExposurePuckOneUp</string>
+			<string>FCPXHackExposurePuckTwoUp</string>
+			<string>FCPXHackExposurePuckThreeUp</string>
+			<string>FCPXHackExposurePuckFourUp</string>
+			<string>FCPXHackExposurePuckOneDown</string>
+			<string>FCPXHackExposurePuckTwoDown</string>
+			<string>FCPXHackExposurePuckThreeDown</string>
+			<string>FCPXHackExposurePuckFourDown</string>
 			<string>FCPXHackScrollingTimeline</string>
 			<string>FCPXHackEffectsOne</string>
 			<string>FCPXHackEffectsTwo</string>
