@@ -95,6 +95,7 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
+--  > Check 'AnchorWithSelectedMediaAudioBacktimed'
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --
 --------------------------------------------------------------------------------
@@ -115,7 +116,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.41"
+local scriptVersion = "0.42"
 --------------------------------------------------------------------------------
 
 
@@ -205,6 +206,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
+	hotkey.setLogLevel("warning")
 	hs.window.filter.setLogLevel(1)
 	hs.window.filter.ignoreAlways['System Events'] = true
 
@@ -229,6 +231,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
 		if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
+		if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
 
 		--------------------------------------------------------------------------------
 		-- Useful Debugging Information:
@@ -252,12 +255,8 @@ function loadScript()
 		local settingsDebug14 = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or ""
 		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineActive") or ""
 		local settingsDebug16 = hs.settings.get("fcpxHacks.scrollingTimelineOffget") or ""
-		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ".")
-
-		--------------------------------------------------------------------------------
-		-- Set Hotkey Console Messages To Warnings Only:
-		--------------------------------------------------------------------------------
-		hotkey.setLogLevel("warning")
+		local settingsDebug17 = hs.settings.get("fcpxHacks.lastVersion") or ""
+		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. tostring(settingsDebug17) .. ".")
 
 		-------------------------------------------------------------------------------
 		-- Common Error Messages:
@@ -269,10 +268,35 @@ function loadScript()
 		-------------------------------------------------------------------------------
 		-- Check Final Cut Pro Version Compatibility:
 		-------------------------------------------------------------------------------
-		if finalCutProVersion() ~= "10.2.3" then
-			hs.osascript.applescript(commonErrorMessageAppleScript .. [[
-				display dialog ("Please be aware that this script has only been tested on Final Cut Pro 10.2.3 and MAY not work correctly on other versions.") buttons {"Ok"} with icon fcpxIcon
-			]])
+		if finalCutProVersion() ~= "10.2.3" then displayMessage("Please be aware that this script has only been tested on Final Cut Pro 10.2.3 and MAY not work correctly on other versions.") end
+
+		--------------------------------------------------------------------------------
+		-- Check if we need to update the Final Cut Pro Shortcut Files:
+		--------------------------------------------------------------------------------
+		if hs.settings.get("fcpxHacks.lastVersion") == nil then
+			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+		else
+			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
+				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+					local finalCutProRunning = isFinalCutProRunning()
+					if finalCutProRunning then
+						displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
+						updateKeyboardShortcuts()
+						if not restartFinalCutPro() then
+							--------------------------------------------------------------------------------
+							-- Failed to restart Final Cut Pro:
+							--------------------------------------------------------------------------------
+							displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+							return "Failed"
+						end
+					else
+						displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.")
+						updateKeyboardShortcuts()
+					end
+				end
+			end
+			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
 		end
 
 		--------------------------------------------------------------------------------
@@ -373,25 +397,6 @@ function loadScript()
 				scrollingTimelineWatcherDown:stop()
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Check if we need to update the Final Cut Pro Shortcut Files:
-		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.lastVersion") == nil then
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-		else
-			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
-				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
-					local dialogBoxResult = displayYesNoQuestion("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, you'll need to run 'Enable Hacks Shortcuts in Final Cut Pro' again from the FCPX Hacks settings menubar.\n\nWould you like to do this now?")
-					if dialogBoxResult then
-						hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
-						toggleEnableHacksShortcutsInFinalCutPro()
-					end
-				end
-			end
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-		end
-
 
 		--------------------------------------------------------------------------------
 		-- Set up Menubar:
@@ -511,11 +516,50 @@ function getFinalCutProApplicationTree()
 end
 
 --------------------------------------------------------------------------------
+-- UPDATE KEYBOARD SHORTCUTS:
 --------------------------------------------------------------------------------
+function updateKeyboardShortcuts()
+	local appleScriptA = [[
+		--------------------------------------------------------------------------------
+		-- Replace Files:
+		--------------------------------------------------------------------------------
+		try
+			tell me to activate
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommandGroups.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+		try
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommands.plist." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+		try
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace Default.commandset." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+		try
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommandDescriptions.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
+		try
+			do shell script "cp -f ~/.hammerspoon/hs/fcpx/new/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+		on error
+			display dialog commonErrorMessageStart & "Failed to replace NSProCommandNames.strings." & commonErrorMessageEnd buttons {"Close"} with icon caution
+			return "Failed"
+		end try
 
-
-
-
+		return "Done"
+	]]
+	ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+	return toggleEnableHacksShortcutsInFinalCutProResult
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -561,7 +605,7 @@ function bindKeyboardShortcuts()
 		finalCutProShortcutKeyPlaceholders = nil
 		finalCutProShortcutKeyPlaceholders =
 		{
-			FCPXHackLaunchFinalCutPro 									= { characterString = "", modifiers = {}, fn = function() launchFinalCutPro() end, releasedFn = nil, repeatFn = nil },
+			FCPXHackLaunchFinalCutPro 									= { characterString = "", modifiers = {}, fn = function() launchFinalCutPro() end, releasedFn = nil, repeatFn = nil, global = true },
 			FCPXHackShowListOfShortcutKeys 								= { characterString = "", modifiers = {}, fn = function() displayShortcutList() end, releasedFn = nil, repeatFn = nil },
 			FCPXHackHighlightBrowserPlayhead 							= { characterString = "", modifiers = {}, fn = function() highlightFCPXBrowserPlayhead() end, releasedFn = nil, repeatFn = nil },
 			FCPXHackRevealInBrowserAndHighlight 						= { characterString = "", modifiers = {}, fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, releasedFn = nil, repeatFn = nil },
@@ -1053,7 +1097,7 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Display Proxy/Original Icon", fn = toggleEnableProxyMenuIcon, checked = enableProxyMenuIcon},
 	   	{ title = "Display This Menu As Icon", fn = toggleMenubarDisplayMode, checked = displayMenubarAsIcon},
       	{ title = "-" },
-		{ title = "Factory Reset FCPX Hacks", 	fn = resetSettings },
+		{ title = "Trash FCPX Hacks Preferences", 	fn = resetSettings },
     	{ title = "-" },
     	{ title = "Created by LateNite Films", fn = gotoLateNiteSite },
   	    { title = "Script Version " .. scriptVersion, disabled = true },
@@ -1068,29 +1112,30 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Assign Effects Shortcut 5", 	fn = assignEffectsShortcutFive, disabled = not effectsListUpdated },
 	}
 	local menuTable = {
-	   	{ title = "Launch Final Cut Pro", fn = launchFinalCutPro, disabled = fcpxActive},
-
+	   	{ title = "Open Final Cut Pro", fn = launchFinalCutPro },
 		{ title = "-" },
-	   	{ title = "Show Keyboard Shortcuts", fn = displayShortcutList },
-	    { title = "-" },
-	    { title = "Background Render (" .. FFAutoRenderDelay .. " secs)", fn = toggleBackgroundRender, disabled = not fcpxActive, checked = FFAutoStartBGRender },
-   	    { title = "-" },
-	    { title = "Leave In Place On Import", fn = toggleLeaveInPlace, disabled = not fcpxActive, checked = not FFImportCopyToMediaFolder },
+   	    { title = "SHORTCUTS:", disabled = true },
 	    { title = "Create Optimized Media", fn = toggleCreateOptimizedMedia, disabled = not fcpxActive, checked = FFImportCreateOptimizeMedia },
 	    { title = "Create Multicam Optimized Media", fn = toggleCreateMulticamOptimizedMedia, disabled = not fcpxActive, checked = FFCreateOptimizedMediaForMulticamClips },
 	    { title = "Create Proxy Media", fn = toggleCreateProxyMedia, disabled = not fcpxActive, checked = FFImportCreateProxyMedia },
+	    { title = "Leave Files In Place On Import", fn = toggleLeaveInPlace, disabled = not fcpxActive, checked = not FFImportCopyToMediaFolder },
+	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", fn = toggleBackgroundRender, disabled = not fcpxActive, checked = FFAutoStartBGRender },
    	    { title = "-" },
-   	   	{ title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", fn = changeBackupInterval },
-   	    { title = "-" },
+ 	    { title = "AUTOMATION:", disabled = true },
    	    { title = "Enable Scrolling Timeline", fn = toggleScrollingTimeline, checked = scrollingTimelineActive },
-	   	{ title = "Enable Timecode Overlay", fn = toggleTimecodeOverlay, checked = FFEnableGuards },
+   	    { title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
+      	{ title = "-" },
+   	    { title = "HACKS:", disabled = true },
+   	   	{ title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", fn = changeBackupInterval },
+   	    { title = "Enable Timecode Overlay", fn = toggleTimecodeOverlay, checked = FFEnableGuards },
 	   	{ title = "Enable Moving Markers", fn = toggleMovingMarkers, checked = allowMovingMarkers },
        	{ title = "Enable Rendering During Playback", fn = togglePerformTasksDuringPlayback, checked = not FFSuspendBGOpsDuringPlay },
-      	{ title = "-" },
-      	{ title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
         { title = "-" },
+        { title = "SETTINGS:", disabled = true },
       	{ title = "FCPX Hacks Settings", menu = settingsMenuTable },
       	{ title = "Hammerspoon Settings", menu = settingsHammerspoonSettings},
+   	    { title = "-" },
+      	{ title = "Show Keyboard Shortcuts", fn = displayShortcutList },
     	{ title = "-" },
     	{ title = "Quit FCPX Hacks", fn = quitFCPXHacks},
 	}
@@ -1222,67 +1267,59 @@ end
 --------------------------------------------------------------------------------
 function resetSettings()
 
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-	local resetMessage = "Are you sure you want to factory reset FCPX Hacks?"
+	local finalCutProRunning = isFinalCutProRunning()
 
-	if enableHacksShortcutsInFinalCutPro ~= nil then
-		if enableHacksShortcutsInFinalCutPro then
-			resetMessage = resetMessage .. "\n\nAs you have Hacks Shortcuts enabled, you will need to enter your Administrator password to reset these shortcuts."
-		end
+	local resetMessage = "Are you sure you want to trash the FCPX Hacks Preferences?"
+	if finalCutProRunning then
+		resetMessage = resetMessage .. "\n\nThis will require your Administrator password and require Final Cut Pro to restart."
+	else
+		resetMessage = resetMessage .. "\n\nThis will require your Administrator password."
 	end
 
 	if displayYesNoQuestion(resetMessage) then
 
 		--------------------------------------------------------------------------------
-		-- Remove Hacks Shortcuts:
+		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
-
 		local removeHacksResult = true
-		if enableHacksShortcutsInFinalCutPro ~= nil then
-			if enableHacksShortcutsInFinalCutPro then
-				--------------------------------------------------------------------------------
-				-- Disable Hacks Shortcut in Final Cut Pro:
-				--------------------------------------------------------------------------------
-				local appleScriptA = [[
-					--------------------------------------------------------------------------------
-					-- Replace Files:
-					--------------------------------------------------------------------------------
-					try
-						tell me to activate
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-					on error
-						return "Failed"
-					end try
-					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
-					on error
-						return "Failed"
-					end try
-					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
-					on error
-						return "Failed"
-					end try
-					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
-					on error
-						return "Failed"
-					end try
-					try
-						do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
-					on error
-						return "Failed"
-					end try
+		local appleScriptA = [[
+			--------------------------------------------------------------------------------
+			-- Replace Files:
+			--------------------------------------------------------------------------------
+			try
+				tell me to activate
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			on error
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			on error
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset'" with administrator privileges
+			on error
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandDescriptions.strings'" with administrator privileges
+			on error
+				return "Failed"
+			end try
+			try
+				do shell script "cp -f ~/.hammerspoon/hs/fcpx/old/en.lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/NSProCommandNames.strings'" with administrator privileges
+			on error
+				return "Failed"
+			end try
 
-					return "Done"
-				]]
-				ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
-				if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
-					displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
-				else
-					removeHacksResult = true
-				end
-			end
+			return "Done"
+		]]
+		ok,toggleEnableHacksShortcutsInFinalCutProResult = hs.osascript.applescript(commonErrorMessageAppleScript .. appleScriptA)
+		if toggleEnableHacksShortcutsInFinalCutProResult ~= "Done" then
+			displayErrorMessage("Failed to restore keyboard layouts. Something has gone wrong! Aborting reset.")
+		else
+			removeHacksResult = true
 		end
 
 		if removeHacksResult then
@@ -1305,16 +1342,29 @@ function resetSettings()
 			hs.settings.set("fcpxHacks.effectsShortcutFive", nil)
 			hs.settings.set("fcpxHacks.enableProxyMenuIcon", nil)
 			hs.settings.set("fcpxHacks.scrollingTimelineActive", nil)
+			hs.settings.set("fcpxHacks.lastVersion", nil)
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Restart Final Cut Pro if running:
+			--------------------------------------------------------------------------------
+			if finalCutProRunning then
+				if not restartFinalCutPro() then
+					--------------------------------------------------------------------------------
+					-- Failed to restart Final Cut Pro:
+					--------------------------------------------------------------------------------
+					displayMessage("We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.")
+				end
+			end
+			--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
 			-- Reload Hammerspoon:
 			--------------------------------------------------------------------------------
 			hs.reload()
 
-		end
-
-	end
-
+		end --removeHacksResult
+	end -- displayYesNoQuestion(resetMessage)
 end
 
 --------------------------------------------------------------------------------
@@ -6295,7 +6345,8 @@ function readShortcutKeysFromPlist()
 						--print("executeType: " .. tostring(executeType))
 						--print("executeRC: " .. tostring(executeRC))
 					end
-					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'] }
+					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -6322,7 +6373,8 @@ function readShortcutKeysFromPlist()
 						--------------------------------------------------------------------------------
 						-- Insert Blank Placeholder
 						--------------------------------------------------------------------------------
-						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'] }
+						local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
+						finalCutProShortcutKey[k .. addToK] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
 
 						local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. currentDict .. ":characterString\" '" .. tostring(activeCommandSet) .. "'"
 						local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
