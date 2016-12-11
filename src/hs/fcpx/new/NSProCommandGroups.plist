@@ -8,6 +8,16 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackCreateOptimizedMediaOn</string>
+			<string>FCPXHackCreateOptimizedMediaOff</string>
+			<string>FCPXHackCreateMulticamOptimizedMediaOn</string>
+			<string>FCPXHackCreateMulticamOptimizedMediaOff</string>
+			<string>FCPXHackCreateProxyMediaOn</string>
+			<string>FCPXHackCreateProxyMediaOff</string>
+			<string>FCPXHackLeaveInPlaceOn</string>
+			<string>FCPXHackLeaveInPlaceOff</string>
+			<string>FCPXHackBackgroundRenderOn</string>
+			<string>FCPXHackBackgroundRenderOff</string>
 			<string>FCPXHackChangeTimelineClipHeightUp</string>
 			<string>FCPXHackChangeTimelineClipHeightDown</string>
 			<string>FCPXHackColorPuckOne</string>

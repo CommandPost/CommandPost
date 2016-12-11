@@ -2,19 +2,89 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FCPXHackChangeTimelineClipHeightUp</key>
+	<key>FCPXHackCreateOptimizedMediaOn</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>FCPXHackChangeTimelineClipHeightDown</key>
+	<key>FCPXHackCreateOptimizedMediaOff</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
+	</dict>
+	<key>FCPXHackCreateMulticamOptimizedMediaOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateMulticamOptimizedMediaOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateProxyMediaOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackCreateProxyMediaOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackLeaveInPlaceOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackLeaveInPlaceOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackBackgroundRenderOn</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackBackgroundRenderOff</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackChangeTimelineClipHeightUp</key>
+	<dict>
+		<key>characterString</key>
+		<string>=</string>
+		<key>modifiers</key>
+		<string>control option command</string>
+	</dict>
+	<key>FCPXHackChangeTimelineClipHeightDown</key>
+	<dict>
+		<key>characterString</key>
+		<string>-</string>
+		<key>modifiers</key>
+		<string>control option command</string>
 	</dict>
 	<key>FCPXHackColorPuckOneUp</key>
 	<dict>

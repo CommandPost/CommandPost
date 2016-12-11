@@ -43,6 +43,12 @@
 -- THE SOFTWARE.
 --
 --------------------------------------------------------------------------------
+--  FCPX HACKS LOGO DESIGNED BY:
+--------------------------------------------------------------------------------
+--
+--  > Sam Woodhall (https://twitter.com/SWDoctor)
+--
+--------------------------------------------------------------------------------
 --  USING SNIPPETS OF CODE FROM:
 --------------------------------------------------------------------------------
 --
@@ -56,7 +62,7 @@
 --  HUGE SPECIAL THANKS TO THESE AMAZING DEVELOPERS FOR ALL THEIR HELP:
 --------------------------------------------------------------------------------
 --
---  > A-Ron (https://github.com/asmagill)
+--  > Aaron Magill (https://github.com/asmagill)
 --  > Chris Jones (https://github.com/cmsj)
 --  > Bill Cheeseman (http://pfiddlesoft.com)
 --  > Yvan Koenig (http://macscripter.net/viewtopic.php?id=45148)
@@ -94,7 +100,9 @@
 --  HIGH PRIORITY LIST:
 --------------------------------------------------------------------------------
 --
--- 	> Custom Keyboard shortcuts for "Shortcuts" menubar items
+--  > Rethink findMenuItem
+--  > Fix Scrolling Timeline Bugs
+--  > Add Scrolling Timeline Cache
 --  > Select clip on Secondary Storyline Shortcut
 --  > "Activate all audio tracks on all selected multicam clips" shortcut.
 --  > Move Storyline Up & Down Shortcut
@@ -117,7 +125,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.44"
+local scriptVersion = "0.45"
 --------------------------------------------------------------------------------
 
 
@@ -284,7 +292,7 @@ function loadScript()
 		-------------------------------------------------------------------------------
 		commonErrorMessageStart = "I'm sorry, but the following error has occurred:\n\n"
 		commonErrorMessageEnd = "\n\nmacOS Version: " .. macOSVersion() .. "\nFCPX Version: " .. finalCutProVersion() .. "\nScript Version: " .. scriptVersion .. "\n\nPlease take a screenshot of your entire screen and email it to the below address so that we can try and come up with a fix:\n\nchris@latenitefilms.com\n\nThank you for testing!"
-		commonErrorMessageAppleScript = 'set fcpxIcon to ((path to "apps" as Unicode text) & ("Final Cut Pro.app:Contents:Resources:Final Cut.icns" as Unicode text)) as alias\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+		commonErrorMessageAppleScript = 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpx:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
 		-------------------------------------------------------------------------------
 		-- Check Final Cut Pro Version Compatibility:
@@ -294,6 +302,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Check Keyboard Layout before we begin:
 		--------------------------------------------------------------------------------
+		--[[
 		if hs.keycodes.currentLayout() ~= nil then
 			local currentKeyboardLayout = hs.keycodes.currentLayout()
 			local supportedKeyboardLayout = false
@@ -315,6 +324,7 @@ function loadScript()
 				displayMessage("Unfortunately your current keyboard layout (" .. tostring(currentKeyboardLayout) .. ") hasn't yet been tested in FCPX Hacks.\n\nIdeally to use customised keyboard shortcuts, you should use a Standard English QWERTY keyboard layout.\n\nOur suggestion would be to switch layouts, however you're welcome to try keep your current laytout and just see what happens! Good luck!")
 			end
 		end
+		--]]
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
@@ -499,6 +509,8 @@ function testingGround()
 
 	-- Clear Console During Development:
 	--hs.console.clearConsole()
+
+	--toggleBackgroundRender(true)
 
 end
 
@@ -719,6 +731,18 @@ function bindKeyboardShortcuts()
 
 			FCPXHackChangeTimelineClipHeightUp 							= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 			FCPXHackChangeTimelineClipHeightDown						= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+
+			FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateMulticamOptimizedMediaOn						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(true) end, 		releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateProxyMediaOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateProxyMediaOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 				releasedFn = nil, 														repeatFn = nil },
+
 		}
 
 		--------------------------------------------------------------------------------
@@ -844,8 +868,19 @@ function bindKeyboardShortcuts()
 			FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 			FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 
-			FCPXHackChangeTimelineClipHeightUp 							= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
-			FCPXHackChangeTimelineClipHeightDown						= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("+"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+
+			FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateMulticamOptimizedMediaOn						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(true) end, 		releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateProxyMediaOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackCreateProxyMediaOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 				releasedFn = nil, 														repeatFn = nil },
+			FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 				releasedFn = nil, 														repeatFn = nil },
 
 		}
 
@@ -927,6 +962,20 @@ end
 function refreshMenuBar(refreshPlistValues)
 
 	--------------------------------------------------------------------------------
+	-- Local Variables:
+	--------------------------------------------------------------------------------
+	local FFImportCreateProxyMedia 					= false
+	local allowMovingMarkers 						= false
+	local FFPeriodicBackupInterval 					= "15"
+	local FFSuspendBGOpsDuringPlay 					= false
+	local FFEnableGuards 							= false
+	local FFCreateOptimizedMediaForMulticamClips 	= true
+	local FFAutoStartBGRender 						= true
+	local FFAutoRenderDelay 						= "0.3"
+	local FFImportCopyToMediaFolder 				= true
+	local FFImportCreateOptimizeMedia 				= false
+
+	--------------------------------------------------------------------------------
 	-- Assume FCPX is closed if not told otherwise:
 	--------------------------------------------------------------------------------
 	local fcpxActive = isFinalCutProFrontmost()
@@ -940,70 +989,60 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Get plist values for Allow Moving Markers:
 		--------------------------------------------------------------------------------
-		allowMovingMarkers = false
 		local executeResult,executeStatus = hs.execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if trim(executeResult) == "true" then allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFPeriodicBackupInterval:
 		--------------------------------------------------------------------------------
-		FFPeriodicBackupInterval = "15"
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFPeriodicBackupInterval")
 		if trim(executeResult) ~= "" then FFPeriodicBackupInterval = executeResult end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFSuspendBGOpsDuringPlay:
 		--------------------------------------------------------------------------------
-		FFSuspendBGOpsDuringPlay = false
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFSuspendBGOpsDuringPlay")
 		if trim(executeResult) == "1" then FFSuspendBGOpsDuringPlay = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFEnableGuards:
 		--------------------------------------------------------------------------------
-		FFEnableGuards = false
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFEnableGuards")
 		if trim(executeResult) == "1" then FFEnableGuards = true end
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCreateOptimizeMedia:
+		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
 		--------------------------------------------------------------------------------
-		FFCreateOptimizedMediaForMulticamClips = true
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
 		if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoStartBGRender:
 		--------------------------------------------------------------------------------
-		FFAutoStartBGRender = true
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
 		if trim(executeResult) == "0" then FFAutoStartBGRender = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
-		FFAutoRenderDelay = "0.3"
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoRenderDelay")
 		if executeStatus == true then FFAutoRenderDelay = trim(executeResult) end
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFAutoStartBGRender:
+		-- Get plist values for FFImportCopyToMediaFolder:
 		--------------------------------------------------------------------------------
-		FFImportCopyToMediaFolder = true
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
 		if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateOptimizeMedia:
 		--------------------------------------------------------------------------------
-		FFImportCreateOptimizeMedia = false
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
 		if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
 
 		--------------------------------------------------------------------------------
 		-- Get plist values for FFImportCreateProxyMedia:
 		--------------------------------------------------------------------------------
-		local FFImportCreateProxyMedia = false
 		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
 		if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
 
@@ -1177,6 +1216,65 @@ function refreshMenuBar(refreshPlistValues)
 end
 
 --------------------------------------------------------------------------------
+-- DISPLAY A LIST OF ALL SHORTCUTS:
+--------------------------------------------------------------------------------
+function displayShortcutList()
+
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
+
+	if enableHacksShortcutsInFinalCutPro then
+		displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
+	else
+		local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
+
+---------------------------------
+CONTROL+OPTION+COMMAND:
+---------------------------------
+L = Launch Final Cut Pro (System Wide)
+
+W = Toggle Scrolling Timeline
+
+H = Highlight Browser Playhead
+F = Reveal in Browser & Highlight
+S = Single Match Frame & Highlight
+
+D = Reveal Multicam in Browser & Highlight
+G = Reveal Multicam in Angle Editor & Highlight
+
+E = Batch Export from Browser
+
+B = Change Backup Interval
+
+T = Toggle Timecode Overlays
+Y = Toggle Moving Markers
+P = Toggle Rendering During Playback
+
+M = Select Color Board Puck 1
+, = Select Color Board Puck 2
+. = Select Color Board Puck 3
+/ = Select Color Board Puck 4
+
+1-9 = Restore Keyword Preset
+
++ = Increase Timeline Clip Height
+- = Decrease Timeline Clip Height
+
+-----------------------------------------
+CONTROL+OPTION+COMMAND+SHIFT:
+-----------------------------------------
+1-9 = Save Keyword Preset
+
+-----------------------------------------
+CONTROL+SHIFT:
+-----------------------------------------
+1-5 = Apply Effect]]
+
+		displayMessage(whatMessage)
+	end
+end
+
+--------------------------------------------------------------------------------
 -- UPDATE KEYBOARD SHORTCUTS:
 --------------------------------------------------------------------------------
 function updateKeyboardShortcuts()
@@ -1270,60 +1368,6 @@ function toggleCheckforHammerspoonUpdates()
 	local originalValue = hs.automaticallyCheckForUpdates()
 	hs.automaticallyCheckForUpdates(not originalValue)
 	refreshMenuBar()
-end
-
---------------------------------------------------------------------------------
--- DISPLAY A LIST OF ALL SHORTCUTS:
---------------------------------------------------------------------------------
-function displayShortcutList()
-
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
-
-	if enableHacksShortcutsInFinalCutPro then
-		displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
-	else
-		local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
-
----------------------------------
-CONTROL+OPTION+COMMAND:
----------------------------------
-L = Launch Final Cut Pro (System Wide)
-
-W = Toggle Scrolling Timeline
-
-H = Highlight Browser Playhead
-F = Reveal in Browser & Highlight
-S = Single Match Frame & Highlight
-
-D = Reveal Multicam in Browser & Highlight
-G = Reveal Multicam in Angle Editor & Highlight
-
-E = Batch Export from Browser
-
-B = Change Backup Interval
-T = Toggle Timecode Overlays
-Y = Toggle Moving Markers
-P = Toggle Allow Tasks during Playback
-
-M = Select Color Board Puck 1
-, = Select Color Board Puck 2
-. = Select Color Board Puck 3
-/ = Select Color Board Puck 4
-1-9 = Restore Keyword Preset
-
------------------------------------------
-CONTROL+OPTION+COMMAND+SHIFT:
------------------------------------------
-1-9 = Save Keyword Preset
-
------------------------------------------
-CONTROL+SHIFT:
------------------------------------------
-1-5 = Apply Effect]]
-
-		displayMessage(whatMessage)
-	end
 end
 
 --------------------------------------------------------------------------------
@@ -1796,14 +1840,19 @@ end
 --------------------------------------------------------------------------------
 function updateMenubarIcon()
 
+	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/fcpx/assets/fcpxhacks.png")
+	local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
 	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
 	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
 	local proxyMenuIcon = ""
+	local proxyStatusIcon = getProxyStatusIcon()
+
+	fcpxMenubar:setIcon(nil)
 
 	if enableProxyMenuIcon ~= nil then
 		if enableProxyMenuIcon == true then
-			if getProxyStatusIcon() ~= nil then
-				proxyMenuIcon = " " .. getProxyStatusIcon()
+			if proxyStatusIcon ~= nil then
+				proxyMenuIcon = " " .. proxyStatusIcon
 			else
 				proxyMenuIcon = ""
 			end
@@ -1814,7 +1863,15 @@ function updateMenubarIcon()
 		fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
 	else
 		if displayMenubarAsIcon then
-			fcpxMenubar:setTitle("🎬" .. proxyMenuIcon)
+			fcpxMenubar:setIcon(fcpxHacksIconSmall)
+			if proxyStatusIcon ~= nil then
+				if proxyStatusIcon ~= "" then
+					if enableProxyMenuIcon then
+						proxyMenuIcon = proxyMenuIcon .. "  "
+					end
+			 	end
+			 end
+			fcpxMenubar:setTitle(proxyMenuIcon)
 		else
 			fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
 		end
@@ -2086,7 +2143,23 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 --------------------------------------------------------------------------------
-function toggleCreateMulticamOptimizedMedia()
+function toggleCreateMulticamOptimizedMedia(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
+		--------------------------------------------------------------------------------
+		local FFCreateOptimizedMediaForMulticamClips = true
+		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFCreateOptimizedMediaForMulticamClips")
+		if trim(executeResult) == "0" then FFCreateOptimizedMediaForMulticamClips = false end
+
+		if optionalValue == FFCreateOptimizedMediaForMulticamClips then return end
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2170,7 +2243,23 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE CREATE PROXY MEDIA:
 --------------------------------------------------------------------------------
-function toggleCreateProxyMedia()
+function toggleCreateProxyMedia(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Get plist values for FFImportCreateProxyMedia:
+		--------------------------------------------------------------------------------
+		local FFImportCreateProxyMedia = false
+		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateProxyMedia")
+		if trim(executeResult) == "1" then FFImportCreateProxyMedia = true end
+
+		if optionalValue == FFImportCreateProxyMedia then return end
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2254,7 +2343,23 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE CREATE OPTIMIZED MEDIA:
 --------------------------------------------------------------------------------
-function toggleCreateOptimizedMedia()
+function toggleCreateOptimizedMedia(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Get plist values for FFImportCreateOptimizeMedia:
+		--------------------------------------------------------------------------------
+		local FFImportCreateOptimizeMedia = false
+		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCreateOptimizeMedia")
+		if trim(executeResult) == "1" then FFImportCreateOptimizeMedia = true end
+
+		if optionalValue == FFImportCreateOptimizeMedia then return end
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2338,7 +2443,23 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE LEAVE IN PLACE ON IMPORT:
 --------------------------------------------------------------------------------
-function toggleLeaveInPlace()
+function toggleLeaveInPlace(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Get plist values for FFImportCopyToMediaFolder:
+		--------------------------------------------------------------------------------
+		local FFImportCopyToMediaFolder = true
+		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFImportCopyToMediaFolder")
+		if trim(executeResult) == "0" then FFImportCopyToMediaFolder = false end
+
+		if optionalValue == not FFImportCopyToMediaFolder then return end
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2426,7 +2547,23 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE BACKGROUND RENDER:
 --------------------------------------------------------------------------------
-function toggleBackgroundRender()
+function toggleBackgroundRender(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Get plist values for FFAutoStartBGRender:
+		--------------------------------------------------------------------------------
+		local FFAutoStartBGRender = true
+		local executeResult,executeStatus = hs.execute("defaults read ~/Library/Preferences/com.apple.FinalCut.plist FFAutoStartBGRender")
+		if trim(executeResult) == "0" then FFAutoStartBGRender = false end
+
+		if optionalValue == FFAutoStartBGRender then return end
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- Define FCPX:
@@ -2945,7 +3082,12 @@ function changeTimelineClipHeight(direction)
 	--------------------------------------------------------------------------------
 	-- If the window is already open:
 	--------------------------------------------------------------------------------
-	if fcpxElements[1] == nil or fcpxElements[1][whichSplitGroup] == nil or fcpxElements[1][whichSplitGroup][whichGroup] == nil or fcpxElements[1][whichSplitGroup][whichGroup][2] == nil then
+	local isWindowAlreadyOpen = false
+	if fcpxElements[1] == nil then isWindowAlreadyOpen = true end
+	if fcpxElements[1][whichSplitGroup] == nil then isWindowAlreadyOpen = true end
+	if fcpxElements[1][whichSplitGroup][whichGroup] == nil then isWindowAlreadyOpen = true end
+	if fcpxElements[1][whichSplitGroup][whichGroup][2] == nil then isWindowAlreadyOpen = true end
+	if isWindowAlreadyOpen then
 
 		--------------------------------------------------------------------------------
 		-- Increase or decrease slider once:
@@ -6651,10 +6793,10 @@ function readShortcutKeysFromPlist()
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
 						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-						print("executeResult: " .. tostring(executeResult))
-						print("executeStatus: " .. tostring(executeStatus))
-						print("executeType: " .. tostring(executeType))
-						print("executeRC: " .. tostring(executeRC))
+						--print("executeResult: " .. tostring(executeResult))
+						--print("executeStatus: " .. tostring(executeStatus))
+						--print("executeType: " .. tostring(executeType))
+						--print("executeRC: " .. tostring(executeRC))
 					end
 					local globalShortcut = finalCutProShortcutKeyPlaceholders[k]['global'] or false
 					finalCutProShortcutKey[k] = { characterString = "", modifiers = {}, fn = finalCutProShortcutKeyPlaceholders[k]['fn'],  releasedFn = finalCutProShortcutKeyPlaceholders[k]['releasedFn'], repeatFn = finalCutProShortcutKeyPlaceholders[k]['repeatFn'], global = globalShortcut }
@@ -6717,11 +6859,11 @@ function readShortcutKeysFromPlist()
 					--------------------------------------------------------------------------------
 					if executeType ~= "exit" then
 						print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
-						print("executeCommand: " .. tostring(executeCommand))
-						print("executeResult: " .. tostring(executeResult))
-						print("executeStatus: " .. tostring(executeStatus))
-						print("executeType: " .. tostring(executeType))
-						print("executeRC: " .. tostring(executeRC))
+						--print("executeCommand: " .. tostring(executeCommand))
+						--print("executeResult: " .. tostring(executeResult))
+						--print("executeStatus: " .. tostring(executeStatus))
+						--print("executeType: " .. tostring(executeType))
+						--print("executeRC: " .. tostring(executeRC))
 					end
 					finalCutProShortcutKey[k]['modifiers'] = {}
 				else
