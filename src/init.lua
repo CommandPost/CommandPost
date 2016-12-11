@@ -122,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.55"
+local scriptVersion = "0.56"
 --------------------------------------------------------------------------------
 
 
@@ -1815,13 +1815,6 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Check for Updates", 																fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
 	}
 	local settingsMenuTable = {
-		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
-	   	{ title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback},
-	   	{ title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
-	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
-	   	{ title = "-" },
-	   	{ title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
-	   	{ title = "-" },
 	   	{ title = "Highlight Playhead Colour", 														menu = settingsColourMenuTable},
 	   	{ title = "Highlight Playhead Shape", 														menu = settingsShapeMenuTable},
        	{ title = "-" },
@@ -1854,12 +1847,17 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "-" },
  	    { title = "AUTOMATION:", 																																																	disabled = true },
    	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
+   	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback},
+   	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
    	    { title = "Effects Shortcuts", 																menu = settingsEffectsShortcutsTable },
       	{ title = "-" },
    	    { title = "TOOLS:", 																																																		disabled = true },
+   	    { title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
+   	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "-" },
    	    { title = "HACKS:", 																																																		disabled = true },
+   		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
    	    { title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = FFEnableGuards },
 	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = allowMovingMarkers },
        	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not FFSuspendBGOpsDuringPlay },
@@ -10197,7 +10195,7 @@ function mediaImportWatcher()
 				if not isFinalCutProRunning() then
 					stopMediaImportTimer = true
 				else
-					local fcpx = hs.application("Final Cut Pro")
+					local fcpx = hs.appfinder.appFromName("Final Cut Pro")
 					local fcpxElements = ax.applicationElement(fcpx)
 					if fcpxElements[1] ~= nil then
 						if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
