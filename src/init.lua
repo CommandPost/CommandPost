@@ -122,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.54"
+local scriptVersion = "0.55"
 --------------------------------------------------------------------------------
 
 
@@ -274,6 +274,7 @@ local FFImportCopyToMediaFolder 				= nil											-- Used in refreshMenuBar
 local FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
 
 local fcpxChooser								= nil											-- Chooser
+local fcpxChooserActive							= false											-- Chooser Active?
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1231,6 +1232,7 @@ end
 -- SHOW CHOOSER:
 --------------------------------------------------------------------------------
 function showChooser()
+	fcpxChooserActive = true
 	fcpxChooser:show()
 end
 
@@ -1552,14 +1554,28 @@ end
 --------------------------------------------------------------------------------
 function chooserAction(result)
 
+	--------------------------------------------------------------------------------
+	-- Hide Chooser:
+	--------------------------------------------------------------------------------
+	fcpxChooser:hide()
+
+	--------------------------------------------------------------------------------
+	-- Perform Specific Function:
+	--------------------------------------------------------------------------------
 	if result ~= nil then
-		fcpxChooser:hide()
-		launchFinalCutPro()
-		_G[result["function"]](result["function1"], result["function2"], result["function3"])
-	else
-		fcpxChooser:hide()
-		launchFinalCutPro()
+		hs.timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
 	end
+
+	--------------------------------------------------------------------------------
+	-- Put focus back in Final Cut Pro:
+	--------------------------------------------------------------------------------
+	launchFinalCutPro()
+
+	--------------------------------------------------------------------------------
+	-- Re-activate the Scrolling Timeline:
+	--------------------------------------------------------------------------------
+	fcpxChooserActive = false
+	scrollingTimelineWatcherWorking = false
 
 end
 
@@ -2496,6 +2512,11 @@ function updateEffectsList()
 		--------------------------------------------------------------------------------
 		hs.settings.set("fcpxHacks.allEffects", allEffects)
 		hs.settings.set("fcpxHacks.effectsListUpdated", true)
+
+		--------------------------------------------------------------------------------
+		-- Update Chooser:
+		--------------------------------------------------------------------------------
+		fcpxChooser:refreshChoicesCallback()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -10220,6 +10241,7 @@ function scrollingTimelineWatcher()
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
 	scrollingTimelineWatcherDown = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+
 		--------------------------------------------------------------------------------
 		-- Don't repeat if key is held down:
 		--------------------------------------------------------------------------------
@@ -10234,11 +10256,11 @@ function scrollingTimelineWatcher()
 			--------------------------------------------------------------------------------
 			-- Spacebar Pressed:
 			--------------------------------------------------------------------------------
-			if event:getKeyCode() == 49 then
+			if event:getKeyCode() == 49 and next(event:getFlags()) == nil then
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not isCommandEditorOpen then
+				if not isCommandEditorOpen and not fcpxChooserActive then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
