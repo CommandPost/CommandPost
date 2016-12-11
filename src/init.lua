@@ -66,6 +66,7 @@
 --  VERY SPECIAL THANKS TO THESE AWESOME TESTERS & SUPPORTERS:
 --------------------------------------------------------------------------------
 --
+--  > Андрей Смирнов
 --  > FCPX Editors InSync Facebook Group
 --  > Alex Gollner (http://alex4d.com)
 --  > Scott Simmons (http://www.scottsimmons.tv)
@@ -76,6 +77,7 @@
 --  FEATURE TO-DO LIST:
 --------------------------------------------------------------------------------
 --
+--  > Shortcut to go to full screen mode.
 --  > Move Storyline Up & Down Shortcut
 --  > Add Audio Fade Handles Shortcut
 --  > Select clip on Secondary Storyline Shortcut
@@ -91,6 +93,7 @@
 --  BUGS & ISSUES TO-DO LIST:
 --------------------------------------------------------------------------------
 --
+--  > Rewrite bindKeyboardShortcuts() to use smarter loops and arrays.
 --  > updateEffectsList() needs to be faster.
 --  > translateKeyboardCharacters() could be done better.
 --  > Work out a way to allow custom shortcuts for languages other than English.
@@ -106,7 +109,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.34"
+local scriptVersion = "0.35"
 --------------------------------------------------------------------------------
 
 
@@ -141,6 +144,11 @@ local clock = os.clock
 function loadScript()
 
 	--------------------------------------------------------------------------------
+	-- Need Accessibility Activated:
+	--------------------------------------------------------------------------------
+	hs.accessibilityState(true)
+
+	--------------------------------------------------------------------------------
 	-- Clean the console to make it clean:
 	--------------------------------------------------------------------------------
 	hs.console.clearConsole()
@@ -158,8 +166,6 @@ function loadScript()
 	print("")
 	print("Thanks for testing!")
 	print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-	print("")
-	print("Begin Hammerspoon script:")
 	print("")
 
 	--------------------------------------------------------------------------------
@@ -190,6 +196,36 @@ function loadScript()
 	-- Is Final Cut Pro Installed:
 	--------------------------------------------------------------------------------
 	if isFinalCutProInstalled() then
+
+		--------------------------------------------------------------------------------
+		-- USEFUL DEBUGGING INFORMATION:
+		--------------------------------------------------------------------------------
+		if macOSVersion() ~= nil then
+			print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion()))
+		end
+		if finalCutProVersion() ~= nil then
+			print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))
+		end
+		if hs.keycodes.currentLayout() ~= nil then
+			print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout()))
+		end
+		local settingsDebug1 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
+		local settingsDebug2 = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or ""
+		local settingsDebug3 = hs.settings.get("fcpxHacks.allEffects") or ""
+		local settingsDebug4 = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or ""
+		local settingsDebug5 = hs.settings.get("fcpxHacks.effectsListUpdated") or ""
+		local settingsDebug6 = hs.settings.get("fcpxHacks.displayHighlightShape") or ""
+		local settingsDebug7 = hs.settings.get("fcpxHacks.displayHighlightColour") or ""
+		local settingsDebug8 = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or ""
+		local settingsDebug9 = hs.settings.get("fcpxHacks.effectsShortcutOne") or ""
+		local settingsDebug10 = hs.settings.get("fcpxHacks.effectsShortcutTwo") or ""
+		local settingsDebug11 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
+		local settingsDebug12 = hs.settings.get("fcpxHacks.effectsShortcutFour") or ""
+		local settingsDebug13 = hs.settings.get("fcpxHacks.effectsShortcutFive") or ""
+		local settingsDebug14 = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or ""
+		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineStatus") or ""
+		local settingsDebug16 = hs.settings.get("fcpxHacks.scrollingTimelineOffget") or ""
+		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ".")
 
 		--------------------------------------------------------------------------------
 		-- Set Hotkey Console Messages To Warnings Only:
@@ -297,20 +333,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- All loaded!
 		--------------------------------------------------------------------------------
-		print("")
-		if macOSVersion() ~= nil then
-			print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion()))
-		end
-		if hs.processInfo['version'] ~= nil then
-			print("[FCPX Hacks] Hammerspoon Version: " .. tostring(hs.processInfo['version']))
-		end
-		if finalCutProVersion() ~= nil then
-			print("[FCPX Hacks] Final Cut Pro Version: " .. tostring(finalCutProVersion()))
-		end
-		if hs.keycodes.currentLayout() ~= nil then
-			print("[FCPX Hacks] Current keyboard layout: " .. tostring(hs.keycodes.currentLayout()))
-		end
-		print("")
 		print("[FCPX Hacks] Successfully loaded.")
 		hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
 	else
@@ -473,10 +495,13 @@ function bindKeyboardShortcuts()
 			FCPXHackScrollingTimeline	 								= { characterString = "", modifiers = {} },
 		}
 		if readShortcutKeysFromPlist() ~= "Done" then
+			displayMessage("Something went wrong when we were reading your custom keyboard shortcuts. As a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!")
 			print("[FCPX Hacks] ERROR: Something went wrong during the plist reading process. Falling back to default shortcut keys.")
 			enableHacksShortcutsInFinalCutPro = false
 		end
-	else
+	end
+
+	if not enableHacksShortcutsInFinalCutPro then
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
 		--------------------------------------------------------------------------------
@@ -527,7 +552,6 @@ function bindKeyboardShortcuts()
 		}
 	end
 
-
 	--------------------------------------------------------------------------------
 	-- Reset Modal Hotkey for Final Cut Pro Commands:
 	--------------------------------------------------------------------------------
@@ -548,7 +572,11 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Launch Final Cut Pro:
 		--------------------------------------------------------------------------------
-		hs.hotkey.bind(finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'], finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'], function() hs.application.launchOrFocus("Final Cut Pro") end)
+		if (finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'] ~= nil) and (finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'] ~= nil) then
+			hs.hotkey.bind(finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['modifiers'], finalCutProShortcutKey['FCPXHackLaunchFinalCutPro']['characterString'], function() hs.application.launchOrFocus("Final Cut Pro") end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackLaunchFinalCutPro keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Used for development:
@@ -569,82 +597,233 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Help:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['modifiers'], finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'], function() displayShortcutList() end)
+		if finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'] ~= nil then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['modifiers'], finalCutProShortcutKey['FCPXHackShowListOfShortcutKeys']['characterString'], function() displayShortcutList() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackShowListOfShortcutKeys keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackScrollingTimeline']['modifiers'], finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'], function() activateScrollingTimeline() end)
+		if finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'] ~= nil then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackScrollingTimeline']['modifiers'], finalCutProShortcutKey['FCPXHackScrollingTimeline']['characterString'], function() activateScrollingTimeline() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackScrollingTimeline keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Match Frame Commands:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['modifiers'], finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['characterString'], function() highlightFCPXBrowserPlayhead() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['characterString'], function() matchFrameThenHighlightFCPXBrowserPlayhead() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['characterString'], function() singleMatchFrame() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['characterString'], function() multicamMatchFrame(true) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['characterString'], function() multicamMatchFrame(false) end)
+		if finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['modifiers'], finalCutProShortcutKey['FCPXHackHighlightBrowserPlayhead']['characterString'], function() highlightFCPXBrowserPlayhead() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackBatchExportFromBrowser keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealInBrowserAndHighlight']['characterString'], function() matchFrameThenHighlightFCPXBrowserPlayhead() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealInBrowserAndHighlight keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackSingleMatchFrameAndHighlight']['characterString'], function() singleMatchFrame() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealInBrowserAndHighlight keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInBrowserAndHighlight']['characterString'], function() multicamMatchFrame(true) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealMulticamClipInBrowserAndHighlight keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['modifiers'], finalCutProShortcutKey['FCPXHackRevealMulticamClipInAngleEditorAndHighlight']['characterString'], function() multicamMatchFrame(false) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRevealMulticamClipInAngleEditorAndHighlight keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Export Tools:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['modifiers'], finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['characterString'], function() batchExportToCompressor() end)
+		if finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['modifiers'], finalCutProShortcutKey['FCPXHackBatchExportFromBrowser']['characterString'], function() batchExportToCompressor() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackBatchExportFromBrowser keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Plist Modification Features:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackChangeBackupInterval']['modifiers'], finalCutProShortcutKey['FCPXHackChangeBackupInterval']['characterString'], function() changeBackupInterval() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['modifiers'], finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['characterString'], function() toggleTimecodeOverlay() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['modifiers'], finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['characterString'], function() toggleMovingMarkers() end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['modifiers'], finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['characterString'], function() togglePerformTasksDuringPlayback() end)
+		if finalCutProShortcutKey['FCPXHackChangeBackupInterval']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackChangeBackupInterval']['modifiers'], finalCutProShortcutKey['FCPXHackChangeBackupInterval']['characterString'], function() changeBackupInterval() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackChangeBackupInterval keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['modifiers'], finalCutProShortcutKey['FCPXHackToggleTimecodeOverlays']['characterString'], function() toggleTimecodeOverlay() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleTimecodeOverlays keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['modifiers'], finalCutProShortcutKey['FCPXHackToggleMovingMarkers']['characterString'], function() toggleMovingMarkers() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleMovingMarkers keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['modifiers'], finalCutProShortcutKey['FCPXHackAllowTasksDuringPlayback']['characterString'], function() togglePerformTasksDuringPlayback() end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackToggleMovingMarkers keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Color Board Selectors:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['characterString'], function() colorBoardSelectPuck(2) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['characterString'], function() colorBoardSelectPuck(3) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['characterString'], function() colorBoardSelectPuck(4) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['characterString'], function() colorBoardSelectPuck(5) end)
+		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckOne']['characterString'], function() colorBoardSelectPuck(2) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetOne keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckTwo']['characterString'], function() colorBoardSelectPuck(3) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckTwo keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckThree']['characterString'], function() colorBoardSelectPuck(4) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckThree keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['modifiers'], finalCutProShortcutKey['FCPXHackSelectColorBoardPuckFour']['characterString'], function() colorBoardSelectPuck(5) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSelectColorBoardPuckThree keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Restore Keyword Searches:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['characterString'], function() fcpxRestoreKeywordSearches(1) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['characterString'], function() fcpxRestoreKeywordSearches(2) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['characterString'], function() fcpxRestoreKeywordSearches(3) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['characterString'], function() fcpxRestoreKeywordSearches(4) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['characterString'], function() fcpxRestoreKeywordSearches(5) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['characterString'], function() fcpxRestoreKeywordSearches(6) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['characterString'], function() fcpxRestoreKeywordSearches(7) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['characterString'], function() fcpxRestoreKeywordSearches(8) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['characterString'], function() fcpxRestoreKeywordSearches(9) end)
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetOne']['characterString'], function() fcpxRestoreKeywordSearches(1) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetOne keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetTwo']['characterString'], function() fcpxRestoreKeywordSearches(2) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetTwo keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetThree']['characterString'], function() fcpxRestoreKeywordSearches(3) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetThree keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFour']['characterString'], function() fcpxRestoreKeywordSearches(4) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetFour keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetFive']['characterString'], function() fcpxRestoreKeywordSearches(5) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetFive keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSix']['characterString'], function() fcpxRestoreKeywordSearches(6) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetSix keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetSeven']['characterString'], function() fcpxRestoreKeywordSearches(7) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetSeven keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetEight']['characterString'], function() fcpxRestoreKeywordSearches(8) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetEight keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackRestoreKeywordPresetNine']['characterString'], function() fcpxRestoreKeywordSearches(9) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackRestoreKeywordPresetNine keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Save Keyword Searches:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['characterString'], function() fcpxSaveKeywordSearches(1) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['characterString'], function() fcpxSaveKeywordSearches(2) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['characterString'], function() fcpxSaveKeywordSearches(3) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['characterString'], function() fcpxSaveKeywordSearches(4) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['characterString'], function() fcpxSaveKeywordSearches(5) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['characterString'], function() fcpxSaveKeywordSearches(6) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['characterString'], function() fcpxSaveKeywordSearches(7) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['characterString'], function() fcpxSaveKeywordSearches(8) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['characterString'], function() fcpxSaveKeywordSearches(9) end)
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetOne']['characterString'], function() fcpxSaveKeywordSearches(1) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetOne keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetTwo']['characterString'], function() fcpxSaveKeywordSearches(2) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetTwo keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetThree']['characterString'], function() fcpxSaveKeywordSearches(3) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetThree keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFour']['characterString'], function() fcpxSaveKeywordSearches(4) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetFour keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetFive']['characterString'], function() fcpxSaveKeywordSearches(5) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetFive keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSix']['characterString'], function() fcpxSaveKeywordSearches(6) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetSix keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetSeven']['characterString'], function() fcpxSaveKeywordSearches(7) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetSeven keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetEight']['characterString'], function() fcpxSaveKeywordSearches(8) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetEight keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['modifiers'], finalCutProShortcutKey['FCPXHackSaveKeywordPresetNine']['characterString'], function() fcpxSaveKeywordSearches(9) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackSaveKeywordPresetNine keyboard shortcut.")
+		end
 
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsOne']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsOne']['characterString'], function() effectsShortcut(1) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsTwo']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsTwo']['characterString'], function() effectsShortcut(2) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsThree']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsThree']['characterString'], function() effectsShortcut(3) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFour']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFour']['characterString'], function() effectsShortcut(4) end)
-		hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFive']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFive']['characterString'], function() effectsShortcut(5) end)
-
-		--------------------------------------------------------------------------------
-		-- Future Features:
-		--------------------------------------------------------------------------------
-		--finalCutProShortcutKey['']['modifiers'], finalCutProShortcutKey['']['characterString']
+		if finalCutProShortcutKey['FCPXHackEffectsOne']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsOne']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsOne']['characterString'], function() effectsShortcut(1) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsOne keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackEffectsTwo']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsTwo']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsTwo']['characterString'], function() effectsShortcut(2) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsTwo keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackEffectsThree']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsThree']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsThree']['characterString'], function() effectsShortcut(3) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsThree keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackEffectsFour']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFour']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFour']['characterString'], function() effectsShortcut(4) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsFour keyboard shortcut.")
+		end
+		if finalCutProShortcutKey['FCPXHackEffectsFive']['characterString'] ~= "" then
+			hotkeys:bind(finalCutProShortcutKey['FCPXHackEffectsFive']['modifiers'], finalCutProShortcutKey['FCPXHackEffectsFive']['characterString'], function() effectsShortcut(5) end)
+		else
+			print("[FCPX Hacks] WARNING: Failed to load FCPXHackEffectsFive keyboard shortcut.")
+		end
 
 	--------------------------------------------------------------------------------
 	-- Enable Hotkeys!
@@ -807,10 +986,18 @@ function refreshMenuBar(refreshPlistValues)
 	if effectsListUpdated == nil then effectsListUpdated = false end
 
 	--------------------------------------------------------------------------------
-	-- Get Enable Proxy Menu Item
+	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
 	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
 	if enableProxyMenuIcon == nil then enableProxyMenuIcon = false end
+
+	--------------------------------------------------------------------------------
+	-- Hammerspoon Settings:
+	--------------------------------------------------------------------------------
+	local startHammerspoonOnLaunch = hs.autoLaunch()
+	local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
+	local hammerspoonDockIcon = hs.dockIcon()
+	local hammerspoonMenuIcon = hs.menuIcon()
 
 	--------------------------------------------------------------------------------
 	-- Setup Menu:
@@ -826,6 +1013,16 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Green", 	fn = changeHighlightColourGreen, 	checked = displayHighlightColourGreen	},
 	   	{ title = "Yellow", fn = changeHighlightColourYellow, 	checked = displayHighlightColourYellow	},
 	}
+	local settingsHammerspoonSettings = {
+		{ title = "Console...", fn = openHammerspoonConsole },
+		{ title = "-" },
+		{ title = "-" },
+		{ title = "Show Dock Icon", 	fn = toggleHammerspoonDockIcon, 			checked = hammerspoonDockIcon		},
+		{ title = "Show Menu Icon", 	fn = toggleHammerspoonMenuIcon, 			checked = hammerspoonMenuIcon		},
+		{ title = "-" },
+	   	{ title = "Launch at Startup", 	fn = toggleLaunchHammerspoonOnStartup, 		checked = startHammerspoonOnLaunch		},
+	   	{ title = "Check for Updates", 	fn = toggleCheckforHammerspoonUpdates, 		checked = hammerspoonCheckForUpdates	},
+	}
 	local settingsMenuTable = {
 		{ title = "Enable Hacks Shortcuts in Final Cut Pro", fn = toggleEnableHacksShortcutsInFinalCutPro, checked = enableHacksShortcutsInFinalCutPro},
 	   	{ title = "Enable Shortcuts During Fullscreen Playback", fn = toggleEnableShortcutsDuringFullscreenPlayback, checked = enableShortcutsDuringFullscreenPlayback},
@@ -839,9 +1036,6 @@ function refreshMenuBar(refreshPlistValues)
 	   	{ title = "Display This Menu As Icon", fn = toggleMenubarDisplayMode, checked = displayMenubarAsIcon},
       	{ title = "-" },
 		{ title = "Factory Reset FCPX Hacks", 	fn = resetSettings },
-		{ title = "-" },
-  	    { title = "Script Version " .. scriptVersion, disabled = true },
-  	    { title = "Thrown Together by LateNite Films", disabled = true },
 	}
 	local settingsEffectsShortcutsTable = {
 		{ title = "Update Effects List", 	fn = updateEffectsList, disabled = not fcpxActive },
@@ -854,6 +1048,7 @@ function refreshMenuBar(refreshPlistValues)
 	}
 	local menuTable = {
 	   	{ title = "Launch Final Cut Pro", fn = launchFinalCutPro, disabled = fcpxActive},
+
 		{ title = "-" },
 	   	{ title = "Show Keyboard Shortcuts", fn = displayShortcutList },
 	    { title = "-" },
@@ -872,7 +1067,13 @@ function refreshMenuBar(refreshPlistValues)
       	{ title = "-" },
       	{ title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
         { title = "-" },
-      	{ title = "Settings", menu = settingsMenuTable },
+      	{ title = "FCPX Hacks Settings", menu = settingsMenuTable },
+      	{ title = "Hammerspoon Settings", menu = settingsHammerspoonSettings},
+    	{ title = "-" },
+    	{ title = "Quit FCPX Hacks", fn = quitFCPXHacks},
+    	{ title = "-" },
+  	    { title = "Script Version " .. scriptVersion, disabled = true },
+  	    { title = "Thrown Together by LateNite Films", disabled = true },
 	}
 
 	--------------------------------------------------------------------------------
@@ -893,6 +1094,56 @@ function refreshMenuBar(refreshPlistValues)
 	fcpxMenubar:setMenu(menuTable)
 end
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- QUIT FCPX HACKS:
+--------------------------------------------------------------------------------
+function quitFCPXHacks()
+	hs.application("Hammerspoon"):kill()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE HAMMERSPOON DOCK ICON:
+--------------------------------------------------------------------------------
+function toggleHammerspoonDockIcon()
+	local originalValue = hs.dockIcon()
+	hs.dockIcon(not originalValue)
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE HAMMERSPOON MENU ICON:
+--------------------------------------------------------------------------------
+function toggleHammerspoonMenuIcon()
+	local originalValue = hs.menuIcon()
+	hs.menuIcon(not originalValue)
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- OPEN HAMMERSPOON CONSOLE:
+--------------------------------------------------------------------------------
+function openHammerspoonConsole()
+	hs.openConsole()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE LAUNCH HAMMERSPOON ON START:
+--------------------------------------------------------------------------------
+function toggleLaunchHammerspoonOnStartup()
+	local originalValue = hs.autoLaunch()
+	hs.autoLaunch(not originalValue)
+	refreshMenuBar()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
+--------------------------------------------------------------------------------
+function toggleCheckforHammerspoonUpdates()
+	local originalValue = hs.automaticallyCheckForUpdates()
+	hs.automaticallyCheckForUpdates(not originalValue)
+	refreshMenuBar()
+end
 
 --------------------------------------------------------------------------------
 -- ADJUST SCROLLING TIMELINE OFFSET:
@@ -6030,8 +6281,11 @@ function readShortcutKeysFromPlist()
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
 				local executeResult,executeStatus = hs.execute(executeCommand)
 				if executeStatus == nil then
-					displayErrorMessage("Could not read the plist correctly when retrieving characterString information for the first time.\n\n" .. "Command: " .. tostring(executeCommand))
-					return "Failed"
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					finalCutProShortcutKey[k]['characterString'] = ""
+					print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -6043,7 +6297,9 @@ function readShortcutKeysFromPlist()
 
 					if executeStatus == nil then
 						if executeType == "exit" then
+							--------------------------------------------------------------------------------
 							-- Assuming that the plist was read fine, but contained no value:
+							--------------------------------------------------------------------------------
 							finalCutProShortcutKey[k]['characterString'] = ""
 						else
 							displayErrorMessage("Could not read the plist correctly when retrieving characterString information.")
@@ -6059,8 +6315,11 @@ function readShortcutKeysFromPlist()
 				local executeCommand = "/usr/libexec/PlistBuddy -c \"Print :" .. tostring(k) .. ":\" '" .. tostring(activeCommandSet) .. "'"
 				local executeResult,executeStatus = hs.execute(executeCommand)
 				if executeStatus == nil then
-					displayErrorMessage("Could not read the plist correctly when retrieving modifiers information for the first time.")
-					return "Failed"
+					--------------------------------------------------------------------------------
+					-- Maybe there is nothing allocated to this command in the plist?
+					--------------------------------------------------------------------------------
+					finalCutProShortcutKey[k]['modifiers'] = {}
+					print("[FCPX Hacks] WARNING: Retrieving data from plist failed (" .. tostring(k) .. ").")
 				else
 					local x, lastDict = string.gsub(executeResult, "Dict {", "")
 					lastDict = lastDict - 1
@@ -6078,7 +6337,9 @@ function readShortcutKeysFromPlist()
 							local executeResult,executeStatus,executeType,executeRC = hs.execute(executeCommand)
 							if executeStatus == nil then
 								if executeType == "exit" then
+									--------------------------------------------------------------------------------
 									-- Assuming that the plist was read fine, but contained no value:
+									--------------------------------------------------------------------------------
 									finalCutProShortcutKey[k]['modifiers'] = {}
 								else
 									displayErrorMessage("Could not read the plist correctly when retrieving modifierMask information.")
@@ -6106,35 +6367,11 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProFrontmost()
 
-	local result = nil
-
-	if hs.application("Final Cut Pro") == nil then
-		result = false
+	if hs.appfinder.appFromName("Final Cut Pro") == nil then
+		return false
 	else
-		if hs.application("Final Cut Pro"):isRunning() ~= nil then
-			if hs.application("Final Cut Pro"):isRunning() then
-				if hs.appfinder.appFromName("Final Cut Pro") == nil then
-					result = false
-				else
-					if hs.application("Final Cut Pro") ~= nil then
-						if hs.application("Final Cut Pro"):isFrontmost() then
-							result = true
-						else
-							result = false
-						end
-					else
-						result = false
-					end
-				end
-			else
-				result = false
-			end
-		else
-			result = false
-		end
+		return hs.appfinder.appFromName("Final Cut Pro"):isFrontmost()
 	end
-
-	return result
 
 end
 
@@ -6143,27 +6380,11 @@ end
 --------------------------------------------------------------------------------
 function isFinalCutProRunning()
 
-	local result = nil
-
-	if hs.application("Final Cut Pro") == nil then
-		result = false
+	if hs.appfinder.appFromName("Final Cut Pro") == nil then
+		return false
 	else
-		if hs.appfinder.appFromName("Final Cut Pro") == nil then
-			result = false
-		else
-			if hs.application("Final Cut Pro"):isRunning() ~= nil then
-				if hs.application("Final Cut Pro"):isRunning() then
-					result = true
-				else
-					result = false
-				end
-			else
-				result = false
-			end
-		end
+		return hs.appfinder.appFromName("Final Cut Pro"):isRunning()
 	end
-
-	return result
 
 end
 
@@ -6416,7 +6637,11 @@ function keyCodeTranslator(input)
 	}
 
 	if englishKeyCodes[input] == nil then
-		return hs.keycodes.map[input]
+		if hs.keycodes.map[input] == nil then
+			return ""
+		else
+			return hs.keycodes.map[input]
+		end
 	else
 		return englishKeyCodes[input]
 	end
@@ -6474,6 +6699,7 @@ function translateKeyboardCharacters(input)
 	local convertedToKeycode = keyCodeTranslator(result)
 	if convertedToKeycode == nil then
 		print("[FCPX HACKS] NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
+		result = ""
 	else
 		result = convertedToKeycode
 	end
