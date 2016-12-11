@@ -102,7 +102,6 @@
 --------------------------------------------------------------------------------
 --
 --  > fcpxRestoreKeywordSearches() needs more testing
---  > Fix all: ax.applicationElement(fcpx)[1]
 --  > Fix clipboardWatcher() so it correctly labels clipboard items by name
 --  > Fix Color Board Mouse functions speed
 --
@@ -123,7 +122,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.53"
+local scriptVersion = "0.54"
 --------------------------------------------------------------------------------
 
 
@@ -273,6 +272,8 @@ local FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
 local FFAutoRenderDelay 						= nil											-- Used in refreshMenuBar
 local FFImportCopyToMediaFolder 				= nil											-- Used in refreshMenuBar
 local FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
+
+local fcpxChooser								= nil											-- Chooser
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -535,6 +536,11 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		refreshMenuBar(true)
 
+	-------------------------------------------------------------------------------
+	-- Set up Chooser:
+	-------------------------------------------------------------------------------
+	setupChooser()
+
 	--------------------------------------------------------------------------------
 	-- All loaded!
 	--------------------------------------------------------------------------------
@@ -563,6 +569,22 @@ function testingGround()
 
 	-- Clear Console During Development:
 	--hs.console.clearConsole()
+
+	--[[
+	FRAME.IO TEST:
+
+	THE-SWELL-005-CHRIS-R1.mp4
+	Version 1 - Chris Hocking - 4:33PM May 22nd, 2015
+
+	000 - Chris Hocking - 2:51PM October 26th, 2016
+	00:00:00:00 - This is a test
+
+	001 - Chris Hocking - 2:51PM October 26th, 2016
+	00:01:02:09 - This is another test
+
+	002 - Chris Hocking - 2:51PM October 26th, 2016
+	00:01:35:21 - Yet another test
+	--]]
 
 end
 
@@ -897,6 +919,8 @@ function bindKeyboardShortcuts()
 			FCPXHackCutSwitchAngle14Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 14) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle15Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackConsole				 								= { characterString = "", 							modifiers = {}, 									fn = function() showChooser() end, 									releasedFn = nil, 														repeatFn = nil },
 		}
 
 		--------------------------------------------------------------------------------
@@ -1116,6 +1140,8 @@ function bindKeyboardShortcuts()
 			FCPXHackCutSwitchAngle14Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 14) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle15Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
+
+			FCPXHackConsole				 								= { characterString = keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() showChooser() end, 									releasedFn = nil, 														repeatFn = nil },
 		}
 
 		--------------------------------------------------------------------------------
@@ -1174,6 +1200,366 @@ function bindKeyboardShortcuts()
 	-- Enable Hotkeys:
 	--------------------------------------------------------------------------------
 	hotkeys:enter()
+
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--     C H O O S E R    ( T H E   F C P X   H A C K S   C O N S O L E  )      --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- SETUP CHOOSER:
+--------------------------------------------------------------------------------
+function setupChooser()
+
+	fcpxChooser = hs.chooser.new(chooserAction)
+	fcpxChooser:bgDark(false)
+	fcpxChooser:choices(chooserChoices)
+
+end
+
+--------------------------------------------------------------------------------
+-- SHOW CHOOSER:
+--------------------------------------------------------------------------------
+function showChooser()
+	fcpxChooser:show()
+end
+
+--------------------------------------------------------------------------------
+-- CHOOSER CHOICES:
+--------------------------------------------------------------------------------
+function chooserChoices()
+
+	--------------------------------------------------------------------------------
+	-- Hardcoded Choices:
+	--------------------------------------------------------------------------------
+	local fcpxChooserChoices = {
+		{
+			["text"] = "Toggle Scrolling Timeline",
+			["subText"] = "Automation",
+			["function"] = "toggleScrollingTimeline",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Highlight Browser Playhead",
+			["subText"] = "Automation",
+			["function"] = "highlightFCPXBrowserPlayhead",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Reveal in Browser & Highlight",
+			["subText"] = "Automation",
+			["function"] = "matchFrameThenHighlightFCPXBrowserPlayhead",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Optimized Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateOptimizedMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Optimized Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateOptimizedMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Multicam Optimized Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateMulticamOptimizedMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Multicam Optimized Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateMulticamOptimizedMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Proxy Media (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateProxyMedia",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Create Proxy Media (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleCreateProxyMedia",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Leave Files In Place On Import (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleLeaveInPlace",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Leave Files In Place On Import (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleLeaveInPlace",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Background Render (Activate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleBackgroundRender",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Background Render (Deactivate)",
+			["subText"] = "Shortcut",
+			["function"] = "toggleBackgroundRender",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 1",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 1,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 2",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 2,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 3",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 3,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 4",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 4,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 5",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 5,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 6",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 6,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 7",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 7,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 8",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 8,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 9",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 9,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Clip At Lane 10",
+			["subText"] = "Automation",
+			["function"] = "selectClipAtLane",
+			["function1"] = 10,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Single Match Frame & Highlight",
+			["subText"] = "Automation",
+			["function"] = "singleMatchFrame",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Reveal Multicam in Browser & Highlight",
+			["subText"] = "Automation",
+			["function"] = "multicamMatchFrame",
+			["function1"] = true,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Reveal Multicam in Angle Editor & Highlight",
+			["subText"] = "Automation",
+			["function"] = "multicamMatchFrame",
+			["function1"] = false,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Change Backup Interval",
+			["subText"] = "Hack",
+			["function"] = "changeBackupInterval",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Timecode Overlay",
+			["subText"] = "Hack",
+			["function"] = "toggleTimecodeOverlay",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Moving Markers",
+			["subText"] = "Hack",
+			["function"] = "toggleMovingMarkers",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Toggle Enable Rendering During Playback",
+			["subText"] = "Hack",
+			["function"] = "togglePerformTasksDuringPlayback",
+			["function1"] = nil,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Color Board Puck 1",
+			["subText"] = "Automation",
+			["function"] = "colorBoardSelectPuck",
+			["function1"] = 1,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Color Board Puck 2",
+			["subText"] = "Automation",
+			["function"] = "colorBoardSelectPuck",
+			["function1"] = 2,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Color Board Puck 3",
+			["subText"] = "Automation",
+			["function"] = "colorBoardSelectPuck",
+			["function1"] = 3,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+		{
+			["text"] = "Select Color Board Puck 4",
+			["subText"] = "Automation",
+			["function"] = "colorBoardSelectPuck",
+			["function1"] = 4,
+			["function2"] = nil,
+			["function3"] = nil,
+		},
+	}
+
+	--------------------------------------------------------------------------------
+	-- Effects List:
+	--------------------------------------------------------------------------------
+	local allEffects = hs.settings.get("fcpxHacks.allEffects")
+	if allEffects ~= nil and next(allEffects) ~= nil then
+		for i=1, #allEffects do
+			individualEffect = {
+				["text"] = allEffects[i],
+				["subText"] = "Effect",
+				["function"] = "effectsShortcut",
+				["function1"] = allEffects[i],
+				["function2"] = "",
+				["function3"] = "",
+			}
+			table.insert(fcpxChooserChoices, 1, individualEffect)
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Sort everything:
+	--------------------------------------------------------------------------------
+	table.sort(fcpxChooserChoices, function(a, b) return a.text < b.text end)
+
+	--------------------------------------------------------------------------------
+	-- Return Choices:
+	--------------------------------------------------------------------------------
+	return fcpxChooserChoices
+
+end
+
+--------------------------------------------------------------------------------
+-- CHOOSER COMPLETE:
+--------------------------------------------------------------------------------
+function chooserAction(result)
+
+	if result ~= nil then
+		fcpxChooser:hide()
+		launchFinalCutPro()
+		_G[result["function"]](result["function1"], result["function2"], result["function3"])
+	else
+		fcpxChooser:hide()
+		launchFinalCutPro()
+	end
 
 end
 
@@ -3592,8 +3978,8 @@ function selectClipAtLane(whichLane)
 	end
 
 	local howManyClips = tableCount(whichLayoutItems)
-	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips < whichLane then
-		print("[FCPX Hacks] ERROR: We couldn't find any clips on the Secondary Storyline at your current playhead position.")
+	if next(whichLayoutItems) == nil or howManyClips < whichLane then
+		print("[FCPX Hacks] ERROR: Couldn't find any clips at selected lane (selectClipAtLane).")
 		return "Fail"
 	end
 
@@ -4000,6 +4386,7 @@ function effectsShortcut(whichShortcut)
 	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutThree") end
 	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFour") end
 	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFive") end
+	if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 	if currentShortcut == nil then
 		displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
@@ -8023,7 +8410,16 @@ function readShortcutKeysFromPlist()
 								return "Failed"
 							end
 						else
-							finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(trim(executeResult))
+							--------------------------------------------------------------------------------
+							-- We only want the first line of the executeResult:
+							--------------------------------------------------------------------------------
+							for line in executeResult:gmatch"(.-)\n" do
+								executeResult = line
+								goto escape
+							end
+							::escape::
+
+							finalCutProShortcutKey[k .. addToK]['characterString'] = translateKeyboardCharacters(executeResult)
 						end
 
 					end
@@ -8896,6 +9292,7 @@ function translateKeyboardCharacters(input)
 
 	local result = tostring(input)
 
+	if input == " " 									then result = "space"		end
 	if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
 	if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
 	if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
@@ -9613,19 +10010,21 @@ function clipboardWatcher()
 					--------------------------------------------------------------------------------
 					-- Define Temporary Files:
 					--------------------------------------------------------------------------------
-					--[[
-					--local temporaryFileName 		= os.tmpname()
+					local temporaryFileName 		= os.tmpname()
 					--local temporaryFileNameTwo	 	= os.tmpname()
-					--]]
 
 					--------------------------------------------------------------------------------
 					-- Write Clipboard Data to Temporary File:
 					--------------------------------------------------------------------------------
-					--[[
 					local temporaryFile = io.open(temporaryFileName, "w")
 					temporaryFile:write(currentClipboardData)
 					temporaryFile:close()
-					--]]
+
+					executeCommand = "cp " .. tostring(temporaryFileName) .. " ~/.hammerspoon/test.txt"
+					executeOutput, executeStatus, executeType, executeRC = hs.execute(executeCommand)
+					executeOutput, executeStatus, executeType, executeRC = hs.execute("rm " .. tostring(temporaryFileName))
+
+					print("temporaryFileName: " .. temporaryFileName)
 
 					--------------------------------------------------------------------------------
 					-- Convert binary plist to XML then return in JSON:

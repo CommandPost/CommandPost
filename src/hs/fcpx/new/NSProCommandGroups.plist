@@ -8,6 +8,7 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackConsole</string>
 			<string>FCPXHackCutSwitchAngle01Video</string>
 			<string>FCPXHackCutSwitchAngle02Video</string>
 			<string>FCPXHackCutSwitchAngle03Video</string>
