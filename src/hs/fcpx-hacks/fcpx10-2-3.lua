@@ -14,7 +14,7 @@
 --  You can download the latest version here:
 --  https://latenitefilms.com/blog/final-cut-pro-hacks/
 --
---  Please be aware that I'm a filmmaker, not a coder, so... apologies!
+--  Please be aware that I'm a filmmaker, not a programmer, so... apologies!
 --
 --------------------------------------------------------------------------------
 --  LICENSE:
@@ -50,142 +50,119 @@
 
 
 --------------------------------------------------------------------------------
--- ENABLE DEBUG MODE:
---------------------------------------------------------------------------------
-local debugMode = false
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                   T H E    M A I N    S C R I P T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- LOAD EXTENSIONS:
+-- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
--- BUILT-IN:
-
-	fs							= require("hs.fs")
-	host						= require("hs.host")
-	settings					= require("hs.settings")
-	http						= require("hs.http")
-	menubar						= require("hs.menubar")
-	eventtap					= require("hs.eventtap")
-	window						= require("hs.window")
-	window.filter				= require("hs.window.filter")
-	pathwatcher					= require("hs.pathwatcher")
-	alert 						= require("hs.alert")
-	hotkey 						= require("hs.hotkey")
-	application 				= require("hs.application")
-	uielement 					= require("hs.uielement")
-	appfinder 					= require("hs.appfinder")
-	osascript 					= require("hs.osascript")
-	drawing 					= require("hs.drawing")
-	fnutils 					= require("hs.fnutils")
-	keycodes					= require("hs.keycodes")
-	json  						= require("hs.json")
-	base64 						= require("hs.base64")
-	distributednotifications	= require("hs.distributednotifications")
-	utf8						= require("hs.utf8")
-	http						= require("hs.http")
-
-
--- THIRD PARTY:
-
-	ax 							= require("hs._asm.axuielement")
-	slaxml 						= require("hs.slaxml")
-	slaxdom 					= require("hs.slaxml.slaxdom")
-	pasteboard 					= require("hs.pasteboard")
+fs											= require("hs.fs")
+host										= require("hs.host")
+settings									= require("hs.settings")
+http										= require("hs.http")
+menubar										= require("hs.menubar")
+eventtap									= require("hs.eventtap")
+window										= require("hs.window")
+window.filter								= require("hs.window.filter")
+pathwatcher									= require("hs.pathwatcher")
+alert 										= require("hs.alert")
+hotkey 										= require("hs.hotkey")
+application 								= require("hs.application")
+uielement 									= require("hs.uielement")
+appfinder 									= require("hs.appfinder")
+osascript 									= require("hs.osascript")
+drawing 									= require("hs.drawing")
+fnutils 									= require("hs.fnutils")
+keycodes									= require("hs.keycodes")
+json  										= require("hs.json")
+base64 										= require("hs.base64")
+distributednotifications					= require("hs.distributednotifications")
+utf8										= require("hs.utf8")
+http										= require("hs.http")
 
 --------------------------------------------------------------------------------
+-- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-
-
-
-
---------------------------------------------------------------------------------
--- LOCAL VARIABLES:
---------------------------------------------------------------------------------
-local clock 									= os.clock										-- Used for sleep()
-
-local browserHighlight 							= nil											-- Used for Highlight Browser Playhead
-local browserHighlightTimer 					= nil											-- Used for Highlight Browser Playhead
-
-local scrollingTimelineSpacebarPressed   		= false											-- Was spacebar pressed?
-local scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
-
-local scrollingTimelineTimer					= nil											-- Scrolling Timeline Timer
-local scrollingTimelineScrollbarTimer			= nil											-- Scrolling Timeline Scrollbar Timer
-
-local scrollingTimelineWindowCache				= nil											-- Scrolling Timeline Window Cache
-local scrollingTimelineSplitGroupCache 			= nil											-- Scrolling Timeline Split Group Cache
-local scrollingTimelineGroupCache 				= nil											-- Scrolling Timeline Group Cache
-
-local finalCutProShortcutKey 					= nil											-- Table of all Final Cut Pro Shortcuts
-local finalCutProShortcutKeyPlaceholders 		= nil											-- Table of all needed Final Cut Pro Shortcuts
-
-local isCommandEditorOpen 						= false 										-- Is Command Editor Open?
-
-local colorBoardSelectPuckSplitGroupCache 		= nil											-- Color Board Select Puck Split Group Cache
-local colorBoardSelectPuckGroupCache 			= nil											-- Color Board Select Puck Group Cache
-
-local releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
-local releaseMouseColorBoardDown 				= false											-- Color Board Mouse Shortcut Currently Being Pressed
-
-local changeTimelineClipHeightAlreadyInProgress = false											-- Change Timeline Clip Height Already In Progress
-local releaseChangeTimelineClipHeightDown		= false											-- Change Timeline Clip Height Currently Being Pressed
-local changeAppearanceButtonLocation 			= {}											-- Change Timeline Appearance Button Location
-local changeTimelineClipHeightSplitGroupCache 	= nil											-- Change Timeline Clip Height Split Group Cache
-local changeTimelineClipHeightGroupCache 		= nil											-- Change Timeline Clip Height Group Cache
-
-local clipboardTimer							= nil											-- Clipboard Watcher Timer
-local clipboardLastChange 						= pasteboard.changeCount()						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
-
-local clipboardHistory							= {}											-- Clipboard History
-local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
-
-local clipboardWatcherFrequency 				= 0.5											-- Clipboard Watcher Update Frequency
-local clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
-
-local selectClipAtLaneSplitGroupCache 			= nil											-- Select Secondary Storyline Split Group Cache
-local selectClipAtLaneGroupCache 				= nil											-- Select Secondary Storyline Group Cache
-
-local newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
-local mediaImportCount 							= 0												-- Media Import Count
-local stopMediaImportTimer 						= false											-- Stop Media Import Timer
-local currentApplication 						= nil											-- Current Application (used by Media Import Watcher)
-
-local lastCommandSet							= nil											-- Last Keyboard Shortcut Command Set
-
-local colorBoardMousePuckOriginalPosition		= nil											-- Color Board Mouse Puck Original Position
-
-local FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
-local allowMovingMarkers 						= nil											-- Used in refreshMenuBar
-local FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
-local FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
-local FFEnableGuards 							= nil											-- Used in refreshMenuBar
-local FFCreateOptimizedMediaForMulticamClips 	= nil											-- Used in refreshMenuBar
-local FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
-local FFAutoRenderDelay 						= nil											-- Used in refreshMenuBar
-local FFImportCopyToMediaFolder 				= nil											-- Used in refreshMenuBar
-local FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
-
-local fcpxChooser								= nil											-- Chooser
-local fcpxChooserActive							= false											-- Chooser Active?
+ax 											= require("hs._asm.axuielement")
+slaxml 										= require("hs.slaxml")
+slaxdom 									= require("hs.slaxml.slaxdom")
+pasteboard 									= require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
+-- GLOBAL VARIABLES:
 --------------------------------------------------------------------------------
 
+debugMode 									= false											-- Debug Mode
+clock 										= os.clock										-- Used for sleep()
 
+browserHighlight 							= nil											-- Used for Highlight Browser Playhead
+browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
 
+scrollingTimelineSpacebarPressed   			= false											-- Was spacebar pressed?
+scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
 
+scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
+scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
+
+scrollingTimelineWindowCache				= nil											-- Scrolling Timeline Window Cache
+scrollingTimelineSplitGroupCache 			= nil											-- Scrolling Timeline Split Group Cache
+scrollingTimelineGroupCache 				= nil											-- Scrolling Timeline Group Cache
+
+finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
+finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
+
+isCommandEditorOpen 						= false 										-- Is Command Editor Open?
+
+colorBoardSelectPuckSplitGroupCache 		= nil											-- Color Board Select Puck Split Group Cache
+colorBoardSelectPuckGroupCache 				= nil											-- Color Board Select Puck Group Cache
+
+releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
+releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
+
+changeTimelineClipHeightAlreadyInProgress 	= false											-- Change Timeline Clip Height Already In Progress
+releaseChangeTimelineClipHeightDown			= false											-- Change Timeline Clip Height Currently Being Pressed
+changeAppearanceButtonLocation 				= {}											-- Change Timeline Appearance Button Location
+changeTimelineClipHeightSplitGroupCache 	= nil											-- Change Timeline Clip Height Split Group Cache
+changeTimelineClipHeightGroupCache 			= nil											-- Change Timeline Clip Height Group Cache
+
+clipboardTimer								= nil											-- Clipboard Watcher Timer
+clipboardLastChange 						= pasteboard.changeCount()						-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+
+clipboardHistory							= {}											-- Clipboard History
+finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- Final Cut Pro Pasteboard UTI
+
+clipboardWatcherFrequency 					= 0.5											-- Clipboard Watcher Update Frequency
+clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
+
+selectClipAtLaneSplitGroupCache 			= nil											-- Select Secondary Storyline Split Group Cache
+selectClipAtLaneGroupCache 					= nil											-- Select Secondary Storyline Group Cache
+
+newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
+mediaImportCount 							= 0												-- Media Import Count
+stopMediaImportTimer 						= false											-- Stop Media Import Timer
+currentApplication 							= nil											-- Current Application (used by Media Import Watcher)
+
+lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
+
+colorBoardMousePuckOriginalPosition			= nil											-- Color Board Mouse Puck Original Position
+
+FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
+allowMovingMarkers 							= nil											-- Used in refreshMenuBar
+FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
+FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
+FFEnableGuards 								= nil											-- Used in refreshMenuBar
+FFCreateOptimizedMediaForMulticamClips 		= nil											-- Used in refreshMenuBar
+FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
+FFAutoRenderDelay 							= nil											-- Used in refreshMenuBar
+FFImportCopyToMediaFolder 					= nil											-- Used in refreshMenuBar
+FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
+
+fcpxChooser									= nil											-- Chooser
+fcpxChooserActive							= false											-- Chooser Active?
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -456,106 +433,6 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	print("[FCPX Hacks] Successfully loaded.")
 	hs.alert.show("FCPX Hacks (v" .. scriptVersion .. ") has loaded.")
-
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   D E V E L O P M E N T      T O O L S                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- TESTING GROUND (CONTROL + OPTION + COMMAND + Q):
---------------------------------------------------------------------------------
-function testingGround()
-
-	-- Clear Console During Development:
-	--hs.console.clearConsole()
-
-	--[[
-	FRAME.IO TEST:
-
-	THE-SWELL-005-CHRIS-R1.mp4
-	Version 1 - Chris Hocking - 4:33PM May 22nd, 2015
-
-	000 - Chris Hocking - 2:51PM October 26th, 2016
-	00:00:00:00 - This is a test
-
-	001 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:02:09 - This is another test
-
-	002 - Chris Hocking - 2:51PM October 26th, 2016
-	00:01:35:21 - Yet another test
-	--]]
-
-end
-
---------------------------------------------------------------------------------
--- HIGHLIGHT BROWSER PLAYHEAD EXPERIMENT:
---------------------------------------------------------------------------------
-function highlightFCPXBrowserPlayheadTest()
-
-    sw = ax.windowElement(hs.application("Final Cut Pro"):mainWindow())
-
-    persistentPlayhead = sw:searchPath({
-        { role = "AXWindow", Title = "Final Cut Pro"},
-        { role = "AXSplitGroup", AXRoleDescription = "split group" },
-        { role = "AXGroup", },
-        { role = "AXSplitGroup", Identifier = "_NS:11" },
-        { role = "AXScrollArea", Description = "organizer" },
-        { role = "AXGroup", Identifier = "_NS:9"},
-        { role = "AXValueIndicator", Description = "persistent playhead" },
-    }, 1)
-
-    persistentPlayheadPosition = persistentPlayhead:attributeValue("AXPosition")
-    persistentPlayheadSize = persistentPlayhead:attributeValue("AXSize")
-
-    mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
-
-	hs.logger.printHistory()
-
-end
-
---------------------------------------------------------------------------------
--- GET UI ELEMENT CURRENTLY UNDER MOUSE:
---------------------------------------------------------------------------------
-function getElementUnderMouse()
-	underMouse = ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
-	--print_r(underMouse:path())
-	for i=1, #underMouse:attributeNames() do
-		--print(underMouse:attributeNames()[i] .. ": " .. underMouse:attributeValue(underMouse:attributeNames()[i]))
-		local description = tostring(underMouse:attributeNames()[i])
-		local result = tostring(underMouse:attributeValue(underMouse:attributeNames()[i]))
-		print(description .. ": " .. result)
-
-	end
-
-end
-
---------------------------------------------------------------------------------
--- GET FINAL CUT PRO APPLICATION UI TREE:
---------------------------------------------------------------------------------
-function getFinalCutProApplicationTree()
-
-	ax = require("hs._asm.axuielement")
-	inspect = require("hs.inspect")
-	timestamp = function(date)
-	    date = date or require"hs.timer".secondsSinceEpoch()
-	    return os.date("%F %T" .. ((tostring(date):match("(%.%d+)$")) or ""), math.floor(date))
-    end
-
-    print(timestamp())
-	s = ax.applicationElement(hs.application("Final Cut Pro"))
-	print(inspect(s:buildTree()))
-	print(timestamp())
 
 end
 
