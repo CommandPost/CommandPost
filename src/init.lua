@@ -121,7 +121,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.46"
+local scriptVersion = "0.47"
 --------------------------------------------------------------------------------
 
 
@@ -143,6 +143,22 @@ local debugMode = false
 --                   T H E    M A I N    S C R I P T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CLEAR THE CONSOLE:
+--------------------------------------------------------------------------------
+hs.console.clearConsole()
+
+--------------------------------------------------------------------------------
+-- DISPLAY WELCOME MESSAGE IN THE CONSOLE:
+--------------------------------------------------------------------------------
+print("====================================================")
+print("                  FCPX Hacks v" .. scriptVersion     )
+print("====================================================")
+print("    If you have any problems with this script,      ")
+print("  please email a screenshot of your entire screen   ")
+print(" with this console open to: chris@latenitefilms.com ")
+print("====================================================")
 
 --------------------------------------------------------------------------------
 -- LOAD EXTENSIONS:
@@ -178,9 +194,17 @@ local debugMode = false
 -- THIRD PARTY:
 
 	ax 							= require("hs._asm.axuielement")
-	pasteboard 					= require("hs.pasteboard")
 	slaxml 						= require("hs.slaxml")
 	slaxdom 					= require("hs.slaxml.slaxdom")
+
+
+-- PASTEBOARD ONLY CURRENTLY WORKS ON MACOS 10.11 AND ABOVE:
+
+	local disablePasteboard = true
+	if tonumber(hs.host.operatingSystemVersion()["minor"]) >= 11 then
+		pasteboard 					= require("hs.pasteboard")
+		disablePasteboard = false
+	end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -230,6 +254,9 @@ local finalCutProClipboardUTI 					= "com.apple.flexo.proFFPasteboardUTI"			-- F
 local clipboardWatcherFrequency 				= 0.5											-- Clipboard Watcher Update Frequency
 local clipboardHistoryMaximumSize 				= 5												-- Maximum Size of Clipboard History
 
+local selectSecondaryStorylineSplitGroupCache 	= nil											-- Select Secondary Storyline Split Group Cache
+local selectSecondaryStorylineGroupCache 		= nil											-- Select Secondary Storyline Group Cache
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -248,27 +275,11 @@ function loadScript()
 	hs.accessibilityState(true)
 
 	--------------------------------------------------------------------------------
-	-- Clean the console to make it clean:
-	--------------------------------------------------------------------------------
-	hs.console.clearConsole()
-
-	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
 	hotkey.setLogLevel("warning")
 	hs.window.filter.setLogLevel(1)
 	hs.window.filter.ignoreAlways['System Events'] = true
-
-	--------------------------------------------------------------------------------
-	-- Display Welcome Message in the Console:
-	--------------------------------------------------------------------------------
-	print("====================================================")
-	print("                  FCPX Hacks v" .. scriptVersion     )
-	print("====================================================")
-	print("    If you have any problems with this script,      ")
-	print("  please email a screenshot of your entire screen   ")
-	print(" with this console open to: chris@latenitefilms.com ")
-	print("====================================================")
 
 	--------------------------------------------------------------------------------
 	-- Is Final Cut Pro Installed:
@@ -518,169 +529,6 @@ function testingGround()
 	hs.console.clearConsole()
 
 	selectSecondaryStoryline(1)
-
-end
-
---------------------------------------------------------------------------------
--- SELECT SECONDARY STORYLINE:
---------------------------------------------------------------------------------
-local selectSecondaryStorylineSplitGroupCache = nil
-local selectSecondaryStorylineGroupCache = nil
-
-function selectSecondaryStoryline(whichStoryline)
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx 				= hs.application("Final Cut Pro")
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
-
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichSplitGroup 			= nil
-	local whichGroup 				= nil
-	local whichValueIndicator 		= nil
-
-	--------------------------------------------------------------------------------
-	-- Cache:
-	--------------------------------------------------------------------------------
-	local useCache = false
-	if fcpxElements[selectSecondaryStorylineSplitGroupCache] ~= nil then
-		if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache] ~= nil then
-			if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
-				if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
-					useCache = true
-					whichSplitGroup = selectSecondaryStorylineSplitGroupCache
-					whichGroup = selectSecondaryStorylineGroupCache
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If Cache didn't work:
-	--------------------------------------------------------------------------------
-	if not useCache then
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroup = i
-					goto selectSecondaryStorylineSplitGroupExit
-				end
-			end
-		end
-		if whichSplitGroup == nil then
-			displayErrorMessage("Unable to locate Split Group.")
-			return "Failed"
-		end
-		::selectSecondaryStorylineSplitGroupExit::
-		selectSecondaryStorylineSplitGroupCache = whichSplitGroup
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-			if whichGroup == nil then
-				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-							whichGroup = i
-							goto selectSecondaryStorylineGroupExit
-						end
-					end
-				end
-			end
-		end
-		if whichGroup == nil then
-			displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::selectSecondaryStorylineGroupExit::
-		selectSecondaryStorylineGroupCache = whichGroup
-	end
-
-	--------------------------------------------------------------------------------
-	-- Split Group = 1
-	-- Scroll Area = 2
-	-- Layout Area = 1
-	--------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- Which Value Indicator:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
-			whichValueIndicator = i
-			goto selectSecondaryStorylineValueIndicatorExit
-		end
-	end
-	if whichValueIndicator == nil then
-		displayErrorMessage("Unable to locate Value Indicator.")
-		return "Failed"
-	end
-	::selectSecondaryStorylineValueIndicatorExit::
-
-	--------------------------------------------------------------------------------
-	-- Timeline Playhead Position:
-	--------------------------------------------------------------------------------
-	local timelinePlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-	--------------------------------------------------------------------------------
-	-- Which Layout Items (Selected Timeline Clip):
-	--------------------------------------------------------------------------------
-	local whichLayoutItems = {}
-	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
-		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i] ~= nil then
-			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
-
-				local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
-				local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
-
-				if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-					local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
-					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY }
-				end
-
-			end
-		end
-	end
-
-	local howManyClips = tableCount(whichLayoutItems)
-	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips <= whichStoryline then
-		print("[FCPX Hacks] ERROR: We couldn't find any clips on the Secondary Storyline at your current playhead position.")
-		return "Fail"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort the table:
-	--------------------------------------------------------------------------------
-	table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
-
-	--------------------------------------------------------------------------------
-	-- Which clip to we need:
-	--------------------------------------------------------------------------------
-	local whichClip = whichLayoutItems[whichStoryline + 1][1]
-
-	--------------------------------------------------------------------------------
-	-- Click the clip:
-	--------------------------------------------------------------------------------
-	local clipCentrePosition = {}
-	local clipPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXPosition")
-	local clipSize = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXSize")
-
-	clipCentrePosition['x'] = timelinePlayheadXPosition
-	clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
-
-	ninjaMouseClick(clipCentrePosition)
 
 end
 
@@ -1335,82 +1183,82 @@ function refreshMenuBar(refreshPlistValues)
 	-- Setup Menu:
 	--------------------------------------------------------------------------------
 	local settingsShapeMenuTable = {
-	   	{ title = "Rectangle", 	fn = changeHighlightShapeRectangle,	checked = displayHighlightShapeRectangle	},
-	   	{ title = "Circle", 	fn = changeHighlightShapeCircle, 	checked = displayHighlightShapeCircle		},
-	   	{ title = "Diamond", 	fn = changeHighlightShapeDiamond, 	checked = displayHighlightShapeDiamond		},
+	   	{ title = "Rectangle", 																		fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
+	   	{ title = "Circle", 																		fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
+	   	{ title = "Diamond", 																		fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
 	}
 	local settingsColourMenuTable = {
-	   	{ title = "Red", 	fn = changeHighlightColourRed, 		checked = displayHighlightColourRed		},
-	   	{ title = "Blue", 	fn = changeHighlightColourBlue, 	checked = displayHighlightColourBlue	},
-	   	{ title = "Green", 	fn = changeHighlightColourGreen, 	checked = displayHighlightColourGreen	},
-	   	{ title = "Yellow", fn = changeHighlightColourYellow, 	checked = displayHighlightColourYellow	},
+	   	{ title = "Red", 																			fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColourRed		},
+	   	{ title = "Blue", 																			fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColourBlue	},
+	   	{ title = "Green", 																			fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColourGreen	},
+	   	{ title = "Yellow", 																		fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColourYellow	},
 	}
 	local settingsHammerspoonSettings = {
-		{ title = "Console...", fn = openHammerspoonConsole },
+		{ title = "Console...", 																	fn = openHammerspoonConsole },
 		{ title = "-" },
 		{ title = "-" },
-		{ title = "Show Dock Icon", 	fn = toggleHammerspoonDockIcon, 			checked = hammerspoonDockIcon		},
-		{ title = "Show Menu Icon", 	fn = toggleHammerspoonMenuIcon, 			checked = hammerspoonMenuIcon		},
+		{ title = "Show Dock Icon", 																fn = toggleHammerspoonDockIcon, 									checked = hammerspoonDockIcon		},
+		{ title = "Show Menu Icon", 																fn = toggleHammerspoonMenuIcon, 									checked = hammerspoonMenuIcon		},
 		{ title = "-" },
-	   	{ title = "Launch at Startup", 	fn = toggleLaunchHammerspoonOnStartup, 		checked = startHammerspoonOnLaunch		},
-	   	{ title = "Check for Updates", 	fn = toggleCheckforHammerspoonUpdates, 		checked = hammerspoonCheckForUpdates	},
+	   	{ title = "Launch at Startup", 																fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
+	   	{ title = "Check for Updates", 																fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
 	}
 	local settingsMenuTable = {
-		{ title = "Enable Hacks Shortcuts in Final Cut Pro", fn = toggleEnableHacksShortcutsInFinalCutPro, checked = enableHacksShortcutsInFinalCutPro},
-	   	{ title = "Enable Shortcuts During Fullscreen Playback", fn = toggleEnableShortcutsDuringFullscreenPlayback, checked = enableShortcutsDuringFullscreenPlayback},
-	   	{ title = "Enable Clipboard History", fn = toggleEnableClipboardHistory, checked = enableClipboardHistory},
-	   	{ title = "Enable Mobile Notifications", fn = toggleEnableMobileNotifications, checked = enableMobileNotifications},
+		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
+	   	{ title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback},
+	   	{ title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory, 							disabled = disablePasteboard},
+	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
 	   	{ title = "-" },
-	   	{ title = "Highlight Playhead Colour", menu = settingsColourMenuTable},
-	   	{ title = "Highlight Playhead Shape", menu = settingsShapeMenuTable},
+	   	{ title = "Highlight Playhead Colour", 														menu = settingsColourMenuTable},
+	   	{ title = "Highlight Playhead Shape", 														menu = settingsShapeMenuTable},
        	{ title = "-" },
-	   	{ title = "Display Proxy/Original Icon", fn = toggleEnableProxyMenuIcon, checked = enableProxyMenuIcon},
-	   	{ title = "Display This Menu As Icon", fn = toggleMenubarDisplayMode, checked = displayMenubarAsIcon},
+	   	{ title = "Display Proxy/Original Icon", 													fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
+	   	{ title = "Display This Menu As Icon", 														fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
       	{ title = "-" },
-		{ title = "Trash FCPX Hacks Preferences", 	fn = resetSettings },
+		{ title = "Trash FCPX Hacks Preferences", 													fn = resetSettings },
     	{ title = "-" },
-    	{ title = "Created by LateNite Films", fn = gotoLateNiteSite },
-  	    { title = "Script Version " .. scriptVersion, disabled = true },
+    	{ title = "Created by LateNite Films", 														fn = gotoLateNiteSite },
+  	    { title = "Script Version " .. scriptVersion, 																																												disabled = true },
 	}
 	local settingsEffectsShortcutsTable = {
-		{ title = "Update Effects List", 	fn = updateEffectsList, disabled = not fcpxActive },
+		{ title = "Update Effects List", 															fn = updateEffectsList, 																										disabled = not fcpxActive },
 		{ title = "-" },
-		{ title = "Assign Effects Shortcut 1", 	fn = assignEffectsShortcutOne, disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 2", 	fn = assignEffectsShortcutTwo, disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 3", 	fn = assignEffectsShortcutThree, disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 4", 	fn = assignEffectsShortcutFour, disabled = not effectsListUpdated },
-		{ title = "Assign Effects Shortcut 5", 	fn = assignEffectsShortcutFive, disabled = not effectsListUpdated },
+		{ title = "Assign Effects Shortcut 1", 														fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
+		{ title = "Assign Effects Shortcut 2", 														fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
+		{ title = "Assign Effects Shortcut 3", 														fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
+		{ title = "Assign Effects Shortcut 4", 														fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
+		{ title = "Assign Effects Shortcut 5", 														fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
 	}
 	local menuTable = {
-	   	{ title = "Open Final Cut Pro", fn = launchFinalCutPro },
+	   	{ title = "Open Final Cut Pro", 															fn = launchFinalCutPro },
 		{ title = "-" },
-   	    { title = "SHORTCUTS:", disabled = true },
-	    { title = "Create Optimized Media", fn = toggleCreateOptimizedMedia, disabled = not fcpxActive, checked = FFImportCreateOptimizeMedia },
-	    { title = "Create Multicam Optimized Media", fn = toggleCreateMulticamOptimizedMedia, disabled = not fcpxActive, checked = FFCreateOptimizedMediaForMulticamClips },
-	    { title = "Create Proxy Media", fn = toggleCreateProxyMedia, disabled = not fcpxActive, checked = FFImportCreateProxyMedia },
-	    { title = "Leave Files In Place On Import", fn = toggleLeaveInPlace, disabled = not fcpxActive, checked = not FFImportCopyToMediaFolder },
-	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", fn = toggleBackgroundRender, disabled = not fcpxActive, checked = FFAutoStartBGRender },
+   	    { title = "SHORTCUTS:", 																																																	disabled = true },
+	    { title = "Create Optimized Media", 														fn = toggleCreateOptimizedMedia, 									checked = FFImportCreateOptimizeMedia, 						disabled = not fcpxActive },
+	    { title = "Create Multicam Optimized Media", 												fn = toggleCreateMulticamOptimizedMedia, 							checked = FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxActive },
+	    { title = "Create Proxy Media", 															fn = toggleCreateProxyMedia, 										checked = FFImportCreateProxyMedia, 						disabled = not fcpxActive },
+	    { title = "Leave Files In Place On Import", 												fn = toggleLeaveInPlace, 											checked = not FFImportCopyToMediaFolder, 					disabled = not fcpxActive },
+	    { title = "Enable Background Render (" .. FFAutoRenderDelay .. " secs)", 					fn = toggleBackgroundRender, 										checked = FFAutoStartBGRender, 								disabled = not fcpxActive },
    	    { title = "-" },
- 	    { title = "AUTOMATION:", disabled = true },
-   	    { title = "Enable Scrolling Timeline", fn = toggleScrollingTimeline, checked = scrollingTimelineActive },
-   	    { title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
+ 	    { title = "AUTOMATION:", 																																																	disabled = true },
+   	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
+   	    { title = "Effects Shortcuts", 																menu = settingsEffectsShortcutsTable },
       	{ title = "-" },
-   	    { title = "TOOLS:", disabled = true },
-      	{ title = "Paste from Clipboard History", menu = settingsClipboardHistoryTable },
+   	    { title = "TOOLS:", 																																																		disabled = true },
+      	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "-" },
-   	    { title = "HACKS:", disabled = true },
-   	    { title = "Enable Timecode Overlay", fn = toggleTimecodeOverlay, checked = FFEnableGuards },
-	   	{ title = "Enable Moving Markers", fn = toggleMovingMarkers, checked = allowMovingMarkers },
-       	{ title = "Enable Rendering During Playback", fn = togglePerformTasksDuringPlayback, checked = not FFSuspendBGOpsDuringPlay },
-        { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", fn = changeBackupInterval },
-   	   	{ title = "Change Smart Collections Label", fn = changeSmartCollectionsLabel },
+   	    { title = "HACKS:", 																																																		disabled = true },
+   	    { title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = FFEnableGuards },
+	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = allowMovingMarkers },
+       	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not FFSuspendBGOpsDuringPlay },
+        { title = "Change Backup Interval (" .. tostring(FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
+   	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
         { title = "-" },
-      	{ title = "FCPX Hacks Settings", menu = settingsMenuTable },
-      	{ title = "Hammerspoon Settings", menu = settingsHammerspoonSettings},
+      	{ title = "FCPX Hacks Settings", 															menu = settingsMenuTable },
+      	{ title = "Hammerspoon Settings", 															menu = settingsHammerspoonSettings},
    	    { title = "-" },
-      	{ title = "Show Keyboard Shortcuts", fn = displayShortcutList },
+      	{ title = "Show Keyboard Shortcuts", 														fn = displayShortcutList },
     	{ title = "-" },
-    	{ title = "Quit FCPX Hacks", fn = quitFCPXHacks},
+    	{ title = "Quit FCPX Hacks", 																fn = quitFCPXHacks},
 	}
 
 	--------------------------------------------------------------------------------
@@ -2054,11 +1902,6 @@ end
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS SHORTCUT:
 --------------------------------------------------------------------------------
-function assignEffectsShortcutOne() 	assignEffectsShortcut(1) end
-function assignEffectsShortcutTwo() 	assignEffectsShortcut(2) end
-function assignEffectsShortcutThree() 	assignEffectsShortcut(3) end
-function assignEffectsShortcutFour() 	assignEffectsShortcut(4) end
-function assignEffectsShortcutFive() 	assignEffectsShortcut(5) end
 function assignEffectsShortcut(whichShortcut)
 
 	--------------------------------------------------------------------------------
@@ -2384,36 +2227,16 @@ end
 --------------------------------------------------------------------------------
 -- CHANGE HIGHLIGHT SHAPE:
 --------------------------------------------------------------------------------
-function changeHighlightShapeRectangle()
-	hs.settings.set("fcpxHacks.displayHighlightShape", "Rectangle")
-	refreshMenuBar()
-end
-function changeHighlightShapeCircle()
-	hs.settings.set("fcpxHacks.displayHighlightShape", "Circle")
-	refreshMenuBar()
-end
-function changeHighlightShapeDiamond()
-	hs.settings.set("fcpxHacks.displayHighlightShape", "Diamond")
+function changeHighlightShape(value)
+	hs.settings.set("fcpxHacks.displayHighlightShape", value)
 	refreshMenuBar()
 end
 
 --------------------------------------------------------------------------------
 -- CHANGE HIGHLIGHT COLOUR:
 --------------------------------------------------------------------------------
-function changeHighlightColourRed()
-	hs.settings.set("fcpxHacks.displayHighlightColour", "Red")
-	refreshMenuBar()
-end
-function changeHighlightColourBlue()
-	hs.settings.set("fcpxHacks.displayHighlightColour", "Blue")
-	refreshMenuBar()
-end
-function changeHighlightColourGreen()
-	hs.settings.set("fcpxHacks.displayHighlightColour", "Green")
-	refreshMenuBar()
-end
-function changeHighlightColourYellow()
-	hs.settings.set("fcpxHacks.displayHighlightColour", "Yellow")
+function changeHighlightColour(value)
+	hs.settings.set("fcpxHacks.displayHighlightColour", value)
 	refreshMenuBar()
 end
 
@@ -3315,6 +3138,166 @@ end
 --                   S H O R T C U T   F E A T U R E S                        --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- SELECT SECONDARY STORYLINE:
+--------------------------------------------------------------------------------
+function selectSecondaryStoryline(whichStoryline)
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local fcpx 				= hs.application("Final Cut Pro")
+
+	--------------------------------------------------------------------------------
+	-- Get all FCPX UI Elements:
+	--------------------------------------------------------------------------------
+	fcpxElements = ax.applicationElement(hs.application("Final Cut Pro"))[1]
+
+	--------------------------------------------------------------------------------
+	-- Variables:
+	--------------------------------------------------------------------------------
+	local whichSplitGroup 			= nil
+	local whichGroup 				= nil
+	local whichValueIndicator 		= nil
+
+	--------------------------------------------------------------------------------
+	-- Cache:
+	--------------------------------------------------------------------------------
+	local useCache = false
+	if fcpxElements[selectSecondaryStorylineSplitGroupCache] ~= nil then
+		if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache] ~= nil then
+			if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[selectSecondaryStorylineSplitGroupCache][selectSecondaryStorylineGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
+					useCache = true
+					whichSplitGroup = selectSecondaryStorylineSplitGroupCache
+					whichGroup = selectSecondaryStorylineGroupCache
+				end
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- If Cache didn't work:
+	--------------------------------------------------------------------------------
+	if not useCache then
+		--------------------------------------------------------------------------------
+		-- Which Split Group:
+		--------------------------------------------------------------------------------
+
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if whichSplitGroup == nil then
+				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					whichSplitGroup = i
+					goto selectSecondaryStorylineSplitGroupExit
+				end
+			end
+		end
+		if whichSplitGroup == nil then
+			displayErrorMessage("Unable to locate Split Group.")
+			return "Failed"
+		end
+		::selectSecondaryStorylineSplitGroupExit::
+		selectSecondaryStorylineSplitGroupCache = whichSplitGroup
+
+		--------------------------------------------------------------------------------
+		-- Which Group:
+		--------------------------------------------------------------------------------
+		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			if whichGroup == nil then
+				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+							whichGroup = i
+							goto selectSecondaryStorylineGroupExit
+						end
+					end
+				end
+			end
+		end
+		if whichGroup == nil then
+			displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::selectSecondaryStorylineGroupExit::
+		selectSecondaryStorylineGroupCache = whichGroup
+	end
+
+	--------------------------------------------------------------------------------
+	-- Split Group = 1
+	-- Scroll Area = 2
+	-- Layout Area = 1
+	--------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- Which Value Indicator:
+	--------------------------------------------------------------------------------
+	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			whichValueIndicator = i
+			goto selectSecondaryStorylineValueIndicatorExit
+		end
+	end
+	if whichValueIndicator == nil then
+		displayErrorMessage("Unable to locate Value Indicator.")
+		return "Failed"
+	end
+	::selectSecondaryStorylineValueIndicatorExit::
+
+	--------------------------------------------------------------------------------
+	-- Timeline Playhead Position:
+	--------------------------------------------------------------------------------
+	local timelinePlayheadXPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+	--------------------------------------------------------------------------------
+	-- Which Layout Items (Selected Timeline Clip):
+	--------------------------------------------------------------------------------
+	local whichLayoutItems = {}
+	for i=1, fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValueCount("AXChildren") do
+		if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i] ~= nil then
+			if fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
+
+				local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
+				local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
+
+				if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
+					local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][2][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
+					whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY }
+				end
+
+			end
+		end
+	end
+
+	local howManyClips = tableCount(whichLayoutItems)
+	if next(whichLayoutItems) == nil or howManyClips == 1 or howManyClips <= whichStoryline then
+		print("[FCPX Hacks] ERROR: We couldn't find any clips on the Secondary Storyline at your current playhead position.")
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Sort the table:
+	--------------------------------------------------------------------------------
+	table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
+
+	--------------------------------------------------------------------------------
+	-- Which clip to we need:
+	--------------------------------------------------------------------------------
+	local whichClip = whichLayoutItems[whichStoryline + 1][1]
+
+	--------------------------------------------------------------------------------
+	-- Click the clip:
+	--------------------------------------------------------------------------------
+	local clipCentrePosition = {}
+	local clipPosition = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXPosition")
+	local clipSize = fcpxElements[whichSplitGroup][whichGroup][1][2][1][whichClip]:attributeValue("AXSize")
+
+	clipCentrePosition['x'] = timelinePlayheadXPosition
+	clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
+
+	ninjaMouseClick(clipCentrePosition)
+
+end
 
 --------------------------------------------------------------------------------
 -- CHANGE TIMELINE CLIP HEIGHT:
