@@ -115,7 +115,7 @@
 -------------------------------------------------------------------------------
 -- SCRIPT VERSION:
 -------------------------------------------------------------------------------
-local scriptVersion = "0.40"
+local scriptVersion = "0.41"
 --------------------------------------------------------------------------------
 
 
@@ -225,6 +225,12 @@ function loadScript()
 	if isFinalCutProInstalled() then
 
 		--------------------------------------------------------------------------------
+		-- Settings Defaults:
+		--------------------------------------------------------------------------------
+		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
+		if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
+
+		--------------------------------------------------------------------------------
 		-- Useful Debugging Information:
 		--------------------------------------------------------------------------------
 		if macOSVersion() ~= nil then print("[FCPX Hacks] macOS Version: " .. tostring(macOSVersion())) end
@@ -281,55 +287,45 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Watch For Hammerspoon Script Updates:
+		-- Setup Watches:
 		--------------------------------------------------------------------------------
-		hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 
-		--------------------------------------------------------------------------------
-		-- Watch for Final Cut Pro plist changes:
-		--------------------------------------------------------------------------------
-		preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsPlistChanged):start()
+			--------------------------------------------------------------------------------
+			-- Create and start the application event watcher:
+			--------------------------------------------------------------------------------
+			watcher = hs.application.watcher.new(finalCutProWatcher)
+			watcher:start()
 
-		--------------------------------------------------------------------------------
-		-- Set up Menubar:
-		--------------------------------------------------------------------------------
-		fcpxMenubar = hs.menubar.newWithPriority(1)
+			--------------------------------------------------------------------------------
+			-- Watch For Hammerspoon Script Updates:
+			--------------------------------------------------------------------------------
+			hammerspoonWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 
-		--------------------------------------------------------------------------------
-		-- Work out Menubar Display Mode:
-		--------------------------------------------------------------------------------
-		updateMenubarIcon()
+			--------------------------------------------------------------------------------
+			-- Watch for Final Cut Pro plist changes:
+			--------------------------------------------------------------------------------
+			preferencesWatcher = hs.pathwatcher.new("~/Library/Preferences/", finalCutProSettingsPlistChanged):start()
 
-		--------------------------------------------------------------------------------
-		-- Populate the Menubar for the first time:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
+
+			--------------------------------------------------------------------------------
+			-- Full Screen Keyboard Watcher:
+			--------------------------------------------------------------------------------
+			fullscreenKeyboardWatcher()
+
+			--------------------------------------------------------------------------------
+			-- Command Editor Watcher:
+			--------------------------------------------------------------------------------
+			commandEditorWatcher()
+
+			--------------------------------------------------------------------------------
+			-- Scrolling Timeline Watcher
+			--------------------------------------------------------------------------------
+			scrollingTimelineWatcher()
 
 		--------------------------------------------------------------------------------
 		-- Bind Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
 		bindKeyboardShortcuts()
-
-		--------------------------------------------------------------------------------
-		-- Create and start the application event watcher:
-		--------------------------------------------------------------------------------
-		watcher = hs.application.watcher.new(finalCutProWatcher)
-		watcher:start()
-
-		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		fullscreenKeyboardWatcher()
-
-		--------------------------------------------------------------------------------
-		-- Command Editor Watcher:
-		--------------------------------------------------------------------------------
-		commandEditorWatcher()
-
-		--------------------------------------------------------------------------------
-		-- Scrolling Timeline Watcher
-		--------------------------------------------------------------------------------
-		scrollingTimelineWatcher()
 
 		--------------------------------------------------------------------------------
 		-- Activate the correct modal state:
@@ -395,6 +391,22 @@ function loadScript()
 			end
 			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
 		end
+
+
+		--------------------------------------------------------------------------------
+		-- Set up Menubar:
+		--------------------------------------------------------------------------------
+		fcpxMenubar = hs.menubar.newWithPriority(1)
+
+			--------------------------------------------------------------------------------
+			-- Work out Menubar Display Mode:
+			--------------------------------------------------------------------------------
+			updateMenubarIcon()
+
+			--------------------------------------------------------------------------------
+			-- Populate the Menubar for the first time:
+			--------------------------------------------------------------------------------
+			refreshMenuBar(true)
 
 		--------------------------------------------------------------------------------
 		-- All loaded!
@@ -1073,7 +1085,7 @@ function refreshMenuBar(refreshPlistValues)
    	    { title = "Enable Scrolling Timeline", fn = toggleScrollingTimeline, checked = scrollingTimelineActive },
 	   	{ title = "Enable Timecode Overlay", fn = toggleTimecodeOverlay, checked = FFEnableGuards },
 	   	{ title = "Enable Moving Markers", fn = toggleMovingMarkers, checked = allowMovingMarkers },
-       	{ title = "Allow Tasks During Playback", fn = togglePerformTasksDuringPlayback, checked = FFSuspendBGOpsDuringPlay },
+       	{ title = "Enable Rendering During Playback", fn = togglePerformTasksDuringPlayback, checked = not FFSuspendBGOpsDuringPlay },
       	{ title = "-" },
       	{ title = "Effects Shortcuts", menu = settingsEffectsShortcutsTable },
         { title = "-" },
