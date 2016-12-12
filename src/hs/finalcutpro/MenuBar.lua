@@ -37,26 +37,26 @@ function MenuBar:app()
 	return self._app
 end
 
-function MenuBar:ui()
+function MenuBar:UI()
 	if not self._ui then
-		self._ui = self:app():ui():childWithRole(MenuBar.ROLE)
+		self._ui = self:app():UI():childWithRole(MenuBar.ROLE)
 	end
 	return self._ui
 end
 
 function MenuBar:getMenuMap()
-	if not self._menuMap then
+	if not MenuBar._menuMap then
 		local file = io.open(MenuBar.MENU_MAP_FILE, "r")
 		if file then
 			local content = file:read("*all")
 			file:close()
-			self._menuMap = json.decode(content)
+			MenuBar._menuMap = json.decode(content)
 			log.d("Loaded menu map from '" .. MenuBar.MENU_MAP_FILE .. "'")
 		else
-			self._menuMap = {}
+			MenuBar._menuMap = {}
 		end
 	end
-	return self._menuMap
+	return MenuBar._menuMap
 end
 
 --- hs.finalcutpro.MenuBar:select(...) -> boolean
@@ -74,7 +74,7 @@ function MenuBar:select(...)
 
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
-	local menuUI = self:ui()
+	local menuUI = self:UI()
 	
 	for i=1,select('#', ...) do
 		step = select(i, ...)
@@ -114,7 +114,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:generateMenuMap()
-	local menuMap = self:_processMenuItems(self:ui())
+	local menuMap = self:_processMenuItems(self:UI())
 	
 	-- Opens a file in append mode
 	file = io.open(MenuBar.MENU_MAP_FILE, "w")

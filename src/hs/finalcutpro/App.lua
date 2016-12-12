@@ -13,7 +13,7 @@ local log										= require("hs.logger").new("fcpxapp")
 --- Local Modules
 local UI										= require("hs.finalcutpro.ui")
 local MenuBar									= require("hs.finalcutpro.MenuBar")
-local PreferencesDialog							= require("hs.finalcutpro.PreferencesDialog")
+local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 
 --- The App module
 local App = {}
@@ -22,9 +22,7 @@ local App = {}
 App.BUNDLE_ID 							= "com.apple.FinalCut"
 App.PASTEBOARD_UTI 						= "com.apple.flexo.proFFPasteboardUTI"
 
---- CONSTANTS
-
---- hs.finalcutpro.App:new(hs.application, axuielement) -> App
+--- hs.finalcutpro.App:new() -> App
 --- Function
 --- Creates a new App instance representing Final Cut Pro
 ---
@@ -34,10 +32,8 @@ App.PASTEBOARD_UTI 						= "com.apple.flexo.proFFPasteboardUTI"
 --- Returns:
 ---  * True is successful otherwise Nil
 ---
-function App:new(ui)
-	o = {
-	  ui = ui,
-	}
+function App:new()
+	o = {}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -54,16 +50,31 @@ end
 ---  * The hs.application, or nil if the application is not installed.
 ---
 function App:application()
-	return application(self.BUNDLE_ID) or nil
+	return application(App.BUNDLE_ID) or nil
 end
 
-function App:ui()
+function App:UI()
 	local fcp = self:application()
 	if fcp then
 		return UI:new(ax.applicationElement(fcp))
 	else
 		return nil
 	end
+end
+
+--- hs.finalcutpro.running() -> boolean
+--- Function
+--- Is Final Cut Pro Running?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * True if Final Cut Pro is running otherwise False
+---
+function App:isRunning()
+	local fcpx = self:application()
+	return fcpx and fcpx:isRunning()
 end
 
 function App:menuBar()
@@ -73,11 +84,11 @@ function App:menuBar()
 	return self._menuBar
 end
 
-function App:preferencesDialog()
-	if not self._preferencesDialog then
-		self._preferencesDialog = PreferencesDialog:new(self)
+function App:preferencesWindow()
+	if not self._preferencesWindow then
+		self._preferencesWindow = PreferencesWindow:new(self)
 	end
-	return self._preferencesDialog
+	return self._preferencesWindow
 end
 
 --- hs.finalcutpro.App:windowsUI() -> hs.finalcutpro.UI
@@ -91,7 +102,7 @@ end
 ---  * The hs.finalcutpro.UI, or nil if the application is not running.
 ---
 function App:windowsUI()
-	return self:ui():attribute("AXWindows")
+	return self:UI():attribute("AXWindows")
 end
 
 function App:_listWindows()

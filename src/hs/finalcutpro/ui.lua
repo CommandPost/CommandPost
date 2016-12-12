@@ -133,19 +133,20 @@ function UI:parent()
 	return self:attribute("AXParent")
 end
 
---- hs.finalcutpro.ui:attribute(name) -> <value>
+--- hs.finalcutpro.ui:attribute(string, boolean) -> <value>
 --- Function
 --- Returns the value of the named attribute, if it exists.
 ---
 --- Parameters:
----  * name - the attribute name
+---  * name	- the attribute name
+---  * raw	- (optional) if true, the unmodified attribute will be returned. Defaults to false
 ---
 --- Returns:
 ---  * The attribute value
 ---
-function UI:attribute(name)
+function UI:attribute(name, raw)
 	local attr = self.element:attributeValue(name)
-	if type(attr) == "table" then
+	if not raw and type(attr) == "table" then
 		return UI:new(attr)
 	else
 		return attr
@@ -165,6 +166,10 @@ end
 function UI:press()
   self.element:performAction("AXPress")
   return self
+end
+
+function UI:buildTree()
+	return self.element:buildTree()
 end
 
 return UI

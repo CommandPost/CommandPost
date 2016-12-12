@@ -5197,81 +5197,20 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local prefs = fcp:app():preferencesWindow()
 
 		--------------------------------------------------------------------------------
-		-- Open Preferences:
+		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		-- local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		-- local activatePreferencesResult = fcp.app():menuBar():select("Final Cut Pro", "Preferences…")
-		if not fcp.app():preferencesDialog():show() then
-			dialog.displayErrorMessage("Failed to open Preferences Panel.")
+		if not prefs:playbackPanel():toggleOptimizeMulticamMedia() then
+			dialog.displayErrorMessage("Failed to toggle 'Create optimized media for multicam clips'.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Toolbar:
+		-- Close the Preferences window:
 		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		local whichToolbar = nil
-		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-				whichToolbar = i
-				goto foundToolbar
-			end
-		end
-		if whichToolbar == nil then
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
-				return "Failed"
-			end
-			timer.usleep(200000)
-			goto tryToolbarAgain
-		end
-		::foundToolbar::
-
-		--------------------------------------------------------------------------------
-		-- Goto Playback Preferences:
-		--------------------------------------------------------------------------------
-		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
-		if pressPlaybackButton == nil then
-			dialog.displayErrorMessage("Failed to open Import Preferences.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-				goto foundGroup
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::foundGroup::
-
-		--------------------------------------------------------------------------------
-		-- Toggle Create Optimized Media:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichGroup][1][15]:performAction("AXPress")
-
-		--------------------------------------------------------------------------------
-		-- Close Preferences:
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[2]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to close Preferences window.")
-			return "Failed"
-		end
-
+		prefs:hide()
 	end
 
 	--------------------------------------------------------------------------------

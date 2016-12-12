@@ -46,6 +46,10 @@ local function doesDirectoryExist(path)
 end
 
 function finalcutpro.app()
+	-- if not finalcutpro._app then
+	-- 	finalcutpro._app = App:new()
+	-- end
+	-- return finalcutpro._app
 	return App:new()
 end
 
