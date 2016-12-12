@@ -7,8 +7,8 @@ local inspect 		= require("hs.inspect")
 local log 			= require("hs.logger").new("fcptest")
 
 local function test()
-	local menuBar = fcpx.findMenuBar()
-	log.d("MenuBar: \n"..inspect(menuBar:buildTree()))
+	local ui = fcpx.applicationUI()
+	log.d("UI: \n"..inspect(ui.element:buildTree()))
 end
 
 return test

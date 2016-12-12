@@ -20,15 +20,14 @@ local plist 								= require("hs.plist")
 local application 							= require("hs.application")
 local fs 									= require("hs.fs")
 local osascript 							= require("hs.osascript")
-local timer									= require("hs.timer")
 local json									= require("hs.json")
 
+local App									= require("hs.finalcutpro.App")
 local UI									= require("hs.finalcutpro.ui")
+local just									= require("hs.just")
 
 local log									= require("hs.logger").new("fcp")
 local inspect								= require("hs.inspect")
-
-local menuMapFile							= "hs/finalcutpro/menumap.json"
 
 
 --- doesDirectoryExist() -> boolean
@@ -46,29 +45,16 @@ local function doesDirectoryExist(path)
     return attr and attr.mode == 'directory'
 end
 
-local function applicationUI()
+function finalcutpro.app()
+	return App:new()
+end
+
+function finalcutpro.applicationUI()
 	local fcp = finalcutpro.application()
 	if fcp then
 		return UI:new(ax.applicationElement(fcp))
 	else
 		return nil
-	end
-end
-
---- hs.finalcutpro.findMenuBar() -> UI
---- Function
---- Finds the application menu bar UI element.
----
---- Parameters:
----  * N/A
----
---- Returns:
----  * The menu bar UI, or nil if the application is not running.
----
-function finalcutpro.findMenuBar()
-	local app = applicationUI()
-	if app then
-		return app:childWithRole("AXMenuBar")
 	end
 end
 
@@ -98,37 +84,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function finalcutpro.selectMenuItem(menuItemTable)
-
-	--------------------------------------------------------------------------------
-	-- Get the FCPX menubar:
-	--------------------------------------------------------------------------------
-	local menuBar = finalcutpro.findMenuBar()
-	
-	-- Start at the top of the menu bar list
-	local menuMap = finalcutpro.getMenuMap()
-	local menuUI = menuBar
-	
-	for i,step in pairs(menuItemTable) do
-		if menuMap and menuMap[step] then
-			local item = menuMap[step]
-			menuUI = menuUI:childAt(item.id)
-			menuMap = item.items
-		else
-			menuUI = menuUI:childWithTitle(step)
-		end
-		
-		if menuUI then
-			menuUI:press()
-			-- Assign the contained menu to the menuUI
-			menuUI = menuUI:childAt(1)
-			assert(not menuUI or menuUI:attribute("AXRole") == "AXMenu")
-		else
-			log.d("Unable to find a menu called '"..step.."'.")
-			return nil
-		end
-	end
-	
-	return true
+	return finalcutpro.app():menuBar():select(table.unpack(menuItemTable))
 end
 
 --- hs.finalcutpro.flexoLanguages() -> table
@@ -397,15 +353,8 @@ function finalcutpro.restart()
 		-- Kill Final Cut Pro:
 		finalcutpro.application():kill()
 
-		-- Wait until Final Cut Pro is Closed:
-		local timeoutCount = 0
-		repeat
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				return false
-			end
-			timer.usleep(1000000)
-		until not finalcutpro.running()
+		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 10 seconds):
+		just.doWhile(function() return finalcutpro.running() end, 100000, 100)
 
 		-- Launch Final Cut Pro:
 		local result = finalcutpro.launch()
@@ -659,6 +608,26 @@ function finalcutpro.getColorBoardRadioGroup()
 
 end
 
+--- hs.finalcutpro.showPreferencesDialog() -> UI
+--- Function
+--- Ensures that the 'Preferences' dialog window is displayed, and returns
+--- a UI pointing at the window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * The UI if successful, or nil if it could not be opened within 1 second.
+---
+function finalcutpro.showPreferencesDialog()
+	finalcutpro.selectMenuItem({"Final Cut Pro", "Preferences…"})
+	
+	local app = finalcutpro.applicationUI()
+	return just.doUntil(
+		function() return app:attribute("AXWindows"):childWithSubrole("AXDialog") end
+	)
+end
+
 --- hs.finalcutpro._generateMenuMap() -> Table
 --- Function
 --- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
@@ -670,46 +639,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function finalcutpro._generateMenuMap()
-	local menuBar = finalcutpro.findMenuBar()
-	local menuMap = finalcutpro._processMenuItems(menuBar)
-	
-	-- Opens a file in append mode
-	file = io.open(menuMapFile, "w")
-
-	if file then
-		file:write(json.encode(menuMap))
-		file:close()
-		return true
-	end
-
-	return nil
-end
-
-function finalcutpro._processMenuItems(menu)
-	local count = menu:childCount()
-	-- log.d("Count: "..count)
-	if count then
-		local items = {}
-		for i = 1,count do
-			local child = menu:childAt(i)
-			local title = child:attribute("AXTitle")
-			-- log.d("Title: "..inspect(title))
-			if title and title ~= "" then
-				local item = {id = i}
-				local submenu = child:childAt(1)
-				if submenu and submenu:attribute("AXRole") == "AXMenu" then
-					local children = finalcutpro._processMenuItems(submenu)
-					if children then
-						item.items = children
-					end
-				end
-				items[title] = item
-			end
-		end
-		return items
-	else
-		return nil
-	end
+	return finalcutpro.app():menuBar():generateMenuMap()
 end
 
 return finalcutpro

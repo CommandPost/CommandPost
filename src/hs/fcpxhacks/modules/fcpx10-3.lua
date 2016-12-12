@@ -5202,8 +5202,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open Preferences:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == nil then
+		-- local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
+		-- local activatePreferencesResult = fcp.app():menuBar():select("Final Cut Pro", "Preferences…")
+		if not fcp.app():preferencesDialog():show() then
 			dialog.displayErrorMessage("Failed to open Preferences Panel.")
 			return "Failed"
 		end

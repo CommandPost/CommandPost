@@ -30,7 +30,7 @@ end
 ---  * The number of children
 ---
 function UI:childCount()
-	return self.element:attributeValueCount("AXChildren")
+	return #(self.element)
 end
 
 --- hs.finalcutpro.ui:childAt(index) -> UI
@@ -101,6 +101,20 @@ end
 --- Returns:
 ---  * The child UI
 ---
+function UI:childWithSubrole(roleName)
+	return self:childWith("AXSubrole", roleName)
+end
+
+--- hs.finalcutpro.ui:childWithRole(roleName) -> UI
+--- Function
+--- Returns a UI pointing at the child with the named role, or nil if none ws found.
+---
+--- Parameters:
+---  * roleName - The role to match
+---
+--- Returns:
+---  * The child UI
+---
 function UI:childWithTitle(title)
 	return self:childWith("AXTitle", title)
 end
@@ -116,12 +130,7 @@ end
 ---  * The parent UI
 ---
 function UI:parent()
-	local parent = self:attribute("AXParent")
-	if parent then
-		return UI:new(parent)
-	else
-		return nil
-	end
+	return self:attribute("AXParent")
 end
 
 --- hs.finalcutpro.ui:attribute(name) -> <value>
@@ -135,7 +144,12 @@ end
 ---  * The attribute value
 ---
 function UI:attribute(name)
-	return self.element:attributeValue(name)
+	local attr = self.element:attributeValue(name)
+	if type(attr) == "table" then
+		return UI:new(attr)
+	else
+		return attr
+	end
 end
 
 --- hs.finalcutpro.ui:press() -> UI
