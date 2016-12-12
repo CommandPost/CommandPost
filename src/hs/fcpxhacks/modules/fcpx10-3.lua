@@ -102,6 +102,7 @@ local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -408,6 +409,13 @@ function loadScript()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
+	-- Enable Hacks HUD:
+	--------------------------------------------------------------------------------
+	if settings.get("fcpxHacks.enableHacksHUD") then
+		hackshud.new()
+	end
+
+	--------------------------------------------------------------------------------
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
 	if fcp.frontmost() then
@@ -431,6 +439,13 @@ function loadScript()
 		if settings.get("fcpxHacks.scrollingTimelineActive") then
 			scrollingTimelineWatcherUp:start()
 			scrollingTimelineWatcherDown:start()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Hacks HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			hackshud.show()
 		end
 
 	else
@@ -521,8 +536,7 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
-
-	fcp.launch()
+	hackshud.active()
 
 end
 
@@ -1654,6 +1668,11 @@ function refreshMenuBar(refreshPlistValues)
 	enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
 
 	--------------------------------------------------------------------------------
+	-- Enable Hacks HUD:
+	--------------------------------------------------------------------------------
+	enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD") or false
+
+	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
 	--------------------------------------------------------------------------------
 	local settingsClipboardHistoryTable = {}
@@ -1926,7 +1945,7 @@ function refreshMenuBar(refreshPlistValues)
 	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not mod.FFCreateOptimizedMediaForMulticamClips) end, 							checked = mod.FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
 	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not mod.FFImportCreateProxyMedia) end, 														checked = mod.FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
 	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(mod.FFImportCopyToMediaFolder) end, 																checked = not mod.FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
-	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
+	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 				fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
    	    { title = "-" },
 	}
 	local automationTable = {
@@ -1941,6 +1960,7 @@ function refreshMenuBar(refreshPlistValues)
       	{ title = "-" },
 	}
 	local toolsSettings = {
+		{ title = "Enable Hacks HUD", 																fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
    	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
@@ -3909,6 +3929,22 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE HACKS HUD:
+	--------------------------------------------------------------------------------
+	function toggleEnableHacksHUD()
+		local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
+		settings.set("fcpxHacks.enableHacksHUD", not enableHacksHUD)
+
+		if enableHacksHUD then
+			hackshud.hide()
+		else
+			hackshud.show()
+		end
+
+		refreshMenuBar()
+	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE DEBUG MODE:
@@ -9856,7 +9892,7 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 
 	local FFPlayerQuality = fcp.getPreference("FFPlayerQuality")
 
-	if FFPlayerQuality == "4" then
+	if FFPlayerQuality == 4 then
 		result = proxyOnIcon 		-- Proxy (4)
 	else
 		result = proxyOffIcon 		-- Original (5)
@@ -10484,6 +10520,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
+				-- Enable Hacks HUD:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableHacksHUD") then
+					hackshud:show()
+				end
+
+				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
 				showTouchbar()
@@ -10531,6 +10574,16 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				deleteAllHighlights()
 
+				-------------------------------------------------------------------------------
+				-- Disable Hacks HUD:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableHacksHUD") then
+					if application.frontmostApplication():bundleID() == "org.hammerspoon.Hammerspoon" then
+						-- Focussed on Hammerspoon (and most likely HUD)
+					else
+						hackshud:hide()
+					end
+				end
 		end
 	end
 end
@@ -10574,12 +10627,19 @@ function finalCutProSettingsWatcher(files)
     	--------------------------------------------------------------------------------
     	-- Refresh Menubar:
     	--------------------------------------------------------------------------------
-    	refreshMenuBar(true)
+    	timer.doAfter(0.0000000000001, function() refreshMenuBar(true) end)
 
     	--------------------------------------------------------------------------------
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
-    	updateMenubarIcon()
+    	timer.doAfter(0.0000000000001, function() updateMenubarIcon() end)
+
+ 		--------------------------------------------------------------------------------
+		-- Reload Hacks HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
+		end
 
     end
 end
