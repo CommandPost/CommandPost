@@ -33,6 +33,7 @@ local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
 local urlevent									= require("hs.urlevent")
 local timer										= require("hs.timer")
+local host										= require("hs.host")
 
 local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
@@ -59,11 +60,11 @@ function hackshud.new()
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	hackshud.hudWebView = webview.new(defaultHUDRect, {}, hackshud.hudWebViewController)
-		:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable"})
+		:windowStyle({"HUD", "utility", "titled", "nonactivating"}) -- Removed "closable" until we work out how to cause the close to trigger something.
 		:shadow(true)
-		:closeOnEscape(true)
+		:closeOnEscape(false)
 		:html(generateHTML())
-		:allowGestures(true)
+		:allowGestures(false)
 		:allowNewWindows(false)
 		:windowTitle(hudName)
 		:level(drawing.windowLevels.modalPanel)
@@ -140,6 +141,9 @@ end
 --------------------------------------------------------------------------------
 function generateHTML()
 
+	local fcpGreen = "#3f9253"
+	local fcpRed = "#d1393e"
+
 	local preferences = fcp.getPreferencesAsTable()
 
 	if preferences["FFPlayerQuality"] == nil then
@@ -148,11 +152,21 @@ function generateHTML()
 		FFPlayerQuality = preferences["FFPlayerQuality"]
 	end
 	local playerQuality = nil
-	if FFPlayerQuality == 4 then
-		playerQuality = '<span style="color: red;">Proxy</span>'
-	else
-		playerQuality = '<span style="color: green;">Original/Optimised</span>'
+	if FFPlayerQuality == 10 then
+		playerMedia = '<span style="color: ' .. fcpGreen .. ';">Original/Optimised</span>'
+		playerQuality = '<span style="color: ' .. fcpGreen .. ';">Better Quality</span>'
+	elseif FFPlayerQuality == 5 then
+		playerMedia = '<span style="color: ' .. fcpGreen .. ';">Original/Optimised</span>'
+		playerQuality = '<span style="color: ' .. fcpRed .. ';">Better Performance</span>'
+	elseif FFPlayerQuality == 4 then
+		playerMedia = '<span style="color: ' .. fcpRed .. ';">Proxy</span>'
+		playerQuality = '<span style="color: ' .. fcpRed .. ';">Proxy</span>'
 	end
+
+	-- FFPlayerQuality
+	-- 10 = better quality / original
+	-- 5 = original / better performance
+	-- 4 = better quality / proxy
 
 	if preferences["FFAutoRenderDelay"] == nil then
 		FFAutoRenderDelay = "0.3"
@@ -167,9 +181,9 @@ function generateHTML()
 
 	local backgroundRender = nil
 	if FFAutoStartBGRender then
-		backgroundRender = '<span style="color: green;">Enabled (' .. FFAutoRenderDelay .. 'secs)</span>'
+		backgroundRender = '<span style="color: ' .. fcpGreen .. ';">Enabled (' .. FFAutoRenderDelay .. 'secs)</span>'
 	else
-		backgroundRender = '<span style="color: red;">Disabled</span>'
+		backgroundRender = '<span style="color: ' .. fcpRed .. ';">Disabled</span>'
 	end
 
 	local HTML = [[<!DOCTYPE html>
@@ -177,34 +191,54 @@ function generateHTML()
 	<head>
 		<!-- Style Sheets: -->
 		<style>
+		.button {
+			font-family: -apple-system;
+			font-size: 10px;
+			text-decoration: none;
+			background-color: #333333;
+			color: #bfbebb;
+			padding: 2px 6px 2px 6px;
+			border-top: 1px solid #161616;
+			border-right: 1px solid #161616;
+			border-bottom: 1px solid #161616;
+			border-left: 1px solid #161616;
+		}
 		body {
 			background-color:#1f1f1f;
-			color: white;
-			font-family: 'Verdana';
-			font-size: 12px;
+			color: #bfbebb;
+			font-family: -apple-system;
+			font-size: 11px;
+			font-weight: lighter;
 		}
 		table {
+			width:100%;
 			text-align:left;
+		}
+		th {
+			width:50%;
 		}
 		h1 {
 			font-size: 12px;
 			font-weight: bold;
+			text-align: center;
+			margin: 0px;
+			padding: 0px;
 		}
 		hr {
 			height:1px;
 			border-width:0;
 			color:gray;
-			background-color:gray;
+			background-color:#797979;
 		    display: block;
-			margin-top: 15px;
-			margin-bottom: 15px;
+			margin-top: 10px;
+			margin-bottom: 10px;
 			margin-left: auto;
 			margin-right: auto;
 			border-style: inset;
 		}
 		input[type=text] {
 			width: 100%;
-			padding: 12px 20px;
+			padding: 5px 5px;
 			margin: 8px 0;
 			box-sizing: border-box;
 			border: 4px solid #22426f;
@@ -234,29 +268,36 @@ function generateHTML()
 				console.log('The controller does not exist yet');
 				}
 
-				x.value = "DROP FINAL CUT PRO LIBRARIES & EVENTS HERE";
+				x.value = "DROP FROM FINAL CUT PRO BROWSER TO HERE";
 			}
 
 		</script>
 	</head>
 	<body>
-		<table style="width:100%">
+		<table>
 			<tr>
-				<th><strong>Media:</strong></th>
-				<th>]] .. playerQuality .. [[<th>
+				<th>Media:</th>
+				<th>]] .. playerMedia .. [[<th>
 			</tr>
 			<tr>
-				<th><strong>Background Render:</strong></th>
+				<th>Quality:</th>
+				<th>]] .. playerQuality .. [[<th>
+			</tr>
+
+			<tr>
+				<th>Background Render:</th>
 				<th>]] .. backgroundRender .. [[</th>
 			</tr>
 		</table>
 		<hr />
-		<a href="hammerspoon://fcpxhacks?function=toggleScrollingTimeline" style="color: white;">Toggle Scrolling Timeline</a>
+		<h1>XML Sharing</h1>
+		<form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="DROP FROM FINAL CUT PRO BROWSER TO HERE"></form>
 		<hr />
-		<form>
-			<input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="DROP FINAL CUT PRO LIBRARIES & EVENTS HERE">
-		</form>
-		</span>
+		<table>
+			<tr>
+				<th style="text-align:center;"><a href="hammerspoon://fcpxhacks?function=toggleScrollingTimeline" class="button">Toggle Scrolling Timeline</a></th>
+			<tr>
+		</table>
 	</body>
 </html>
 	]]
@@ -271,11 +312,66 @@ end
 function hackshud.javaScriptCallback(message)
 	if message["body"] ~= nil then
 		if string.find(message["body"], "<!DOCTYPE fcpxml>") ~= nil then
-			dialog.displayMessage("An FCPXML has been successfully dragged onto the Hacks HUD.")
+			hackshud.shareXML(message["body"])
 		else
 			dialog.displayMessage("Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?")
 		end
 	end
+end
+
+
+function hackshud.shareXML(incomingXML)
+
+	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+
+	if enableXMLSharing then
+
+		--------------------------------------------------------------------------------
+		-- Get Settings:
+		--------------------------------------------------------------------------------
+		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+
+		--------------------------------------------------------------------------------
+		-- Get only the needed XML content:
+		--------------------------------------------------------------------------------
+		local startOfXML = string.find(incomingXML, "<?xml version=")
+		local endOfXML = string.find(incomingXML, "</fcpxml>")
+
+		--------------------------------------------------------------------------------
+		-- Error Detection:
+		--------------------------------------------------------------------------------
+		if startOfXML == nil or endOfXML == nil then
+			dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data you dropped. Please try again.\n\nError occurred in hackshud.shareXML().")
+			if incomingXML ~= nil then
+				debugMessage("Start of incomingXML.")
+				debugMessage(incomingXML)
+				debugMessage("End of incomingXML.")
+			else
+				debugMessage("ERROR: incomingXML is nil.")
+			end
+			return "fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- New XML:
+		--------------------------------------------------------------------------------
+		local newXML = string.sub(incomingXML, startOfXML - 2, endOfXML + 8)
+
+		--------------------------------------------------------------------------------
+		-- Display Text Box:
+		--------------------------------------------------------------------------------
+		local textboxResult = dialog.displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
+
+		--------------------------------------------------------------------------------
+		-- Save the XML content to the Shared XML Folder:
+		--------------------------------------------------------------------------------
+		local file = io.open(xmlSharingPath .. textboxResult .. " (" .. host.localizedName() .. ").fcpxml", "w")
+		currentClipboardData = file:write(newXML)
+		file:close()
+	else
+		dialog.displayMessage("XML Sharing is currently disabled.\n\nPlease enable it via the FCPX Hacks menu and try again.")
+	end
+
 end
 
 --------------------------------------------------------------------------------
