@@ -349,16 +349,13 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
 		if enableXMLSharing then
-			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				if tools.doesDirectoryExist(xmlSharingDropboxPath) and tools.doesDirectoryExist(xmlSharingPath) then
-					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+			if xmlSharingPath ~= nil then
+				if tools.doesDirectoryExist(xmlSharingPath) then
 					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 				else
 					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
 					settings.set("fcpxHacks.xmlSharingPath", nil)
-					settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 					settings.set("fcpxHacks.enableXMLSharing", false)
 				end
 			end
@@ -1968,20 +1965,24 @@ function refreshMenuBar(refreshPlistValues)
 	}
 	local toolsTable = {
    	    { title = "TOOLS:", 																																																		disabled = true },
-   	    { title = "Options", 																		menu = toolsSettings },
+   	    { title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
-      	{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
+   	    { title = "Options", 																		menu = toolsSettings },
       	{ title = "-" },
 	}
-	local hacksTable = {
-   	    { title = "HACKS:", 																																																		disabled = true },
-   		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
+	local advancedTable = {
+	   	{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
    		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
 	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
        	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
+       	{ title = "-" },
         { title = "Change Backup Interval (" .. tostring(mod.FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
    	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
+	}
+	local hacksTable = {
+   	    { title = "HACKS:", 																																																		disabled = true },
+        { title = "Advanced Features", 																menu = advancedTable },
         { title = "-" },
     }
 	local settingsTable = {
@@ -4050,30 +4051,14 @@ end
 
 		if not enableXMLSharing then
 
-			xmlSharingDropboxPath = dialog.displayChooseFolder("Which folder would you like to use as the local Drop Box?")
-
-			if xmlSharingDropboxPath ~= false then
-				settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
-			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				return "Cancelled"
-			end
-
 			xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
 			if xmlSharingPath ~= false then
 				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
 			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 				settings.set("fcpxHacks.xmlSharingPath", nil)
 				return "Cancelled"
 			end
-
-			--------------------------------------------------------------------------------
-			-- Watch for XML Dropbox Changes:
-			--------------------------------------------------------------------------------
-			xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Watch for Shared XML Folder Changes:
@@ -4084,13 +4069,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Stop Watchers:
 			--------------------------------------------------------------------------------
-			xmlDropboxWatcher:stop()
 			sharedXMLWatcher:stop()
 
 			--------------------------------------------------------------------------------
 			-- Clear Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 			settings.set("fcpxHacks.xmlSharingPath", nil)
 		end
 
@@ -11028,81 +11011,6 @@ end
 	function sharedXMLNotificationAction(value)
 		importSharedXML(value:subTitle())
 	end
-
---------------------------------------------------------------------------------
--- LOCAL XML DROPBOX WATCHER:
---------------------------------------------------------------------------------
-function xmlDropboxFileWatcher(files)
-    for _,file in pairs(files) do
-        if string.match(file, '<?xml version="1.0" encoding') then
-
-			--------------------------------------------------------------------------------
-			-- Read XML Data:
-			--------------------------------------------------------------------------------
-			local plistFile = io.open(file, "r")
-			if plistFile == nil then return end -- This happens when the file is deleted from the Watch Folder.
-
-			--------------------------------------------------------------------------------
-			-- Display Text Box:
-			--------------------------------------------------------------------------------
-			local textboxResult = dialog.displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
-
-			--------------------------------------------------------------------------------
-			-- Read XML File Data:
-			--------------------------------------------------------------------------------
-			plistFileData = plistFile:read("*all")
-			plistFile:close()
-
-			--------------------------------------------------------------------------------
-			-- Delete file in Drop Box:
-			--------------------------------------------------------------------------------
-			os.remove(file)
-
-			if not textboxResult then
-				return -- Cancelled
-			else
-				--------------------------------------------------------------------------------
-				-- Get Settings:
-				--------------------------------------------------------------------------------
-				local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-				local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
-
-				--------------------------------------------------------------------------------
-				-- Get only the needed XML content:
-				--------------------------------------------------------------------------------
-				local startOfXML = string.find(plistFileData, "<?xml version=")
-				local endOfXML = string.find(plistFileData, "</fcpxml>")
-
-				--------------------------------------------------------------------------------
-				-- Error Detection:
-				--------------------------------------------------------------------------------
-				if startOfXML == nil or endOfXML == nil then
-					dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data from the file in the Dropbox. Please try again.\n\nError occurred in xmlDropboxFileWatcher().")
-					if plistFileData ~= nil then
-						debugMessage("Start of plistFileData.")
-						debugMessage(plistFileData)
-						debugMessage("End of plistFileData.")
-					else
-						debugMessage("ERROR: plistFileData is nil.")
-					end
-					return "fail"
-				end
-
-				--------------------------------------------------------------------------------
-				-- New XML:
-				--------------------------------------------------------------------------------
-				newXML = string.sub(plistFileData, startOfXML - 2, endOfXML + 8)
-
-				--------------------------------------------------------------------------------
-				-- Save the XML content to the Shared XML Folder:
-				--------------------------------------------------------------------------------
-				local file = io.open(xmlSharingPath .. textboxResult .. " (" .. host.localizedName() .. ").fcpxml", "w")
-				currentClipboardData = file:write(newXML)
-				file:close()
-			end
-        end
-    end
-end
 
 --------------------------------------------------------------------------------
 -- TOUCH BAR WATCHER:
