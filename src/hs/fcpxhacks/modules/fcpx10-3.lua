@@ -10248,18 +10248,6 @@ end
 		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 
 		--------------------------------------------------------------------------------
-		-- Show Touch Bar at Mouse Pointer Position:
-		--------------------------------------------------------------------------------
-		if displayTouchBarLocation == "Mouse" then
-
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Mouse Pointer Location:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:atMousePosition()
-
-		end
-
-		--------------------------------------------------------------------------------
 		-- Show Touch Bar at Top Centre of Timeline:
 		--------------------------------------------------------------------------------
 		if displayTouchBarLocation == "TimelineTopCentre" then
@@ -10268,10 +10256,26 @@ end
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
 			local timelineScrollArea = fcp.getTimelineScrollArea()
-			local timelineScrollAreaPosition = {}
-			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
-			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-			mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
+			if timelineScrollArea == nil then
+				displayTouchBarLocation = "Mouse"
+			else
+				local timelineScrollAreaPosition = {}
+				timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
+				timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
+				mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Touch Bar at Mouse Pointer Position:
+		--------------------------------------------------------------------------------
+		if displayTouchBarLocation == "Mouse" then
+
+			--------------------------------------------------------------------------------
+			-- Position Touch Bar to Mouse Pointer Location:
+			--------------------------------------------------------------------------------
+			mod.touchBarWindow:atMousePosition()
 
 		end
 
