@@ -45,13 +45,21 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local mod = {}
+
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                   T H E    M A I N    S C R I P T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- BEGIN MODULE:
+--------------------------------------------------------------------------------
+
+local mod = {}
 
 --------------------------------------------------------------------------------
 -- STANDARD EXTENSIONS:
@@ -83,7 +91,7 @@ local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local timer										= require("hs.timer")
 local window									= require("hs.window")
-window.filter									= require("hs.window.filter")
+local windowfilter								= require("hs.window.filter")
 
 --------------------------------------------------------------------------------
 -- EXTERNAL EXTENSIONS:
@@ -96,13 +104,13 @@ local touchbar 									= require("hs._asm.touchbar")
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local fcp										= require("hs.finalcutpro")
-local plist										= require("hs.plist")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
-local tools										= require("hs.fcpxhacks.modules.tools")
+local fcp										= require("hs.finalcutpro")
 local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.modules.hackshud")
+local plist										= require("hs.plist")
+local tools										= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -193,8 +201,8 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	console.titleVisibility("hidden")
 	hotkey.setLogLevel("warning")
-	window.filter.setLogLevel(1)
-	window.filter.ignoreAlways['System Events'] = true
+	windowfilter.setLogLevel(1)
+	windowfilter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -406,7 +414,7 @@ function loadScript()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
-	-- Enable Hacks HUD:
+	-- Load Hacks HUD:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.enableHacksHUD") then
 		hackshud.new()
@@ -533,7 +541,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
-	hackshud.active()
 
 end
 
@@ -10477,21 +10484,20 @@ end
 -- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS RESIZED:
 --------------------------------------------------------------------------------
 function finalCutProResizeWatcher()
-	finalCutProWindowFilter = window.filter.new{"Final Cut Pro"}
-	finalCutProWindowFilter:subscribe(window.filter.windowMoved, function()
+	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
+	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
-	end)
+	end, true)
 end
 
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS ACTIVATED OR DEACTIVATED:
 --------------------------------------------------------------------------------
 function finalCutProWatcher(appName, eventType, appObject)
-
 	if (appName == "Final Cut Pro") then
 		if (eventType == application.watcher.activated) then
 			--------------------------------------------------------------------------------
@@ -10572,11 +10578,6 @@ function finalCutProWatcher(appName, eventType, appObject)
 				hotkeys:exit()
 
 				--------------------------------------------------------------------------------
-				-- Disable Menubar Items:
-				--------------------------------------------------------------------------------
-				refreshMenuBar()
-
-				--------------------------------------------------------------------------------
 				-- Delete the Mouse Circle:
 				--------------------------------------------------------------------------------
 				deleteAllHighlights()
@@ -10591,6 +10592,11 @@ function finalCutProWatcher(appName, eventType, appObject)
 						hackshud:hide()
 					end
 				end
+
+				--------------------------------------------------------------------------------
+				-- Disable Menubar Items:
+				--------------------------------------------------------------------------------
+				timer.doAfter(0.0000000000001, function() refreshMenuBar() end)
 		end
 	end
 end
@@ -10655,11 +10661,12 @@ end
 -- DISABLE SHORTCUTS WHEN FCPX COMMAND EDITOR IS OPEN:
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
+
 	local commandEditorID = nil
-	local filter = window.filter.new(true)
-	filter:subscribe(
-	  window.filter.windowCreated,
-	  (function(window, applicationName)
+
+	commandEditorFilter = windowfilter.new(true)
+
+	commandEditorFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:title() == 'Command Editor') then
 
@@ -10684,14 +10691,15 @@ function commandEditorWatcher()
 				--------------------------------------------------------------------------------
 				hideTouchbar()
 
+				--------------------------------------------------------------------------------
+				-- Hide the HUD:
+				--------------------------------------------------------------------------------
+				hackshud.hide()
+
 			end
 		end
-	  end),
-	  true
-	)
-	filter:subscribe(
-	  window.filter.windowDestroyed,
-	  (function(window, applicationName)
+	end), true)
+	commandEditorFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
 			if (window:id() == commandEditorID) then
 
@@ -10715,11 +10723,16 @@ function commandEditorWatcher()
 				timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 				--------------------------------------------------------------------------------
 
+				--------------------------------------------------------------------------------
+				-- Show the HUD:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableHacksHUD") then
+					hackshud.show()
+				end
+
 			end
 		end
-	  end),
-	  true
-	)
+	end), true)
 
 end
 
