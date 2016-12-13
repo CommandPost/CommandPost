@@ -10,19 +10,14 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
---
--- TO DO:
---
---   - Work out how to detect when the close button is pressed
---   - Work out how to detect when the Hacks HUD is moved (to save position)
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
 
 local hackshud = {}
+
+--------------------------------------------------------------------------------
+-- EXTENSIONS:
+--------------------------------------------------------------------------------
 
 local settings									= require("hs.settings")
 local fnutils 									= require("hs.fnutils")
@@ -39,16 +34,37 @@ local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 
 --------------------------------------------------------------------------------
--- Create the Hacks HUD:
+-- SETTINGS:
+--------------------------------------------------------------------------------
+
+hackshud.name									= "Hacks HUD"
+hackshud.width									= 350
+hackshud.height									= 200
+
+hackshud.fcpGreen 								= "#3f9253"
+hackshud.fcpRed 								= "#d1393e"
+
+--------------------------------------------------------------------------------
+-- VARIABLES:
+--------------------------------------------------------------------------------
+
+hackshud.ignoreWindowChange						= true
+hackshud.windowID								= nil
+
+--------------------------------------------------------------------------------
+-- CREATE THE HACKS HUD:
 --------------------------------------------------------------------------------
 function hackshud.new()
 
+	--------------------------------------------------------------------------------
+	-- Get last HUD position from settings otherwise default to centre screen:
+	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
-	local hudWidth = 350
-	local hudHeight = 200
-	local defaultHUDRect = {x = (screenFrame['w']/2) - (hudWidth/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hudWidth, h = hudHeight}
-
-	local hudName = "Hacks HUD"
+	local defaultHUDRect = {x = (screenFrame['w']/2) - (hackshud.width/2), y = (screenFrame['h']/2) - (hackshud.height/2), w = hackshud.width, h = hackshud.height}
+	local hudPosition = settings.get("fcpxHacks.hudPosition") or {}
+	if next(hudPosition) ~= nil then
+		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hackshud.width, h = hackshud.height}
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
@@ -60,13 +76,13 @@ function hackshud.new()
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	hackshud.hudWebView = webview.new(defaultHUDRect, {}, hackshud.hudWebViewController)
-		:windowStyle({"HUD", "utility", "titled", "nonactivating"}) -- Removed "closable" until we work out how to cause the close to trigger something.
+		:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable"})
 		:shadow(true)
-		:closeOnEscape(false)
+		:closeOnEscape(true)
 		:html(generateHTML())
 		:allowGestures(false)
 		:allowNewWindows(false)
-		:windowTitle(hudName)
+		:windowTitle(hackshud.name)
 		:level(drawing.windowLevels.modalPanel)
 
 	--------------------------------------------------------------------------------
@@ -77,26 +93,67 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	-- Window Watcher:
 	--------------------------------------------------------------------------------
-	-- TO DO: Work out why the hell this doesn't work:
-	--windowFilter = windowfilter.new{hudName}
-	--windowFilter:subscribe(windowfilter.windowMoved, function() print("Moving") end)
+	hackshud.hudFilter = windowfilter.new(true)
+		:setAppFilter(hackshud.name, {activeApplication=true})
+
+	--------------------------------------------------------------------------------
+	-- HUD Moved:
+	--------------------------------------------------------------------------------
+	hackshud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
+		if window:id() == hackshud.windowID then
+			if hackshud.active() then
+				local result = hackshud.hudWebView:hswindow():frame()
+				if result ~= nil then
+					settings.set("fcpxHacks.hudPosition", result)
+				end
+			end
+		end
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- HUD Closed:
+	--------------------------------------------------------------------------------
+	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, function(window, applicationName, event)
+		if window:id() == hackshud.windowID then
+			if not hackshud.ignoreWindowChange then
+				settings.set("fcpxHacks.enableHacksHUD", false)
+				refreshMenuBar()
+			end
+		end
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- HUD Unfocussed:
+	--------------------------------------------------------------------------------
+	hackshud.hudFilter:subscribe(windowfilter.windowUnfocused, function(window, applicationName, event)
+		if window:id() == hackshud.windowID then
+			if not fcp.frontmost() then
+				if not hackshud.ignoreWindowChange then
+					hackshud.hide()
+				end
+			end
+		end
+	end, true)
 
 end
 
 --------------------------------------------------------------------------------
--- Show the Hacks HUD:
+-- SHOW THE HACKS HUD:
 --------------------------------------------------------------------------------
 function hackshud.show()
+	hackshud.ignoreWindowChange = true
 	if hackshud.hudWebView == nil then
 		hackshud.new()
 		hackshud.hudWebView:show()
 	else
 		hackshud.hudWebView:show()
 	end
+	hackshud.windowID = hackshud.hudWebView:hswindow():id()
+	hackshud.ignoreWindowChange = false
 end
 
 --------------------------------------------------------------------------------
--- Is Hacks HUD Active?
+-- IS HACKS HUD ACTIVE:
 --------------------------------------------------------------------------------
 function hackshud.active()
 	if hackshud.hudWebView == nil then
@@ -110,16 +167,17 @@ function hackshud.active()
 end
 
 --------------------------------------------------------------------------------
--- Hide the Hacks HUD:
+-- HIDE THE HACKS HUD:
 --------------------------------------------------------------------------------
 function hackshud.hide()
 	if hackshud.active() then
+		hackshud.ignoreWindowChange = true
 		hackshud.hudWebView:hide()
 	end
 end
 
 --------------------------------------------------------------------------------
--- Delete the Hacks HUD:
+-- DELETE THE HACKS HUD:
 --------------------------------------------------------------------------------
 function hackshud.delete()
 	if hackshud.active() then
@@ -128,7 +186,7 @@ function hackshud.delete()
 end
 
 --------------------------------------------------------------------------------
--- Refresh the Hacks HUD:
+-- REFRESH THE HACKS HUD:
 --------------------------------------------------------------------------------
 function hackshud.refresh()
 	if hackshud.active() then
@@ -137,14 +195,19 @@ function hackshud.refresh()
 end
 
 --------------------------------------------------------------------------------
--- Generate HTML:
+-- GENERATE HTML:
 --------------------------------------------------------------------------------
 function generateHTML()
 
-	local fcpGreen = "#3f9253"
-	local fcpRed = "#d1393e"
-
 	local preferences = fcp.getPreferencesAsTable()
+
+	--------------------------------------------------------------------------------
+	-- FFPlayerQuality
+	--------------------------------------------------------------------------------
+	-- 10 	= Original - Better Quality
+	-- 5 	= Original - Better Performance
+	-- 4 	= Proxy
+	--------------------------------------------------------------------------------
 
 	if preferences["FFPlayerQuality"] == nil then
 		FFPlayerQuality = 5
@@ -153,21 +216,15 @@ function generateHTML()
 	end
 	local playerQuality = nil
 	if FFPlayerQuality == 10 then
-		playerMedia = '<span style="color: ' .. fcpGreen .. ';">Original/Optimised</span>'
-		playerQuality = '<span style="color: ' .. fcpGreen .. ';">Better Quality</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">Original/Optimised</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpGreen .. ';">Better Quality</span>'
 	elseif FFPlayerQuality == 5 then
-		playerMedia = '<span style="color: ' .. fcpGreen .. ';">Original/Optimised</span>'
-		playerQuality = '<span style="color: ' .. fcpRed .. ';">Better Performance</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">Original/Optimised</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">Better Performance</span>'
 	elseif FFPlayerQuality == 4 then
-		playerMedia = '<span style="color: ' .. fcpRed .. ';">Proxy</span>'
-		playerQuality = '<span style="color: ' .. fcpRed .. ';">Proxy</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpRed .. ';">Proxy</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">Proxy</span>'
 	end
-
-	-- FFPlayerQuality
-	-- 10 = better quality / original
-	-- 5 = original / better performance
-	-- 4 = better quality / proxy
-
 	if preferences["FFAutoRenderDelay"] == nil then
 		FFAutoRenderDelay = "0.3"
 	else
@@ -181,9 +238,9 @@ function generateHTML()
 
 	local backgroundRender = nil
 	if FFAutoStartBGRender then
-		backgroundRender = '<span style="color: ' .. fcpGreen .. ';">Enabled (' .. FFAutoRenderDelay .. 'secs)</span>'
+		backgroundRender = '<span style="color: ' .. hackshud.fcpGreen .. ';">Enabled (' .. FFAutoRenderDelay .. 'secs)</span>'
 	else
-		backgroundRender = '<span style="color: ' .. fcpRed .. ';">Disabled</span>'
+		backgroundRender = '<span style="color: ' .. hackshud.fcpRed .. ';">Disabled</span>'
 	end
 
 	local HTML = [[<!DOCTYPE html>
@@ -295,7 +352,7 @@ function generateHTML()
 		<hr />
 		<table>
 			<tr>
-				<th style="text-align:center;"><a href="hammerspoon://fcpxhacks?function=toggleScrollingTimeline" class="button">Toggle Scrolling Timeline</a></th>
+				<th style="text-align:center;"><a href="hammerspoon://fcpxhacks?function=toggleScrollingTimeline" class="button">Toggle Scrolling Timeline</a> <a href="hammerspoon://fcpxhacks?function=toggleTouchBar" class="button">Toggle Touch Bar</a></th>
 			<tr>
 		</table>
 	</body>
@@ -307,7 +364,7 @@ function generateHTML()
 end
 
 --------------------------------------------------------------------------------
--- JavaScript Callback:
+-- JAVASCRIPT CALLBACK:
 --------------------------------------------------------------------------------
 function hackshud.javaScriptCallback(message)
 	if message["body"] ~= nil then
@@ -319,7 +376,20 @@ function hackshud.javaScriptCallback(message)
 	end
 end
 
+--------------------------------------------------------------------------------
+-- URL EVENT CALLBACK:
+--------------------------------------------------------------------------------
+function hackshud.hudCallback(eventName, params)
+	if params["function"] ~= nil then
+		timer.doAfter(0.0000000001, function()
+			_G[params["function"]]()
+		end)
+	end
+end
 
+--------------------------------------------------------------------------------
+-- SHARED XML:
+--------------------------------------------------------------------------------
 function hackshud.shareXML(incomingXML)
 
 	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
@@ -375,12 +445,6 @@ function hackshud.shareXML(incomingXML)
 end
 
 --------------------------------------------------------------------------------
--- URL Event Callback:
+-- END OF MODULE:
 --------------------------------------------------------------------------------
-function hackshud.hudCallback(eventName, params)
-	if params["function"] ~= nil then
-		timer.doAfter(0.0000000001, function() _G[params["function"]]() end )
-	end
-end
-
 return hackshud
