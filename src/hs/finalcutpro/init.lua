@@ -149,17 +149,23 @@ end
 
 --- hs.finalcutpro.getPreferencesAsTable() -> table or nil
 --- Function
---- Gets Final Cut Pro's Preferences as a table.
+--- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
+--- file has been modified and reloads when necessary.
 ---
 --- Parameters:
----  * None
+---  * forceReload	- (optional) if true, a reload will be forced even if the file hasn't been modified.
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
 ---
-function finalcutpro.getPreferencesAsTable()
-	local preferencesTable = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
-	return preferencesTable
+function finalcutpro.getPreferencesAsTable(forceReload)
+	local modified = fs.attributes(finalCutProPreferencesPlistPath, "modification")
+	if forceReload or modified ~= finalcutpro._preferencesModified then
+		log.d("Reloading FCPX preferences from file...")
+		finalcutpro._preferences = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
+		finalcutpro._preferencesModified = modified
+	 end
+	return finalcutpro._preferences
 end
 
 --- hs.finalcutpro.getPreference(preferenceName) -> string or nil
@@ -167,18 +173,25 @@ end
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
----  * preferenceName - The preference you want to return
+---  * preferenceName 	- The preference you want to return
+---  * default			- (optional) The default value to return if the preference is not set.
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
 ---
-function finalcutpro.getPreference(value)
+function finalcutpro.getPreference(value, default)
 	local result = nil
-	local preferencesTable = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
 
+	local preferencesTable = finalcutpro.getPreferencesAsTable()
 	if preferencesTable ~= nil then
 		result = preferencesTable[value]
 	end
+	
+	if result == nil then
+		result = default
+	end
+	
+	log.d("preference['"..value.."']: "..inspect(result))
 
 	return result
 end
@@ -644,6 +657,14 @@ end
 ---
 function finalcutpro._generateMenuMap()
 	return finalcutpro.app():menuBar():generateMenuMap()
+end
+
+function finalcutpro._elementAtMouse()
+	return ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
+end
+
+function finalcutpro._inspectElementAtMouse()
+	return inspect(finalcutpro._elementAtMouse():buildTree())
 end
 
 return finalcutpro

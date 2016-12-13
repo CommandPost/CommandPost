@@ -230,7 +230,7 @@ function plist.fileToTable(plistFileName)
 	local marker = file:read(6)
 	file:close()
 
-	log.d("Marker: "..marker)
+	-- log.d("Marker: "..marker)
 
 	if marker == "bplist" then
 		-- it's a binary plist

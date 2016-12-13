@@ -4,6 +4,7 @@ local inspect						= require("hs.inspect")
 local just							= require("hs.just")
 
 local PlaybackPanel					= require("hs.finalcutpro.prefs.PlaybackPanel")
+local ImportPanel					= require("hs.finalcutpro.prefs.ImportPanel")
 
 local PreferencesWindow = {}
 
@@ -49,6 +50,13 @@ function PreferencesWindow:playbackPanel()
 		self._playbackPanel = PlaybackPanel:new(self)
 	end
 	return self._playbackPanel
+end
+
+function PreferencesWindow:importPanel()
+	if not self._importPanel then
+		self._importPanel = ImportPanel:new(self)
+	end
+	return self._importPanel
 end
 
 function PreferencesWindow:isShowing()

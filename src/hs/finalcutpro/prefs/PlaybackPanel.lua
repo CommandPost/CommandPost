@@ -7,7 +7,8 @@ local PlaybackPanel = {}
 
 PlaybackPanel.ID = 3
 
-PlaybackPanel.OPTIMIZE_MULTICAM_MEDIA = "_NS:145"
+PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = "_NS:145"
+PlaybackPanel.AUTO_START_BG_RENDER = "_NS:15"
 
 function PlaybackPanel:new(preferencesDialog)
 	o = {_parent = preferencesDialog}
@@ -75,8 +76,12 @@ function PlaybackPanel:toggleCheckBox(identifier)
 	return false
 end
 
-function PlaybackPanel:toggleOptimizeMulticamMedia()
-	return self:toggleCheckBox(PlaybackPanel.OPTIMIZE_MULTICAM_MEDIA)
+function PlaybackPanel:toggleCreateOptimizedMediaForMulticamClips()
+	return self:toggleCheckBox(PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS)
+end
+
+function PlaybackPanel:toggleAutoStartBGRender()
+	return self:toggleCheckBox(PlaybackPanel.AUTO_START_BG_RENDER)
 end
 
 return PlaybackPanel

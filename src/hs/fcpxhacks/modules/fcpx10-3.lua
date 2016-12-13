@@ -71,6 +71,7 @@ local host										= require("hs.host")
 local hotkey									= require("hs.hotkey")
 local http										= require("hs.http")
 local image										= require("hs.image")
+local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
@@ -116,6 +117,7 @@ mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path
 
 local execute									= hs.execute									-- Execute!
 local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
+local log										= require("hs.logger").new("fcpx10-3")
 
 mod.debugMode									= false											-- Debug Mode is off by default.
 mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
@@ -143,16 +145,11 @@ mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro S
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
 mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
 mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
-mod.FFImportCreateProxyMedia 					= nil											-- Used in refreshMenuBar
 mod.allowMovingMarkers							= nil											-- Used in refreshMenuBar
 mod.FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
 mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
 mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
-mod.FFCreateOptimizedMediaForMulticamClips 		= nil											-- Used in refreshMenuBar
-mod.FFAutoStartBGRender 						= nil											-- Used in refreshMenuBar
 mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
-mod.FFImportCopyToMediaFolder 					= nil											-- Used in refreshMenuBar
-mod.FFImportCreateOptimizeMedia 				= nil											-- Used in refreshMenuBar
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -2044,57 +2041,12 @@ function refreshMenuBar(refreshPlistValues)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
-		--------------------------------------------------------------------------------
-		if preferences["FFCreateOptimizedMediaForMulticamClips"] == nil then
-			mod.FFCreateOptimizedMediaForMulticamClips = true
-		else
-			mod.FFCreateOptimizedMediaForMulticamClips = preferences["FFCreateOptimizedMediaForMulticamClips"]
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get plist values for FFAutoStartBGRender:
-		--------------------------------------------------------------------------------
-		if preferences["FFAutoStartBGRender"] == nil then
-			mod.FFAutoStartBGRender = true
-		else
-			mod.FFAutoStartBGRender = preferences["FFAutoStartBGRender"]
-		end
-
-		--------------------------------------------------------------------------------
 		-- Get plist values for FFAutoRenderDelay:
 		--------------------------------------------------------------------------------
 		if preferences["FFAutoRenderDelay"] == nil then
 			mod.FFAutoRenderDelay = "0.3"
 		else
 			mod.FFAutoRenderDelay = preferences["FFAutoRenderDelay"]
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCopyToMediaFolder:
-		--------------------------------------------------------------------------------
-		if preferences["FFImportCopyToMediaFolder"] == nil then
-			mod.FFImportCopyToMediaFolder = true
-		else
-			mod.FFImportCopyToMediaFolder = preferences["FFImportCopyToMediaFolder"]
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCreateOptimizeMedia:
-		--------------------------------------------------------------------------------
-		if preferences["FFImportCreateOptimizeMedia"] == nil then
-			mod.FFImportCreateOptimizeMedia = false
-		else
-			mod.FFImportCreateOptimizeMedia = preferences["FFImportCreateOptimizeMedia"]
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get plist values for FFImportCreateProxyMedia:
-		--------------------------------------------------------------------------------
-		if preferences["FFImportCreateProxyMedia"] == nil then
-			mod.FFImportCreateProxyMedia = false
-		else
-			mod.FFImportCreateProxyMedia = preferences["FFImportCreateProxyMedia"]
 		end
 
 	end
@@ -2468,12 +2420,12 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "-" },
 	}
 	local shortcutsTable = {
-   	    { title = "SHORTCUTS:", 																																																	disabled = true },
-	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia(not mod.FFImportCreateOptimizeMedia) end, 												checked = mod.FFImportCreateOptimizeMedia, 						disabled = not fcpxRunning },
-	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia(not mod.FFCreateOptimizedMediaForMulticamClips) end, 							checked = mod.FFCreateOptimizedMediaForMulticamClips, 			disabled = not fcpxRunning },
-	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia(not mod.FFImportCreateProxyMedia) end, 														checked = mod.FFImportCreateProxyMedia, 						disabled = not fcpxRunning },
-	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace(mod.FFImportCopyToMediaFolder) end, 																checked = not mod.FFImportCopyToMediaFolder, 					disabled = not fcpxRunning },
-	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 					fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
+   	    { title = "SHORTCUTS:", 																																		disabled = true },
+	    { title = "Create Optimized Media", 														fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp.getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
+	    { title = "Create Multicam Optimized Media", 												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp.getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
+	    { title = "Create Proxy Media", 															fn = function() toggleCreateProxyMedia() end, 						checked = fcp.getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
+	    { title = "Leave Files In Place On Import", 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp.getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
+	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 				fn = function() toggleBackgroundRender() end, 						checked = fcp.getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
    	    { title = "-" },
 	}
 	local automationTable = {
@@ -5179,19 +5131,10 @@ end
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFCreateOptimizedMediaForMulticamClips:
-			--------------------------------------------------------------------------------
-			if fcp.getPreference("FFCreateOptimizedMediaForMulticamClips") == nil then
-				FFCreateOptimizedMediaForMulticamClips = true
-			else
-				FFCreateOptimizedMediaForMulticamClips = fcp.getPreference("FFCreateOptimizedMediaForMulticamClips")
-			end
-
-			if optionalValue == FFCreateOptimizedMediaForMulticamClips then return end
-
+		log.d("optionalValue: "..inspect(optionalValue))
+		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
+			log.d("optionalValue matches preference value. Bailing.")
+			return
 		end
 
 		--------------------------------------------------------------------------------
@@ -5202,7 +5145,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleOptimizeMulticamMedia() then
+		if not prefs:playbackPanel():toggleCreateOptimizedMediaForMulticamClips() then
 			dialog.displayErrorMessage("Failed to toggle 'Create optimized media for multicam clips'.")
 			return "Failed"
 		end
@@ -5226,98 +5169,27 @@ end
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFImportCreateProxyMedia:
-			--------------------------------------------------------------------------------
-			if fcp.getPreference("FFImportCreateProxyMedia") == nil then
-				FFImportCreateProxyMedia = false
-			else
-				FFImportCreateProxyMedia = fcp.getPreference("FFImportCreateProxyMedia")
-			end
-
-			if optionalValue == FFImportCreateProxyMedia then return end
-
+		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCreateProxyMedia", false) then
+			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local prefs = fcp:app():preferencesWindow()
 
 		--------------------------------------------------------------------------------
-		-- Open Preferences:
+		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == nil then
-			dialog.displayErrorMessage("Failed to open Preferences Panel.")
+		if not prefs:importPanel():toggleCreateProxyMedia() then
+			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Toolbar:
+		-- Close the Preferences window:
 		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		local whichToolbar = nil
-		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-				whichToolbar = i
-				goto foundToolbar
-			end
-		end
-		if whichToolbar == nil then
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
-				return "Failed"
-			end
-			timer.usleep(200000)
-			goto tryToolbarAgain
-		end
-		::foundToolbar::
-
-		--------------------------------------------------------------------------------
-		-- Goto Playback Preferences:
-		--------------------------------------------------------------------------------
-		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-		if pressPlaybackButton == nil then
-			dialog.displayErrorMessage("Failed to open Import Preferences.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-				goto foundGroup
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::foundGroup::
-
-		--------------------------------------------------------------------------------
-		-- Toggle Create Proxy Media:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichGroup][1][19]:performAction("AXPress")
-
-		--------------------------------------------------------------------------------
-		-- Close Preferences:
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[2]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to close Preferences window.")
-			return "Failed"
-		end
-
+		prefs:hide()
 	end
 
 	--------------------------------------------------------------------------------
@@ -5333,97 +5205,27 @@ end
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFImportCreateOptimizeMedia:
-			--------------------------------------------------------------------------------
-			if fcp.getPreference("FFImportCreateOptimizeMedia") == nil then
-				FFImportCreateOptimizeMedia = false
-			else
-				FFImportCreateOptimizeMedia = fcp.getPreference("FFImportCreateOptimizeMedia")
-			end
-
-			if optionalValue == FFImportCreateOptimizeMedia then return end
-
+		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCreateOptimizeMedia", false) then
+			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local prefs = fcp:app():preferencesWindow()
 
 		--------------------------------------------------------------------------------
-		-- Open Preferences:
+		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == nil then
-			dialog.displayErrorMessage("Failed to open Preferences Panel.")
+		if not prefs:importPanel():toggleCreateOptimizedMedia() then
+			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Toolbar:
+		-- Close the Preferences window:
 		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		local whichToolbar = nil
-		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-				whichToolbar = i
-				goto foundToolbar
-			end
-		end
-		if whichToolbar == nil then
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
-				return "Failed"
-			end
-			timer.usleep(200000)
-			goto tryToolbarAgain
-		end
-		::foundToolbar::
-
-		--------------------------------------------------------------------------------
-		-- Goto Playback Preferences:
-		--------------------------------------------------------------------------------
-		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-		if pressPlaybackButton == nil then
-			dialog.displayErrorMessage("Failed to open Import Preferences.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-				goto foundGroup
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::foundGroup::
-
-		--------------------------------------------------------------------------------
-		-- Toggle Create Optimized Media:
-		--------------------------------------------------------------------------------
-		fcpxElements[whichGroup][1][1]:performAction("AXPress")
-
-		--------------------------------------------------------------------------------
-		-- Close Preferences:
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[2]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to close Preferences window.")
-			return "Failed"
-		end
+		prefs:hide()
 
 	end
 
@@ -5440,101 +5242,27 @@ end
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFImportCopyToMediaFolder:
-			--------------------------------------------------------------------------------
-			if fcp.getPreference("FFImportCopyToMediaFolder") == nil then
-				FFImportCopyToMediaFolder = true
-			else
-				FFImportCopyToMediaFolder = fcp.getPreference("FFImportCopyToMediaFolder")
-			end
-
-			if optionalValue == not FFImportCopyToMediaFolder then return end
-
+		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCopyToMediaFolder", true) then
+			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local prefs = fcp:app():preferencesWindow()
 
 		--------------------------------------------------------------------------------
-		-- Open Preferences:
+		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == nil then
-			dialog.displayErrorMessage("Failed to open Preferences Panel.")
+		if not prefs:importPanel():toggleCopyToMediaFolder() then
+			dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Toolbar:
+		-- Close the Preferences window:
 		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		local whichToolbar = nil
-		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-				whichToolbar = i
-				goto foundToolbar
-			end
-		end
-		if whichToolbar == nil then
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
-				return "Failed"
-			end
-			timer.usleep(200000)
-			goto tryToolbarAgain
-		end
-		::foundToolbar::
-
-		--------------------------------------------------------------------------------
-		-- Goto Playback Preferences:
-		--------------------------------------------------------------------------------
-		local pressPlaybackButton = fcpxElements[whichToolbar][4]:performAction("AXPress")
-		if pressPlaybackButton == nil then
-			dialog.displayErrorMessage("Failed to open Import Preferences.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-				goto foundGroup
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::foundGroup::
-
-		--------------------------------------------------------------------------------
-		-- Toggle "AutoStart Background Render":
-		--------------------------------------------------------------------------------
-		if fcpxElements[whichGroup][1][9][1]:attributeValue("AXValue") == 0 then
-			fcpxElements[whichGroup][1][9][1]:performAction("AXPress")
-		else
-			fcpxElements[whichGroup][1][9][2]:performAction("AXPress")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close Preferences:
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[2]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to close Preferences window.")
-			return "Failed"
-		end
+		prefs:hide()
 
 	end
 
@@ -5551,101 +5279,27 @@ end
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFAutoStartBGRender:
-			--------------------------------------------------------------------------------
-			if fcp.getPreference("FFAutoStartBGRender") == nil then
-				FFAutoStartBGRender = true
-			else
-				FFAutoStartBGRender = fcp.getPreference("FFAutoStartBGRender")
-			end
-
-			if optionalValue == FFAutoStartBGRender then return end
-
+		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFAutoStartBGRender", true) then
+			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local prefs = fcp:app():preferencesWindow()
 
 		--------------------------------------------------------------------------------
-		-- Open Preferences:
+		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		local activatePreferencesResult = fcp.selectMenuItem({"Final Cut Pro", "Preferences…"})
-		if activatePreferencesResult == nil then
-			dialog.displayErrorMessage("Failed to open Preferences Panel.")
+		if not prefs:playbackPanel():toggleAutoStartBGRender() then
+			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.")
 			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Which Toolbar:
+		-- Close the Preferences window:
 		--------------------------------------------------------------------------------
-		local timeoutCount = 0
-		local whichToolbar = nil
-		::tryToolbarAgain::
-		fcpxElements = ax.applicationElement(fcpx)[1]
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXToolbar" then
-				whichToolbar = i
-				goto foundToolbar
-			end
-		end
-		if whichToolbar == nil then
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				dialog.displayErrorMessage("Unable to locate Preferences Toolbar.")
-				return "Failed"
-			end
-			timer.usleep(200000)
-			goto tryToolbarAgain
-		end
-		::foundToolbar::
-
-		--------------------------------------------------------------------------------
-		-- Goto Playback Preferences:
-		--------------------------------------------------------------------------------
-		local pressPlaybackButton = fcpxElements[whichToolbar][3]:performAction("AXPress")
-		if pressPlaybackButton == nil then
-			dialog.displayErrorMessage("Failed to open Playback Preferences.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group:
-		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, (fcpxElements:attributeValueCount("AXChildren")) do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-				goto foundGroup
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.")
-			return "Failed"
-		end
-		::foundGroup::
-
-		--------------------------------------------------------------------------------
-		-- Toggle "AutoStart Background Render":
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[whichGroup][1][1]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to toggle Background Render option.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close Preferences:
-		--------------------------------------------------------------------------------
-		local buttonResult = fcpxElements[2]:performAction("AXPress")
-		if buttonResult == nil then
-			dialog.displayErrorMessage("Unable to close Preferences window.")
-			return "Failed"
-		end
+		prefs:hide()
 
 	end
 
