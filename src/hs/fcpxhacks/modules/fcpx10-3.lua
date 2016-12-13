@@ -1643,6 +1643,10 @@ function refreshMenuBar(refreshPlistValues)
 	local displayTouchBarLocationTimelineTopCentre = false
 	if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
 
+	--------------------------------------------------------------------------------
+	-- Display Touch Bar:
+	--------------------------------------------------------------------------------
+	local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Check for Updates:
@@ -1932,8 +1936,13 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Generators Shortcut 4" .. generatorsShortcutFour, 								fn = function() assignGeneratorsShortcut(4) end, 																				disabled = not generatorsListUpdated },
 		{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
 	}
+
+    local displayShortcutText = "Display Keyboard Shortcuts"
+    if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
+
 	local menuTable = {
 	   	{ title = "Open Final Cut Pro", 															fn = fcp.launch },
+	   	{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
 		{ title = "-" },
 	}
 	local shortcutsTable = {
@@ -1945,18 +1954,23 @@ function refreshMenuBar(refreshPlistValues)
 	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 				fn = function() toggleBackgroundRender(not mod.FFAutoStartBGRender) end, 															checked = mod.FFAutoStartBGRender, 								disabled = not fcpxRunning },
    	    { title = "-" },
 	}
+	local automationOptions = {
+	   	{ title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
+   	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
+   	    { title = "-" },
+   	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
+	}
 	local automationTable = {
  	    { title = "AUTOMATION:", 																																																	disabled = true },
-   	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
-   	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
-   	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
    	    { title = "Assign Effects Shortcuts", 														menu = settingsEffectsShortcutsTable },
    	    { title = "Assign Transitions Shortcuts", 													menu = settingsTransitionsShortcutsTable },
    	    { title = "Assign Titles Shortcuts", 														menu = settingsTitlesShortcutsTable },
    	    { title = "Assign Generators Shortcuts", 													menu = settingsGeneratorsShortcutsTable },
+   	    { title = "Options", 																		menu = automationOptions },
       	{ title = "-" },
 	}
 	local toolsSettings = {
+		{ title = "Enable Touch Bar", 																fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
 		{ title = "Enable Hacks HUD", 																fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
@@ -1986,8 +2000,6 @@ function refreshMenuBar(refreshPlistValues)
         { title = "-" },
     }
 	local settingsTable = {
-		{ title = "Display Keyboard Shortcuts", 													fn = displayShortcutList },
-		{ title = "-" },
       	{ title = "Preferences...", 																menu = settingsMenuTable },
     	{ title = "-" },
     	{ title = "Quit FCPX Hacks", 																fn = quitFCPXHacks},
@@ -2028,7 +2040,10 @@ function displayShortcutList()
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
-		dialog.displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
+		if fcp.running() then
+			fcp.launch()
+			fcp.selectMenuItem({"Final Cut Pro", "Commands", "Customize…"})
+		end
 	else
 		local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
 
@@ -9756,6 +9771,11 @@ end
 		-- Update Settings:
 		--------------------------------------------------------------------------------
 		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
 
 	end
 
