@@ -102,6 +102,8 @@ local plist										= require("hs.plist")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 local tools										= require("hs.fcpxhacks.modules.tools")
+local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -110,6 +112,26 @@ local tools										= require("hs.fcpxhacks.modules.tools")
 mod.commonErrorMessageStart 					= "I'm sorry, but the following error has occurred:\n\n"
 mod.commonErrorMessageEnd 						= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
 mod.commonErrorMessageAppleScript 				= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. mod.commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. mod.commonErrorMessageEnd .. '"\n'
+
+local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
+												["scrollingTimelineActive"] 					= false,
+												["enableHacksShortcutsInFinalCutPro"] 			= false,
+												["chooserRememberLast"]							= true,
+												["chooserShowAutomation"] 						= true,
+												["chooserShowShortcuts"] 						= true,
+												["chooserShowHacks"] 							= true,
+												["chooserShowVideoEffects"] 					= true,
+												["chooserShowAudioEffects"] 					= true,
+												["chooserShowTransitions"] 						= true,
+												["chooserShowTitles"] 							= true,
+												["chooserShowGenerators"] 						= true,
+												["chooserShowMenuItems"]						= true,
+												["menubarShortcutsEnabled"] 					= true,
+												["menubarAutomationEnabled"] 					= true,
+												["menubarToolsEnabled"] 						= true,
+												["menubarHacksEnabled"] 						= true,
+												["enableCheckForUpdates"]						= true,
+												["checkForUpdatesInterval"]						= 600, }
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
@@ -127,10 +149,6 @@ mod.releaseColorBoardDown						= false											-- Color Board Shortcut Current
 mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
-
-mod.fcpxChooserActive							= false											-- Chooser Active?
-mod.fcpxChooserChoices							= {}											-- Chooser Choices
-mod.fcpxChooser									= nil											-- Chooser
 
 mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
@@ -176,11 +194,12 @@ function loadScript()
 	window.filter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
-	-- First time running 10.3? Trash settings:
+	-- First time running 10.3? If so, let's trash the settings incase there's
+	-- compatibility issues with an older version of FCPX Hacks:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
 
-		writeToConsole("First time running Final Cut Pro 10.3.")
+		writeToConsole("First time running Final Cut Pro 10.3. Trashing settings.")
 
 		--------------------------------------------------------------------------------
 		-- Trash all FCPX Hacks Settings:
@@ -196,27 +215,21 @@ function loadScript()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Set Up Default Settings:
+	-- Check for Final Cut Pro Updates:
 	--------------------------------------------------------------------------------
-	local defaultSettings = {
-		["enableShortcutsDuringFullscreenPlayback"] 	= false,
-		["scrollingTimelineActive"] 					= false,
-		["enableHacksShortcutsInFinalCutPro"] 			= false,
-		["chooserShowAutomation"] 						= true,
-		["chooserShowShortcuts"] 						= true,
-		["chooserShowHacks"] 							= true,
-		["chooserShowVideoEffects"] 					= true,
-		["chooserShowAudioEffects"] 					= true,
-		["chooserShowTransitions"] 						= true,
-		["chooserShowTitles"] 							= true,
-		["chooserShowGenerators"] 						= true,
-		["menubarShortcutsEnabled"] 					= true,
-		["menubarAutomationEnabled"] 					= true,
-		["menubarToolsEnabled"] 						= true,
-		["menubarHacksEnabled"] 						= true,
-		["enableCheckForUpdates"]						= true,
-		["checkForUpdatesInterval"]						= 600,
-	}
+	local lastFinalCutProVersion = settings.get("fcpxHacks.lastFinalCutProVersion")
+	if lastFinalCutProVersion == nil then
+		settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+	else
+		if lastFinalCutProVersion ~= fcp.version() then
+			settings.set("fcpxHacks.chooserMenuItems", nil) -- Reset Chooser Menu Items.
+			settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Apply Default Settings:
+	--------------------------------------------------------------------------------
 	for k, v in pairs(defaultSettings) do
 		if settings.get("fcpxHacks." .. k) == nil then
 			settings.set("fcpxHacks." .. k, v)
@@ -333,16 +346,13 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
 		if enableXMLSharing then
-			local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-			if xmlSharingDropboxPath ~= nil and xmlSharingPath ~= nil then
-				if tools.doesDirectoryExist(xmlSharingDropboxPath) and tools.doesDirectoryExist(xmlSharingPath) then
-					xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
+			if xmlSharingPath ~= nil then
+				if tools.doesDirectoryExist(xmlSharingPath) then
 					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
 				else
 					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
 					settings.set("fcpxHacks.xmlSharingPath", nil)
-					settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 					settings.set("fcpxHacks.enableXMLSharing", false)
 				end
 			end
@@ -393,6 +403,13 @@ function loadScript()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
+	-- Enable Hacks HUD:
+	--------------------------------------------------------------------------------
+	if settings.get("fcpxHacks.enableHacksHUD") then
+		hackshud.new()
+	end
+
+	--------------------------------------------------------------------------------
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
 	if fcp.frontmost() then
@@ -416,6 +433,13 @@ function loadScript()
 		if settings.get("fcpxHacks.scrollingTimelineActive") then
 			scrollingTimelineWatcherUp:start()
 			scrollingTimelineWatcherDown:start()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Hacks HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			hackshud.show()
 		end
 
 	else
@@ -466,7 +490,7 @@ function loadScript()
 	-------------------------------------------------------------------------------
 	-- Set up Chooser:
 	-------------------------------------------------------------------------------
-	setupChooser()
+	hacksconsole.new()
 
 	--------------------------------------------------------------------------------
 	-- All loaded!
@@ -506,6 +530,7 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
+	hackshud.active()
 
 end
 
@@ -803,7 +828,7 @@ function bindKeyboardShortcuts()
 			FCPXHackCutSwitchAngle15Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackConsole				 								= { characterString = "", 							modifiers = {}, 									fn = function() showChooser() end, 									releasedFn = nil, 														repeatFn = nil },
+			FCPXHackConsole				 								= { characterString = "", 							modifiers = {}, 									fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
 
 			FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 		}
@@ -1044,7 +1069,7 @@ function bindKeyboardShortcuts()
 			FCPXHackCutSwitchAngle15Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-			FCPXHackConsole				 								= { characterString = keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() showChooser() end, 									releasedFn = nil, 														repeatFn = nil },
+			FCPXHackConsole				 								= { characterString = keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
 
 			FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 		}
@@ -1403,567 +1428,6 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                     C H O O S E R    /  C O N S O L E                      --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- SETUP CHOOSER:
---------------------------------------------------------------------------------
-function setupChooser()
-
-	mod.fcpxChooser = chooser.new(chooserAction):bgDark(true)
-											:fgColor(drawing.color.x11.snow)
-											:subTextColor(drawing.color.x11.snow)
-											:rightClickCallback(chooserRightClick)
-											:choices(chooserChoices)
-
-end
-
---------------------------------------------------------------------------------
--- SHOW CHOOSER:
---------------------------------------------------------------------------------
-function showChooser()
-	mod.fcpxChooserActive = true
-	mod.fcpxChooser:show()
-end
-
---------------------------------------------------------------------------------
--- CHOOSER CHOICES:
---------------------------------------------------------------------------------
-function chooserChoices()
-
-	--------------------------------------------------------------------------------
-	-- Debug Mode:
-	--------------------------------------------------------------------------------
-	debugMessage("Updating Chooser Choices.")
-
-	--------------------------------------------------------------------------------
-	-- Reset Choices:
-	--------------------------------------------------------------------------------
-	mod.fcpxChooserChoices = nil
-	mod.fcpxChooserChoices = {}
-
-	--------------------------------------------------------------------------------
-	-- Settings:
-	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
-	local chooserShowTitles 			= settings.get("fcpxHacks.chooserShowTitles")
-	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
-
-	--------------------------------------------------------------------------------
-	-- Hardcoded Choices:
-	--------------------------------------------------------------------------------
-	local chooserAutomation = {
-		{
-			["text"] = "Toggle Scrolling Timeline",
-			["subText"] = "Automation",
-			["function"] = "toggleScrollingTimeline",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Highlight Browser Playhead",
-			["subText"] = "Automation",
-			["function"] = "highlightFCPXBrowserPlayhead",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal in Browser & Highlight",
-			["subText"] = "Automation",
-			["function"] = "matchFrameThenHighlightFCPXBrowserPlayhead",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 1",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 1,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 2",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 2,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 3",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 3,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 4",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 4,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 5",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 5,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 6",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 6,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 7",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 7,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 8",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 8,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 9",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 9,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 10",
-			["subText"] = "Automation",
-			["function"] = "selectClipAtLane",
-			["function1"] = 10,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Single Match Frame & Highlight",
-			["subText"] = "Automation",
-			["function"] = "singleMatchFrame",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal Multicam in Browser & Highlight",
-			["subText"] = "Automation",
-			["function"] = "multicamMatchFrame",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal Multicam in Angle Editor & Highlight",
-			["subText"] = "Automation",
-			["function"] = "multicamMatchFrame",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Color Board Puck 1",
-			["subText"] = "Automation",
-			["function"] = "colorBoardSelectPuck",
-			["function1"] = 1,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Color Board Puck 2",
-			["subText"] = "Automation",
-			["function"] = "colorBoardSelectPuck",
-			["function1"] = 2,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Color Board Puck 3",
-			["subText"] = "Automation",
-			["function"] = "colorBoardSelectPuck",
-			["function1"] = 3,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Color Board Puck 4",
-			["subText"] = "Automation",
-			["function"] = "colorBoardSelectPuck",
-			["function1"] = 4,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-	}
-	local chooserShortcuts = {
-		{
-			["text"] = "Create Optimized Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateOptimizedMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Optimized Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateOptimizedMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Multicam Optimized Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateMulticamOptimizedMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Multicam Optimized Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateMulticamOptimizedMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Proxy Media (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateProxyMedia",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Create Proxy Media (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleCreateProxyMedia",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Leave Files In Place On Import (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleLeaveInPlace",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Leave Files In Place On Import (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleLeaveInPlace",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Background Render (Activate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleBackgroundRender",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Background Render (Deactivate)",
-			["subText"] = "Shortcut",
-			["function"] = "toggleBackgroundRender",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-	}
-	local chooserHacks = {
-		{
-			["text"] = "Change Backup Interval",
-			["subText"] = "Hack",
-			["function"] = "changeBackupInterval",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Timecode Overlay",
-			["subText"] = "Hack",
-			["function"] = "toggleTimecodeOverlay",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Moving Markers",
-			["subText"] = "Hack",
-			["function"] = "toggleMovingMarkers",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Toggle Enable Rendering During Playback",
-			["subText"] = "Hack",
-			["function"] = "togglePerformTasksDuringPlayback",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-	}
-
-	if chooserShowAutomation then fnutils.concat(mod.fcpxChooserChoices, chooserAutomation) end
-	if chooserShowShortcuts then fnutils.concat(mod.fcpxChooserChoices, chooserShortcuts) end
-	if chooserShowHacks then fnutils.concat(mod.fcpxChooserChoices, chooserHacks) end
-
-	--------------------------------------------------------------------------------
-	-- Video Effects List:
-	--------------------------------------------------------------------------------
-	if chooserShowVideoEffects then
-		local allVideoEffects = settings.get("fcpxHacks.allVideoEffects")
-		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
-			for i=1, #allVideoEffects do
-				individualEffect = {
-					["text"] = allVideoEffects[i],
-					["subText"] = "Video Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allVideoEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-				}
-				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Audio Effects List:
-	--------------------------------------------------------------------------------
-	if chooserShowAudioEffects then
-		local allAudioEffects = settings.get("fcpxHacks.allAudioEffects")
-		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
-			for i=1, #allAudioEffects do
-				individualEffect = {
-					["text"] = allAudioEffects[i],
-					["subText"] = "Audio Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allAudioEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-				}
-				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Transitions List:
-	--------------------------------------------------------------------------------
-	if chooserShowTransitions then
-		local allTransitions = settings.get("fcpxHacks.allTransitions")
-		if allTransitions ~= nil and next(allTransitions) ~= nil then
-			for i=1, #allTransitions do
-				local individualEffect = {
-					["text"] = allTransitions[i],
-					["subText"] = "Transition",
-					["function"] = "transitionsShortcut",
-					["function1"] = allTransitions[i],
-					["function2"] = "",
-					["function3"] = "",
-				}
-				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Titles List:
-	--------------------------------------------------------------------------------
-	if chooserShowTitles then
-		local allTitles = settings.get("fcpxHacks.allTitles")
-		if allTitles ~= nil and next(allTitles) ~= nil then
-			for i=1, #allTitles do
-				individualEffect = {
-					["text"] = allTitles[i],
-					["subText"] = "Title",
-					["function"] = "titlesShortcut",
-					["function1"] = allTitles[i],
-					["function2"] = "",
-					["function3"] = "",
-				}
-				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Generators List:
-	--------------------------------------------------------------------------------
-	if chooserShowGenerators then
-		local allGenerators = settings.get("fcpxHacks.allGenerators")
-		if allGenerators ~= nil and next(allGenerators) ~= nil then
-			for i=1, #allGenerators do
-				local individualEffect = {
-					["text"] = allGenerators[i],
-					["subText"] = "Generator",
-					["function"] = "generatorsShortcut",
-					["function1"] = allGenerators[i],
-					["function2"] = "",
-					["function3"] = "",
-				}
-				table.insert(mod.fcpxChooserChoices, 1, individualEffect)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort everything:
-	--------------------------------------------------------------------------------
-	table.sort(mod.fcpxChooserChoices, function(a, b) return a.text < b.text end)
-
-	--------------------------------------------------------------------------------
-	-- Return Choices:
-	--------------------------------------------------------------------------------
-	return mod.fcpxChooserChoices
-
-end
-
---------------------------------------------------------------------------------
--- CHOOSER COMPLETE:
---------------------------------------------------------------------------------
-function chooserAction(result)
-
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	mod.fcpxChooser:hide()
-
-	--------------------------------------------------------------------------------
-	-- Perform Specific Function:
-	--------------------------------------------------------------------------------
-	if result ~= nil then
-		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"]) end )
-	end
-
-	--------------------------------------------------------------------------------
-	-- Put focus back in Final Cut Pro:
-	--------------------------------------------------------------------------------
-	fcp.launch()
-
-	--------------------------------------------------------------------------------
-	-- Re-activate the Scrolling Timeline:
-	--------------------------------------------------------------------------------
-	mod.fcpxChooserActive = false
-	mod.scrollingTimelineWatcherWorking = false
-
-end
-
---------------------------------------------------------------------------------
--- CHOOSER RIGHT CLICK:
---------------------------------------------------------------------------------
-function chooserRightClick()
-
-	--------------------------------------------------------------------------------
-	-- Settings:
-	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get("fcpxHacks.chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get("fcpxHacks.chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get("fcpxHacks.chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get("fcpxHacks.chooserShowTransitions")
-	local chooserShowTitles				= settings.get("fcpxHacks.chooserShowTitles")
-	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
-
-	--------------------------------------------------------------------------------
-	-- 'Show All' Display Option:
-	--------------------------------------------------------------------------------
-	local chooserShowAll = false
-	if chooserShowAutomation and chooserShowShortcuts and chooserShowHacks and chooserShowVideoEffects and chooserShowAudioEffects and chooserShowTransitions and chooserShowTitles and chooserShowGenerators then
-		chooserShowAll = true
-	end
-
-	--------------------------------------------------------------------------------
-	-- Menubar:
-	--------------------------------------------------------------------------------
-	fcpxRightClickMenubar = menubar.new(false)
-	local rightClickMenu = {
-		--{ title = "SELECTED ITEM:",	 	disabled = true },
-		--{ title = "Favourite Selected Item", disabled = true },
-		--{ title = "Hide Selected Item", 	 disabled = true },
-     	--{ title = "-" },
-     	{ title = "DISPLAY OPTIONS:",	 	disabled = true },
-     	{ title = "Show None", fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", false)
-     		settings.set("fcpxHacks.chooserShowShortcuts", false)
-     		settings.set("fcpxHacks.chooserShowHacks", false)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", false)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", false)
-     		settings.set("fcpxHacks.chooserShowTransitions", false)
-     		settings.set("fcpxHacks.chooserShowTitles", false)
-     		settings.set("fcpxHacks.chooserShowGenerators", false)
-     		mod.fcpxChooser:refreshChoicesCallback()
-     	end },
-     	{ title = "Show All", 				checked = chooserShowAll,	fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", true)
-     		settings.set("fcpxHacks.chooserShowShortcuts", true)
-     		settings.set("fcpxHacks.chooserShowHacks", true)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", true)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", true)
-     		settings.set("fcpxHacks.chooserShowTransitions", true)
-     		settings.set("fcpxHacks.chooserShowTitles", true)
-     		settings.set("fcpxHacks.chooserShowGenerators", true)
-     		mod.fcpxChooser:refreshChoicesCallback()
-     	end },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				mod.fcpxChooser:refreshChoicesCallback() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Titles", 			checked = chooserShowTitles,		fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					mod.fcpxChooser:refreshChoicesCallback() end },
-       	{ title = "Show Generators", 		checked = chooserShowGenerators,	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			mod.fcpxChooser:refreshChoicesCallback() end },
-	}
-	fcpxRightClickMenubar:setMenu(rightClickMenu)
-	fcpxRightClickMenubar:popupMenu(mouse.getAbsolutePosition())
-
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --                     M E N U B A R    F E A T U R E S                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -2131,6 +1595,10 @@ function refreshMenuBar(refreshPlistValues)
 	local displayTouchBarLocationTimelineTopCentre = false
 	if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
 
+	--------------------------------------------------------------------------------
+	-- Display Touch Bar:
+	--------------------------------------------------------------------------------
+	local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Check for Updates:
@@ -2151,6 +1619,11 @@ function refreshMenuBar(refreshPlistValues)
 	-- Enable Shared Clipboard:
 	--------------------------------------------------------------------------------
 	enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+
+	--------------------------------------------------------------------------------
+	-- Enable Hacks HUD:
+	--------------------------------------------------------------------------------
+	enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD") or false
 
 	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
@@ -2415,8 +1888,13 @@ function refreshMenuBar(refreshPlistValues)
 		{ title = "Generators Shortcut 4" .. generatorsShortcutFour, 								fn = function() assignGeneratorsShortcut(4) end, 																				disabled = not generatorsListUpdated },
 		{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
 	}
+
+    local displayShortcutText = "Display Keyboard Shortcuts"
+    if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
+
 	local menuTable = {
 	   	{ title = "Open Final Cut Pro", 															fn = fcp.launch },
+	   	{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
 		{ title = "-" },
 	}
 	local shortcutsTable = {
@@ -2428,18 +1906,24 @@ function refreshMenuBar(refreshPlistValues)
 	    { title = "Enable Background Render (" .. mod.FFAutoRenderDelay .. " secs)", 				fn = function() toggleBackgroundRender() end, 						checked = fcp.getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
    	    { title = "-" },
 	}
+	local automationOptions = {
+	   	{ title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
+   	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
+   	    { title = "-" },
+   	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
+	}
 	local automationTable = {
  	    { title = "AUTOMATION:", 																																																	disabled = true },
-   	    { title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
-   	    { title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
-   	    { title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
    	    { title = "Assign Effects Shortcuts", 														menu = settingsEffectsShortcutsTable },
    	    { title = "Assign Transitions Shortcuts", 													menu = settingsTransitionsShortcutsTable },
    	    { title = "Assign Titles Shortcuts", 														menu = settingsTitlesShortcutsTable },
    	    { title = "Assign Generators Shortcuts", 													menu = settingsGeneratorsShortcutsTable },
+   	    { title = "Options", 																		menu = automationOptions },
       	{ title = "-" },
 	}
 	local toolsSettings = {
+		{ title = "Enable Touch Bar", 																fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
+		{ title = "Enable Hacks HUD", 																fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 	   	{ title = "Enable Mobile Notifications", 													fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
    	    { title = "Enable Clipboard History", 														fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
    	    { title = "Enable Shared Clipboard", 														fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
@@ -2447,25 +1931,27 @@ function refreshMenuBar(refreshPlistValues)
 	}
 	local toolsTable = {
    	    { title = "TOOLS:", 																																																		disabled = true },
-   	    { title = "Options", 																		menu = toolsSettings },
+   	    { title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
       	{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
       	{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
-      	{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
+   	    { title = "Options", 																		menu = toolsSettings },
       	{ title = "-" },
 	}
-	local hacksTable = {
-   	    { title = "HACKS:", 																																																		disabled = true },
-   		{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
+	local advancedTable = {
+	   	{ title = "Enable Hacks Shortcuts in Final Cut Pro", 										fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
    		{ title = "Enable Timecode Overlay", 														fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
 	   	{ title = "Enable Moving Markers", 															fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
        	{ title = "Enable Rendering During Playback", 												fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
+       	{ title = "-" },
         { title = "Change Backup Interval (" .. tostring(mod.FFPeriodicBackupInterval) .. " mins)", 	fn = changeBackupInterval },
    	   	{ title = "Change Smart Collections Label", 												fn = changeSmartCollectionsLabel },
+	}
+	local hacksTable = {
+   	    { title = "HACKS:", 																																																		disabled = true },
+        { title = "Advanced Features", 																menu = advancedTable },
         { title = "-" },
     }
 	local settingsTable = {
-		{ title = "Display Keyboard Shortcuts", 													fn = displayShortcutList },
-		{ title = "-" },
       	{ title = "Preferences...", 																menu = settingsMenuTable },
     	{ title = "-" },
     	{ title = "Quit FCPX Hacks", 																fn = quitFCPXHacks},
@@ -2506,7 +1992,10 @@ function displayShortcutList()
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
-		dialog.displayMessage("As you have enabled Hacks Shortcuts within the settings, you can refer to the Command Editor within Final Cut Pro review and change the shortcut selections.")
+		if fcp.running() then
+			fcp.launch()
+			fcp.selectMenuItem({"Final Cut Pro", "Commands", "Customize…"})
+		end
 	else
 		local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
 
@@ -2777,7 +2266,7 @@ end
 		local allVideoEffects = {}
 		if effectsList ~= nil then
 			for i=1, #effectsList:attributeValue("AXChildren") do
-				allVideoEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allVideoEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all effects.")
@@ -2817,7 +2306,7 @@ end
 		local allAudioEffects = {}
 		if effectsList ~= nil then
 			for i=1, #effectsList:attributeValue("AXChildren") do
-				allAudioEffects[i] = effectsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allAudioEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all effects.")
@@ -2880,7 +2369,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Update Chooser:
 			--------------------------------------------------------------------------------
-			mod.fcpxChooser:refreshChoicesCallback()
+			hacksconsole.refresh()
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -3110,7 +2599,7 @@ end
 		local allTransitions = {}
 		if transitionsList ~= nil then
 			for i=1, #transitionsList:attributeValue("AXChildren") do
-				allTransitions[i] = transitionsList:attributeValue("AXChildren")[i]:attributeValue("AXTitle")
+				allTransitions[i] = transitionsList[i]:attributeValue("AXTitle")
 			end
 		else
 			dialog.displayErrorMessage("Unable to get list of all transitions.")
@@ -3166,7 +2655,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		mod.fcpxChooser:refreshChoicesCallback()
+		hacksconsole.refresh()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3470,7 +2959,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		mod.fcpxChooser:refreshChoicesCallback()
+		hacksconsole.refresh()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -3791,7 +3280,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		mod.fcpxChooser:refreshChoicesCallback()
+		hacksconsole.refresh()
 
 		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
@@ -4410,6 +3899,22 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE HACKS HUD:
+	--------------------------------------------------------------------------------
+	function toggleEnableHacksHUD()
+		local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
+		settings.set("fcpxHacks.enableHacksHUD", not enableHacksHUD)
+
+		if enableHacksHUD then
+			hackshud.hide()
+		else
+			hackshud.show()
+		end
+
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
@@ -4513,30 +4018,14 @@ end
 
 		if not enableXMLSharing then
 
-			xmlSharingDropboxPath = dialog.displayChooseFolder("Which folder would you like to use as the local Drop Box?")
-
-			if xmlSharingDropboxPath ~= false then
-				settings.set("fcpxHacks.xmlSharingDropboxPath", xmlSharingDropboxPath)
-			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				return "Cancelled"
-			end
-
 			xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
 			if xmlSharingPath ~= false then
 				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
 			else
-				settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 				settings.set("fcpxHacks.xmlSharingPath", nil)
 				return "Cancelled"
 			end
-
-			--------------------------------------------------------------------------------
-			-- Watch for XML Dropbox Changes:
-			--------------------------------------------------------------------------------
-			xmlDropboxWatcher = pathwatcher.new(xmlSharingDropboxPath, xmlDropboxFileWatcher):start()
 
 			--------------------------------------------------------------------------------
 			-- Watch for Shared XML Folder Changes:
@@ -4547,13 +4036,11 @@ end
 			--------------------------------------------------------------------------------
 			-- Stop Watchers:
 			--------------------------------------------------------------------------------
-			xmlDropboxWatcher:stop()
 			sharedXMLWatcher:stop()
 
 			--------------------------------------------------------------------------------
 			-- Clear Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.xmlSharingDropboxPath", nil)
 			settings.set("fcpxHacks.xmlSharingPath", nil)
 		end
 
@@ -5676,7 +5163,7 @@ end
 			--------------------------------------------------------------------------------
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
 				if whichSplitGroup == nil then
-					if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroup = i
 						goto selectClipAtLaneSplitGroupExit
 					end
@@ -5721,8 +5208,8 @@ end
 		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichSplitGroup][whichGroup][1]:attributeValueCount("AXChildren") do
 			if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i] ~= nil then
-				if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if fcpxElements[whichSplitGroup][whichGroup][1]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:95" then
+				if fcpxElements[whichSplitGroup][whichGroup][1][i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][1][i]:attributeValue("AXIdentifier") == "_NS:95" then
 						whichScrollArea = i
 						goto performScrollingTimelineWatcherScrollAreaExit
 					end
@@ -5743,7 +5230,7 @@ end
 		-- Which Value Indicator:
 		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+			if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXDescription") == "Playhead" then
 				whichValueIndicator = i
 				goto selectClipAtLaneValueIndicatorExit
 			end
@@ -5769,12 +5256,12 @@ end
 				--------------------------------------------------------------------------------
 				-- Normal clips:
 				--------------------------------------------------------------------------------
-				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXLayoutItem" then
-					local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['x']
-					local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSize")['w']
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXRole") == "AXLayoutItem" then
+					local currentClipPositionMinX = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXPosition")['x']
+					local currentClipPositionMaxX = currentClipPositionMinX + fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXSize")['w']
 
 					if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-						local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXPosition")['y']
+						local currentClipPositionY = fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXPosition")['y']
 						whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
 					end
 				end
@@ -5782,7 +5269,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Storylines:
 				--------------------------------------------------------------------------------
-				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValue("AXRole") == "AXGroup" then
 					for ii=1, fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i]:attributeValueCount("AXChildren") do
 						if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii] ~= nil then
 							if fcpxElements[whichSplitGroup][whichGroup][1][whichScrollArea][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
@@ -5904,7 +5391,7 @@ end
 		local whichSplitGroup = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+				if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
 					whichSplitGroup = i
 				end
 			end
@@ -5968,7 +5455,7 @@ end
 			whichSplitGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupTwo = i
 						goto listSplitGroupTwo
 					end
@@ -5986,7 +5473,7 @@ end
 			whichSplitGroupThree = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupThree == nil then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupThree = i
 						goto listSplitGroupThree
 					end
@@ -6003,7 +5490,7 @@ end
 			--------------------------------------------------------------------------------
 			whichScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
 					whichScrollArea = i
 				end
 			end
@@ -6017,7 +5504,7 @@ end
 			--------------------------------------------------------------------------------
 			whichOutline = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
 					whichOutline = i
 				end
 			end
@@ -6031,8 +5518,8 @@ end
 			--------------------------------------------------------------------------------
 			whichRows = {nil}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXSelected") == true then
 						whichRows[#whichRows + 1] = i
 					end
 				end
@@ -6083,7 +5570,7 @@ end
 			whichSplitGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 						whichSplitGroupTwo = i
 						goto filmstripSplitGroupTwoDone
 					end
@@ -6100,7 +5587,7 @@ end
 			--------------------------------------------------------------------------------
 			whichScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXScrollArea" then
 					whichScrollArea = i
 				end
 			end
@@ -6114,7 +5601,7 @@ end
 			--------------------------------------------------------------------------------
 			whichGroupTwo = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][i]:attributeValue("AXRole") == "AXGroup" then
 					whichGroupTwo = i
 				end
 			end
@@ -6128,8 +5615,8 @@ end
 			--------------------------------------------------------------------------------
 			whichGroupThree = {}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXSelectedChildren")[1] ~= nil then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][i]:attributeValue("AXRole") == "AXGroup" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][i]:attributeValue("AXSelectedChildren")[1] ~= nil then
 						whichGroupThree[#whichGroupThree + 1] = i
 					end
 				end
@@ -6158,8 +5645,8 @@ end
 			--------------------------------------------------------------------------------
 			whichLibraryScrollArea = nil
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:32" then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXIdentifier") == "_NS:32" then
 						whichLibraryScrollArea = i
 					end
 				end
@@ -6178,8 +5665,8 @@ end
 			--------------------------------------------------------------------------------
 			whichLibraryRows = {}
 			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXRow" then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1]:attributeValue("AXChildren")[i]:attributeValue("AXSelected") == true then
+				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][i]:attributeValue("AXRole") == "AXRow" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichLibraryScrollArea][1][i]:attributeValue("AXSelected") == true then
 						whichLibraryRows[#whichLibraryRows + 1] = i
 					end
 				end
@@ -6285,7 +5772,7 @@ end
 				whichSplitGroupTwo = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
 					if whichSplitGroupTwo == nil then
-						if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup][whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
 							whichSplitGroupTwo = i
 							goto listSplitGroupTwoA
 						end
@@ -6303,7 +5790,7 @@ end
 				whichSplitGroupThree = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
 					if whichSplitGroupThree == nil then
-						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][i]:attributeValue("AXRole") == "AXSplitGroup" then
 							whichSplitGroupThree = i
 							goto listSplitGroupThreeA
 						end
@@ -6320,7 +5807,7 @@ end
 				--------------------------------------------------------------------------------
 				whichScrollArea = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
 						whichScrollArea = i
 					end
 				end
@@ -6334,7 +5821,7 @@ end
 				--------------------------------------------------------------------------------
 				whichOutline = nil
 				for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXOutline" then
+					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
 						whichOutline = i
 					end
 				end
@@ -7026,8 +6513,8 @@ end
 					--------------------------------------------------------------------------------
 					whichNextButton = nil
 					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Next…" then
+						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Next…" then
 								whichNextButton = i
 							end
 						end
@@ -7052,8 +6539,8 @@ end
 
 					::waitForSaveWindow::
 					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "save" then
+						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXSheet" then
+							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXDescription") == "save" then
 								whichSaveSheet = i
 								saveWindowOpen = true
 							end
@@ -7080,8 +6567,8 @@ end
 					--------------------------------------------------------------------------------
 					whichSaveButton = nil
 					for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Save" then
+						if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Save" then
 								whichSaveButton = i
 							end
 						end
@@ -7113,8 +6600,8 @@ end
 						whichAlertButton = nil
 						performCancel = false
 						for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSheet" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "alert" then
+							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXSheet" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXDescription") == "alert" then
 									for x=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValueCount("AXChildren") do
 										if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXRole") == "AXButton" then
 											if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXTitle") == "Cancel" then
@@ -7140,8 +6627,8 @@ end
 							--------------------------------------------------------------------------------
 							whichCancelButton = nil
 							for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Cancel" then
 										whichCancelButton = i
 									end
 								end
@@ -7157,8 +6644,8 @@ end
 							--------------------------------------------------------------------------------
 							whichCancelExportButton = nil
 							for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Cancel" then
+								if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
+									if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Cancel" then
 										whichCancelExportButton = i
 									end
 								end
@@ -7206,413 +6693,6 @@ end
 		]]
 		local ok,dialogBoxResult = osascript.applescript(mod.commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- FCPX SINGLE MATCH FRAME:
-	--------------------------------------------------------------------------------
-	--
-	-- TO DO: This is currently broken in Final Cut Pro 10.3.
-	--
-	function singleMatchFrame()
-
-		--------------------------------------------------------------------------------
-		-- UNDER CONSTRUCTION:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3.")
-		if 1==1 then return end
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		fcpx = application.get("Final Cut Pro")
-
-		--------------------------------------------------------------------------------
-		-- Click on 'Reveal in Browser':
-		--------------------------------------------------------------------------------
-		local resultRevealInBrowser = nil
-		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
-		if resultRevealInBrowser == nil then
-			--------------------------------------------------------------------------------
-			-- Error:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip or List Mode?
-		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = getFinalCutProBrowserMode()
-
-		-- Error Checking:
-		if (fcpxBrowserMode == "Failed") then
-			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get all FCPX UI Elements:
-		--------------------------------------------------------------------------------
-		fcpx = fcp.application()
-		fcpxElements = ax.applicationElement(fcpx)
-
-		--------------------------------------------------------------------------------
-		-- Which Window:
-		--------------------------------------------------------------------------------
-		local whichWindow = nil
-		local whichEventsWindow = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXWindow" then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-					whichEventsWindow = i
-				end
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Final Cut Pro" then
-					whichWindow = i
-				end
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") ~= "Final Cut Pro" or fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXTitle") == "Events" then
-					if fcpxElements:attributeValue("AXChildren")[i][1] ~= nil then
-						if fcpxElements:attributeValue("AXChildren")[i][1][1] ~= nil then
-							if fcpxElements:attributeValue("AXChildren")[i][1][1][1] ~= nil then
-								if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXRole") == "AXSplitGroup" then
-									if fcpxElements:attributeValue("AXChildren")[i][1][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
-										whichEventsWindow = i -- Because something FCPX doesn't give the Secondary Window an AXTitle!
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		if whichWindow == nil then
-			writeToConsole("ERROR: Unable to find whichWindow in highlightFCPXBrowserPlayhead.")
-			dialog.displayMessage("We weren't able to find the browser playhead.\n\nAre you sure it's actually on the screen currently?")
-			return "Failed"
-		end
-		if whichEventsWindow ~= nil then whichWindow = whichEventsWindow end
-		fcpxElements = ax.applicationElement(fcpx)[whichWindow]
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group:
-		--------------------------------------------------------------------------------
-		local whichSplitGroup = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if whichSplitGroup == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					whichSplitGroup = i
-				end
-			end
-		end
-		if whichSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Split Group.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- List Mode:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "List" then
-
-			--------------------------------------------------------------------------------
-			-- Which Group contains the browser:
-			--------------------------------------------------------------------------------
-			local whichGroup = nil
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroupGroup == nil then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-						--------------------------------------------------------------------------------
-						-- We now have ALL of the groups, and need to work out which group we actually want:
-						--------------------------------------------------------------------------------
-						for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-							if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-								--------------------------------------------------------------------------------
-								-- Which Split Group is it:
-								--------------------------------------------------------------------------------
-								for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXSplitGroup" then
-										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:231" then
-											whichGroup = i
-											goto listGroupDone
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			::listGroupDone::
-			if whichGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Group.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Two:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupTwo = i
-						goto listSplitGroupTwo
-					end
-				end
-			end
-			::listSplitGroupTwo::
-			if whichSplitGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Three:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupThree = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupThree == nil then
-					if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupThree = i
-						goto listSplitGroupThree
-					end
-				end
-			end
-			::listSplitGroupThree::
-			if whichSplitGroupThree == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Three.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Two:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichGroupTwo = i
-				end
-			end
-			if whichGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which is Persistent Playhead?
-			--------------------------------------------------------------------------------
-			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-			--------------------------------------------------------------------------------
-			-- Get Description Based off Playhead:
-			--------------------------------------------------------------------------------
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichSplitGroupThree][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-			if currentElement:attributeValue("AXRole") == "AXHandle" then
-				currentElement = currentElement:attributeValue("AXParent")
-			end
-
-			oneElementBack = currentElement:attributeValue("AXParent")
-
-			local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-			local whichSearchGroup = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSearchGroup == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						whichSearchGroup = i
-						goto searchGroupDone
-					end
-				end
-			end
-			::searchGroupDone::
-			if whichSearchGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Search Group.")
-				return "Failed"
-			end
-
-			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
-
-			--------------------------------------------------------------------------------
-			-- Set the search field to Title of the Selected Clip:
-			--------------------------------------------------------------------------------
-			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-			if searchTextFieldResult == nil then
-				dialog.displayErrorMessage("Unable to set Search Field.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger the search:
-			--------------------------------------------------------------------------------
-			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-			if searchTextFieldActionResult == nil then
-				dialog.displayErrorMessage("Unable to trigger Search.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Highlight Browser Playhead:
-			--------------------------------------------------------------------------------
-			highlightFCPXBrowserPlayhead()
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip Mode:
-		--------------------------------------------------------------------------------
-		elseif fcpxBrowserMode == "Filmstrip" then
-
-			--------------------------------------------------------------------------------
-			-- Which Group contains the browser:
-			--------------------------------------------------------------------------------
-			local whichGroup = nil
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroupGroup == nil then
-					if fcpxElements[whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-						--------------------------------------------------------------------------------
-						-- We now have ALL of the groups, and need to work out which group we actually want:
-						--------------------------------------------------------------------------------
-						for x=1, fcpxElements[whichSplitGroup][i]:attributeValueCount("AXChildren") do
-							if fcpxElements[whichSplitGroup][i][x]:attributeValue("AXRole") == "AXSplitGroup" then
-								--------------------------------------------------------------------------------
-								-- Which Split Group is it:
-								--------------------------------------------------------------------------------
-								for y=1, fcpxElements[whichSplitGroup][i][x]:attributeValueCount("AXChildren") do
-									if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXRole") == "AXScrollArea" then
-										if fcpxElements[whichSplitGroup][i][x][y]:attributeValue("AXIdentifier") == "_NS:40" then
-											whichGroup = i
-											goto filmstripGroupDone
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			::filmstripGroupDone::
-			if whichGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Group.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Two:
-			--------------------------------------------------------------------------------
-			local whichSplitGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupTwo == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupTwo = i
-						goto filmstripSplitGroupTwoDone
-					end
-				end
-			end
-			::filmstripSplitGroupTwoDone::
-			if whichSplitGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Scroll Area:
-			--------------------------------------------------------------------------------
-			local whichScrollArea = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-					whichScrollArea = i
-				end
-			end
-			if whichScrollArea == nil then
-				dialog.displayErrorMessage("Unable to locate Scroll Area.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Two:
-			--------------------------------------------------------------------------------
-			local whichGroupTwo = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-					whichGroupTwo = i
-				end
-			end
-			if whichGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which is Persistent Playhead:
-			--------------------------------------------------------------------------------
-			local whichPersistentPlayhead = (fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) - 1
-
-			--------------------------------------------------------------------------------
-			-- Get Description Based off Playhead:
-			--------------------------------------------------------------------------------
-			persistentPlayheadPosition = fcpxElements[whichSplitGroup][whichGroup][whichSplitGroupTwo][whichScrollArea][whichGroupTwo][whichPersistentPlayhead]:attributeValue("AXPosition")
-
-			persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-			persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-			currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-
-			if currentElement:attributeValue("AXRole") == "AXHandle" then
-				currentElement = currentElement:attributeValue("AXParent")
-			end
-
-			oneElementBack = currentElement:attributeValue("AXParent")
-
-			local searchTerm = oneElementBack:attributeValue("AXDescription")
-
-			local whichSearchGroup = nil
-			for i=1, (fcpxElements[whichSplitGroup][whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSearchGroup == nil then
-					if fcpxElements[whichSplitGroup][whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						whichSearchGroup = i
-						goto searchGroupDone
-					end
-				end
-			end
-			::searchGroupDone::
-			if whichSearchGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Search Group.")
-				return "Failed"
-			end
-
-			local searchTextFieldPosition = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup]:attributeValueCount("AXChildren")
-			local searchTextField = fcpxElements[whichSplitGroup][whichGroup][whichSearchGroup][searchTextFieldPosition]
-
-			--------------------------------------------------------------------------------
-			-- Set the search field to Title of the Selected Clip:
-			--------------------------------------------------------------------------------
-			local searchTextFieldResult = searchTextField:setAttributeValue("AXValue", searchTerm)
-			if searchTextFieldResult == nil then
-				dialog.displayErrorMessage("Unable to set Search Field.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger the search:
-			--------------------------------------------------------------------------------
-			local searchTextFieldActionResult = searchTextField:performAction("AXConfirm")
-			if searchTextFieldActionResult == nil then
-				dialog.displayErrorMessage("Unable to trigger Search.")
-			end
-
-			--------------------------------------------------------------------------------
-			-- Highlight Browser Playhead:
-			--------------------------------------------------------------------------------
-			highlightFCPXBrowserPlayhead()
-
-		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -7741,7 +6821,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -7754,7 +6834,7 @@ end
 			--------------------------------------------------------------------------------
 			fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -7778,7 +6858,7 @@ end
 		local savedKeywordValues = {}
 		local favoriteCount = 1
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
 				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
 				favoriteCount = favoriteCount + 1
 			end
@@ -7858,7 +6938,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -7871,7 +6951,7 @@ end
 			--------------------------------------------------------------------------------
 			local keywordDisclosureTriangle = nil
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -7895,7 +6975,7 @@ end
 		--------------------------------------------------------------------------------
 		local favoriteCount = 1
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
+			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
 				currentKeywordSelection = fcpxElements[i]
 
 				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
@@ -8058,7 +7138,7 @@ end
 				--------------------------------------------------------------------------------
 				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
 					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+						if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
 							whichValueIndicator = i
 							goto performScrollingTimelineValueIndicatorExitX
 						end
@@ -8190,6 +7270,129 @@ end
 			--------------------------------------------------------------------------------
 			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- FCPX SINGLE MATCH FRAME:
+	--------------------------------------------------------------------------------
+	function singleMatchFrame()
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Click on 'Reveal in Browser':
+		--------------------------------------------------------------------------------
+		local resultRevealInBrowser = nil
+		resultRevealInBrowser = fcp.selectMenuItem({"File", "Reveal in Browser"})
+		if resultRevealInBrowser == nil then
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Persistent Playhead:
+		--------------------------------------------------------------------------------
+ 		local browserPersistentPlayhead = fcp.getBrowserPersistentPlayhead()
+		if browserPersistentPlayhead == nil then
+			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Description Based off Playhead:
+		--------------------------------------------------------------------------------
+		local persistentPlayheadPosition = browserPersistentPlayhead:attributeValue("AXPosition")
+
+		persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
+		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
+
+		local currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
+		if currentElement == nil then
+			dialog.displayErrorMessage("FCPX Hacks was unable to find the clip name. This can sometimes happen when Final Cut Pro fails to 'Reveal in Browser' properly, so it's worth trying again.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		if currentElement:attributeValue("AXRole") == "AXHandle" then
+			currentElement = currentElement:attributeValue("AXParent")
+		end
+
+		local searchTerm = currentElement:attributeValue("AXParent")[1]:attributeValue("AXValue")
+
+		if searchTerm == nil or searchTerm == "" then
+			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check to see if Search Bar is already visible:
+		--------------------------------------------------------------------------------
+		local browserSplitGroup = fcp.getBrowserSplitGroup()
+		local searchTextFieldID = nil
+		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+			if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
+				if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
+					searchTextFieldID = i
+				end
+			end
+		end
+		if searchTextFieldID == nil then
+
+			--------------------------------------------------------------------------------
+			-- Maybe the search bar is not visible?
+			--------------------------------------------------------------------------------
+			browserSearchButton = fcp.getBrowserSearchButton()
+			local result = browserSearchButton:performAction("AXPress")
+
+			if result == nil then
+				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occured in singleMatchFrame().")
+				return nil
+			end
+
+			--------------------------------------------------------------------------------
+			-- Try searching for it again:
+			--------------------------------------------------------------------------------
+			browserSplitGroup = fcp.getBrowserSplitGroup()
+			for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+				if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
+					if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
+						searchTextFieldID = i
+					end
+				end
+			end
+
+			if searchTextFieldID == nil then
+				dialog.displayErrorMessage("Failed to find Search Text Box.\n\nError occured in singleMatchFrame().")
+				return nil
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enter in search value:
+		--------------------------------------------------------------------------------
+		local result = browserSplitGroup[searchTextFieldID]:setAttributeValue("AXValue", searchTerm)
+		if result == nil then
+			dialog.displayErrorMessage("Failed enter value into the Search Text Field.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Press search button:
+		--------------------------------------------------------------------------------
+		local result = browserSplitGroup[searchTextFieldID][1]:performAction("AXPress")
+		if result == nil then
+			dialog.displayErrorMessage("Failed trigger search button.\n\nError occured in singleMatchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Highlight Browser Playhead:
+		--------------------------------------------------------------------------------
+		highlightFCPXBrowserPlayhead()
+
 	end
 
 --------------------------------------------------------------------------------
@@ -10051,6 +9254,35 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- MENU ITEM SHORTCUT:
+	--------------------------------------------------------------------------------
+	function menuItemShortcut(i, x, y, z)
+
+		local fcpxElements = ax.applicationElement(fcp.application())
+
+		local whichMenuBar = nil
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+				whichMenuBar = i
+			end
+		end
+
+		if whichMenuBar == nil then
+			displayErrorMessage("Failed to find menu bar.\n\nError occured in menuItemShortcut().")
+			return
+		end
+
+		if i ~= "" and x ~= "" and y == "" and z == "" then
+			fcpxElements[whichMenuBar][i][1][x]:performAction("AXPress")
+		elseif i ~= "" and x ~= "" and y ~= "" and z == "" then
+			fcpxElements[whichMenuBar][i][1][x][1][y]:performAction("AXPress")
+		elseif i ~= "" and x ~= "" and y ~= "" and z ~= "" then
+			fcpxElements[whichMenuBar][i][1][x][1][y][1][z]:performAction("AXPress")
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE TOUCH BAR:
 	--------------------------------------------------------------------------------
 	function toggleTouchBar()
@@ -10078,6 +9310,11 @@ end
 		-- Update Settings:
 		--------------------------------------------------------------------------------
 		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
 
 	end
 
@@ -10150,155 +9387,11 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		--------------------------------------------------------------------------------
-		-- Get Browser Split Group:
-		--------------------------------------------------------------------------------
-		browserSplitGroup = fcp.getBrowserSplitGroup()
-		if browserSplitGroup == nil then
-			writeToConsole("ERROR: Failed to get Browser Split Group in highlightFCPXBrowserPlayhead().")
-			return "Fail"
-		end
 
 		--------------------------------------------------------------------------------
-		-- Which Group:
+		-- Get Browser Persistent Playhead:
 		--------------------------------------------------------------------------------
-		local whichGroup = nil
-		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-			if browserSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-			end
-		end
-		if whichGroup == nil then
-			writeToConsole("ERROR: Unable to locate Group in highlightFCPXBrowserPlayhead().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Scroll Area:
-		--------------------------------------------------------------------------------
-		local whichScrollArea = nil
-		for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-			if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
-				whichScrollArea = i
-			end
-		end
-
-		if whichScrollArea == nil then
-
-			--------------------------------------------------------------------------------
-			-- LIST VIEW:
-			--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Which Split Group:
-				--------------------------------------------------------------------------------
-				local whichSplitGroup = nil
-				for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						if browserSplitGroup[whichGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:658" then
-							whichSplitGroup = i
-							goto exitWhichSplitGroupLoop
-						end
-					end
-				end
-				::exitWhichSplitGroupLoop::
-				if whichSplitGroup == nil then
-					writeToConsole("ERROR: Unable to locate Split Group in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Group 2:
-				--------------------------------------------------------------------------------
-				local whichGroupTwo = nil
-				for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						if browserSplitGroup[whichGroup][whichSplitGroup]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:590" then
-							whichGroupTwo = i
-							goto exitWhichGroupTwoLoop
-						end
-					end
-				end
-				::exitWhichGroupTwoLoop::
-				if whichGroupTwo == nil then
-					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Value Indicator:
-				--------------------------------------------------------------------------------
-				local whichValueIndicator = nil
-				whichValueIndicator = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-				persistentPlayhead = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo][whichValueIndicator]
-
-		else
-
-			--------------------------------------------------------------------------------
-			-- FILMSTRIP VIEW:
-			--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Which Group 2:
-				--------------------------------------------------------------------------------
-				local whichGroupTwo = nil
-				for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
-					if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXGroup" then
-						if browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXChildren")[i]:attributeValue("AXIdentifier") == "_NS:39" then
-							whichGroupTwo = i
-							goto exitWhichGroupTwoLoop
-						end
-					end
-				end
-				::exitWhichGroupTwoLoop::
-				if whichGroupTwo == nil then
-					writeToConsole("ERROR: Unable to locate Group Two in highlightFCPXBrowserPlayhead().")
-					return "Failed"
-				end
-
-				--------------------------------------------------------------------------------
-				-- Which Value Indicator:
-				--------------------------------------------------------------------------------
-				local whichValueIndicator = nil
-				whichValueIndicator = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren") - 1
-				persistentPlayhead = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichValueIndicator]
-
-		end
-
-		--[[
-		if persistentPlayhead == nil then
-			--------------------------------------------------------------------------------
-			-- Browser on Second Screen (Filmstrip View):
-			--------------------------------------------------------------------------------
-			persistentPlayhead = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup", },
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-				{ role = "AXGroup", },
-				{ role = "AXScrollArea", Identifier = "_NS:33"},
-				{ role = "AXGroup", Identifier = "_NS:39"},
-				{ role = "AXValueIndicator", Description = "persistent playhead" },
-			}, 1)
-		end
-
-		if persistentPlayhead == nil then
-			--------------------------------------------------------------------------------
-			-- Browser on Second Screen (List View):
-			--------------------------------------------------------------------------------
-			persistentPlayhead = sw:searchPath({
-				{ role = "AXWindow", Title = "Events"},
-				{ role = "AXSplitGroup",},
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:344"},
-				{ role = "AXGroup", },
-				{ role = "AXSplitGroup", Identifier = "_NS:658"},
-				{ role = "AXGroup", Identifier = "_NS:590"},
-				{ role = "AXValueIndicator", Description = "persistent playhead" },
-			}, 1)
-		end
-		--]]
-
+		local persistentPlayhead = fcp.getBrowserPersistentPlayhead()
 		if persistentPlayhead ~= nil then
 
 			--------------------------------------------------------------------------------
@@ -10341,7 +9434,7 @@ function getProxyStatusIcon() -- Returns Icon or Nil
 
 	local FFPlayerQuality = fcp.getPreference("FFPlayerQuality")
 
-	if FFPlayerQuality == "4" then
+	if FFPlayerQuality == 4 then
 		result = proxyOnIcon 		-- Proxy (4)
 	else
 		result = proxyOffIcon 		-- Original (5)
@@ -10374,7 +9467,7 @@ function getFinalCutProBrowserMode() -- Returns "Filmstrip", "List" or "Failed"
 	--------------------------------------------------------------------------------
 	local whichMenuBar = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXMenuBar" then
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
 				whichMenuBar = i
 				goto getFinalCutProBrowserModeWhichMenuBarExit
 			end
@@ -10477,7 +9570,7 @@ function checkScrollingTimelinePress()
 			--------------------------------------------------------------------------------
 			local whichValueIndicator = nil
 			for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-				if timelineScrollArea[1]:attributeValue("AXChildren")[i]:attributeValue("AXDescription") == "Playhead" then
+				if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
 					whichValueIndicator = i
 					goto performScrollingTimelineValueIndicatorExit
 				end
@@ -10697,18 +9790,6 @@ end
 		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
 
 		--------------------------------------------------------------------------------
-		-- Show Touch Bar at Mouse Pointer Position:
-		--------------------------------------------------------------------------------
-		if displayTouchBarLocation == "Mouse" then
-
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Mouse Pointer Location:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:atMousePosition()
-
-		end
-
-		--------------------------------------------------------------------------------
 		-- Show Touch Bar at Top Centre of Timeline:
 		--------------------------------------------------------------------------------
 		if displayTouchBarLocation == "TimelineTopCentre" then
@@ -10717,10 +9798,26 @@ end
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
 			local timelineScrollArea = fcp.getTimelineScrollArea()
-			local timelineScrollAreaPosition = {}
-			timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
-			timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-			mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
+			if timelineScrollArea == nil then
+				displayTouchBarLocation = "Mouse"
+			else
+				local timelineScrollAreaPosition = {}
+				timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
+				timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
+				mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
+			end
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Touch Bar at Mouse Pointer Position:
+		--------------------------------------------------------------------------------
+		if displayTouchBarLocation == "Mouse" then
+
+			--------------------------------------------------------------------------------
+			-- Position Touch Bar to Mouse Pointer Location:
+			--------------------------------------------------------------------------------
+			mod.touchBarWindow:atMousePosition()
 
 		end
 
@@ -10969,6 +10066,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
+				-- Enable Hacks HUD:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableHacksHUD") then
+					hackshud:show()
+				end
+
+				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
 				showTouchbar()
@@ -11016,6 +10120,16 @@ function finalCutProWatcher(appName, eventType, appObject)
 				--------------------------------------------------------------------------------
 				deleteAllHighlights()
 
+				-------------------------------------------------------------------------------
+				-- Disable Hacks HUD:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableHacksHUD") then
+					if application.frontmostApplication():bundleID() == "org.hammerspoon.Hammerspoon" then
+						-- Focussed on Hammerspoon (and most likely HUD)
+					else
+						hackshud:hide()
+					end
+				end
 		end
 	end
 end
@@ -11059,12 +10173,19 @@ function finalCutProSettingsWatcher(files)
     	--------------------------------------------------------------------------------
     	-- Refresh Menubar:
     	--------------------------------------------------------------------------------
-    	refreshMenuBar(true)
+    	timer.doAfter(0.0000000000001, function() refreshMenuBar(true) end)
 
     	--------------------------------------------------------------------------------
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
-    	updateMenubarIcon()
+    	timer.doAfter(0.0000000000001, function() updateMenubarIcon() end)
+
+ 		--------------------------------------------------------------------------------
+		-- Reload Hacks HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
+		end
 
     end
 end
@@ -11330,7 +10451,7 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not mod.isCommandEditorOpen and not mod.fcpxChooserActive then
+				if not mod.isCommandEditorOpen and not hacksconsole.active then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
@@ -11449,81 +10570,6 @@ end
 	function sharedXMLNotificationAction(value)
 		importSharedXML(value:subTitle())
 	end
-
---------------------------------------------------------------------------------
--- LOCAL XML DROPBOX WATCHER:
---------------------------------------------------------------------------------
-function xmlDropboxFileWatcher(files)
-    for _,file in pairs(files) do
-        if string.match(file, '<?xml version="1.0" encoding') then
-
-			--------------------------------------------------------------------------------
-			-- Read XML Data:
-			--------------------------------------------------------------------------------
-			local plistFile = io.open(file, "r")
-			if plistFile == nil then return end -- This happens when the file is deleted from the Watch Folder.
-
-			--------------------------------------------------------------------------------
-			-- Display Text Box:
-			--------------------------------------------------------------------------------
-			local textboxResult = dialog.displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
-
-			--------------------------------------------------------------------------------
-			-- Read XML File Data:
-			--------------------------------------------------------------------------------
-			plistFileData = plistFile:read("*all")
-			plistFile:close()
-
-			--------------------------------------------------------------------------------
-			-- Delete file in Drop Box:
-			--------------------------------------------------------------------------------
-			os.remove(file)
-
-			if not textboxResult then
-				return -- Cancelled
-			else
-				--------------------------------------------------------------------------------
-				-- Get Settings:
-				--------------------------------------------------------------------------------
-				local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-				local xmlSharingDropboxPath = settings.get("fcpxHacks.xmlSharingDropboxPath")
-
-				--------------------------------------------------------------------------------
-				-- Get only the needed XML content:
-				--------------------------------------------------------------------------------
-				local startOfXML = string.find(plistFileData, "<?xml version=")
-				local endOfXML = string.find(plistFileData, "</fcpxml>")
-
-				--------------------------------------------------------------------------------
-				-- Error Detection:
-				--------------------------------------------------------------------------------
-				if startOfXML == nil or endOfXML == nil then
-					dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data from the file in the Dropbox. Please try again.\n\nError occurred in xmlDropboxFileWatcher().")
-					if plistFileData ~= nil then
-						debugMessage("Start of plistFileData.")
-						debugMessage(plistFileData)
-						debugMessage("End of plistFileData.")
-					else
-						debugMessage("ERROR: plistFileData is nil.")
-					end
-					return "fail"
-				end
-
-				--------------------------------------------------------------------------------
-				-- New XML:
-				--------------------------------------------------------------------------------
-				newXML = string.sub(plistFileData, startOfXML - 2, endOfXML + 8)
-
-				--------------------------------------------------------------------------------
-				-- Save the XML content to the Shared XML Folder:
-				--------------------------------------------------------------------------------
-				local file = io.open(xmlSharingPath .. textboxResult .. " (" .. host.localizedName() .. ").fcpxml", "w")
-				currentClipboardData = file:write(newXML)
-				file:close()
-			end
-        end
-    end
-end
 
 --------------------------------------------------------------------------------
 -- TOUCH BAR WATCHER:

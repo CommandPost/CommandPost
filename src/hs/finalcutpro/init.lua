@@ -313,7 +313,12 @@ end
 ---  * The Final Cut Pro application (as hs.application) or nil if an error occurred
 ---
 function finalcutpro.application()
-	local result = application(finalCutProBundleID) or nil
+	local result = application.applicationsForBundleID(finalCutProBundleID) or nil
+	if next(result) == nil then
+		return nil
+	else
+		return result[1]
+	end
 	return result
 end
 
@@ -328,8 +333,27 @@ end
 ---  * True if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
 ---
 function finalcutpro.launch()
-	local result = application.launchOrFocusByBundleID(finalCutProBundleID)
+
+	local result = nil
+
+	local fcpx = finalcutpro.application()
+
+	if fcpx == nil then
+		-- Final Cut Pro is Closed:
+		result = application.launchOrFocusByBundleID(finalCutProBundleID)
+	else
+		-- Final Cut Pro is Open:
+		if not fcpx:isFrontmost() then
+			-- Open by not Active:
+			result = application.launchOrFocusByBundleID(finalCutProBundleID)
+		else
+			-- Already frontmost:
+			return true
+		end
+	end
+
 	return result
+
 end
 
 --- hs.finalcutpro.running() -> boolean
@@ -474,7 +498,7 @@ function finalcutpro.getTimelineScrollArea()
 
 		local whichScrollArea = nil
 		for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
-			if finalCutProTimelineSplitGroup:attributeValue("AXChildren")[i]:attributeValue("AXRole") == "AXScrollArea" then
+			if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXScrollArea" then
 				whichScrollArea = i
 			end
 		end
@@ -620,6 +644,178 @@ function finalcutpro.getColorBoardRadioGroup()
 		{ role = "AXGroup", },
 		{ role = "AXRadioGroup", Identifier = "_NS:128"},
 	}, 1)
+
+	return result
+
+end
+
+--- hs.finalcutpro.getBrowserPersistentPlayhead() -> axuielementObject or nil
+--- Function
+--- Gets the Browser Persistent Playhead
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * axuielementObject for the Browser Persistent Playhead or nil if failed
+---
+function finalcutpro.getBrowserPersistentPlayhead()
+
+	local persistentPlayhead = nil
+
+	--------------------------------------------------------------------------------
+	-- Get Browser Split Group:
+	--------------------------------------------------------------------------------
+	browserSplitGroup = finalcutpro.getBrowserSplitGroup()
+	if browserSplitGroup == nil then
+		writeToConsole("ERROR: Failed to get Browser Split Group in finalcutpro.getBrowserPersistentPlayhead().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	local whichGroup = nil
+	for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+		if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
+			whichGroup = i
+		end
+	end
+	if whichGroup == nil then
+		writeToConsole("ERROR: Unable to locate Group in finalcutpro.getBrowserPersistentPlayhead().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Scroll Area:
+	--------------------------------------------------------------------------------
+	local whichScrollArea = nil
+	for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+		if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXScrollArea" then
+			whichScrollArea = i
+		end
+	end
+
+	if whichScrollArea == nil then
+
+		--------------------------------------------------------------------------------
+		-- LIST VIEW:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Which Split Group:
+			--------------------------------------------------------------------------------
+			local whichSplitGroup = nil
+			for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+				if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
+					if browserSplitGroup[whichGroup][i]:attributeValue("AXIdentifier") == "_NS:658" then
+						whichSplitGroup = i
+						goto exitWhichSplitGroupLoop
+					end
+				end
+			end
+			::exitWhichSplitGroupLoop::
+			if whichSplitGroup == nil then
+				writeToConsole("ERROR: Unable to locate Split Group in finalcutpro.getBrowserPersistentPlayhead().")
+				return nil
+			end
+
+			--------------------------------------------------------------------------------
+			-- Which Group 2:
+			--------------------------------------------------------------------------------
+			local whichGroupTwo = nil
+			for i=1, browserSplitGroup[whichGroup][whichSplitGroup]:attributeValueCount("AXChildren") do
+				if browserSplitGroup[whichGroup][whichSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
+					if browserSplitGroup[whichGroup][whichSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:590" then
+						whichGroupTwo = i
+						goto exitWhichGroupTwoLoop
+					end
+				end
+			end
+			::exitWhichGroupTwoLoop::
+			if whichGroupTwo == nil then
+				writeToConsole("ERROR: Unable to locate Group Two in finalcutpro.getBrowserPersistentPlayhead().")
+				return nil
+			end
+
+			--------------------------------------------------------------------------------
+			-- Which Value Indicator:
+			--------------------------------------------------------------------------------
+			local whichValueIndicator = nil
+			whichValueIndicator = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo]:attributeValueCount("AXChildren") - 1
+			persistentPlayhead = browserSplitGroup[whichGroup][whichSplitGroup][whichGroupTwo][whichValueIndicator]
+
+	else
+
+		--------------------------------------------------------------------------------
+		-- FILMSTRIP VIEW:
+		--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Which Group 2:
+			--------------------------------------------------------------------------------
+			local whichGroupTwo = nil
+			for i=1, browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren") do
+				if browserSplitGroup[whichGroup][whichScrollArea][i]:attributeValue("AXRole") == "AXGroup" then
+					if browserSplitGroup[whichGroup][whichScrollArea][i]:attributeValue("AXIdentifier") == "_NS:39" then
+						whichGroupTwo = i
+						goto exitWhichGroupTwoLoop
+					end
+				end
+			end
+			::exitWhichGroupTwoLoop::
+			if whichGroupTwo == nil then
+				writeToConsole("ERROR: Unable to locate Group Two in finalcutpro.getBrowserPersistentPlayhead().")
+				return nil
+			end
+
+			--------------------------------------------------------------------------------
+			-- Which Value Indicator:
+			--------------------------------------------------------------------------------
+			local whichValueIndicator = nil
+			whichValueIndicator = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren") - 1
+			persistentPlayhead = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichValueIndicator]
+	end
+
+	return persistentPlayhead
+
+end
+
+--- hs.finalcutpro.getBrowserSearchButton() -> axuielementObject or nil
+--- Function
+--- Gets the Browser Search Button
+---
+--- Parameters:
+---  * [BrowserButtonBar] - If you already know the Browser Button Bar Group,
+---                         you can supply it here for a slight speed increase
+---
+--- Returns:
+---  * axuielementObject for the Browser Search Button or nil if failed
+---
+function finalcutpro.getBrowserSearchButton(optionalBrowserButtonBar)
+
+	local browserButtonBar = nil
+	if optionalBrowserButtonBar == nil then
+		browserButtonBar = finalcutpro.getBrowserButtonBar()
+	else
+		browserButtonBar = optionalBrowserButtonBar
+	end
+
+	local searchButtonID = nil
+	for i=1, browserButtonBar:attributeValueCount("AXChildren") do
+		if browserButtonBar[i]:attributeValue("AXRole") == "AXButton" then
+			if browserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:92" then
+				searchButtonID = i
+			end
+		end
+	end
+	if searchButtonID == nil then
+		writeToConsole("Unable to find Search Button.\n\nError occured in finalcutpro.getBrowserSearchButton().")
+		return nil
+	end
+
+	local result = nil
+	result = browserButtonBar[searchButtonID]
 
 	return result
 
