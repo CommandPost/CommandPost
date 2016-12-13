@@ -1,12 +1,15 @@
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
+local axutils						= require("hs.finalcutpro.axutils")
 local just							= require("hs.just")
 
 local PlaybackPanel					= require("hs.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("hs.finalcutpro.prefs.ImportPanel")
 
 local PreferencesWindow = {}
+
+PreferencesWindow.GROUP						= "_NS:9"
 
 function PreferencesWindow:new(app)
 	o = {_app = app}
@@ -19,31 +22,40 @@ function PreferencesWindow:app()
 	return self._app
 end
 
-function PreferencesWindow:UI()
-	if not self._ui then
-		self._ui = self:_findWindowUI(self:app():windowsUI())
-	end
-	return self._ui
+function PreferencesWindow:AX()
+	local windowsAX = self:app():windowsAX()
+	return windowsAX and self:_findWindowAX(windowsAX)
 end
 
-function PreferencesWindow:_findWindowUI(windows)
-	for i = 1,windows:childCount() do
-		local w = windows:childAt(i)
-		if w:attribute("AXSubrole") == "AXDialog" 
-			and not w:attribute("AXModal") 
-			and w:attribute("AXTitle") ~= ""
-			then
+function PreferencesWindow:_findWindowAX(windows)
+	for i,w in ipairs(windows) do
+		if w:attributeValue("AXSubrole") == "AXDialog"
+		and not w:attributeValue("AXModal")
+		and w:attributeValue("AXTitle") ~= ""
+		then
 			-- Is a dialog and is not modal (Media Import is modal) and the title is not blank
+			-- TODO: This also matches the Command Editor window...
 			return w
 		end
 	end
 	return nil
 end
 
-function PreferencesWindow:toolbarUI()
-	local ui = self:UI()
-	return ui and ui:childWithRole("AXToolbar") or nil
+
+-- Returns the AX for the AXToolbar containing this panel's buttons
+function PreferencesWindow:toolbarAX()
+	local ax = self:AX()
+	return ax and axutils.childWith(ax, "AXRole", "AXToolbar") or nil
 end
+
+-- Returns the AX for the AXGroup containing this panel's elements
+function PreferencesWindow:groupAX()
+	local ax = self:AX()
+	local group = ax and axutils.childWith(ax, "AXIdentifier", PreferencesWindow.GROUP)
+	-- The group conains another single group that contains the actual checkboxes, etc.
+	return group and #group == 1 and group[1]
+end
+
 
 function PreferencesWindow:playbackPanel()
 	if not self._playbackPanel then
@@ -60,7 +72,7 @@ function PreferencesWindow:importPanel()
 end
 
 function PreferencesWindow:isShowing()
-	return self:UI() ~= nil
+	return self:AX() ~= nil
 end
 
 --- Ensures the PreferencesWindow is showing
@@ -69,18 +81,18 @@ function PreferencesWindow:show()
 		-- open the window
 		-- self:app():ensureIsRunning()
 		self:app():menuBar():select("Final Cut Pro", "Preferences…")
-		ui = just.doUntil(function() return self:UI() end)
-		return ui ~= nil
+		ax = just.doUntil(function() return self:AX() end)
+		return ax ~= nil
 	end
 	return true
 end
 
 function PreferencesWindow:hide()
-	local ui = self:UI()
-	if ui then
-		local closeBtn = ui:childWithSubrole("AXCloseButton")
+	local ax = self:AX()
+	if ax then
+		local closeBtn = axutils.childWith(ax, "AXSubrole", "AXCloseButton")
 		if closeBtn then
-			closeBtn:press()
+			closeBtn:doPress()
 			return true
 		end
 	end

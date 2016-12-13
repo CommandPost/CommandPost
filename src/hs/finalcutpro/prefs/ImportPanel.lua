@@ -2,6 +2,7 @@ local log								= require("hs.logger").new("playback")
 local inspect							= require("hs.inspect")
 
 local just								= require("hs.just")
+local axutils							= require("hs.finalcutpro.axutils")
 
 local ImportPanel = {}
 
@@ -22,29 +23,16 @@ function ImportPanel:parent()
 	return self._parent
 end
 
-function ImportPanel:UI()
-	local toolbarUI = self:parent():toolbarUI()
-	if toolbarUI then
-		return toolbarUI:childAt(ImportPanel.ID)
-	end
-	return nil
-end
-
--- Returns the UI for the AXGroup containing this panels's elements
-function ImportPanel:groupUI()
-	local parentUI = self:parent():UI()
-	if parentUI then
-		-- AXIdentifier = "_NS:9"
-		return parentUI:childWith("AXIdentifier", "_NS:9")
-	end
-	return nil
+function ImportPanel:AX()
+	local toolbarAX = self:parent():toolbarAX()
+	return toolbarAX and toolbarAX[ImportPanel.ID]
 end
 
 function ImportPanel:isShowing()
 	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarUI()
+		local toolbar = self:parent():toolbarAX()
 		if toolbar then
-			local selected = toolbar:attribute("AXSelectedChildren", true)
+			local selected = toolbar:selectedChildren()
 			return #selected == 1 and selected[1] == toolbar[ImportPanel.ID]
 		end
 	end
@@ -55,10 +43,10 @@ function ImportPanel:show()
 	local parent = self:parent()
 	-- show the parent.
 	if parent:show() then
-		-- get the toolbar UI
-		local panel = just.doUntil(function() return self:UI() end)
+		-- get the toolbar AX
+		local panel = just.doUntil(function() return self:AX() end)
 		if panel then
-			panel:press()
+			panel:doPress()
 			return true
 		end
 	end
@@ -67,11 +55,13 @@ end
 
 function ImportPanel:toggleCheckBox(identifier)
 	if self:show() then
-		local group = self:groupUI()
+		local group = self:parent():groupAX()
 		if group then
-			local checkbox = group:childWith("AXIdentifier", identifier)
-			checkbox:press()
-			return true
+			local checkbox = axutils.childWith(group, "AXIdentifier", identifier)
+			if checkbox then
+				checkbox:doPress()
+				return true
+			end
 		end
 	end
 	return false
@@ -87,14 +77,13 @@ end
 
 function ImportPanel:toggleCopyToMediaFolder()
 	if self:show() then
-		local group = self:groupUI()
+		local group = self:parent():groupAX()
 		if group then
-			local radioGroup = group:childWith("AXIdentifier", ImportPanel.COPY_TO_MEDIA_FOLDER)
+			local radioGroup = axutils.childWith(group, "AXIdentifier", ImportPanel.COPY_TO_MEDIA_FOLDER)
 			if radioGroup then
-				for i=1,radioGroup:childCount() do
-					local button = radioGroup:childAt(i)
-					if button:attribute("AXValue") == 0 then
-						button:press()
+				for i,button in ipairs(radioGroup) do
+					if button:value() == 0 then
+						button:doPress()
 						return true
 					end
 				end

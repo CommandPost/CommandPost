@@ -8,10 +8,10 @@
 --- Standard Modules
 local application								= require("hs.application")
 local ax 										= require("hs._asm.axuielement")
+local inspect									= require("hs.inspect")
 local log										= require("hs.logger").new("fcpxapp")
 
 --- Local Modules
-local UI										= require("hs.finalcutpro.ui")
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 
@@ -27,7 +27,7 @@ App.PASTEBOARD_UTI 						= "com.apple.flexo.proFFPasteboardUTI"
 --- Creates a new App instance representing Final Cut Pro
 ---
 --- Parameters:
----  * ui			- The hs.finalcutpro.ui for the application
+---  * N/A
 ---
 --- Returns:
 ---  * True is successful otherwise Nil
@@ -53,13 +53,9 @@ function App:application()
 	return application(App.BUNDLE_ID) or nil
 end
 
-function App:UI()
+function App:AX()
 	local fcp = self:application()
-	if fcp then
-		return UI:new(ax.applicationElement(fcp))
-	else
-		return nil
-	end
+	return fcp and ax.applicationElement(fcp)
 end
 
 --- hs.finalcutpro.running() -> boolean
@@ -91,27 +87,26 @@ function App:preferencesWindow()
 	return self._preferencesWindow
 end
 
---- hs.finalcutpro.App:windowsUI() -> hs.finalcutpro.UI
+--- hs.finalcutpro.App:windowsAX() -> axuielement
 --- Function
---- Returns the UI containing the list of windows in the app.
+--- Returns the AX containing the list of windows in the app.
 ---
 --- Parameters:
 ---  * N/A
 ---
 --- Returns:
----  * The hs.finalcutpro.UI, or nil if the application is not running.
+---  * The axuieleme, or nil if the application is not running.
 ---
-function App:windowsUI()
-	return self:UI():attribute("AXWindows")
+function App:windowsAX()
+	local ax = self:AX()
+	return ax and ax:windows()
 end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")
-	local windows = self:windowsUI()
-	for i=1,windows:childCount() do
-		local w = windows:childAt(i)
-		log.d(i, ": title: ", w:attribute("AXTitle"), "; role: ", w:attribute("AXRole"), "; subrole: ", w:attribute("AXSubrole"),
-			 "; modal: ", w:attribute("AXModal"))
+	local windows = self:windowsAX()
+	for i,w in ipairs(windows) do
+		log.d(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
 	end
 end
 

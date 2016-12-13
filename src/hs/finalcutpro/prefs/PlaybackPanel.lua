@@ -1,6 +1,7 @@
 local log								= require("hs.logger").new("playback")
 local inspect							= require("hs.inspect")
 
+local axutils							= require("hs.finalcutpro.axutils")
 local just								= require("hs.just")
 
 local PlaybackPanel = {}
@@ -21,29 +22,16 @@ function PlaybackPanel:parent()
 	return self._parent
 end
 
-function PlaybackPanel:UI()
-	local toolbarUI = self:parent():toolbarUI()
-	if toolbarUI then
-		return toolbarUI:childAt(PlaybackPanel.ID)
-	end
-	return nil
-end
-
--- Returns the UI for the AXGroup containing this panels's elements
-function PlaybackPanel:groupUI()
-	local parentUI = self:parent():UI()
-	if parentUI then
-		-- AXIdentifier = "_NS:9"
-		return parentUI:childWith("AXIdentifier", "_NS:9")
-	end
-	return nil
+function PlaybackPanel:AX()
+	local toolbarAX = self:parent():toolbarAX()
+	return toolbarAX and toolbarAX[PlaybackPanel.ID]
 end
 
 function PlaybackPanel:isShowing()
 	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarUI()
+		local toolbar = self:parent():toolbarAX()
 		if toolbar then
-			local selected = toolbar:attribute("AXSelectedChildren", true)
+			local selected = toolbar:selectedChildren()
 			return #selected == 1 and selected[1] == toolbar[PlaybackPanel.ID]
 		end
 	end
@@ -54,10 +42,10 @@ function PlaybackPanel:show()
 	local parent = self:parent()
 	-- show the parent.
 	if parent:show() then
-		-- get the toolbar UI
-		local panel = just.doUntil(function() return self:UI() end)
+		-- get the toolbar AX
+		local panel = just.doUntil(function() return self:AX() end)
 		if panel then
-			panel:press()
+			panel:doPress()
 			return true
 		end
 	end
@@ -66,10 +54,10 @@ end
 
 function PlaybackPanel:toggleCheckBox(identifier)
 	if self:show() then
-		local group = self:groupUI()
+		local group = self:parent():groupAX()
 		if group then
-			local checkbox = group:childWith("AXIdentifier", identifier)
-			checkbox:press()
+			local checkbox = axutils.childWith(group, "AXIdentifier", identifier)
+			checkbox:doPress()
 			return true
 		end
 	end

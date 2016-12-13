@@ -8,6 +8,7 @@
 --- Standard Modules
 local log											= require("hs.logger").new("menubar")
 local json											= require("hs.json")
+local axutils										= require("hs.finalcutpro.axutils")
 
 local MenuBar = {}
 
@@ -37,11 +38,9 @@ function MenuBar:app()
 	return self._app
 end
 
-function MenuBar:UI()
-	if not self._ui then
-		self._ui = self:app():UI():childWithRole(MenuBar.ROLE)
-	end
-	return self._ui
+function MenuBar:AX()
+	local appAX = self:app():AX()
+	return appAX and axutils.childWith(appAX, "AXRole", MenuBar.ROLE)
 end
 
 function MenuBar:getMenuMap()
@@ -74,25 +73,25 @@ function MenuBar:select(...)
 
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
-	local menuUI = self:UI()
+	local menuAX = self:AX()
 	
 	for i=1,select('#', ...) do
 		step = select(i, ...)
 		if menuMap and menuMap[step] then
 			-- We have the menu name in our list
 			local item = menuMap[step]
-			menuUI = menuUI:childAt(item.id)
+			menuAX = menuAX[item.id]
 			menuMap = item.items
 		else
 			-- We don't have it in our list, so look it up manually. Hopefully they are in English!
-			menuUI = menuUI:childWithTitle(step)
+			menuAX = axutils.childWith(menuAX, "AXTitle", step)
 		end
 		
-		if menuUI then
-			menuUI:press()
-			-- Assign the contained AXMenu to the menuUI - it contains the next set of AXMenuItems
-			menuUI = menuUI:childAt(1)
-			assert(not menuUI or menuUI:attribute("AXRole") == "AXMenu")
+		if menuAX then
+			menuAX:doPress()
+			-- Assign the contained AXMenu to the menuAX - it contains the next set of AXMenuItems
+			menuAX = menuAX[1]
+			assert(not menuAX or menuAX:role() == "AXMenu")
 		else
 			log.d("Unable to find a menu called '"..step.."'.")
 			return nil
@@ -114,7 +113,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:generateMenuMap()
-	local menuMap = self:_processMenuItems(self:UI())
+	local menuMap = self:_processMenuItems(self:AX())
 	
 	-- Opens a file in append mode
 	file = io.open(MenuBar.MENU_MAP_FILE, "w")
@@ -129,18 +128,16 @@ function MenuBar:generateMenuMap()
 end
 
 function MenuBar:_processMenuItems(menu)
-	local count = menu:childCount()
-	-- log.d("Count: "..count)
+	local count = #menu
 	if count then
 		local items = {}
-		for i = 1,count do
-			local child = menu:childAt(i)
-			local title = child:attribute("AXTitle")
+		for i,child in ipairs(menu) do
+			local title = child:attributeValue("AXTitle")
 			-- log.d("Title: "..inspect(title))
 			if title and title ~= "" then
 				local item = {id = i}
-				local submenu = child:childAt(1)
-				if submenu and submenu:attribute("AXRole") == "AXMenu" then
+				local submenu = child[1]
+				if submenu and submenu:role() == "AXMenu" then
 					local children = self:_processMenuItems(submenu)
 					if children then
 						item.items = children

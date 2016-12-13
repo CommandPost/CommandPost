@@ -23,7 +23,6 @@ local osascript 							= require("hs.osascript")
 local json									= require("hs.json")
 
 local App									= require("hs.finalcutpro.App")
-local UI									= require("hs.finalcutpro.ui")
 local just									= require("hs.just")
 
 local log									= require("hs.logger").new("fcp")
@@ -46,20 +45,15 @@ local function doesDirectoryExist(path)
 end
 
 function finalcutpro.app()
-	-- if not finalcutpro._app then
-	-- 	finalcutpro._app = App:new()
-	-- end
-	-- return finalcutpro._app
-	return App:new()
+	if not finalcutpro._app then
+		finalcutpro._app = App:new()
+	end
+	return finalcutpro._app
 end
 
-function finalcutpro.applicationUI()
+function finalcutpro.applicationAX()
 	local fcp = finalcutpro.application()
-	if fcp then
-		return UI:new(ax.applicationElement(fcp))
-	else
-		return nil
-	end
+	return fcp and ax.applicationElement(fcp)
 end
 
 function finalcutpro.getMenuMap()
