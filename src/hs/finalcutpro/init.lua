@@ -63,6 +63,8 @@ function finalcutpro.selectMenuItem(menuItemTable)
 	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
 	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
 		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
+		if menuItemTable[2] == "Commands" 						then whichMenuTwo = 4 		end
+			if menuItemTable[3] == "Customize…" 				then whichMenuThree = 1 	end
 		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
 	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
 	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
