@@ -98,15 +98,15 @@ end
 ---  * The axuieleme, or nil if the application is not running.
 ---
 function App:windowsUI()
-	local ax = self:UI()
-	return ax and ax:windows()
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXWindows")
 end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
-		log.d(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
+		debugMessage(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
 	end
 end
 
