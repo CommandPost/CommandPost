@@ -71,20 +71,6 @@ function finalcutpro.getMenuMap()
 	return finalcutpro._menuMap
 end
 
---- hs.finalcutpro.selectMenuItem(table) -> boolean
---- Function
---- Selects a Final Cut Pro Menu Item
----
---- Parameters:
----  * table - A table of the menu item you'd like to activate, for example: {"View", "Browser", "as List"}
----
---- Returns:
----  * True is successful otherwise Nil
----
-function finalcutpro.selectMenuItem(menuItemTable)
-	return finalcutpro.app():menuBar():select(table.unpack(menuItemTable))
-end
-
 --- hs.finalcutpro.flexoLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
@@ -811,26 +797,6 @@ function finalcutpro.getBrowserSearchButton(optionalBrowserButtonBar)
 
 	return result
 
-end
-
---- hs.finalcutpro.showPreferencesDialog() -> UI
---- Function
---- Ensures that the 'Preferences' dialog window is displayed, and returns
---- a UI pointing at the window.
----
---- Parameters:
----  * N/A
----
---- Returns:
----  * The UI if successful, or nil if it could not be opened within 1 second.
----
-function finalcutpro.showPreferencesDialog()
-	finalcutpro.selectMenuItem({"Final Cut Pro", "Preferences…"})
-	
-	local app = finalcutpro.applicationUI()
-	return just.doUntil(
-		function() return app:attribute("AXWindows"):childWithSubrole("AXDialog") end
-	)
 end
 
 --- hs.finalcutpro._generateMenuMap() -> Table
