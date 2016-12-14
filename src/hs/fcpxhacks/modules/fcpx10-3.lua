@@ -5095,14 +5095,7 @@ end
 		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 		whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
 
-		local appleScriptA = 'set whichSharedXMLPath to "' .. whichSharedXMLPath .. '"' .. '\n\n'
-		local appleScriptB = [[
-			tell application "Final Cut Pro"
-				activate
-				open POSIX file whichSharedXMLPath as string
-			end tell
-		]]
-		osascript.applescript(appleScriptA .. appleScriptB)
+		local result = fcp.importXML(whichSharedXMLPath)
 
 	end
 

@@ -71,6 +71,32 @@ function finalcutpro.getMenuMap()
 	return finalcutpro._menuMap
 end
 
+--- hs.finalcutpro.importXML() -> boolean
+--- Function
+--- Imports an XML file into Final Cut Pro
+---
+--- Parameters:
+---  * path = Path to XML File
+---
+--- Returns:
+---  * A boolean value indicating whether the AppleScript succeeded or not
+---
+function finalcutpro.importXML(path)
+
+	if finalcutpro.running() then
+		local appleScriptA = 'set whichSharedXMLPath to "' .. path .. '"' .. '\n\n'
+		local appleScriptB = [[
+			tell application "Final Cut Pro"
+				activate
+				open POSIX file whichSharedXMLPath as string
+			end tell
+		]]
+		local bool, object, descriptor = osascript.applescript(appleScriptA .. appleScriptB)
+		return bool
+	end
+
+end
+
 --- hs.finalcutpro.flexoLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
@@ -166,11 +192,11 @@ function finalcutpro.getPreference(value, default)
 	if preferencesTable ~= nil then
 		result = preferencesTable[value]
 	end
-	
+
 	if result == nil then
 		result = default
 	end
-	
+
 	return result
 end
 
