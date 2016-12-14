@@ -4,7 +4,7 @@
 ---
 --- Thrown together by:
 ---   Chris Hocking (https://github.com/latenitefilms)
----
+---   David Peterson (https://randomphotons.com/)
 
 local finalcutpro = {}
 
@@ -20,7 +20,14 @@ local plist 								= require("hs.plist")
 local application 							= require("hs.application")
 local fs 									= require("hs.fs")
 local osascript 							= require("hs.osascript")
-local timer									= require("hs.timer")
+local json									= require("hs.json")
+
+local App									= require("hs.finalcutpro.App")
+local just									= require("hs.just")
+
+local log									= require("hs.logger").new("fcp")
+local inspect								= require("hs.inspect")
+
 
 --- doesDirectoryExist() -> boolean
 --- Internal Function
@@ -37,188 +44,31 @@ local function doesDirectoryExist(path)
     return attr and attr.mode == 'directory'
 end
 
---- hs.finalcutpro.selectMenuItem() -> table
---- Function
---- Selects a Final Cut Pro Menu Item
----
---- Parameters:
----  * table - A table of the menu item you'd like to activate, for example: {"View", "Browser", "as List"}
----
---- Returns:
----  * True is successful otherwise Nil
----
-function finalcutpro.selectMenuItem(menuItemTable)
-
-	--------------------------------------------------------------------------------
-	-- Variables:
-	--------------------------------------------------------------------------------
-	local whichMenuBar 		= nil
-	local whichMenuOne 		= nil
-	local whichMenuTwo 		= nil
-	local whichMenuThree 	= nil
-
-	--------------------------------------------------------------------------------
-	-- Hardcoded Values (for system other than English):
-	--------------------------------------------------------------------------------
-	if menuItemTable[1] == "Apple" 								then whichMenuOne = 1 		end
-	if menuItemTable[1] == "Final Cut Pro" 						then whichMenuOne = 2 		end
-		if menuItemTable[2] == "Preferences…" 					then whichMenuTwo = 3 		end
-		if menuItemTable[2] == "Commands" 						then whichMenuTwo = 4 		end
-			if menuItemTable[3] == "Customize…" 				then whichMenuThree = 1 	end
-		if menuItemTable[25] == "Reveal in Browser" 			then whichMenuTwo = 23 		end
-	if menuItemTable[1] == "File" 								then whichMenuOne = 3 		end
-	if menuItemTable[1] == "Edit" 								then whichMenuOne = 4 		end
-	if menuItemTable[1] == "Trim" 								then whichMenuOne = 5 		end
-	if menuItemTable[1] == "Mark" 								then whichMenuOne = 6 		end
-	if menuItemTable[1] == "Clip" 								then whichMenuOne = 7 		end
-		if menuItemTable[2] == "Open in Angle Editor"			then whichMenuTwo = 4 		end
-	if menuItemTable[1] == "Modify" 							then whichMenuOne = 8 		end
-	if menuItemTable[1] == "View" 								then whichMenuOne = 9 		end
-		if menuItemTable[2] == "Timeline History Back"			then whichMenuTwo = 16 		end
-		if menuItemTable[2] == "Zoom to Fit"					then whichMenuTwo = 22 		end
-	if menuItemTable[1] == "Window" 							then whichMenuOne = 10 		end
-		if menuItemTable[2] == "Go To" 							then whichMenuTwo = 6 		end
-			if menuItemTable[3] == "Timeline"					then whichMenuThree = 7		end
-			if menuItemTable[3] == "Color Board"				then whichMenuThree = 9		end
-	if menuItemTable[1] == "Help" 								then whichMenuOne = 11 		end
-
-	--------------------------------------------------------------------------------
-	-- TO DO: Commenting this stuff out will have definitely broken something:
-	--------------------------------------------------------------------------------
-	--if menuItemTable[2] == "Browser" 				then whichMenuTwo = 5 		end
-	--if menuItemTable[3] == "as List"				then whichMenuThree = 2		end
-	--if menuItemTable[3] == "Group Clips By"		then whichMenuThree = 4		end
-	--if menuItemTable[4] == "None"					then whichMenuThree = 1		end
-
-	local result = nil
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local fcpx = finalcutpro.application()
-
-	--------------------------------------------------------------------------------
-	-- Get all FCPX UI Elements:
-	--------------------------------------------------------------------------------
-	fcpxElements = ax.applicationElement(fcpx)
-
-	--------------------------------------------------------------------------------
-	-- Which AXMenuBar:
-	--------------------------------------------------------------------------------
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-				whichMenuBar = i
-				goto performFinalCutProMenuItemWhichMenuBarExit
-			end
+function finalcutpro.app()
+	if not finalcutpro._app then
+		finalcutpro._app = App:new()
 	end
-	if whichMenuBar == nil then	return nil end
-	::performFinalCutProMenuItemWhichMenuBarExit::
+	return finalcutpro._app
+end
 
-	--------------------------------------------------------------------------------
-	-- Which Menu One:
-	--------------------------------------------------------------------------------
-	if whichMenuOne == nil then
-		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == menuItemTable[1] then
-				whichMenuOne = i
-				goto performFinalCutProMenuItemWhichMenuOneExit
-			end
+function finalcutpro.applicationAX()
+	local fcp = finalcutpro.application()
+	return fcp and ax.applicationElement(fcp)
+end
+
+function finalcutpro.getMenuMap()
+	if not finalcutpro._menuMap then
+		local file = io.open(menuMapFile, "r")
+		if file then
+			local content = file:read("*all")
+			file:close()
+			finalcutpro._menuMap = json.decode(content)
+			log.d("Loaded menu map from '"..menuMapFile.."'")
+		else
+			finalcutpro._menuMap = {}
 		end
-		if whichMenuOne == nil then	return nil end
-		::performFinalCutProMenuItemWhichMenuOneExit::
 	end
-
-	--------------------------------------------------------------------------------
-	-- Which Menu Two:
-	--------------------------------------------------------------------------------
-	if whichMenuTwo == nil then
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == menuItemTable[2] then
-					whichMenuTwo = i
-					goto performFinalCutProMenuItemWhichMenuTwoExit
-				end
-		end
-		if whichMenuTwo == nil then	return nil end
-		::performFinalCutProMenuItemWhichMenuTwoExit::
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 1:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 2 then
-		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo]:performAction("AXPress")
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 2:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 3 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Select Menu Item 3:
-	--------------------------------------------------------------------------------
-	if #menuItemTable == 4 then
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Three:
-		--------------------------------------------------------------------------------
-		if whichMenuThree == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuThree = i
-						goto performFinalCutProMenuItemWhichMenuThreeExit
-					end
-			end
-			if whichMenuThree == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuThreeExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Menu Four:
-		--------------------------------------------------------------------------------
-		if whichMenuFour == nil then
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1]:attributeValueCount("AXChildren") do
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][i]:attributeValue("AXTitle") == menuItemTable[3] then
-						whichMenuFour = i
-						goto performFinalCutProMenuItemWhichMenuFourExit
-					end
-			end
-			if whichMenuFour == nil then return nil end
-			::performFinalCutProMenuItemWhichMenuFourExit::
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Menu Item:
-		--------------------------------------------------------------------------------
-		result = fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree][1][whichMenuFour]:performAction("AXPress")
-
-	end
-
-	if type(result) == "userdata" then result = true else result = false end
-
-	return result
-
+	return finalcutpro._menuMap
 end
 
 --- hs.finalcutpro.flexoLanguages() -> table
@@ -277,19 +127,25 @@ function finalcutpro.clipboardUTI()
 	return finalCutProClipboardUTI
 end
 
---- hs.finalcutpro.getPreferencesAsTable() -> table or nil
+--- hs.finalcutpro.getPreferences() -> table or nil
 --- Function
---- Gets Final Cut Pro's Preferences as a table.
+--- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
+--- file has been modified and reloads when necessary.
 ---
 --- Parameters:
----  * None
+---  * forceReload	- (optional) if true, a reload will be forced even if the file hasn't been modified.
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
 ---
-function finalcutpro.getPreferencesAsTable()
-	local preferencesTable = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
-	return preferencesTable
+function finalcutpro.getPreferences(forceReload)
+	local modified = fs.attributes(finalCutProPreferencesPlistPath, "modification")
+	if forceReload or modified ~= finalcutpro._preferencesModified then
+		log.d("Reloading FCPX preferences from file...")
+		finalcutpro._preferences = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
+		finalcutpro._preferencesModified = modified
+	 end
+	return finalcutpro._preferences
 end
 
 --- hs.finalcutpro.getPreference(preferenceName) -> string or nil
@@ -297,19 +153,24 @@ end
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
----  * preferenceName - The preference you want to return
+---  * preferenceName 	- The preference you want to return
+---  * default			- (optional) The default value to return if the preference is not set.
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
 ---
-function finalcutpro.getPreference(value)
+function finalcutpro.getPreference(value, default)
 	local result = nil
-	local preferencesTable = plist.binaryFileToTable(finalCutProPreferencesPlistPath) or nil
 
+	local preferencesTable = finalcutpro.getPreferences()
 	if preferencesTable ~= nil then
 		result = preferencesTable[value]
 	end
-
+	
+	if result == nil then
+		result = default
+	end
+	
 	return result
 end
 
@@ -511,15 +372,8 @@ function finalcutpro.restart()
 		-- Kill Final Cut Pro:
 		finalcutpro.application():kill()
 
-		-- Wait until Final Cut Pro is Closed:
-		local timeoutCount = 0
-		repeat
-			timeoutCount = timeoutCount + 1
-			if timeoutCount == 10 then
-				return false
-			end
-			timer.usleep(1000000)
-		until not finalcutpro.running()
+		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 10 seconds):
+		just.doWhile(function() return finalcutpro.running() end, 100000, 100)
 
 		-- Launch Final Cut Pro:
 		local result = finalcutpro.launch()
@@ -943,6 +797,28 @@ function finalcutpro.getBrowserSearchButton(optionalBrowserButtonBar)
 
 	return result
 
+end
+
+--- hs.finalcutpro._generateMenuMap() -> Table
+--- Function
+--- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * True is successful otherwise Nil
+---
+function finalcutpro._generateMenuMap()
+	return finalcutpro.app():menuBar():generateMenuMap()
+end
+
+function finalcutpro._elementAtMouse()
+	return ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
+end
+
+function finalcutpro._inspectElementAtMouse()
+	return inspect(finalcutpro._elementAtMouse():buildTree())
 end
 
 return finalcutpro
