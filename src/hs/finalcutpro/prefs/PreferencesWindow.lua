@@ -23,8 +23,8 @@ function PreferencesWindow:app()
 end
 
 function PreferencesWindow:UI()
-	local windowsUI = self:app():windowsUI()
-	return windowsUI and self:_findWindowUI(windowsUI)
+		local windowsUI = self:app():windowsUI()
+		return windowsUI and self:_findWindowUI(windowsUI)
 end
 
 function PreferencesWindow:_findWindowUI(windows)
@@ -77,12 +77,12 @@ end
 
 --- Ensures the PreferencesWindow is showing
 function PreferencesWindow:show()
-	if self:app():isRunning() and not self:isShowing() then
+	if not self:isShowing() then
 		-- open the window
-		-- self:app():ensureIsRunning()
-		self:app():menuBar():select("Final Cut Pro", "Preferences…")
-		ax = just.doUntil(function() return self:UI() end)
-		return ax ~= nil
+		if self:app():menuBar():select("Final Cut Pro", "Preferences…") then
+			local ui = just.doUntil(function() return self:UI() end)
+			return ui ~= nil
+		end
 	end
 	return true
 end

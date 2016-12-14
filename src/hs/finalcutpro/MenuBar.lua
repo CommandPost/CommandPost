@@ -70,35 +70,41 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:select(...)
-
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
 	local menuUI = self:UI()
+	local menuItemUI = nil
 	
 	for i=1,select('#', ...) do
 		step = select(i, ...)
 		if menuMap and menuMap[step] then
 			-- We have the menu name in our list
 			local item = menuMap[step]
-			menuUI = menuUI[item.id]
+			menuItemUI = menuUI[item.id]
 			menuMap = item.items
 		else
 			-- We don't have it in our list, so look it up manually. Hopefully they are in English!
-			menuUI = axutils.childWith(menuUI, "AXTitle", step)
+			menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
 		end
 		
-		if menuUI then
-			menuUI:doPress()
-			-- Assign the contained AXMenu to the menuUI - it contains the next set of AXMenuItems
-			menuUI = menuUI[1]
-			assert(not menuUI or menuUI:role() == "AXMenu")
+		if menuItemUI then
+			if #menuItemUI == 1 then
+				-- Assign the contained AXMenu to the menuUI - it contains the next set of AXMenuItems
+				menuUI = menuItemUI[1]
+				assert(not menuUI or menuUI:role() == "AXMenu")
+			end
 		else
 			log.d("Unable to find a menu called '"..step.."'.")
 			return nil
 		end
 	end
 	
-	return true
+	if menuItemUI then
+		menuItemUI:doPress()
+		return true
+	end
+	
+	return false
 end
 
 --- hs.finalcutpro.MenuBar:generateMenuMap() -> boolean
