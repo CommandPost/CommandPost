@@ -7197,7 +7197,7 @@ end
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
-		
+
 		local menuBar = fcp:app():menuBar()
 
 		--------------------------------------------------------------------------------
@@ -10192,13 +10192,22 @@ end
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
 
+	--------------------------------------------------------------------------------
+	-- ENGLISH:		Command Editor
+	-- GERMAN: 		Befehl-Editor
+	-- SPANISH: 	Editor de comandos
+	-- FRENCH: 		Éditeur de commandes
+	-- JAPANESE:	コマンドエディタ
+	-- CHINESE:		命令编辑器
+	--------------------------------------------------------------------------------
+
 	local commandEditorID = nil
 
 	commandEditorFilter = windowfilter.new(true)
 
 	commandEditorFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
-			if (window:title() == 'Command Editor') then
+			if (window:title() == 'Command Editor') or (window:title() == 'Befehl-Editor') or (window:title() == 'Editor de comandos') or (window:title() == 'Éditeur de commandes') or (window:title() == 'コマンドエディタ') or (window:title() == '命令编辑器') then
 
 				--------------------------------------------------------------------------------
 				-- Command Editor is Open:
