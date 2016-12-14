@@ -185,8 +185,6 @@ function finalcutpro.getPreference(value, default)
 		result = default
 	end
 	
-	log.d("preference['"..value.."']: "..inspect(result))
-
 	return result
 end
 
