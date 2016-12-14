@@ -23,14 +23,14 @@ function ImportPanel:parent()
 	return self._parent
 end
 
-function ImportPanel:AX()
-	local toolbarAX = self:parent():toolbarAX()
-	return toolbarAX and toolbarAX[ImportPanel.ID]
+function ImportPanel:UI()
+	local toolbarUI = self:parent():toolbarUI()
+	return toolbarUI and toolbarUI[ImportPanel.ID]
 end
 
 function ImportPanel:isShowing()
 	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarAX()
+		local toolbar = self:parent():toolbarUI()
 		if toolbar then
 			local selected = toolbar:selectedChildren()
 			return #selected == 1 and selected[1] == toolbar[ImportPanel.ID]
@@ -43,8 +43,8 @@ function ImportPanel:show()
 	local parent = self:parent()
 	-- show the parent.
 	if parent:show() then
-		-- get the toolbar AX
-		local panel = just.doUntil(function() return self:AX() end)
+		-- get the toolbar UI
+		local panel = just.doUntil(function() return self:UI() end)
 		if panel then
 			panel:doPress()
 			return true
@@ -55,7 +55,7 @@ end
 
 function ImportPanel:toggleCheckBox(identifier)
 	if self:show() then
-		local group = self:parent():groupAX()
+		local group = self:parent():groupUI()
 		if group then
 			local checkbox = axutils.childWith(group, "AXIdentifier", identifier)
 			if checkbox then
@@ -77,7 +77,7 @@ end
 
 function ImportPanel:toggleCopyToMediaFolder()
 	if self:show() then
-		local group = self:parent():groupAX()
+		local group = self:parent():groupUI()
 		if group then
 			local radioGroup = axutils.childWith(group, "AXIdentifier", ImportPanel.COPY_TO_MEDIA_FOLDER)
 			if radioGroup then

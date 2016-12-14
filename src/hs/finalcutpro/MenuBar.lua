@@ -38,9 +38,9 @@ function MenuBar:app()
 	return self._app
 end
 
-function MenuBar:AX()
-	local appAX = self:app():AX()
-	return appAX and axutils.childWith(appAX, "AXRole", MenuBar.ROLE)
+function MenuBar:UI()
+	local appUI = self:app():UI()
+	return appUI and axutils.childWith(appUI, "AXRole", MenuBar.ROLE)
 end
 
 function MenuBar:getMenuMap()
@@ -73,25 +73,25 @@ function MenuBar:select(...)
 
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
-	local menuAX = self:AX()
+	local menuUI = self:UI()
 	
 	for i=1,select('#', ...) do
 		step = select(i, ...)
 		if menuMap and menuMap[step] then
 			-- We have the menu name in our list
 			local item = menuMap[step]
-			menuAX = menuAX[item.id]
+			menuUI = menuUI[item.id]
 			menuMap = item.items
 		else
 			-- We don't have it in our list, so look it up manually. Hopefully they are in English!
-			menuAX = axutils.childWith(menuAX, "AXTitle", step)
+			menuUI = axutils.childWith(menuUI, "AXTitle", step)
 		end
 		
-		if menuAX then
-			menuAX:doPress()
-			-- Assign the contained AXMenu to the menuAX - it contains the next set of AXMenuItems
-			menuAX = menuAX[1]
-			assert(not menuAX or menuAX:role() == "AXMenu")
+		if menuUI then
+			menuUI:doPress()
+			-- Assign the contained AXMenu to the menuUI - it contains the next set of AXMenuItems
+			menuUI = menuUI[1]
+			assert(not menuUI or menuUI:role() == "AXMenu")
 		else
 			log.d("Unable to find a menu called '"..step.."'.")
 			return nil
@@ -113,7 +113,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:generateMenuMap()
-	local menuMap = self:_processMenuItems(self:AX())
+	local menuMap = self:_processMenuItems(self:UI())
 	
 	-- Opens a file in append mode
 	file = io.open(MenuBar.MENU_MAP_FILE, "w")

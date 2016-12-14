@@ -22,12 +22,12 @@ function PreferencesWindow:app()
 	return self._app
 end
 
-function PreferencesWindow:AX()
-	local windowsAX = self:app():windowsAX()
-	return windowsAX and self:_findWindowAX(windowsAX)
+function PreferencesWindow:UI()
+	local windowsUI = self:app():windowsUI()
+	return windowsUI and self:_findWindowUI(windowsUI)
 end
 
-function PreferencesWindow:_findWindowAX(windows)
+function PreferencesWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
 		if w:attributeValue("AXSubrole") == "AXDialog"
 		and not w:attributeValue("AXModal")
@@ -42,15 +42,15 @@ function PreferencesWindow:_findWindowAX(windows)
 end
 
 
--- Returns the AX for the AXToolbar containing this panel's buttons
-function PreferencesWindow:toolbarAX()
-	local ax = self:AX()
+-- Returns the UI for the AXToolbar containing this panel's buttons
+function PreferencesWindow:toolbarUI()
+	local ax = self:UI()
 	return ax and axutils.childWith(ax, "AXRole", "AXToolbar") or nil
 end
 
--- Returns the AX for the AXGroup containing this panel's elements
-function PreferencesWindow:groupAX()
-	local ax = self:AX()
+-- Returns the UI for the AXGroup containing this panel's elements
+function PreferencesWindow:groupUI()
+	local ax = self:UI()
 	local group = ax and axutils.childWith(ax, "AXIdentifier", PreferencesWindow.GROUP)
 	-- The group conains another single group that contains the actual checkboxes, etc.
 	return group and #group == 1 and group[1]
@@ -72,7 +72,7 @@ function PreferencesWindow:importPanel()
 end
 
 function PreferencesWindow:isShowing()
-	return self:AX() ~= nil
+	return self:UI() ~= nil
 end
 
 --- Ensures the PreferencesWindow is showing
@@ -81,14 +81,14 @@ function PreferencesWindow:show()
 		-- open the window
 		-- self:app():ensureIsRunning()
 		self:app():menuBar():select("Final Cut Pro", "Preferences…")
-		ax = just.doUntil(function() return self:AX() end)
+		ax = just.doUntil(function() return self:UI() end)
 		return ax ~= nil
 	end
 	return true
 end
 
 function PreferencesWindow:hide()
-	local ax = self:AX()
+	local ax = self:UI()
 	if ax then
 		local closeBtn = axutils.childWith(ax, "AXSubrole", "AXCloseButton")
 		if closeBtn then

@@ -53,7 +53,7 @@ function App:application()
 	return application(App.BUNDLE_ID) or nil
 end
 
-function App:AX()
+function App:UI()
 	local fcp = self:application()
 	return fcp and ax.applicationElement(fcp)
 end
@@ -87,9 +87,9 @@ function App:preferencesWindow()
 	return self._preferencesWindow
 end
 
---- hs.finalcutpro.App:windowsAX() -> axuielement
+--- hs.finalcutpro.App:windowsUI() -> axuielement
 --- Function
---- Returns the AX containing the list of windows in the app.
+--- Returns the UI containing the list of windows in the app.
 ---
 --- Parameters:
 ---  * N/A
@@ -97,14 +97,14 @@ end
 --- Returns:
 ---  * The axuieleme, or nil if the application is not running.
 ---
-function App:windowsAX()
-	local ax = self:AX()
+function App:windowsUI()
+	local ax = self:UI()
 	return ax and ax:windows()
 end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")
-	local windows = self:windowsAX()
+	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
 		log.d(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
 	end
