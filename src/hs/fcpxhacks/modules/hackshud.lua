@@ -199,7 +199,7 @@ end
 --------------------------------------------------------------------------------
 function generateHTML()
 
-	local preferences = fcp.getPreferencesAsTable()
+	local preferences = fcp.getPreferences()
 
 	--------------------------------------------------------------------------------
 	-- FFPlayerQuality
