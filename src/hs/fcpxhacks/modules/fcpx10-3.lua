@@ -1456,7 +1456,7 @@ function refreshMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Read Final Cut Pro Preferences:
 		--------------------------------------------------------------------------------
-		local preferences = fcp.getPreferencesAsTable()
+		local preferences = fcp.getPreferences()
 		if preferences == nil then
 			dialog.displayErrorMessage("Failed to read Final Cut Pro Preferences")
 			return "Fail"

@@ -127,7 +127,7 @@ function finalcutpro.clipboardUTI()
 	return finalCutProClipboardUTI
 end
 
---- hs.finalcutpro.getPreferencesAsTable() -> table or nil
+--- hs.finalcutpro.getPreferences() -> table or nil
 --- Function
 --- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
 --- file has been modified and reloads when necessary.
@@ -138,7 +138,7 @@ end
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
 ---
-function finalcutpro.getPreferencesAsTable(forceReload)
+function finalcutpro.getPreferences(forceReload)
 	local modified = fs.attributes(finalCutProPreferencesPlistPath, "modification")
 	if forceReload or modified ~= finalcutpro._preferencesModified then
 		log.d("Reloading FCPX preferences from file...")
@@ -162,7 +162,7 @@ end
 function finalcutpro.getPreference(value, default)
 	local result = nil
 
-	local preferencesTable = finalcutpro.getPreferencesAsTable()
+	local preferencesTable = finalcutpro.getPreferences()
 	if preferencesTable ~= nil then
 		result = preferencesTable[value]
 	end
