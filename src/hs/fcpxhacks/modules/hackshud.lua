@@ -148,7 +148,11 @@ function hackshud.show()
 	else
 		hackshud.hudWebView:show()
 	end
-	hackshud.windowID = hackshud.hudWebView:hswindow():id()
+
+	timer.doAfter(0.01, function()
+		hackshud.windowID = hackshud.hudWebView:hswindow():id()
+	end)
+
 	hackshud.ignoreWindowChange = false
 end
 
