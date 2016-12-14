@@ -35,6 +35,8 @@ function bench(label, fn, ...)
 			text = v.value and string.format("%0.3fms", v.value*1000) or "START"
 			debugMessage(string.format("%"..v.indent.."s%40s: %"..(30-v.indent).."s", "", v.label, text))
 		end
+		-- clear the log
+		_timelog = {}
 	end
 	
 	return result
