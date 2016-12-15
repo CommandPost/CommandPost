@@ -10068,12 +10068,10 @@ function finalCutProWatcher(appName, eventType, appObject)
 				deleteAllHighlights()
 
 				-------------------------------------------------------------------------------
-				-- Disable Hacks HUD:
+				-- If not focussed on Hammerspoon then hide HUD:
 				--------------------------------------------------------------------------------
 				if settings.get("fcpxHacks.enableHacksHUD") then
-					if application.frontmostApplication():bundleID() == "org.hammerspoon.Hammerspoon" then
-						-- Focussed on Hammerspoon (and most likely HUD)
-					else
+					if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
 						hackshud:hide()
 					end
 				end

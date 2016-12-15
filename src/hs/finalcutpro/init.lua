@@ -824,7 +824,6 @@ end
 ---
 function finalcutpro.getColorBoardRadioGroup()
 
-
 	-- Define Final Cut Pro:
 	sw = ax.applicationElement(finalcutpro.application())
 

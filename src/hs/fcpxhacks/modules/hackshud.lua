@@ -19,6 +19,7 @@ local hackshud = {}
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local application								= require("hs.application")
 local settings									= require("hs.settings")
 local fnutils 									= require("hs.fnutils")
 local webview									= require("hs.webview")
@@ -126,9 +127,10 @@ function hackshud.new()
 	-- HUD Unfocussed:
 	--------------------------------------------------------------------------------
 	hackshud.hudFilter:subscribe(windowfilter.windowUnfocused, function(window, applicationName, event)
-		if window:id() == hackshud.windowID then
-			if not fcp.frontmost() then
-				if not hackshud.ignoreWindowChange then
+		if window:id() ~= hackshud.windowID then
+			local hsFrontmost = application.applicationsForBundleID("org.hammerspoon.Hammerspoon")[1]:isFrontmost()
+			if hsFrontmost ~= nil then
+				if not fcp.frontmost() and hsFrontmost then
 					hackshud.hide()
 				end
 			end
