@@ -232,13 +232,16 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	local fcpVersion = fcp.version()
 	local osVersion = tools.macOSVersion()
+	local fcpLanguage = fcp.currentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
 	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion), true) 								end
 	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion), true)						end
+	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: " .. tostring(fcpLanguage), true)					end
 	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout()), true) 	end
+
 	writeToConsole("", true)
 
 	local validFinalCutProVersion = false
@@ -305,10 +308,14 @@ end
 --------------------------------------------------------------------------------
 -- DEBUG MESSAGE:
 --------------------------------------------------------------------------------
-function debugMessage(value)
-	if value ~= nil then
-		if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-		if settings.get("fcpxHacks.debugMode") then writeToConsole(value) end
+function debugMessage(value, value2)
+	if value2 ~= nil then
+		writeToConsole(tostring(value) .. ": " .. tostring(value2))
+	else
+		if value ~= nil then
+			if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+			if settings.get("fcpxHacks.debugMode") then writeToConsole(value) end
+		end
 	end
 end
 

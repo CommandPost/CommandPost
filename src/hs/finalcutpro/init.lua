@@ -28,9 +28,8 @@ local just									= require("hs.just")
 local log									= require("hs.logger").new("fcp")
 local inspect								= require("hs.inspect")
 
-
 --- doesDirectoryExist() -> boolean
---- Internal Function
+--- Function
 --- Returns true if Directory Exists else False
 ---
 --- Parameters:
@@ -44,6 +43,178 @@ local function doesDirectoryExist(path)
     return attr and attr.mode == 'directory'
 end
 
+--- hs.finalcutpro.currentLanguage() -> string
+--- Function
+--- Returns the language Final Cut Pro is currently using.
+---
+--- Parameters:
+---  * none
+---
+--- Returns:
+---  * Returns the current language as string (or 'en' if unknown).
+---
+function finalcutpro.currentLanguage()
+
+	-- If FCPX is already run, we determine the language off the menu:
+	if finalcutpro.running() then
+		local fcpxElements = ax.applicationElement(finalcutpro.application())
+		if fcpxElements ~= nil then
+			local whichMenuBar = nil
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+					whichMenuBar = i
+				end
+			end
+			if fcpxElements[whichMenuBar][3] ~= nil then
+
+				local fileValue
+				fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
+				--------------------------------------------------------------------------------
+				-- ENGLISH:		File
+				-- GERMAN: 		Ablage
+				-- SPANISH: 	Archivo
+				-- FRENCH: 		Fichier
+				-- JAPANESE:	ファイル
+				-- CHINESE:		文件
+				--------------------------------------------------------------------------------
+				if fileValue == "File" 		then return "en" 		end
+				if fileValue == "Ablage" 	then return "de" 		end
+				if fileValue == "Archivo" 	then return "es" 		end
+				if fileValue == "Fichier" 	then return "fr" 		end
+				if fileValue == "ファイル" 	then return "ja" 		end
+				if fileValue == "文件" 		then return "zh_CN" 	end
+			end
+		end
+	end
+
+	-- If FCPX is not running, we try to determine the language using Command Line Tools:
+	local result = "en"
+	local finalCutProLanguage = finalcutpro.getPreference("AppleLanguages", nil)
+
+	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
+		if finalCutProLanguage[1] ~= nil then
+			result = finalCutProLanguage[1]
+		end
+	else
+		-- Use System Default Language:
+		executeResult, executeStatus = hs.execute("defaults read NSGlobalDomain AppleLanguages")
+		if executeResult ~= nil then
+			if string.sub(executeResult, 1, 1) == "(" then
+
+				local first = string.find(executeResult, '"')
+				local second = string.find(executeResult, '-', first + 1)
+
+				result = string.sub(executeResult, first + 1, second - 1)
+
+			end
+		end
+	end
+
+	return result
+
+end
+
+--- hs.finalcutpro.getTranslation() -> string/table or nil
+--- Function
+--- Returns a specific translation if language is set otherwise returns
+--- a table of all different translations
+---
+--- Parameters:
+---  * value - the value you want to translate
+---  * [language] - (optional) the language you want to translate to (i.e. "en" for English)
+---
+--- Returns:
+---  * Returns either the translation as a string or table, or nil if an error has occurred.
+---
+function finalcutpro.getTranslation(value, language)
+
+	local result = nil
+	if value == "Playhead" then
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		Playhead
+		-- GERMAN: 		Abspielposition
+		-- SPANISH: 	Cursor de reproducción
+		-- FRENCH: 		Tête de lecture
+		-- JAPANESE:	再生ヘッド
+		-- CHINESE:		播放头
+		--------------------------------------------------------------------------------
+		result = {
+			["en"] 		= "Playhead",					-- English
+			["de"] 		= "Abspielposition", 			-- German
+			["es"] 		= "Cursor de reproducción",		-- Spanish
+			["fr"] 		= "Tête de lecture",			-- French
+			["ja"] 		= "再生ヘッド",					-- Japanese
+			["zh_CN"] 	= "播放头",						-- Chinese
+		}
+	end
+	if value == "Command Editor" then
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		Command Editor
+		-- GERMAN: 		Befehl-Editor
+		-- SPANISH: 	Editor de comandos
+		-- FRENCH: 		Éditeur de commandes
+		-- JAPANESE:	コマンドエディタ
+		-- CHINESE:		命令编辑器
+		--------------------------------------------------------------------------------
+			result = {
+			["en"] 		= "Command Editor",				-- English
+			["de"] 		= "Befehl-Editor", 				-- German
+			["es"] 		= "Editor de comandos",			-- Spanish
+			["fr"] 		= "Éditeur de commandes",		-- French
+			["ja"] 		= "コマンドエディタ",				-- Japanese
+			["zh_CN"] 	= "命令编辑器",					-- Chinese
+		}
+	end
+	if value == "Media Import" then
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		Media Import
+		-- GERMAN: 		Medien importieren
+		-- SPANISH: 	Importación de contenido
+		-- FRENCH: 		Importation des médias
+		-- JAPANESE:	メディアの読み込み
+		-- CHINESE:		媒体导入
+		--------------------------------------------------------------------------------
+			result = {
+			["en"] 		= "Media Import",				-- English
+			["de"] 		= "Medien importieren", 		-- German
+			["es"] 		= "Importación de contenido",	-- Spanish
+			["fr"] 		= "Importation des médias",		-- French
+			["ja"] 		= "メディアの読み込み",			-- Japanese
+			["zh_CN"] 	= "媒体导入",					-- Chinese
+		}
+	end
+
+	if result ~= nil then
+		if language ~= nil then
+			if result[language] ~= nil then
+				local temp = result[language]
+				result = nil
+				result = temp
+			end
+		else
+			language = finalcutpro.currentLanguage()
+			if result[language] ~= nil then
+				local temp = result[language]
+				result = nil
+				result = temp
+			end
+		end
+	end
+
+	return result
+
+end
+
+--- hs.finalcutpro.app() -> hs.application
+--- Function
+--- Returns the root Final Cut Pro application.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The root Final Cut Pro application.
+---
 function finalcutpro.app()
 	if not finalcutpro._app then
 		finalcutpro._app = App:new()
@@ -51,11 +222,31 @@ function finalcutpro.app()
 	return finalcutpro._app
 end
 
+--- hs.finalcutpro.applicationAX() -> hs._asm.axuielement
+--- Function
+--- Returns the Final Cut Pro AX
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro AX.
+---
 function finalcutpro.applicationAX()
 	local fcp = finalcutpro.application()
 	return fcp and ax.applicationElement(fcp)
 end
 
+--- hs.finalcutpro.getMenuMap() -> table
+--- Function
+--- Returns the Final Cut Pro Menu Map
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Menu Map.
+---
 function finalcutpro.getMenuMap()
 	if not finalcutpro._menuMap then
 		local file = io.open(menuMapFile, "r")

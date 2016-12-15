@@ -1254,7 +1254,10 @@ function getShortcutsFromActiveCommandSet()
 
 						local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
 
-						mod.finalCutProShortcutKey[k .. tostring(x)] = {
+						local xValue = ""
+						if x ~= 1 then xValue = tostring(x) end
+
+						mod.finalCutProShortcutKey[k .. xValue] = {
 							characterString 	= 		tempCharacterString,
 							modifiers 			= 		tempModifiers,
 							fn 					= 		mod.finalCutProShortcutKeyPlaceholders[k]['fn'],
@@ -6716,7 +6719,7 @@ end
 		--------------------------------------------------------------------------------
 		-- UNDER CONSTRUCTION:
 		--------------------------------------------------------------------------------
-		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use.")
+		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use in the meantime.")
 		if 1==1 then return end
 
 		writeToConsole("DOWN " .. direction)
@@ -6830,7 +6833,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -6843,7 +6846,7 @@ end
 			--------------------------------------------------------------------------------
 			fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -6866,10 +6869,15 @@ end
 		--------------------------------------------------------------------------------
 		local savedKeywordValues = {}
 		local favoriteCount = 1
+		local skipFirst = true
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
-				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
-				favoriteCount = favoriteCount + 1
+			if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
+				if skipFirst then
+					skipFirst = false
+				else
+					savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
+					favoriteCount = favoriteCount + 1
+				end
 			end
 		end
 
@@ -6947,7 +6955,7 @@ end
 		local startTextField = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
 			if startTextField == nil then
-				if fcpxElements[i]:attributeValue("AXDescription") == "favorite 1" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
 					startTextField = i
 					goto startTextFieldDone
 				end
@@ -6960,7 +6968,7 @@ end
 			--------------------------------------------------------------------------------
 			local keywordDisclosureTriangle = nil
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXDescription") == "Keyword Shortcuts" then
+				if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
 					keywordDisclosureTriangle = i
 					goto keywordDisclosureTriangleDone
 				end
@@ -6983,24 +6991,29 @@ end
 		-- Restore Values to Keyword Editor:
 		--------------------------------------------------------------------------------
 		local favoriteCount = 1
+		local skipFirst = true
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXDescription") == "favorite " .. favoriteCount then
-				currentKeywordSelection = fcpxElements[i]
+			if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
+				if skipFirst then
+					skipFirst = false
+				else
+					currentKeywordSelection = fcpxElements[i]
 
-				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-				eventtap.keyStroke({""}, "return")
-
-				--------------------------------------------------------------------------------
-				-- If at first you don't succeed, try, oh try, again!
-				--------------------------------------------------------------------------------
-				if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
 					setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
 					keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
 					eventtap.keyStroke({""}, "return")
-				end
 
-				favoriteCount = favoriteCount + 1
+					--------------------------------------------------------------------------------
+					-- If at first you don't succeed, try, oh try, again!
+					--------------------------------------------------------------------------------
+					if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
+						setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
+						keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
+						eventtap.keyStroke({""}, "return")
+					end
+
+					favoriteCount = favoriteCount + 1
+				end
 			end
 		end
 
@@ -7108,7 +7121,7 @@ end
 			-- No player controls visible:
 			--------------------------------------------------------------------------------
 			if fcpxElements[1][1] ~= nil then
-				if fcpxElements[1][1]:attributeValue("AXDescription") == "Display Area" then
+				if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
 					fullscreenActive = true
 				end
 			end
@@ -7119,7 +7132,7 @@ end
 			if fcpxElements[1][1] ~= nil then
 				if fcpxElements[1][1][1] ~= nil then
 					if fcpxElements[1][1][1][1] ~= nil then
-						if fcpxElements[1][1][1][1]:attributeValue("AXDescription") == "Play Pause" then
+						if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
 							fullscreenActive = true
 						end
 					end
@@ -7170,13 +7183,14 @@ end
 				--------------------------------------------------------------------------------
 				local whichValueIndicator = nil
 				for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-					if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
+					if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
 						whichValueIndicator = i
 						goto performScrollingTimelineValueIndicatorExit
 					end
 				end
 				if whichValueIndicator == nil then
-					dialog.displayErrorMessage("Unable to locate Value Indicator.")
+					dialog.displayErrorMessage("Sorry, but we were unable to locate Value Indicator.\n\nWe will now disable the scrolling timeline.\n\nThis error occured in checkScrollingTimelinePress()")
+					toggleScrollingTimeline()
 					return "Failed"
 				end
 				::performScrollingTimelineValueIndicatorExit::
@@ -7251,9 +7265,9 @@ end
 				--------------------------------------------------------------------------------
 				-- If you change the edit the location of the Value Indicator will change:
 				--------------------------------------------------------------------------------
-				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= "Playhead" then
+				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= mod.labelPlayhead then
 					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1][i]:attributeValue("AXDescription") == "Playhead" then
+						if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
 							whichValueIndicator = i
 							goto performScrollingTimelineValueIndicatorExitX
 						end
@@ -9597,6 +9611,15 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- UPDATE TRANSLATIONS:
+	--------------------------------------------------------------------------------
+	function updateTranslations()
+		mod.labelPlayhead 			= fcp.getTranslation("Playhead")
+		mod.labelCommandEditor		= fcp.getTranslation("Command Editor")
+		mod.labelMediaImport		= fcp.getTranslation("Media Import")
+	end
+
+	--------------------------------------------------------------------------------
 	-- PROWL API KEY VALID:
 	--------------------------------------------------------------------------------
 	function prowlAPIKeyValid(input)
@@ -9962,6 +9985,11 @@ function finalCutProWatcher(appName, eventType, appObject)
 	  		--------------------------------------------------------------------------------
 
 				--------------------------------------------------------------------------------
+				-- Update Translations:
+				--------------------------------------------------------------------------------
+				timer.doAfter(0.0000000000001, function() updateTranslations() end)
+
+				--------------------------------------------------------------------------------
 				-- Enable Hotkeys:
 				--------------------------------------------------------------------------------
 				hotkeys:enter()
@@ -10119,14 +10147,6 @@ end
 --------------------------------------------------------------------------------
 function commandEditorWatcher()
 
-	--------------------------------------------------------------------------------
-	-- ENGLISH:		Command Editor
-	-- GERMAN: 		Befehl-Editor
-	-- SPANISH: 	Editor de comandos
-	-- FRENCH: 		Éditeur de commandes
-	-- JAPANESE:	コマンドエディタ
-	-- CHINESE:		命令编辑器
-	--------------------------------------------------------------------------------
 
 	local commandEditorID = nil
 
@@ -10134,7 +10154,7 @@ function commandEditorWatcher()
 
 	commandEditorFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
 		if applicationName == 'Final Cut Pro' then
-			if (window:title() == 'Command Editor') or (window:title() == 'Befehl-Editor') or (window:title() == 'Editor de comandos') or (window:title() == 'Éditeur de commandes') or (window:title() == 'コマンドエディタ') or (window:title() == '命令编辑器') then
+			if (window:title() == mod.labelCommandEditor) then
 
 				--------------------------------------------------------------------------------
 				-- Command Editor is Open:
@@ -10228,7 +10248,12 @@ function fullscreenKeyboardWatcher()
 		-- Only Continue if in Full Screen Playback Mode:
 		--------------------------------------------------------------------------------
 		if fcpxElements[1][1] ~= nil then
-			if fcpxElements[1][1]:attributeValue("AXDescription") == "Display Area" then
+			if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+
+				--------------------------------------------------------------------------------
+				-- Debug:
+				--------------------------------------------------------------------------------
+				debugMessage("Key Pressed whilst in Full Screen Mode.")
 
 				--------------------------------------------------------------------------------
 				-- Get keypress information:
@@ -10240,7 +10265,11 @@ function fullscreenKeyboardWatcher()
 				-- Check all of these shortcut keys for presses:
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
+
+				print(mod.finalCutProShortcutKey[SetSelectionStart])
+
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
+					print(whichShortcutKey)
 					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
 						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
@@ -10263,7 +10292,7 @@ function fullscreenKeyboardWatcher()
 			--------------------------------------------------------------------------------
 			if fcpxElements[1][1][1] ~= nil then
 				if fcpxElements[1][1][1][1] ~= nil then
-					if fcpxElements[1][1][1][1]:attributeValue("AXDescription") == "Play Pause" then
+					if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
 
 						--------------------------------------------------------------------------------
 						-- Get keypress information:
@@ -10276,14 +10305,16 @@ function fullscreenKeyboardWatcher()
 						--------------------------------------------------------------------------------
 						local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 						for x, whichShortcutKey in pairs(fullscreenKeys) do
-							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-									if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-										eventtap.keyStroke({""}, "escape")
-										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-										eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-										return true
+							if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
+								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
+									if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
+										if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+											eventtap.keyStroke({""}, "escape")
+											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+											return true
+										end
 									end
 								end
 							end
@@ -10328,7 +10359,7 @@ function mediaImportWatcher()
 						local fcpx = fcp.application()
 						local fcpxElements = ax.applicationElement(fcpx)
 						if fcpxElements[1] ~= nil then
-							if fcpxElements[1]:attributeValue("AXTitle") == "Media Import" then
+							if fcpxElements[1]:attributeValue("AXTitle") == mod.labelMediaImport then
 								if mediaImportCount ~= 0 then
 									--------------------------------------------------------------------------------
 									-- Media Import Window was not open:
