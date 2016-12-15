@@ -139,7 +139,10 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["menubarToolsEnabled"] 						= true,
 												["menubarHacksEnabled"] 						= true,
 												["enableCheckForUpdates"]						= true,
-												["checkForUpdatesInterval"]						= 600, }
+												["hudShowInspector"]							= true,
+												["hudShowDropTargets"]							= true,
+												["hudShowButtons"]								= true,
+												["checkForUpdatesInterval"]						= 600 }
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
@@ -837,6 +840,8 @@ function bindKeyboardShortcuts()
 
 			FCPXHackConsole				 								= { characterString = "", 							modifiers = {}, 									fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
 
+			FCPXHackHUD					 								= { characterString = "", 							modifiers = {}, 									fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
+
 			FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 		}
 
@@ -1077,6 +1082,8 @@ function bindKeyboardShortcuts()
 			FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackConsole				 								= { characterString = keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
+
+			FCPXHackHUD					 								= { characterString = keyCodeTranslator("a"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
 
 			FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 		}
@@ -1451,6 +1458,8 @@ end
 	--------------------------------------------------------------------------------
 	function refreshMenuBar(refreshPlistValues)
 
+		local maxTextLength = 25
+
 		--------------------------------------------------------------------------------
 		-- Assume FCPX is closed if not told otherwise:
 		--------------------------------------------------------------------------------
@@ -1617,27 +1626,41 @@ end
 		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
-		enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable XML Sharing:
 		--------------------------------------------------------------------------------
-		enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+		local enableXMLSharing 		= settings.get("fcpxHacks.enableXMLSharing") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable Clipboard History:
 		--------------------------------------------------------------------------------
-		enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable Shared Clipboard:
 		--------------------------------------------------------------------------------
-		enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
-		enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD") or false
+		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
+
+		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
+		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
+		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+
+		local hudButtonOne 			= settings.get("fcpxHacks.hudButtonOne") 	or " (Unassigned)"
+		local hudButtonTwo 			= settings.get("fcpxHacks.hudButtonTwo") 	or " (Unassigned)"
+		local hudButtonThree 		= settings.get("fcpxHacks.hudButtonThree") 	or " (Unassigned)"
+		local hudButtonFour 		= settings.get("fcpxHacks.hudButtonFour") 	or " (Unassigned)"
+
+		if hudButtonOne ~= " (Unassigned)" then		hudButtonOne = " (" .. 		tools.stringMaxLength(hudButtonOne["text"],maxTextLength,"...") 	.. ")" end
+		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(hudButtonTwo["text"],maxTextLength,"...") 	.. ")" end
+		if hudButtonThree ~= " (Unassigned)" then 	hudButtonThree = " (" .. 	tools.stringMaxLength(hudButtonThree["text"],maxTextLength,"...") 	.. ")" end
+		if hudButtonFour ~= " (Unassigned)" then 	hudButtonFour = " (" .. 	tools.stringMaxLength(hudButtonFour["text"],maxTextLength,"...") 	.. ")" end
 
 		--------------------------------------------------------------------------------
 		-- Clipboard History Menu:
@@ -1750,11 +1773,11 @@ end
 		local effectsShortcutThree 	= settings.get("fcpxHacks.effectsShortcutThree")
 		local effectsShortcutFour 	= settings.get("fcpxHacks.effectsShortcutFour")
 		local effectsShortcutFive 	= settings.get("fcpxHacks.effectsShortcutFive")
-		if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. string.format("%.20s", effectsShortcutOne) .. ")" end
-		if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. string.format("%.20s", effectsShortcutTwo) .. ")" end
-		if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. string.format("%.20s", effectsShortcutThree) .. ")" end
-		if effectsShortcutFour == nil then 		effectsShortcutFour = " (Unassigned)" 		else effectsShortcutFour = " (" .. string.format("%.20s", effectsShortcutFour) .. ")" end
-		if effectsShortcutFive == nil then 		effectsShortcutFive = " (Unassigned)" 		else effectsShortcutFive = " (" .. string.format("%.20s", effectsShortcutFive) .. ")" end
+		if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. tools.stringMaxLength(effectsShortcutOne,maxTextLength,"...") .. ")" end
+		if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. tools.stringMaxLength(effectsShortcutTwo,maxTextLength,"...") .. ")" end
+		if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. tools.stringMaxLength(effectsShortcutThree,maxTextLength,"...") .. ")" end
+		if effectsShortcutFour == nil then 		effectsShortcutFour = " (Unassigned)" 		else effectsShortcutFour = " (" .. tools.stringMaxLength(effectsShortcutFour,maxTextLength,"...") .. ")" end
+		if effectsShortcutFive == nil then 		effectsShortcutFive = " (Unassigned)" 		else effectsShortcutFive = " (" .. tools.stringMaxLength(effectsShortcutFive,maxTextLength,"...") .. ")" end
 
 		--------------------------------------------------------------------------------
 		-- Transition Shortcuts:
@@ -1765,11 +1788,11 @@ end
 		local transitionsShortcutThree 	= settings.get("fcpxHacks.transitionsShortcutThree")
 		local transitionsShortcutFour 	= settings.get("fcpxHacks.transitionsShortcutFour")
 		local transitionsShortcutFive 	= settings.get("fcpxHacks.transitionsShortcutFive")
-		if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. string.format("%.20s", transitionsShortcutOne) .. ")" 	end
-		if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. string.format("%.20s", transitionsShortcutTwo) .. ")" 	end
-		if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. string.format("%.20s", transitionsShortcutThree) .. ")"	end
-		if transitionsShortcutFour == nil then 		transitionsShortcutFour = " (Unassigned)" 		else transitionsShortcutFour 	= " (" .. string.format("%.20s", transitionsShortcutFour) .. ")" 	end
-		if transitionsShortcutFive == nil then 		transitionsShortcutFive = " (Unassigned)" 		else transitionsShortcutFive 	= " (" .. string.format("%.20s", transitionsShortcutFive) .. ")" 	end
+		if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. tools.stringMaxLength(transitionsShortcutOne,maxTextLength,"...") .. ")" 	end
+		if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. tools.stringMaxLength(transitionsShortcutTwo,maxTextLength,"...") .. ")" 	end
+		if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. tools.stringMaxLength(transitionsShortcutThree,maxTextLength,"...") .. ")"	end
+		if transitionsShortcutFour == nil then 		transitionsShortcutFour = " (Unassigned)" 		else transitionsShortcutFour 	= " (" .. tools.stringMaxLength(transitionsShortcutFour,maxTextLength,"...") .. ")" 	end
+		if transitionsShortcutFive == nil then 		transitionsShortcutFive = " (Unassigned)" 		else transitionsShortcutFive 	= " (" .. tools.stringMaxLength(transitionsShortcutFive,maxTextLength,"...") .. ")" 	end
 
 		--------------------------------------------------------------------------------
 		-- Titles Shortcuts:
@@ -1780,11 +1803,11 @@ end
 		local titlesShortcutThree 	= settings.get("fcpxHacks.titlesShortcutThree")
 		local titlesShortcutFour 	= settings.get("fcpxHacks.titlesShortcutFour")
 		local titlesShortcutFive 	= settings.get("fcpxHacks.titlesShortcutFive")
-		if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. string.format("%.20s", titlesShortcutOne) .. ")" 	end
-		if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. string.format("%.20s", titlesShortcutTwo) .. ")" 	end
-		if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. string.format("%.20s", titlesShortcutThree) .. ")"	end
-		if titlesShortcutFour == nil then 		titlesShortcutFour = " (Unassigned)" 		else titlesShortcutFour 	= " (" .. string.format("%.20s", titlesShortcutFour) .. ")" 	end
-		if titlesShortcutFive == nil then 		titlesShortcutFive = " (Unassigned)" 		else titlesShortcutFive 	= " (" .. string.format("%.20s", titlesShortcutFive) .. ")" 	end
+		if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. tools.stringMaxLength(titlesShortcutOne,maxTextLength,"...") .. ")" 	end
+		if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. tools.stringMaxLength(titlesShortcutTwo,maxTextLength,"...") .. ")" 	end
+		if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. tools.stringMaxLength(titlesShortcutThree,maxTextLength,"...") .. ")"	end
+		if titlesShortcutFour == nil then 		titlesShortcutFour = " (Unassigned)" 		else titlesShortcutFour 	= " (" .. tools.stringMaxLength(titlesShortcutFour,maxTextLength,"...") .. ")" 	end
+		if titlesShortcutFive == nil then 		titlesShortcutFive = " (Unassigned)" 		else titlesShortcutFive 	= " (" .. tools.stringMaxLength(titlesShortcutFive,maxTextLength,"...") .. ")" 	end
 
 		--------------------------------------------------------------------------------
 		-- Generators Shortcuts:
@@ -1795,11 +1818,11 @@ end
 		local generatorsShortcutThree 	= settings.get("fcpxHacks.generatorsShortcutThree")
 		local generatorsShortcutFour 	= settings.get("fcpxHacks.generatorsShortcutFour")
 		local generatorsShortcutFive 	= settings.get("fcpxHacks.generatorsShortcutFive")
-		if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. string.format("%.20s", generatorsShortcutOne) .. ")" 	end
-		if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. string.format("%.20s", generatorsShortcutTwo) .. ")" 	end
-		if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. string.format("%.20s", generatorsShortcutThree) .. ")"	end
-		if generatorsShortcutFour == nil then 		generatorsShortcutFour = " (Unassigned)" 		else generatorsShortcutFour 	= " (" .. string.format("%.20s", generatorsShortcutFour) .. ")" 	end
-		if generatorsShortcutFive == nil then 		generatorsShortcutFive = " (Unassigned)" 		else generatorsShortcutFive 	= " (" .. string.format("%.20s", generatorsShortcutFive) .. ")" 	end
+		if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. tools.stringMaxLength(generatorsShortcutOne,maxTextLength,"...") .. ")" 	end
+		if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. tools.stringMaxLength(generatorsShortcutTwo,maxTextLength,"...") .. ")" 	end
+		if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. tools.stringMaxLength(generatorsShortcutThree,maxTextLength,"...") .. ")"	end
+		if generatorsShortcutFour == nil then 		generatorsShortcutFour = " (Unassigned)" 		else generatorsShortcutFour 	= " (" .. tools.stringMaxLength(generatorsShortcutFour,maxTextLength,"...") .. ")" 	end
+		if generatorsShortcutFive == nil then 		generatorsShortcutFive = " (Unassigned)" 		else generatorsShortcutFive 	= " (" .. tools.stringMaxLength(generatorsShortcutFive,maxTextLength,"...") .. ")" 	end
 
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
@@ -1849,8 +1872,14 @@ end
 			{ title = "Display Proxy/Original Icon", 													fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
 			{ title = "Display This Menu As Icon", 														fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
 		}
+		local settingsHUD = {
+			{ title = "Show Inspector", 																fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
+			{ title = "Show Drop Targets", 																fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
+			{ title = "Show Buttons", 																	fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
+		}
 		local settingsMenuTable = {
 			{ title = "Menubar Options", 																menu = settingsMenubar},
+			{ title = "HUD Options", 																	menu = settingsHUD},
 			{ title = "-" },
 			{ title = "Touch Bar Location", 															menu = settingsTouchBarLocation},
 			{ title = "-" },
@@ -1903,6 +1932,13 @@ end
 			{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
 		}
 
+		local settingsHUDButtons = {
+			{ title = "Button 1" .. hudButtonOne, 														fn = function() hackshud.assignButton(1) end },
+			{ title = "Button 2" .. hudButtonTwo, 														fn = function() hackshud.assignButton(2) end },
+			{ title = "Button 3" .. hudButtonThree, 													fn = function() hackshud.assignButton(3) end },
+			{ title = "Button 4" .. hudButtonFour, 														fn = function() hackshud.assignButton(4) end },
+		}
+
 		local displayShortcutText = "Display Keyboard Shortcuts"
 		if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
 
@@ -1948,6 +1984,7 @@ end
 			{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
 			{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
 			{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
+			{ title = "Assign HUD Buttons", 															menu = settingsHUDButtons },
 			{ title = "Options", 																		menu = toolsSettings },
 			{ title = "-" },
 		}
@@ -2073,6 +2110,7 @@ end
 	---------------------------------
 	L = Launch Final Cut Pro (System Wide)
 
+	A = Toggle HUD
 	Z = Toggle Touch Bar
 
 	W = Toggle Scrolling Timeline
@@ -3977,7 +4015,9 @@ end
 		if enableHacksHUD then
 			hackshud.hide()
 		else
-			hackshud.show()
+			if fcp.frontmost() then
+				hackshud.show()
+			end
 		end
 
 		refreshMenuBar()
@@ -4007,6 +4047,16 @@ end
 	function toggleMenubarDisplay(value)
 		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
 		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE HUD OPTION:
+	--------------------------------------------------------------------------------
+	function toggleHUDOption(value)
+		local result = settings.get("fcpxHacks." .. value)
+		settings.set("fcpxHacks." .. value, not result)
+		hackshud.reload()
 		refreshMenuBar()
 	end
 

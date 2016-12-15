@@ -136,6 +136,8 @@ local styledtext				= require("hs.styledtext")
 local inspect					= require("hs.inspect")
 local settings					= require("hs.settings")
 
+local hsBundleID				= hs.processInfo["bundleID"]
+
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
@@ -224,7 +226,7 @@ function mod.init()
 	if checkFailed then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
 		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
-		application.applicationsForBundleID("org.hammerspoon.Hammerspoon")[1]:kill()
+		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
 	--------------------------------------------------------------------------------
@@ -256,7 +258,7 @@ function mod.init()
 	if not validFinalCutProVersion then
 		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
 		dialog.displayAlertMessage("FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
-		application.applicationsForBundleID("org.hammerspoon.Hammerspoon")[1]:kill()
+		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
 	return self
