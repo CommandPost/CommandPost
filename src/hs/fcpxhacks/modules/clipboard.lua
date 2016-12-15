@@ -60,6 +60,7 @@ local CLIPBOARD = protect({
 	ANCHORED_ANGLE 								= "FFAnchoredAngle",
 	ANCHORED_COLLECTION 						= "FFAnchoredCollection",
 	ANCHORED_SEQUENCE 							= "FFAnchoredSequence",
+	ANCHORED_CLIP								= "FFAnchoredClip",
 	GAP 										= "FFAnchoredGapGeneratorComponent",
 	GENERATOR									= "FFAnchoredGeneratorComponent",
 	TIMERANGE_AND_OBJECT 						= "FigTimeRangeAndObject",
@@ -113,6 +114,8 @@ function clipboard.processObject(data, objects)
 				return clipboard.processAnchoredCollection(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_SEQUENCE then
 				return clipboard.processAnchoredSequence(data, objects)
+			elseif classname == CLIPBOARD.ANCHORED_CLIP then
+				return clipboard.processAnchoredClip(data, objects)
 			elseif classname == CLIPBOARD.TIMERANGE_AND_OBJECT then
 				return clipboard.processTimeRangeAndObject(data, objects)
 			elseif classname == CLIPBOARD.DICTIONARY then
@@ -251,6 +254,16 @@ end
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
 function clipboard.processAnchoredSequence(data, objects)
+	return _get(data.displayName, objects), 1
+end
+
+--------------------------------------------------------------------------------
+-- PROCESS ANCHORED CLIP:
+--------------------------------------------------------------------------------
+-- Process 'FFAnchoredClip' objects (aka Compound Clip)
+-- Returns: string (primary clip name), integer (number of clips)
+--------------------------------------------------------------------------------
+function clipboard.processAnchoredClip(data, objects)
 	return _get(data.displayName, objects), 1
 end
 
