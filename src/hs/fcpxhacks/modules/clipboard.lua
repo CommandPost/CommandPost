@@ -38,6 +38,7 @@ clipboard.lastChange 							= pasteboard.changeCount()				-- Displays how many t
 clipboard.history								= {}									-- Clipboard History
 clipboard.historyMaximumSize 					= 5										-- Maximum Size of Clipboard History
 clipboard.hostname								= host.localizedName()					-- Hostname
+clipboard.excludedClassnames					= {"FFAnchoredTimeMarker"}				-- Data we don't want to count when copying.
 
 local CLIPBOARD = protect({
 	--------------------------------------------------------------------------------
@@ -99,23 +100,15 @@ function clipboard.processObject(data, objects)
 	data = _get(data, objects)
 	if type(data) == "table" then
 		-- inspect(data) is potentially expensive, so make sure debug is on first.
-		if log.getLogLevel() >= 4 then
-			log.d("processing object:\n"..inspect(data))
-		end
 		local class = _get(data['$class'], objects)
 		if class then
 			local classname = _get(class["$classname"], objects)
-			log.d("$classname: "..classname)
 			if classname == CLIPBOARD.ARRAY or classname == CLIPBOARD.SET then
 				return clipboard.processMutableCollection(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_ANGLE then
 				return clipboard.processAnchoredAngle(data, objects)
 			elseif classname == CLIPBOARD.ANCHORED_COLLECTION then
 				return clipboard.processAnchoredCollection(data, objects)
-			elseif classname == CLIPBOARD.ANCHORED_SEQUENCE then
-				return clipboard.processAnchoredSequence(data, objects)
-			elseif classname == CLIPBOARD.ANCHORED_CLIP then
-				return clipboard.processAnchoredClip(data, objects)
 			elseif classname == CLIPBOARD.TIMERANGE_AND_OBJECT then
 				return clipboard.processTimeRangeAndObject(data, objects)
 			elseif classname == CLIPBOARD.DICTIONARY then
@@ -124,11 +117,25 @@ function clipboard.processObject(data, objects)
 				return clipboard.processGap(data, objects)
 			elseif classname == CLIPBOARD.GENERATOR then
 				return clipboard.processGenerator(data, objects)
+			elseif clipboard.isClassnameSupported(classname) then
+				return clipboard.processSimpleContent(data, objects)
 			end
-			log.d("Unsupported classname: "..classname)
+			if log.getLogLevel() >= 4 then
+				log.d("Unsupported classname: "..classname)
+				-- log.d("Object:\n"..inspect(data))
+			end
 		end
 	end
 	return nil, 0
+end
+
+function clipboard.isClassnameSupported(classname)
+	for i,name in ipairs(clipboard.excludedClassnames) do
+		if name == classname then
+			return false
+		end
+	end
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -248,23 +255,18 @@ function clipboard.processAnchoredAngle(data, objects)
 end
 
 --------------------------------------------------------------------------------
--- PROCESS ANCHORED SEQUENCE:
+-- PROCESS SIMPLE CONTENT:
 --------------------------------------------------------------------------------
--- Process 'FFAnchoredSequence' objects
+-- Process objects which have a displayName, such as Compound Clips, Images, etc.
 -- Returns: string (primary clip name), integer (number of clips)
 --------------------------------------------------------------------------------
-function clipboard.processAnchoredSequence(data, objects)
-	return _get(data.displayName, objects), 1
-end
-
---------------------------------------------------------------------------------
--- PROCESS ANCHORED CLIP:
---------------------------------------------------------------------------------
--- Process 'FFAnchoredClip' objects (aka Compound Clip)
--- Returns: string (primary clip name), integer (number of clips)
---------------------------------------------------------------------------------
-function clipboard.processAnchoredClip(data, objects)
-	return _get(data.displayName, objects), 1
+function clipboard.processSimpleContent(data, objects)
+	local displayName = _get(data.displayName, objects)
+	if displayName then
+		return displayName, 1
+	else
+		return nil, 0
+	end
 end
 
 --------------------------------------------------------------------------------
