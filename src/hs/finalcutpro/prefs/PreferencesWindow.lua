@@ -79,7 +79,7 @@ end
 function PreferencesWindow:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():select("Final Cut Pro", "Preferences…") then
+		if self:app():menuBar():selectMenu("Final Cut Pro", "Preferences…") then
 			local ui = just.doUntil(function() return self:UI() end)
 			return ui ~= nil
 		end

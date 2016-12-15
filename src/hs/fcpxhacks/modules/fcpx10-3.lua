@@ -2063,7 +2063,7 @@ end
 		if enableHacksShortcutsInFinalCutPro then
 			if fcp.running() then
 				fcp.launch()
-				fcp:app():menuBar():select("Final Cut Pro", "Commands", "Customize…")
+				fcp:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
 			end
 		else
 			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
@@ -5731,7 +5731,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():select("View", "Browser", "as List") then
+				if not fcp:app():menuBar():selectMenu("View", "Browser", "as List") then
 					dialog.displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
@@ -5739,7 +5739,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():select("View", "Browser", "Group Clips By", "None") then
+				if not fcp:app():menuBar():selectMenu("View", "Browser", "Group Clips By", "None") then
 					dialog.displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
@@ -7327,7 +7327,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		if not menuBar:select("Clip", "Open in Angle Editor") then
+		if not menuBar:selectMenu("Clip", "Open in Angle Editor") then
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
@@ -7335,7 +7335,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		if not menuBar:select("Window", "Go To", "Timeline") then
+		if not menuBar:selectMenu("Window", "Go To", "Timeline") then
 			dialog.displayErrorMessage("Unable to return to timeline.")
 			return
 		end
@@ -7343,7 +7343,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
-		if not menuBar:select("File", "Reveal in Browser") then
+		if not menuBar:selectMenu("File", "Reveal in Browser") then
 			dialog.displayErrorMessage("Unable to Reveal in Browser.")
 			return
 		end
@@ -7352,7 +7352,7 @@ end
 		-- Go back to original timeline if appropriate:
 		--------------------------------------------------------------------------------
 		if goBackToTimeline then
-			if not menuBar:select("View", "Timeline History Back") then
+			if not menuBar:selectMenu("View", "Timeline History Back") then
 				dialog.displayErrorMessage("Unable to go back to previous timeline.")
 				return
 			end
@@ -7377,7 +7377,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():select("File", "Reveal in Browser") then
+		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
 			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
 			return "Fail"
 		end
@@ -7411,7 +7411,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():select("File", "Reveal in Browser") then
+		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
 			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 			return nil
 		end
@@ -7562,7 +7562,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():select("Window", "Go To", "Color Board") then
+			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Failed"
 			end
@@ -7691,7 +7691,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():select("Window", "Go To", "Color Board") then
+			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Fail"
 			end

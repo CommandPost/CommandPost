@@ -58,7 +58,7 @@ function MenuBar:getMenuMap()
 	return MenuBar._menuMap
 end
 
---- hs.finalcutpro.MenuBar:select(...) -> boolean
+--- hs.finalcutpro.MenuBar:selectMenu(...) -> boolean
 --- Function
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
@@ -69,7 +69,7 @@ end
 --- Returns:
 ---  * True is successful otherwise Nil
 ---
-function MenuBar:select(...)
+function MenuBar:selectMenu(...)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
 	local menuUI = self:UI()
