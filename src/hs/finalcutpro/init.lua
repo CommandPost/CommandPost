@@ -110,6 +110,18 @@ function finalcutpro.currentLanguage()
 
 				result = string.sub(executeResult, first + 1, second - 1)
 
+				-- Only return languages Final Cut Pro actually supports:
+				local validLanguage = false
+				for i=1, #finalCutProLanguages do
+					if result == finalCutProLanguages[i] then validLanguage = true end
+				end
+
+				if validLanguage then
+					return result
+				else
+					return "en"
+				end
+
 			end
 		end
 	end
@@ -768,6 +780,23 @@ end
 ---
 function finalcutpro.getBrowserSplitGroup()
 
+	-- Different Split Group Identifiers for Different Languages:
+	local splitGroupIdentifier = nil
+	currentLanguage = finalcutpro.currentLanguage()
+	if currentLanguage == "en" then
+		splitGroupIdentifier = "_NS:344"
+	elseif currentLanguage == "de" then
+		splitGroupIdentifier = "_NS:346"
+	elseif currentLanguage == "es" then
+		splitGroupIdentifier = "_NS:347"
+	elseif currentLanguage == "fr" then
+		splitGroupIdentifier = "_NS:345"
+	elseif currentLanguage == "ja" then
+		splitGroupIdentifier = "_NS:347"
+	elseif currentLanguage == "zh_CN" then
+		splitGroupIdentifier = "_NS:347"
+	end
+
 	-- Define Final Cut Pro:
 	sw = ax.applicationElement(finalcutpro.application())
 
@@ -780,7 +809,7 @@ function finalcutpro.getBrowserSplitGroup()
 		{ role = "AXGroup", },
 		{ role = "AXSplitGroup", },
 		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:344"},
+		{ role = "AXSplitGroup", Identifier = splitGroupIdentifier},
 	}, 1)
 
 	-- Dual Screen:
@@ -789,7 +818,7 @@ function finalcutpro.getBrowserSplitGroup()
 			{ role = "AXWindow", },
 			{ role = "AXSplitGroup", },
 			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
+			{ role = "AXSplitGroup", Identifier = splitGroupIdentifier},
 		}, 1)
 	end
 
