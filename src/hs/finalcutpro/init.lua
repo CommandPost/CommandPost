@@ -60,29 +60,33 @@ function finalcutpro.currentLanguage()
 		local fcpxElements = ax.applicationElement(finalcutpro.application())
 		if fcpxElements ~= nil then
 			local whichMenuBar = nil
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-					whichMenuBar = i
-				end
-			end
-			if fcpxElements[whichMenuBar][3] ~= nil then
+			if fcpxElements:attributeValueCount("AXChildren") ~= nil then
+				if fcpxElements:attributeValueCount("AXChildren") > 0 then
+					for i=1, fcpxElements:attributeValueCount("AXChildren") do
+						if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+							whichMenuBar = i
+						end
+					end
+					if fcpxElements[whichMenuBar][3] ~= nil then
 
-				local fileValue
-				fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
-				--------------------------------------------------------------------------------
-				-- ENGLISH:		File
-				-- GERMAN: 		Ablage
-				-- SPANISH: 	Archivo
-				-- FRENCH: 		Fichier
-				-- JAPANESE:	ファイル
-				-- CHINESE:		文件
-				--------------------------------------------------------------------------------
-				if fileValue == "File" 		then return "en" 		end
-				if fileValue == "Ablage" 	then return "de" 		end
-				if fileValue == "Archivo" 	then return "es" 		end
-				if fileValue == "Fichier" 	then return "fr" 		end
-				if fileValue == "ファイル" 	then return "ja" 		end
-				if fileValue == "文件" 		then return "zh_CN" 	end
+						local fileValue
+						fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
+						--------------------------------------------------------------------------------
+						-- ENGLISH:		File
+						-- GERMAN: 		Ablage
+						-- SPANISH: 	Archivo
+						-- FRENCH: 		Fichier
+						-- JAPANESE:	ファイル
+						-- CHINESE:		文件
+						--------------------------------------------------------------------------------
+						if fileValue == "File" 		then return "en" 		end
+						if fileValue == "Ablage" 	then return "de" 		end
+						if fileValue == "Archivo" 	then return "es" 		end
+						if fileValue == "Fichier" 	then return "fr" 		end
+						if fileValue == "ファイル" 	then return "ja" 		end
+						if fileValue == "文件" 		then return "zh_CN" 	end
+					end
+				end
 			end
 		end
 	end
