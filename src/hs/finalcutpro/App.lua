@@ -14,6 +14,7 @@ local log										= require("hs.logger").new("fcpxapp")
 --- Local Modules
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
+local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 
 --- The App module
 local App = {}
@@ -87,6 +88,13 @@ function App:preferencesWindow()
 	return self._preferencesWindow
 end
 
+function App:primaryWindow()
+	if not self._primaryWindow then
+		self._primaryWindow = PrimaryWindow:new(self)
+	end
+	return self._primaryWindow
+end
+
 --- hs.finalcutpro.App:windowsUI() -> axuielement
 --- Function
 --- Returns the UI containing the list of windows in the app.
@@ -106,8 +114,16 @@ function App:_listWindows()
 	log.d("Listing FCPX windows:")
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
-		debugMessage(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
+		debugMessage(string.format("%7d", i)..": "..self:_describeWindow(w))
 	end
+	
+	debugMessage("")
+	debugMessage("   Main: "..self:_describeWindow(self:UI():mainWindow()))
+	debugMessage("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
+end
+
+function App:_describeWindow(w)
+	return "title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal())
 end
 
 return App

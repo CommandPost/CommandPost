@@ -1033,8 +1033,54 @@ function finalcutpro._elementAtMouse()
 	return ax.systemElementAtPosition(hs.mouse.getAbsolutePosition())
 end
 
-function finalcutpro._inspectElementAtMouse()
-	return inspect(finalcutpro._elementAtMouse():buildTree())
+--- hs.finalcutpro._inspectElementAtMouse(options) -> string
+--- Function
+--- Finds the UI element at the current mouse pointer location and displays
+--- data about it.
+---
+--- Options:
+--- * parents	- an integer listing the number of parents to go back to. Defaults to 0.
+--- * depth  	- an integer listing the depth the element should be displayed to. Defaults to everything.
+---
+---
+--- Parameters:
+---  * options - the table of options
+---
+--- Returns:
+---  * the string with the element details
+---
+function finalcutpro._inspectElementAtMouse(options)
+	local element = finalcutpro._elementAtMouse()
+	if options.parents then
+		for i=1,options.parents do
+			element = element ~= nil and element:parent()
+		end
+	end
+	
+	if element then
+		local result = ""
+		if options.type == "path" then
+			local path = element:path()
+			for i,e in ipairs(path) do
+				result = result ..[[
+==============================================
+#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:role()) .. [[ 
+      Children = ]] .. inspect(#e) .. [[ 
+==============================================
+]] .. inspect(e:buildTree(options.depth)) .. "\n"
+			end
+			return result
+		else
+			return inspect(element:buildTree(options.depth))
+		end
+	else
+		return "<no element found>"
+	end
 end
+
+function finalcutpro._inspectElementAtMousePath()
+	return inspect(finalcutpro._elementAtMouse():path())
+end
+
 
 return finalcutpro

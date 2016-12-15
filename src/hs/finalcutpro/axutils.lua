@@ -16,9 +16,11 @@ local axutils = {}
 --- Returns:
 --- The first matching child, or nil if none was found
 function axutils.childWith(element, name, value)
-	for i,child in ipairs(element) do
-		if child:attributeValue(name) == value then
-			return child
+	if element then
+		for i,child in ipairs(element) do
+			if child:attributeValue(name) == value then
+				return child
+			end
 		end
 	end
 	return nil
