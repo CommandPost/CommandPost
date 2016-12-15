@@ -1939,6 +1939,17 @@ end
 			{ title = "Button 4" .. hudButtonFour, 														fn = function() hackshud.assignButton(4) end },
 		}
 
+		currentLanguage = fcp.currentLanguage()
+
+		local menuLanguage = {
+			{ title = "German", 																		fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
+			{ title = "English", 																		fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
+			{ title = "Spanish", 																		fn = function() changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
+			{ title = "French", 																		fn = function() changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
+			{ title = "Japanese", 																		fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
+			{ title = "Chinese (China)", 																fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
+		}
+
 		local displayShortcutText = "Display Keyboard Shortcuts"
 		if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
 
@@ -1984,6 +1995,7 @@ end
 			{ title = "Import Shared XML File", 														menu = settingsSharedXMLTable },
 			{ title = "Paste from Clipboard History", 													menu = settingsClipboardHistoryTable },
 			{ title = "Paste from Shared Clipboard", 													menu = settingsSharedClipboardTable },
+			{ title = "Final Cut Pro Language", 														menu = menuLanguage },
 			{ title = "Assign HUD Buttons", 															menu = settingsHUDButtons },
 			{ title = "Options", 																		menu = toolsSettings },
 			{ title = "-" },
@@ -3846,6 +3858,46 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- CHANGE FINAL CUT PRO LANGUAGE:
+	--------------------------------------------------------------------------------
+	function changeFinalCutProLanguage(language)
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartStatus = false
+		if fcp.running() then
+			if dialog.displayYesNoQuestion("Changing Final Cut Pro's language requires Final Cut Pro to restart.\n\nDo you want to continue?") then
+				restartStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update Final Cut Pro's settings::
+		--------------------------------------------------------------------------------
+		local result = fcp.setPreference("AppleLanguages", {language})
+		if not result then
+			dialog.displayErrorMessage("Unable to change Final Cut Pro's language.")
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartStatus then
+			if not fcp.restart() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				dialog.displayErrorMessage("Failed to restart Final Cut Pro. You will need to restart manually.")
+				return "Failed"
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- CHANGE TOUCH BAR LOCATION:
 	--------------------------------------------------------------------------------
 	function changeTouchBarLocation(value)
@@ -5178,12 +5230,6 @@ end
 	function selectClipAtLane(whichLane)
 
 		--------------------------------------------------------------------------------
-		-- UNDER CONSTRUCTION:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however you can use the new built-in 'Select Above/Below' shortcuts as a workaround.")
-		if 1==1 then return end
-
-		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
 		local fcpx 				= fcp.application()
@@ -5202,66 +5248,44 @@ end
 		local whichScrollArea			= nil
 
 		--------------------------------------------------------------------------------
-		-- Cache:
+		-- Which Split Group:
 		--------------------------------------------------------------------------------
-		local useCache = false
-		if fcpxElements[selectClipAtLaneSplitGroupCache] ~= nil then
-			if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache] ~= nil then
-				if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXRole") == "AXSplitGroup" then
-					if fcpxElements[selectClipAtLaneSplitGroupCache][selectClipAtLaneGroupCache][1]:attributeValue("AXIdentifier") == "_NS:11" then
-						useCache = true
-						whichSplitGroup = selectClipAtLaneSplitGroupCache
-						whichGroup = selectClipAtLaneGroupCache
-					end
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if whichSplitGroup == nil then
+				if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
+					whichSplitGroup = i
+					goto selectClipAtLaneSplitGroupExit
 				end
 			end
 		end
+		if whichSplitGroup == nil then
+			dialog.displayErrorMessage("Unable to locate Split Group.")
+			return "Failed"
+		end
+		::selectClipAtLaneSplitGroupExit::
+		selectClipAtLaneSplitGroupCache = whichSplitGroup
 
 		--------------------------------------------------------------------------------
-		-- If Cache didn't work:
+		-- Which Group:
 		--------------------------------------------------------------------------------
-		if not useCache then
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group:
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if whichSplitGroup == nil then
-					if fcpxElements[i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroup = i
-						goto selectClipAtLaneSplitGroupExit
-					end
-				end
-			end
-			if whichSplitGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group.")
-				return "Failed"
-			end
-			::selectClipAtLaneSplitGroupExit::
-			selectClipAtLaneSplitGroupCache = whichSplitGroup
-
-			--------------------------------------------------------------------------------
-			-- Which Group:
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
-				if whichGroup == nil then
-					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
-						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
-							if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
-								whichGroup = i
-								goto selectClipAtLaneGroupExit
-							end
+		for i=1, fcpxElements[whichSplitGroup]:attributeValueCount("AXChildren") do
+			if whichGroup == nil then
+				if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1] ~= nil then
+					if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXRole") == "AXSplitGroup" then
+						if fcpxElements[whichSplitGroup]:attributeValue("AXChildren")[i][1]:attributeValue("AXIdentifier") == "_NS:11" then
+							whichGroup = i
+							goto selectClipAtLaneGroupExit
 						end
 					end
 				end
 			end
-			if whichGroup == nil then
-				dialog.displayErrorMessage("Unable to locate Group.")
-				return "Failed"
-			end
-			::selectClipAtLaneGroupExit::
-			selectClipAtLaneGroupCache = whichGroup
 		end
+		if whichGroup == nil then
+			dialog.displayErrorMessage("Unable to locate Group.")
+			return "Failed"
+		end
+		::selectClipAtLaneGroupExit::
+		selectClipAtLaneGroupCache = whichGroup
 
 		--------------------------------------------------------------------------------
 		-- NOE: Split Group = 1
