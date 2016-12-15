@@ -786,7 +786,7 @@ function finalcutpro.getBrowserSplitGroup()
 	-- Dual Screen:
 	if browserSplitGroup == nil then
 		browserSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Events"},
+			{ role = "AXWindow", },
 			{ role = "AXSplitGroup", },
 			{ role = "AXGroup", },
 			{ role = "AXSplitGroup", Identifier = "_NS:344"},
