@@ -12,11 +12,6 @@ local Viewer						= require("hs.finalcutpro.main.Viewer")
 
 local PrimaryWindow = {}
 
-PrimaryWindow.LEFT_GROUP = 1
-PrimaryWindow.RIGHT_GROUP = 2
-PrimaryWindow.BROWSER = 1
-PrimaryWindow.TIMELINE = 2
-
 function PrimaryWindow:new(app)
 	o = {
 		_app = app

@@ -6,8 +6,6 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Inspector = {}
 
-Inspector.ID = 2
-
 function Inspector:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)

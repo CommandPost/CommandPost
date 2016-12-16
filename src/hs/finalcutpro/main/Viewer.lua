@@ -6,8 +6,6 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Viewer = {}
 
-Viewer.ID = 2
-
 function Viewer:new(parent, eventViewer)
 	o = {_parent = parent, _eventViewer = eventViewer}
 	setmetatable(o, self)

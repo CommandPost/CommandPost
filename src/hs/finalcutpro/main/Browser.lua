@@ -6,8 +6,6 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Browser = {}
 
-Browser.ID = 2
-
 function Browser:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
