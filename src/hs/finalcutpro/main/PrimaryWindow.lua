@@ -187,8 +187,9 @@ function PrimaryWindow:viewerUI()
 end
 
 function PrimaryWindow:_isViewer(element)
-	-- Viewers contain an AXSplitGroup with an ID of "_NS:523"
-	return axutils.childWith(element, "AXIdentifier", "_NS:523") ~= nil
+	-- Viewers have a single 'AXContents' element
+	local contents = element:attributeValue("AXContents")
+	return contents and #contents == 1 and contents[1]:attributeValue("AXRole") == "AXSplitGroup"
 end
 
 function PrimaryWindow:viewer()
