@@ -29,6 +29,11 @@ function PrimaryWindow:app()
 	return self._app
 end
 
+function PrimaryWindow:show()
+	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
+	return true
+end
+
 function PrimaryWindow:UI()
 	local ui = self:app():UI():mainWindow()
 	if not self:_isPrimaryWindow(ui) then
