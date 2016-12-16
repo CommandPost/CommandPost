@@ -27,6 +27,9 @@ local just									= require("hs.just")
 
 local log									= require("hs.logger").new("fcp")
 local inspect								= require("hs.inspect")
+local drawing								= require("hs.drawing")
+local geometry								= require("hs.geometry")
+local timer									= require("hs.timer")
 
 --- doesDirectoryExist() -> boolean
 --- Function
@@ -1062,12 +1065,7 @@ function finalcutpro._inspectElementAtMouse(options)
 		if options.type == "path" then
 			local path = element:path()
 			for i,e in ipairs(path) do
-				result = result ..[[
-==============================================
-#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:role()) .. [[ 
-      Children = ]] .. inspect(#e) .. [[ 
-==============================================
-]] .. inspect(e:buildTree(options.depth)) .. "\n"
+				result = result ..finalcutpro._inspectElement(e, options, i)
 			end
 			return result
 		else
@@ -1076,6 +1074,53 @@ function finalcutpro._inspectElementAtMouse(options)
 	else
 		return "<no element found>"
 	end
+end
+
+function finalcutpro._inspectElement(e, options, i)
+	if not e then
+		return "<no element found>"
+	end
+	
+	finalcutpro._highlightElement(e)
+	
+	i = i or 0
+	local depth = options and options.depth or 1
+	return [[
+==============================================
+#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:role()) .. [[ 
+      Children = ]] .. inspect(#e) .. [[ 
+==============================================
+]] .. inspect(e:buildTree(depth)) .. "\n"
+end
+
+function finalcutpro._highlightElement(e)
+	local mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH
+	local eFrame = geometry.rect(e:frame())
+	-- local wFrame = geometry.rect(e:window():frame())
+	-- eFrame.x = wFrame.x + eFrame.x
+	-- eFrame.y = wFrame.y + eFrame.y
+
+	--------------------------------------------------------------------------------
+	-- Get Highlight Colour Preferences:
+	--------------------------------------------------------------------------------
+	local highlightColor = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=0.75}
+
+	local highlight = drawing.rectangle(eFrame)
+	highlight:setStrokeColor(highlightColor)
+	highlight:setFill(false)
+	highlight:setStrokeWidth(3)
+	highlight:show()
+
+	--------------------------------------------------------------------------------
+	-- Set a timer to delete the highlight after 3 seconds:
+	--------------------------------------------------------------------------------
+	local highlightTimer = timer.doAfter(3, 
+	function()
+		-- debugMessage("Deleting element highlight...")
+		highlight:delete() 
+		highlightTimer = nil
+		-- debugMessage("Deleted element highlight.")
+	end)
 end
 
 function finalcutpro._inspectElementAtMousePath()
