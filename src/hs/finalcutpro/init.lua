@@ -63,29 +63,33 @@ function finalcutpro.currentLanguage()
 		local fcpxElements = ax.applicationElement(finalcutpro.application())
 		if fcpxElements ~= nil then
 			local whichMenuBar = nil
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-					whichMenuBar = i
-				end
-			end
-			if fcpxElements[whichMenuBar][3] ~= nil then
+			if fcpxElements:attributeValueCount("AXChildren") ~= nil then
+				if fcpxElements:attributeValueCount("AXChildren") > 0 then
+					for i=1, fcpxElements:attributeValueCount("AXChildren") do
+						if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+							whichMenuBar = i
+						end
+					end
+					if fcpxElements[whichMenuBar][3] ~= nil then
 
-				local fileValue
-				fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
-				--------------------------------------------------------------------------------
-				-- ENGLISH:		File
-				-- GERMAN: 		Ablage
-				-- SPANISH: 	Archivo
-				-- FRENCH: 		Fichier
-				-- JAPANESE:	ファイル
-				-- CHINESE:		文件
-				--------------------------------------------------------------------------------
-				if fileValue == "File" 		then return "en" 		end
-				if fileValue == "Ablage" 	then return "de" 		end
-				if fileValue == "Archivo" 	then return "es" 		end
-				if fileValue == "Fichier" 	then return "fr" 		end
-				if fileValue == "ファイル" 	then return "ja" 		end
-				if fileValue == "文件" 		then return "zh_CN" 	end
+						local fileValue
+						fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
+						--------------------------------------------------------------------------------
+						-- ENGLISH:		File
+						-- GERMAN: 		Ablage
+						-- SPANISH: 	Archivo
+						-- FRENCH: 		Fichier
+						-- JAPANESE:	ファイル
+						-- CHINESE:		文件
+						--------------------------------------------------------------------------------
+						if fileValue == "File" 		then return "en" 		end
+						if fileValue == "Ablage" 	then return "de" 		end
+						if fileValue == "Archivo" 	then return "es" 		end
+						if fileValue == "Fichier" 	then return "fr" 		end
+						if fileValue == "ファイル" 	then return "ja" 		end
+						if fileValue == "文件" 		then return "zh_CN" 	end
+					end
+				end
 			end
 		end
 	end
@@ -108,6 +112,18 @@ function finalcutpro.currentLanguage()
 				local second = string.find(executeResult, '-', first + 1)
 
 				result = string.sub(executeResult, first + 1, second - 1)
+
+				-- Only return languages Final Cut Pro actually supports:
+				local validLanguage = false
+				for i=1, #finalCutProLanguages do
+					if result == finalCutProLanguages[i] then validLanguage = true end
+				end
+
+				if validLanguage then
+					return result
+				else
+					return "en"
+				end
 
 			end
 		end
@@ -411,7 +427,16 @@ function finalcutpro.setPreference(key, value)
 
 	if type(value) == "boolean" then
 		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -bool " .. tostring(value))
-	else
+	elseif type(value) == "table" then
+		local arrayString = ""
+		for i=1, #value do
+			arrayString = arrayString .. value[i]
+			if i ~= #value then
+				arrayString = arrayString .. ","
+			end
+		end
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -array '" .. arrayString .. "'")
+	elseif type(value) == "string" then
 		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -string '" .. value .. "'")
 	end
 
@@ -767,6 +792,23 @@ end
 ---
 function finalcutpro.getBrowserSplitGroup()
 
+	-- Different Split Group Identifiers for Different Languages:
+	local splitGroupIdentifier = nil
+	currentLanguage = finalcutpro.currentLanguage()
+	if currentLanguage == "en" then
+		splitGroupIdentifier = "_NS:344"
+	elseif currentLanguage == "de" then
+		splitGroupIdentifier = "_NS:346"
+	elseif currentLanguage == "es" then
+		splitGroupIdentifier = "_NS:347"
+	elseif currentLanguage == "fr" then
+		splitGroupIdentifier = "_NS:345"
+	elseif currentLanguage == "ja" then
+		splitGroupIdentifier = "_NS:347"
+	elseif currentLanguage == "zh_CN" then
+		splitGroupIdentifier = "_NS:347"
+	end
+
 	-- Define Final Cut Pro:
 	sw = ax.applicationElement(finalcutpro.application())
 
@@ -779,16 +821,16 @@ function finalcutpro.getBrowserSplitGroup()
 		{ role = "AXGroup", },
 		{ role = "AXSplitGroup", },
 		{ role = "AXGroup", },
-		{ role = "AXSplitGroup", Identifier = "_NS:344"},
+		{ role = "AXSplitGroup", Identifier = splitGroupIdentifier},
 	}, 1)
 
 	-- Dual Screen:
 	if browserSplitGroup == nil then
 		browserSplitGroup = sw:searchPath({
-			{ role = "AXWindow", Title = "Events"},
+			{ role = "AXWindow", },
 			{ role = "AXSplitGroup", },
 			{ role = "AXGroup", },
-			{ role = "AXSplitGroup", Identifier = "_NS:344"},
+			{ role = "AXSplitGroup", Identifier = splitGroupIdentifier},
 		}, 1)
 	end
 
@@ -843,6 +885,62 @@ function finalcutpro.getColorBoardRadioGroup()
 	}, 1)
 
 	return result
+
+end
+
+--- hs.finalcutpro.getBrowserMode() -> string or nil
+--- Function
+--- Returns the current Browser Mode
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * "List", "Filmstrip" or nil
+---
+function finalcutpro.getBrowserMode()
+
+	--------------------------------------------------------------------------------
+	-- Get Browser Split Group:
+	--------------------------------------------------------------------------------
+	browserSplitGroup = finalcutpro.getBrowserSplitGroup()
+	if browserSplitGroup == nil then
+		writeToConsole("ERROR: Failed to get Browser Split Group in finalcutpro.getBrowserMode().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	local whichGroup = nil
+	for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+		if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
+			whichGroup = i
+		end
+	end
+	if whichGroup == nil then
+		writeToConsole("ERROR: Unable to locate Group in finalcutpro.getBrowserMode().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Scroll Area:
+	--------------------------------------------------------------------------------
+	local whichScrollArea = nil
+	for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+		if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXScrollArea" then
+			whichScrollArea = i
+		end
+	end
+
+	if whichScrollArea == nil then
+		--------------------------------------------------------------------------------
+		-- LIST VIEW:
+		--------------------------------------------------------------------------------
+		return "List"
+	else
+		return "Filmstrip"
+	end
 
 end
 

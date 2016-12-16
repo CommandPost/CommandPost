@@ -102,5 +102,20 @@ function tools.removeFilenameFromPath(input)
 	return (string.sub(input, 1, (string.find(input, "/[^/]*$"))))
 end
 
+--------------------------------------------------------------------------------
+-- STRING MAX LENGTH
+--------------------------------------------------------------------------------
+function tools.stringMaxLength(string, maxLength, optionalEnd)
+
+	local result = string
+	if string.len(string) > maxLength then
+		result = string.sub(string, 1, maxLength)
+		if optionalEnd ~= nil then
+			result = result .. optionalEnd
+		end
+	end
+	return result
+
+end
 
 return tools

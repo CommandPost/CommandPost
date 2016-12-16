@@ -509,6 +509,10 @@ buildTreeHamster = function(self, depth, withParents, seen)
         if seenBefore then return seenBefore end
         local thisObject = self:allAttributeValues() or {}
         thisObject._element = self
+        thisObject._actions = self:actionNames()
+        thisObject._attributes = self:attributeNames()
+        thisObject._parameterizedAttributes = self:parameterizedAttributeNames()
+
         seen[self] = thisObject
         for k, v in pairs(thisObject) do
             if k ~= "_element" then

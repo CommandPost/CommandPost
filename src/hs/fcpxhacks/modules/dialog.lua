@@ -176,15 +176,31 @@ end
 --------------------------------------------------------------------------------
 -- DISPLAY MESSAGE:
 --------------------------------------------------------------------------------
-function dialog.displayMessage(whatMessage)
+function dialog.displayMessage(whatMessage, optionalButtons)
+
+	if optionalButtons == nil or type(optionalButtons) ~= "table" then
+		optionalButtons = {"OK"}
+	end
+
+	local buttons = 'buttons {'
+	for i=1, #optionalButtons do
+		buttons = buttons .. '"' .. optionalButtons[i] .. '"'
+		if i ~= #optionalButtons then buttons = buttons .. ", " end
+	end
+	buttons = buttons .. "}"
+
 	local returnToFinalCutPro = fcp.frontmost()
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon fcpxIcon
+		set result to button returned of (display dialog whatMessage ]] .. buttons .. [[ with icon fcpxIcon)
+		return result
 	]]
-	osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a, result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
+
+	return result
+
 end
 
 --------------------------------------------------------------------------------
