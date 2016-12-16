@@ -57,4 +57,18 @@ function Playhead:getTimecode()
 	return ui and ui:attributeValue("AXValue")
 end
 
+function Playhead:getX()
+	local ui = self:UI()
+	return ui and ui:position().x
+end
+
+function Playhead:getPosition()
+	local ui = self:UI()
+	if ui then
+		local frame = ui:frame()
+		return frame.x + frame.w/2 + 1.0
+	end
+	return nil
+end
+
 return Playhead

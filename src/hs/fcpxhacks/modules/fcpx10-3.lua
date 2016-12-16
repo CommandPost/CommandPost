@@ -113,6 +113,8 @@ local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local plist										= require("hs.plist")
 local tools										= require("hs.fcpxhacks.modules.tools")
 
+local _bench									= require("hs.bench")
+
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
@@ -7901,134 +7903,44 @@ end
 	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
 	function selectClipAtLane(whichLane)
-
-		--------------------------------------------------------------------------------
-		-- Variables:
-		--------------------------------------------------------------------------------
-		local whichScrollArea			= nil
-		local whichValueIndicator 		= nil
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Split Group:
-		--------------------------------------------------------------------------------
-		timelineSplitGroup = fcp.getTimelineSplitGroup()
-		if timelineSplitGroup == nil then
-			displayErrorMessage("Failed to get Timeline Split Group whilst performing Select Clip at Lane.\n\nError occured in getTimelineSplitGroup() within selectClipAtLane().")
-			return
+		return _bench("selectClipAtLaneNew", function()
+		local content = fcp:app():timeline():content()
+		local playheadX = content:playhead():getPosition()
+		
+		local clips = content:clipsUI(false, function(clip)
+			local frame = clip:frame()
+			return playheadX >= frame.x and playheadX < (frame.x + frame.w)
+		end)
+		
+		if whichLane > #clips then
+			return false
 		end
-
-		--------------------------------------------------------------------------------
-		-- Which Scroll Area:
-		--------------------------------------------------------------------------------
-		for i=1, timelineSplitGroup:attributeValueCount("AXChildren") do
-			if timelineSplitGroup[i]:attributeValue("AXRole") == "AXScrollArea" then
-				if timelineSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:9" then
-					whichScrollArea = i
-					goto selectClipAtLaneWhichScrollAreaExit
-				end
-			end
-		end
-		if whichScrollArea == nil then
-			dialog.displayErrorMessage("Unable to locate Scroll Area.\n\nError occured in selectClipAtLane().")
-			return "Failed"
-		end
-		::selectClipAtLaneWhichScrollAreaExit::
-
-		--------------------------------------------------------------------------------
-		-- NOTE: Layout Area = 1
-		--------------------------------------------------------------------------------
-
-		--------------------------------------------------------------------------------
-		-- Which Value Indicator:
-		--------------------------------------------------------------------------------
-		for i=1, timelineSplitGroup[whichScrollArea][1]:attributeValueCount("AXChildren") do
-			if timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXDescription") == "Playhead" then
-				whichValueIndicator = i
-				goto selectClipAtLaneValueIndicatorExit
-			end
-		end
-		if whichValueIndicator == nil then
-			dialog.displayErrorMessage("Unable to locate Value Indicator.")
-			return "Failed"
-		end
-		::selectClipAtLaneValueIndicatorExit::
-
-		--------------------------------------------------------------------------------
-		-- Timeline Playhead Position:
-		--------------------------------------------------------------------------------
-		local timelinePlayheadXPosition = timelineSplitGroup[whichScrollArea][1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-		--------------------------------------------------------------------------------
-		-- Which Layout Items (Selected Timeline Clip):
-		--------------------------------------------------------------------------------
-		local whichLayoutItems = {}
-		for i=1, timelineSplitGroup[whichScrollArea][1]:attributeValueCount("AXChildren") do
-			if timelineSplitGroup[whichScrollArea][1]:attributeValue("AXChildren")[i] ~= nil then
-
-				--------------------------------------------------------------------------------
-				-- Normal clips:
-				--------------------------------------------------------------------------------
-				if timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXRole") == "AXLayoutItem" then
-					local currentClipPositionMinX = timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXPosition")['x']
-					local currentClipPositionMaxX = currentClipPositionMinX + timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXSize")['w']
-
-					if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-						local currentClipPositionY = timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXPosition")['y']
-						whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH}
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Storylines:
-				--------------------------------------------------------------------------------
-				if timelineSplitGroup[whichScrollArea][1][i]:attributeValue("AXRole") == "AXGroup" then
-					for ii=1, timelineSplitGroup[whichScrollArea][1][i]:attributeValueCount("AXChildren") do
-						if timelineSplitGroup[whichScrollArea][1][i][ii] ~= nil then
-							if timelineSplitGroup[whichScrollArea][1][i][ii]:attributeValue("AXRole") == "AXLayoutItem" then
-
-								local currentClipPositionMinX = timelineSplitGroup[whichScrollArea][1][i][ii]:attributeValue("AXPosition")['x']
-								local currentClipPositionMaxX = currentClipPositionMinX + timelineSplitGroup[whichScrollArea][1][i][ii]:attributeValue("AXSize")['w']
-
-								if timelinePlayheadXPosition >= currentClipPositionMinX and timelinePlayheadXPosition <= currentClipPositionMaxX then
-									local currentClipPositionY = timelineSplitGroup[whichScrollArea][1][i][ii]:attributeValue("AXPosition")['y']
-									whichLayoutItems[#whichLayoutItems + 1] = { i, currentClipPositionY, currentClipSizeH }
-								end
-
-							end
-						end
-					end -- ii loop
-				end
-			end
-		end
-
-		local howManyClips = tools.tableCount(whichLayoutItems)
-		if next(whichLayoutItems) == nil or howManyClips < whichLane then
-			writeToConsole("ERROR: Couldn't find any clips at selected lane (selectClipAtLane).")
-			return "Fail"
-		end
-
+		
 		--------------------------------------------------------------------------------
 		-- Sort the table:
 		--------------------------------------------------------------------------------
-		table.sort(whichLayoutItems, function(a, b) return a[2] > b[2] end)
+		table.sort(clips, function(a, b) return a:position().y < b:position().y end)
+		
+		-- debugMessage("selectClipAtLane("..whichLane..")\n"
+		--           .. "playhead: "..playheadX
+		--           .. fcp._inspect(clips))
 
 		--------------------------------------------------------------------------------
 		-- Which clip to we need:
 		--------------------------------------------------------------------------------
-		local whichClip = whichLayoutItems[whichLane][1]
+		local clipFrame = clips[whichLane]:frame()
 
 		--------------------------------------------------------------------------------
 		-- Click the clip:
 		--------------------------------------------------------------------------------
-		local clipCentrePosition = {}
-		local clipPosition = timelineSplitGroup[whichScrollArea][1][whichClip]:attributeValue("AXPosition")
-		local clipSize = timelineSplitGroup[whichScrollArea][1][whichClip]:attributeValue("AXSize")
-
-		clipCentrePosition['x'] = timelinePlayheadXPosition
-		clipCentrePosition['y'] = clipPosition['y'] + ( clipSize['h'] / 2 )
+		local clipCentrePosition = {
+			x = playheadX,
+			y = clipFrame.y + clipFrame.h/2
+		}
 
 		tools.ninjaMouseClick(clipCentrePosition)
-
+		return true
+		end) --_bench
 	end
 
 	--------------------------------------------------------------------------------

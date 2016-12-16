@@ -1174,26 +1174,48 @@ function finalcutpro._inspectElementAtMouse(options)
 	end
 end
 
-function finalcutpro._inspectElement(e, options, i)
-	if not e then
-		return "<no element found>"
+function finalcutpro._inspect(e, options)
+	if e == nil then
+		return "<nil>"
 	elseif type(e) ~= "userdata" or not e.attributeValue then
-		return inspect(e)
+		local count = #e
+		if count > 0 then
+			local item = nil
+			local result = ""
+			for i=1,count do
+				item = e[i]
+				result = result .. 
+				         "\n= " .. string.format("%3d", i) .. 
+						 " ========================================" ..
+						 finalcutpro._inspect(item, options)
+			end
+			return result
+		else
+			return inspect(e)
+		end
+	else
+		return "\n==============================================" ..
+		       finalcutpro._inspectElement(e, options)
 	end
-	
+end
+
+function finalcutpro._inspectElement(e, options, i)
 	finalcutpro._highlightElement(e)
 	
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[
-==============================================
-#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
+	return [[ 
+      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
       Children = ]] .. inspect(#e) .. [[ 
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
 
 function finalcutpro._highlightElement(e)
+	if not e.frame then
+		return
+	end
+	
 	local eFrame = geometry.rect(e:frame())
 	-- local wFrame = geometry.rect(e:window():frame())
 	-- eFrame.x = wFrame.x + eFrame.x

@@ -103,12 +103,73 @@ end
 ---  * N/A
 ---
 --- Returns:
----  * The axuieleme, or nil if the application is not running.
+---  * The axuielement, or nil if the application is not running.
 ---
 function App:windowsUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXWindows")
 end
+
+--- hs.finalcutpro.App:timeline() -> Timeline
+--- Function
+--- Returns the Timeline instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Timeline
+function App:timeline()
+	return self:primaryWindow():timeline()
+end	
+
+--- hs.finalcutpro.App:viewer() -> Viewer
+--- Function
+--- Returns the Viewer instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Viewer
+function App:viewer()
+	return self:primaryWindow():viewer()
+end	
+
+--- hs.finalcutpro.App:eventViewer() -> Viewer
+--- Function
+--- Returns the Event Viewer instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Event Viewer
+function App:eventViewer()
+	return self:primaryWindow():viewer()
+end	
+
+--- hs.finalcutpro.App:browser() -> Browser
+--- Function
+--- Returns the Browser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Browser
+function App:browser()
+	return self:primaryWindow():browser()
+end	
+
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- 
+-- DEBUG FUNCTIONS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")

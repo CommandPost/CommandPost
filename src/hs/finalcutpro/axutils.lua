@@ -26,4 +26,25 @@ function axutils.childWith(element, name, value)
 	return nil
 end
 
+--- hs.finalcutpro.axutil.childWith(axuielement, string, anything) -> axuielement
+--- Function:
+--- This searches for the first child of the specified element for which the provided
+--- function returns true. The function will receive one parameter - the current child.
+---
+--- Params:
+--- * element	- the axuielement
+--- * matcherFn	- the function which checks if the child matches the requirements.
+--- Returns:
+--- The first matching child, or nil if none was found
+function axutils.childMatching(element, matcherFn)
+	if element then
+		for i,child in ipairs(element) do
+			if matcherFn(child) then
+				return child
+			end
+		end
+	end
+	return nil
+end
+
 return axutils
