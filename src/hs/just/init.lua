@@ -34,8 +34,8 @@ local timer 					= require("hs.timer")
 ---  * The last return value of the action function.
 ---
 function just.doWhile(actionFn, period, loops)
-	loops = loops or 100
-	period = period or 10
+	loops = loops or 1000
+	period = period or 1000
 	
 	local count = 0
 	local result = true
