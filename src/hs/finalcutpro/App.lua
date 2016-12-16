@@ -15,6 +15,7 @@ local log										= require("hs.logger").new("fcpxapp")
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
+local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
 
 --- The App module
 local App = {}
@@ -95,6 +96,13 @@ function App:primaryWindow()
 	return self._primaryWindow
 end
 
+function App:secondaryWindow()
+	if not self._secondaryWindow then
+		self._secondaryWindow = SecondaryWindow:new(self)
+	end
+	return self._secondaryWindow
+end
+
 --- hs.finalcutpro.App:windowsUI() -> axuielement
 --- Function
 --- Returns the UI containing the list of windows in the app.
@@ -120,7 +128,8 @@ end
 --- Returns:
 ---  * the Timeline
 function App:timeline()
-	return self:primaryWindow():timeline()
+	local timeline = self:secondaryWindow():timeline()
+	return timeline:isShowing() and timeline or self:primaryWindow():timeline()
 end	
 
 --- hs.finalcutpro.App:viewer() -> Viewer
@@ -133,7 +142,8 @@ end
 --- Returns:
 ---  * the Viewer
 function App:viewer()
-	return self:primaryWindow():viewer()
+	local viewer = self:secondaryWindow():viewer()
+	return viewer:isShowing() and viewer or self:primaryWindow():viewer()
 end	
 
 --- hs.finalcutpro.App:eventViewer() -> Viewer
@@ -146,7 +156,12 @@ end
 --- Returns:
 ---  * the Event Viewer
 function App:eventViewer()
-	return self:primaryWindow():viewer()
+	local viewer = self:secondaryWindow():viewer()
+	if viewer:isShowing() then
+		return self:secondaryWindow():eventViewer()
+	else
+		return self:primaryWindow():eventViewer()
+	end
 end	
 
 --- hs.finalcutpro.App:browser() -> Browser
@@ -159,7 +174,8 @@ end
 --- Returns:
 ---  * the Browser
 function App:browser()
-	return self:primaryWindow():browser()
+	local browser = self:secondaryWindow():browser()
+	return browser:isShowing() and browser or self:primaryWindow():browser()
 end	
 
 

@@ -8,8 +8,12 @@ local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
 
 local Timeline = {}
 
-function Timeline:new(parent)
-	o = {_parent = parent}
+function Timeline.isTimeline(element)
+	return element:attributeValue("AXRole") == "AXGroup"
+end
+
+function Timeline:new(parent, secondary)
+	o = {_parent = parent, _secondary = secondary}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -23,13 +27,29 @@ function Timeline:app()
 	return self:parent():app()
 end
 
+function Timeline:isOnSecondaryWindow()
+	return self._secondary
+end
+
+function Timeline:isOnPrimaryWindow()
+	return not self._secondary
+end
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- TIMELINE UI
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:UI()
-	return self:parent():timelineUI()
+	local top = self:parent():timelineGroupUI()
+	if top then
+		for i,child in ipairs(top) do
+			if Timeline.isTimeline(child) then
+				return child
+			end
+		end
+	end
+	return nil
 end
 
 function Timeline:isShowing()
@@ -37,21 +57,24 @@ function Timeline:isShowing()
 end
 
 function Timeline:show()
-	local parent = self:parent()
-	-- show the parent.
-	if parent:show() then
-		local menuBar = self:app():menuBar()
+	local menuBar = self:app():menuBar()
+	
+	if self:isOnPrimaryWindow() then
 		-- if the timeline is on the secondary, we need to turn it off before enabling in primary
 		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
 		-- Then enable it in the primary
 		menuBar:checkMenu("Window", "Show in Workspace", "Timeline")
+	else
+		menuBar:checkMenu("Window", "Show in Secondary Display", "Timeline")
 	end
+
 	return self
 end
 
 function Timeline:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace
+	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
 	menuBar:uncheckMenu("Window", "Show in Workspace", "Timeline")
 	return self
 end

@@ -168,67 +168,28 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- VIEWER UI
+--- VIEWER
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function PrimaryWindow:viewerUI()
-	local top = self:topGroupUI()
-	local ui = nil
-	for i,child in ipairs(top) do
-		-- There can be two viwers enabled
-		if self:_isViewer(child) then
-			-- Both the event viewer and standard viewer have the ID, so pick the right-most one
-			if ui == nil or ui:position().x < child:position().x then
-				ui = child
-			end
-		end
-	end
-	return ui
-end
-
-function PrimaryWindow:_isViewer(element)
-	-- Viewers have a single 'AXContents' element
-	local contents = element:attributeValue("AXContents")
-	return contents and #contents == 1 and contents[1]:attributeValue("AXRole") == "AXSplitGroup"
+function PrimaryWindow:viewerGroupUI()
+	return self:topGroupUI()
 end
 
 function PrimaryWindow:viewer()
 	if not self._viewer then
-		self._viewer = Viewer:new(self, false)
+		self._viewer = Viewer:new(self, false, false)
 	end
 	return self._viewer
 end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- EVENT VIEWER UI
+--- EVENT VIEWER
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function PrimaryWindow:eventViewerUI()
-	local top = self:topGroupUI()
-	local ui = nil
-	local viewerCount = 0
-	for i,child in ipairs(top) do
-		-- There can be two viwers enabled
-		if self:_isViewer(child) then
-			viewerCount = viewerCount + 1
-			-- Both the event viewer and standard viewer have the ID, so pick the left-most one
-			if ui == nil or ui:position().x > child:position().x then
-				ui = child
-			end
-		end
-	end
-	-- Can only be the event viewer if there are two viewers.
-	if viewerCount == 2 then
-		return ui
-	else
-		return nil
-	end
-end
-
 function PrimaryWindow:eventViewer()
 	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true)
+		self._eventViewer = Viewer:new(self, true, false)
 	end
 	return self._eventViewer
 end
@@ -239,9 +200,8 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-function PrimaryWindow:timelineUI()
-	local bottom = self:bottomGroupUI()
-	return bottom and bottom[1]
+function PrimaryWindow:timelineGroupUI()
+	return self:bottomGroupUI()
 end
 
 function PrimaryWindow:timeline()
@@ -256,19 +216,8 @@ end
 -- BROWSER
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function PrimaryWindow:browserUI()
-	local top = self:topGroupUI()
-	local ui = nil
-	for i,child in ipairs(top) do
-		if self:_isBrowser(child) then
-			return child
-		end
-	end
-	return ui
-end
-
-function PrimaryWindow:_isBrowser(element)
-	return axutils.childWith(element, "AXIdentifier", "_NS:82") ~= nil
+function PrimaryWindow:browserGroupUI()
+	return self:topGroupUI()
 end
 
 function PrimaryWindow:browser()

@@ -1178,11 +1178,10 @@ function finalcutpro._inspect(e, options)
 	if e == nil then
 		return "<nil>"
 	elseif type(e) ~= "userdata" or not e.attributeValue then
-		local count = #e
-		if count > 0 then
+		if type(e) == "table" and #e > 0 then
 			local item = nil
 			local result = ""
-			for i=1,count do
+			for i=1,#e do
 				item = e[i]
 				result = result .. 
 				         "\n= " .. string.format("%3d", i) .. 
