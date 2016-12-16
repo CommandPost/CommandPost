@@ -17,32 +17,42 @@ function Timeline:parent()
 	return self._parent
 end
 
+function Timeline:app()
+	return self:parent():app()
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- TIMELINE UI
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 function Timeline:UI()
-	local toolbarUI = self:parent():toolbarUI()
-	return toolbarUI and toolbarUI[Timeline.ID]
+	return self:parent():timelineUI()
 end
 
 function Timeline:isShowing()
-	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarUI()
-		if toolbar then
-			local selected = toolbar:selectedChildren()
-			return #selected == 1 and selected[1] == toolbar[Timeline.ID]
-		end
-	end
-	return false
+	return self:UI() ~= nil
 end
 
 function Timeline:show()
 	local parent = self:parent()
 	-- show the parent.
 	if parent:show() then
-		-- get the toolbar UI
-		local panel = just.doUntil(function() return self:UI() end)
-		if panel then
-			panel:doPress()
-			return true
-		end
+		local menuBar = self:app():menuBar()
+		-- if the timeline is on the secondary, we need to turn it off before enabling in primary
+		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
+		-- Then enable it in the primary
+		menuBar:checkMenu("Window", "Show in Workspace", "Timeline")
 	end
-	return false
+	return self
 end
+
+function Timeline:hide()
+	local menuBar = self:app():menuBar()
+	-- Uncheck it from the primary workspace
+	menuBar:uncheckMenu("Window", "Show in Workspace", "Timeline")
+	return self
+end
+
+
+return Timeline
