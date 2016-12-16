@@ -885,6 +885,62 @@ function finalcutpro.getColorBoardRadioGroup()
 
 end
 
+--- hs.finalcutpro.getBrowserMode() -> string or nil
+--- Function
+--- Returns the current Browser Mode
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * "List", "Filmstrip" or nil
+---
+function finalcutpro.getBrowserMode()
+
+	--------------------------------------------------------------------------------
+	-- Get Browser Split Group:
+	--------------------------------------------------------------------------------
+	browserSplitGroup = finalcutpro.getBrowserSplitGroup()
+	if browserSplitGroup == nil then
+		writeToConsole("ERROR: Failed to get Browser Split Group in finalcutpro.getBrowserMode().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Group:
+	--------------------------------------------------------------------------------
+	local whichGroup = nil
+	for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
+		if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
+			whichGroup = i
+		end
+	end
+	if whichGroup == nil then
+		writeToConsole("ERROR: Unable to locate Group in finalcutpro.getBrowserMode().")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Which Scroll Area:
+	--------------------------------------------------------------------------------
+	local whichScrollArea = nil
+	for i=1, browserSplitGroup[whichGroup]:attributeValueCount("AXChildren") do
+		if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXScrollArea" then
+			whichScrollArea = i
+		end
+	end
+
+	if whichScrollArea == nil then
+		--------------------------------------------------------------------------------
+		-- LIST VIEW:
+		--------------------------------------------------------------------------------
+		return "List"
+	else
+		return "Filmstrip"
+	end
+
+end
+
 --- hs.finalcutpro.getBrowserPersistentPlayhead() -> axuielementObject or nil
 --- Function
 --- Gets the Browser Persistent Playhead
