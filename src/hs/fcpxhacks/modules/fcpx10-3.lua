@@ -113,8 +113,6 @@ local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local plist										= require("hs.plist")
 local tools										= require("hs.fcpxhacks.modules.tools")
 
-local _bench									= require("hs.bench")
-
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
@@ -7903,7 +7901,6 @@ end
 	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
 	function selectClipAtLane(whichLane)
-		return _bench("selectClipAtLaneNew", function()
 		local content = fcp:app():timeline():content()
 		local playheadX = content:playhead():getPosition()
 		
@@ -7940,7 +7937,6 @@ end
 
 		tools.ninjaMouseClick(clipCentrePosition)
 		return true
-		end) --_bench
 	end
 
 	--------------------------------------------------------------------------------
