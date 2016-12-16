@@ -9230,7 +9230,7 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Change Value:
+		-- Change Value of Zoom Slider:
 		--------------------------------------------------------------------------------
 		local AXPopoverID = 1
 		local AXSliderID = 8
@@ -9239,14 +9239,16 @@ end
 
 		if direction == "up" then value = 0.2 else value = -0.2 end
 
-		local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
-		timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
+		if timelineButtonBar[timelineApperanceButtonID][AXPopoverID] ~= nil then
+			local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
+			timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
 
-		if changeTimelineClipHeightAlreadyInProgress then
-			timer.doUntil(function() return not changeTimelineClipHeightAlreadyInProgress end, function()
-				local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
-				timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
-			end, eventtap.keyRepeatInterval())
+			if changeTimelineClipHeightAlreadyInProgress then
+				timer.doUntil(function() return not changeTimelineClipHeightAlreadyInProgress end, function()
+					local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
+					timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
+				end, eventtap.keyRepeatInterval())
+			end
 		end
 
 	end
