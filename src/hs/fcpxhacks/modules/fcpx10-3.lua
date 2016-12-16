@@ -743,8 +743,8 @@ function bindKeyboardShortcuts()
 			FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 			FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 
-			FCPXHackChangeTimelineClipHeightUp 							= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
-			FCPXHackChangeTimelineClipHeightDown						= { characterString = "", 							modifiers = {}, 									fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightUp 							= { characterString = "",							modifiers = {}, 									fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightDown						= { characterString = "",							modifiers = {}, 									fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 
 			FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
@@ -986,8 +986,8 @@ function bindKeyboardShortcuts()
 			FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 			FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
 
-			FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("="),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 						releasedFn = function() writeToConsole("release") end, 					repeatFn = function() changeTimelineClipHeightRepeat("up") end },
-			FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 						releasedFn = function() writeToConsole("release") end, 					repeatFn = function() changeTimelineClipHeightRepeat("down") end },
+			FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("+"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+			FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 
 			FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
 			FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
@@ -6595,93 +6595,6 @@ end
 
 	end
 
-	--------------------------------------------------------------------------------
-	-- CHANGE TIMELINE CLIP HEIGHT:
-	--------------------------------------------------------------------------------
-	--
-	-- TO DO: This is currently broken in Final Cut Pro 10.3.
-	--
-	local changeTimelineClipHeightPressed = nil
-	function changeTimelineClipHeight(direction)
-
-		--------------------------------------------------------------------------------
-		-- UNDER CONSTRUCTION:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage("This feature has not yet been implemented for Final Cut Pro 10.3, however Apple has added an Increase/Decrease Clip Height Shortcut to the Command Editor which you can use in the meantime.")
-		if 1==1 then return end
-
-		writeToConsole("DOWN " .. direction)
-
-		--------------------------------------------------------------------------------
-		-- LOCAL VARIABLES:
-		--------------------------------------------------------------------------------
-		local showError = false
-		local event = eventtap.event
-
-		increaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['modifiers'])
-		decreaseThumbnailSizeModifiers = convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['modifiers'])
-		increaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["IncreaseThumbnailSize"]['characterString']]
-		decreaseThumbnailSizeCharacterString = keycodes.map[mod.finalCutProShortcutKey["DecreaseThumbnailSize"]['characterString']]
-
-		--------------------------------------------------------------------------------
-		-- ERROR DETECTION:
-		--------------------------------------------------------------------------------
-		if increaseThumbnailSizeModifiers == nil then showError = true end
-		if decreaseThumbnailSizeModifiers == nil then showError = true end
-		if increaseThumbnailSizeCharacterString == nil then showError = true end
-		if decreaseThumbnailSizeCharacterString == nil then showError = true end
-		if next(increaseThumbnailSizeModifiers) == nil and increaseThumbnailSizeCharacterString == "" then showError = true end
-		if next(decreaseThumbnailSizeModifiers) == nil and decreaseThumbnailSizeCharacterString == "" then showError = true end
-		if showError then
-			dialog.displayErrorMessage("The Increase/Decrease Clip Height keyboard shortcuts must be allocated in the Final Cut Pro Command Editor for this feature to work.")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- DO ONCE:
-		--------------------------------------------------------------------------------
-		if direction == "up" then
-			writeToConsole("up")
-			--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, true):post()
-			--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, false):post()
-		else
-			writeToConsole("down")
-			--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, true):post()
-			--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, false):post()
-		end
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- CHANGE TIMELINE CLIP HEIGHT REPEAT:
-		--------------------------------------------------------------------------------
-		function changeTimelineClipHeightRepeat(direction)
-
-		--------------------------------------------------------------------------------
-		-- UNDER CONSTRUCTION:
-		--------------------------------------------------------------------------------
-		if 1==1 then return end
-
-			writeToConsole("REPEAT " .. direction)
-
-			local event = eventtap.event
-			if direction == "up" then
-				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, true):post()
-				--event.newKeyEvent(increaseThumbnailSizeModifiers, increaseThumbnailSizeCharacterString, false):post()
-
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", true):post()
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "=", false):post()
-
-			else
-				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, true):post()
-				--event.newKeyEvent(decreaseThumbnailSizeModifiers, decreaseThumbnailSizeCharacterString, false):post()
-
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", true):post()
-				--eventtap.event.newKeyEvent({"cmd", "shift"}, "-", false):post()
-			end
-
-		end
-
 --------------------------------------------------------------------------------
 -- KEYWORDS:
 --------------------------------------------------------------------------------
@@ -9266,19 +9179,102 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- CHANGE TIMELINE CLIP HEIGHT:
+	--------------------------------------------------------------------------------
+	function changeTimelineClipHeight(direction)
+
+		--------------------------------------------------------------------------------
+		-- Prevent multiple keypresses:
+		--------------------------------------------------------------------------------
+		if changeTimelineClipHeightAlreadyInProgress then return end
+		changeTimelineClipHeightAlreadyInProgress = true
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Button Bar:
+		--------------------------------------------------------------------------------
+		timelineButtonBar = fcp.getTimelineButtonBar()
+		if timelineButtonBar == nil then
+			displayErrorMessage("Unable to locate the Timeline Button Bar.\n\nError Occurred in changeTimelineClipHeight().")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Find the Timeline Appearance Button:
+		--------------------------------------------------------------------------------
+		timelineApperanceButtonID = nil
+		for i=1, timelineButtonBar:attributeValueCount("AXChildren") do
+			if timelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:154" then
+				timelineApperanceButtonID = i
+			end
+		end
+		if timelineApperanceButtonID == nil then
+			displayErrorMessage("Unable to locate the Timeline Apperance Button.\n\nError Occurred in changeTimelineClipHeight().")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Open Appearance Popup if not already open:
+		--------------------------------------------------------------------------------
+		if timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXValue") == 0 then
+			-- Appearance Popup Closed:
+			local result = timelineButtonBar[timelineApperanceButtonID]:performAction("AXPress")
+			if result == nil then
+				displayErrorMessage("Unable to open the Timeline Apperance Popup.\n\nError Occurred in changeTimelineClipHeight().")
+				return
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Change Value:
+		--------------------------------------------------------------------------------
+		local AXPopoverID = 1
+		local AXSliderID = 8
+		local AXValueIndicator = 1
+		local value = 0
+
+		if direction == "up" then value = 0.2 else value = -0.2 end
+
+		local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
+		timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
+
+		if changeTimelineClipHeightAlreadyInProgress then
+			timer.doUntil(function() return not changeTimelineClipHeightAlreadyInProgress end, function()
+				local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
+				timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
+			end, eventtap.keyRepeatInterval())
+		end
+
+	end
+
+		--------------------------------------------------------------------------------
+		-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
+		--------------------------------------------------------------------------------
+		function changeTimelineClipHeightRelease()
+
+			changeTimelineClipHeightAlreadyInProgress = false
+
+			--------------------------------------------------------------------------------
+			-- Close the popup via mouse (as GUI Scripting fails):
+			--------------------------------------------------------------------------------
+			local changeAppearanceButtonSize 			= timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXSize")
+			local changeAppearanceButtonPosition 		= timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXPosition")
+			local changeAppearanceButtonLocation 		= {}
+			changeAppearanceButtonLocation['x'] 	= changeAppearanceButtonPosition['x'] + (changeAppearanceButtonSize['w'] / 2 )
+			changeAppearanceButtonLocation['y'] 	= changeAppearanceButtonPosition['y'] + (changeAppearanceButtonSize['h'] / 2 )
+
+			tools.ninjaMouseClick(changeAppearanceButtonLocation)
+
+		end
+
+	--------------------------------------------------------------------------------
 	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
 	function selectClipAtLane(whichLane)
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local fcpx 				= fcp.application()
-
-		--------------------------------------------------------------------------------
-		-- Get all FCPX UI Elements:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcp.application())[1]
 
 		--------------------------------------------------------------------------------
 		-- Variables:
