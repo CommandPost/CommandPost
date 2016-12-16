@@ -7,6 +7,7 @@ local just							= require("hs.just")
 local Button						= require("hs.finalcutpro.ui.Button")
 
 local Browser						= require("hs.finalcutpro.main.Browser")
+local Inspector						= require("hs.finalcutpro.main.Inspector")
 
 local PrimaryWindow = {}
 
@@ -110,11 +111,11 @@ end
 
 function PrimaryWindow:topGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left == 3 then 
-		if #(left[1]) > 1 then
-			return left[1][1]
-		else
-			return left[2][1]
+	if left and #left == 3 then
+		for i,child in ipairs(left) do
+			if #child == 1 and #(child[1]) > 1 then
+				return child[1]
+			end
 		end
 	end
 	return nil	
@@ -122,11 +123,11 @@ end
 
 function PrimaryWindow:bottomGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left == 3 then 
-		if #(left[1]) == 1 then
-			return left[1][1]
-		else
-			return left[2][1]
+	if left and #left == 3 then
+		for i,child in ipairs(left) do
+			if #child == 1 and #(child[1]) == 1 then
+				return child[1]
+			end
 		end
 	end
 	return nil	
@@ -157,7 +158,15 @@ function PrimaryWindow:inspectorUI()
 end
 
 function PrimaryWindow:_isInspector(element)
-	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil
+	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
+		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
+end
+
+function PrimaryWindow:inspector()
+	if not self._inspector then
+		self._inspector = Inspector:new(self)
+	end
+	return self._inspector
 end
 
 -----------------------------------------------------------------------
