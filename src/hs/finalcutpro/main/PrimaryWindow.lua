@@ -8,6 +8,7 @@ local Button						= require("hs.finalcutpro.ui.Button")
 
 local Browser						= require("hs.finalcutpro.main.Browser")
 local Inspector						= require("hs.finalcutpro.main.Inspector")
+local Viewer						= require("hs.finalcutpro.main.Viewer")
 
 local PrimaryWindow = {}
 
@@ -194,6 +195,13 @@ function PrimaryWindow:_isViewer(element)
 	return axutils.childWith(element, "AXIdentifier", "_NS:523") ~= nil
 end
 
+function PrimaryWindow:viewer()
+	if not self._viewer then
+		self._viewer = Viewer:new(self, false)
+	end
+	return self._viewer
+end
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- EVENT VIEWER UI
@@ -202,16 +210,30 @@ end
 function PrimaryWindow:eventViewerUI()
 	local top = self:topGroupUI()
 	local ui = nil
+	local viewerCount = 0
 	for i,child in ipairs(top) do
 		-- There can be two viwers enabled
 		if self:_isViewer(child) then
+			viewerCount = viewerCount + 1
 			-- Both the event viewer and standard viewer have the ID, so pick the left-most one
 			if ui == nil or ui:position().x > child:position().x then
 				ui = child
 			end
 		end
 	end
-	return ui
+	-- Can only be the event viewer if there are two viewers.
+	if viewerCount == 2 then
+		return ui
+	else
+		return nil
+	end
+end
+
+function PrimaryWindow:eventViewer()
+	if not self._eventViewer then
+		self._eventViewer = Viewer:new(self, true)
+	end
+	return self._eventViewer
 end
 
 -----------------------------------------------------------------------

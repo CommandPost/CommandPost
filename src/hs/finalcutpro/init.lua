@@ -1079,6 +1079,8 @@ end
 function finalcutpro._inspectElement(e, options, i)
 	if not e then
 		return "<no element found>"
+	elseif type(e) ~= "userdata" or not e.attributeValue then
+		return inspect(e)
 	end
 	
 	finalcutpro._highlightElement(e)
@@ -1087,14 +1089,13 @@ function finalcutpro._inspectElement(e, options, i)
 	local depth = options and options.depth or 1
 	return [[
 ==============================================
-#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:role()) .. [[ 
+#]] .. string.format("%3d", i) .. [[: Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
       Children = ]] .. inspect(#e) .. [[ 
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
 
 function finalcutpro._highlightElement(e)
-	local mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH
 	local eFrame = geometry.rect(e:frame())
 	-- local wFrame = geometry.rect(e:window():frame())
 	-- eFrame.x = wFrame.x + eFrame.x

@@ -45,16 +45,15 @@ function Browser:show()
 		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Browser")
 		-- Then enable it in the primary
 		menuBar:checkMenu("Window", "Show in Workspace", "Browser")
-		return true
 	end
-	return false
+	return self
 end
 
 function Browser:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace
 	menuBar:uncheckMenu("Window", "Show in Workspace", "Browser")
-	return true
+	return self
 end
 
 

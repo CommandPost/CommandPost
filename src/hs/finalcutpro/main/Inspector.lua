@@ -43,9 +43,8 @@ function Inspector:show()
 		local menuBar = self:app():menuBar()
 		-- Enable it in the primary
 		menuBar:checkMenu("Window", "Show in Workspace", "Inspector")
-		return true
 	end
-	return false
+	return self
 end
 
 
@@ -53,7 +52,7 @@ function Inspector:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace
 	menuBar:uncheckMenu("Window", "Show in Workspace", "Inspector")
-	return true
+	return self
 end
 
 
