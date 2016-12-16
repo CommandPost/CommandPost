@@ -239,7 +239,8 @@ end
 -----------------------------------------------------------------------
 
 function PrimaryWindow:timelineUI()
-	return self:bottomGroupUI()
+	local bottom = self:bottomGroupUI()
+	return bottom and bottom[1]
 end
 
 function PrimaryWindow:timeline()

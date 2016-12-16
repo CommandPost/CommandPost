@@ -4,6 +4,8 @@ local inspect							= require("hs.inspect")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
+local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+
 local Timeline = {}
 
 function Timeline:new(parent)
@@ -54,5 +56,60 @@ function Timeline:hide()
 	return self
 end
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- MAIN UI
+--- The Canvas is the main body of the timeline, containing the
+--- Timeline Index, the canvas, and the Effects/Transitions panels.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:mainUI()
+	local ui = self:UI()
+	if ui then
+		for i,child in ipairs(ui) do
+			if self:_isMain(child) then
+				return child
+			end
+		end
+	end
+	return nil
+end
+
+function Timeline:_isMain(element)
+	return element:attributeValue("AXIdentifier") == "_NS:237"
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- CONTENT UI
+--- The Content is the main body of the timeline, containing the
+--- Timeline Index, the Content, and the Effects/Transitions panels.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:content()
+	if not self._content then
+		self._content = TimelineContent:new(self)
+	end
+	return self._content
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- MAIN UI
+--- The Canvas is the main body of the timeline, containing the
+--- Timeline Index, the canvas, and the Effects/Transitions panels.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:toolbarUI()
+	local ui = self:UI()
+	if ui then
+		for i,child in ipairs(ui) do
+			if not self:_isMain(child) then
+				return child
+			end
+		end
+	end
+	return nil
+end
 
 return Timeline
