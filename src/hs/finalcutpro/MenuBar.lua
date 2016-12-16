@@ -9,6 +9,7 @@
 local log											= require("hs.logger").new("menubar")
 local json											= require("hs.json")
 local axutils										= require("hs.finalcutpro.axutils")
+local just											= require("hs.just")
 
 local MenuBar = {}
 
@@ -67,17 +68,15 @@ end
 ---            select("View", "Browser", "as List")
 ---
 --- Returns:
----  * True is successful otherwise Nil
+---  * The MenuBar, for further operations
 ---
 function MenuBar:selectMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	
 	if menuItemUI then
 		menuItemUI:doPress()
-		return true
 	end
-	
-	return false
+	return self
 end
 
 function MenuBar:isChecked(...)
@@ -98,18 +97,18 @@ function MenuBar:checkMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		return true
+		just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
 	end
-	return false
+	return self
 end
 
 function MenuBar:uncheckMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		return true
+		just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
 	end
-	return false
+	return self
 end
 
 function MenuBar:findMenuUI(...)
