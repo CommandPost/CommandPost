@@ -542,8 +542,6 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
 
-	print(keyStrokeFromPlist("ShareDefaultDestination"))
-
 end
 
 --------------------------------------------------------------------------------
@@ -2261,9 +2259,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -2594,9 +2592,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -2831,29 +2829,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -2862,14 +2851,6 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
-		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 
 		--------------------------------------------------------------------------------
 		-- If Titles & Generators is Closed, let's open it:
@@ -3011,34 +2992,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Button IDs Again:
 		--------------------------------------------------------------------------------
+		local checkBoxCount = 1
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
-
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3130,29 +3094,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -3332,34 +3287,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Button IDs Again:
 		--------------------------------------------------------------------------------
+		local checkBoxCount = 1
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
-
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -6231,12 +6169,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
@@ -6312,9 +6259,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -6536,7 +6483,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			tools.tools.doubleLeftClick(effectButtonPosition)
+			tools.doubleLeftClick(effectButtonPosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -6604,12 +6551,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.effectsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.effectsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
@@ -6686,9 +6642,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -6697,7 +6653,7 @@ end
 			end
 
 			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
+			-- Get Transitions Browsers Popup Button:
 			--------------------------------------------------------------------------------
 			local whichEffectsBrowserPopupButton = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
@@ -6978,12 +6934,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.titlesShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.titlesShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.")
@@ -7007,34 +6972,25 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -7112,10 +7068,10 @@ end
 		local titlesPopupButton = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+				--if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
 					titlesPopupButton = i
 					goto titlesGeneratorsDropdownExit
-				end
+				--end
 			end
 		end
 		if titlesPopupButton == nil then
@@ -7157,10 +7113,10 @@ end
 			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
 				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
 					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+						--if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
 							titlesGeneratorsGroup = i
 							goto titlesGeneratorsGroupExit
-						end
+						--end
 					end
 				end
 			end
@@ -7302,30 +7258,13 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Button IDs Again:
 			--------------------------------------------------------------------------------
+			local checkBoxCount = 1
 			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-					--------------------------------------------------------------------------------
-					-- Button 1: Libraries
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-						libariesButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 2: Photos/Audio
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-						photosAudioButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 3: Titles/Transitions
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-						titlesGeneratorsButtonID = i
-					end
-
+					if checkBoxCount == 3 then libariesButtonID = i end
+					if checkBoxCount == 2 then photosAudioButtonID = i end
+					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+					checkBoxCount = checkBoxCount + 1
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
@@ -7384,12 +7323,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.")
@@ -7413,29 +7361,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -7730,34 +7669,17 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Button IDs Again:
 			--------------------------------------------------------------------------------
+			local checkBoxCount = 1
 			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-					--------------------------------------------------------------------------------
-					-- Button 1: Libraries
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-						libariesButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 2: Photos/Audio
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-						photosAudioButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 3: Titles/Transitions
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-						titlesGeneratorsButtonID = i
-					end
-
+					if checkBoxCount == 3 then libariesButtonID = i end
+					if checkBoxCount == 2 then photosAudioButtonID = i end
+					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+					checkBoxCount = checkBoxCount + 1
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
