@@ -14,6 +14,8 @@ local log										= require("hs.logger").new("fcpxapp")
 --- Local Modules
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
+local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
+local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
 
 --- The App module
 local App = {}
@@ -87,6 +89,20 @@ function App:preferencesWindow()
 	return self._preferencesWindow
 end
 
+function App:primaryWindow()
+	if not self._primaryWindow then
+		self._primaryWindow = PrimaryWindow:new(self)
+	end
+	return self._primaryWindow
+end
+
+function App:secondaryWindow()
+	if not self._secondaryWindow then
+		self._secondaryWindow = SecondaryWindow:new(self)
+	end
+	return self._secondaryWindow
+end
+
 --- hs.finalcutpro.App:windowsUI() -> axuielement
 --- Function
 --- Returns the UI containing the list of windows in the app.
@@ -95,19 +111,96 @@ end
 ---  * N/A
 ---
 --- Returns:
----  * The axuieleme, or nil if the application is not running.
+---  * The axuielement, or nil if the application is not running.
 ---
 function App:windowsUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXWindows")
 end
 
+--- hs.finalcutpro.App:timeline() -> Timeline
+--- Function
+--- Returns the Timeline instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Timeline
+function App:timeline()
+	local timeline = self:secondaryWindow():timeline()
+	return timeline:isShowing() and timeline or self:primaryWindow():timeline()
+end	
+
+--- hs.finalcutpro.App:viewer() -> Viewer
+--- Function
+--- Returns the Viewer instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Viewer
+function App:viewer()
+	local viewer = self:secondaryWindow():viewer()
+	return viewer:isShowing() and viewer or self:primaryWindow():viewer()
+end	
+
+--- hs.finalcutpro.App:eventViewer() -> Viewer
+--- Function
+--- Returns the Event Viewer instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Event Viewer
+function App:eventViewer()
+	local viewer = self:secondaryWindow():viewer()
+	if viewer:isShowing() then
+		return self:secondaryWindow():eventViewer()
+	else
+		return self:primaryWindow():eventViewer()
+	end
+end	
+
+--- hs.finalcutpro.App:browser() -> Browser
+--- Function
+--- Returns the Browser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Browser
+function App:browser()
+	local browser = self:secondaryWindow():browser()
+	return browser:isShowing() and browser or self:primaryWindow():browser()
+end	
+
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- 
+-- DEBUG FUNCTIONS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
 function App:_listWindows()
 	log.d("Listing FCPX windows:")
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
-		debugMessage(i..": title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal()))
+		debugMessage(string.format("%7d", i)..": "..self:_describeWindow(w))
 	end
+	
+	debugMessage("")
+	debugMessage("   Main: "..self:_describeWindow(self:UI():mainWindow()))
+	debugMessage("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
+end
+
+function App:_describeWindow(w)
+	return "title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal())
 end
 
 return App

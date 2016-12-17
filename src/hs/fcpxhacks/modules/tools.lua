@@ -86,6 +86,13 @@ function tools.ninjaMouseClick(position)
 		mouse.setAbsolutePosition(originalMousePoint)
 end
 
+function tools.ninjaMouseAction(position, fn)
+	local originalMousePoint = mouse.getAbsolutePosition()
+	mouse.setAbsolutePosition(position)
+	fn()
+	mouse.setAbsolutePosition(originalMousePoint)
+end
+
 --------------------------------------------------------------------------------
 -- HOW MANY ITEMS IN A TABLE?
 --------------------------------------------------------------------------------

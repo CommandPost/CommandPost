@@ -88,15 +88,16 @@
 --------------------------------------------------------------------------------
 
 
+
+
+
 --------------------------------------------------------------------------------
--- THE MODULE:
+--------------------------------------------------------------------------------
+--                        T H E    M O D U L E                                --
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 local mod = {}
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -113,28 +114,59 @@ mod.iconPath			= "~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"
 --------------------------------------------------------------------------------
 
 
+
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                   T H E    M A I N    S C R I P T                          --
+--                    T H E    M A I N    S C R I P T                         --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- EXTENSIONS:
+-- BUILT-IN EXTENSIONS:
 --------------------------------------------------------------------------------
-
-local fcp 						= require("hs.finalcutpro")
-local tools						= require("hs.fcpxhacks.modules.tools")
-local dialog					= require("hs.fcpxhacks.modules.dialog")
 
 local application 				= require("hs.application")
 local console 					= require("hs.console")
 local drawing					= require("hs.drawing")
 local fs						= require("hs.fs")
-local keycodes					= require("hs.keycodes")
-local styledtext				= require("hs.styledtext")
 local inspect					= require("hs.inspect")
+local keycodes					= require("hs.keycodes")
+local logger					= require("hs.logger")
 local settings					= require("hs.settings")
+local styledtext				= require("hs.styledtext")
+local timer						= require("hs.timer")
+
+--------------------------------------------------------------------------------
+-- DEBUG MODE:
+--------------------------------------------------------------------------------
+if settings.get("fcpxHacks.debugMode") then
+
+	--------------------------------------------------------------------------------
+	-- Logger Level (defaults to 'warn' if not specified)
+	--------------------------------------------------------------------------------
+	logger.defaultLogLevel = 'debug'
+
+	--------------------------------------------------------------------------------
+	-- This will test that our global/local values are set up correctly
+	-- by forcing a garbage collection.
+	--------------------------------------------------------------------------------
+	timer.doAfter(5, collectgarbage)
+
+end
+
+--------------------------------------------------------------------------------
+-- CUSTOM EXTENSIONS:
+--------------------------------------------------------------------------------
+
+local dialog					= require("hs.fcpxhacks.modules.dialog")
+local fcp 						= require("hs.finalcutpro")
+local tools						= require("hs.fcpxhacks.modules.tools")
+
+--------------------------------------------------------------------------------
+-- VARIABLES:
+--------------------------------------------------------------------------------
 
 local hsBundleID				= hs.processInfo["bundleID"]
 
@@ -286,6 +318,19 @@ print = function(value)
 	else
 		value = tostring(value)
 	end
+
+	-- Reformat hs.logger values:
+	if string.sub(value, 1, 8) == string.match(value, "%d%d:%d%d:%d%d") then
+		value = string.sub(value, 9, string.len(value))
+		value =	"> " .. string.gsub(value, "^%s*(.-)%s*$", "%1")
+		local consoleStyledText = styledtext.new(value, {
+			color = drawing.color.definedCollections.hammerspoon["red"],
+			font = { name = "Menlo", size = 12 },
+		})
+		console.printStyledtext(consoleStyledText)
+		return
+	end
+
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
 		local consoleStyledText = styledtext.new(value, {
 			color = drawing.color.definedCollections.hammerspoon["blue"],
@@ -323,7 +368,6 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 
 
 

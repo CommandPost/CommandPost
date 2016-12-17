@@ -32,9 +32,8 @@ function PreferencesWindow:_findWindowUI(windows)
 		if w:attributeValue("AXSubrole") == "AXDialog"
 		and not w:attributeValue("AXModal")
 		and w:attributeValue("AXTitle") ~= ""
+		and axutils.childWith(w, "AXIdentifier", PreferencesWindow.GROUP)
 		then
-			-- Is a dialog and is not modal (Media Import is modal) and the title is not blank
-			-- TODO: This also matches the Command Editor window...
 			return w
 		end
 	end
