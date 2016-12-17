@@ -81,6 +81,7 @@ local http										= require("hs.http")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
+local logger									= require("hs.logger")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
@@ -4020,6 +4021,13 @@ end
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
 		mod.debugMode = not mod.debugMode
+
+		if mod.debugMode then
+			logger.defaultLogLevel = 'warn'
+		else
+			logger.defaultLogLevel = 'debug'
+		end
+
 		settings.set("fcpxHacks.debugMode", mod.debugMode)
 		refreshMenuBar()
 	end
