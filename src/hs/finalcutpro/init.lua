@@ -58,7 +58,9 @@ end
 ---
 function finalcutpro.currentLanguage()
 
+	--------------------------------------------------------------------------------
 	-- If FCPX is already run, we determine the language off the menu:
+	--------------------------------------------------------------------------------
 	if finalcutpro.running() then
 		local fcpxElements = ax.applicationElement(finalcutpro.application())
 		if fcpxElements ~= nil then
@@ -71,7 +73,6 @@ function finalcutpro.currentLanguage()
 						end
 					end
 					if fcpxElements[whichMenuBar][3] ~= nil then
-
 						local fileValue
 						fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
 						--------------------------------------------------------------------------------
@@ -94,47 +95,42 @@ function finalcutpro.currentLanguage()
 		end
 	end
 
-	-- If FCPX is not running, we try to determine the language using Command Line Tools:
-	local result = "en"
+	--------------------------------------------------------------------------------
+	-- If FCPX is not running, we next try to determine the language using
+	-- the Final Cut Pro Plist File:
+	--------------------------------------------------------------------------------
 	local finalCutProLanguage = finalcutpro.getPreference("AppleLanguages", nil)
-
 	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
 		if finalCutProLanguage[1] ~= nil then
-			result = finalCutProLanguage[1]
-		end
-	else
-		-- Use System Default Language:
-		executeResult, executeStatus = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-		if executeStatus ~= nil then
-			if executeResult ~= nil then
-				if string.sub(executeResult, 1, 1) == "(" then
-					local first = string.find(executeResult, '"')
-					if first ~= nil then
-						local second = string.find(executeResult, '-', first + 1)
-						if second ~= nil then
-
-							result = string.sub(executeResult, first + 1, second - 1)
-
-							-- Only return languages Final Cut Pro actually supports:
-							local validLanguage = false
-							for i=1, #finalCutProLanguages do
-								if result == finalCutProLanguages[i] then validLanguage = true end
-							end
-
-							if validLanguage then
-								return result
-							else
-								return "en"
-							end
-
-						end
-					end
-				end
-			end
+			return finalCutProLanguage[1]
 		end
 	end
 
-	return result
+	--------------------------------------------------------------------------------
+	-- If that fails, we try and use the user locale:
+	--------------------------------------------------------------------------------
+	local a, userLocale = osascript.applescript("return user locale of (get system info)")
+	if userLocale ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Only return languages Final Cut Pro actually supports:
+		--------------------------------------------------------------------------------
+		for i=1, #finalCutProLanguages do
+			if result == finalCutProLanguages[i] then
+				return result
+			else
+				if string.sub(userLocale, 1, string.find(userLocale, "_") - 1) == finalCutProLanguages[i] then
+					return string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+				end
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- If all else fails, assume it's English:
+	--------------------------------------------------------------------------------
+	return "en"
 
 end
 
