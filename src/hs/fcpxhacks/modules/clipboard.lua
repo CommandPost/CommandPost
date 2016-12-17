@@ -379,7 +379,7 @@ function clipboard.startWatching()
 						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 						if sharedClipboardPath ~= nil then
 
-							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. clipboard.hostname, "w")
+							local file = io.open(sharedClipboardPath .. "/" ..  clipboard.hostname .. "/" .. currentClipboardLabel, "w")
 							file:write(currentClipboardData)
 							file:close()
 
