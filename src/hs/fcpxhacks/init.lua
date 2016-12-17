@@ -332,6 +332,7 @@ print = function(value)
 	end
 
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
+		value = string.gsub(value, "^%s*(.-)%s*$", "%1")
 		local consoleStyledText = styledtext.new(value, {
 			color = drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },

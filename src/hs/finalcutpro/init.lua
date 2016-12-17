@@ -105,26 +105,31 @@ function finalcutpro.currentLanguage()
 	else
 		-- Use System Default Language:
 		executeResult, executeStatus = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-		if executeResult ~= nil then
-			if string.sub(executeResult, 1, 1) == "(" then
+		if executeStatus ~= nil then
+			if executeResult ~= nil then
+				if string.sub(executeResult, 1, 1) == "(" then
+					local first = string.find(executeResult, '"')
+					if first ~= nil then
+						local second = string.find(executeResult, '-', first + 1)
+						if second ~= nil then
 
-				local first = string.find(executeResult, '"')
-				local second = string.find(executeResult, '-', first + 1)
+							result = string.sub(executeResult, first + 1, second - 1)
 
-				result = string.sub(executeResult, first + 1, second - 1)
+							-- Only return languages Final Cut Pro actually supports:
+							local validLanguage = false
+							for i=1, #finalCutProLanguages do
+								if result == finalCutProLanguages[i] then validLanguage = true end
+							end
 
-				-- Only return languages Final Cut Pro actually supports:
-				local validLanguage = false
-				for i=1, #finalCutProLanguages do
-					if result == finalCutProLanguages[i] then validLanguage = true end
+							if validLanguage then
+								return result
+							else
+								return "en"
+							end
+
+						end
+					end
 				end
-
-				if validLanguage then
-					return result
-				else
-					return "en"
-				end
-
 			end
 		end
 	end
@@ -1157,7 +1162,7 @@ function finalcutpro._inspectElementAtMouse(options)
 			element = element ~= nil and element:parent()
 		end
 	end
-	
+
 	if element then
 		local result = ""
 		if options.type == "path" then
@@ -1183,8 +1188,8 @@ function finalcutpro._inspect(e, options)
 			local result = ""
 			for i=1,#e do
 				item = e[i]
-				result = result .. 
-				         "\n= " .. string.format("%3d", i) .. 
+				result = result ..
+				         "\n= " .. string.format("%3d", i) ..
 						 " ========================================" ..
 						 finalcutpro._inspect(item, options)
 			end
@@ -1200,12 +1205,12 @@ end
 
 function finalcutpro._inspectElement(e, options, i)
 	finalcutpro._highlightElement(e)
-	
+
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[ 
-      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
-      Children = ]] .. inspect(#e) .. [[ 
+	return [[
+      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[
+      Children = ]] .. inspect(#e) .. [[
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
@@ -1214,7 +1219,7 @@ function finalcutpro._highlightElement(e)
 	if not e.frame then
 		return
 	end
-	
+
 	local eFrame = geometry.rect(e:frame())
 	-- local wFrame = geometry.rect(e:window():frame())
 	-- eFrame.x = wFrame.x + eFrame.x
@@ -1234,10 +1239,10 @@ function finalcutpro._highlightElement(e)
 	--------------------------------------------------------------------------------
 	-- Set a timer to delete the highlight after 3 seconds:
 	--------------------------------------------------------------------------------
-	local highlightTimer = timer.doAfter(3, 
+	local highlightTimer = timer.doAfter(3,
 	function()
 		-- debugMessage("Deleting element highlight...")
-		highlight:delete() 
+		highlight:delete()
 		highlightTimer = nil
 		-- debugMessage("Deleted element highlight.")
 	end)
