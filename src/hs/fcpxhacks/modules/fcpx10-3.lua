@@ -1750,15 +1750,31 @@ end
 			--------------------------------------------------------------------------------
 			local sharedXMLFiles = {}
 
+			local emptySharedXMLFiles = true
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 
-			for file in fs.dir(xmlSharingPath) do
-				 if file:sub(-7) == ".fcpxml" then
-					sharedXMLFiles[#sharedXMLFiles + 1] = file:sub(1, -8)
-				 end
+			for folder in fs.dir(xmlSharingPath) do
+
+				if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
+
+					submenu = {}
+					for file in fs.dir(xmlSharingPath .. "/" .. folder) do
+						if file:sub(-7) == ".fcpxml" then
+							emptySharedXMLFiles = false
+							local xmlPath = xmlSharingPath .. folder .. "/" .. file
+							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp.importXML(xmlPath) end, disabled = not fcpxRunning})
+						end
+					end
+
+					if next(submenu) ~= nil then
+						table.insert(settingsSharedXMLTable, {title = folder, menu = submenu})
+					end
+
+				end
+
 			end
 
-			if next(sharedXMLFiles) == nil then
+			if emptySharedXMLFiles then
 				--------------------------------------------------------------------------------
 				-- Nothing in the Shared Clipboard:
 				--------------------------------------------------------------------------------
@@ -1767,9 +1783,6 @@ end
 				--------------------------------------------------------------------------------
 				-- Something in the Shared Clipboard:
 				--------------------------------------------------------------------------------
-				for i=1, #sharedXMLFiles do
-					table.insert(settingsSharedXMLTable, {title = sharedXMLFiles[i], fn = function() importSharedXML(sharedXMLFiles[i]) end, disabled = not fcpxRunning})
-				end
 				table.insert(settingsSharedXMLTable, { title = "-" })
 				table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = clearSharedXMLFiles })
 			end
@@ -5021,13 +5034,19 @@ end
 	-- CLEAR SHARED XML FILES:
 	--------------------------------------------------------------------------------
 	function clearSharedXMLFiles()
+
 		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		for file in fs.dir(xmlSharingPath) do
-			 if file:sub(-7) == ".fcpxml" then
-				os.remove(xmlSharingPath .. file)
-			 end
-			 refreshMenuBar()
+		for folder in fs.dir(xmlSharingPath) do
+			if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
+				for file in fs.dir(xmlSharingPath .. "/" .. folder) do
+					if file:sub(-7) == ".fcpxml" then
+						os.remove(xmlSharingPath .. folder .. "/" .. file)
+					end
+				end
+			end
 		end
+		refreshMenuBar()
+
 	end
 
 --------------------------------------------------------------------------------
@@ -5156,18 +5175,6 @@ end
 	--------------------------------------------------------------------------------
 	function gotoLateNiteSite()
 		os.execute('open "' .. fcpxhacks.developerURL .. '"')
-	end
-
-	--------------------------------------------------------------------------------
-	-- IMPORT SHARED XML:
-	--------------------------------------------------------------------------------
-	function importSharedXML(whichSharedXML)
-
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
-
-		local result = fcp.importXML(whichSharedXMLPath)
-
 	end
 
 --------------------------------------------------------------------------------
@@ -10198,15 +10205,21 @@ function sharedXMLFileWatcher(files)
 			local testFile = io.open(file, "r")
 			if testFile ~= nil then
 				testFile:close()
-				if not string.find(file, "(" .. host.localizedName() ..")") then
+
+				local editorName = string.reverse(string.sub(string.reverse(file), string.find(string.reverse(file), "/", 1) + 1, string.find(string.reverse(file), "/", string.find(string.reverse(file), "/", 1) + 1) - 1))
+
+				if host.localizedName() ~= editorName then
+
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
-														   						   :title("New XML Recieved")
-														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
-														   						   :informativeText("FCPX Hacks has recieved a new XML file.")
-														   						   :hasActionButton(true)
-														   						   :actionButtonTitle("Import XML")
-														   						   :send()
+					sharedXMLNotification = notify.new(function() fcp.importXML(file) end)
+						:setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						:title("New XML Recieved")
+						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
+						:informativeText("FCPX Hacks has recieved a new XML file.")
+						:hasActionButton(true)
+						:actionButtonTitle("Import XML")
+						:send()
+
 				end
 			end
         end
@@ -10214,13 +10227,6 @@ function sharedXMLFileWatcher(files)
 
 	refreshMenuBar()
 end
-
-	--------------------------------------------------------------------------------
-	-- SHARED XML FILE NOTIFICATION ACTION:
-	--------------------------------------------------------------------------------
-	function sharedXMLNotificationAction(value)
-		importSharedXML(value:subTitle())
-	end
 
 --------------------------------------------------------------------------------
 -- TOUCH BAR WATCHER:
