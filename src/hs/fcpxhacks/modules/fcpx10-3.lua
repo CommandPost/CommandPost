@@ -7903,24 +7903,20 @@ end
 	function selectClipAtLane(whichLane)
 		local content = fcp:app():timeline():content()
 		local playheadX = content:playhead():getPosition()
-		
+
 		local clips = content:clipsUI(false, function(clip)
 			local frame = clip:frame()
 			return playheadX >= frame.x and playheadX < (frame.x + frame.w)
 		end)
-		
+
 		if whichLane > #clips then
 			return false
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Sort the table:
 		--------------------------------------------------------------------------------
-		table.sort(clips, function(a, b) return a:position().y < b:position().y end)
-		
-		-- debugMessage("selectClipAtLane("..whichLane..")\n"
-		--           .. "playhead: "..playheadX
-		--           .. fcp._inspect(clips))
+		table.sort(clips, function(a, b) return a:position().y > b:position().y end)
 
 		--------------------------------------------------------------------------------
 		-- Which clip to we need:
