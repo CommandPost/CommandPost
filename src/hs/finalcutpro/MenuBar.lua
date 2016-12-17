@@ -9,6 +9,7 @@
 local log											= require("hs.logger").new("menubar")
 local json											= require("hs.json")
 local axutils										= require("hs.finalcutpro.axutils")
+local just											= require("hs.just")
 
 local MenuBar = {}
 
@@ -67,9 +68,50 @@ end
 ---            select("View", "Browser", "as List")
 ---
 --- Returns:
----  * True is successful otherwise Nil
+---  * The MenuBar, for further operations
 ---
 function MenuBar:selectMenu(...)
+	local menuItemUI = self:findMenuUI(...)
+	
+	if menuItemUI then
+		menuItemUI:doPress()
+	end
+	return self
+end
+
+function MenuBar:isChecked(...)
+	local menuItemUI = self:findMenuUI(...)
+	return menuItemUI and self:_isMenuChecked(menuItemUI)
+end
+
+function MenuBar:isEnabled(...)
+	local menuItemUI = self:findMenuUI(...)
+	return menuItemUI and self:_isMenuChecked(menuItemUI)
+end
+
+function MenuBar:_isMenuChecked(menu)
+	return menu:attributeValue("AXMenuItemMarkChar") ~= nil
+end
+
+function MenuBar:checkMenu(...)
+	local menuItemUI = self:findMenuUI(...)
+	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
+		menuItemUI:doPress()
+		just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
+	end
+	return self
+end
+
+function MenuBar:uncheckMenu(...)
+	local menuItemUI = self:findMenuUI(...)
+	if menuItemUI and self:_isMenuChecked(menuItemUI) then
+		menuItemUI:doPress()
+		just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
+	end
+	return self
+end
+
+function MenuBar:findMenuUI(...)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
 	local menuUI = self:UI()
@@ -84,6 +126,7 @@ function MenuBar:selectMenu(...)
 			menuMap = item.items
 		else
 			-- We don't have it in our list, so look it up manually. Hopefully they are in English!
+			log.w("Searching manually for '"..step.."'.")
 			menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
 		end
 		
@@ -94,17 +137,11 @@ function MenuBar:selectMenu(...)
 				assert(not menuUI or menuUI:role() == "AXMenu")
 			end
 		else
-			log.d("Unable to find a menu called '"..step.."'.")
+			log.w("Unable to find a menu called '"..step.."'.")
 			return nil
 		end
 	end
-	
-	if menuItemUI then
-		menuItemUI:doPress()
-		return true
-	end
-	
-	return false
+	return menuItemUI
 end
 
 --- hs.finalcutpro.MenuBar:generateMenuMap() -> boolean
