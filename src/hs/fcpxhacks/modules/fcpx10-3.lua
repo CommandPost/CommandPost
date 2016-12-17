@@ -67,6 +67,7 @@ local mod = {}
 
 local alert										= require("hs.alert")
 local application								= require("hs.application")
+local base64									= require("hs.base64")
 local chooser									= require("hs.chooser")
 local console									= require("hs.console")
 local distributednotifications					= require("hs.distributednotifications")
@@ -1694,29 +1695,43 @@ end
 			--------------------------------------------------------------------------------
 			-- Get list of files:
 			--------------------------------------------------------------------------------
+			local emptySharedClipboard = true
 			local sharedClipboardFiles = {}
 			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 			for file in fs.dir(sharedClipboardPath) do
-				 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
-					sharedClipboardFiles[#sharedClipboardFiles + 1] = file:sub(36)
+				 if file:sub(-10) == ".fcpxhacks" then
+
+					local pathToClipboardFile = sharedClipboardPath .. file
+					local plistData = plist.xmlFileToTable(pathToClipboardFile)
+					if plistData ~= nil then
+						if plistData["SharedClipboardLabel1"] ~= nil then
+
+							local editorName = string.sub(file, 1, -11)
+							local submenu = {}
+							for i=1, 5 do
+								emptySharedClipboard = false
+								local currentItem = plistData["SharedClipboardLabel"..tostring(i)]
+								if currentItem ~= "" then table.insert(submenu, {title = currentItem, fn = function() pasteFromSharedClipboard(pathToClipboardFile, tostring(i)) end, disabled = not fcpxRunning}) end
+							end
+
+							table.insert(settingsSharedClipboardTable, {title = editorName, menu = submenu})
+						end
+					end
+
+
 				 end
 			end
 
-			if next(sharedClipboardFiles) == nil then
+			if emptySharedClipboard then
 				--------------------------------------------------------------------------------
 				-- Nothing in the Shared Clipboard:
 				--------------------------------------------------------------------------------
 				table.insert(settingsSharedClipboardTable, { title = "Empty", disabled = true })
 			else
-				--------------------------------------------------------------------------------
-				-- Something in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				for i=1, #sharedClipboardFiles do
-					table.insert(settingsSharedClipboardTable, {title = sharedClipboardFiles[i], fn = function() pasteFromSharedClipboard(sharedClipboardFiles[i]) end, disabled = not fcpxRunning})
-				end
 				table.insert(settingsSharedClipboardTable, { title = "-" })
 				table.insert(settingsSharedClipboardTable, { title = "Clear Shared Clipboard History", fn = clearSharedClipboardHistory })
 			end
+
 		else
 			--------------------------------------------------------------------------------
 			-- Shared Clipboard Disabled:
@@ -4939,20 +4954,16 @@ end
 	--------------------------------------------------------------------------------
 	-- PASTE FROM SHARED CLIPBOARD:
 	--------------------------------------------------------------------------------
-	function pasteFromSharedClipboard(whichClipboard)
+	function pasteFromSharedClipboard(pathToClipboardFile, whichClipboard)
 
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
-		if enableSharedClipboard then
-			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-			if sharedClipboardPath ~= nil then
+		if tools.doesFileExist(pathToClipboardFile) then
+			local plistData = plist.xmlFileToTable(pathToClipboardFile)
+			if plistData ~= nil then
 
-				local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
-				if file == nil then
-					dialog.displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
-					return "Fail"
-				end
-				currentClipboardData = file:read("*all")
-				file:close()
+				--------------------------------------------------------------------------------
+				-- Decode Shared Clipboard Data from Plist:
+				--------------------------------------------------------------------------------
+				local currentClipboardData = base64.decode(plistData["SharedClipboardData" .. whichClipboard])
 
 				--------------------------------------------------------------------------------
 				-- Write data back to Clipboard:
@@ -4970,8 +4981,15 @@ end
 					return "Failed"
 				end
 
+			else
+				dialog.errorMessage("The Shared Clipboard file could not be read.")
+				return "Fail"
 			end
+		else
+			dialog.displayMessage("The Shared Clipboard file could not be found.")
+			return "Fail"
 		end
+
 	end
 
 --------------------------------------------------------------------------------
@@ -4992,7 +5010,7 @@ end
 	function clearSharedClipboardHistory()
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 		for file in fs.dir(sharedClipboardPath) do
-			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
+			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
 			 refreshMenuBar()
@@ -10157,8 +10175,16 @@ end
 -- SHARED CLIPBOARD WATCHER:
 --------------------------------------------------------------------------------
 function sharedClipboardFileWatcher(files)
-	debugMessage("Refreshing Shared Clipboard.")
-	refreshMenuBar()
+    doReload = false
+    for _,file in pairs(files) do
+        if file:sub(-10) == ".fcpxhacks" then
+            doReload = true
+        end
+    end
+    if doReload then
+		debugMessage("Refreshing Shared Clipboard.")
+		refreshMenuBar(true)
+    end
 end
 
 --------------------------------------------------------------------------------

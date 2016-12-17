@@ -40,6 +40,18 @@ function tools.doesDirectoryExist(path)
 end
 
 --------------------------------------------------------------------------------
+-- DOES FILE EXIST:
+--------------------------------------------------------------------------------
+function tools.doesFileExist(path)
+    local attr = fs.attributes(path)
+    if type(attr) == "table" then
+    	return true
+    else
+    	return false
+    end
+end
+
+--------------------------------------------------------------------------------
 -- TRIM STRING:
 --------------------------------------------------------------------------------
 function tools.trim(s)
