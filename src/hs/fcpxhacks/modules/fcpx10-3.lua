@@ -8463,7 +8463,7 @@ end
 					return "Failed"
 				end
 
-				print("number of clips: " .. tostring(#whichRows))
+				debugMessage("number of clips: " .. tostring(#whichRows))
 
 				--------------------------------------------------------------------------------
 				-- Bring Focus Back to Clips:
@@ -8474,7 +8474,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Begin Clip Loop:
 				--------------------------------------------------------------------------------
-				print("#whichRows: " .. tostring(#whichRows))
+				debugMessage("#whichRows: " .. tostring(#whichRows))
 				for x=1, #whichRows do
 
 					--------------------------------------------------------------------------------
@@ -8491,7 +8491,7 @@ end
 					local clickHere = {}
 					clickHere['x'] = clipPosition['x'] + 60
 					clickHere['y'] = clipPosition['y'] + 15
-					--tools.ninjaMouseClick(clickHere)
+					tools.ninjaMouseClick(clickHere)
 
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share)
@@ -8499,8 +8499,6 @@ end
 					if not keyStrokeFromPlist("ShareDefaultDestination") then
 						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
-					else
-						print("Shortcut trigged!")
 					end
 
 					--------------------------------------------------------------------------------
@@ -9950,10 +9948,7 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 
-				print(mod.finalCutProShortcutKey[SetSelectionStart])
-
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					print(whichShortcutKey)
 					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
 						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
