@@ -7859,6 +7859,11 @@ end
 			return playheadX >= frame.x and playheadX < (frame.x + frame.w)
 		end)
 
+		if clips == nil then
+			debugMessage("No clips detected in selectClipAtLane().")
+			return false
+		end
+
 		if whichLane > #clips then
 			return false
 		end
