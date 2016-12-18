@@ -178,6 +178,18 @@ function App:browser()
 	return browser:isShowing() and browser or self:primaryWindow():browser()
 end	
 
+--- hs.finalcutpro.App:inspector() -> Inspector
+--- Function
+--- Returns the Inspector instance from the primary storyline
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Inspector
+function App:inspector()
+	return self:primaryWindow():inspector()
+end	
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -200,7 +212,10 @@ function App:_listWindows()
 end
 
 function App:_describeWindow(w)
-	return "title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal())
+	return "title: "..inspect(w:attributeValue("AXTitle"))..
+	       "; role: "..inspect(w:attributeValue("AXRole"))..
+		   "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
+		   "; modal: "..inspect(w:attributeValue("AXModal"))
 end
 
 return App

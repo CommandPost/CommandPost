@@ -108,7 +108,7 @@ end
 
 function PrimaryWindow:topGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left == 3 then
+	if left and #left >= 3 then
 		for i,child in ipairs(left) do
 			if #child == 1 and #(child[1]) > 1 then
 				return child[1]
@@ -146,17 +146,12 @@ function PrimaryWindow:inspectorUI()
 		-- it's in the top-left panel (half-height)
 		local top = self:topGroupUI()
 		for i,child in ipairs(top) do
-			if self:_isInspector(child) then
+			if Inspector.isInspector(child) then
 				return child
 			end
 		end
 	end
 	return nil
-end
-
-function PrimaryWindow:_isInspector(element)
-	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
-		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
 end
 
 function PrimaryWindow:inspector()

@@ -4,7 +4,15 @@ local inspect							= require("hs.inspect")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
+local ColorBoard						= require("hs.finalcutpro.main.ColorBoard")
+
 local Inspector = {}
+
+function Inspector.isInspector(element)
+	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
+		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
+		or ColorBoard.isColorBoard(element)
+end
 
 function Inspector:new(parent)
 	o = {_parent = parent}
@@ -27,7 +35,23 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Inspector:UI()
-	return self:parent():inspectorUI()
+	local parent = self:parent()
+	local ui = parent:rightGroupUI()
+	if ui then
+		-- it's in the right panel (full-height)
+		if Inspector.isInspector(ui) then
+			return ui
+		end
+	else
+		-- it's in the top-left panel (half-height)
+		local top = parent:topGroupUI()
+		for i,child in ipairs(top) do
+			if Inspector.isInspector(child) then
+				return child
+			end
+		end
+	end
+	return nil
 end
 
 function Inspector:isShowing()
@@ -53,5 +77,16 @@ function Inspector:hide()
 	return self
 end
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- Color Board
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Inspector:colorBoard()
+	if not self._colorBoard then
+		self._colorBoard = ColorBoard:new(self)
+	end
+	return self._colorBoard
+end
 
 return Inspector
