@@ -2,9 +2,11 @@
 ---
 --- Controls for Final Cut Pro
 ---
---- Thrown together by:
----   Chris Hocking (https://github.com/latenitefilms)
----   David Peterson (https://randomphotons.com/)
+--- Authors:
+---
+---   Chris Hocking 	https://latenitefilms.com
+---   David Peterson 	https://randomphotons.com/
+---
 
 local finalcutpro = {}
 
@@ -31,6 +33,8 @@ local drawing								= require("hs.drawing")
 local geometry								= require("hs.geometry")
 local timer									= require("hs.timer")
 
+finalcutpro.cachedCurrentLanguage 			= nil
+
 --- doesDirectoryExist() -> boolean
 --- Function
 --- Returns true if Directory Exists else False
@@ -56,7 +60,16 @@ end
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
 ---
-function finalcutpro.currentLanguage()
+function finalcutpro.currentLanguage(forceReload)
+
+	--------------------------------------------------------------------------------
+	-- Caching:
+	--------------------------------------------------------------------------------
+	if finalcutpro.cachedCurrentLanguage ~= nil then
+		if not forceReload then
+			return finalcutpro.cachedCurrentLanguage
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- If FCPX is already run, we determine the language off the menu:
@@ -83,12 +96,30 @@ function finalcutpro.currentLanguage()
 						-- JAPANESE:	ファイル
 						-- CHINESE:		文件
 						--------------------------------------------------------------------------------
-						if fileValue == "File" 		then return "en" 		end
-						if fileValue == "Ablage" 	then return "de" 		end
-						if fileValue == "Archivo" 	then return "es" 		end
-						if fileValue == "Fichier" 	then return "fr" 		end
-						if fileValue == "ファイル" 	then return "ja" 		end
-						if fileValue == "文件" 		then return "zh_CN" 	end
+						if fileValue == "File" 		then
+							finalcutpro.cachedCurrentLanguage = "en"
+							return "en"
+						end
+						if fileValue == "Ablage" 	then
+							finalcutpro.cachedCurrentLanguage = "de"
+							return "de"
+						end
+						if fileValue == "Archivo" 	then
+							finalcutpro.cachedCurrentLanguage = "es"
+							return "es"
+						end
+						if fileValue == "Fichier" 	then
+							finalcutpro.cachedCurrentLanguage = "fr"
+							return "fr"
+						end
+						if fileValue == "ファイル" 	then
+							finalcutpro.cachedCurrentLanguage = "ja"
+							return "ja"
+						end
+						if fileValue == "文件" 		then
+							finalcutpro.cachedCurrentLanguage = "zh_CN"
+							return "zh_CN"
+						end
 					end
 				end
 			end
@@ -102,6 +133,7 @@ function finalcutpro.currentLanguage()
 	local finalCutProLanguage = finalcutpro.getPreference("AppleLanguages", nil)
 	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
 		if finalCutProLanguage[1] ~= nil then
+			finalcutpro.cachedCurrentLanguage = finalCutProLanguage[1]
 			return finalCutProLanguage[1]
 		end
 	end
@@ -116,11 +148,42 @@ function finalcutpro.currentLanguage()
 		-- Only return languages Final Cut Pro actually supports:
 		--------------------------------------------------------------------------------
 		for i=1, #finalCutProLanguages do
-			if result == finalCutProLanguages[i] then
-				return result
+			if userLocale == finalCutProLanguages[i] then
+				finalcutpro.cachedCurrentLanguage = userLocale
+				return userLocale
 			else
 				if string.sub(userLocale, 1, string.find(userLocale, "_") - 1) == finalCutProLanguages[i] then
+					finalcutpro.cachedCurrentLanguage = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
 					return string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+				end
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
+	--------------------------------------------------------------------------------
+	local a, AppleLanguages = hs.osascript.applescript([[
+		set lang to do shell script "defaults read NSGlobalDomain AppleLanguages"
+			tell application "System Events"
+				set pl to make new property list item with properties {text:lang}
+				set r to value of pl
+			end tell
+		return item 1 of r ]])
+	if AppleLanguages ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Only return languages Final Cut Pro actually supports:
+		--------------------------------------------------------------------------------
+		for i=1, #finalCutProLanguages do
+			if AppleLanguages == finalCutProLanguages[i] then
+				finalcutpro.cachedCurrentLanguage = AppleLanguages
+				return AppleLanguages
+			else
+				if string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1) == finalCutProLanguages[i] then
+					finalcutpro.cachedCurrentLanguage = string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
+					return string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
 				end
 			end
 		end
