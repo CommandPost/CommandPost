@@ -10,16 +10,28 @@ local ColorBoard = {}
 
 ColorBoard.aspect						= {}
 ColorBoard.aspect.color					= {
-	id = 1, reset = "_NS:288", 
-	global = "_NS:278", shadows = "_NS:273", midtones = "_NS:268", highlights = "_NS:258"
+	id 									= 1, 
+	reset 								= "_NS:288", 
+	global 								= { puck = "_NS:278", pct = "_NS:70", angle = "_NS:98"}, 
+	shadows 							= { puck = "_NS:273", pct = "_NS:77", angle = "_NS:104"}, 
+	midtones 							= { puck = "_NS:268", pct = "_NS:84", angle = "_NS:110"}, 
+	highlights 							= { puck = "_NS:258", pct = "_NS:91", angle = "_NS:116"}
 }
 ColorBoard.aspect.saturation			= {
-	id = 2, reset = "_NS:538",
-	global = "_NS:529", shadows = "_NS:524", midtones = "_NS:519", highlights = "_NS:514"
+	id 									= 2,
+	reset 								= "_NS:538",
+	global 								= { puck = "_NS:529", pct = "_NS:42"},
+	shadows 							= { puck = "_NS:524", pct = "_NS:49"},
+	midtones 							= { puck = "_NS:519", pct = "_NS:56"},
+	highlights 							= { puck = "_NS:514", pct = "_NS:63"}
 }
 ColorBoard.aspect.exposure				= {
-	id = 3, reset = "_NS:412",
-	global = "_NS:403", shadows = "_NS:398", midtones = "_NS:393", highlights = "_NS:388"
+	id									= 3,
+	reset								= "_NS:412",
+	global								= { puck = "_NS:403", pct = "_NS:9"},
+	shadows 							= { puck = "_NS:398", pct = "_NS:21"},
+	midtones							= { puck = "_NS:393", pct = "_NS:28"},
+	highlights							= { puck = "_NS:388", pct = "_NS:35"}
 }
 
 function ColorBoard.getAspect(aspect, property)
@@ -88,6 +100,14 @@ function ColorBoard:hide()
 	return self
 end
 
+
+function ColorBoard:childUI(id)
+	local ui = self:UI()
+	if ui then
+		return axutils.childWith(ui, "AXIdentifier", id)
+	end
+	return nil
+end
 
 function ColorBoard:topToolbarUI()
 	local ui = self:UI()
@@ -160,8 +180,9 @@ function ColorBoard:reset(aspect)
 end
 
 function ColorBoard:selectPuck(aspect, property)
-	local id = ColorBoard.getAspect(aspect, property)
-	local puckUI = self:puckUI(id)
+	self:showPanel(aspect)
+	local details = ColorBoard.getAspect(aspect, property)
+	local puckUI = self:childUI(details.puck)
 	if puckUI then
 		local f = puckUI:frame()
 		local centre = geometry(f.x + f.w/2, f.y + f.h/2)
@@ -170,12 +191,39 @@ function ColorBoard:selectPuck(aspect, property)
 	return self
 end
 
-function ColorBoard:puckUI(id)
-	local ui = self:UI()
-	if ui then
-		return axutils.childWith(ui, "AXIdentifier", id)
+function ColorBoard:setPercentage(aspect, property, value)
+	self:showPanel(aspect)
+	local details = ColorBoard.getAspect(aspect, property)
+	local pctUI = self:childUI(details.pct)
+	if not pctUI then -- short inspector panels can hide some details panels
+		self:selectPuck(aspect, property)
+		-- try again
+		pctUI = self:childUI(details.pct)
 	end
-	return nil
+	if pctUI then
+		pctUI:setAttributeValue("AXValue", tostring(value))
+		pctUI:doConfirm()
+	end
+	return self
 end
+
+function ColorBoard:setAngle(aspect, property, value)
+	local details = ColorBoard.getAspect(aspect, property)
+	if details.angle then
+		self:showPanel(aspect)
+		local angleUI = self:childUI(details.angle)
+		if not angleUI then -- short inspector panels can hide some details panels
+			self:selectPuck(aspect, property)
+			-- try again
+			angleUI = self:childUI(details.angle)
+		end
+		if angleUI then
+			angleUI:setAttributeValue("AXValue", tostring(value))
+			angleUI:doConfirm()
+		end
+	end
+	return self
+end
+
 
 return ColorBoard
