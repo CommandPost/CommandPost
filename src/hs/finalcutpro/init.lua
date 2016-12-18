@@ -1214,7 +1214,8 @@ end
 --- Returns:
 ---  * the string with the element details
 ---
-function finalcutpro._inspectElementAtMouse(options)
+function finalcutpro._inspectAtMouse(options)
+	options = options or {}
 	local element = finalcutpro._elementAtMouse()
 	if options.parents then
 		for i=1,options.parents do
