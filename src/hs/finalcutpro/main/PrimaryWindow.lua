@@ -108,7 +108,7 @@ end
 
 function PrimaryWindow:topGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left == 3 then
+	if left and #left >= 3 then
 		for i,child in ipairs(left) do
 			if #child == 1 and #(child[1]) > 1 then
 				return child[1]
