@@ -377,9 +377,9 @@ function loadScript()
 		fullscreenKeyboardWatcher()
 
 		--------------------------------------------------------------------------------
-		-- Command Editor Watcher:
+		-- Final Cut Pro Window Watcher:
 		--------------------------------------------------------------------------------
-		commandEditorWatcher()
+		finalCutProWindowWatcher()
 
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline Watcher:
@@ -403,11 +403,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
 		if enableMediaImportWatcher then mediaImportWatcher() end
-
-		--------------------------------------------------------------------------------
-		-- Resize Watcher:
-		--------------------------------------------------------------------------------
-		finalCutProResizeWatcher()
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -9640,20 +9635,6 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS RESIZED:
---------------------------------------------------------------------------------
-function finalCutProResizeWatcher()
-	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
-		debugMessage("Window Resized.")
-		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then setTouchBarLocation() end
-		end
-	end, true)
-end
-
---------------------------------------------------------------------------------
 -- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS ACTIVATED OR DEACTIVATED:
 --------------------------------------------------------------------------------
 function finalCutProWatcher(appName, eventType, appObject)
@@ -9769,18 +9750,156 @@ function finalCutProWatcher(appName, eventType, appObject)
 end
 
 --------------------------------------------------------------------------------
--- AUTOMATICALLY RELOAD THIS CONFIG FILE WHEN UPDATED:
+-- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO WINDOWS ARE CHANGED:
 --------------------------------------------------------------------------------
-function hammerspoonConfigWatcher(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == ".lua" then
-            doReload = true
-        end
-    end
-    if doReload then
-        hs.reload()
-    end
+function finalCutProWindowWatcher()
+
+	local commandEditorID = nil
+	wasInFullscreenMode = false
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Filter:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher = windowfilter.new(true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Window Created:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher:subscribe(windowfilter.windowCreated,(function(window, applicationName)
+		if applicationName == "Final Cut Pro" then
+			if window:title() == "" then
+				local fcpx = fcp.application()
+				local fcpxElements = ax.applicationElement(fcpx)
+				if fcpxElements[1][1] ~= nil then
+					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+						-------------------------------------------------------------------------------
+						-- Hide HUD:
+						--------------------------------------------------------------------------------
+						if settings.get("fcpxHacks.enableHacksHUD") then
+								hackshud:hide()
+								wasInFullscreenMode = true
+						end
+					end
+				end
+			end
+		end
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Window Destroyed:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
+		if applicationName == "Final Cut Pro" then
+			if window:title() == "" then
+				-------------------------------------------------------------------------------
+				-- Show HUD:
+				--------------------------------------------------------------------------------
+				if wasInFullscreenMode then
+					if settings.get("fcpxHacks.enableHacksHUD") then
+							hackshud:show()
+					end
+				end
+			end
+		end
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Filter:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Created:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
+
+		--------------------------------------------------------------------------------
+		-- Command Editor Window Opened:
+		--------------------------------------------------------------------------------
+		if (window:title() == mod.labelCommandEditor) then
+
+			--------------------------------------------------------------------------------
+			-- Command Editor is Open:
+			--------------------------------------------------------------------------------
+			commandEditorID = window:id()
+			mod.isCommandEditorOpen = true
+			debugMessage("Command Editor Opened.")
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Disable Hotkeys:
+			--------------------------------------------------------------------------------
+			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
+				hotkeys:exit()
+			end
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Hide the Touch Bar:
+			--------------------------------------------------------------------------------
+			hideTouchbar()
+
+			--------------------------------------------------------------------------------
+			-- Hide the HUD:
+			--------------------------------------------------------------------------------
+			hackshud.hide()
+
+		end
+
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Destroyed:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
+
+		--------------------------------------------------------------------------------
+		-- Command Editor Window Closed:
+		--------------------------------------------------------------------------------
+		if (window:id() == commandEditorID) then
+
+			--------------------------------------------------------------------------------
+			-- Command Editor is Closed:
+			--------------------------------------------------------------------------------
+			commandEditorID = nil
+			mod.isCommandEditorOpen = false
+			debugMessage("Command Editor Closed.")
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Check if we need to show the Touch Bar:
+			--------------------------------------------------------------------------------
+			showTouchbar()
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Refresh Keyboard Shortcuts:
+			--------------------------------------------------------------------------------
+			timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Show the HUD:
+			--------------------------------------------------------------------------------
+			if settings.get("fcpxHacks.enableHacksHUD") then
+				hackshud.show()
+			end
+
+		end
+
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Moved:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
+		debugMessage("Window Resized.")
+		if touchBarSupported then
+			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			if displayTouchBar then setTouchBarLocation() end
+		end
+	end, true)
+
 end
 
 --------------------------------------------------------------------------------
@@ -9822,86 +9941,6 @@ function finalCutProSettingsWatcher(files)
 		end
 
     end
-end
-
---------------------------------------------------------------------------------
--- DISABLE SHORTCUTS WHEN FCPX COMMAND EDITOR IS OPEN:
---------------------------------------------------------------------------------
-function commandEditorWatcher()
-
-
-	local commandEditorID = nil
-
-	commandEditorFilter = windowfilter.new(true)
-
-	commandEditorFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-		if applicationName == 'Final Cut Pro' then
-			if (window:title() == mod.labelCommandEditor) then
-
-				--------------------------------------------------------------------------------
-				-- Command Editor is Open:
-				--------------------------------------------------------------------------------
-				commandEditorID = window:id()
-				mod.isCommandEditorOpen = true
-				debugMessage("Command Editor Opened.")
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Disable Hotkeys:
-				--------------------------------------------------------------------------------
-				if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
-					hotkeys:exit()
-				end
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Hide the Touch Bar:
-				--------------------------------------------------------------------------------
-				hideTouchbar()
-
-				--------------------------------------------------------------------------------
-				-- Hide the HUD:
-				--------------------------------------------------------------------------------
-				hackshud.hide()
-
-			end
-		end
-	end), true)
-	commandEditorFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-		if applicationName == 'Final Cut Pro' then
-			if (window:id() == commandEditorID) then
-
-				--------------------------------------------------------------------------------
-				-- Command Editor is Closed:
-				--------------------------------------------------------------------------------
-				commandEditorID = nil
-				mod.isCommandEditorOpen = false
-				debugMessage("Command Editor Closed.")
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Check if we need to show the Touch Bar:
-				--------------------------------------------------------------------------------
-				showTouchbar()
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Refresh Keyboard Shortcuts:
-				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Show the HUD:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableHacksHUD") then
-					hackshud.show()
-				end
-
-			end
-		end
-	end), true)
-
 end
 
 --------------------------------------------------------------------------------
@@ -10247,6 +10286,21 @@ function touchbarWatcher(obj, message)
 
     end
 
+end
+
+--------------------------------------------------------------------------------
+-- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:
+--------------------------------------------------------------------------------
+function hammerspoonConfigWatcher(files)
+    doReload = false
+    for _,file in pairs(files) do
+        if file:sub(-4) == ".lua" then
+            doReload = true
+        end
+    end
+    if doReload then
+        hs.reload()
+    end
 end
 
 --------------------------------------------------------------------------------

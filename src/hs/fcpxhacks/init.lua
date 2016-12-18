@@ -319,10 +319,13 @@ print = function(value)
 		value = tostring(value)
 	end
 
+	--------------------------------------------------------------------------------
 	-- Reformat hs.logger values:
+	--------------------------------------------------------------------------------
 	if string.sub(value, 1, 8) == string.match(value, "%d%d:%d%d:%d%d") then
-		value = string.sub(value, 9, string.len(value))
-		value =	"> " .. string.gsub(value, "^%s*(.-)%s*$", "%1")
+		value = string.sub(value, 9, string.len(value)) .. " [" .. string.sub(value, 1, 8) .. "]"
+		value = string.gsub(value, "     ", " ")
+		value =	" > " .. string.gsub(value, "^%s*(.-)%s*$", "%1")
 		local consoleStyledText = styledtext.new(value, {
 			color = drawing.color.definedCollections.hammerspoon["red"],
 			font = { name = "Menlo", size = 12 },
@@ -332,9 +335,10 @@ print = function(value)
 	end
 
 	if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
+		value = string.gsub(value, "     ", " ")
 		value = string.gsub(value, "^%s*(.-)%s*$", "%1")
-		local consoleStyledText = styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["blue"],
+		local consoleStyledText = styledtext.new(" > " .. value, {
+			color = drawing.color.definedCollections.hammerspoon["red"],
 			font = { name = "Menlo", size = 12 },
 		})
 		console.printStyledtext(consoleStyledText)
@@ -349,7 +353,11 @@ function writeToConsole(value, overrideLabel)
 		if not overrideLabel then
 			value = "> "..value
 		end
-		print(value)
+		local consoleStyledText = styledtext.new(value, {
+			color = drawing.color.definedCollections.hammerspoon["blue"],
+			font = { name = "Menlo", size = 12 },
+		})
+		console.printStyledtext(consoleStyledText)
 	end
 end
 
@@ -358,11 +366,21 @@ end
 --------------------------------------------------------------------------------
 function debugMessage(value, value2)
 	if value2 ~= nil then
-		writeToConsole(tostring(value) .. ": " .. tostring(value2))
+		local consoleStyledText = styledtext.new(" > " .. tostring(value) .. ": " .. tostring(value2), {
+			color = drawing.color.definedCollections.hammerspoon["red"],
+			font = { name = "Menlo", size = 12 },
+		})
+		console.printStyledtext(consoleStyledText)
 	else
 		if value ~= nil then
 			if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-			if settings.get("fcpxHacks.debugMode") then writeToConsole(value) end
+			if settings.get("fcpxHacks.debugMode") then
+				local consoleStyledText = styledtext.new(" > " .. value, {
+					color = drawing.color.definedCollections.hammerspoon["red"],
+					font = { name = "Menlo", size = 12 },
+				})
+				console.printStyledtext(consoleStyledText)
+			end
 		end
 	end
 end
