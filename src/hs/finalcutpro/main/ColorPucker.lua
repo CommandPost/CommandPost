@@ -5,6 +5,9 @@ local timer									= require("hs.timer")
 
 local Pucker = {}
 
+Pucker.elasticity = .5
+Pucker.naturalLength = 10
+
 function Pucker:new(colorBoard, aspect, property)
 	o = {
 		colorBoard = colorBoard,
@@ -67,8 +70,8 @@ function Pucker.loop(pucker)
 	local xDiff = current.x - pucker.origin.x
 	local yDiff = pucker.origin.y - current.y
 	
-	local xShift = xDiff ~= 0 and xDiff/math.abs(xDiff) or 0
-	local yShift = yDiff ~= 0 and yDiff/math.abs(yDiff) or 0
+	local xShift = Pucker.tension(xDiff)
+	local yShift = Pucker.tension(yDiff)
 	
 	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
 	local angleValue = angleUI and tonumber(angleUI:attributeValue("AXValue") or "0") + xShift
@@ -79,6 +82,12 @@ function Pucker.loop(pucker)
 	if angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
 	
 	timer.doAfter(0.0001, function() Pucker.loop(pucker) end)
+end
+
+function Pucker.tension(diff)
+	local factor = diff < 0 and -1 or 1
+	local tension = Pucker.elasticity * (diff*factor-Pucker.naturalLength) / Pucker.naturalLength
+	return tension < 0 and 0 or tension * factor
 end
 
 return Pucker
