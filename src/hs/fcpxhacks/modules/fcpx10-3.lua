@@ -5731,7 +5731,17 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.")
+			dialog.displayErrorMessage("Unable to return to timeline.\n\nError occured in multicamMatchFrame().")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Select Clip:
+		--------------------------------------------------------------------------------
+		if menuBar:isEnabled("Edit", "Select Clip") then
+			menuBar:selectMenu("Edit", "Select Clip")
+		else
+			dialog.displayErrorMessage("Unable to select clip.\n\nError occured in multicamMatchFrame().")
 			return
 		end
 
