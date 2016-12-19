@@ -6083,8 +6083,14 @@ end
 		-- TODO: This 'caching' should be replaced with hs.finalcutpro equivalent:
 		--------------------------------------------------------------------------------
 		local colorBoard = nil
+		::colorBoardMousePuckTryAgain::
 		if colorBoardMousePuckCache == nil then
-			writeToConsole("Using colorBoardMousePuck() for first time.")
+
+			--------------------------------------------------------------------------------
+			-- Cache Empty:
+			--------------------------------------------------------------------------------
+			writeToConsole("Cache Empty.")
+
 			local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
 			colorBoardMousePuckCache = finalCutProColorBoardRadioGroup
 
@@ -6112,8 +6118,46 @@ end
 			end
 
 		else
-			writeToConsole("Using Cache.")
-			colorBoard = colorBoardMousePuckColorBoardCache
+			if colorBoardMousePuckCache:attributeValueCount("AXChildren") == nil then
+
+				--------------------------------------------------------------------------------
+				-- Cache Failed to Trying Again:
+				--------------------------------------------------------------------------------
+				writeToConsole("Cache Failed.")
+
+				local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
+				colorBoardMousePuckCache = finalCutProColorBoardRadioGroup
+
+				if finalCutProColorBoardRadioGroup == nil then
+
+					--------------------------------------------------------------------------------
+					-- Open Color Board:
+					--------------------------------------------------------------------------------
+					local menuBar = fcp:app():menuBar()
+					if menuBar:isEnabled("Window", "Go To", "Color Board") then
+						menuBar:selectMenu("Window", "Go To", "Color Board")
+					else
+						dialog.displayErrorMessage("Failed to goto Color Board.")
+						return "Fail"
+					end
+
+				end
+
+				colorBoard = fcp:app():inspector():colorBoard()
+				colorBoardMousePuckColorBoardCache = colorBoard
+
+				if not colorBoard:isActive() then
+					dialog.displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+					return "Failed"
+				end
+
+			else
+				--------------------------------------------------------------------------------
+				-- Using Cache:
+				--------------------------------------------------------------------------------
+				writeToConsole("Using Cache.")
+				colorBoard = colorBoardMousePuckColorBoardCache
+			end
 		end
 
 		mod.colorPucker = colorBoard:startPucker(aspect, property)
