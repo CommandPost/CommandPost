@@ -140,14 +140,6 @@ function ColorBoard:colorSatExpUI()
 	return ui and axutils.childWith(ui, "AXIdentifier", "_NS:128")
 end
 
-function ColorBoard:showExposurePanel()
-	local ui = self:colorSatExpUI()
-	if ui then
-		ui[ColorBoard.EXPOSURE_PANEL]:doPress()
-	end
-	return self
-end
-
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- Panel Controls
@@ -191,15 +183,30 @@ function ColorBoard:selectPuck(aspect, property)
 	return self
 end
 
-function ColorBoard:setPercentage(aspect, property, value)
+
+--- Ensures that the specified aspect/property (eg 'color/global')
+--- 'edit' panel is visible and returns the specified value type UI
+--- (eg. 'pct' or 'angle')
+function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
+	if not self:isShowing() then
+		return nil
+	end
 	self:showPanel(aspect)
 	local details = ColorBoard.getAspect(aspect, property)
-	local pctUI = self:childUI(details.pct)
-	if not pctUI then -- short inspector panels can hide some details panels
+	if not details[type] then
+		return nil
+	end
+	local ui = self:childUI(details[type])
+	if not ui then -- short inspector panels can hide some details panels
 		self:selectPuck(aspect, property)
 		-- try again
-		pctUI = self:childUI(details.pct)
+		ui = self:childUI(details[type])
 	end
+	return ui
+end
+
+function ColorBoard:applyPercentage(aspect, property, value)
+	local pctUI = self:aspectPropertyPanelUI(aspect, property, 'pct')
 	if pctUI then
 		pctUI:setAttributeValue("AXValue", tostring(value))
 		pctUI:doConfirm()
@@ -207,23 +214,54 @@ function ColorBoard:setPercentage(aspect, property, value)
 	return self
 end
 
-function ColorBoard:setAngle(aspect, property, value)
-	local details = ColorBoard.getAspect(aspect, property)
-	if details.angle then
-		self:showPanel(aspect)
-		local angleUI = self:childUI(details.angle)
-		if not angleUI then -- short inspector panels can hide some details panels
-			self:selectPuck(aspect, property)
-			-- try again
-			angleUI = self:childUI(details.angle)
-		end
-		if angleUI then
-			angleUI:setAttributeValue("AXValue", tostring(value))
-			angleUI:doConfirm()
-		end
+function ColorBoard:shiftPercentage(aspect, property, shift)
+	local ui = self:aspectPropertyPanelUI(aspect, property, 'pct')
+	if ui then
+		local value = tonumber(ui:attributeValue("AXValue") or "0")
+		ui:setAttributeValue("AXValue", tostring(value + shift))
+		ui:doConfirm()
+	end
+	return self	
+end
+
+function ColorBoard:getPercentage(aspect, property)
+	local pctUI = self:aspectPropertyPanelUI(aspect, property, 'pct')
+	if pctUI then
+		return tonumber(pctUI:attributeValue("AXValue"))
+	end
+	return nil
+end
+
+function ColorBoard:applyAngle(aspect, property, value)
+	local angleUI = self:aspectPropertyPanelUI(aspect, property, 'angle')
+	if angleUI then
+		angleUI:setAttributeValue("AXValue", tostring(value))
+		angleUI:doConfirm()
 	end
 	return self
 end
+
+function ColorBoard:shiftAngle(aspect, property, shift)
+	local ui = self:aspectPropertyPanelUI(aspect, property, 'angle')
+	if ui then
+		local value = tonumber(ui:attributeValue("AXValue") or "0")
+		-- loop around between 0 and 360 degrees
+		value = (value + shift + 360) % 360
+		ui:setAttributeValue("AXValue", tostring(value))
+		ui:doConfirm()
+	end
+	return self	
+end
+
+function ColorBoard:getAngle(aspect, property, value)
+	local angleUI = self:aspectPropertyPanelUI(aspect, property, 'angle')
+	if angleUI then
+		local value = angleUI:getAttributeValue("AXValue")
+		if value ~= nil then return tonumber(value) end
+	end
+	return nil
+end
+
 
 
 return ColorBoard
