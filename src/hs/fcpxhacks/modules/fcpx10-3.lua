@@ -7955,7 +7955,9 @@ end
 		-- Toggle Touch Bar:
 		--------------------------------------------------------------------------------
 		setTouchBarLocation()
-		mod.touchBarWindow:toggle()
+		if fcp.running() then
+			mod.touchBarWindow:toggle()
+		end
 
 		--------------------------------------------------------------------------------
 		-- Update Settings:
