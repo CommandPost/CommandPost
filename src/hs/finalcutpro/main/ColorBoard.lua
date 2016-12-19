@@ -119,6 +119,11 @@ function ColorBoard:showInspectorUI()
 	return nil
 end
 
+function ColorBoard:isActive()
+	return self:colorSatExpUI() ~= nil
+end
+		
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- Color Correction Panels
