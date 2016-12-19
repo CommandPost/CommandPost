@@ -5768,6 +5768,7 @@ end
 	-- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
 	--------------------------------------------------------------------------------
 	function matchFrameThenHighlightFCPXBrowserPlayhead()
+
 		--------------------------------------------------------------------------------
 		-- Delete Any Highlights:
 		--------------------------------------------------------------------------------
@@ -5778,25 +5779,13 @@ end
 		--------------------------------------------------------------------------------
 		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
 			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+			highlightFCPXBrowserPlayhead()
+
 		else
 			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
 			return "Fail"
 		end
 
-		--------------------------------------------------------------------------------
-		-- If it worked then...
-		--------------------------------------------------------------------------------
-		if resultRevealInBrowser then
-			--------------------------------------------------------------------------------
-			-- Highlight FCPX Browser Playhead:
-			--------------------------------------------------------------------------------
-			highlightFCPXBrowserPlayhead()
-		else
-			--------------------------------------------------------------------------------
-			-- Error:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
-		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -8368,7 +8357,7 @@ end
 			if fcpxBrowserMode == "Filmstrip" then
 
 				local menuBar = fcp:app():menuBar()
-				
+
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
