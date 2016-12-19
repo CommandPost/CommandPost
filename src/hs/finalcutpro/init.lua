@@ -501,7 +501,6 @@ function finalcutpro.setPreference(key, value)
 		end
 		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -array '" .. arrayString .. "'")
 	elseif type(value) == "string" then
-		print("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -string '" .. value .. "'")
 		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -string '" .. value .. "'")
 	end
 
