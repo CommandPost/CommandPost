@@ -33,19 +33,7 @@ ColorBoard.aspect.exposure				= {
 	midtones							= { puck = "_NS:393", pct = "_NS:28"},
 	highlights							= { puck = "_NS:388", pct = "_NS:35"}
 }
-
-function ColorBoard.getAspect(aspect, property)
-	local panel = nil
-	if type(aspect) == "string" then
-		panel = ColorBoard.aspect[aspect]
-	else
-		panel = name
-	end
-	if property then
-		return panel[property]
-	end
-	return panel
-end
+ColorBoard.currentAspect = "*"
 
 function ColorBoard.isColorBoard(element)
 	for i,child in ipairs(element) do
@@ -142,6 +130,32 @@ function ColorBoard:colorSatExpUI()
 	return ui and axutils.childWith(ui, "AXIdentifier", "_NS:128")
 end
 
+function ColorBoard:getAspect(aspect, property)
+	local panel = nil
+	if type(aspect) == "string" then
+		if aspect == ColorBoard.currentAspect then
+			-- return the currently-visible aspect
+			local ui = self:colorSatExpUI()
+			if ui then
+				for k,value in pairs(ColorBoard.aspect) do
+					if ui[value.id]:value() == 1 then
+						panel = value
+					end
+				end
+			end
+		else
+			panel = ColorBoard.aspect[aspect]
+		end
+	else
+		panel = name
+	end
+	if panel and property then
+		return panel[property]
+	end
+	return panel
+end
+
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- Panel Controls
@@ -153,16 +167,16 @@ end
 
 function ColorBoard:showPanel(aspect)
 	self:show()
-	aspect = ColorBoard.getAspect(aspect)
+	aspect = self:getAspect(aspect)
 	local ui = self:colorSatExpUI()
-	if aspect and ui then
+	if aspect and ui and ui[aspect.id]:value() == 0 then
 		ui[aspect.id]:doPress()
 	end
 	return self
 end
 
 function ColorBoard:reset(aspect)
-	aspect = ColorBoard.getAspect(aspect)
+	aspect = self:getAspect(aspect)
 	self:showPanel(aspect)
 	local ui = self:UI()
 	if ui then
@@ -176,7 +190,7 @@ end
 
 function ColorBoard:selectPuck(aspect, property)
 	self:showPanel(aspect)
-	local details = ColorBoard.getAspect(aspect, property)
+	local details = self:getAspect(aspect, property)
 	local puckUI = self:childUI(details.puck)
 	if puckUI then
 		local f = puckUI:frame()
@@ -195,7 +209,7 @@ function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
 		return nil
 	end
 	self:showPanel(aspect)
-	local details = ColorBoard.getAspect(aspect, property)
+	local details = self:getAspect(aspect, property)
 	if not details[type] then
 		return nil
 	end
