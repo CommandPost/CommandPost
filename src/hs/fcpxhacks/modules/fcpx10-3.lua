@@ -10097,7 +10097,7 @@ function mediaImportWatcher()
 					return stopMediaImportTimer
 				end,
 				function()
-					if not fcp.prunning() then
+					if not fcp.running() then
 						debugMessage("FCPX is not running. Stop watching.")
 						stopMediaImportTimer = true
 					else
