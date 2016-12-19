@@ -86,7 +86,7 @@ end
 
 function MenuBar:isEnabled(...)
 	local menuItemUI = self:findMenuUI(...)
-	return menuItemUI and self:_isMenuChecked(menuItemUI)
+	return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
 
 function MenuBar:_isMenuChecked(menu)
