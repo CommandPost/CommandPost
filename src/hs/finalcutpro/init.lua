@@ -1268,9 +1268,9 @@ function finalcutpro._inspectElement(e, options, i)
 
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[
-      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[
-      Children = ]] .. inspect(#e) .. [[
+	return [[ 
+      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
+      Children = ]] .. inspect(#e) .. [[ 
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
