@@ -6083,7 +6083,6 @@ end
 		-- TODO: This 'caching' should be replaced with hs.finalcutpro equivalent:
 		--------------------------------------------------------------------------------
 		local colorBoard = nil
-		::colorBoardMousePuckTryAgain::
 		if colorBoardMousePuckCache == nil then
 
 			--------------------------------------------------------------------------------
