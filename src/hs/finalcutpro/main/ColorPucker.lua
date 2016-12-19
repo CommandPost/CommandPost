@@ -20,7 +20,6 @@ function Pucker:new(colorBoard, aspect, property)
 end
 
 function Pucker:start()
-	debugMessage("Pucker:start() - setting up")
 	-- find the percent and angle UIs
 	self.pctUI		= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'pct')
 	self.angleUI	= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'angle')
@@ -37,14 +36,12 @@ function Pucker:start()
 		:show()
 	
 	-- start the timer
-	debugMessage("Pucker:start() - starting loop")
 	self.running = true
 	Pucker.loop(self)
 	return self
 end
 
 function Pucker:stop()
-	debugMessage("Pucker:stop() - stopping")
 	self.running = false
 end
 
@@ -58,7 +55,6 @@ end
 
 function Pucker.loop(pucker)
 	if not pucker.running then
-		debugMessage("Pucker.loop() - stopping.")
 		pucker:cleanup()
 		return
 	end
