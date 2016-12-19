@@ -5721,7 +5721,7 @@ end
 		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
 			menuBar:selectMenu("Clip", "Open in Angle Editor")
 		else
-			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
+			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?\n\nError occured in multicamMatchFrame().")
 			return "Failed"
 		end
 
@@ -5741,7 +5741,7 @@ end
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser.")
+			dialog.displayErrorMessage("Unable to Reveal in Browser.\n\nError occured in multicamMatchFrame().")
 			return
 		end
 
@@ -5752,7 +5752,7 @@ end
 			if menuBar:isEnabled("View", "Timeline History Back") then
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
-				dialog.displayErrorMessage("Unable to go back to previous timeline.")
+				dialog.displayErrorMessage("Unable to go back to previous timeline.\n\nError occured in multicamMatchFrame().")
 				return
 			end
 		end
@@ -5780,9 +5780,8 @@ end
 		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
 			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
 			highlightFCPXBrowserPlayhead()
-
 		else
-			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
+			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.\n\nError occurred in matchFrameThenHighlightFCPXBrowserPlayhead().")
 			return "Fail"
 		end
 
@@ -5804,7 +5803,7 @@ end
 		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
 			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.\n\nError occured in singleMatchFrame().")
 			return nil
 		end
 
