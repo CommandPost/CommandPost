@@ -22,6 +22,7 @@ local hackshud = {}
 local application								= require("hs.application")
 local chooser									= require("hs.chooser")
 local drawing									= require("hs.drawing")
+local fs 										= require("hs.fs")
 local fnutils 									= require("hs.fnutils")
 local host										= require("hs.host")
 local screen									= require("hs.screen")
@@ -1161,9 +1162,16 @@ function hackshud.shareXML(incomingXML)
 		--------------------------------------------------------------------------------
 		-- Save the XML content to the Shared XML Folder:
 		--------------------------------------------------------------------------------
-		local file = io.open(xmlSharingPath .. textboxResult .. " (" .. host.localizedName() .. ").fcpxml", "w")
+		local newXMLPath = xmlSharingPath .. host.localizedName() .. "/"
+
+		if not tools.doesDirectoryExist(newXMLPath) then
+			fs.mkdir(newXMLPath)
+		end
+
+		local file = io.open(newXMLPath .. textboxResult .. ".fcpxml", "w")
 		currentClipboardData = file:write(newXML)
 		file:close()
+
 	else
 		dialog.displayMessage("XML Sharing is currently disabled.\n\nPlease enable it via the FCPX Hacks menu and try again.")
 	end

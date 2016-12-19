@@ -3,9 +3,12 @@
 --           P A S T E B O A R D     S U P P O R T     L I B R A R Y          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---
--- Module created by David Peterson (https://github.com/randomeizer).
---
+---
+--- Authors:
+---
+---  > David Peterson (https://randomphotons.com/)
+---  > Chris Hocking (https://latenitefilms.com)
+---
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -16,17 +19,22 @@
 local clipboard = {}
 
 --------------------------------------------------------------------------------
--- STANDARD EXTENSIONS:
+-- EXTENSIONS:
 --------------------------------------------------------------------------------
+local base64									= require("hs.base64")
+local fs										= require("hs.fs")
+local host										= require("hs.host")
+local inspect									= require("hs.inspect")
+local pasteboard 								= require("hs.pasteboard")
+local plist 									= require("hs.plist")
+local settings									= require("hs.settings")
+local timer										= require("hs.timer")
+
+local plist										= require("hs.plist")
+local protect 									= require("hs.fcpxhacks.modules.protect")
+local tools										= require("hs.fcpxhacks.modules.tools")
 
 local log										= require("hs.logger").new("clipboard")
-local plist 									= require("hs.plist")
-local protect 									= require("hs.fcpxhacks.modules.protect")
-local pasteboard 								= require("hs.pasteboard")
-local settings									= require("hs.settings")
-local inspect									= require("hs.inspect")
-local timer										= require("hs.timer")
-local host										= require("hs.host")
 
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
@@ -314,7 +322,7 @@ function clipboard.startWatching()
 	--------------------------------------------------------------------------------
 	-- Used for debugging:
 	--------------------------------------------------------------------------------
-	debugMessage("Starting Clipboard Watcher.")
+	log.d("Starting Clipboard Watcher.")
 
 	--------------------------------------------------------------------------------
 	-- Get Clipboard History from Settings:
@@ -379,9 +387,112 @@ function clipboard.startWatching()
 						local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 						if sharedClipboardPath ~= nil then
 
-							local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. clipboard.hostname, "w")
-							file:write(currentClipboardData)
-							file:close()
+							local sharedClipboardPlistFile = sharedClipboardPath .. clipboard.hostname .. ".fcpxhacks"
+
+							--------------------------------------------------------------------------------
+							-- Create Plist file if one doesn't already exist:
+							--------------------------------------------------------------------------------
+							if not tools.doesFileExist(sharedClipboardPlistFile) then
+
+								log.d("Creating new Shared Clipboard Plist File.")
+
+local blankPlist = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SharedClipboardLabel1</key>
+	<string></string>
+	<key>SharedClipboardLabel2</key>
+	<string></string>
+	<key>SharedClipboardLabel3</key>
+	<string></string>
+	<key>SharedClipboardLabel4</key>
+	<string></string>
+	<key>SharedClipboardLabel5</key>
+	<string></string>
+	<key>SharedClipboardData1</key>
+	<string></string>
+	<key>SharedClipboardData2</key>
+	<string></string>
+	<key>SharedClipboardData3</key>
+	<string></string>
+	<key>SharedClipboardData4</key>
+	<string></string>
+	<key>SharedClipboardData5</key>
+	<string></string>
+</dict>
+</plist>
+]]
+
+								local file = io.open(sharedClipboardPlistFile, "w")
+								file:write(blankPlist)
+								file:close()
+
+							end
+
+							--------------------------------------------------------------------------------
+							-- Reading Plist file:
+							--------------------------------------------------------------------------------
+							if tools.doesFileExist(sharedClipboardPlistFile) then
+								local plistData = plist.xmlFileToTable(sharedClipboardPlistFile)
+								if plistData ~= nil then
+
+									encodedCurrentClipboardData = base64.encode(currentClipboardData)
+
+									local newPlistData = {}
+									newPlistData["SharedClipboardLabel1"] = currentClipboardLabel
+									newPlistData["SharedClipboardData1"] = encodedCurrentClipboardData
+									newPlistData["SharedClipboardLabel2"] = plistData["SharedClipboardLabel1"]
+									newPlistData["SharedClipboardData2"] = plistData["SharedClipboardData1"]
+									newPlistData["SharedClipboardLabel3"] = plistData["SharedClipboardLabel2"]
+									newPlistData["SharedClipboardData3"] = plistData["SharedClipboardData2"]
+									newPlistData["SharedClipboardLabel4"] = plistData["SharedClipboardLabel3"]
+									newPlistData["SharedClipboardData4"] = plistData["SharedClipboardData3"]
+									newPlistData["SharedClipboardLabel5"] = plistData["SharedClipboardLabel4"]
+									newPlistData["SharedClipboardData5"] = plistData["SharedClipboardData4"]
+
+
+local newPlist = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SharedClipboardLabel1</key>
+	<string>]] .. newPlistData["SharedClipboardLabel1"] .. [[</string>
+	<key>SharedClipboardLabel2</key>
+	<string>]] .. newPlistData["SharedClipboardLabel2"] .. [[</string>
+	<key>SharedClipboardLabel3</key>
+	<string>]] .. newPlistData["SharedClipboardLabel3"] .. [[</string>
+	<key>SharedClipboardLabel4</key>
+	<string>]] .. newPlistData["SharedClipboardLabel4"] .. [[</string>
+	<key>SharedClipboardLabel5</key>
+	<string>]] .. newPlistData["SharedClipboardLabel5"] .. [[</string>
+	<key>SharedClipboardData1</key>
+	<string>]] .. newPlistData["SharedClipboardData1"] .. [[</string>
+	<key>SharedClipboardData2</key>
+	<string>]] .. newPlistData["SharedClipboardData2"] .. [[</string>
+	<key>SharedClipboardData3</key>
+	<string>]] .. newPlistData["SharedClipboardData3"] .. [[</string>
+	<key>SharedClipboardData4</key>
+	<string>]] .. newPlistData["SharedClipboardData4"] .. [[</string>
+	<key>SharedClipboardData5</key>
+	<string>]] .. newPlistData["SharedClipboardData5"] .. [[</string>
+</dict>
+</plist>
+]]
+
+									local file = io.open(sharedClipboardPlistFile, "w")
+									file:write(newPlist)
+									file:close()
+
+								else
+									log.e("Failed to read Shared Clipboard Plist File.")
+								end
+
+							else
+								log.e("Shared Clipboard Plist File doesn't appear to exist.")
+							end
 
 						end
 					end

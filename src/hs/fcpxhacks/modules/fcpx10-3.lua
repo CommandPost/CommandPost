@@ -67,6 +67,7 @@ local mod = {}
 
 local alert										= require("hs.alert")
 local application								= require("hs.application")
+local base64									= require("hs.base64")
 local chooser									= require("hs.chooser")
 local console									= require("hs.console")
 local distributednotifications					= require("hs.distributednotifications")
@@ -81,6 +82,7 @@ local http										= require("hs.http")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
+local logger									= require("hs.logger")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
@@ -375,9 +377,9 @@ function loadScript()
 		fullscreenKeyboardWatcher()
 
 		--------------------------------------------------------------------------------
-		-- Command Editor Watcher:
+		-- Final Cut Pro Window Watcher:
 		--------------------------------------------------------------------------------
-		commandEditorWatcher()
+		finalCutProWindowWatcher()
 
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline Watcher:
@@ -401,11 +403,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
 		if enableMediaImportWatcher then mediaImportWatcher() end
-
-		--------------------------------------------------------------------------------
-		-- Resize Watcher:
-		--------------------------------------------------------------------------------
-		finalCutProResizeWatcher()
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -541,8 +538,6 @@ function testingGround()
 	-- Clear Console:
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
-
-	print(keyStrokeFromPlist("ShareDefaultDestination"))
 
 end
 
@@ -1695,29 +1690,43 @@ end
 			--------------------------------------------------------------------------------
 			-- Get list of files:
 			--------------------------------------------------------------------------------
+			local emptySharedClipboard = true
 			local sharedClipboardFiles = {}
 			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 			for file in fs.dir(sharedClipboardPath) do
-				 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
-					sharedClipboardFiles[#sharedClipboardFiles + 1] = file:sub(36)
+				 if file:sub(-10) == ".fcpxhacks" then
+
+					local pathToClipboardFile = sharedClipboardPath .. file
+					local plistData = plist.xmlFileToTable(pathToClipboardFile)
+					if plistData ~= nil then
+						if plistData["SharedClipboardLabel1"] ~= nil then
+
+							local editorName = string.sub(file, 1, -11)
+							local submenu = {}
+							for i=1, 5 do
+								emptySharedClipboard = false
+								local currentItem = plistData["SharedClipboardLabel"..tostring(i)]
+								if currentItem ~= "" then table.insert(submenu, {title = currentItem, fn = function() pasteFromSharedClipboard(pathToClipboardFile, tostring(i)) end, disabled = not fcpxRunning}) end
+							end
+
+							table.insert(settingsSharedClipboardTable, {title = editorName, menu = submenu})
+						end
+					end
+
+
 				 end
 			end
 
-			if next(sharedClipboardFiles) == nil then
+			if emptySharedClipboard then
 				--------------------------------------------------------------------------------
 				-- Nothing in the Shared Clipboard:
 				--------------------------------------------------------------------------------
 				table.insert(settingsSharedClipboardTable, { title = "Empty", disabled = true })
 			else
-				--------------------------------------------------------------------------------
-				-- Something in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				for i=1, #sharedClipboardFiles do
-					table.insert(settingsSharedClipboardTable, {title = sharedClipboardFiles[i], fn = function() pasteFromSharedClipboard(sharedClipboardFiles[i]) end, disabled = not fcpxRunning})
-				end
 				table.insert(settingsSharedClipboardTable, { title = "-" })
 				table.insert(settingsSharedClipboardTable, { title = "Clear Shared Clipboard History", fn = clearSharedClipboardHistory })
 			end
+
 		else
 			--------------------------------------------------------------------------------
 			-- Shared Clipboard Disabled:
@@ -1736,15 +1745,31 @@ end
 			--------------------------------------------------------------------------------
 			local sharedXMLFiles = {}
 
+			local emptySharedXMLFiles = true
 			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 
-			for file in fs.dir(xmlSharingPath) do
-				 if file:sub(-7) == ".fcpxml" then
-					sharedXMLFiles[#sharedXMLFiles + 1] = file:sub(1, -8)
-				 end
+			for folder in fs.dir(xmlSharingPath) do
+
+				if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
+
+					submenu = {}
+					for file in fs.dir(xmlSharingPath .. "/" .. folder) do
+						if file:sub(-7) == ".fcpxml" then
+							emptySharedXMLFiles = false
+							local xmlPath = xmlSharingPath .. folder .. "/" .. file
+							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp.importXML(xmlPath) end, disabled = not fcpxRunning})
+						end
+					end
+
+					if next(submenu) ~= nil then
+						table.insert(settingsSharedXMLTable, {title = folder, menu = submenu})
+					end
+
+				end
+
 			end
 
-			if next(sharedXMLFiles) == nil then
+			if emptySharedXMLFiles then
 				--------------------------------------------------------------------------------
 				-- Nothing in the Shared Clipboard:
 				--------------------------------------------------------------------------------
@@ -1753,9 +1778,6 @@ end
 				--------------------------------------------------------------------------------
 				-- Something in the Shared Clipboard:
 				--------------------------------------------------------------------------------
-				for i=1, #sharedXMLFiles do
-					table.insert(settingsSharedXMLTable, {title = sharedXMLFiles[i], fn = function() importSharedXML(sharedXMLFiles[i]) end, disabled = not fcpxRunning})
-				end
 				table.insert(settingsSharedXMLTable, { title = "-" })
 				table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = clearSharedXMLFiles })
 			end
@@ -2261,9 +2283,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -2594,9 +2616,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -2831,29 +2853,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -2862,14 +2875,6 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
-		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 
 		--------------------------------------------------------------------------------
 		-- If Titles & Generators is Closed, let's open it:
@@ -3011,34 +3016,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Button IDs Again:
 		--------------------------------------------------------------------------------
+		local checkBoxCount = 1
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
-
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3130,29 +3118,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -3332,34 +3311,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Button IDs Again:
 		--------------------------------------------------------------------------------
+		local checkBoxCount = 1
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
-
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -4082,6 +4044,13 @@ end
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
 		mod.debugMode = not mod.debugMode
+
+		if mod.debugMode then
+			logger.defaultLogLevel = 'warn'
+		else
+			logger.defaultLogLevel = 'debug'
+		end
+
 		settings.set("fcpxHacks.debugMode", mod.debugMode)
 		refreshMenuBar()
 	end
@@ -4993,20 +4962,16 @@ end
 	--------------------------------------------------------------------------------
 	-- PASTE FROM SHARED CLIPBOARD:
 	--------------------------------------------------------------------------------
-	function pasteFromSharedClipboard(whichClipboard)
+	function pasteFromSharedClipboard(pathToClipboardFile, whichClipboard)
 
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard")
-		if enableSharedClipboard then
-			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-			if sharedClipboardPath ~= nil then
+		if tools.doesFileExist(pathToClipboardFile) then
+			local plistData = plist.xmlFileToTable(pathToClipboardFile)
+			if plistData ~= nil then
 
-				local file = io.open(sharedClipboardPath .. "/Final Cut Pro Shared Clipboard for " .. whichClipboard, "r")
-				if file == nil then
-					dialog.displayMessage("The Shared Clipboard item could not be found.\n\nPlease try again.")
-					return "Fail"
-				end
-				currentClipboardData = file:read("*all")
-				file:close()
+				--------------------------------------------------------------------------------
+				-- Decode Shared Clipboard Data from Plist:
+				--------------------------------------------------------------------------------
+				local currentClipboardData = base64.decode(plistData["SharedClipboardData" .. whichClipboard])
 
 				--------------------------------------------------------------------------------
 				-- Write data back to Clipboard:
@@ -5024,8 +4989,15 @@ end
 					return "Failed"
 				end
 
+			else
+				dialog.errorMessage("The Shared Clipboard file could not be read.")
+				return "Fail"
 			end
+		else
+			dialog.displayMessage("The Shared Clipboard file could not be found.")
+			return "Fail"
 		end
+
 	end
 
 --------------------------------------------------------------------------------
@@ -5046,7 +5018,7 @@ end
 	function clearSharedClipboardHistory()
 		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 		for file in fs.dir(sharedClipboardPath) do
-			 if file:sub(1, 30) == "Final Cut Pro Shared Clipboard" then
+			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
 			 refreshMenuBar()
@@ -5057,13 +5029,19 @@ end
 	-- CLEAR SHARED XML FILES:
 	--------------------------------------------------------------------------------
 	function clearSharedXMLFiles()
+
 		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		for file in fs.dir(xmlSharingPath) do
-			 if file:sub(-7) == ".fcpxml" then
-				os.remove(xmlSharingPath .. file)
-			 end
-			 refreshMenuBar()
+		for folder in fs.dir(xmlSharingPath) do
+			if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
+				for file in fs.dir(xmlSharingPath .. "/" .. folder) do
+					if file:sub(-7) == ".fcpxml" then
+						os.remove(xmlSharingPath .. folder .. "/" .. file)
+					end
+				end
+			end
 		end
+		refreshMenuBar()
+
 	end
 
 --------------------------------------------------------------------------------
@@ -5192,18 +5170,6 @@ end
 	--------------------------------------------------------------------------------
 	function gotoLateNiteSite()
 		os.execute('open "' .. fcpxhacks.developerURL .. '"')
-	end
-
-	--------------------------------------------------------------------------------
-	-- IMPORT SHARED XML:
-	--------------------------------------------------------------------------------
-	function importSharedXML(whichSharedXML)
-
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		whichSharedXMLPath = xmlSharingPath .. whichSharedXML .. ".fcpxml"
-
-		local result = fcp.importXML(whichSharedXMLPath)
-
 	end
 
 --------------------------------------------------------------------------------
@@ -5752,7 +5718,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("Clip", "Open in Angle Editor") then
+		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
+			menuBar:selectMenu("Clip", "Open in Angle Editor")
+		else
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
@@ -5760,7 +5728,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("Window", "Go To", "Timeline") then
+		if menuBar:isEnabled("Window", "Go To", "Timeline") then
+			menuBar:selectMenu("Window", "Go To", "Timeline")
+		else
 			dialog.displayErrorMessage("Unable to return to timeline.")
 			return
 		end
@@ -5768,7 +5738,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("File", "Reveal in Browser") then
+		if menuBar:isEnabled("File", "Reveal in Browser") then
+			menuBar:selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Unable to Reveal in Browser.")
 			return
 		end
@@ -5777,7 +5749,9 @@ end
 		-- Go back to original timeline if appropriate:
 		--------------------------------------------------------------------------------
 		if goBackToTimeline then
-			if not menuBar:selectMenu("View", "Timeline History Back") then
+			if menuBar:isEnabled("View", "Timeline History Back") then
+				menuBar:selectMenu("View", "Timeline History Back")
+			else
 				dialog.displayErrorMessage("Unable to go back to previous timeline.")
 				return
 			end
@@ -5802,7 +5776,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
+		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
+			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
 			return "Fail"
 		end
@@ -5836,7 +5812,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
+		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
+			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 			return nil
 		end
@@ -5987,7 +5965,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
+			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
+				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+			else
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Failed"
 			end
@@ -6158,7 +6138,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
+			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
+				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+			else
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Fail"
 			end
@@ -6273,12 +6255,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.")
@@ -6354,9 +6345,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -6578,7 +6569,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Double Click:
 			--------------------------------------------------------------------------------
-			tools.tools.doubleLeftClick(effectButtonPosition)
+			tools.doubleLeftClick(effectButtonPosition)
 
 			--------------------------------------------------------------------------------
 			-- Put it back:
@@ -6646,12 +6637,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.effectsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.effectsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.effectsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.")
@@ -6728,9 +6728,9 @@ end
 			local whichEffectsBrowserSplitGroup = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
 				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
+					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
 						whichEffectsBrowserSplitGroup = i
-					end
+					--end
 				end
 			end
 			if whichEffectsBrowserSplitGroup == nil then
@@ -6739,7 +6739,7 @@ end
 			end
 
 			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
+			-- Get Transitions Browsers Popup Button:
 			--------------------------------------------------------------------------------
 			local whichEffectsBrowserPopupButton = nil
 			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
@@ -7020,12 +7020,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.titlesShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.titlesShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.titlesShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.titlesShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.")
@@ -7049,34 +7058,25 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -7154,10 +7154,10 @@ end
 		local titlesPopupButton = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
+				--if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
 					titlesPopupButton = i
 					goto titlesGeneratorsDropdownExit
-				end
+				--end
 			end
 		end
 		if titlesPopupButton == nil then
@@ -7199,10 +7199,10 @@ end
 			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
 				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
 					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
+						--if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
 							titlesGeneratorsGroup = i
 							goto titlesGeneratorsGroupExit
-						end
+						--end
 					end
 				end
 			end
@@ -7344,30 +7344,13 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Button IDs Again:
 			--------------------------------------------------------------------------------
+			local checkBoxCount = 1
 			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-					--------------------------------------------------------------------------------
-					-- Button 1: Libraries
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-						libariesButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 2: Photos/Audio
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-						photosAudioButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 3: Titles/Transitions
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-						titlesGeneratorsButtonID = i
-					end
-
+					if checkBoxCount == 3 then libariesButtonID = i end
+					if checkBoxCount == 2 then photosAudioButtonID = i end
+					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+					checkBoxCount = checkBoxCount + 1
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
@@ -7426,12 +7409,21 @@ end
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
-		if whichShortcut == 1 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne") end
-		if whichShortcut == 2 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo") end
-		if whichShortcut == 3 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree") end
-		if whichShortcut == 4 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour") end
-		if whichShortcut == 5 then currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive") end
-		if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
 		if currentShortcut == nil then
 			dialog.displayMessage("There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.")
@@ -7455,29 +7447,20 @@ end
 		local libariesButtonID = nil
 		local photosAudioButtonID = nil
 		local titlesGeneratorsButtonID = nil
+		local checkBoxCount = 1
+		local whichBrowserPanelWasOpen = nil
 		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
 
-				--------------------------------------------------------------------------------
-				-- Button 1: Libraries
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-					libariesButtonID = i
+				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
+					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
+					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
+					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
 				end
-
-				--------------------------------------------------------------------------------
-				-- Button 2: Photos/Audio
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-					photosAudioButtonID = i
-				end
-
-				--------------------------------------------------------------------------------
-				-- Button 3: Titles/Transitions
-				--------------------------------------------------------------------------------
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-					titlesGeneratorsButtonID = i
-				end
+				if checkBoxCount == 3 then libariesButtonID = i end
+				if checkBoxCount == 2 then photosAudioButtonID = i end
+				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+				checkBoxCount = checkBoxCount + 1
 
 			end
 		end
@@ -7772,34 +7755,17 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Button IDs Again:
 			--------------------------------------------------------------------------------
+			local checkBoxCount = 1
 			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
 				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-					--------------------------------------------------------------------------------
-					-- Button 1: Libraries
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:416" then
-						libariesButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 2: Photos/Audio
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:425" then
-						photosAudioButtonID = i
-					end
-
-					--------------------------------------------------------------------------------
-					-- Button 3: Titles/Transitions
-					--------------------------------------------------------------------------------
-					if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:433" then
-						titlesGeneratorsButtonID = i
-					end
-
+					if checkBoxCount == 3 then libariesButtonID = i end
+					if checkBoxCount == 2 then photosAudioButtonID = i end
+					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
+					checkBoxCount = checkBoxCount + 1
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -7950,6 +7916,11 @@ end
 			local frame = clip:frame()
 			return playheadX >= frame.x and playheadX < (frame.x + frame.w)
 		end)
+
+		if clips == nil then
+			debugMessage("No clips detected in selectClipAtLane().")
+			return false
+		end
 
 		if whichLane > #clips then
 			return false
@@ -8438,10 +8409,14 @@ end
 			--------------------------------------------------------------------------------
 			if fcpxBrowserMode == "Filmstrip" then
 
+				local menuBar = fcp:app():menuBar()
+				
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():selectMenu("View", "Browser", "Toggle Filmstrip/List View") then
+				if menuBar:isEnabled("View", "Browser", "Toggle Filmstrip/List View") then
+					menuBar:selectMenu("View", "Browser", "Toggle Filmstrip/List View")
+				else
 					dialog.displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
@@ -8449,7 +8424,9 @@ end
 				--------------------------------------------------------------------------------
 				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():selectMenu("View", "Browser", "Group Clips By", "None") then
+				if menuBar:isEnabled("View", "Browser", "Group Clips By", "None") then
+					menuBar:selectMenu("View", "Browser", "Group Clips By", "None")
+				else
 					dialog.displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
@@ -8550,7 +8527,7 @@ end
 					return "Failed"
 				end
 
-				print("number of clips: " .. tostring(#whichRows))
+				debugMessage("number of clips: " .. tostring(#whichRows))
 
 				--------------------------------------------------------------------------------
 				-- Bring Focus Back to Clips:
@@ -8561,7 +8538,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Begin Clip Loop:
 				--------------------------------------------------------------------------------
-				print("#whichRows: " .. tostring(#whichRows))
+				debugMessage("#whichRows: " .. tostring(#whichRows))
 				for x=1, #whichRows do
 
 					--------------------------------------------------------------------------------
@@ -8578,7 +8555,7 @@ end
 					local clickHere = {}
 					clickHere['x'] = clipPosition['x'] + 60
 					clickHere['y'] = clipPosition['y'] + 15
-					--tools.ninjaMouseClick(clickHere)
+					tools.ninjaMouseClick(clickHere)
 
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share)
@@ -8586,8 +8563,6 @@ end
 					if not keyStrokeFromPlist("ShareDefaultDestination") then
 						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
-					else
-						print("Shortcut trigged!")
 					end
 
 					--------------------------------------------------------------------------------
@@ -9729,20 +9704,6 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS RESIZED:
---------------------------------------------------------------------------------
-function finalCutProResizeWatcher()
-	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
-		debugMessage("Window Resized.")
-		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then setTouchBarLocation() end
-		end
-	end, true)
-end
-
---------------------------------------------------------------------------------
 -- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO IS ACTIVATED OR DEACTIVATED:
 --------------------------------------------------------------------------------
 function finalCutProWatcher(appName, eventType, appObject)
@@ -9751,6 +9712,11 @@ function finalCutProWatcher(appName, eventType, appObject)
 			--------------------------------------------------------------------------------
 	  		-- Final Cut Pro Activated:
 	  		--------------------------------------------------------------------------------
+
+				--------------------------------------------------------------------------------
+				-- Update Current Language:
+				--------------------------------------------------------------------------------
+				timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
 
 				--------------------------------------------------------------------------------
 				-- Update Translations:
@@ -9853,18 +9819,156 @@ function finalCutProWatcher(appName, eventType, appObject)
 end
 
 --------------------------------------------------------------------------------
--- AUTOMATICALLY RELOAD THIS CONFIG FILE WHEN UPDATED:
+-- AUTOMATICALLY DO THINGS WHEN FINAL CUT PRO WINDOWS ARE CHANGED:
 --------------------------------------------------------------------------------
-function hammerspoonConfigWatcher(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == ".lua" then
-            doReload = true
-        end
-    end
-    if doReload then
-        hs.reload()
-    end
+function finalCutProWindowWatcher()
+
+	local commandEditorID = nil
+	wasInFullscreenMode = false
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Filter:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher = windowfilter.new(true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Window Created:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher:subscribe(windowfilter.windowCreated,(function(window, applicationName)
+		if applicationName == "Final Cut Pro" then
+			if window:title() == "" then
+				local fcpx = fcp.application()
+				local fcpxElements = ax.applicationElement(fcpx)
+				if fcpxElements[1][1] ~= nil then
+					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+						-------------------------------------------------------------------------------
+						-- Hide HUD:
+						--------------------------------------------------------------------------------
+						if settings.get("fcpxHacks.enableHacksHUD") then
+								hackshud:hide()
+								wasInFullscreenMode = true
+						end
+					end
+				end
+			end
+		end
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Fullscreen Playback Window Destroyed:
+	--------------------------------------------------------------------------------
+	fullscreenPlaybackWatcher:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
+		if applicationName == "Final Cut Pro" then
+			if window:title() == "" then
+				-------------------------------------------------------------------------------
+				-- Show HUD:
+				--------------------------------------------------------------------------------
+				if wasInFullscreenMode then
+					if settings.get("fcpxHacks.enableHacksHUD") then
+							hackshud:show()
+					end
+				end
+			end
+		end
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Filter:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Created:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
+
+		--------------------------------------------------------------------------------
+		-- Command Editor Window Opened:
+		--------------------------------------------------------------------------------
+		if (window:title() == mod.labelCommandEditor) then
+
+			--------------------------------------------------------------------------------
+			-- Command Editor is Open:
+			--------------------------------------------------------------------------------
+			commandEditorID = window:id()
+			mod.isCommandEditorOpen = true
+			debugMessage("Command Editor Opened.")
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Disable Hotkeys:
+			--------------------------------------------------------------------------------
+			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
+				hotkeys:exit()
+			end
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Hide the Touch Bar:
+			--------------------------------------------------------------------------------
+			hideTouchbar()
+
+			--------------------------------------------------------------------------------
+			-- Hide the HUD:
+			--------------------------------------------------------------------------------
+			hackshud.hide()
+
+		end
+
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Destroyed:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
+
+		--------------------------------------------------------------------------------
+		-- Command Editor Window Closed:
+		--------------------------------------------------------------------------------
+		if (window:id() == commandEditorID) then
+
+			--------------------------------------------------------------------------------
+			-- Command Editor is Closed:
+			--------------------------------------------------------------------------------
+			commandEditorID = nil
+			mod.isCommandEditorOpen = false
+			debugMessage("Command Editor Closed.")
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Check if we need to show the Touch Bar:
+			--------------------------------------------------------------------------------
+			showTouchbar()
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Refresh Keyboard Shortcuts:
+			--------------------------------------------------------------------------------
+			timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
+			--------------------------------------------------------------------------------
+
+			--------------------------------------------------------------------------------
+			-- Show the HUD:
+			--------------------------------------------------------------------------------
+			if settings.get("fcpxHacks.enableHacksHUD") then
+				hackshud.show()
+			end
+
+		end
+
+	end), true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Moved:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
+		debugMessage("Window Resized.")
+		if touchBarSupported then
+			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
+			if displayTouchBar then setTouchBarLocation() end
+		end
+	end, true)
+
 end
 
 --------------------------------------------------------------------------------
@@ -9906,86 +10010,6 @@ function finalCutProSettingsWatcher(files)
 		end
 
     end
-end
-
---------------------------------------------------------------------------------
--- DISABLE SHORTCUTS WHEN FCPX COMMAND EDITOR IS OPEN:
---------------------------------------------------------------------------------
-function commandEditorWatcher()
-
-
-	local commandEditorID = nil
-
-	commandEditorFilter = windowfilter.new(true)
-
-	commandEditorFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-		if applicationName == 'Final Cut Pro' then
-			if (window:title() == mod.labelCommandEditor) then
-
-				--------------------------------------------------------------------------------
-				-- Command Editor is Open:
-				--------------------------------------------------------------------------------
-				commandEditorID = window:id()
-				mod.isCommandEditorOpen = true
-				debugMessage("Command Editor Opened.")
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Disable Hotkeys:
-				--------------------------------------------------------------------------------
-				if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
-					hotkeys:exit()
-				end
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Hide the Touch Bar:
-				--------------------------------------------------------------------------------
-				hideTouchbar()
-
-				--------------------------------------------------------------------------------
-				-- Hide the HUD:
-				--------------------------------------------------------------------------------
-				hackshud.hide()
-
-			end
-		end
-	end), true)
-	commandEditorFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-		if applicationName == 'Final Cut Pro' then
-			if (window:id() == commandEditorID) then
-
-				--------------------------------------------------------------------------------
-				-- Command Editor is Closed:
-				--------------------------------------------------------------------------------
-				commandEditorID = nil
-				mod.isCommandEditorOpen = false
-				debugMessage("Command Editor Closed.")
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Check if we need to show the Touch Bar:
-				--------------------------------------------------------------------------------
-				showTouchbar()
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Refresh Keyboard Shortcuts:
-				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
-				--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Show the HUD:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableHacksHUD") then
-					hackshud.show()
-				end
-
-			end
-		end
-	end), true)
-
 end
 
 --------------------------------------------------------------------------------
@@ -10032,10 +10056,7 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 
-				print(mod.finalCutProShortcutKey[SetSelectionStart])
-
 				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					print(whichShortcutKey)
 					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
 						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
@@ -10269,8 +10290,16 @@ end
 -- SHARED CLIPBOARD WATCHER:
 --------------------------------------------------------------------------------
 function sharedClipboardFileWatcher(files)
-	debugMessage("Refreshing Shared Clipboard.")
-	refreshMenuBar()
+    doReload = false
+    for _,file in pairs(files) do
+        if file:sub(-10) == ".fcpxhacks" then
+            doReload = true
+        end
+    end
+    if doReload then
+		debugMessage("Refreshing Shared Clipboard.")
+		refreshMenuBar(true)
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -10284,15 +10313,21 @@ function sharedXMLFileWatcher(files)
 			local testFile = io.open(file, "r")
 			if testFile ~= nil then
 				testFile:close()
-				if not string.find(file, "(" .. host.localizedName() ..")") then
+
+				local editorName = string.reverse(string.sub(string.reverse(file), string.find(string.reverse(file), "/", 1) + 1, string.find(string.reverse(file), "/", string.find(string.reverse(file), "/", 1) + 1) - 1))
+
+				if host.localizedName() ~= editorName then
+
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(sharedXMLNotificationAction):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
-														   						   :title("New XML Recieved")
-														   						   :subTitle(file:sub(string.len(xmlSharingPath) + 1, -8))
-														   						   :informativeText("FCPX Hacks has recieved a new XML file.")
-														   						   :hasActionButton(true)
-														   						   :actionButtonTitle("Import XML")
-														   						   :send()
+					sharedXMLNotification = notify.new(function() fcp.importXML(file) end)
+						:setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						:title("New XML Recieved")
+						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
+						:informativeText("FCPX Hacks has recieved a new XML file.")
+						:hasActionButton(true)
+						:actionButtonTitle("Import XML")
+						:send()
+
 				end
 			end
         end
@@ -10300,13 +10335,6 @@ function sharedXMLFileWatcher(files)
 
 	refreshMenuBar()
 end
-
-	--------------------------------------------------------------------------------
-	-- SHARED XML FILE NOTIFICATION ACTION:
-	--------------------------------------------------------------------------------
-	function sharedXMLNotificationAction(value)
-		importSharedXML(value:subTitle())
-	end
 
 --------------------------------------------------------------------------------
 -- TOUCH BAR WATCHER:
@@ -10327,6 +10355,21 @@ function touchbarWatcher(obj, message)
 
     end
 
+end
+
+--------------------------------------------------------------------------------
+-- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:
+--------------------------------------------------------------------------------
+function hammerspoonConfigWatcher(files)
+    doReload = false
+    for _,file in pairs(files) do
+        if file:sub(-4) == ".lua" then
+            doReload = true
+        end
+    end
+    if doReload then
+        hs.reload()
+    end
 end
 
 --------------------------------------------------------------------------------

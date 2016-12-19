@@ -2,9 +2,11 @@
 ---
 --- Controls for Final Cut Pro
 ---
---- Thrown together by:
----   Chris Hocking (https://github.com/latenitefilms)
----   David Peterson (https://randomphotons.com/)
+--- Authors:
+---
+---   Chris Hocking 	https://latenitefilms.com
+---   David Peterson 	https://randomphotons.com/
+---
 
 local finalcutpro = {}
 
@@ -31,6 +33,8 @@ local drawing								= require("hs.drawing")
 local geometry								= require("hs.geometry")
 local timer									= require("hs.timer")
 
+finalcutpro.cachedCurrentLanguage 			= nil
+
 --- doesDirectoryExist() -> boolean
 --- Function
 --- Returns true if Directory Exists else False
@@ -56,9 +60,20 @@ end
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
 ---
-function finalcutpro.currentLanguage()
+function finalcutpro.currentLanguage(forceReload)
 
+	--------------------------------------------------------------------------------
+	-- Caching:
+	--------------------------------------------------------------------------------
+	if finalcutpro.cachedCurrentLanguage ~= nil then
+		if not forceReload then
+			return finalcutpro.cachedCurrentLanguage
+		end
+	end
+
+	--------------------------------------------------------------------------------
 	-- If FCPX is already run, we determine the language off the menu:
+	--------------------------------------------------------------------------------
 	if finalcutpro.running() then
 		local fcpxElements = ax.applicationElement(finalcutpro.application())
 		if fcpxElements ~= nil then
@@ -71,7 +86,6 @@ function finalcutpro.currentLanguage()
 						end
 					end
 					if fcpxElements[whichMenuBar][3] ~= nil then
-
 						local fileValue
 						fileValue = fcpxElements[whichMenuBar][3]:attributeValue("AXTitle") or nil
 						--------------------------------------------------------------------------------
@@ -82,54 +96,104 @@ function finalcutpro.currentLanguage()
 						-- JAPANESE:	ファイル
 						-- CHINESE:		文件
 						--------------------------------------------------------------------------------
-						if fileValue == "File" 		then return "en" 		end
-						if fileValue == "Ablage" 	then return "de" 		end
-						if fileValue == "Archivo" 	then return "es" 		end
-						if fileValue == "Fichier" 	then return "fr" 		end
-						if fileValue == "ファイル" 	then return "ja" 		end
-						if fileValue == "文件" 		then return "zh_CN" 	end
+						if fileValue == "File" 		then
+							finalcutpro.cachedCurrentLanguage = "en"
+							return "en"
+						end
+						if fileValue == "Ablage" 	then
+							finalcutpro.cachedCurrentLanguage = "de"
+							return "de"
+						end
+						if fileValue == "Archivo" 	then
+							finalcutpro.cachedCurrentLanguage = "es"
+							return "es"
+						end
+						if fileValue == "Fichier" 	then
+							finalcutpro.cachedCurrentLanguage = "fr"
+							return "fr"
+						end
+						if fileValue == "ファイル" 	then
+							finalcutpro.cachedCurrentLanguage = "ja"
+							return "ja"
+						end
+						if fileValue == "文件" 		then
+							finalcutpro.cachedCurrentLanguage = "zh_CN"
+							return "zh_CN"
+						end
 					end
 				end
 			end
 		end
 	end
 
-	-- If FCPX is not running, we try to determine the language using Command Line Tools:
-	local result = "en"
+	--------------------------------------------------------------------------------
+	-- If FCPX is not running, we next try to determine the language using
+	-- the Final Cut Pro Plist File:
+	--------------------------------------------------------------------------------
 	local finalCutProLanguage = finalcutpro.getPreference("AppleLanguages", nil)
-
 	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
 		if finalCutProLanguage[1] ~= nil then
-			result = finalCutProLanguage[1]
-		end
-	else
-		-- Use System Default Language:
-		executeResult, executeStatus = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-		if executeResult ~= nil then
-			if string.sub(executeResult, 1, 1) == "(" then
-
-				local first = string.find(executeResult, '"')
-				local second = string.find(executeResult, '-', first + 1)
-
-				result = string.sub(executeResult, first + 1, second - 1)
-
-				-- Only return languages Final Cut Pro actually supports:
-				local validLanguage = false
-				for i=1, #finalCutProLanguages do
-					if result == finalCutProLanguages[i] then validLanguage = true end
-				end
-
-				if validLanguage then
-					return result
-				else
-					return "en"
-				end
-
-			end
+			finalcutpro.cachedCurrentLanguage = finalCutProLanguage[1]
+			return finalCutProLanguage[1]
 		end
 	end
 
-	return result
+	--------------------------------------------------------------------------------
+	-- If that fails, we try and use the user locale:
+	--------------------------------------------------------------------------------
+	local a, userLocale = osascript.applescript("return user locale of (get system info)")
+	if userLocale ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Only return languages Final Cut Pro actually supports:
+		--------------------------------------------------------------------------------
+		for i=1, #finalCutProLanguages do
+			if userLocale == finalCutProLanguages[i] then
+				finalcutpro.cachedCurrentLanguage = userLocale
+				return userLocale
+			else
+				if string.sub(userLocale, 1, string.find(userLocale, "_") - 1) == finalCutProLanguages[i] then
+					finalcutpro.cachedCurrentLanguage = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+					return string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+				end
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
+	--------------------------------------------------------------------------------
+	local a, AppleLanguages = hs.osascript.applescript([[
+		set lang to do shell script "defaults read NSGlobalDomain AppleLanguages"
+			tell application "System Events"
+				set pl to make new property list item with properties {text:lang}
+				set r to value of pl
+			end tell
+		return item 1 of r ]])
+	if AppleLanguages ~= nil then
+
+		--------------------------------------------------------------------------------
+		-- Only return languages Final Cut Pro actually supports:
+		--------------------------------------------------------------------------------
+		for i=1, #finalCutProLanguages do
+			if AppleLanguages == finalCutProLanguages[i] then
+				finalcutpro.cachedCurrentLanguage = AppleLanguages
+				return AppleLanguages
+			else
+				if string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1) == finalCutProLanguages[i] then
+					finalcutpro.cachedCurrentLanguage = string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
+					return string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
+				end
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- If all else fails, assume it's English:
+	--------------------------------------------------------------------------------
+	return "en"
 
 end
 
@@ -1150,14 +1214,15 @@ end
 --- Returns:
 ---  * the string with the element details
 ---
-function finalcutpro._inspectElementAtMouse(options)
+function finalcutpro._inspectAtMouse(options)
+	options = options or {}
 	local element = finalcutpro._elementAtMouse()
 	if options.parents then
 		for i=1,options.parents do
 			element = element ~= nil and element:parent()
 		end
 	end
-	
+
 	if element then
 		local result = ""
 		if options.type == "path" then
@@ -1183,8 +1248,8 @@ function finalcutpro._inspect(e, options)
 			local result = ""
 			for i=1,#e do
 				item = e[i]
-				result = result .. 
-				         "\n= " .. string.format("%3d", i) .. 
+				result = result ..
+				         "\n= " .. string.format("%3d", i) ..
 						 " ========================================" ..
 						 finalcutpro._inspect(item, options)
 			end
@@ -1200,12 +1265,12 @@ end
 
 function finalcutpro._inspectElement(e, options, i)
 	finalcutpro._highlightElement(e)
-	
+
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[ 
-      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
-      Children = ]] .. inspect(#e) .. [[ 
+	return [[
+      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[
+      Children = ]] .. inspect(#e) .. [[
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
@@ -1214,7 +1279,7 @@ function finalcutpro._highlightElement(e)
 	if not e.frame then
 		return
 	end
-	
+
 	local eFrame = geometry.rect(e:frame())
 	-- local wFrame = geometry.rect(e:window():frame())
 	-- eFrame.x = wFrame.x + eFrame.x
@@ -1234,10 +1299,10 @@ function finalcutpro._highlightElement(e)
 	--------------------------------------------------------------------------------
 	-- Set a timer to delete the highlight after 3 seconds:
 	--------------------------------------------------------------------------------
-	local highlightTimer = timer.doAfter(3, 
+	local highlightTimer = timer.doAfter(3,
 	function()
 		-- debugMessage("Deleting element highlight...")
-		highlight:delete() 
+		highlight:delete()
 		highlightTimer = nil
 		-- debugMessage("Deleted element highlight.")
 	end)

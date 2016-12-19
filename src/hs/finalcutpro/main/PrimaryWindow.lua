@@ -97,7 +97,7 @@ end
 function PrimaryWindow:rightGroupUI()
 	local root = self:rootGroupUI()
 	if root and #root == 2 then
-		if #(root[1]) == 3 then
+		if #(root[1]) >= 3 then
 			return root[1]
 		else
 			return root[2]
@@ -120,7 +120,7 @@ end
 
 function PrimaryWindow:bottomGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left == 3 then
+	if left and #left >= 3 then
 		for i,child in ipairs(left) do
 			if #child == 1 and #(child[1]) == 1 then
 				return child[1]
