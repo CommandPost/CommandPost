@@ -25,7 +25,7 @@ function Pucker:start()
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
 	local oFrame = geometry.rect(self.origin.x-5, self.origin.y-5, 10, 10)
-	local color = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=0.75}
+	local color = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=0.75}
 
 	self.highlight = drawing.circle(oFrame)
 		:setStrokeColor(color)

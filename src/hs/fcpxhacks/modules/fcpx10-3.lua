@@ -6219,6 +6219,7 @@ end
 	function colorBoardMousePuckRelease()
 		if mod.colorPucker then
 			mod.colorPucker:stop()
+			mod.colorPicker = nil
 		end
 	end
 
