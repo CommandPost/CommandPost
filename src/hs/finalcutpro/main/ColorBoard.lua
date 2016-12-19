@@ -6,6 +6,8 @@ local axutils							= require("hs.finalcutpro.axutils")
 local tools								= require("hs.fcpxhacks.modules.tools")
 local geometry							= require("hs.geometry")
 
+local Pucker							= require("hs.finalcutpro.main.ColorPucker")
+
 local ColorBoard = {}
 
 ColorBoard.aspect						= {}
@@ -284,6 +286,8 @@ function ColorBoard:getAngle(aspect, property, value)
 	return nil
 end
 
-
+function ColorBoard:startPucker(aspect, property)
+	return Pucker:new(self, aspect, property):start()
+end
 
 return ColorBoard

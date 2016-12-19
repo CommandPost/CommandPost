@@ -6055,7 +6055,10 @@ end
 	end
 	
 	function colorBoardMousePuck(aspect, property)
-		local originalPosition = geometry(mouse.getAbsolutePosition())
+		if mod.colorPucker then
+			mod.colorPucker:stop()
+		end
+		
 		local menuBar = fcp:app():menuBar()
 		local colorBoard = fcp:app():inspector():colorBoard()
 		
@@ -6079,20 +6082,7 @@ end
 			return "Failed"
 		end
 		
-		--------------------------------------------------------------------------------
-		-- Get shortcut key from plist, press and hold if required:
-		--------------------------------------------------------------------------------
-		mod.releaseMouseColorBoardDown = false
-		timer.doUntil(function() return mod.releaseMouseColorBoardDown end, function()
-
-			local currentPosition = mouse.getAbsolutePosition()
-			local xDiff = currentPosition.x - originalPosition.x
-			local yDiff = currentPosition.y - originalPosition.y
-			
-			colorBoard:shiftPercentage(aspect, property, xDiff/math.abs(xDiff))
-			colorBoard:shiftAngle(aspect, property, yDiff/math.abs(yDiff))
-		end, 0.00001)
-		
+		mod.colorPucker = colorBoard:startPucker(aspect, property)
 	end
 	
 
@@ -6227,7 +6217,9 @@ end
 	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
 	--------------------------------------------------------------------------------
 	function colorBoardMousePuckRelease()
-		mod.releaseMouseColorBoardDown = true
+		if mod.colorPucker then
+			mod.colorPucker:stop()
+		end
 	end
 
 	--------------------------------------------------------------------------------
