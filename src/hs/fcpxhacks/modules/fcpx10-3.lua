@@ -5718,7 +5718,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("Clip", "Open in Angle Editor") then
+		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
+			menuBar:selectMenu("Clip", "Open in Angle Editor")
+		else
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
 			return "Failed"
 		end
@@ -5726,7 +5728,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Put focus back on the timeline:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("Window", "Go To", "Timeline") then
+		if menuBar:isEnabled("Window", "Go To", "Timeline") then
+			menuBar:selectMenu("Window", "Go To", "Timeline")
+		else
 			dialog.displayErrorMessage("Unable to return to timeline.")
 			return
 		end
@@ -5734,7 +5738,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
-		if not menuBar:selectMenu("File", "Reveal in Browser") then
+		if menuBar:isEnabled("File", "Reveal in Browser") then
+			menuBar:selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Unable to Reveal in Browser.")
 			return
 		end
@@ -5743,7 +5749,9 @@ end
 		-- Go back to original timeline if appropriate:
 		--------------------------------------------------------------------------------
 		if goBackToTimeline then
-			if not menuBar:selectMenu("View", "Timeline History Back") then
+			if menuBar:isEnabled("View", "Timeline History Back") then
+				menuBar:selectMenu("View", "Timeline History Back")
+			else
 				dialog.displayErrorMessage("Unable to go back to previous timeline.")
 				return
 			end
@@ -5768,7 +5776,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
+		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
+			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.")
 			return "Fail"
 		end
@@ -5802,7 +5812,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if not fcp:app():menuBar():selectMenu("File", "Reveal in Browser") then
+		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
+			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+		else
 			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.")
 			return nil
 		end
@@ -5953,7 +5965,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
+			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
+				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+			else
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Failed"
 			end
@@ -6082,7 +6096,9 @@ end
 			--------------------------------------------------------------------------------
 			-- Open Color Board:
 			--------------------------------------------------------------------------------
-			if not fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board") then
+			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
+				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+			else
 				dialog.displayErrorMessage("Failed to goto Color Board.")
 				return "Fail"
 			end
@@ -8351,10 +8367,14 @@ end
 			--------------------------------------------------------------------------------
 			if fcpxBrowserMode == "Filmstrip" then
 
+				local menuBar = fcp:app():menuBar()
+				
 				--------------------------------------------------------------------------------
 				-- Switch to list mode:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():selectMenu("View", "Browser", "Toggle Filmstrip/List View") then
+				if menuBar:isEnabled("View", "Browser", "Toggle Filmstrip/List View") then
+					menuBar:selectMenu("View", "Browser", "Toggle Filmstrip/List View")
+				else
 					dialog.displayErrorMessage("Failed to switch to list mode.")
 					return "Failed"
 				end
@@ -8362,7 +8382,9 @@ end
 				--------------------------------------------------------------------------------
 				-- Trigger Group clips by None:
 				--------------------------------------------------------------------------------
-				if not fcp:app():menuBar():selectMenu("View", "Browser", "Group Clips By", "None") then
+				if menuBar:isEnabled("View", "Browser", "Group Clips By", "None") then
+					menuBar:selectMenu("View", "Browser", "Group Clips By", "None")
+				else
 					dialog.displayErrorMessage("Failed to switch to Group Clips by None.")
 					return "Failed"
 				end
