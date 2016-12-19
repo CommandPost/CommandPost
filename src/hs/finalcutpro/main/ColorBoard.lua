@@ -89,7 +89,9 @@ function ColorBoard:isShowing()
 end
 
 function ColorBoard:show()
-	-- TODO: Simulate a 'Cmd+6' to show the color board.
+	if not self:isShowing() then
+		self:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+	end
 	return self
 end
 
@@ -150,6 +152,7 @@ end
 -----------------------------------------------------------------------
 
 function ColorBoard:showPanel(aspect)
+	self:show()
 	aspect = ColorBoard.getAspect(aspect)
 	local ui = self:colorSatExpUI()
 	if aspect and ui then
