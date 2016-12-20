@@ -180,7 +180,7 @@ end
 
 --- hs.finalcutpro.App:inspector() -> Inspector
 --- Function
---- Returns the Inspector instance from the primary storyline
+--- Returns the Inspector instance from the primary window
 ---
 --- Parameters:
 ---  * N/A
@@ -189,6 +189,19 @@ end
 ---  * the Inspector
 function App:inspector()
 	return self:primaryWindow():inspector()
+end	
+
+--- hs.finalcutpro.App:colorBoard() -> ColorBoard
+--- Function
+--- Returns the ColorBoard instance from the primary window
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the ColorBoard
+function App:colorBoard()
+	return self:primaryWindow():colorBoard()
 end	
 
 ----------------------------------------------------------------------------------------

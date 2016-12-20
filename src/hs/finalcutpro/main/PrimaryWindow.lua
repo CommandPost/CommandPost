@@ -8,6 +8,7 @@ local Button						= require("hs.finalcutpro.ui.Button")
 
 local Browser						= require("hs.finalcutpro.main.Browser")
 local Inspector						= require("hs.finalcutpro.main.Inspector")
+local ColorBoard					= require("hs.finalcutpro.main.ColorBoard")
 local Viewer						= require("hs.finalcutpro.main.Viewer")
 local Timeline						= require("hs.finalcutpro.main.Timeline")
 
@@ -135,30 +136,23 @@ end
 -- INSPECTOR
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function PrimaryWindow:inspectorUI()
-	local ui = self:rightGroupUI()
-	if ui then
-		-- it's in the right panel (full-height)
-		if self:_isInspector(ui) then
-			return ui
-		end
-	else
-		-- it's in the top-left panel (half-height)
-		local top = self:topGroupUI()
-		for i,child in ipairs(top) do
-			if Inspector.isInspector(child) then
-				return child
-			end
-		end
-	end
-	return nil
-end
-
 function PrimaryWindow:inspector()
 	if not self._inspector then
 		self._inspector = Inspector:new(self)
 	end
 	return self._inspector
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-- INSPECTOR
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function PrimaryWindow:colorBoard()
+	if not self._colorBoard then
+		self._colorBoard = ColorBoard:new(self)
+	end
+	return self._colorBoard
 end
 
 -----------------------------------------------------------------------

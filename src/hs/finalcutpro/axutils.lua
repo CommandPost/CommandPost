@@ -47,4 +47,34 @@ function axutils.childMatching(element, matcherFn)
 	return nil
 end
 
+--- hs.finalcutpro.axutil.isValid(axuielement) -> boolean
+--- Function:
+--- Checks if the axuilelement is still valid
+---
+--- Params:
+--- * element	- the axuielement
+--- * matcherFn	- the function which checks if the child matches the requirements.
+--- Returns:
+--- The first matching child, or nil if none was found
+function axutils.isValid(element)
+	return element ~= nil and element.role
+end
+
+--- hs.finalcutpro.axutil.isValid(axuielement) -> boolean
+--- Function:
+--- Checks if the axuilelement is still valid
+---
+--- Params:
+--- * element	- the axuielement
+--- * matcherFn	- the function which checks if the child matches the requirements.
+--- Returns:
+--- The first matching child, or nil if none was found
+function axutils.isInvalid(element)
+	return element == nil or element:attributeValue("AXRole") == nil
+end
+
+function axutils.find(cachedElement, finderFn)
+	return axutils.isValid(cachedElement) and cachedElement or finderFn()
+end
+
 return axutils

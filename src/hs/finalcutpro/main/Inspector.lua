@@ -4,14 +4,12 @@ local inspect							= require("hs.inspect")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
-local ColorBoard						= require("hs.finalcutpro.main.ColorBoard")
 
 local Inspector = {}
 
 function Inspector.isInspector(element)
 	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
 		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
-		or ColorBoard.isColorBoard(element)
 end
 
 function Inspector:new(parent)
@@ -75,18 +73,6 @@ function Inspector:hide()
 	-- Uncheck it from the primary workspace
 	menuBar:uncheckMenu("Window", "Show in Workspace", "Inspector")
 	return self
-end
-
------------------------------------------------------------------------
------------------------------------------------------------------------
---- Color Board
------------------------------------------------------------------------
------------------------------------------------------------------------
-function Inspector:colorBoard()
-	if not self._colorBoard then
-		self._colorBoard = ColorBoard:new(self)
-	end
-	return self._colorBoard
 end
 
 return Inspector

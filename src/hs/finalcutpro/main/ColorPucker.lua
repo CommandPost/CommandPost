@@ -69,13 +69,11 @@ function Pucker.loop(pucker)
 	local xShift = Pucker.tension(xDiff)
 	local yShift = Pucker.tension(yDiff)
 	
-	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
-	local angleValue = angleUI and tonumber(angleUI:attributeValue("AXValue") or "0") + xShift
-	-- loop angle at the boundaries
-	angleValue = (angleValue + 360) % 360 
+	local pctValue = pctUI and tostring(tonumber(pctUI:attributeValue("AXValue") or "0") + yShift)
+	local angleValue = angleUI and tostring((tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360)
 	
-	if pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
-	if angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
+	if pctUI then pctUI:setAttributeValue("AXValue", pctValue):doConfirm() end
+	if angleUI then angleUI:setAttributeValue("AXValue", angleValue):doConfirm() end
 	
 	timer.doAfter(0.0001, function() Pucker.loop(pucker) end)
 end
