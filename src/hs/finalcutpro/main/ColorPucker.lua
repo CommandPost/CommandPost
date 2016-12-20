@@ -37,17 +37,45 @@ function Pucker:start()
 	return self
 end
 
+function Pucker:getBrightness()
+	if self.property == "global" then
+		return 0.25
+	elseif self.property == "shadows" then
+		return 0
+	elseif self.property == "midtones" then
+		return 0.33
+	elseif self.property == "highlights" then
+		return 0.66
+	else
+		return 1
+	end
+end
+
+function Pucker:getArc()
+	if self.aspect == "color" then
+		return 135, 315
+	elseif self.property == "global" then
+		return 0, 0
+	else
+		return 90, 270
+	end
+end
+
 function Pucker:drawMarker()
 	local d = Pucker.naturalLength*2
 	local oFrame = geometry.rect(self.origin.x-d/2, self.origin.y-d/2, d, d)
-	local color = {red=1, blue=1, green=1, alpha=1}
+	
+	local brightness = self:getBrightness()
+	local color = {hue=0, saturation=0, brightness=brightness, alpha=1}
 
 	self.circle = drawing.circle(oFrame)
 		:setStrokeColor(color)
 		:setFill(true)
 		:setStrokeWidth(1)
-		
-	self.arc = drawing.arc(self.origin, d/2, 135, 315)
+	
+	aStart, aEnd = self:getArc()
+	self.arc = drawing.arc(self.origin, d/2, aStart, aEnd)
+		:setStrokeColor(color)
 		:setFillColor(color)
 		:setFill(true)
 	
@@ -67,17 +95,19 @@ function Pucker:colorMarker(pct, angle)
 		solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
 		fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
 	else
-		solidColor = {hue = 0, saturation = 0, brightness = 1, alpha = 1}
-		fillColor = {hue = 0, saturation = 0, brightness = 1, alpha = math.abs(pct/100)}
+		brightness = pct >= 0 and 1 or 0
+		fillColor = {hue = 0, saturation = 0, brightness = brightness, alpha = math.abs(pct/100)}
 	end
 	
-	self.circle:setStrokeColor(solidColor)
-		:setFillColor(fillColor)
-		:show()
+	if solidColor then
+		self.circle:setStrokeColor(solidColor)
+		self.arc:setStrokeColor(solidColor)
+			:setFillColor(solidColor)
+	end
+	
+	self.circle:setFillColor(fillColor):show()
 		
-	self.arc:setStrokeColor(solidColor)
-		:setFillColor(solidColor)
-		:show()
+	self.arc:show()
 		
 	if angle and pct < 0 then
 		self.negative:show()
@@ -150,7 +180,7 @@ function Pucker.loop(pucker)
 	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
 	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
 	
-	timer.doAfter(0.0005, function() Pucker.loop(pucker) end)
+	timer.doAfter(0.01, function() Pucker.loop(pucker) end)
 end
 
 function Pucker.tension(diff)
