@@ -5,8 +5,8 @@ local timer									= require("hs.timer")
 
 local Pucker = {}
 
-Pucker.elasticity = .5
-Pucker.naturalLength = 10
+Pucker.naturalLength = 20
+Pucker.elasticity = Pucker.naturalLength/20
 
 function Pucker:new(colorBoard, aspect, property)
 	o = {
@@ -28,19 +28,53 @@ function Pucker:start()
 	
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
-	local oFrame = geometry.rect(self.origin.x-5, self.origin.y-5, 10, 10)
-	local color = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=0.75}
-
-	self.highlight = drawing.circle(oFrame)
-		:setStrokeColor(color)
-		:setFill(false)
-		:setStrokeWidth(3)
-		:show()
+	
+	self:drawMarker()
 	
 	-- start the timer
 	self.running = true
 	Pucker.loop(self)
 	return self
+end
+
+function Pucker:drawMarker()
+	local d = Pucker.naturalLength*2
+	local oFrame = geometry.rect(self.origin.x-d/2, self.origin.y-d/2, d, d)
+	local color = {red=1, blue=1, green=1, alpha=1}
+
+	self.circle = drawing.circle(oFrame)
+		:setStrokeColor(color)
+		:setFill(true)
+		:setStrokeWidth(1)
+		
+	self.arc = drawing.arc(self.origin, d/2, 135, 315)
+		:setFillColor(color)
+		:setFill(true)
+	
+	local rFrame = geometry.rect(self.origin.x-d/4, self.origin.y-d/8, d/2, d/4)
+	self.negative = drawing.rectangle(rFrame)
+		:setStrokeColor({white=1, alpha=0.75})
+		:setStrokeWidth(1)
+		:setFillColor({white=0, alpha=1.0 })
+		:setFill(true)
+end
+
+function Pucker:colorMarker(pct, angle)
+	local solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
+	local fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
+	self.circle:setStrokeColor(solidColor)
+		:setFillColor(fillColor)
+		:show()
+		
+	self.arc:setStrokeColor(solidColor)
+		:setFillColor(solidColor)
+		:show()
+		
+	if angle and pct < 0 then
+		self.negative:show()
+	else
+		self.negative:hide()
+	end
 end
 
 function Pucker:stop()
@@ -49,7 +83,12 @@ end
 
 function Pucker:cleanup()
 	self.running = false
-	self.highlight:delete()
+	self.circle:delete()
+	self.circle = nil
+	self.arc:delete()
+	self.arc = nil
+	self.negative:delete()
+	self.negative = nil
 	self.pctUI = nil
 	self.angleUI = nil
 	self.origin = nil
@@ -97,6 +136,7 @@ function Pucker.loop(pucker)
 	
 	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
 	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
+	pucker:colorMarker(pctValue, angleValue)
 	
 	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
 	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
