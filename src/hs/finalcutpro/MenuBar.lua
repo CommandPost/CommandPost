@@ -99,7 +99,6 @@ function MenuBar:checkMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
 	end
 	return self
 end
@@ -108,7 +107,6 @@ function MenuBar:uncheckMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
 	end
 	return self
 end

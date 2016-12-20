@@ -26,6 +26,11 @@ function Pucker:start()
 	self.pctUI		= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'pct')
 	self.angleUI	= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'angle')
 	
+	-- disable skimming while the pucker is running
+	self.menuBar = self.colorBoard:app():menuBar()
+	self.skimming = self.menuBar:isChecked("View", "Skimming")
+	self.menuBar:uncheckMenu("View", "Skimming")
+	
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
 	
@@ -131,6 +136,10 @@ function Pucker:cleanup()
 	self.pctUI = nil
 	self.angleUI = nil
 	self.origin = nil
+	if self.skimming then
+		self.menuBar:checkMenu("View", "Skimming")
+	end
+	self.menuBar = nil
 end
 
 function Pucker:accumulate(xShift, yShift)
