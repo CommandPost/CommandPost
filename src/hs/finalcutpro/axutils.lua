@@ -73,8 +73,28 @@ function axutils.isInvalid(element)
 	return element == nil or element:attributeValue("AXRole") == nil
 end
 
-function axutils.find(cachedElement, finderFn)
-	return axutils.isValid(cachedElement) and cachedElement or finderFn()
+--- hs.finalcutpro.axutil.cached(table, string, function) -> axuielement
+--- Function:
+--- Checks if the cached value at the `source[key]` is a valid axuielement. If not
+--- it will call the provided function, cache the result and return it.
+---
+--- Params:
+--- * source	- the table containing the cache
+--- * key		- the key the value is cached under
+--- * finderFn	- the function which will return the element if not found.
+--- Returns:
+--- The valid cached value.
+function axutils.cache(source, key, finderFn)
+	local value = source[key]
+	if not axutils.isValid(value) then
+		value = finderFn()
+		if axutils.isValid(value) then
+			source[key] = value
+		else
+			return nil
+		end
+	end
+	return value
 end
 
 return axutils

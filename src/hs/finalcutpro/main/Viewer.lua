@@ -56,11 +56,13 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Viewer:UI()
-	if self:isMainViewer() then
-		return self:viewerUI()
-	else
-		return self:eventViewerUI()
-	end
+	return axutils.cache(self, "_ui", function()
+		if self:isMainViewer() then
+			return self:viewerUI()
+		else
+			return self:eventViewerUI()
+		end
+	end)
 end
 
 -----------------------------------------------------------------------
@@ -69,20 +71,22 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Viewer:viewerUI()
-	local top = self:parent():viewerGroupUI()
-	local ui = nil
-	if top then
-		for i,child in ipairs(top) do
-			-- There can be two viwers enabled
-			if Viewer.isViewer(child) then
-				-- Both the event viewer and standard viewer have the ID, so pick the right-most one
-				if ui == nil or ui:position().x < child:position().x then
-					ui = child
+	return axutils.cache(self, "_viewer", function()
+		local top = self:parent():viewerGroupUI()
+		local ui = nil
+		if top then
+			for i,child in ipairs(top) do
+				-- There can be two viwers enabled
+				if Viewer.isViewer(child) then
+					-- Both the event viewer and standard viewer have the ID, so pick the right-most one
+					if ui == nil or ui:position().x < child:position().x then
+						ui = child
+					end
 				end
 			end
 		end
-	end
-	return ui
+		return ui
+	end)
 end
 
 -----------------------------------------------------------------------
@@ -91,25 +95,27 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Viewer:eventViewerUI()
-	local top = self:parent():viewerGroupUI()
-	local ui = nil
-	local viewerCount = 0
-	for i,child in ipairs(top) do
-		-- There can be two viwers enabled
-		if Viewer.isViewer(child) then
-			viewerCount = viewerCount + 1
-			-- Both the event viewer and standard viewer have the ID, so pick the left-most one
-			if ui == nil or ui:position().x > child:position().x then
-				ui = child
+	return axutils.cache(self, "_eventViewer", function()
+		local top = self:parent():viewerGroupUI()
+		local ui = nil
+		local viewerCount = 0
+		for i,child in ipairs(top) do
+			-- There can be two viwers enabled
+			if Viewer.isViewer(child) then
+				viewerCount = viewerCount + 1
+				-- Both the event viewer and standard viewer have the ID, so pick the left-most one
+				if ui == nil or ui:position().x > child:position().x then
+					ui = child
+				end
 			end
 		end
-	end
-	-- Can only be the event viewer if there are two viewers.
-	if viewerCount == 2 then
-		return ui
-	else
-		return nil
-	end
+		-- Can only be the event viewer if there are two viewers.
+		if viewerCount == 2 then
+			return ui
+		else
+			return nil
+		end
+	end)
 end
 
 

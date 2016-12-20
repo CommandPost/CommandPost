@@ -10,6 +10,7 @@ local Timeline = {}
 
 function Timeline.isTimeline(element)
 	return element:attributeValue("AXRole") == "AXGroup"
+	   and axutils.childWith(element, "AXIdentifier", "_NS:237") ~= nil
 end
 
 function Timeline:new(parent, secondary)
@@ -41,19 +42,22 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:UI()
-	local top = self:parent():timelineGroupUI()
-	if top then
-		for i,child in ipairs(top) do
-			if Timeline.isTimeline(child) then
-				return child
+	return axutils.cache(self, "_ui", function()
+		local top = self:parent():timelineGroupUI()
+		if top then
+			for i,child in ipairs(top) do
+				if Timeline.isTimeline(child) then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 function Timeline:isShowing()
-	return self:UI() ~= nil
+	local ui = self:UI()
+	return ui ~= nil and #ui > 0
 end
 
 function Timeline:show()
@@ -87,15 +91,17 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:mainUI()
-	local ui = self:UI()
-	if ui then
-		for i,child in ipairs(ui) do
-			if self:_isMain(child) then
-				return child
+	return axutils.cache(self, "_main", function()
+		local ui = self:UI()
+		if ui then
+			for i,child in ipairs(ui) do
+				if self:_isMain(child) then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 function Timeline:_isMain(element)
@@ -124,15 +130,17 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:toolbarUI()
-	local ui = self:UI()
-	if ui then
-		for i,child in ipairs(ui) do
-			if not self:_isMain(child) then
-				return child
+	return axutils.cache(self, "_toolbar", function()
+		local ui = self:UI()
+		if ui then
+			for i,child in ipairs(ui) do
+				if not self:_isMain(child) then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 return Timeline

@@ -40,8 +40,10 @@ function MenuBar:app()
 end
 
 function MenuBar:UI()
-	local appUI = self:app():UI()
-	return appUI and axutils.childWith(appUI, "AXRole", MenuBar.ROLE)
+	return axutils.cache(self, "_ui", function()
+		local appUI = self:app():UI()
+		return appUI and axutils.childWith(appUI, "AXRole", MenuBar.ROLE)
+	end)
 end
 
 function MenuBar:getMenuMap()

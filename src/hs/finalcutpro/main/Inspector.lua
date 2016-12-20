@@ -4,6 +4,7 @@ local inspect							= require("hs.inspect")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
+local _bench							= require("hs.bench")
 
 local Inspector = {}
 
@@ -33,27 +34,29 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Inspector:UI()
-	local parent = self:parent()
-	local ui = parent:rightGroupUI()
-	if ui then
-		-- it's in the right panel (full-height)
-		if Inspector.isInspector(ui) then
-			return ui
-		end
-	else
-		-- it's in the top-left panel (half-height)
-		local top = parent:topGroupUI()
-		for i,child in ipairs(top) do
-			if Inspector.isInspector(child) then
-				return child
+	return axutils.cache(self, "_ui", function()
+		local parent = self:parent()
+		local ui = parent:rightGroupUI()
+		if ui then
+			-- it's in the right panel (full-height)
+			if Inspector.isInspector(ui) then
+				return ui
+			end
+		else
+			-- it's in the top-left panel (half-height)
+			local top = parent:topGroupUI()
+			for i,child in ipairs(top) do
+				if Inspector.isInspector(child) then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 function Inspector:isShowing()
-	return self:UI() ~= nil
+	return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
 end
 
 function Inspector:show()

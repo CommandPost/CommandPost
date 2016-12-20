@@ -20,14 +20,16 @@ function Button:parent()
 end
 
 function Button:UI()
-	local parentUI = self:parent():UI()
-	if self._id.attribute then
-		return parentUI:attributeValue(self._id.attribute)
-	elseif self._id.subrole then
-		return axutils.childWith(parentUI, "AXSubrole", self._id.subrole)
-	else
-		return nil
-	end
+	return axutils.cache(self, "_ui", function()
+		local parentUI = self:parent():UI()
+		if self._id.attribute then
+			return parentUI:attributeValue(self._id.attribute)
+		elseif self._id.subrole then
+			return axutils.childWith(parentUI, "AXSubrole", self._id.subrole)
+		else
+			return nil
+		end
+	end)
 end
 
 function Button:isEnabled()

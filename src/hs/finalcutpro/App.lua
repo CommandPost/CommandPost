@@ -11,6 +11,8 @@ local ax 										= require("hs._asm.axuielement")
 local inspect									= require("hs.inspect")
 local log										= require("hs.logger").new("fcpxapp")
 
+local axutils									= require("hs.finalcutpro.axutils")
+
 --- Local Modules
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
@@ -56,8 +58,10 @@ function App:application()
 end
 
 function App:UI()
-	local fcp = self:application()
-	return fcp and ax.applicationElement(fcp)
+	return axutils.cache(self, "_ui", function()
+		local fcp = self:application()
+		return fcp and ax.applicationElement(fcp)
+	end)
 end
 
 --- hs.finalcutpro.running() -> boolean

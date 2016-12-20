@@ -70,7 +70,7 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function ColorBoard:UI()
-	self._ui = axutils.find(self._ui, function()
+	return axutils.cache(self, "_ui", function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
@@ -89,15 +89,14 @@ function ColorBoard:UI()
 		end
 		return nil
 	end)
-	return self._ui
 end
 
 function ColorBoard:_findUI()
 end
 
 function ColorBoard:isShowing()
-		local ui = self:UI()
-		return ui ~= nil and ui:attributeValue("AXSize").w > 0
+	local ui = self:UI()
+	return ui ~= nil and ui:attributeValue("AXSize").w > 0
 end
 
 function ColorBoard:show()
@@ -116,31 +115,34 @@ end
 
 
 function ColorBoard:childUI(id)
-	self._child[id] = axutils.find(self._child[id], function()
+	return axutils.cache(self._child, id, function()
 		local ui = self:UI()
 		return ui and axutils.childWith(ui, "AXIdentifier", id)
 	end)
-	return self._child[id]
 end
 
 function ColorBoard:topToolbarUI()
-	local ui = self:UI()
-	if ui then
-		for i,child in ipairs(ui) do
-			if axutils.childWith(child, "AXIdentifier", "_NS:180") then
-				return child
+	return axutils.cache(self, "_topToolbar", function()
+		local ui = self:UI()
+		if ui then
+			for i,child in ipairs(ui) do
+				if axutils.childWith(child, "AXIdentifier", "_NS:180") then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 function ColorBoard:showInspectorUI()
-	local ui = self:topToolbarUI()
-	if ui then
-		return axutils.childWith(ui, "AXIdentifier", "_NS:180")
-	end
-	return nil
+	return axutils.cache(self, "_showInspector", function()
+		local ui = self:topToolbarUI()
+		if ui then
+			return axutils.childWith(ui, "AXIdentifier", "_NS:180")
+		end
+		return nil
+	end)
 end
 
 function ColorBoard:isActive()
@@ -155,11 +157,10 @@ end
 -----------------------------------------------------------------------
 
 function ColorBoard:colorSatExpUI()
-	self._colorSatExp = axutils.find(self._colorSatExp, function()
+	return axutils.cache(self, "_colorSatExp", function()
 		local ui = self:UI()
 		return ui and axutils.childWith(ui, "AXIdentifier", "_NS:128")
 	end)
-	return self._colorSatExp
 end
 
 function ColorBoard:getAspect(aspect, property)
@@ -186,7 +187,6 @@ function ColorBoard:getAspect(aspect, property)
 	end
 	return panel
 end
-
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------

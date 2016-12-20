@@ -24,8 +24,10 @@ function ImportPanel:parent()
 end
 
 function ImportPanel:UI()
-	local toolbarUI = self:parent():toolbarUI()
-	return toolbarUI and toolbarUI[ImportPanel.ID]
+	return axutils.cache(self, "_ui", function()
+		local toolbarUI = self:parent():toolbarUI()
+		return toolbarUI and toolbarUI[ImportPanel.ID]
+	end)
 end
 
 function ImportPanel:isShowing()
