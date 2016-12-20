@@ -55,7 +55,7 @@ function Pucker:cleanup()
 	self.origin = nil
 end
 
-function Pucker:accumulateX(xShift)
+function Pucker:accumulate(xShift, yShift)
 	if xShift < 1 and xShift > -1 then
 		self.xShift = self.xShift + xShift
 		if self.xShift > 1 or self.xShift < -1 then
@@ -65,10 +65,6 @@ function Pucker:accumulateX(xShift)
 			xShift = 0
 		end
 	end
-	return xShift
-end
-
-function Pucker:accumulateY(yShift)
 	if yShift < 1 and yShift > -1 then
 		self.yShift = self.yShift + yShift
 		if self.yShift > 1 or self.yShift < -1 then
@@ -78,7 +74,7 @@ function Pucker:accumulateY(yShift)
 			yShift = 0
 		end
 	end
-	return yShift
+	return xShift, yShift
 end
 
 function Pucker.loop(pucker)
@@ -97,8 +93,7 @@ function Pucker.loop(pucker)
 	local xShift = Pucker.tension(xDiff)
 	local yShift = Pucker.tension(yDiff)
 	
-	xShift = pucker:accumulateX(xShift)
-	yShift = pucker:accumulateY(yShift)
+	xShift, yShift = pucker:accumulate(xShift, yShift)
 	
 	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
 	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
