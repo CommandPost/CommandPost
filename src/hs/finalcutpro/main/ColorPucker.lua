@@ -12,7 +12,9 @@ function Pucker:new(colorBoard, aspect, property)
 	o = {
 		colorBoard = colorBoard,
 		aspect = aspect,
-		property = property
+		property = property,
+		xShift = 0,
+		yShift = 0
 	}
 	setmetatable(o, self)
 	self.__index = self
@@ -53,6 +55,32 @@ function Pucker:cleanup()
 	self.origin = nil
 end
 
+function Pucker:accumulateX(xShift)
+	if xShift < 1 and xShift > -1 then
+		self.xShift = self.xShift + xShift
+		if self.xShift > 1 or self.xShift < -1 then
+			xShift = self.xShift
+			self.xShift = 0
+		else
+			xShift = 0
+		end
+	end
+	return xShift
+end
+
+function Pucker:accumulateY(yShift)
+	if yShift < 1 and yShift > -1 then
+		self.yShift = self.yShift + yShift
+		if self.yShift > 1 or self.yShift < -1 then
+			yShift = self.yShift
+			self.yShift = 0
+		else
+			yShift = 0
+		end
+	end
+	return yShift
+end
+
 function Pucker.loop(pucker)
 	if not pucker.running then
 		pucker:cleanup()
@@ -69,13 +97,16 @@ function Pucker.loop(pucker)
 	local xShift = Pucker.tension(xDiff)
 	local yShift = Pucker.tension(yDiff)
 	
-	local pctValue = pctUI and tostring(tonumber(pctUI:attributeValue("AXValue") or "0") + yShift)
-	local angleValue = angleUI and tostring((tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360)
+	xShift = pucker:accumulateX(xShift)
+	yShift = pucker:accumulateY(yShift)
 	
-	if pctUI then pctUI:setAttributeValue("AXValue", pctValue):doConfirm() end
-	if angleUI then angleUI:setAttributeValue("AXValue", angleValue):doConfirm() end
+	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
+	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
 	
-	timer.doAfter(0.0001, function() Pucker.loop(pucker) end)
+	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
+	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
+	
+	timer.doAfter(0.0005, function() Pucker.loop(pucker) end)
 end
 
 function Pucker.tension(diff)
