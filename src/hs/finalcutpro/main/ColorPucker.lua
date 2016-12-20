@@ -6,7 +6,7 @@ local timer									= require("hs.timer")
 local Pucker = {}
 
 Pucker.naturalLength = 20
-Pucker.elasticity = Pucker.naturalLength/20
+Pucker.elasticity = Pucker.naturalLength/10
 
 function Pucker:new(colorBoard, aspect, property)
 	o = {
@@ -60,8 +60,17 @@ function Pucker:drawMarker()
 end
 
 function Pucker:colorMarker(pct, angle)
-	local solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
-	local fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
+	local solidColor = nil
+	local fillColor = nil
+	
+	if angle then
+		solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
+		fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
+	else
+		solidColor = {hue = 0, saturation = 0, brightness = 1, alpha = 1}
+		fillColor = {hue = 0, saturation = 0, brightness = 1, alpha = math.abs(pct/100)}
+	end
+	
 	self.circle:setStrokeColor(solidColor)
 		:setFillColor(fillColor)
 		:show()
