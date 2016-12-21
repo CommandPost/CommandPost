@@ -473,6 +473,34 @@
 		<key>modifiers</key>
 		<string></string>
 	</dict>
+	<key>FCPXHackPuckOneMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackPuckTwoMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackPuckThreeMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
+	<key>FCPXHackPuckFourMouse</key>
+	<dict>
+		<key>characterString</key>
+		<string></string>
+		<key>modifiers</key>
+		<string></string>
+	</dict>
 	<key>FCPXHackColorPuckOneMouse</key>
 	<dict>
 		<key>characterString</key>

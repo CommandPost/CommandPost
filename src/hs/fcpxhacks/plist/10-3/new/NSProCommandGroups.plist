@@ -75,6 +75,10 @@
 			<string>FCPXHackCutSwitchAngle15Both</string>
 			<string>FCPXHackCutSwitchAngle16Both</string>
 			<string>FCPXHackMoveToPlayhead</string>
+			<string>FCPXHackPuckOneMouse</string>
+			<string>FCPXHackPuckTwoMouse</string>
+			<string>FCPXHackPuckThreeMouse</string>
+			<string>FCPXHackPuckFourMouse</string>
 			<string>FCPXHackColorPuckOneMouse</string>
 			<string>FCPXHackColorPuckTwoMouse</string>
 			<string>FCPXHackColorPuckThreeMouse</string>

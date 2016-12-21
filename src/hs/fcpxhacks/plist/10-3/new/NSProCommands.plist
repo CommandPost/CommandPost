@@ -471,6 +471,35 @@
 		<key>downSelector</key>
 		<string>FCPXHackMoveToPlayhead:</string>
 	</dict>
+
+	<key>FCPXHackPuckOneMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackPuckOneMouse:</string>
+	</dict>
+	<key>FCPXHackPuckTwoMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackPuckTwoMouse:</string>
+	</dict>
+	<key>FCPXHackPuckThreeMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackPuckThreeMouse:</string>
+	</dict>
+	<key>FCPXHackPuckFourMouse</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackPuckFourMouse:</string>
+	</dict>
 	<key>FCPXHackColorPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
@@ -499,6 +528,7 @@
 		<key>downSelector</key>
 		<string>FCPXHackColorPuckFourMouse:</string>
 	</dict>
+
 	<key>FCPXHackSaturationPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
