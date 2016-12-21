@@ -57,7 +57,7 @@ function Pucker:getBrightness()
 end
 
 function Pucker:getArc()
-	if self.aspect == "color" then
+	if self.angleUI then
 		return 135, 315
 	elseif self.property == "global" then
 		return 0, 0
@@ -127,19 +127,26 @@ end
 
 function Pucker:cleanup()
 	self.running = false
-	self.circle:delete()
-	self.circle = nil
-	self.arc:delete()
-	self.arc = nil
-	self.negative:delete()
-	self.negative = nil
+	if self.circle then
+		self.circle:delete()
+		self.circle = nil
+	end
+	if self.arc then
+		self.arc:delete()
+		self.arc = nil
+	end
+	if self.negative then
+		self.negative:delete()
+		self.negative = nil
+	end
 	self.pctUI = nil
 	self.angleUI = nil
 	self.origin = nil
-	if self.skimming then
+	if self.skimming and self.menuBar then
 		self.menuBar:checkMenu("View", "Skimming")
 	end
 	self.menuBar = nil
+	self.colorBoard.pucker = nil
 end
 
 function Pucker:accumulate(xShift, yShift)

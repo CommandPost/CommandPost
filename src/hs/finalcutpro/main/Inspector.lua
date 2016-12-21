@@ -34,7 +34,8 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Inspector:UI()
-	return axutils.cache(self, "_ui", function()
+	return axutils.cache(self, "_ui", 
+	function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
@@ -52,7 +53,8 @@ function Inspector:UI()
 			end
 		end
 		return nil
-	end)
+	end,
+	function(cachedElement) return Inspector.isInspector(cachedElement) end)
 end
 
 function Inspector:isShowing()

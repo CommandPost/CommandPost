@@ -70,7 +70,8 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function ColorBoard:UI()
-	return axutils.cache(self, "_ui", function()
+	return axutils.cache(self, "_ui", 
+	function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
@@ -88,7 +89,8 @@ function ColorBoard:UI()
 			end
 		end
 		return nil
-	end)
+	end,
+	function(element) return ColorBoard:isColorBoard(element) end)
 end
 
 function ColorBoard:_findUI()
@@ -146,7 +148,8 @@ function ColorBoard:showInspectorUI()
 end
 
 function ColorBoard:isActive()
-	return self:colorSatExpUI() ~= nil
+	local ui = self:colorSatExpUI()
+	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", "_NS:128")
 end
 		
 
@@ -312,7 +315,12 @@ function ColorBoard:getAngle(aspect, property, value)
 end
 
 function ColorBoard:startPucker(aspect, property)
-	return Pucker:new(self, aspect, property):start()
+	if self.pucker then
+		self.pucker:cleanup()
+		self.pucker = nil
+	end
+	self.pucker = Pucker:new(self, aspect, property):start()
+	return self.pucker
 end
 
 return ColorBoard
