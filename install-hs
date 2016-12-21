@@ -1,0 +1,26 @@
+#!/bin/sh
+
+### This script will erase the existing ~/.hammerspoon directory and 
+### copy in the contents of the src/ directory, thus updating it with the latest code.
+
+HS_PATH="$HOME/.hammerspoon"
+
+if [ ! -d $HS_PATH ]; then
+	echo "Please install Hammerspoon: http://www.hammerspoon.org/"
+	exit 1
+fi
+
+if [ -L $HS_PATH ] ; then
+	echo "Unlinking existing Hammerspoon directory."
+	unlink "$HS_PATH"
+fi
+
+if [ -d $HS_PATH ]; then
+	echo "Deleting existing Hammerspoon directory."
+	rm -Rf "$HS_PATH"
+fi
+
+echo "Copying FCPX Hacks source to Hammerspoon directory."
+cp -R src/ "$HS_PATH"
+
+echo "FCPX Hacks has been installed successfully."
