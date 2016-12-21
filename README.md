@@ -22,8 +22,9 @@ To install, you can either link the `~/.hammerspoon` directory to the `src` dire
 
 ## Building the Distribution DMG
 
-1. Install [adddmg](https://github.com/LinusU/node-appdmg)
-2. Open a Terminal window
-3. Execute `./make-dmg`
+1. Open a Terminal window
+2. If not already done, install [dmgbuild](https://dmgbuild.readthedocs.io/en/latest/index.html):
+`easy_install dmgbuild`
+3. Run the build script: `./make-dmg`
 
 A DMG file will be created in `build/FCPXHacks.dmg`

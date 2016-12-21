@@ -10,9 +10,26 @@ if [ -e "build/FCPXHacks.dmg" ]; then
 	rm "build/FCPXHacks.dmg"
 fi
 
-appdmg dmg/config.json build/FCPXHacks.dmg
-dmg/licenseDMG.py build/FCPXHacks.dmg dmg/license.rtf
+LINK="false"
+# Check if we are in 'link' mode currently
+if [ -L "$HOME/.hammerspoon" ]; then
+	LINK="true"
+fi
 
-open build/FCPXHacks.dmg
+# Install the latest version
+./install-hs
 
-echo "The package is in 'build/FCPXHacks.dmg'"
+echo "Building the DMG"
+dmgbuild -s dmg/settings.py -D hammerspoon="$HOME/.hammerspoon" "FCPX Hacks" "build/FCPXHacks.dmg"
+
+if [ $? -eq 0 ]; then
+	echo "Attaching the license to the DMG"
+	dmg/licenseDMG.py build/FCPXHacks.dmg dmg/license.rtf
+	open build/FCPXHacks.dmg
+
+	echo "The package is in 'build/FCPXHacks.dmg'"
+fi
+
+if [ "$LINK" == "true" ]; then
+	./link-hs
+fi
