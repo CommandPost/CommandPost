@@ -103,7 +103,7 @@ local mod = {}
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-mod.scriptVersion 		= "0.70"
+mod.scriptVersion 		= "0.71"
 mod.bugReportEmail		= "chris@latenitefilms.com"
 mod.developerURL		= "https://latenitefilms.com/blog/final-cut-pro-hacks/"
 mod.updateURL			= "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
@@ -271,12 +271,12 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-	if osVersion ~= nil then 					writeToConsole("macOS Version: " .. tostring(osVersion), true) 								end
-	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: " .. tostring(fcpVersion), true)						end
-	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: " .. tostring(fcpLanguage), true)					end
-	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: " .. tostring(keycodes.currentLayout()), true) 	end
-
-	writeToConsole("", true)
+												writeToConsole("Hammerspoon Version: 			" .. hs.processInfo["version"], true)
+	if osVersion ~= nil then 					writeToConsole("macOS Version: 					" .. tostring(osVersion), true) 					end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: 			" .. tostring(fcpVersion), true)					end
+	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: 		" .. tostring(fcpLanguage), true)					end
+	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: 		" .. tostring(keycodes.currentLayout()), true) 		end
+												writeToConsole("", true)
 
 	local validFinalCutProVersion = false
 	if fcpVersion == "10.2.3" then

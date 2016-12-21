@@ -490,7 +490,7 @@ function finalcutpro.setPreference(key, value)
 	local executeResult, executeStatus
 
 	if type(value) == "boolean" then
-		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -bool " .. tostring(value))
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -bool " .. tostring(value))
 	elseif type(value) == "table" then
 		local arrayString = ""
 		for i=1, #value do
@@ -499,9 +499,9 @@ function finalcutpro.setPreference(key, value)
 				arrayString = arrayString .. ","
 			end
 		end
-		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -array '" .. arrayString .. "'")
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -array '" .. arrayString .. "'")
 	elseif type(value) == "string" then
-		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " " .. key .. " -string '" .. value .. "'")
+		executeResult, executeStatus = hs.execute("defaults write " .. finalCutProPreferencesPlistPath .. " '" .. key .. "' -string '" .. value .. "'")
 	end
 
 	if executeStatus == nil then
