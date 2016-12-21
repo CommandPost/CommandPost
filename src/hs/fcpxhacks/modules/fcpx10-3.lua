@@ -711,12 +711,12 @@ function defaultShortcutKeys()
 		FCPXHackPuckOneMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "global") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackPuckTwoMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "shadows") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackPuckThreeMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckFourMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckFourMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "global") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "shadows") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "global") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "shadows") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
@@ -727,6 +727,7 @@ function defaultShortcutKeys()
 		FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "shadows") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "highlights") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+
 		FCPXHackMoveToPlayhead										= { characterString = "", 							modifiers = {}, 									fn = function() moveToPlayhead() end, 								releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackCutSwitchAngle01Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 1) end, 				releasedFn = nil, 														repeatFn = nil },
