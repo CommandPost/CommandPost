@@ -1,6 +1,7 @@
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
+local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
@@ -71,22 +72,61 @@ end
 --- PLAYHEAD
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function TimelineContent:playheadUI()
-	return axutils.cache(self, "_playhead", function()
-		local ui = self:UI()
-		if ui then
-			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
-		end
-		return nil
-	end)
-end
-
 function TimelineContent:playhead()
 	if not self._playhead then
 		self._playhead = Playhead:new(self)
 	end
 	return self._playhead
 end
+
+function TimelineContent:horizontalScrollUI()
+	local ui = self:scrollAreaUI()
+	if ui then
+		return ui[2]
+	end
+	return nil
+end
+
+function TimelineContent:verticalScrollUI()
+	local ui = self:scrollAreaUI()
+	if ui then
+		return ui[3]
+	end
+	return nil
+end
+
+function TimelineContent:viewFrame()
+	local scrollArea = self:scrollAreaUI()
+	if scrollArea then
+		local sap = scrollArea:position()
+		local horizontalScroll = scrollArea[2]
+		local verticalScroll = scrollArea[3]
+		return {x = sap.x, y = sap.y, w = horizontalScroll:size().w, h = verticalScroll:size().h}
+	end
+	return nil
+end
+
+function TimelineContent:timelineFrame()
+	local ui = self:UI()
+	return ui and ui:frame()
+end
+
+function TimelineContent:scrollHorizontalBy(shift)
+	local ui = self:horizontalScrollUI()
+	if ui then
+		local value = ui:value()
+		ui:setAttributeValue("AXValue", value + shift)
+	end
+end
+
+function TimelineContent:scrollVerticalBy(shift)
+	local ui = self:verticalScrollUI()
+	if ui then
+		local value = ui:value()
+		ui:setAttributeValue("AXValue", value + shift)
+	end
+end
+
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------

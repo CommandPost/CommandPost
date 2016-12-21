@@ -5,6 +5,7 @@ local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+local Scroller							= require("hs.finalcutpro.main.TimelineScroller")
 
 local Timeline = {}
 
@@ -110,7 +111,7 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- CONTENT UI
+--- CONTENT
 --- The Content is the main body of the timeline, containing the
 --- Timeline Index, the Content, and the Effects/Transitions panels.
 -----------------------------------------------------------------------
@@ -120,6 +121,16 @@ function Timeline:content()
 		self._content = TimelineContent:new(self)
 	end
 	return self._content
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEAD
+--- The timline Playhead.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:playhead()
+	return self:content():playhead()
 end
 
 -----------------------------------------------------------------------
@@ -141,6 +152,27 @@ function Timeline:toolbarUI()
 		end
 		return nil
 	end)
+end
+
+function Timeline:setScrollingTimeline(enabled)
+	if enabled then
+		if not self._scroller then
+			self._scroller = Scroller:new(self)
+		end
+		self._scroller:start()
+	else
+		if self._scroller then
+			self._scroller:stop()
+		end
+	end
+end
+
+function Timeline:isScrollingTimeline()
+	return self._scroller and self._scroller:isRunning()
+end
+
+function Timeline:getScrollingTimelineLog()
+	return self._scroller.log
 end
 
 return Timeline
