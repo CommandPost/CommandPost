@@ -30,22 +30,26 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function TimelineContent:UI()
-	local scrollArea = self:scrollAreaUI()
-	if scrollArea then
-		return axutils.childWith(scrollArea, "AXIdentifier", "_NS:16")
-	end
-	return nil
+	return axutils.cache(self, "_ui", function()
+		local scrollArea = self:scrollAreaUI()
+		if scrollArea then
+			return axutils.childWith(scrollArea, "AXIdentifier", "_NS:16")
+		end
+		return nil
+	end)
 end
 
 function TimelineContent:scrollAreaUI()
-	local main = self:parent():mainUI()
-	if main then
-		return axutils.childMatching(main, function(child)
-			return child:attributeValue("AXIdentifier") == "_NS:9" 
-			   and child:attributeValue("AXHorizontalScrollBar") ~= nil
-		end)
-	end
-	return nil
+	return axutils.cache(self, "_scrollArea", function()
+		local main = self:parent():mainUI()
+		if main then
+			return axutils.childMatching(main, function(child)
+				return child:attributeValue("AXIdentifier") == "_NS:9" 
+				   and child:attributeValue("AXHorizontalScrollBar") ~= nil
+			end)
+		end
+		return nil
+	end)
 end
 
 function TimelineContent:isShowing()
@@ -68,11 +72,13 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function TimelineContent:playheadUI()
-	local ui = self:UI()
-	if ui then
-		return axutils.childWith(ui, "AXRole", "AXValueIndicator")
-	end
-	return nil
+	return axutils.cache(self, "_playhead", function()
+		local ui = self:UI()
+		if ui then
+			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
+		end
+		return nil
+	end)
 end
 
 function TimelineContent:playhead()

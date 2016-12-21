@@ -17,6 +17,7 @@ local dialog = {}
 
 local fcp										= require("hs.finalcutpro")
 
+local alert										= require("hs.alert")
 local osascript									= require("hs.osascript")
 local sharing									= require("hs.sharing")
 local console									= require("hs.console")
@@ -223,6 +224,11 @@ function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 	if returnToFinalCutPro then fcp.launch() end
 	return result
 
+end
+
+function dialog.displayNotification(whatMessage)
+	alert.closeAll(0)
+	alert.show(whatMessage)
 end
 
 --------------------------------------------------------------------------------

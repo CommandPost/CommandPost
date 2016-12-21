@@ -41,15 +41,17 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Browser:UI()
-	local top = self:parent():browserGroupUI()
-	if top then
-		for i,child in ipairs(top) do
-			if Browser.isBrowser(child) then
-				return child
+	return axutils.cache(self, "_ui", function()
+		local top = self:parent():browserGroupUI()
+		if top then
+			for i,child in ipairs(top) do
+				if Browser.isBrowser(child) then
+					return child
+				end
 			end
 		end
-	end
-	return nil
+		return nil
+	end)
 end
 
 function Browser:isShowing()

@@ -27,11 +27,13 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Playhead:UI()
-	local ui = self:parent():UI()
-	if ui then
-		return axutils.childWith(ui, "AXRole", "AXValueIndicator")
-	end
-	return nil
+	return axutils.cache(self, "_ui", function()
+		local ui = self:parent():UI()
+		if ui then
+			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
+		end
+		return nil
+	end)
 end
 
 function Playhead:isShowing()

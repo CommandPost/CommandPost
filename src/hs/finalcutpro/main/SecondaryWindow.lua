@@ -32,12 +32,14 @@ function SecondaryWindow:show()
 end
 
 function SecondaryWindow:UI()
-	local ui = self:app():UI():mainWindow()
-	if not self:_isSecondaryWindow(ui) then
-		local windowsUI = self:app():windowsUI()
-		ui = windowsUI and self:_findWindowUI(windowsUI)
-	end
-	return ui
+	return axutils.cache(self, "_ui", function()
+		local ui = self:app():UI():mainWindow()
+		if not self:_isSecondaryWindow(ui) then
+			local windowsUI = self:app():windowsUI()
+			ui = windowsUI and self:_findWindowUI(windowsUI)
+		end
+		return ui
+	end)
 end
 
 function SecondaryWindow:_findWindowUI(windows)
@@ -80,8 +82,10 @@ end
 
 -- The top AXSplitGroup contains the 
 function SecondaryWindow:rootGroupUI()
-	local ui = self:UI()
-	return ui and axutils.childWith(ui, "AXRole", "AXSplitGroup")
+	return axutils.cache(self, "_rootGroup", function()
+		local ui = self:UI()
+		return ui and axutils.childWith(ui, "AXRole", "AXSplitGroup")
+	end)
 end
 
 -----------------------------------------------------------------------
@@ -120,7 +124,13 @@ end
 -----------------------------------------------------------------------
 
 function SecondaryWindow:timelineGroupUI()
-	return self:rootGroupUI()
+	return axutils.cache(self, "_timelineGroup", function()
+		-- for some reason, the Timeline is burried under three levels
+		local root = self:rootGroupUI()
+		if root and root[1] and root[1][1] then
+			return root[1][1]
+		end
+	end)
 end
 
 function SecondaryWindow:timeline()

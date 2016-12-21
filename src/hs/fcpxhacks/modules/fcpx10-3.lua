@@ -65,7 +65,6 @@ local mod = {}
 -- STANDARD EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local alert										= require("hs.alert")
 local application								= require("hs.application")
 local base64									= require("hs.base64")
 local chooser									= require("hs.chooser")
@@ -504,8 +503,8 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	alert.closeAll(0)
-	alert.show("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") has loaded")
+	
+	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -575,10 +574,10 @@ function defaultShortcutKeys()
 		FCPXHackToggleMovingMarkers 								= { characterString = keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackAllowTasksDuringPlayback 							= { characterString = keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, 			releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSelectColorBoardPuckOne 							= { characterString = keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(1) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckTwo 							= { characterString = keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(2) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(3) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck(4) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckOne 							= { characterString = keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "global") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckTwo 							= { characterString = keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "shadows") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
 		FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
@@ -626,60 +625,60 @@ function defaultShortcutKeys()
 
 		FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackColorPuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackColorPuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackColorPuckThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackColorPuckFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 1) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackColorPuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackSaturationPuckOne			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaturationPuckTwo			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaturationPuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaturationPuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 2) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaturationPuckOne			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global") end, 				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckTwo			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows") end, 				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones") end, 			releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights") end, 			releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackExposurePuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackExposurePuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackExposurePuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackExposurePuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackExposurePuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackColorPuckOneUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 1, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 1, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourUp		 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 1, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "up") end,				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourUp		 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 1, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 1, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourDown	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 1, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourDown	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourLeft	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourLeft	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 1, "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 1, "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 1, "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourRight	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 1, "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourRight	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackSaturationPuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 2, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 2, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckThreeUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 2, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckFourUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 2, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckThreeUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckFourUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "up") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackSaturationPuckOneDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 2, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckTwoDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 2, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 2, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 2, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckOneDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckTwoDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackExposurePuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 3, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 3, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckFourUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckFourUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackExposurePuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(1, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(2, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(3, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck(4, 3, "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
 		FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("+"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 		FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
@@ -708,25 +707,25 @@ function defaultShortcutKeys()
 		FCPXHackSelectClipAtLaneNine								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(9) end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackSelectClipAtLaneTen									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(10) end, 							releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackPuckOneMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckTwoMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckThreeMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckFourMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckOneMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "global") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckTwoMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "shadows") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckThreeMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckFourMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 1) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "global") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "shadows") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckThreeMouse							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 2) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "global") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "shadows") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckThreeMouse							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "highlights") end,releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackExposurePuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(1, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(2, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(3, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck(4, 3) end, 						releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "global") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "shadows") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "highlights") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		FCPXHackMoveToPlayhead										= { characterString = "", 							modifiers = {}, 									fn = function() moveToPlayhead() end, 								releasedFn = nil, 														repeatFn = nil },
 
@@ -970,8 +969,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Let user know that keyboard shortcuts have loaded:
 	--------------------------------------------------------------------------------
-	alert.closeAll(0)
-	alert.show("Keyboard Shortcuts Updated")
+	dialog.displayNotification("Keyboard Shortcuts Updated")
 
 end
 
@@ -5111,8 +5109,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Saved:
 		--------------------------------------------------------------------------------
-		alert.closeAll(0)
-		alert.show("Your Keywords have been saved to Preset " .. tostring(whichButton))
+		dialog.displayNotification("Your Keywords have been saved to Preset " .. tostring(whichButton))
 
 	end
 
@@ -5234,8 +5231,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Successfully Restored:
 		--------------------------------------------------------------------------------
-		alert.closeAll(0)
-		alert.show("Your Keywords have been restored to Preset " .. tostring(whichButton))
+		dialog.displayNotification("Your Keywords have been restored to Preset " .. tostring(whichButton))
 
 	end
 
@@ -5278,8 +5274,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			alert.closeAll(0)
-			alert.show("Scrolling Timeline Deactivated")
+			display.displayNotification("Scrolling Timeline Deactivated")
 
 		else
 			--------------------------------------------------------------------------------
@@ -5303,8 +5298,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			alert.closeAll(0)
-			alert.show("Scrolling Timeline Activated")
+			dialog.displayNotification("Scrolling Timeline Activated")
 
 		end
 
@@ -5750,27 +5744,7 @@ end
 	--------------------------------------------------------------------------------
 	-- COLOR BOARD - PUCK SELECTION:
 	--------------------------------------------------------------------------------
-	function colorBoardSelectPuck(whichPuck, whichPanel, whichDirection)
-
-		--------------------------------------------------------------------------------
-		-- Make sure Nudge Shortcuts are allocated:
-		--------------------------------------------------------------------------------
-		if whichDirection ~= nil then
-			local nudgeShortcutMissing = false
-			if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-			if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-			if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-			if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
-			if nudgeShortcutMissing then
-				dialog.displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
-				return "Failed"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- The first button is actually the reset button:
-		--------------------------------------------------------------------------------
-		whichPuck = whichPuck + 1
+	function colorBoardSelectPuck(aspect, property, whichDirection)
 
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
@@ -5778,67 +5752,15 @@ end
 		deleteAllHighlights()
 
 		--------------------------------------------------------------------------------
-		-- Get Final Cut Pro Color Board Button Bar:
+		-- Show the Color Board with the correct panel
 		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
-		if finalCutProColorBoardRadioGroup == nil then
+		local colorBoard = fcp.app():colorBoard()
 
-			--------------------------------------------------------------------------------
-			-- Open Color Board:
-			--------------------------------------------------------------------------------
-			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
-				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
-			else
-				dialog.displayErrorMessage("Failed to goto Color Board.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Try again:
-			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
-
-		end
-		if finalCutProColorBoardRadioGroup == nil then
-			dialog.displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
+		if not colorBoard:isActive() then
+			dialog.displayNotification("Please select a single clip in the Timeline.")
 			return "Failed"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Change to correct panel:
-		--------------------------------------------------------------------------------
-		if whichPanel ~= nil then
-			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Could not open specific Color Board panel.")
-				return "Failed"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Correct Puck:
-		--------------------------------------------------------------------------------
-		colorBoardPanel = finalCutProColorBoardRadioGroup
-		local whichPuckCount = 1
-		for i=1, colorBoardPanel:attributeValue("AXParent"):attributeValueCount("AXChildren") do
-			if colorBoardPanel:attributeValue("AXParent")[i]:attributeValue("AXRole") == "AXButton" then
-				if whichPuckCount == whichPuck then
-					whichPuckButton = i
-					goto colorBoardSelectPuckExit
-				else
-					whichPuckCount = whichPuckCount + 1
-				end
-			end
-		end
-		::colorBoardSelectPuckExit::
-
-		if not colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXFocused") then
-			local colorBoardPosition = {}
-			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
-			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-			tools.ninjaMouseClick(colorBoardPosition)
-		end
-
+		
 		--------------------------------------------------------------------------------
 		-- If a Direction is specified:
 		--------------------------------------------------------------------------------
@@ -5850,163 +5772,18 @@ end
 			mod.releaseColorBoardDown = false
 			timer.doUntil(function() return mod.releaseColorBoardDown end, function()
 				if whichDirection == "up" then
-					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] ~= "" then
-						keyStrokeFromPlist("ColorBoard-NudgePuckUp")
-					end
-				end
-				if whichDirection == "down" then
-					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] ~= "" then
-						keyStrokeFromPlist("ColorBoard-NudgePuckDown")
-					end
-				end
-				if whichDirection == "left" then
-					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] ~= "" then
-						keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
-					end
-				end
-				if whichDirection == "right" then
-					if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] ~= "" then
-						keyStrokeFromPlist("ColorBoard-NudgePuckRight")
-					end
+					colorBoard:shiftPercentage(aspect, property, 1)
+				elseif whichDirection == "down" then
+					colorBoard:shiftPercentage(aspect, property, -1)
+				elseif whichDirection == "left" then
+					colorBoard:shiftAngle(aspect, property, -1)
+				elseif whichDirection == "right" then
+					colorBoard:shiftAngle(aspect, property, 1)
 				end
 			end, eventtap.keyRepeatInterval())
-
+		else -- just select the puck
+			colorBoard:selectPuck(aspect, property)
 		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - PUCK CONTROL VIA MOUSE:
-	--------------------------------------------------------------------------------
-	function colorBoardMousePuck(whichPuck, whichPanel)
-
-		--------------------------------------------------------------------------------
-		-- Local Variables:
-		--------------------------------------------------------------------------------
-		local colorBoardOriginalMousePoint = mouse.getAbsolutePosition()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Nudge Shortcuts are allocated:
-		--------------------------------------------------------------------------------
-		local nudgeShortcutMissing = false
-		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckUp"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckDown"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckLeft"]['characterString'] == "" then nudgeShortcutMissing = true	end
-		if mod.finalCutProShortcutKey["ColorBoard-NudgePuckRight"]['characterString'] == "" then nudgeShortcutMissing = true end
-		if nudgeShortcutMissing then
-			dialog.displayMessage("This feature requires the Color Board Nudge Pucks shortcuts to be allocated.\n\nPlease allocate these shortcuts keys to anything you like in the Command Editor and try again.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- The first button is actually the reset button:
-		--------------------------------------------------------------------------------
-		whichPuck = whichPuck + 1
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get Final Cut Pro Color Board Button Bar:
-		--------------------------------------------------------------------------------
-		local finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
-		if finalCutProColorBoardRadioGroup == nil then
-
-			--------------------------------------------------------------------------------
-			-- Open Color Board:
-			--------------------------------------------------------------------------------
-			if fcp:app():menuBar():isEnabled("Window", "Go To", "Color Board") then
-				fcp:app():menuBar():selectMenu("Window", "Go To", "Color Board")
-			else
-				dialog.displayErrorMessage("Failed to goto Color Board.")
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Try again:
-			--------------------------------------------------------------------------------
-			finalCutProColorBoardRadioGroup = fcp.getColorBoardRadioGroup()
-
-		end
-		if finalCutProColorBoardRadioGroup == nil then
-			dialog.displayMessage("Please make sure you have a clip selected in the timeline before using this function.")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Change to correct panel:
-		--------------------------------------------------------------------------------
-		if whichPanel ~= nil then
-			local result = finalCutProColorBoardRadioGroup[whichPanel]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Could not open specific Color Board panel.")
-				return "Failed"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Correct Puck:
-		--------------------------------------------------------------------------------
-		colorBoardPanel = finalCutProColorBoardRadioGroup
-		local whichPuckCount = 1
-		for i=1, colorBoardPanel:attributeValue("AXParent"):attributeValueCount("AXChildren") do
-			if colorBoardPanel:attributeValue("AXParent")[i]:attributeValue("AXRole") == "AXButton" then
-				if whichPuckCount == whichPuck then
-					whichPuckButton = i
-					goto colorBoardSelectPuckExit
-				else
-					whichPuckCount = whichPuckCount + 1
-				end
-			end
-		end
-		::colorBoardSelectPuckExit::
-
-		if not colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXFocused") then
-			local colorBoardPosition = {}
-			colorBoardPosition['x'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['x'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['w'] / 2)
-			colorBoardPosition['y'] = colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXPosition")['y'] + (colorBoardPanel:attributeValue("AXParent")[whichPuckButton]:attributeValue("AXSize")['h'] / 2)
-			tools.ninjaMouseClick(colorBoardPosition)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get shortcut key from plist, press and hold if required:
-		--------------------------------------------------------------------------------
-		mod.releaseMouseColorBoardDown = false
-		timer.doUntil(function() return mod.releaseMouseColorBoardDown end, function()
-
-			local currentMousePoint = mouse.getAbsolutePosition()
-
-			if currentMousePoint['y'] < colorBoardOriginalMousePoint['y'] then
-				keyStrokeFromPlist("ColorBoard-NudgePuckUp")
-				colorBoardOriginalMousePoint = currentMousePoint
-			end
-			if currentMousePoint['y'] > colorBoardOriginalMousePoint['y'] then
-				keyStrokeFromPlist("ColorBoard-NudgePuckDown")
-				colorBoardOriginalMousePoint = currentMousePoint
-			end
-
-			if whichPanel == 1 then
-				if currentMousePoint['x'] < colorBoardOriginalMousePoint['x'] then
-					keyStrokeFromPlist("ColorBoard-NudgePuckLeft")
-					colorBoardOriginalMousePoint = currentMousePoint
-				end
-				if currentMousePoint['x'] > colorBoardOriginalMousePoint['x'] then
-					keyStrokeFromPlist("ColorBoard-NudgePuckRight")
-					colorBoardOriginalMousePoint = currentMousePoint
-				end
-			end
-
-		end, 0.00001)
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
-	--------------------------------------------------------------------------------
-	function colorBoardMousePuckRelease()
-		mod.releaseMouseColorBoardDown = true
 	end
 
 	--------------------------------------------------------------------------------
@@ -6014,6 +5791,41 @@ end
 	--------------------------------------------------------------------------------
 	function colorBoardSelectPuckRelease()
 		mod.releaseColorBoardDown = true
+	end
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - PUCK CONTROL VIA MOUSE:
+	--------------------------------------------------------------------------------
+	function colorBoardMousePuck(aspect, property)
+		--------------------------------------------------------------------------------
+		-- Stop Existing Color Pucker:
+		--------------------------------------------------------------------------------
+		if mod.colorPucker then
+			mod.colorPucker:stop()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		colorBoard = fcp:app():colorBoard()
+		if not colorBoard:isActive() then
+			dialog.displayNotification("Please select a single clip in the Timeline.")
+			return "Failed"
+		end
+
+		mod.colorPucker = colorBoard:startPucker(aspect, property)
+	end
+
+	--------------------------------------------------------------------------------
+	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+	--------------------------------------------------------------------------------
+	function colorBoardMousePuckRelease()
+		if mod.colorPucker then
+			mod.colorPucker:stop()
+			mod.colorPicker = nil
+		end
 	end
 
 --------------------------------------------------------------------------------

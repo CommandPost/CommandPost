@@ -40,8 +40,10 @@ function MenuBar:app()
 end
 
 function MenuBar:UI()
-	local appUI = self:app():UI()
-	return appUI and axutils.childWith(appUI, "AXRole", MenuBar.ROLE)
+	return axutils.cache(self, "_ui", function()
+		local appUI = self:app():UI()
+		return appUI and axutils.childWith(appUI, "AXRole", MenuBar.ROLE)
+	end)
 end
 
 function MenuBar:getMenuMap()
@@ -97,7 +99,6 @@ function MenuBar:checkMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
 	end
 	return self
 end
@@ -106,7 +107,6 @@ function MenuBar:uncheckMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
 		menuItemUI:doPress()
-		just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
 	end
 	return self
 end

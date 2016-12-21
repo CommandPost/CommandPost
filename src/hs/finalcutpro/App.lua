@@ -11,6 +11,8 @@ local ax 										= require("hs._asm.axuielement")
 local inspect									= require("hs.inspect")
 local log										= require("hs.logger").new("fcpxapp")
 
+local axutils									= require("hs.finalcutpro.axutils")
+
 --- Local Modules
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
@@ -56,8 +58,10 @@ function App:application()
 end
 
 function App:UI()
-	local fcp = self:application()
-	return fcp and ax.applicationElement(fcp)
+	return axutils.cache(self, "_ui", function()
+		local fcp = self:application()
+		return fcp and ax.applicationElement(fcp)
+	end)
 end
 
 --- hs.finalcutpro.running() -> boolean
@@ -178,6 +182,31 @@ function App:browser()
 	return browser:isShowing() and browser or self:primaryWindow():browser()
 end	
 
+--- hs.finalcutpro.App:inspector() -> Inspector
+--- Function
+--- Returns the Inspector instance from the primary window
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the Inspector
+function App:inspector()
+	return self:primaryWindow():inspector()
+end	
+
+--- hs.finalcutpro.App:colorBoard() -> ColorBoard
+--- Function
+--- Returns the ColorBoard instance from the primary window
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the ColorBoard
+function App:colorBoard()
+	return self:primaryWindow():colorBoard()
+end	
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -200,7 +229,10 @@ function App:_listWindows()
 end
 
 function App:_describeWindow(w)
-	return "title: "..inspect(w:title()).."; role: "..inspect(w:role()).."; subrole: "..inspect(w:subrole()).."; modal: "..inspect(w:modal())
+	return "title: "..inspect(w:attributeValue("AXTitle"))..
+	       "; role: "..inspect(w:attributeValue("AXRole"))..
+		   "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
+		   "; modal: "..inspect(w:attributeValue("AXModal"))
 end
 
 return App

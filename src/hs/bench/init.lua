@@ -4,13 +4,14 @@
 -- Use this to benchmark sections of code. Wrap them in a function inside this
 -- function call. Eg:
 --
--- local bench = require("hs.bench")	
+-- local _bench = require("hs.bench")	
 -- 
--- local foo = bench("Foo Test", function()
+-- local foo = _bench("Foo Test", function()
 --     return do.somethingHere()
--- end) --bench
+-- end) --_bench
 --------------------------------------------------------------------------------
-local clock = os.clock
+-- local clock = os.clock
+local clock = require("hs.timer").secondsSinceEpoch
 local _timeindent = 0
 local _timelog = {}
 

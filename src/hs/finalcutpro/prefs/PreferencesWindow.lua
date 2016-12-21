@@ -23,8 +23,10 @@ function PreferencesWindow:app()
 end
 
 function PreferencesWindow:UI()
+	return axutils.cache(self, "_ui", function()
 		local windowsUI = self:app():windowsUI()
 		return windowsUI and self:_findWindowUI(windowsUI)
+	end)
 end
 
 function PreferencesWindow:_findWindowUI(windows)
@@ -43,16 +45,20 @@ end
 
 -- Returns the UI for the AXToolbar containing this panel's buttons
 function PreferencesWindow:toolbarUI()
-	local ax = self:UI()
-	return ax and axutils.childWith(ax, "AXRole", "AXToolbar") or nil
+	return axutils.cache(self, "_toolbar", function()
+		local ax = self:UI()
+		return ax and axutils.childWith(ax, "AXRole", "AXToolbar") or nil
+	end)
 end
 
 -- Returns the UI for the AXGroup containing this panel's elements
 function PreferencesWindow:groupUI()
-	local ax = self:UI()
-	local group = ax and axutils.childWith(ax, "AXIdentifier", PreferencesWindow.GROUP)
-	-- The group conains another single group that contains the actual checkboxes, etc.
-	return group and #group == 1 and group[1]
+	return axutils.cache(self, "_group", function()
+		local ax = self:UI()
+		local group = ax and axutils.childWith(ax, "AXIdentifier", PreferencesWindow.GROUP)
+		-- The group conains another single group that contains the actual checkboxes, etc.
+		return group and #group == 1 and group[1]
+	end)
 end
 
 

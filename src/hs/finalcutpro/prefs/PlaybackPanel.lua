@@ -23,8 +23,10 @@ function PlaybackPanel:parent()
 end
 
 function PlaybackPanel:UI()
-	local toolbarUI = self:parent():toolbarUI()
-	return toolbarUI and toolbarUI[PlaybackPanel.ID]
+	return axutils.cache(self, "_ui", function()
+		local toolbarUI = self:parent():toolbarUI()
+		return toolbarUI and toolbarUI[PlaybackPanel.ID]
+	end)
 end
 
 function PlaybackPanel:isShowing()
