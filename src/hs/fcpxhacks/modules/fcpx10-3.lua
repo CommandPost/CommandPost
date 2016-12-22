@@ -503,7 +503,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	
+
 	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
@@ -785,6 +785,8 @@ function defaultShortcutKeys()
 		FCPXHackHUD					 								= { characterString = keyCodeTranslator("a"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
+
+		FCPXHackLockPlayhead										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLockPlayhead() end, 							releasedFn = nil, 														repeatFn = nil },
 	}
 
 	return defaultShortcutKeys
@@ -5236,7 +5238,7 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- SCROLLING TIMELINE RELATED:
+-- TIMELINE RELATED:
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -5309,205 +5311,218 @@ end
 
 	end
 
-	--------------------------------------------------------------------------------
-	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function checkScrollingTimelinePress()
-
 		--------------------------------------------------------------------------------
-		-- Define FCPX:
+		-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
 		--------------------------------------------------------------------------------
-		local fcpx 				= fcp.application()
-		local fcpxElements 		= ax.applicationElement(fcpx)
-
-		--------------------------------------------------------------------------------
-		-- Don't activate scrollbar in fullscreen mode:
-		--------------------------------------------------------------------------------
-		local fullscreenActive = false
+		function checkScrollingTimelinePress()
 
 			--------------------------------------------------------------------------------
-			-- No player controls visible:
+			-- Define FCPX:
 			--------------------------------------------------------------------------------
-			if fcpxElements[1][1] ~= nil then
-				if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
-					fullscreenActive = true
+			local fcpx 				= fcp.application()
+			local fcpxElements 		= ax.applicationElement(fcpx)
+
+			--------------------------------------------------------------------------------
+			-- Don't activate scrollbar in fullscreen mode:
+			--------------------------------------------------------------------------------
+			local fullscreenActive = false
+
+				--------------------------------------------------------------------------------
+				-- No player controls visible:
+				--------------------------------------------------------------------------------
+				if fcpxElements[1][1] ~= nil then
+					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+						fullscreenActive = true
+					end
 				end
-			end
 
-			--------------------------------------------------------------------------------
-			-- Player controls visible:
-			--------------------------------------------------------------------------------
-			if fcpxElements[1][1] ~= nil then
-				if fcpxElements[1][1][1] ~= nil then
-					if fcpxElements[1][1][1][1] ~= nil then
-						if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
-							fullscreenActive = true
+				--------------------------------------------------------------------------------
+				-- Player controls visible:
+				--------------------------------------------------------------------------------
+				if fcpxElements[1][1] ~= nil then
+					if fcpxElements[1][1][1] ~= nil then
+						if fcpxElements[1][1][1][1] ~= nil then
+							if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
+								fullscreenActive = true
+							end
 						end
 					end
 				end
+
+			--------------------------------------------------------------------------------
+			-- If Full Screen is Active then abort:
+			--------------------------------------------------------------------------------
+			if fullscreenActive then
+				debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
+				return "Stop"
 			end
 
-		--------------------------------------------------------------------------------
-		-- If Full Screen is Active then abort:
-		--------------------------------------------------------------------------------
-		if fullscreenActive then
-			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		local timelineScrollArea = fcp.getTimelineScrollArea()
-		if timelineScrollArea == nil then
-			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = mouse.getAbsolutePosition()
-		local timelinePosition = timelineScrollArea:attributeValue("AXPosition")
-		local timelineSize = timelineScrollArea:attributeValue("AXSize")
-		local isMouseInTimelineArea = true
-		if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
-		if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
-		if (mouseLocation['x'] <= timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
-		if (mouseLocation['x'] >= (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
-		if isMouseInTimelineArea then
+			--------------------------------------------------------------------------------
+			-- Get Timeline Scroll Area:
+			--------------------------------------------------------------------------------
+			local timelineScrollArea = fcp.getTimelineScrollArea()
+			if timelineScrollArea == nil then
+				writeToConsole("ERROR: Could not find Timeline Scroll Area.")
+				return "Stop"
+			end
 
 			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			-- Check mouse is in timeline area:
 			--------------------------------------------------------------------------------
+			local mouseLocation = mouse.getAbsolutePosition()
+			local timelinePosition = timelineScrollArea:attributeValue("AXPosition")
+			local timelineSize = timelineScrollArea:attributeValue("AXSize")
+			local isMouseInTimelineArea = true
+			if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
+			if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
+			if (mouseLocation['x'] <= timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
+			if (mouseLocation['x'] >= (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
+			if isMouseInTimelineArea then
+
+				--------------------------------------------------------------------------------
+				-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+				--------------------------------------------------------------------------------
+
+					--------------------------------------------------------------------------------
+					-- Debug Mode:
+					--------------------------------------------------------------------------------
+					debugMessage("Mouse inside Timeline Area.")
+
+					--------------------------------------------------------------------------------
+					-- Which Value Indicator:
+					--------------------------------------------------------------------------------
+					local whichValueIndicator = nil
+					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
+						if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
+							whichValueIndicator = i
+							goto performScrollingTimelineValueIndicatorExit
+						end
+					end
+					if whichValueIndicator == nil then
+						dialog.displayErrorMessage("Sorry, but we were unable to locate Value Indicator.\n\nWe will now disable the scrolling timeline.\n\nThis error occured in checkScrollingTimelinePress()")
+						toggleScrollingTimeline()
+						return "Failed"
+					end
+					::performScrollingTimelineValueIndicatorExit::
+
+					local initialPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+					performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
+			else
 
 				--------------------------------------------------------------------------------
 				-- Debug Mode:
 				--------------------------------------------------------------------------------
-				debugMessage("Mouse inside Timeline Area.")
+				debugMessage("Mouse outside of Timeline Area.")
 
-				--------------------------------------------------------------------------------
-				-- Which Value Indicator:
-				--------------------------------------------------------------------------------
-				local whichValueIndicator = nil
-				for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-					if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
-						whichValueIndicator = i
-						goto performScrollingTimelineValueIndicatorExit
-					end
-				end
-				if whichValueIndicator == nil then
-					dialog.displayErrorMessage("Sorry, but we were unable to locate Value Indicator.\n\nWe will now disable the scrolling timeline.\n\nThis error occured in checkScrollingTimelinePress()")
-					toggleScrollingTimeline()
-					return "Failed"
-				end
-				::performScrollingTimelineValueIndicatorExit::
-
-				local initialPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-				performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
-		else
-
-			--------------------------------------------------------------------------------
-			-- Debug Mode:
-			--------------------------------------------------------------------------------
-			debugMessage("Mouse outside of Timeline Area.")
-
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- PERFORM SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
-
-		--------------------------------------------------------------------------------
-		-- Define Scrollbar Check Timer:
-		--------------------------------------------------------------------------------
-		mod.scrollingTimelineScrollbarTimer = timer.new(0.001, function()
-			if timelineScrollArea[2] ~= nil then
-				performScrollingTimelineLoops(whichSplitGroup, whichGroup)
-				scrollbarSearchLoopActivated = false
 			end
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
-		--------------------------------------------------------------------------------
-		if timelineScrollArea[2] == nil then
-			mod.scrollingTimelineScrollbarTimer:start()
-			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Make sure Playhead is actually visible:
+		-- PERFORM SCROLLING TIMELINE:
 		--------------------------------------------------------------------------------
-		local scrollAreaX = timelineScrollArea:attributeValue("AXPosition")['x']
-		local scrollAreaW = timelineScrollArea:attributeValue("AXSize")['w']
-		local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
-		if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
-			local timelineWidth = timelineScrollArea:attributeValue("AXSize")['w']
-			initialPlayheadXPosition = (timelineWidth / 2)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Initial Scrollbar Value:
-		--------------------------------------------------------------------------------
-		local initialScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-
-		--------------------------------------------------------------------------------
-		-- Define the Loop of Death:
-		--------------------------------------------------------------------------------
-		mod.scrollingTimelineTimer = timer.new(0.000001, function()
+		function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
 
 			--------------------------------------------------------------------------------
-			-- Does the scrollbar still exist?
+			-- Define Scrollbar Check Timer:
 			--------------------------------------------------------------------------------
-			if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
+			mod.scrollingTimelineScrollbarTimer = timer.new(0.001, function()
+				if timelineScrollArea[2] ~= nil then
+					performScrollingTimelineLoops(whichSplitGroup, whichGroup)
+					scrollbarSearchLoopActivated = false
+				end
+			end)
 
-				local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
-				local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
+			--------------------------------------------------------------------------------
+			-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
+			--------------------------------------------------------------------------------
+			if timelineScrollArea[2] == nil then
+				mod.scrollingTimelineScrollbarTimer:start()
+				return "Fail"
+			end
 
-				local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
+			--------------------------------------------------------------------------------
+			-- Make sure Playhead is actually visible:
+			--------------------------------------------------------------------------------
+			local scrollAreaX = timelineScrollArea:attributeValue("AXPosition")['x']
+			local scrollAreaW = timelineScrollArea:attributeValue("AXSize")['w']
+			local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
+			if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
+				local timelineWidth = timelineScrollArea:attributeValue("AXSize")['w']
+				initialPlayheadXPosition = (timelineWidth / 2)
+			end
+
+			--------------------------------------------------------------------------------
+			-- Initial Scrollbar Value:
+			--------------------------------------------------------------------------------
+			local initialScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
+
+			--------------------------------------------------------------------------------
+			-- Define the Loop of Death:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineTimer = timer.new(0.000001, function()
 
 				--------------------------------------------------------------------------------
-				-- If you change the edit the location of the Value Indicator will change:
+				-- Does the scrollbar still exist?
 				--------------------------------------------------------------------------------
-				if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= mod.labelPlayhead then
-					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
-							whichValueIndicator = i
-							goto performScrollingTimelineValueIndicatorExitX
+				if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
+
+					local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
+					local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
+
+					local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
+
+					--------------------------------------------------------------------------------
+					-- If you change the edit the location of the Value Indicator will change:
+					--------------------------------------------------------------------------------
+					if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= mod.labelPlayhead then
+						for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
+							if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
+								whichValueIndicator = i
+								goto performScrollingTimelineValueIndicatorExitX
+							end
 						end
+						if whichValueIndicator == nil then
+							dialog.displayErrorMessage("Unable to locate Value Indicator.")
+							return "Failed"
+						end
+						::performScrollingTimelineValueIndicatorExitX::
 					end
-					if whichValueIndicator == nil then
-						dialog.displayErrorMessage("Unable to locate Value Indicator.")
-						return "Failed"
-					end
-					::performScrollingTimelineValueIndicatorExitX::
+
+					local currentPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
+
+					initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
+					currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
+
+					x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
+					y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
+
+					scrollbarStep = y - x
+
+					local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
+					timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
 				end
 
-				local currentPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
+			end)
 
-				initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
-				currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
+			--------------------------------------------------------------------------------
+			-- Begin the Loop of Death:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineTimer:start()
 
-				x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
-				y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
+		end
 
-				scrollbarStep = y - x
-
-				local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-				timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
-			end
-
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Begin the Loop of Death:
-		--------------------------------------------------------------------------------
-		mod.scrollingTimelineTimer:start()
-
+	--------------------------------------------------------------------------------
+	-- TOGGLE LOCK PLAYHEAD:
+	--------------------------------------------------------------------------------
+	function toggleLockPlayhead()
+		if fcp.app():timeline():isLockedPlayhead() then
+			dialog.displayNotification("Playhead Lock Deactivated")
+			fcp.app():timeline():unlockPlayhead()
+		else
+			dialog.displayNotification("Playhead Lock Enabled")
+			fcp.app():timeline():lockPlayhead()
+		end
 	end
 
 --------------------------------------------------------------------------------
@@ -5760,7 +5775,7 @@ end
 			dialog.displayNotification("Please select a single clip in the Timeline.")
 			return "Failed"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- If a Direction is specified:
 		--------------------------------------------------------------------------------

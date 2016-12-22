@@ -63,7 +63,7 @@ end
 
 function Timeline:show()
 	local menuBar = self:app():menuBar()
-	
+
 	if self:isOnPrimaryWindow() then
 		-- if the timeline is on the secondary, we need to turn it off before enabling in primary
 		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
@@ -185,17 +185,17 @@ function Timeline:lockPlayhead()
 
 	-- local playheadOffset = self.timeline:playhead():getX()
 	local playheadStopped = 0
-	
+
 	check = function()
 		if not self._locked then
 			return
 		end
-		
+
 		local viewWidth = content:viewWidth()
 		if viewWidth == nil then
 			debugMessage("nil viewWidth")
 		end
-			
+
 		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
 		local playheadX = playhead:getX()
 		if playheadX == nil then
@@ -220,7 +220,6 @@ function Timeline:lockPlayhead()
 				if status ~= Timeline.DEADZONE then
 					status = Timeline.DEADZONE
 					debugMessage("In the deadzone.")
-					-- debugMessage("Deadzone.")
 				end
 				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
 			else
@@ -242,15 +241,15 @@ function Timeline:lockPlayhead()
 			timer.doAfter(next, check)
 		end
 	end
-	
+
 	check()
-	
+
 	return self
 end
 
 function Timeline:unlockPlayhead()
 	self._locked = false
-	
+
 	return self
 end
 
