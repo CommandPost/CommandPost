@@ -831,30 +831,6 @@ local function hudButtonFunctionsToURL(table)
 end
 
 --------------------------------------------------------------------------------
--- CLEAN UP BUTTON TEXT:
---------------------------------------------------------------------------------
-local function cleanupButtonText(value)
-
-	--------------------------------------------------------------------------------
-	-- Get rid of …
-	--------------------------------------------------------------------------------
-	value = string.gsub(value, "…", "")
-
-	--------------------------------------------------------------------------------
-	-- Only get last value of menu items:
-	--------------------------------------------------------------------------------
-	if string.find(value, " > ", 1) ~= nil then
-		value = string.reverse(value)
-		local lastArrow = string.find(value, " > ", 1)
-		value = string.sub(value, 1, lastArrow - 1)
-		value = string.reverse(value)
-	end
-
-	return value
-
-end
-
---------------------------------------------------------------------------------
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 function generateHTML()
@@ -1077,13 +1053,13 @@ function generateHTML()
 	if hudShowButtons then html = html.. [[
 		<table>
 			<tr>
-				<th><a href="]] .. hudButtonOneURL .. [[" class="button">]] .. tools.stringMaxLength(cleanupButtonText(hudButtonOne["text"]), length) .. [[</a></th>
-				<th><a href="]] .. hudButtonTwoURL .. [[" class="button">]] .. tools.stringMaxLength(cleanupButtonText(hudButtonTwo["text"]), length) .. [[</a></th>
+				<th><a href="]] .. hudButtonOneURL .. [[" class="button">]] .. tools.stringMaxLength(tools.cleanupButtonText(hudButtonOne["text"]), length) .. [[</a></th>
+				<th><a href="]] .. hudButtonTwoURL .. [[" class="button">]] .. tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]), length) .. [[</a></th>
 			<tr>
 			<tr style="padding:80px;"><th></th></tr>
 			<tr>
-				<th><a href="]] .. hudButtonThreeURL .. [[" class="button">]] .. tools.stringMaxLength(cleanupButtonText(hudButtonThree["text"]), length) .. [[</a></th>
-				<th><a href="]] .. hudButtonFourURL .. [[" class="button">]] .. tools.stringMaxLength(cleanupButtonText(hudButtonFour["text"]), length) .. [[</a></th>
+				<th><a href="]] .. hudButtonThreeURL .. [[" class="button">]] .. tools.stringMaxLength(tools.cleanupButtonText(hudButtonThree["text"]), length) .. [[</a></th>
+				<th><a href="]] .. hudButtonFourURL .. [[" class="button">]] .. tools.stringMaxLength(tools.cleanupButtonText(hudButtonFour["text"]), length) .. [[</a></th>
 			</tr>
 		</table>]]
 	end

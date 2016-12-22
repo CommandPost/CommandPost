@@ -140,4 +140,28 @@ function tools.stringMaxLength(string, maxLength, optionalEnd)
 
 end
 
+--------------------------------------------------------------------------------
+-- CLEAN UP BUTTON TEXT:
+--------------------------------------------------------------------------------
+function tools.cleanupButtonText(value)
+
+	--------------------------------------------------------------------------------
+	-- Get rid of …
+	--------------------------------------------------------------------------------
+	value = string.gsub(value, "…", "")
+
+	--------------------------------------------------------------------------------
+	-- Only get last value of menu items:
+	--------------------------------------------------------------------------------
+	if string.find(value, " > ", 1) ~= nil then
+		value = string.reverse(value)
+		local lastArrow = string.find(value, " > ", 1)
+		value = string.sub(value, 1, lastArrow - 1)
+		value = string.reverse(value)
+	end
+
+	return value
+
+end
+
 return tools
