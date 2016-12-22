@@ -6,6 +6,10 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Playhead = {}
 
+function Playhead.isPlayhead(element)
+	return element and element:attributeValue("AXRole") == "AXValueIndicator"
+end
+
 function Playhead:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -33,7 +37,8 @@ function Playhead:UI()
 			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
 		end
 		return nil
-	end)
+	end,
+	Playhead.isPlayhead)
 end
 
 function Playhead:isShowing()
