@@ -3,9 +3,9 @@ local inspect							= require("hs.inspect")
 
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
+local timer								= require("hs.timer")
 
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
-local Scroller							= require("hs.finalcutpro.main.TimelineScroller")
 
 local Timeline = {}
 
@@ -154,40 +154,96 @@ function Timeline:toolbarUI()
 	end)
 end
 
-function Timeline:scroller()
-	if not self._scroller then
-		self._scroller = Scroller:new(self)
-	end
-	return self._scroller
-end
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEAD LOCKING
+--- If the playhead is locked, it will be kept as close to the middle
+--- of the timeline view panel as possible at all times.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 
-function Timeline:setScrollingTimeline(enabled)
-	if enabled then
-		self:scroller():start()
-	else
-		self:scroller():stop()
-	end
-	return enabled
-end
+Timeline.lockActive = 0.01
+Timeline.lockInactive = 0.1
+Timeline.lockThreshold = 5
 
-function Timeline:toggleScrollingTimeline()
-	return self:setScrollingTimeline(not self:isScrollingTimeline())
-end
-
-function Timeline:isScrollingTimeline()
-	return self._scroller and self._scroller:isRunning()
-end
+Timeline.LOCKED = 1
+Timeline.TRACKING = 2
+Timeline.DEADZONE = 3
 
 function Timeline:lockPlayhead()
-	self:scroller():lockPlayhead()
+	local content = self:content()
+	local playhead = content:playhead()
+	local check = nil
+	local status = 0
+
+	-- Setting this to false unlocks the playhead.
+	self._locked = true
+
+	-- local playheadOffset = self.timeline:playhead():getX()
+	local playheadStopped = 0
+	
+	check = function()
+		if not self._locked then
+			return
+		end
+		
+		local viewWidth = content:viewWidth()
+		if viewWidth == nil then
+			debugMessage("nil viewWidth")
+		end
+			
+		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
+		local playheadX = playhead:getX()
+		if playheadX == nil then
+			debugMessage("nil playheadX")
+		end
+		if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
+			-- it is on the offset or doesn't exist.
+			playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+			if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
+				status = Timeline.LOCKED
+				debugMessage("Playhead locked.")
+			end
+		else
+			-- it's moving
+			local timelineFrame = content:timelineFrame()
+			local scrollWidth = timelineFrame.w - viewWidth
+			local scrollPoint = timelineFrame.x*-1 + playheadX - playheadOffset
+			local scrollTarget = scrollPoint/scrollWidth
+			local scrollValue = content:getScrollHorizontal()
+
+			if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
+				if status ~= Timeline.DEADZONE then
+					status = Timeline.DEADZONE
+					debugMessage("In the deadzone.")
+					-- debugMessage("Deadzone.")
+				end
+				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+			else
+				if status ~= Timeline.TRACKING then
+					status = Timeline.TRACKING
+					debugMessage("Tracking the playhead.")
+				end
+				content:scrollHorizontalTo(scrollTarget)
+				playheadStopped = 0
+			end
+		end
+
+		local next = Timeline.lockActive
+		if playheadStopped == Timeline.lockThreshold then
+			next = Timeline.lockInactive
+		end
+
+		if next ~= nil then
+			timer.doAfter(next, check)
+		end
+	end
+	
+	check()
 end
 
 function Timeline:unlockPlayhead()
-	self:scroller():unlockPlayhead()
-end
-
-function Timeline:getScrollingTimelineLog()
-	return self._scroller.log
+	self._locked = false
 end
 
 return Timeline

@@ -135,6 +135,11 @@ function TimelineContent:scrollHorizontalTo(value)
 	end
 end
 
+function TimelineContent:getScrollHorizontal()
+	local ui = self:horizontalScrollUI()
+	return ui and ui[1]:attributeValue("AXValue")
+end
+
 function TimelineContent:scrollVerticalBy(shift)
 	local ui = self:verticalScrollUI()
 	if ui then
@@ -153,6 +158,11 @@ function TimelineContent:scrollVerticalTo(value)
 			indicator:setAttributeValue("AXValue", value)
 		end
 	end
+end
+
+function TimelineContent:getScrollVertical()
+	local ui = self:verticalScrollUI()
+	return ui and ui[1]:attributeValue("AXValue")
 end
 
 -----------------------------------------------------------------------
