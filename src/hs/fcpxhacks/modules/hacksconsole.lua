@@ -784,7 +784,7 @@ function hacksconsole.rightClickAction()
 	local selectedItemMenu = {}
 	local rightClickMenu = {}
 
-	if next(hacksconsole.hacksChooser:selectedRowContents()) ~= nil then
+	if next(hacksconsole.hacksChooser:selectedRowContents()) ~= nil and hacksconsole.mode == "normal" then
 
 		local isFavourite = false
 		if next(chooserFavourited) ~= nil then
@@ -894,6 +894,7 @@ function hacksconsole.rightClickAction()
 			}},
 		}},
 	}
+
 
 	rightClickMenu = fnutils.concat(selectedItemMenu, rightClickMenu)
 
