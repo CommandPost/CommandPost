@@ -5756,6 +5756,11 @@ end
 		--------------------------------------------------------------------------------
 		local colorBoard = fcp.app():colorBoard()
 
+		--------------------------------------------------------------------------------
+		-- Show the Color Board if it's hidden:
+		--------------------------------------------------------------------------------
+		if not colorBoard:isShowing() then colorBoard:show() end
+
 		if not colorBoard:isActive() then
 			dialog.displayNotification("Please select a single clip in the Timeline.")
 			return "Failed"
@@ -5810,6 +5815,12 @@ end
 		deleteAllHighlights()
 
 		colorBoard = fcp:app():colorBoard()
+
+		--------------------------------------------------------------------------------
+		-- Show the Color Board if it's hidden:
+		--------------------------------------------------------------------------------
+		if not colorBoard:isShowing() then colorBoard:show() end
+
 		if not colorBoard:isActive() then
 			dialog.displayNotification("Please select a single clip in the Timeline.")
 			return "Failed"
