@@ -1,7 +1,3 @@
-local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
-
-local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
 local Playhead = {}
