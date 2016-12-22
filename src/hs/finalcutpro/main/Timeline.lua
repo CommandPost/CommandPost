@@ -171,6 +171,10 @@ Timeline.TRACKING = 2
 Timeline.DEADZONE = 3
 
 function Timeline:lockPlayhead()
+	if self._locked then
+		-- already locked.
+		return self
+	end
 	local content = self:content()
 	local playhead = content:playhead()
 	local check = nil
@@ -240,10 +244,18 @@ function Timeline:lockPlayhead()
 	end
 	
 	check()
+	
+	return self
 end
 
 function Timeline:unlockPlayhead()
 	self._locked = false
+	
+	return self
+end
+
+function Timeline:isLockedPlayhead()
+	return self._locked
 end
 
 return Timeline
