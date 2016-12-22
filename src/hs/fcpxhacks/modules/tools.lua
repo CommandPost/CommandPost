@@ -98,6 +98,9 @@ function tools.ninjaMouseClick(position)
 		mouse.setAbsolutePosition(originalMousePoint)
 end
 
+--------------------------------------------------------------------------------
+-- NINJA MOUSE ACTION:
+--------------------------------------------------------------------------------
 function tools.ninjaMouseAction(position, fn)
 	local originalMousePoint = mouse.getAbsolutePosition()
 	mouse.setAbsolutePosition(position)
