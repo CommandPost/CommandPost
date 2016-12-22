@@ -503,7 +503,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	
+
 	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") has loaded")
 
 	--------------------------------------------------------------------------------
@@ -5760,7 +5760,7 @@ end
 			dialog.displayNotification("Please select a single clip in the Timeline.")
 			return "Failed"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- If a Direction is specified:
 		--------------------------------------------------------------------------------
@@ -5786,12 +5786,12 @@ end
 		end
 	end
 
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - RELEASE KEYPRESS:
-	--------------------------------------------------------------------------------
-	function colorBoardSelectPuckRelease()
-		mod.releaseColorBoardDown = true
-	end
+		--------------------------------------------------------------------------------
+		-- COLOR BOARD - RELEASE KEYPRESS:
+		--------------------------------------------------------------------------------
+		function colorBoardSelectPuckRelease()
+			mod.releaseColorBoardDown = true
+		end
 
 	--------------------------------------------------------------------------------
 	-- COLOR BOARD - PUCK CONTROL VIA MOUSE:
@@ -5818,15 +5818,15 @@ end
 		mod.colorPucker = colorBoard:startPucker(aspect, property)
 	end
 
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
-	--------------------------------------------------------------------------------
-	function colorBoardMousePuckRelease()
-		if mod.colorPucker then
-			mod.colorPucker:stop()
-			mod.colorPicker = nil
+		--------------------------------------------------------------------------------
+		-- COLOR BOARD - RELEASE MOUSE KEYPRESS:
+		--------------------------------------------------------------------------------
+		function colorBoardMousePuckRelease()
+			if mod.colorPucker then
+				mod.colorPucker:stop()
+				mod.colorPicker = nil
+			end
 		end
-	end
 
 --------------------------------------------------------------------------------
 -- EFFECTS/TRANSITIONS/TITLES/GENERATOR RELATED:

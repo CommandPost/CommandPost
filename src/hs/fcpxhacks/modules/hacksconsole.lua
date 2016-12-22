@@ -139,6 +139,7 @@ function hacksconsole.choices()
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
+	local chooserFavourited				= settings.get("fcpxHacks.chooserFavourited") or {}
 	local chooserRemoved 				= settings.get("fcpxHacks.chooserRemoved") or {}
 	local chooserShowAutomation 		= settings.get("fcpxHacks.chooserShowAutomation")
 	local chooserShowShortcuts 			= settings.get("fcpxHacks.chooserShowShortcuts")
@@ -643,14 +644,36 @@ function hacksconsole.choices()
 		end
 
 		--------------------------------------------------------------------------------
+		-- Temporarily Remove Favourited Items:
+		--------------------------------------------------------------------------------
+		local tempFavouiteItems = {}
+		if next(chooserFavourited) ~= nil then
+			for i=1, #chooserFavourited do
+				for x=#hacksconsole.chooserChoices,1,-1  do
+					if hacksconsole.chooserChoices[x]["text"] == chooserFavourited[i]["text"] and hacksconsole.chooserChoices[x]["subText"] == chooserFavourited[i]["subText"] then
+						tempFavouiteItems[#tempFavouiteItems + 1] = hacksconsole.chooserChoices[x]
+						table.remove(hacksconsole.chooserChoices, x)
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
 		-- Sort everything:
 		--------------------------------------------------------------------------------
 		table.sort(hacksconsole.chooserChoices, function(a, b) return a.text < b.text end)
+		table.sort(tempFavouiteItems, function(a, b) return a.text < b.text end)
+
+		--------------------------------------------------------------------------------
+		-- Merge the Tables Back Together:
+		--------------------------------------------------------------------------------
+		hacksconsole.chooserChoices = fnutils.concat(tempFavouiteItems, hacksconsole.chooserChoices)
 
 		--------------------------------------------------------------------------------
 		-- Return Choices:
 		--------------------------------------------------------------------------------
 		return hacksconsole.chooserChoices
+
 	elseif hacksconsole.mode == "restore" then
 		return chooserRemoved
 	end
@@ -728,6 +751,7 @@ function hacksconsole.rightClickAction()
 	--------------------------------------------------------------------------------
 	local chooserRememberLast 			= settings.get("fcpxHacks.chooserRememberLast")
 	local chooserRemoved 				= settings.get("fcpxHacks.chooserRemoved") or {}
+	local chooserFavourited				= settings.get("fcpxHacks.chooserFavourited") or {}
 
 	--------------------------------------------------------------------------------
 	-- Display Options:
@@ -742,6 +766,8 @@ function hacksconsole.rightClickAction()
 	local chooserShowGenerators 		= settings.get("fcpxHacks.chooserShowGenerators")
 	local chooserShowMenuItems 			= settings.get("fcpxHacks.chooserShowMenuItems")
 
+	local selectedRowContents 			= hacksconsole.hacksChooser:selectedRowContents()
+
 	--------------------------------------------------------------------------------
 	-- 'Show All' Display Option:
 	--------------------------------------------------------------------------------
@@ -754,58 +780,123 @@ function hacksconsole.rightClickAction()
 	-- Menubar:
 	--------------------------------------------------------------------------------
 	hacksconsole.rightClickMenubar = menubar.new(false)
-	local rightClickMenu = {
-		{ title = "MODE:",	 				disabled = true },
-		{ title = "Normal", 				checked = hacksconsole.mode == "normal",			fn = function() hacksconsole.mode = "normal"; 		hacksconsole.refresh() end },
-		{ title = "Remove from List",		checked = hacksconsole.mode == "remove",			fn = function() hacksconsole.mode = "remove"; 		hacksconsole.refresh() end },
-		{ title = "Restore to List",		disabled = next(chooserRemoved) == nil, 			checked = hacksconsole.mode == "restore",			fn = function() hacksconsole.mode = "restore"; 		hacksconsole.refresh() end },
-     	{ title = "-" },
-     	{ title = "DISPLAY:",	 	disabled = true },
-     	{ title = "Show None", disabled=hacksconsole.mode == "restore", fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", false)
-     		settings.set("fcpxHacks.chooserShowShortcuts", false)
-     		settings.set("fcpxHacks.chooserShowHacks", false)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", false)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", false)
-     		settings.set("fcpxHacks.chooserShowTransitions", false)
-     		settings.set("fcpxHacks.chooserShowTitles", false)
-     		settings.set("fcpxHacks.chooserShowGenerators", false)
-     		settings.set("fcpxHacks.chooserShowMenuItems", false)
-     		hacksconsole.refresh()
-     	end },
-     	{ title = "Show All", 				checked = chooserShowAll, disabled=hacksconsole.mode == "restore", fn = function()
-     		settings.set("fcpxHacks.chooserShowAutomation", true)
-     		settings.set("fcpxHacks.chooserShowShortcuts", true)
-     		settings.set("fcpxHacks.chooserShowHacks", true)
-     		settings.set("fcpxHacks.chooserShowVideoEffects", true)
-     		settings.set("fcpxHacks.chooserShowAudioEffects", true)
-     		settings.set("fcpxHacks.chooserShowTransitions", true)
-     		settings.set("fcpxHacks.chooserShowTitles", true)
-     		settings.set("fcpxHacks.chooserShowGenerators", true)
-     		settings.set("fcpxHacks.chooserShowMenuItems", true)
-     		hacksconsole.refresh()
-     	end },
-       	{ title = "Show Automation", 		checked = chooserShowAutomation,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			hacksconsole.refresh() end },
-       	{ title = "Show Hacks", 			checked = chooserShowHacks,			disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						hacksconsole.refresh() end },
-       	{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				hacksconsole.refresh() end },
-     	{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		hacksconsole.refresh() end },
-       	{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		hacksconsole.refresh() end },
-       	{ title = "Show Transitions", 		checked = chooserShowTransitions,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			hacksconsole.refresh() end },
-       	{ title = "Show Titles", 			checked = chooserShowTitles,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					hacksconsole.refresh() end },
-       	{ title = "Show Generators", 		checked = chooserShowGenerators,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			hacksconsole.refresh() end },
-       	{ title = "Show Menu Items", 		checked = chooserShowMenuItems,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowMenuItems", not chooserShowMenuItems); 				hacksconsole.refresh() end },
-       	{ title = "-" },
-		{ title = "SETTINGS:",	 			disabled = true },
-		{ title = "Remember Last Query", 	checked = chooserRememberLast,						fn= function() settings.set("fcpxHacks.chooserRememberLast", not chooserRememberLast) end },
-		{ title = "Update...", menu = {
-			{ title = "Effects Shortcuts",			fn= function() hacksconsole.hide(); 		updateEffectsList();			end },
-			{ title = "Transitions Shortcuts",		fn= function() hacksconsole.hide(); 		updateTransitionsList(); 		end },
-			{ title = "Titles Shortcuts",			fn= function() hacksconsole.hide(); 		updateTitlesList() 				end },
-			{ title = "Generators Shortcuts",		fn= function() hacksconsole.hide(); 		updateGeneratorsList() 			end },
-			{ title = "Menu Items",					fn= function() settings.set("fcpxHacks.chooserMenuItems", nil); 			hacksconsole.refresh() end },
-		}}
 
+	local selectedItemMenu = {}
+	local rightClickMenu = {}
+
+	if next(hacksconsole.hacksChooser:selectedRowContents()) ~= nil then
+
+		local isFavourite = false
+		if next(chooserFavourited) ~= nil then
+			for i=1, #chooserFavourited do
+				if selectedRowContents["text"] == chooserFavourited[i]["text"] and selectedRowContents["subText"] == chooserFavourited[i]["subText"] then
+					isFavourite = true
+				end
+			end
+		end
+
+		local favouriteTitle = "Unfavourite"
+		if not isFavourite then favouriteTitle = "Favourite" end
+
+		selectedItemMenu = {
+			{ title = "HIGHLIGHTED ITEM:", disabled = true },
+			{ title = favouriteTitle, fn = function()
+
+				if isFavourite then
+					--------------------------------------------------------------------------------
+					-- Remove from favourites:
+					--------------------------------------------------------------------------------
+					for x=#chooserFavourited,1,-1 do
+						if chooserFavourited[x]["text"] == selectedRowContents["text"] and chooserFavourited[x]["subText"] == selectedRowContents["subText"] then
+							table.remove(chooserFavourited, x)
+						end
+					end
+					settings.set("fcpxHacks.chooserFavourited", chooserRemoved)
+				else
+					--------------------------------------------------------------------------------
+					-- Add to favourites:
+					--------------------------------------------------------------------------------
+					chooserFavourited[#chooserFavourited + 1] = selectedRowContents
+					settings.set("fcpxHacks.chooserFavourited", chooserFavourited)
+				end
+
+				hacksconsole.refresh()
+				hacksconsole.hacksChooser:show()
+
+			end },
+			{ title = "Remove from List", fn = function()
+				chooserRemoved[#chooserRemoved + 1] = selectedRowContents
+				settings.set("fcpxHacks.chooserRemoved", chooserRemoved)
+				hacksconsole.refresh()
+				hacksconsole.hacksChooser:show()
+			end },
+			{ title = "-" },
+		}
+	end
+
+	rightClickMenu = {
+		{ title = "Mode", menu = {
+			{ title = "Normal", 				checked = hacksconsole.mode == "normal",			fn = function() hacksconsole.mode = "normal"; 		hacksconsole.refresh() end },
+			{ title = "Remove from List",		checked = hacksconsole.mode == "remove",			fn = function() hacksconsole.mode = "remove"; 		hacksconsole.refresh() end },
+			{ title = "Restore to List",		disabled = next(chooserRemoved) == nil, 			checked = hacksconsole.mode == "restore",			fn = function() hacksconsole.mode = "restore"; 		hacksconsole.refresh() end },
+		}},
+     	{ title = "-" },
+     	{ title = "Display Options", menu = {
+			{ title = "Show None", disabled=hacksconsole.mode == "restore", fn = function()
+				settings.set("fcpxHacks.chooserShowAutomation", false)
+				settings.set("fcpxHacks.chooserShowShortcuts", false)
+				settings.set("fcpxHacks.chooserShowHacks", false)
+				settings.set("fcpxHacks.chooserShowVideoEffects", false)
+				settings.set("fcpxHacks.chooserShowAudioEffects", false)
+				settings.set("fcpxHacks.chooserShowTransitions", false)
+				settings.set("fcpxHacks.chooserShowTitles", false)
+				settings.set("fcpxHacks.chooserShowGenerators", false)
+				settings.set("fcpxHacks.chooserShowMenuItems", false)
+				hacksconsole.refresh()
+			end },
+			{ title = "Show All", 				checked = chooserShowAll, disabled=hacksconsole.mode == "restore" or chooserShowAll, fn = function()
+				settings.set("fcpxHacks.chooserShowAutomation", true)
+				settings.set("fcpxHacks.chooserShowShortcuts", true)
+				settings.set("fcpxHacks.chooserShowHacks", true)
+				settings.set("fcpxHacks.chooserShowVideoEffects", true)
+				settings.set("fcpxHacks.chooserShowAudioEffects", true)
+				settings.set("fcpxHacks.chooserShowTransitions", true)
+				settings.set("fcpxHacks.chooserShowTitles", true)
+				settings.set("fcpxHacks.chooserShowGenerators", true)
+				settings.set("fcpxHacks.chooserShowMenuItems", true)
+				hacksconsole.refresh()
+			end },
+			{ title = "-" },
+			{ title = "Show Automation", 		checked = chooserShowAutomation,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowAutomation", not chooserShowAutomation); 			hacksconsole.refresh() end },
+			{ title = "Show Hacks", 			checked = chooserShowHacks,			disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowHacks", not chooserShowHacks); 						hacksconsole.refresh() end },
+			{ title = "Show Shortcuts", 		checked = chooserShowShortcuts,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowShortcuts", not chooserShowShortcuts); 				hacksconsole.refresh() end },
+			{ title = "-" },
+			{ title = "Show Video Effects", 	checked = chooserShowVideoEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowVideoEffects", not chooserShowVideoEffects); 		hacksconsole.refresh() end },
+			{ title = "Show Audio Effects", 	checked = chooserShowAudioEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowAudioEffects", not chooserShowAudioEffects); 		hacksconsole.refresh() end },
+			{ title = "-" },
+			{ title = "Show Transitions", 		checked = chooserShowTransitions,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowTransitions", not chooserShowTransitions); 			hacksconsole.refresh() end },
+			{ title = "Show Titles", 			checked = chooserShowTitles,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowTitles", not chooserShowTitles); 					hacksconsole.refresh() end },
+			{ title = "Show Generators", 		checked = chooserShowGenerators,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowGenerators", not chooserShowGenerators); 			hacksconsole.refresh() end },
+			{ title = "-" },
+			{ title = "Show Menu Items", 		checked = chooserShowMenuItems,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set("fcpxHacks.chooserShowMenuItems", not chooserShowMenuItems); 				hacksconsole.refresh() end },
+			},
+		},
+       	{ title = "-" },
+       	{ title = "Preferences...", menu = {
+			{ title = "Remember Last Query", 	checked = chooserRememberLast,						fn= function() settings.set("fcpxHacks.chooserRememberLast", not chooserRememberLast) end },
+			{ title = "-" },
+			{ title = "Update", menu = {
+				{ title = "Effects Shortcuts",			fn= function() hacksconsole.hide(); 		updateEffectsList();			end },
+				{ title = "Transitions Shortcuts",		fn= function() hacksconsole.hide(); 		updateTransitionsList(); 		end },
+				{ title = "Titles Shortcuts",			fn= function() hacksconsole.hide(); 		updateTitlesList() 				end },
+				{ title = "Generators Shortcuts",		fn= function() hacksconsole.hide(); 		updateGeneratorsList() 			end },
+				{ title = "Menu Items",					fn= function() settings.set("fcpxHacks.chooserMenuItems", nil); 			hacksconsole.refresh() end },
+			}},
+		}},
 	}
+
+	rightClickMenu = fnutils.concat(selectedItemMenu, rightClickMenu)
+
 	hacksconsole.rightClickMenubar:setMenu(rightClickMenu)
 	hacksconsole.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 

@@ -832,15 +832,16 @@ function finalcutpro.getEffectsTransitionsBrowserGroup()
 	-- Get Timeline Split Group:
 	local finalCutProTimelineSplitGroup = finalcutpro.getTimelineSplitGroup()
 
-	-- Which Group:
+	local result = nil
+
+	-- Get the LAST Group:
 	for i=1, finalCutProTimelineSplitGroup:attributeValueCount("AXChildren") do
 		if finalCutProTimelineSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
-			return finalCutProTimelineSplitGroup[i]
+			result = finalCutProTimelineSplitGroup[i]
 		end
 	end
 
-	-- If things get to here it's failed:
-	return nil
+	return result
 
 end
 
@@ -1268,9 +1269,9 @@ function finalcutpro._inspectElement(e, options, i)
 
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[ 
-      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[ 
-      Children = ]] .. inspect(#e) .. [[ 
+	return [[
+      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[
+      Children = ]] .. inspect(#e) .. [[
 ==============================================
 ]] .. inspect(e:buildTree(depth)) .. "\n"
 end
