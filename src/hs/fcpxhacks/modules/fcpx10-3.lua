@@ -5274,7 +5274,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			display.displayNotification("Scrolling Timeline Deactivated")
+			dialog.displayNotification("Scrolling Timeline Deactivated")
 
 		else
 			--------------------------------------------------------------------------------
