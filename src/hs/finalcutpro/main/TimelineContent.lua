@@ -81,18 +81,22 @@ end
 
 function TimelineContent:horizontalScrollUI()
 	local ui = self:scrollAreaUI()
-	if ui then
-		return ui[2]
-	end
-	return nil
+	return ui and ui[2]
 end
 
 function TimelineContent:verticalScrollUI()
 	local ui = self:scrollAreaUI()
-	if ui then
-		return ui[3]
-	end
-	return nil
+	return ui and ui[3]
+end
+
+function TimelineContent:viewWidth()
+	local hScroll = self:horizontalScrollUI()
+	return hScroll and hScroll:size().w or nil
+end
+
+function TimelineContent:viewHeight()
+	local vScroll = self:verticalScrollUI()
+	return vScroll and vScroll:size().h or nil
 end
 
 function TimelineContent:viewFrame()
@@ -114,19 +118,42 @@ end
 function TimelineContent:scrollHorizontalBy(shift)
 	local ui = self:horizontalScrollUI()
 	if ui then
-		local value = ui:value()
-		ui:setAttributeValue("AXValue", value + shift)
+		local indicator = ui[1]
+		local value = indicator:attributeValue("AXValue")
+		indicator:setAttributeValue("AXValue", value + shift)
+	end
+end
+
+function TimelineContent:scrollHorizontalTo(value)
+	local ui = self:horizontalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		value = math.max(0, math.min(1, value))
+		if indicator:attributeValue("AXValue") ~= value then
+			indicator:setAttributeValue("AXValue", value)
+		end
 	end
 end
 
 function TimelineContent:scrollVerticalBy(shift)
 	local ui = self:verticalScrollUI()
 	if ui then
-		local value = ui:value()
-		ui:setAttributeValue("AXValue", value + shift)
+		local indicator = ui[1]
+		local value = indicator:attributeValue("AXValue")
+		indicator:setAttributeValue("AXValue", value + shift)
 	end
 end
 
+function TimelineContent:scrollVerticalTo(value)
+	local ui = self:verticalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		value = math.max(0, math.min(1, value))
+		if indicator:attributeValue("AXValue") ~= value then
+			indicator:setAttributeValue("AXValue", value)
+		end
+	end
+end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------

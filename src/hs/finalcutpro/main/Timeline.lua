@@ -154,21 +154,36 @@ function Timeline:toolbarUI()
 	end)
 end
 
+function Timeline:scroller()
+	if not self._scroller then
+		self._scroller = Scroller:new(self)
+	end
+	return self._scroller
+end
+
 function Timeline:setScrollingTimeline(enabled)
 	if enabled then
-		if not self._scroller then
-			self._scroller = Scroller:new(self)
-		end
-		self._scroller:start()
+		self:scroller():start()
 	else
-		if self._scroller then
-			self._scroller:stop()
-		end
+		self:scroller():stop()
 	end
+	return enabled
+end
+
+function Timeline:toggleScrollingTimeline()
+	return self:setScrollingTimeline(not self:isScrollingTimeline())
 end
 
 function Timeline:isScrollingTimeline()
 	return self._scroller and self._scroller:isRunning()
+end
+
+function Timeline:lockPlayhead()
+	self:scroller():lockPlayhead()
+end
+
+function Timeline:unlockPlayhead()
+	self:scroller():unlockPlayhead()
 end
 
 function Timeline:getScrollingTimelineLog()

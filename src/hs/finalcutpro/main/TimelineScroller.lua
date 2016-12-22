@@ -6,9 +6,11 @@ local Scroller = {}
 
 Scroller.interval = 0.1
 Scroller.logLength = 5
-Scroller.errorMargin = 2.0
+Scroller.errorMargin = 5.0
 
-Scroller.scrollInterval = 0.001
+Scroller.scrollActive = 0.01
+Scroller.scrollInactive = 0.1
+Scroller.stoppedThreshold = 5
 
 Scroller.SECONDS_PER_MINUTE = 60
 Scroller.SECONDS_PER_HOUR = 60 * Scroller.SECONDS_PER_MINUTE
@@ -24,63 +26,23 @@ function Scroller:new(timeline)
 end
 
 function Scroller:init()
-	local content = self.timeline:content()
-	local playhead = content:playhead()
-	local viewer = content:app():viewer()
-	local parse = Scroller.parseTimecode
-	local compare = Scroller.compareTimecode
+	local playhead = self.timeline:playhead()
+	local lastDir = 0
 	
 	self.timer = timer.new(Scroller.interval,
 	function()
 		local dir = self:processPlayhead(playhead)
-		-- if dir > 0 then
-		-- 	-- it's playing forward
-		-- 	if dir ~= self.lastDir then
-		-- 		alert.closeAll(0)
-		-- 		alert.show("Forward")
-		-- 	end
-		-- elseif dir < 0 then
-		-- 	-- it's playing backward
-		-- 	if dir ~= self.lastDir then
-		-- 		alert.closeAll(0)
-		-- 		alert.show("Backward")
-		-- 	end
-		-- else
-		-- 	-- it's not moving.
-		-- 	if dir ~= self.lastDir then
-		-- 		alert.closeAll(0)
-		-- 		alert.show("Stopped")
-		-- 	end
-		-- end
 
-		if dir ~= 0 then
-			self.scrollTimer:start()
-		else
-			self.scrollTimer:stop()
+		if dir ~= lastDir then
+			-- we've changed status
+			if dir ~= 0 then
+				self:lockPlayhead()
+			else
+				self:unlockPlayhead()
+			end
 		end
-		self.lastDir = dir
-	end)
-	
-	self.scrollTimer = timer.new(Scroller.scrollInterval,
-	function()
-		-- it's moving
-		local viewFrame = content:viewFrame()
-		local timelineFrame = content:timelineFrame()
-		local viewTimelineRatio = viewFrame.w / timelineFrame.w
-
-		local currentPlayheadX = playhead:getX()
-		local currentPlayheadPercentage = currentPlayheadX / timelineFrame.w
-
-		if self.initialPlayheadX == nil then
-			-- We just started moving
-			self.initialPlayheadX = currentPlayheadX
-			self.initialPlayheadPercentage = currentPlayheadPercentage
-		end
-
-		local scrollbarStep = (currentPlayheadPercentage - self.initialPlayheadPercentage) * viewTimelineRatio
-
-		content:scrollHorizontalBy(scrollbarStep)
 		
+		lastDir = dir
 	end)
 end
 
@@ -99,6 +61,62 @@ function Scroller:stop()
 	if self.scrollTimer and self.scrollTimer:running() then
 		self.scrollTimer:stop()
 	end
+end
+
+function Scroller:lockPlayhead()
+	local content = self.timeline:content()
+	local playhead = content:playhead()
+	local check = nil
+	self._locked = true
+
+	-- local playheadOffset = self.timeline:playhead():getX()
+	local playheadStopped = 0
+	
+	check = function()
+		if not self._locked then
+			return
+		end
+		
+		local viewWidth = content:viewWidth()
+			
+		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
+		local playheadX = playhead:getX()
+		if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
+			-- it is on the offset
+			playheadStopped = math.min(Scroller.stoppedThreshold, playheadStopped + 1)
+		else
+			-- it's moving
+			local timelineFrame = content:timelineFrame()
+			local scrollWidth = timelineFrame.w - viewWidth
+			local scrollPoint = timelineFrame.x*-1 + playheadX - playheadOffset
+			local scrollValue = scrollPoint/scrollWidth
+
+			if scrollValue >= 0 and scrollValue <= 1 or playheadX < 1 or playheadX > scrollWidth then
+				-- debugMessage("Tracking...")
+				content:scrollHorizontalTo(scrollValue)
+				playheadStopped = 0
+			else
+				-- debugMessage("Deadzone.")
+				playheadStopped = math.min(Scroller.stoppedThreshold, playheadStopped + 1)
+			end
+		end
+
+		local next = Scroller.scrollActive
+		if playheadStopped == Scroller.stoppedThreshold then
+			next = Scroller.scrollInactive
+		end
+
+		if next ~= nil then
+			-- debugMessage("Checking after "..next)
+			timer.doAfter(next, check)
+		end
+	end
+	
+	check()
+end
+
+function Scroller:unlockPlayhead()
+	self._locked = false
 end
 
 function Scroller:isRunning()
