@@ -5279,11 +5279,13 @@ end
 			dialog.displayNotification("Scrolling Timeline Deactivated")
 
 		else
+			local message = ""
 			--------------------------------------------------------------------------------
 			-- Ensure that Playhead Lock is off
 			--------------------------------------------------------------------------------
 			if fcp.app():timeline():isLockedPlayhead() then
 				toggleLockPlayhead()
+				message = "Playlist Lock Deactivated\n"
 			end
 			
 			--------------------------------------------------------------------------------
@@ -5307,7 +5309,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Notification:
 			--------------------------------------------------------------------------------
-			dialog.displayNotification("Scrolling Timeline Activated")
+			dialog.displayNotification(message.."Scrolling Timeline Activated")
 
 		end
 
@@ -5524,19 +5526,21 @@ end
 	--------------------------------------------------------------------------------
 	function toggleLockPlayhead()
 		if fcp.app():timeline():isLockedPlayhead() then
-			dialog.displayNotification("Playhead Lock Deactivated")
 			fcp.app():timeline():unlockPlayhead()
+			dialog.displayNotification("Playhead Lock Deactivated")
 		else
+			local message = ""
 			--------------------------------------------------------------------------------
 			-- Ensure that Scrolling Timeline is off
 			--------------------------------------------------------------------------------
 			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
 			if scrollingTimeline then
 				toggleScrollingTimeline()
+				message = "Scrolling Timeline Deactivated\n"
 			end
 			
-			dialog.displayNotification("Playhead Lock Activated")
 			fcp.app():timeline():lockPlayhead()
+			dialog.displayNotification(message.."Playhead Lock Activated")
 		end
 	end
 
