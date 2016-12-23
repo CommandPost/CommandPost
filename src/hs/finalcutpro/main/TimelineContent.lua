@@ -1,6 +1,7 @@
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
+local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
@@ -71,21 +72,97 @@ end
 --- PLAYHEAD
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function TimelineContent:playheadUI()
-	return axutils.cache(self, "_playhead", function()
-		local ui = self:UI()
-		if ui then
-			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
-		end
-		return nil
-	end)
-end
-
 function TimelineContent:playhead()
 	if not self._playhead then
 		self._playhead = Playhead:new(self)
 	end
 	return self._playhead
+end
+
+function TimelineContent:horizontalScrollUI()
+	local ui = self:scrollAreaUI()
+	return ui and ui[2]
+end
+
+function TimelineContent:verticalScrollUI()
+	local ui = self:scrollAreaUI()
+	return ui and ui[3]
+end
+
+function TimelineContent:viewWidth()
+	local hScroll = self:horizontalScrollUI()
+	return hScroll and hScroll:size().w or nil
+end
+
+function TimelineContent:viewHeight()
+	local vScroll = self:verticalScrollUI()
+	return vScroll and vScroll:size().h or nil
+end
+
+function TimelineContent:viewFrame()
+	local scrollArea = self:scrollAreaUI()
+	if scrollArea then
+		local sap = scrollArea:position()
+		local horizontalScroll = scrollArea[2]
+		local verticalScroll = scrollArea[3]
+		return {x = sap.x, y = sap.y, w = horizontalScroll:size().w, h = verticalScroll:size().h}
+	end
+	return nil
+end
+
+function TimelineContent:timelineFrame()
+	local ui = self:UI()
+	return ui and ui:frame()
+end
+
+function TimelineContent:scrollHorizontalBy(shift)
+	local ui = self:horizontalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		local value = indicator:attributeValue("AXValue")
+		indicator:setAttributeValue("AXValue", value + shift)
+	end
+end
+
+function TimelineContent:scrollHorizontalTo(value)
+	local ui = self:horizontalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		value = math.max(0, math.min(1, value))
+		if indicator:attributeValue("AXValue") ~= value then
+			indicator:setAttributeValue("AXValue", value)
+		end
+	end
+end
+
+function TimelineContent:getScrollHorizontal()
+	local ui = self:horizontalScrollUI()
+	return ui and ui[1]:attributeValue("AXValue")
+end
+
+function TimelineContent:scrollVerticalBy(shift)
+	local ui = self:verticalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		local value = indicator:attributeValue("AXValue")
+		indicator:setAttributeValue("AXValue", value + shift)
+	end
+end
+
+function TimelineContent:scrollVerticalTo(value)
+	local ui = self:verticalScrollUI()
+	if ui then
+		local indicator = ui[1]
+		value = math.max(0, math.min(1, value))
+		if indicator:attributeValue("AXValue") ~= value then
+			indicator:setAttributeValue("AXValue", value)
+		end
+	end
+end
+
+function TimelineContent:getScrollVertical()
+	local ui = self:verticalScrollUI()
+	return ui and ui[1]:attributeValue("AXValue")
 end
 
 -----------------------------------------------------------------------

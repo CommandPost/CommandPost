@@ -3,6 +3,7 @@ local inspect							= require("hs.inspect")
 
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
+local timer								= require("hs.timer")
 
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
 
@@ -62,7 +63,7 @@ end
 
 function Timeline:show()
 	local menuBar = self:app():menuBar()
-	
+
 	if self:isOnPrimaryWindow() then
 		-- if the timeline is on the secondary, we need to turn it off before enabling in primary
 		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
@@ -110,7 +111,7 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- CONTENT UI
+--- CONTENT
 --- The Content is the main body of the timeline, containing the
 --- Timeline Index, the Content, and the Effects/Transitions panels.
 -----------------------------------------------------------------------
@@ -120,6 +121,16 @@ function Timeline:content()
 		self._content = TimelineContent:new(self)
 	end
 	return self._content
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEAD
+--- The timline Playhead.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:playhead()
+	return self:content():playhead()
 end
 
 -----------------------------------------------------------------------
@@ -141,6 +152,109 @@ function Timeline:toolbarUI()
 		end
 		return nil
 	end)
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEAD LOCKING
+--- If the playhead is locked, it will be kept as close to the middle
+--- of the timeline view panel as possible at all times.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+Timeline.lockActive = 0.01
+Timeline.lockInactive = 0.1
+Timeline.lockThreshold = 5
+
+Timeline.LOCKED = 1
+Timeline.TRACKING = 2
+Timeline.DEADZONE = 3
+
+function Timeline:lockPlayhead()
+	if self._locked then
+		-- already locked.
+		return self
+	end
+	local content = self:content()
+	local playhead = content:playhead()
+	local check = nil
+	local status = 0
+
+	-- Setting this to false unlocks the playhead.
+	self._locked = true
+
+	-- local playheadOffset = self.timeline:playhead():getX()
+	local playheadStopped = 0
+
+	check = function()
+		if not self._locked then
+			return
+		end
+
+		local viewWidth = content:viewWidth()
+		if viewWidth == nil then
+			debugMessage("nil viewWidth")
+		end
+
+		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
+		local playheadX = playhead:getX()
+		if playheadX == nil then
+			debugMessage("nil playheadX")
+		end
+		if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
+			-- it is on the offset or doesn't exist.
+			playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+			if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
+				status = Timeline.LOCKED
+				debugMessage("Playhead locked.")
+			end
+		else
+			-- it's moving
+			local timelineFrame = content:timelineFrame()
+			local scrollWidth = timelineFrame.w - viewWidth
+			local scrollPoint = timelineFrame.x*-1 + playheadX - playheadOffset
+			local scrollTarget = scrollPoint/scrollWidth
+			local scrollValue = content:getScrollHorizontal()
+
+			if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
+				if status ~= Timeline.DEADZONE then
+					status = Timeline.DEADZONE
+					debugMessage("In the deadzone.")
+				end
+				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+			else
+				if status ~= Timeline.TRACKING then
+					status = Timeline.TRACKING
+					debugMessage("Tracking the playhead.")
+				end
+				content:scrollHorizontalTo(scrollTarget)
+				playheadStopped = 0
+			end
+		end
+
+		local next = Timeline.lockActive
+		if playheadStopped == Timeline.lockThreshold then
+			next = Timeline.lockInactive
+		end
+
+		if next ~= nil then
+			timer.doAfter(next, check)
+		end
+	end
+
+	check()
+
+	return self
+end
+
+function Timeline:unlockPlayhead()
+	self._locked = false
+
+	return self
+end
+
+function Timeline:isLockedPlayhead()
+	return self._locked
 end
 
 return Timeline

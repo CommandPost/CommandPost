@@ -154,5 +154,36 @@ function Viewer:hide()
 	return self
 end
 
+function Viewer:topToolbarUI()
+	return axutils.cache(self, "_topToolbar", function()
+		local ui = self:UI()
+		if ui then
+			for i,child in ipairs(ui) do
+				if axutils.childWith(child, "AXIdentifier", "_NS:274") then
+					return child
+				end
+			end
+		end
+		return nil
+	end)
+end
+
+function Viewer:formatUI()
+	return axutils.cache(self, "_format", function()
+		local ui = self:topToolbarUI()
+		return ui and axutils.childWith(ui, "AXIdentifier", "_NS:274")
+	end)
+end
+
+function Viewer:getFormat()
+	local format = self:formatUI()
+	return format and format:value()
+end
+
+function Viewer:getFramerate()
+	local format = self:getFormat()
+	local framerate = format and string.match(format, ' %d%d%.?%d?%d?[pi]')
+	return framerate and tonumber(string.sub(framerate, 1,-2))
+end
 
 return Viewer

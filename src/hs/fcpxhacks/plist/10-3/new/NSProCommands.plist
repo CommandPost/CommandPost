@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackLockPlayhead</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackLockPlayhead:</string>
+	</dict>
 	<key>FCPXHackHUD</key>
 	<dict>
 		<key>downRepeats</key>

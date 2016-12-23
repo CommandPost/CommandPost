@@ -8,6 +8,7 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXHackLockPlayhead</string>
 			<string>FCPXHackHUD</string>
 			<string>FCPXHackTitlesOne</string>
 			<string>FCPXHackTitlesTwo</string>

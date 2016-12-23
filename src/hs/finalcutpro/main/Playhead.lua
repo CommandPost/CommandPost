@@ -1,10 +1,10 @@
-local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
-
-local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
 local Playhead = {}
+
+function Playhead.isPlayhead(element)
+	return element and element:attributeValue("AXRole") == "AXValueIndicator"
+end
 
 function Playhead:new(parent)
 	o = {_parent = parent}
@@ -33,7 +33,8 @@ function Playhead:UI()
 			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
 		end
 		return nil
-	end)
+	end,
+	Playhead.isPlayhead)
 end
 
 function Playhead:isShowing()
