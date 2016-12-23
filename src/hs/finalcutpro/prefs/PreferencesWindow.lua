@@ -87,10 +87,9 @@ function PreferencesWindow:show()
 		if self:app():menuBar():isEnabled("Final Cut Pro", "Preferences…") then
 			self:app():menuBar():selectMenu("Final Cut Pro", "Preferences…")
 			local ui = just.doUntil(function() return self:UI() end)
-			return ui ~= nil
 		end
 	end
-	return true
+	return self
 end
 
 function PreferencesWindow:hide()
@@ -99,10 +98,9 @@ function PreferencesWindow:hide()
 		local closeBtn = axutils.childWith(ax, "AXSubrole", "AXCloseButton")
 		if closeBtn then
 			closeBtn:doPress()
-			return true
 		end
 	end
-	return false
+	return self
 end
 
 return PreferencesWindow

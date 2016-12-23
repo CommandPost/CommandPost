@@ -18,6 +18,7 @@ local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
+local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 
 --- The App module
 local App = {}
@@ -105,6 +106,13 @@ function App:secondaryWindow()
 		self._secondaryWindow = SecondaryWindow:new(self)
 	end
 	return self._secondaryWindow
+end
+
+function App:commandEditor()
+	if not self._commandEditor then
+		self._commandEditor = CommandEditor:new(self)
+	end
+	return self._commandEditor
 end
 
 --- hs.finalcutpro.App:windowsUI() -> axuielement
