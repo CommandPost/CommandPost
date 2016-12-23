@@ -1816,6 +1816,7 @@ end
 		}
 		local automationOptions = {
 			{ title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
+			{ title = "Enable Timeline Playhead Lock", 													fn = toggleLockPlayhead, 											checked = fcp.app():timeline():isLockedPlayhead() },
 			{ title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
 			{ title = "-" },
 			{ title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
@@ -5551,6 +5552,7 @@ end
 			fcp.app():timeline():lockPlayhead()
 			dialog.displayNotification(message.."Playhead Lock Activated")
 		end
+		refreshMenuBar()
 	end
 
 --------------------------------------------------------------------------------
