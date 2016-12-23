@@ -2249,7 +2249,16 @@ end
 			for i=1, #allAudioButton:attributeValue("AXChildren") do
 				if allAudioButton[i][1] ~= nil then
 					if allAudioButton[i][1][1] ~= nil then
-						if allAudioButton[i][1][1]:attributeValue("AXValue") == "All" then
+						--------------------------------------------------------------------------------
+						-- ENGLISH:		All
+						-- GERMAN: 		Alle
+						-- SPANISH: 	Todo
+						-- FRENCH: 		Tous
+						-- JAPANESE:	すべて
+						-- CHINESE:		全部
+						--------------------------------------------------------------------------------
+						local value = allAudioButton[i][1][1]:attributeValue("AXValue")
+						if (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部") then
 							if secondAll then
 								whichAudioButton = i
 							else
@@ -5287,7 +5296,7 @@ end
 				toggleLockPlayhead()
 				message = "Playlist Lock Deactivated\n"
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- Update Settings:
 			--------------------------------------------------------------------------------
@@ -5538,7 +5547,7 @@ end
 				toggleScrollingTimeline()
 				message = "Scrolling Timeline Deactivated\n"
 			end
-			
+
 			fcp.app():timeline():lockPlayhead()
 			dialog.displayNotification(message.."Playhead Lock Activated")
 		end
