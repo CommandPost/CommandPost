@@ -10,14 +10,7 @@ if [ -e "build/FCPXHacks.dmg" ]; then
 	rm "build/FCPXHacks.dmg"
 fi
 
-LINK="false"
-# Check if we are in 'link' mode currently
-if [ -L "$HOME/.hammerspoon" ]; then
-	LINK="true"
-fi
-
-# Install the latest version
-./install-hs
+cp -R src build/.hammerspoon
 
 echo "Building the DMG"
 dmgbuild -s dmg/settings.py "FCPX Hacks" "build/FCPXHacks.dmg"
@@ -30,6 +23,4 @@ if [ $? -eq 0 ]; then
 	echo "The package is in 'build/FCPXHacks.dmg'"
 fi
 
-if [ "$LINK" == "true" ]; then
-	./link-hs
-fi
+rm -Rf build/.hammerspoon

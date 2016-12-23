@@ -14,13 +14,14 @@ volume_name = 'FCPX Hacks'
 # Volume format (see hdiutil create -help)
 format = defines.get('format', 'UDBZ')
 
-# Files to include
-files = [ 'src/init.lua', 'src/hs' ]
+#hammerspoon = os.path.expanduser('~') + '/.hammerspoon'
+hammerspoon = 'build/.hammerspoon'
 
-hammerspoon = os.path.expanduser('~') + '/.hammerspoon'
+# Files to include
+files = [ hammerspoon, 'dmg/1. Install Hammerspoon.webloc', 'dmg/2. Install FCPX Hacks.app' ]
 
 # Symlinks to create
-symlinks = { 'Hammerspoon': hammerspoon }
+#symlinks = { 'Hammerspoon': hammerspoon }
 
 # Volume icon
 #
@@ -33,12 +34,11 @@ badge_icon = 'src/hs/fcpxhacks/assets/fcpxhacks.icns'
 
 # Where to put the icons
 icon_locations = {
-    'init.lua':     (110, 161),
-    'hs':           (220, 161),
-    'Hammerspoon':  (430, 161)
+    '1. Install Hammerspoon.webloc': (131, 161),
+    '2. Install FCPX Hacks.app':  (393, 161)
     }
     
-background = 'dmg/backgroundImage-assets/backgroundImage.png'
+background = 'dmg/background-assets/background.png'
 
 show_status_bar = False
 show_tab_view = False
@@ -48,7 +48,7 @@ show_sidebar = False
 sidebar_width = 180
 
 # Window position in ((x, y), (w, h)) format
-window_rect = ((100, 100), (524, 400))
+window_rect = ((100, 100), (524, 333))
 
 # Select the default view; must be one of
 #
