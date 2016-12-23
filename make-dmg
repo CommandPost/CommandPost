@@ -20,11 +20,11 @@ fi
 ./install-hs
 
 echo "Building the DMG"
-dmgbuild -s dmg/settings.py -D hammerspoon="$HOME/.hammerspoon" "FCPX Hacks" "build/FCPXHacks.dmg"
+dmgbuild -s dmg/settings.py "FCPX Hacks" "build/FCPXHacks.dmg"
 
 if [ $? -eq 0 ]; then
 	echo "Attaching the license to the DMG"
-	dmg/licenseDMG.py build/FCPXHacks.dmg dmg/license.rtf
+	dmg/licenseDMG.py build/FCPXHacks.dmg dmg/license.txt
 	open build/FCPXHacks.dmg
 
 	echo "The package is in 'build/FCPXHacks.dmg'"

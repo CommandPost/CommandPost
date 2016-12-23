@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import os.path
+
 # Use like this: dmgbuild -s dmg/settings.py
 
 # This can be overridden adding '-D filename=xxxx' to the command line
@@ -15,10 +17,10 @@ format = defines.get('format', 'UDBZ')
 # Files to include
 files = [ 'src/init.lua', 'src/hs' ]
 
-hammerspoon = '~/.hammerspoon'
+hammerspoon = os.path.expanduser('~') + '/.hammerspoon'
 
 # Symlinks to create
-symlinks = { 'Hammerspoon': hammerspoon, "Applications": "/Applications" }
+symlinks = { 'Hammerspoon': hammerspoon }
 
 # Volume icon
 #
@@ -27,7 +29,7 @@ symlinks = { 'Hammerspoon': hammerspoon, "Applications": "/Applications" }
 # will be used to badge the system's Removable Disk icon
 #
 #icon = '/path/to/icon.icns'
-#badge_icon = 'src/hs/fcpx-hacks/assets/fcpxhacks.icns'
+badge_icon = 'src/hs/fcpxhacks/assets/fcpxhacks.icns'
 
 # Where to put the icons
 icon_locations = {
