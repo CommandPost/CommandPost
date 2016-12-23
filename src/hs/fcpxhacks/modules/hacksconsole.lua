@@ -40,8 +40,8 @@ function hacksconsole.new()
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
 	hacksconsole.hacksChooser = chooser.new(hacksconsole.completionAction):bgDark(true)
-											         				 	  --:fgColor(drawing.color.x11.snow)
-											         					  --:subTextColor(drawing.color.x11.snow)
+											         				 	  :fgColor({alpha = 1, blue = 0.98, green = 0.98, red = 1.0})
+											         					  :subTextColor({alpha = 1, blue = 0.98, green = 0.98, red = 1.0})
 											           				 	  :rightClickCallback(hacksconsole.rightClickAction)
 											        				 	  :choices(hacksconsole.choices)
 
