@@ -6,35 +6,35 @@ local axutils							= require("hs.finalcutpro.axutils")
 local timer								= require("hs.timer")
 
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
+local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
 
 local Timeline = {}
 
-function Timeline.isTimeline(element)
+function Timeline.matches(element)
 	return element:attributeValue("AXRole") == "AXGroup"
 	   and axutils.childWith(element, "AXIdentifier", "_NS:237") ~= nil
 end
 
-function Timeline:new(parent, secondary)
-	o = {_parent = parent, _secondary = secondary}
+function Timeline:new(app)
+	o = {_app = app}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function Timeline:parent()
-	return self._parent
-end
-
 function Timeline:app()
-	return self:parent():app()
+	return self._app
 end
 
-function Timeline:isOnSecondaryWindow()
-	return self._secondary
+function Timeline:isOnSecondary()
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
 end
 
-function Timeline:isOnPrimaryWindow()
-	return not self._secondary
+function Timeline:isOnPrimary()
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -44,16 +44,24 @@ end
 -----------------------------------------------------------------------
 function Timeline:UI()
 	return axutils.cache(self, "_ui", function()
-		local top = self:parent():timelineGroupUI()
-		if top then
-			for i,child in ipairs(top) do
-				if Timeline.isTimeline(child) then
-					return child
-				end
+		local app = self:app()
+		return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
+	end,
+	Timeline.matches)
+end
+
+function Timeline._findTimeline(...)
+	for i = 1,select("#", ...) do
+		local window = select(i, ...)
+		if window then
+			local ui = window:timelineGroupUI()
+			if ui then
+				local timeline = axutils.childMatching(ui, Timeline.matches)
+				if timeline then return timeline end
 			end
 		end
-		return nil
-	end)
+	end
+	return nil
 end
 
 function Timeline:isShowing()
@@ -61,20 +69,26 @@ function Timeline:isShowing()
 	return ui ~= nil and #ui > 0
 end
 
-function Timeline:show()
+function Timeline:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
-	if self:isOnPrimaryWindow() then
-		-- if the timeline is on the secondary, we need to turn it off before enabling in primary
-		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
-		-- Then enable it in the primary
-		menuBar:checkMenu("Window", "Show in Workspace", "Timeline")
-	else
-		menuBar:checkMenu("Window", "Show in Secondary Display", "Timeline")
-	end
+	-- if the timeline is on the secondary, we need to turn it off before enabling in primary
+	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
+	-- Then enable it in the primary
+	menuBar:checkMenu("Window", "Show in Workspace", "Timeline")
 
 	return self
 end
+
+function Timeline:showOnSecondary()
+	local menuBar = self:app():menuBar()
+
+	-- if the timeline is on the secondary, we need to turn it off before enabling in primary
+	menuBar:checkMenu("Window", "Show in Secondary Display", "Timeline")
+
+	return self
+end
+
 
 function Timeline:hide()
 	local menuBar = self:app():menuBar()
@@ -94,18 +108,12 @@ end
 function Timeline:mainUI()
 	return axutils.cache(self, "_main", function()
 		local ui = self:UI()
-		if ui then
-			for i,child in ipairs(ui) do
-				if self:_isMain(child) then
-					return child
-				end
-			end
-		end
-		return nil
-	end)
+		return ui and axutils.childMatching(ui, Timeline.matchesMain)
+	end,
+	Timeline.matchesMain)
 end
 
-function Timeline:_isMain(element)
+function Timeline.matchesMain(element)
 	return element:attributeValue("AXIdentifier") == "_NS:237"
 end
 
@@ -143,15 +151,13 @@ end
 function Timeline:toolbarUI()
 	return axutils.cache(self, "_toolbar", function()
 		local ui = self:UI()
-		if ui then
-			for i,child in ipairs(ui) do
-				if not self:_isMain(child) then
-					return child
-				end
-			end
-		end
-		return nil
-	end)
+		return ui and axutil.childMatching(ui, Timeline.matchesToolbar)
+	end,
+	Timeline.matchesToolbar)
+end
+
+function Timeline.matchesToolbar(element)
+	return not Timeline.matchesMain(element)
 end
 
 -----------------------------------------------------------------------
@@ -169,6 +175,7 @@ Timeline.lockThreshold = 5
 Timeline.LOCKED = 1
 Timeline.TRACKING = 2
 Timeline.DEADZONE = 3
+Timeline.INVISIBLE = 4
 
 function Timeline:lockPlayhead()
 	if self._locked then
@@ -191,44 +198,47 @@ function Timeline:lockPlayhead()
 			return
 		end
 
-		local viewWidth = content:viewWidth()
-		if viewWidth == nil then
-			debugMessage("nil viewWidth")
-		end
-
-		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
-		local playheadX = playhead:getX()
-		if playheadX == nil then
-			debugMessage("nil playheadX")
-		end
-		if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
-			-- it is on the offset or doesn't exist.
-			playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
-			if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
-				status = Timeline.LOCKED
-				debugMessage("Playhead locked.")
+		local viewFrame = content:viewFrame()
+		if viewFrame == nil then
+			-- The timeline is not visible.
+			if status ~= Timeline.INVISIBLE then
+				status = Timeline.INVISIBLE
+				debugMessage("Timeline not visible.")
 			end
+			
+			playheadStopped = Timeline.lockThreshold
 		else
-			-- it's moving
-			local timelineFrame = content:timelineFrame()
-			local scrollWidth = timelineFrame.w - viewWidth
-			local scrollPoint = timelineFrame.x*-1 + playheadX - playheadOffset
-			local scrollTarget = scrollPoint/scrollWidth
-			local scrollValue = content:getScrollHorizontal()
-
-			if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
-				if status ~= Timeline.DEADZONE then
-					status = Timeline.DEADZONE
-					debugMessage("In the deadzone.")
-				end
+			local playheadOffset = viewFrame.x + math.floor(viewFrame.w/2)
+			local playheadX = playhead:getPosition()
+			if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
+				-- it is on the offset or doesn't exist.
 				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
-			else
-				if status ~= Timeline.TRACKING then
-					status = Timeline.TRACKING
-					debugMessage("Tracking the playhead.")
+				if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
+					status = Timeline.LOCKED
+					debugMessage("Playhead locked.")
 				end
-				content:scrollHorizontalTo(scrollTarget)
-				playheadStopped = 0
+			else
+				-- it's moving
+				local timelineFrame = content:timelineFrame()
+				local scrollWidth = timelineFrame.w - viewFrame.w
+				local scrollPoint = timelineFrame.x*-1 + viewFrame.x + playheadX - playheadOffset
+				local scrollTarget = scrollPoint/scrollWidth
+				local scrollValue = content:getScrollHorizontal()
+
+				if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
+					if status ~= Timeline.DEADZONE then
+						status = Timeline.DEADZONE
+						debugMessage("In the deadzone.")
+					end
+					playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+				else
+					if status ~= Timeline.TRACKING then
+						status = Timeline.TRACKING
+						debugMessage("Tracking the playhead.")
+					end
+					content:scrollHorizontalTo(scrollTarget)
+					playheadStopped = 0
+				end
 			end
 		end
 

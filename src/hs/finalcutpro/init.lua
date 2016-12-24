@@ -1269,11 +1269,19 @@ function finalcutpro._inspectElement(e, options, i)
 
 	i = i or 0
 	local depth = options and options.depth or 1
-	return [[
-      Role     = ]] .. inspect(e:attributeValue("AXRole")) .. [[
-      Children = ]] .. inspect(#e) .. [[
-==============================================
-]] .. inspect(e:buildTree(depth)) .. "\n"
+	local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
+	
+	local id = e:attributeValue("AXIdentifier")
+	if id then
+		out = out.. "\n      Identifier = " .. inspect(id)
+	end
+	
+	out = out.. "\n      Children   = " .. inspect(#e)
+			
+	out = out.. "\n==============================================" ..
+				"\n" .. inspect(e:buildTree(depth)) .. "\n"
+	
+	return out
 end
 
 function finalcutpro._highlightElement(e)
