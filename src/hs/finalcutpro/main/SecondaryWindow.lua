@@ -12,6 +12,14 @@ local Timeline						= require("hs.finalcutpro.main.Timeline")
 
 local SecondaryWindow = {}
 
+function SecondaryWindow.matches(element)
+	if element and element:attributeValue("AXSubrole") == "AXUnknown" then
+		local children = element:attributeValue("AXChildren")
+		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
+	end
+	return false
+end
+
 function SecondaryWindow:new(app)
 	o = {
 		_app = app
@@ -33,28 +41,25 @@ end
 
 function SecondaryWindow:UI()
 	return axutils.cache(self, "_ui", function()
-		local ui = self:app():UI():mainWindow()
-		if not self:_isSecondaryWindow(ui) then
-			local windowsUI = self:app():windowsUI()
-			ui = windowsUI and self:_findWindowUI(windowsUI)
+		local ui = self:app():UI()
+		if ui then
+			if SecondaryWindow.matches(ui:mainWindow()) then
+				return ui:mainWindow()
+			else
+				local windowsUI = self:app():windowsUI()
+				return windowsUI and self:_findWindowUI(windowsUI)
+			end
 		end
-		return ui
-	end)
+		return nil
+	end,
+	SecondaryWindow.matches)
 end
 
 function SecondaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
-		if self:_isSecondaryWindow(w) then	return w end
+		if SecondaryWindow.matches(w) then return w end
 	end
 	return nil
-end
-
-function SecondaryWindow:_isSecondaryWindow(w)
-	if w and w:attributeValue("AXSubrole") == "AXUnknown" then
-		local children = w:attributeValue("AXChildren")
-		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
-	end
-	return false
 end
 
 function SecondaryWindow:isFullScreen()

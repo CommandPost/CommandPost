@@ -14,7 +14,7 @@ local Timeline						= require("hs.finalcutpro.main.Timeline")
 
 local PrimaryWindow = {}
 
-function PrimaryWindow.isPrimaryWindow(w)
+function PrimaryWindow.matches(w)
 	return w and w:attributeValue("AXSubrole") == "AXStandardWindow"
 end
 
@@ -40,18 +40,23 @@ end
 
 function PrimaryWindow:UI()
 	return axutils.cache(self, "_ui", function()
-		local ui = self:app():UI():mainWindow()
-		if not PrimaryWindow.isPrimaryWindow(ui) then
-			local windowsUI = self:app():windowsUI()
-			ui = windowsUI and self:_findWindowUI(windowsUI)
+		local ui = self:app():UI()
+		if ui then
+			if PrimaryWindow.matches(ui:mainWindow()) then
+				return ui:mainWindow()
+			else
+				local windowsUI = self:app():windowsUI()
+				return windowsUI and self:_findWindowUI(windowsUI)
+			end
 		end
-		return ui
-	end)
+		return nil
+	end,
+	PrimaryWindow.matches)
 end
 
 function PrimaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
-		if PrimaryWindow.isPrimaryWindow(w) then return w end
+		if PrimaryWindow.matches(w) then return w end
 	end
 	return nil
 end
@@ -88,60 +93,52 @@ function PrimaryWindow:rootGroupUI()
 end
 
 function PrimaryWindow:leftGroupUI()
-	return axutils.cache(self, "_leftGroup", function()
-		local root = self:rootGroupUI()
-		if root then
-			for i,child in ipairs(root) do
-				-- the left group has only one child
-				if #child == 1 then
-					return child[1]
-				end
+	local root = self:rootGroupUI()
+	if root then
+		for i,child in ipairs(root) do
+			-- the left group has only one child
+			if #child == 1 then
+				return child[1]
 			end
 		end
-		return nil
-	end)
+	end
+	return nil
 end
 
 function PrimaryWindow:rightGroupUI()
-	return axutils.cache(self, "_rightGroup", function()
-		local root = self:rootGroupUI()
-		if root and #root == 2 then
-			if #(root[1]) >= 3 then
-				return root[1]
-			else
-				return root[2]
-			end
+	local root = self:rootGroupUI()
+	if root and #root == 2 then
+		if #(root[1]) >= 3 then
+			return root[1]
+		else
+			return root[2]
 		end
-		return nil
-	end)
+	end
+	return nil
 end
 
 function PrimaryWindow:topGroupUI()
-	return axutils.cache(self, "_topGroup", function()
-		local left = self:leftGroupUI()
-		if left and #left >= 3 then
-			for i,child in ipairs(left) do
-				if #child == 1 and #(child[1]) > 1 then
-					return child[1]
-				end
+	local left = self:leftGroupUI()
+	if left and #left >= 3 then
+		for i,child in ipairs(left) do
+			if #child == 1 and #(child[1]) > 1 then
+				return child[1]
 			end
 		end
-		return nil	
-	end)
+	end
+	return nil	
 end
 
 function PrimaryWindow:bottomGroupUI()
-	return axutils.cache(self, "_bottomGroup", function()
-		local left = self:leftGroupUI()
-		if left and #left >= 3 then
-			for i,child in ipairs(left) do
-				if #child == 1 and #(child[1]) == 1 then
-					return child[1]
-				end
+	local left = self:leftGroupUI()
+	if left and #left >= 3 then
+		for i,child in ipairs(left) do
+			if #child == 1 and #(child[1]) == 1 then
+				return child[1]
 			end
 		end
-		return nil	
-	end)
+	end
+	return nil	
 end
 
 -----------------------------------------------------------------------

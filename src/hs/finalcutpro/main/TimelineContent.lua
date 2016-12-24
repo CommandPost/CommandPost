@@ -10,6 +10,11 @@ local Playhead							= require("hs.finalcutpro.main.Playhead")
 
 local TimelineContent = {}
 
+function TimelineContent.matches(element)
+	return element and element:attributeValue("AXIdentifier") == "_NS:16"
+		and element:attributeValueCount("AXAuditIssues") < 1
+end
+
 function TimelineContent:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -34,23 +39,22 @@ function TimelineContent:UI()
 	return axutils.cache(self, "_ui", function()
 		local scrollArea = self:scrollAreaUI()
 		if scrollArea then
-			return axutils.childWith(scrollArea, "AXIdentifier", "_NS:16")
+			return axutils.childMatching(scrollArea, TimelineContent.matches)
 		end
 		return nil
-	end)
+	end,
+	TimelineContent.matches)
 end
 
 function TimelineContent:scrollAreaUI()
-	return axutils.cache(self, "_scrollArea", function()
-		local main = self:parent():mainUI()
-		if main then
-			return axutils.childMatching(main, function(child)
-				return child:attributeValue("AXIdentifier") == "_NS:9" 
-				   and child:attributeValue("AXHorizontalScrollBar") ~= nil
-			end)
-		end
-		return nil
-	end)
+	local main = self:parent():mainUI()
+	if main then
+		return axutils.childMatching(main, function(child)
+			return child:attributeValue("AXIdentifier") == "_NS:9" 
+			   and child:attributeValue("AXHorizontalScrollBar") ~= nil
+		end)
+	end
+	return nil
 end
 
 function TimelineContent:isShowing()
@@ -87,6 +91,15 @@ end
 function TimelineContent:verticalScrollUI()
 	local ui = self:scrollAreaUI()
 	return ui and ui[3]
+end
+
+function TimelineContent:viewCenter()
+	local hScroll = self:horizontalScrollUI()
+	if hScroll then
+		local hFrame = hScroll:frame()
+		return hFrame.x + math.floor(hScroll.w/2)
+	end
+	return nil
 end
 
 function TimelineContent:viewWidth()
@@ -137,7 +150,7 @@ end
 
 function TimelineContent:getScrollHorizontal()
 	local ui = self:horizontalScrollUI()
-	return ui and ui[1]:attributeValue("AXValue")
+	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
 function TimelineContent:scrollVerticalBy(shift)
@@ -162,7 +175,7 @@ end
 
 function TimelineContent:getScrollVertical()
 	local ui = self:verticalScrollUI()
-	return ui and ui[1]:attributeValue("AXValue")
+	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
 -----------------------------------------------------------------------

@@ -9,7 +9,7 @@ local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
 
 local Timeline = {}
 
-function Timeline.isTimeline(element)
+function Timeline.matches(element)
 	return element:attributeValue("AXRole") == "AXGroup"
 	   and axutils.childWith(element, "AXIdentifier", "_NS:237") ~= nil
 end
@@ -47,13 +47,14 @@ function Timeline:UI()
 		local top = self:parent():timelineGroupUI()
 		if top then
 			for i,child in ipairs(top) do
-				if Timeline.isTimeline(child) then
+				if Timeline.matches(child) then
 					return child
 				end
 			end
 		end
 		return nil
-	end)
+	end,
+	Timeline.matches)
 end
 
 function Timeline:isShowing()
@@ -169,6 +170,7 @@ Timeline.lockThreshold = 5
 Timeline.LOCKED = 1
 Timeline.TRACKING = 2
 Timeline.DEADZONE = 3
+Timeline.INVISIBLE = 4
 
 function Timeline:lockPlayhead()
 	if self._locked then
@@ -191,44 +193,47 @@ function Timeline:lockPlayhead()
 			return
 		end
 
-		local viewWidth = content:viewWidth()
-		if viewWidth == nil then
-			debugMessage("nil viewWidth")
-		end
-
-		local playheadOffset = viewWidth ~= nil and viewWidth/2 or nil
-		local playheadX = playhead:getX()
-		if playheadX == nil then
-			debugMessage("nil playheadX")
-		end
-		if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
-			-- it is on the offset or doesn't exist.
-			playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
-			if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
-				status = Timeline.LOCKED
-				debugMessage("Playhead locked.")
+		local viewFrame = content:viewFrame()
+		if viewFrame == nil then
+			-- The timeline is not visible.
+			if status ~= Timeline.INVISIBLE then
+				status = Timeline.INVISIBLE
+				debugMessage("Timeline not visible.")
 			end
+			
+			playheadStopped = Timeline.lockThreshold
 		else
-			-- it's moving
-			local timelineFrame = content:timelineFrame()
-			local scrollWidth = timelineFrame.w - viewWidth
-			local scrollPoint = timelineFrame.x*-1 + playheadX - playheadOffset
-			local scrollTarget = scrollPoint/scrollWidth
-			local scrollValue = content:getScrollHorizontal()
-
-			if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
-				if status ~= Timeline.DEADZONE then
-					status = Timeline.DEADZONE
-					debugMessage("In the deadzone.")
-				end
+			local playheadOffset = viewFrame.x + math.floor(viewFrame.w/2)
+			local playheadX = playhead:getPosition()
+			if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
+				-- it is on the offset or doesn't exist.
 				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
-			else
-				if status ~= Timeline.TRACKING then
-					status = Timeline.TRACKING
-					debugMessage("Tracking the playhead.")
+				if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
+					status = Timeline.LOCKED
+					debugMessage("Playhead locked.")
 				end
-				content:scrollHorizontalTo(scrollTarget)
-				playheadStopped = 0
+			else
+				-- it's moving
+				local timelineFrame = content:timelineFrame()
+				local scrollWidth = timelineFrame.w - viewFrame.w
+				local scrollPoint = timelineFrame.x*-1 + viewFrame.x + playheadX - playheadOffset
+				local scrollTarget = scrollPoint/scrollWidth
+				local scrollValue = content:getScrollHorizontal()
+
+				if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
+					if status ~= Timeline.DEADZONE then
+						status = Timeline.DEADZONE
+						debugMessage("In the deadzone.")
+					end
+					playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
+				else
+					if status ~= Timeline.TRACKING then
+						status = Timeline.TRACKING
+						debugMessage("Tracking the playhead.")
+					end
+					content:scrollHorizontalTo(scrollTarget)
+					playheadStopped = 0
+				end
 			end
 		end
 
