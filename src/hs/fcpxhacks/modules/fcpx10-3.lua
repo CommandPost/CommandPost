@@ -7845,8 +7845,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check that there's a default destination:
 		--------------------------------------------------------------------------------
-		local FFShareDestinationsDefaultDestinationIndex = fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil)
-		if FFShareDestinationsDefaultDestinationIndex == nil then
+		if fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil) == nil then
 			dialog.displayMessage("It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.")
 			return
 		end
