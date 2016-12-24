@@ -6,8 +6,6 @@ local just							= require("hs.just")
 
 local Button						= require("hs.finalcutpro.ui.Button")
 
-local Viewer						= require("hs.finalcutpro.main.Viewer")
-
 local SecondaryWindow = {}
 
 function SecondaryWindow.matches(element)
@@ -98,26 +96,6 @@ end
 -----------------------------------------------------------------------
 function SecondaryWindow:viewerGroupUI()
 	return self:rootGroupUI()
-end
-
-function SecondaryWindow:viewer()
-	if not self._viewer then
-		self._viewer = Viewer:new(self, false, true)
-	end
-	return self._viewer
-end
-
------------------------------------------------------------------------
------------------------------------------------------------------------
---- EVENT VIEWER
------------------------------------------------------------------------
------------------------------------------------------------------------
-
-function SecondaryWindow:eventViewer()
-	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true, true)
-	end
-	return self._eventViewer
 end
 
 -----------------------------------------------------------------------

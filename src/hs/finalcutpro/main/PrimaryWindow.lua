@@ -8,7 +8,6 @@ local Button						= require("hs.finalcutpro.ui.Button")
 
 local Inspector						= require("hs.finalcutpro.main.Inspector")
 local ColorBoard					= require("hs.finalcutpro.main.ColorBoard")
-local Viewer						= require("hs.finalcutpro.main.Viewer")
 
 local PrimaryWindow = {}
 
@@ -170,25 +169,6 @@ end
 -----------------------------------------------------------------------
 function PrimaryWindow:viewerGroupUI()
 	return self:topGroupUI()
-end
-
-function PrimaryWindow:viewer()
-	if not self._viewer then
-		self._viewer = Viewer:new(self, false, false)
-	end
-	return self._viewer
-end
-
------------------------------------------------------------------------
------------------------------------------------------------------------
---- EVENT VIEWER
------------------------------------------------------------------------
------------------------------------------------------------------------
-function PrimaryWindow:eventViewer()
-	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true, false)
-	end
-	return self._eventViewer
 end
 
 -----------------------------------------------------------------------

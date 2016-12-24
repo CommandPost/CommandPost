@@ -20,6 +20,7 @@ local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("hs.finalcutpro.main.Timeline")
 local Browser									= require("hs.finalcutpro.main.Browser")
+local Viewer									= require("hs.finalcutpro.main.Viewer")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 
 --- The App module
@@ -148,6 +149,7 @@ function App:timeline()
 	return self._timeline
 end	
 
+
 --- hs.finalcutpro.App:viewer() -> Viewer
 --- Function
 --- Returns the Viewer instance, whether it is in the primary or secondary window.
@@ -158,8 +160,10 @@ end
 --- Returns:
 ---  * the Viewer
 function App:viewer()
-	local viewer = self:secondaryWindow():viewer()
-	return viewer:isShowing() and viewer or self:primaryWindow():viewer()
+	if not self._viewer then
+		self._viewer = Viewer:new(self, false)
+	end
+	return self._viewer
 end	
 
 --- hs.finalcutpro.App:eventViewer() -> Viewer
@@ -172,12 +176,10 @@ end
 --- Returns:
 ---  * the Event Viewer
 function App:eventViewer()
-	local viewer = self:secondaryWindow():viewer()
-	if viewer:isShowing() then
-		return self:secondaryWindow():eventViewer()
-	else
-		return self:primaryWindow():eventViewer()
+	if not self._eventViewer then
+		self._eventViewer = Viewer:new(self, true)
 	end
+	return self._eventViewer
 end	
 
 --- hs.finalcutpro.App:browser() -> Browser
