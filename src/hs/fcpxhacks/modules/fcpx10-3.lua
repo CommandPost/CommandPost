@@ -156,7 +156,6 @@ local log										= require("hs.logger").new("fcpx10-3")
 mod.debugMode									= false											-- Debug Mode is off by default.
 mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
 mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
-mod.isCommandEditorOpen 						= false 										-- Is Command Editor Open?
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
@@ -1969,7 +1968,7 @@ end
 		if enableHacksShortcutsInFinalCutPro then
 			if fcp.running() then
 				fcp.launch()
-				fcp:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+				fcp:app():commandEditor():show()
 			end
 		else
 			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
@@ -9027,7 +9026,6 @@ end
 	--------------------------------------------------------------------------------
 	function updateTranslations()
 		mod.labelPlayhead 			= fcp.getTranslation("Playhead")
-		mod.labelCommandEditor		= fcp.getTranslation("Command Editor")
 		mod.labelMediaImport		= fcp.getTranslation("Media Import")
 	end
 
@@ -9508,7 +9506,6 @@ end
 --------------------------------------------------------------------------------
 function finalCutProWindowWatcher()
 
-	local commandEditorID = nil
 	wasInFullscreenMode = false
 
 	--------------------------------------------------------------------------------
@@ -9557,33 +9554,14 @@ function finalCutProWindowWatcher()
 		end
 	end), true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Filter:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Created:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-
-		--------------------------------------------------------------------------------
-		-- Command Editor Window Opened:
-		--------------------------------------------------------------------------------
-		if (window:title() == mod.labelCommandEditor) then
-
-			--------------------------------------------------------------------------------
-			-- Command Editor is Open:
-			--------------------------------------------------------------------------------
-			commandEditorID = window:id()
-			mod.isCommandEditorOpen = true
-			debugMessage("Command Editor Opened.")
-			--------------------------------------------------------------------------------
-
+	-- Watch the command editor showing and hiding.
+	fcp.app():commandEditor():watch({
+		show = function(commandEditor)
 			--------------------------------------------------------------------------------
 			-- Disable Hotkeys:
 			--------------------------------------------------------------------------------
 			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
+				debugMessage("Disabling hotkeys")
 				hotkeys:exit()
 			end
 			--------------------------------------------------------------------------------
@@ -9597,29 +9575,8 @@ function finalCutProWindowWatcher()
 			-- Hide the HUD:
 			--------------------------------------------------------------------------------
 			hackshud.hide()
-
-		end
-
-	end), true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Destroyed:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-
-		--------------------------------------------------------------------------------
-		-- Command Editor Window Closed:
-		--------------------------------------------------------------------------------
-		if (window:id() == commandEditorID) then
-
-			--------------------------------------------------------------------------------
-			-- Command Editor is Closed:
-			--------------------------------------------------------------------------------
-			commandEditorID = nil
-			mod.isCommandEditorOpen = false
-			debugMessage("Command Editor Closed.")
-			--------------------------------------------------------------------------------
-
+		end,
+		hide = function(commandEditor)
 			--------------------------------------------------------------------------------
 			-- Check if we need to show the Touch Bar:
 			--------------------------------------------------------------------------------
@@ -9638,14 +9595,14 @@ function finalCutProWindowWatcher()
 			if settings.get("fcpxHacks.enableHacksHUD") then
 				hackshud.show()
 			end
-
 		end
-
-	end), true)
+	})
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
+	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
+	
 	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
@@ -9672,7 +9629,7 @@ function finalCutProSettingsWatcher(files)
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
     	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
-    		if not mod.isCommandEditorOpen then
+    		if fcp.app():commandEditor():isHidden() then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
@@ -9894,7 +9851,7 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not mod.isCommandEditorOpen and not hacksconsole.active then
+				if fcps.app():commandEditor():isHidden() and not hacksconsole.active then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
