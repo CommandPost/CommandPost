@@ -99,6 +99,7 @@ local windowfilter								= require("hs.window.filter")
 -- EXTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local i18n										= require("hs.i18n")
 local ax 										= require("hs._asm.axuielement")
 local touchbar 									= require("hs._asm.touchbar")
 
@@ -203,6 +204,17 @@ function loadScript()
 	hotkey.setLogLevel("warning")
 	windowfilter.setLogLevel(1)
 	windowfilter.ignoreAlways['System Events'] = true
+
+	--------------------------------------------------------------------------------
+	-- Setup i18n Languages:
+	--------------------------------------------------------------------------------
+	local languagePath = "hs/fcpxhacks/languages/"
+	for file in fs.dir(languagePath) do
+		if file ~= "." and file ~= ".." then
+			i18n.loadFile(languagePath .. file)
+		end
+	end
+	i18n.setLocale(fcp.currentLanguage())
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -1698,15 +1710,15 @@ end
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
 		local settingsShapeMenuTable = {
-			{ title = "Rectangle", 																		fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
-			{ title = "Circle", 																		fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
-			{ title = "Diamond", 																		fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
+			{ title = i18n("rectangle"), 																fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
+			{ title = i18n("circle"), 																	fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
+			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
 		}
 		local settingsColourMenuTable = {
-			{ title = "Red", 																			fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColourRed		},
-			{ title = "Blue", 																			fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColourBlue	},
-			{ title = "Green", 																			fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColourGreen	},
-			{ title = "Yellow", 																		fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColourYellow	},
+			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColourRed		},
+			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColourBlue	},
+			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColourGreen	},
+			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColourYellow	},
 		}
 		local settingsHammerspoonSettings = {
 			{ title = "Console...", 																	fn = openHammerspoonConsole },
@@ -3686,6 +3698,11 @@ end
 		if not result then
 			dialog.displayErrorMessage("Unable to change Final Cut Pro's language.")
 		end
+
+		--------------------------------------------------------------------------------
+		-- Change FCPX Hacks Language:
+		--------------------------------------------------------------------------------
+		i18n.setLocale(fcp.currentLanguage(true))
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -9602,7 +9619,7 @@ function finalCutProWindowWatcher()
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
 	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-	
+
 	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
