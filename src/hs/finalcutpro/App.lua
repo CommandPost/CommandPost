@@ -18,6 +18,7 @@ local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
+local Timeline									= require("hs.finalcutpro.main.Timeline")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 
 --- The App module
@@ -140,8 +141,10 @@ end
 --- Returns:
 ---  * the Timeline
 function App:timeline()
-	local timeline = self:secondaryWindow():timeline()
-	return timeline:isShowing() and timeline or self:primaryWindow():timeline()
+	if not self._timeline then
+		self._timeline = Timeline:new(self)
+	end
+	return self._timeline
 end	
 
 --- hs.finalcutpro.App:viewer() -> Viewer

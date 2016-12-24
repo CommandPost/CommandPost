@@ -83,23 +83,29 @@ function TimelineContent:playhead()
 	return self._playhead
 end
 
+
+function TimelineContent.matchesHorizontalScroll(element)
+	return element and element:attributeValue("AXOrientation") == "AXHorizontalOrientation"
+end
+
 function TimelineContent:horizontalScrollUI()
-	local ui = self:scrollAreaUI()
-	return ui and ui[2]
+	return axutils.cache(self, "_horizontal", function()
+		local ui = self:scrollAreaUI()
+		return ui and axutils.childMatching(ui, TimelineContent.matchesHorizontalScroll)
+	end,
+	TimelineContent.matchesHorizontalScroll)
+end
+
+function TimelineContent.matchesVerticalScroll(element)
+	return element and element:attributeValue("AXOrientation") == "AXVerticalOrientation"
 end
 
 function TimelineContent:verticalScrollUI()
-	local ui = self:scrollAreaUI()
-	return ui and ui[3]
-end
-
-function TimelineContent:viewCenter()
-	local hScroll = self:horizontalScrollUI()
-	if hScroll then
-		local hFrame = hScroll:frame()
-		return hFrame.x + math.floor(hScroll.w/2)
-	end
-	return nil
+	return axutils.cache(self, "_vertical", function()
+		local ui = self:scrollAreaUI()
+		return ui and axutils.childMatching(ui, TimelineContent.matchesVerticalScroll)
+	end,
+	TimelineContent.matchesVerticalScroll)
 end
 
 function TimelineContent:viewWidth()
@@ -107,18 +113,19 @@ function TimelineContent:viewWidth()
 	return hScroll and hScroll:size().w or nil
 end
 
-function TimelineContent:viewHeight()
-	local vScroll = self:verticalScrollUI()
-	return vScroll and vScroll:size().h or nil
-end
-
 function TimelineContent:viewFrame()
+	local hScroll = self:horizontalScrollUI()
+	if hScroll then
+		local scrollArea = hScroll:parent()
+		local sap = scrollArea:position()
+		local hsFrame = hScroll:frame()
+		if sap and hsFrame then
+			return {x = sap.x, y = sap.y, w = hsFrame.w, h = hsFrame.x-sap.x}
+		end
+	end
 	local scrollArea = self:scrollAreaUI()
 	if scrollArea then
-		local sap = scrollArea:position()
-		local horizontalScroll = scrollArea[2]
-		local verticalScroll = scrollArea[3]
-		return {x = sap.x, y = sap.y, w = horizontalScroll:size().w, h = verticalScroll:size().h}
+		return scrollArea:frame()
 	end
 	return nil
 end

@@ -10,7 +10,6 @@ local Browser						= require("hs.finalcutpro.main.Browser")
 local Inspector						= require("hs.finalcutpro.main.Inspector")
 local ColorBoard					= require("hs.finalcutpro.main.ColorBoard")
 local Viewer						= require("hs.finalcutpro.main.Viewer")
-local Timeline						= require("hs.finalcutpro.main.Timeline")
 
 local PrimaryWindow = {}
 
@@ -195,19 +194,12 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- TIMELINE UI
+--- TIMELINE GROUP UI
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
 function PrimaryWindow:timelineGroupUI()
 	return self:bottomGroupUI()
-end
-
-function PrimaryWindow:timeline()
-	if not self._timeline then
-		self._timeline = Timeline:new(self)
-	end
-	return self._timeline
 end
 
 -----------------------------------------------------------------------

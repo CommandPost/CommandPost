@@ -8,7 +8,6 @@ local Button						= require("hs.finalcutpro.ui.Button")
 
 local Browser						= require("hs.finalcutpro.main.Browser")
 local Viewer						= require("hs.finalcutpro.main.Viewer")
-local Timeline						= require("hs.finalcutpro.main.Timeline")
 
 local SecondaryWindow = {}
 
@@ -136,13 +135,6 @@ function SecondaryWindow:timelineGroupUI()
 			return root[1][1]
 		end
 	end)
-end
-
-function SecondaryWindow:timeline()
-	if not self._timeline then
-		self._timeline = Timeline:new(self, true)
-	end
-	return self._timeline
 end
 
 -----------------------------------------------------------------------
