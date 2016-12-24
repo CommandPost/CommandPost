@@ -6,7 +6,6 @@ local just							= require("hs.just")
 
 local Button						= require("hs.finalcutpro.ui.Button")
 
-local Browser						= require("hs.finalcutpro.main.Browser")
 local Inspector						= require("hs.finalcutpro.main.Inspector")
 local ColorBoard					= require("hs.finalcutpro.main.ColorBoard")
 local Viewer						= require("hs.finalcutpro.main.Viewer")
@@ -209,13 +208,6 @@ end
 -----------------------------------------------------------------------
 function PrimaryWindow:browserGroupUI()
 	return self:topGroupUI()
-end
-
-function PrimaryWindow:browser()
-	if not self._browser then
-		self._browser = Browser:new(self)
-	end
-	return self._browser
 end
 
 return PrimaryWindow

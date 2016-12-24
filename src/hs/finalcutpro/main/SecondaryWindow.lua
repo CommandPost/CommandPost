@@ -6,7 +6,6 @@ local just							= require("hs.just")
 
 local Button						= require("hs.finalcutpro.ui.Button")
 
-local Browser						= require("hs.finalcutpro.main.Browser")
 local Viewer						= require("hs.finalcutpro.main.Viewer")
 
 local SecondaryWindow = {}
@@ -144,13 +143,6 @@ end
 -----------------------------------------------------------------------
 function SecondaryWindow:browserGroupUI()
 	return self:rootGroupUI()
-end
-
-function SecondaryWindow:browser()
-	if not self._browser then
-		self._browser = Browser:new(self, true)
-	end
-	return self._browser
 end
 
 return SecondaryWindow

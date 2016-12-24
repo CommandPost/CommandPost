@@ -19,6 +19,7 @@ local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow"
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("hs.finalcutpro.main.Timeline")
+local Browser									= require("hs.finalcutpro.main.Browser")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 
 --- The App module
@@ -189,9 +190,11 @@ end
 --- Returns:
 ---  * the Browser
 function App:browser()
-	local browser = self:secondaryWindow():browser()
-	return browser:isShowing() and browser or self:primaryWindow():browser()
-end	
+	if not self._browser then
+		self._browser = Browser:new(self)
+	end
+	return self._browser
+end
 
 --- hs.finalcutpro.App:inspector() -> Inspector
 --- Function

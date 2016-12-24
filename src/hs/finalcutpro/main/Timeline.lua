@@ -53,7 +53,6 @@ end
 function Timeline._findTimeline(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
-		debugMessage("findTimeline: window #"..i..":\n"..inspect(window))
 		if window then
 			local ui = window:timelineGroupUI()
 			if ui then
