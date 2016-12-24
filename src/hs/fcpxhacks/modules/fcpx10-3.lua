@@ -156,7 +156,6 @@ local log										= require("hs.logger").new("fcpx10-3")
 mod.debugMode									= false											-- Debug Mode is off by default.
 mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
 mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
-mod.isCommandEditorOpen 						= false 										-- Is Command Editor Open?
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
@@ -1612,6 +1611,16 @@ end
 		end
 
 		--------------------------------------------------------------------------------
+		-- Lock Timeline Playhead:
+		--------------------------------------------------------------------------------
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+
+		--------------------------------------------------------------------------------
+		-- Current Language:
+		--------------------------------------------------------------------------------
+		local currentLanguage = fcp.currentLanguage()
+
+		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
 		local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated") or false
@@ -1678,6 +1687,12 @@ end
 		local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
+
+		--------------------------------------------------------------------------------
+		-- Are Hacks Shortcuts Enabled or Not:
+		--------------------------------------------------------------------------------
+		local displayShortcutText = "Display Keyboard Shortcuts"
+		if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
 
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
@@ -1778,16 +1793,12 @@ end
 			{ title = "Generators Shortcut 4" .. generatorsShortcutFour, 								fn = function() assignGeneratorsShortcut(4) end, 																				disabled = not generatorsListUpdated },
 			{ title = "Generators Shortcut 5" .. generatorsShortcutFive, 								fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
 		}
-
 		local settingsHUDButtons = {
 			{ title = "Button 1" .. hudButtonOne, 														fn = function() hackshud.assignButton(1) end },
 			{ title = "Button 2" .. hudButtonTwo, 														fn = function() hackshud.assignButton(2) end },
 			{ title = "Button 3" .. hudButtonThree, 													fn = function() hackshud.assignButton(3) end },
 			{ title = "Button 4" .. hudButtonFour, 														fn = function() hackshud.assignButton(4) end },
 		}
-
-		currentLanguage = fcp.currentLanguage()
-
 		local menuLanguage = {
 			{ title = "German", 																		fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
 			{ title = "English", 																		fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
@@ -1796,10 +1807,6 @@ end
 			{ title = "Japanese", 																		fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
 			{ title = "Chinese (China)", 																fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
 		}
-
-		local displayShortcutText = "Display Keyboard Shortcuts"
-		if enableHacksShortcutsInFinalCutPro then displayShortcutText = "Open Command Editor" end
-
 		local menuTable = {
 			{ title = "Open Final Cut Pro", 															fn = fcp.launch },
 			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
@@ -1816,7 +1823,7 @@ end
 		}
 		local automationOptions = {
 			{ title = "Enable Scrolling Timeline", 														fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
-			{ title = "Enable Timeline Playhead Lock", 													fn = toggleLockPlayhead, 											checked = fcp.app():timeline():isLockedPlayhead() },
+			{ title = "Enable Timeline Playhead Lock", 													fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
 			{ title = "Enable Shortcuts During Fullscreen Playback", 									fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
 			{ title = "-" },
 			{ title = "Close Media Import When Card Inserted", 											fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
@@ -1892,6 +1899,7 @@ end
 		-- Set the Menu:
 		--------------------------------------------------------------------------------
 		fcpxMenubar:setMenu(menuTable)
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -1960,7 +1968,7 @@ end
 		if enableHacksShortcutsInFinalCutPro then
 			if fcp.running() then
 				fcp.launch()
-				fcp:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+				fcp:app():commandEditor():show()
 			end
 		else
 			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
@@ -5259,7 +5267,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Toggle Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
 		if scrollingTimelineActivated then
 			--------------------------------------------------------------------------------
 			-- Update Settings:
@@ -5293,7 +5301,8 @@ end
 			--------------------------------------------------------------------------------
 			-- Ensure that Playhead Lock is off
 			--------------------------------------------------------------------------------
-			if fcp.app():timeline():isLockedPlayhead() then
+			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+			if lockTimelinePlayhead then
 				toggleLockPlayhead()
 				message = "Playlist Lock Deactivated\n"
 			end
@@ -5535,9 +5544,15 @@ end
 	-- TOGGLE LOCK PLAYHEAD:
 	--------------------------------------------------------------------------------
 	function toggleLockPlayhead()
-		if fcp.app():timeline():isLockedPlayhead() then
-			fcp.app():timeline():unlockPlayhead()
+
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+
+		if lockTimelinePlayhead then
+			if fcp.running() then
+				fcp.app():timeline():unlockPlayhead()
+			end
 			dialog.displayNotification("Playhead Lock Deactivated")
+			settings.set("fcpxHacks.lockTimelinePlayhead", false)
 		else
 			local message = ""
 			--------------------------------------------------------------------------------
@@ -5548,11 +5563,15 @@ end
 				toggleScrollingTimeline()
 				message = "Scrolling Timeline Deactivated\n"
 			end
-
-			fcp.app():timeline():lockPlayhead()
+			if fcp.running() then
+				fcp.app():timeline():lockPlayhead()
+			end
 			dialog.displayNotification(message.."Playhead Lock Activated")
+			settings.set("fcpxHacks.lockTimelinePlayhead", true)
 		end
+
 		refreshMenuBar()
+
 	end
 
 --------------------------------------------------------------------------------
@@ -9007,7 +9026,6 @@ end
 	--------------------------------------------------------------------------------
 	function updateTranslations()
 		mod.labelPlayhead 			= fcp.getTranslation("Playhead")
-		mod.labelCommandEditor		= fcp.getTranslation("Command Editor")
 		mod.labelMediaImport		= fcp.getTranslation("Media Import")
 	end
 
@@ -9391,13 +9409,21 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
-				-- Disable Scrolling Timeline Watcher:
+				-- Enable Scrolling Timeline Watcher:
 				--------------------------------------------------------------------------------
 				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
 					if scrollingTimelineWatcherUp ~= nil then
 						scrollingTimelineWatcherUp:start()
 						scrollingTimelineWatcherDown:start()
 					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Enable Lock Timeline Playhead:
+				--------------------------------------------------------------------------------
+				local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+				if lockTimelinePlayhead then
+					fcp.app():timeline():lockPlayhead()
 				end
 
 				--------------------------------------------------------------------------------
@@ -9433,6 +9459,14 @@ function finalCutProWatcher(appName, eventType, appObject)
 						scrollingTimelineWatcherUp:stop()
 						scrollingTimelineWatcherDown:stop()
 					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Disable Lock Timeline Playhead:
+				--------------------------------------------------------------------------------
+				local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+				if lockTimelinePlayhead then
+					fcp.app():timeline():unlockPlayhead()
 				end
 
 				--------------------------------------------------------------------------------
@@ -9472,7 +9506,6 @@ end
 --------------------------------------------------------------------------------
 function finalCutProWindowWatcher()
 
-	local commandEditorID = nil
 	wasInFullscreenMode = false
 
 	--------------------------------------------------------------------------------
@@ -9521,33 +9554,14 @@ function finalCutProWindowWatcher()
 		end
 	end), true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Filter:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Created:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-
-		--------------------------------------------------------------------------------
-		-- Command Editor Window Opened:
-		--------------------------------------------------------------------------------
-		if (window:title() == mod.labelCommandEditor) then
-
-			--------------------------------------------------------------------------------
-			-- Command Editor is Open:
-			--------------------------------------------------------------------------------
-			commandEditorID = window:id()
-			mod.isCommandEditorOpen = true
-			debugMessage("Command Editor Opened.")
-			--------------------------------------------------------------------------------
-
+	-- Watch the command editor showing and hiding.
+	fcp.app():commandEditor():watch({
+		show = function(commandEditor)
 			--------------------------------------------------------------------------------
 			-- Disable Hotkeys:
 			--------------------------------------------------------------------------------
 			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
+				debugMessage("Disabling hotkeys")
 				hotkeys:exit()
 			end
 			--------------------------------------------------------------------------------
@@ -9561,29 +9575,8 @@ function finalCutProWindowWatcher()
 			-- Hide the HUD:
 			--------------------------------------------------------------------------------
 			hackshud.hide()
-
-		end
-
-	end), true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Destroyed:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-
-		--------------------------------------------------------------------------------
-		-- Command Editor Window Closed:
-		--------------------------------------------------------------------------------
-		if (window:id() == commandEditorID) then
-
-			--------------------------------------------------------------------------------
-			-- Command Editor is Closed:
-			--------------------------------------------------------------------------------
-			commandEditorID = nil
-			mod.isCommandEditorOpen = false
-			debugMessage("Command Editor Closed.")
-			--------------------------------------------------------------------------------
-
+		end,
+		hide = function(commandEditor)
 			--------------------------------------------------------------------------------
 			-- Check if we need to show the Touch Bar:
 			--------------------------------------------------------------------------------
@@ -9602,14 +9595,14 @@ function finalCutProWindowWatcher()
 			if settings.get("fcpxHacks.enableHacksHUD") then
 				hackshud.show()
 			end
-
 		end
-
-	end), true)
+	})
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
+	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
+	
 	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
@@ -9636,7 +9629,7 @@ function finalCutProSettingsWatcher(files)
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
     	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
-    		if not mod.isCommandEditorOpen then
+    		if fcp.app():commandEditor():isHidden() then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
@@ -9858,7 +9851,7 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if not mod.isCommandEditorOpen and not hacksconsole.active then
+				if fcps.app():commandEditor():isHidden() and not hacksconsole.active then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
