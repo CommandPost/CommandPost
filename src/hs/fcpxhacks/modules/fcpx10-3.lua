@@ -9628,7 +9628,7 @@ function finalCutProSettingsWatcher(files)
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
     	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
-    		if fcp.app():commandEditor():isHidden() then
+    		if not fcp.app():commandEditor():isShowing() then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end

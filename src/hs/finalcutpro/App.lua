@@ -18,6 +18,9 @@ local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
+local Timeline									= require("hs.finalcutpro.main.Timeline")
+local Browser									= require("hs.finalcutpro.main.Browser")
+local Viewer									= require("hs.finalcutpro.main.Viewer")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 
 --- The App module
@@ -140,9 +143,12 @@ end
 --- Returns:
 ---  * the Timeline
 function App:timeline()
-	local timeline = self:secondaryWindow():timeline()
-	return timeline:isShowing() and timeline or self:primaryWindow():timeline()
+	if not self._timeline then
+		self._timeline = Timeline:new(self)
+	end
+	return self._timeline
 end	
+
 
 --- hs.finalcutpro.App:viewer() -> Viewer
 --- Function
@@ -154,8 +160,10 @@ end
 --- Returns:
 ---  * the Viewer
 function App:viewer()
-	local viewer = self:secondaryWindow():viewer()
-	return viewer:isShowing() and viewer or self:primaryWindow():viewer()
+	if not self._viewer then
+		self._viewer = Viewer:new(self, false)
+	end
+	return self._viewer
 end	
 
 --- hs.finalcutpro.App:eventViewer() -> Viewer
@@ -168,12 +176,10 @@ end
 --- Returns:
 ---  * the Event Viewer
 function App:eventViewer()
-	local viewer = self:secondaryWindow():viewer()
-	if viewer:isShowing() then
-		return self:secondaryWindow():eventViewer()
-	else
-		return self:primaryWindow():eventViewer()
+	if not self._eventViewer then
+		self._eventViewer = Viewer:new(self, true)
 	end
+	return self._eventViewer
 end	
 
 --- hs.finalcutpro.App:browser() -> Browser
@@ -186,9 +192,11 @@ end
 --- Returns:
 ---  * the Browser
 function App:browser()
-	local browser = self:secondaryWindow():browser()
-	return browser:isShowing() and browser or self:primaryWindow():browser()
-end	
+	if not self._browser then
+		self._browser = Browser:new(self)
+	end
+	return self._browser
+end
 
 --- hs.finalcutpro.App:inspector() -> Inspector
 --- Function
