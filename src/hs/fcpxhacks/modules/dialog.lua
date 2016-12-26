@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
--- Module created by Chris Hocking (https://github.com/latenitefilms).
+-- Module created by Chris Hocking (https://latenitefilms.com)
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -15,17 +15,34 @@
 
 local dialog = {}
 
+local alert										= require("hs.alert")
+local console									= require("hs.console")
+local fs										= require("hs.fs")
+local osascript									= require("hs.osascript")
+local screen									= require("hs.screen")
+local sharing									= require("hs.sharing")
+
 local fcp										= require("hs.finalcutpro")
 
-local alert										= require("hs.alert")
-local osascript									= require("hs.osascript")
-local sharing									= require("hs.sharing")
-local console									= require("hs.console")
-local screen									= require("hs.screen")
+local i18n										= require("hs.fcpxhacks.modules.i18n")
 
-local commonErrorMessageStart 					= "I'm sorry, but the following error has occurred:\n\n"
-local commonErrorMessageEnd 					= "\n\nWould you like to email this bug to Chris so that he can try and come up with a fix?"
-local commonErrorMessageAppleScript 			= 'set fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+--------------------------------------------------------------------------------
+-- SETUP I18N LANGUAGES:
+--------------------------------------------------------------------------------
+local languagePath = "hs/fcpxhacks/languages/"
+for file in fs.dir(languagePath) do
+	if file ~= "." and file ~= ".." then
+		i18n.loadFile(languagePath .. file)
+	end
+end
+i18n.setLocale(fcp.currentLanguage())
+
+--------------------------------------------------------------------------------
+-- COMMON ERROR MESSAGES:
+--------------------------------------------------------------------------------
+local commonErrorMessageStart 					= i18n("commonErrorMessageStart") .. "\n\n"
+local commonErrorMessageEnd 					= "\n\n" .. i18n("commonErrorMessageEnd")
+local commonErrorMessageAppleScript 			= 'set noButton to "' .. i18n("no") .. '"' .. '\n\nset yesButton to "' .. i18n("yes") .. '"' .. '\n\nset okButton to "' .. i18n("ok") .. '"' .. '\n\nset cancelButton to "' .. i18n("cancel") .. '"' .. '\n\nset fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
 
 --------------------------------------------------------------------------------
 -- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
@@ -39,7 +56,7 @@ function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, 
 		repeat
 			try
 				tell me to activate
-				set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} with icon fcpxIcon)
+				set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} with icon fcpxIcon)
 			on error
 				-- Cancel Pressed:
 				return false
@@ -52,7 +69,7 @@ function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, 
 					end if
 				end if
 			end try
-			display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
+			display dialog whatErrorMessage buttons {okButton} with icon fcpxIcon
 		end repeat
 		return usersInput
 	]]
@@ -77,7 +94,7 @@ function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnsw
 		repeat
 			try
 				tell me to activate
-				set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {"OK", "Cancel"} default button 1 with icon fcpxIcon)
+				set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon fcpxIcon)
 			on error
 				-- Cancel Pressed:
 				return false
@@ -96,7 +113,7 @@ function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnsw
 					exit repeat
 				end
 			end try
-			display dialog whatErrorMessage buttons {"OK"} with icon fcpxIcon
+			display dialog whatErrorMessage buttons {okButton} with icon fcpxIcon
 		end repeat
 		return response
 	]]
@@ -134,7 +151,7 @@ function dialog.displayAlertMessage(whatMessage)
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
-		display dialog whatMessage buttons {"OK"} with icon stop
+		display dialog whatMessage buttons {okButton} with icon stop
 	]]
 	osascript.applescript(appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
@@ -157,8 +174,8 @@ function dialog.displayErrorMessage(whatError)
 	local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
-		display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {"Yes", "No"} with icon fcpxIcon
-		if the button returned of the result is "Yes" then
+		display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {yesButton, noButton} with icon fcpxIcon
+		if the button returned of the result is equal to yesButton then
 			return true
 		else
 			return false
@@ -180,7 +197,7 @@ end
 function dialog.displayMessage(whatMessage, optionalButtons)
 
 	if optionalButtons == nil or type(optionalButtons) ~= "table" then
-		optionalButtons = {"OK"}
+		optionalButtons = {i18n("ok")}
 	end
 
 	local buttons = 'buttons {'
@@ -213,8 +230,8 @@ function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
 	local appleScriptB = [[
 		tell me to activate
-		display dialog whatMessage buttons {"Yes", "No"} default button 1 with icon fcpxIcon
-		if the button returned of the result is "Yes" then
+		display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon fcpxIcon
+		if the button returned of the result is equal to yesButton then
 			return true
 		else
 			return false
