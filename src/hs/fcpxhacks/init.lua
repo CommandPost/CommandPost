@@ -160,9 +160,11 @@ end
 -- CUSTOM EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local fcp 						= require("hs.finalcutpro")
+
 local semver					= require("hs.fcpxhacks.modules.semver.semver")
 local dialog					= require("hs.fcpxhacks.modules.dialog")
-local fcp 						= require("hs.finalcutpro")
+local i18n						= require("hs.fcpxhacks.modules.i18n")
 local tools						= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
@@ -188,6 +190,18 @@ function mod.init()
 	writeToConsole("| FCPX Hacks v" .. mod.scriptVersion .. "          |", true)
 	writeToConsole("| Created by LateNite Films |", true)
 	writeToConsole("-----------------------------", true)
+
+	--------------------------------------------------------------------------------
+	-- Setup i18n Languages:
+	--------------------------------------------------------------------------------
+	local fcpLanguage = fcp.currentLanguage()
+	local languagePath = "hs/fcpxhacks/languages/"
+	for file in fs.dir(languagePath) do
+		if file ~= "." and file ~= ".." then
+			i18n.loadFile(languagePath .. file)
+		end
+	end
+	i18n.setLocale(fcpLanguage)
 
 	--------------------------------------------------------------------------------
 	-- Check All The Required Files Exist:
@@ -257,8 +271,7 @@ function mod.init()
 		if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
 	end
 	if checkFailed then
-		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
-		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage(i18n("missingFiles"))
 		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
@@ -273,11 +286,10 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Check Final Cut Pro Version:
+	-- Check Versions:
 	--------------------------------------------------------------------------------
 	local fcpVersion = fcp.version()
 	local osVersion = tools.macOSVersion()
-	local fcpLanguage = fcp.currentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
@@ -299,8 +311,7 @@ function mod.init()
 		require("hs.fcpxhacks.modules.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
-		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		dialog.displayAlertMessage("FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage(i18n("noValidFinalCutPro"))
 		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
