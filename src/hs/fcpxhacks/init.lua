@@ -160,6 +160,7 @@ end
 -- CUSTOM EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local semver					= require("hs.fcpxhacks.modules.semver.semver")
 local dialog					= require("hs.fcpxhacks.modules.dialog")
 local fcp 						= require("hs.finalcutpro")
 local tools						= require("hs.fcpxhacks.modules.tools")
@@ -262,6 +263,16 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
+	-- Check Hammerspoon Version:
+	--------------------------------------------------------------------------------
+	local requiredHammerspoonVersion 		= semver("0.9.51")
+	local hammerspoonVersion 				= semver(hs.processInfo["version"])
+	if hammerspoonVersion < requiredHammerspoonVersion then
+		dialog.displayAlertMessage("FCPX Hacks requires Hammerspoon " .. tostring(requiredHammerspoonVersion) .. " or later.\n\nPlease download the latest version of Hammerspoon and try again.")
+		application.applicationsForBundleID(hsBundleID)[1]:kill()
+	end
+
+	--------------------------------------------------------------------------------
 	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
 	local fcpVersion = fcp.version()
@@ -271,11 +282,11 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-												writeToConsole("Hammerspoon Version: 			" .. hs.processInfo["version"], true)
-	if osVersion ~= nil then 					writeToConsole("macOS Version: 					" .. tostring(osVersion), true) 					end
-	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: 			" .. tostring(fcpVersion), true)					end
-	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: 		" .. tostring(fcpLanguage), true)					end
-	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: 		" .. tostring(keycodes.currentLayout()), true) 		end
+												writeToConsole("Hammerspoon Version: 			" .. tostring(hammerspoonVersion), 			true)
+	if osVersion ~= nil then 					writeToConsole("macOS Version: 					" .. tostring(osVersion), 					true) end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: 			" .. tostring(fcpVersion), 					true) end
+	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: 		" .. tostring(fcpLanguage), 				true) end
+	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: 		" .. tostring(keycodes.currentLayout()), 	true) end
 												writeToConsole("", true)
 
 	local validFinalCutProVersion = false
@@ -294,6 +305,7 @@ function mod.init()
 	end
 
 	return self
+
 end
 
 --------------------------------------------------------------------------------

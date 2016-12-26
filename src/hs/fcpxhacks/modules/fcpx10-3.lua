@@ -3299,11 +3299,27 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
 
+		--------------------------------------------------------------------------------
+		-- Setup Chooser:
+		--------------------------------------------------------------------------------
 		effectChooser = chooser.new(effectChooserAction):bgDark(true)
-														:fgColor(drawing.color.x11.snow)
-														:subTextColor(drawing.color.x11.snow)
 														:choices(effectChooserChoices)
-														:show()
+
+		--------------------------------------------------------------------------------
+		-- Allow for Reduce Transparency:
+		--------------------------------------------------------------------------------
+		if screen.accessibilitySettings()["ReduceTransparency"] then
+			effectChooser:fgColor(nil)
+						 :subTextColor(nil)
+		else
+			effectChooser:fgColor(drawing.color.x11.snow)
+		 				 :subTextColor(drawing.color.x11.snow)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Chooser:
+		--------------------------------------------------------------------------------
+		effectChooser:show()
 
 	end
 
@@ -3403,11 +3419,27 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
 
+		--------------------------------------------------------------------------------
+		-- Setup Chooser:
+		--------------------------------------------------------------------------------
 		transitionChooser = chooser.new(transitionsChooserAction):bgDark(true)
-																 :fgColor(drawing.color.x11.snow)
-																 :subTextColor(drawing.color.x11.snow)
 																 :choices(transitionChooserChoices)
-																 :show()
+
+		--------------------------------------------------------------------------------
+		-- Allow for Reduce Transparency:
+		--------------------------------------------------------------------------------
+		if screen.accessibilitySettings()["ReduceTransparency"] then
+			transitionChooser:fgColor(nil)
+							 :subTextColor(nil)
+		else
+			transitionChooser:fgColor(drawing.color.x11.snow)
+							 :subTextColor(drawing.color.x11.snow)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Chooser:
+		--------------------------------------------------------------------------------
+		transitionChooser:show()
 
 	end
 
@@ -3507,11 +3539,27 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
 
+		--------------------------------------------------------------------------------
+		-- Setup Chooser:
+		--------------------------------------------------------------------------------
 		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
-													    :fgColor(drawing.color.x11.snow)
-													    :subTextColor(drawing.color.x11.snow)
 														:choices(titlesChooserChoices)
-														:show()
+
+		--------------------------------------------------------------------------------
+		-- Allow for Reduce Transparency:
+		--------------------------------------------------------------------------------
+		if screen.accessibilitySettings()["ReduceTransparency"] then
+			titlesChooser:fgColor(nil)
+						 :subTextColor(nil)
+		else
+			titlesChooser:fgColor(drawing.color.x11.snow)
+						 :subTextColor(drawing.color.x11.snow)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Chooser:
+		--------------------------------------------------------------------------------
+		titlesChooser:show()
 
 	end
 
@@ -3611,11 +3659,27 @@ end
 		--------------------------------------------------------------------------------
 		table.sort(generatorsChooserChoices, function(a, b) return a.text < b.text end)
 
+		--------------------------------------------------------------------------------
+		-- Setup Chooser:
+		--------------------------------------------------------------------------------
 		generatorsChooser = chooser.new(generatorsChooserAction):bgDark(true)
-																:fgColor(drawing.color.x11.snow)
-																:subTextColor(drawing.color.x11.snow)
 																:choices(generatorsChooserChoices)
-																:show()
+
+		--------------------------------------------------------------------------------
+		-- Allow for Reduce Transparency:
+		--------------------------------------------------------------------------------
+		if screen.accessibilitySettings()["ReduceTransparency"] then
+			generatorsChooser:fgColor(nil)
+							 :subTextColor(nil)
+		else
+			generatorsChooser:fgColor(drawing.color.x11.snow)
+							 :subTextColor(drawing.color.x11.snow)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show Chooser:
+		--------------------------------------------------------------------------------
+		generatorsChooser:show()
 
 	end
 
@@ -9602,7 +9666,7 @@ function finalCutProWindowWatcher()
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
 	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-	
+
 	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
 		debugMessage("Window Resized.")
 		if touchBarSupported then
