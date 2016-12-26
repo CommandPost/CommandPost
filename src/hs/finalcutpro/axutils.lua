@@ -26,6 +26,14 @@ function axutils.childWith(element, name, value)
 	return nil
 end
 
+function axutils.childWithID(element, value)
+	return axutils.childWith(element, "AXIdentifier", value)
+end
+
+function axutils.childWithRole(element, value)
+	return axutils.childWith(element, "AXRole", value)
+end
+
 --- hs.finalcutpro.axutil.childWith(axuielement, string, anything) -> axuielement
 --- Function:
 --- This searches for the first child of the specified element for which the provided

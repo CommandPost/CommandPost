@@ -6,9 +6,11 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
+local Button							= require("hs.finalcutpro.ui.Button")
+local BrowserList						= require("hs.finalcutpro.main.BrowserList")
+local BrowserFilmstrip					= require("hs.finalcutpro.main.BrowserFilmstrip")
 
 local Browser = {}
-
 
 function Browser.matches(element)
 	return axutils.childWith(element, "AXIdentifier", "_NS:82") ~= nil
@@ -93,5 +95,132 @@ function Browser:hide()
 	return self
 end
 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-- Buttons
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+function Browser:toggleViewMode()
+	if not self._viewMode then
+		self._viewMode = Button:new(self, {id = "_NS:82"})
+	end
+	return self._viewMode
+end
+
+function Browser:appearanceAndFiltering()
+	if not self._appearanceAndFiltering then
+		self._appearanceAndFiltering = Button:new(self, {id = "_NS:68"})
+	end
+	return self._appearanceAndFiltering
+end
+
+function Browser:toggleSearchBar()
+	if not self._toggleSearchBar then
+		self._toggleSearchBar = Button:new(self, {id = "_NS:92"})
+	end
+	return self._toggleSearchBar
+end
+
+Browser.ALL_CLIPS = 1
+Browser.HIDE_REJECTED = 2
+Browser.NO_RATINGS_OR_KEYWORDS = 3
+Browser.FAVORITES = 4
+Browser.REJECTED = 5
+Browser.UNUSED = 6
+
+function Browser:selectClipFiltering(filterType)
+	local ui = self:UI()
+	if ui then
+		button = axutils.childWithID(ui, "_NS:9")
+		if button then
+			local menu = button[1]
+			if not menu then
+				button:doPress()
+				menu = button[1]
+			end
+			local menuItem = menu[filterType]
+			if menuItem then
+				menuItem:doPress()
+			end
+		end
+	end
+	return self
+end
+
+function Browser:mainGroupUI()
+	return axutils.cache(self, "_mainGroup", 
+	function()
+		local ui = self:UI()
+		return ui and axutils.childWithID(ui, "_NS:344")
+	end)
+end
+
+function Browser:sidebarUI()
+	return axutils.cache(self, "_sidebar",
+	function()
+		local main = self:mainGroupUI()
+		return main and axutils.childWithID(ui, "_NS:9")
+	end)
+end
+
+function Browser:filmstrip()
+	if not self._filmstrip then
+		self._filmstrip = BrowserFilmstrip:new(self)
+	end
+	return self._filmstrip
+end
+
+function Browser:list()
+	if not self._list then
+		self._list = BrowserList:new(self)
+	end
+	return self._list
+end
+
+function Browser:isListView()
+	return self:list():isShowing()
+end
+
+function Browser:isFilmstripView()
+	return self:filmstrip():isShowing()
+end
+
+function Browser:selectedClipsUI()
+	if self:isListView() then
+		return self:list():selectedClipsUI()
+	elseif self:isFilmstripView() then
+		return self:filmstrip():selectedClipsUI()
+	else
+		return nil
+	end
+end
+
+function Browser:showClip(clipUI)
+	if self:isListView() then
+		self:list():showClip(clipUI)
+	else
+		self:filmstrip():showClip(clipUI)
+	end
+	return self
+end
+
+function Browser:selectClip(clipUI)
+	if self:isListView() then
+		self:list():selectClip(clipUI)
+	else
+		self:filmstrip():selectClip(clipUI)
+	end
+	return self
+end
+
+function Browser:selectClipAt(index)
+	if self:isListView() then
+		self:list():selectClipAt(index)
+	else
+		self:filmstrip():selectClipAt(index)
+	end
+	return self
+end
 
 return Browser
