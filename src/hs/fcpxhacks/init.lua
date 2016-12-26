@@ -162,9 +162,9 @@ end
 
 local fcp 						= require("hs.finalcutpro")
 
-local semver					= require("hs.fcpxhacks.modules.semver.semver")
 local dialog					= require("hs.fcpxhacks.modules.dialog")
 local i18n						= require("hs.fcpxhacks.modules.i18n")
+local semver					= require("hs.fcpxhacks.modules.semver.semver")
 local tools						= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
@@ -207,15 +207,74 @@ function mod.init()
 	-- Check All The Required Files Exist:
 	--------------------------------------------------------------------------------
 	local requiredFiles = {
+		--------------------------------------------------------------------------------
+		-- hs.bench:
+		--------------------------------------------------------------------------------
+		"hs/bench/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.just:
+		--------------------------------------------------------------------------------
+		"hs/just/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.plist:
+		--------------------------------------------------------------------------------
+		"hs/plist/init.lua",
+		"hs/plist/plistParse.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.finalcutpro:
+		--------------------------------------------------------------------------------
+		"hs/finalcutpro/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs._asm.axuielement:
+		--------------------------------------------------------------------------------
+		"hs/_asm/axuielement/init.lua",
+		"hs/_asm/axuielement/internal.so",
+		"hs/_asm/axuielement/internal.so.dSYM",
+
+		--------------------------------------------------------------------------------
+		-- hs._asm.touchbar:
+		--------------------------------------------------------------------------------
+		"hs/_asm/touchbar/init.lua",
+		"hs/_asm/touchbar/internal.so",
+		"hs/_asm/touchbar/internal.so.dSYM",
+		"hs/_asm/touchbar/supported.so",
+		"hs/_asm/touchbar/supported.so.dSYM",
+
+		--------------------------------------------------------------------------------
+		-- hs.fcpxhacks:
+		--------------------------------------------------------------------------------
 		"hs/fcpxhacks/init.lua",
+
 		"hs/fcpxhacks/assets/fcpxhacks.icns",
 		"hs/fcpxhacks/assets/fcpxhacks.png",
+
+		"hs/fcpxhacks/languages/en.lua",
+
 		"hs/fcpxhacks/modules/clipboard.lua",
 		"hs/fcpxhacks/modules/dialog.lua",
 		"hs/fcpxhacks/modules/fcpx10-2-3.lua",
 		"hs/fcpxhacks/modules/fcpx10-3.lua",
+		"hs/fcpxhacks/modules/hacksconsole.lua",
+		"hs/fcpxhacks/modules/hackshud.lua",
 		"hs/fcpxhacks/modules/protect.lua",
 		"hs/fcpxhacks/modules/tools.lua",
+
+		"hs/fcpxhacks/modules/i18n/init.lua",
+		"hs/fcpxhacks/modules/i18n/interpolate.lua",
+		"hs/fcpxhacks/modules/i18n/plural.lua",
+		"hs/fcpxhacks/modules/i18n/variants.lua",
+		"hs/fcpxhacks/modules/i18n/version.lua",
+
+		"hs/fcpxhacks/modules/semver/semver.lua",
+
+		"hs/fcpxhacks/modules/slaxml/init.lua",
+		"hs/fcpxhacks/modules/slaxml/slaxdom.lua",
+		"hs/fcpxhacks/modules/slaxml/slaxml.lua",
+
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommandGroups.plist",
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
 		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
@@ -226,6 +285,7 @@ function mod.init()
 		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
 		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
 		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
+
 		"hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist",
 		"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
 		"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
@@ -246,6 +306,7 @@ function mod.init()
 		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
 		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
 		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
+
 		"hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist",
 		"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
 		"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",

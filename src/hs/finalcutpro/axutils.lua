@@ -86,7 +86,7 @@ end
 --- * source	- the table containing the cache
 --- * key		- the key the value is cached under
 --- * finderFn	- the function which will return the element if not found.
---- * varifyFn  - (optional) a function which will check the cached element to verify it is still valid.
+--- * verifyFn  - (optional) a function which will check the cached element to verify it is still valid.
 --- Returns:
 --- The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
