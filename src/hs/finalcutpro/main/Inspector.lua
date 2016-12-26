@@ -8,7 +8,7 @@ local _bench							= require("hs.bench")
 
 local Inspector = {}
 
-function Inspector.isInspector(element)
+function Inspector.matches(element)
 	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
 		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
 end
@@ -40,21 +40,21 @@ function Inspector:UI()
 		local ui = parent:rightGroupUI()
 		if ui then
 			-- it's in the right panel (full-height)
-			if Inspector.isInspector(ui) then
+			if Inspector.matches(ui) then
 				return ui
 			end
 		else
 			-- it's in the top-left panel (half-height)
 			local top = parent:topGroupUI()
 			for i,child in ipairs(top) do
-				if Inspector.isInspector(child) then
+				if Inspector.matches(child) then
 					return child
 				end
 			end
 		end
 		return nil
 	end,
-	function(cachedElement) return Inspector.isInspector(cachedElement) end)
+	Inspector.matches)
 end
 
 function Inspector:isShowing()

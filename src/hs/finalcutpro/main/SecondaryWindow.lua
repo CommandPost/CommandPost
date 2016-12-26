@@ -6,11 +6,15 @@ local just							= require("hs.just")
 
 local Button						= require("hs.finalcutpro.ui.Button")
 
-local Browser						= require("hs.finalcutpro.main.Browser")
-local Viewer						= require("hs.finalcutpro.main.Viewer")
-local Timeline						= require("hs.finalcutpro.main.Timeline")
-
 local SecondaryWindow = {}
+
+function SecondaryWindow.matches(element)
+	if element and element:attributeValue("AXSubrole") == "AXUnknown" then
+		local children = element:attributeValue("AXChildren")
+		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
+	end
+	return false
+end
 
 function SecondaryWindow:new(app)
 	o = {
@@ -33,28 +37,25 @@ end
 
 function SecondaryWindow:UI()
 	return axutils.cache(self, "_ui", function()
-		local ui = self:app():UI():mainWindow()
-		if not self:_isSecondaryWindow(ui) then
-			local windowsUI = self:app():windowsUI()
-			ui = windowsUI and self:_findWindowUI(windowsUI)
+		local ui = self:app():UI()
+		if ui then
+			if SecondaryWindow.matches(ui:mainWindow()) then
+				return ui:mainWindow()
+			else
+				local windowsUI = self:app():windowsUI()
+				return windowsUI and self:_findWindowUI(windowsUI)
+			end
 		end
-		return ui
-	end)
+		return nil
+	end,
+	SecondaryWindow.matches)
 end
 
 function SecondaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
-		if self:_isSecondaryWindow(w) then	return w end
+		if SecondaryWindow.matches(w) then return w end
 	end
 	return nil
-end
-
-function SecondaryWindow:_isSecondaryWindow(w)
-	if w and w:attributeValue("AXSubrole") == "AXUnknown" then
-		local children = w:attributeValue("AXChildren")
-		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
-	end
-	return false
 end
 
 function SecondaryWindow:isFullScreen()
@@ -97,26 +98,6 @@ function SecondaryWindow:viewerGroupUI()
 	return self:rootGroupUI()
 end
 
-function SecondaryWindow:viewer()
-	if not self._viewer then
-		self._viewer = Viewer:new(self, false, true)
-	end
-	return self._viewer
-end
-
------------------------------------------------------------------------
------------------------------------------------------------------------
---- EVENT VIEWER
------------------------------------------------------------------------
------------------------------------------------------------------------
-
-function SecondaryWindow:eventViewer()
-	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true, true)
-	end
-	return self._eventViewer
-end
-
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- TIMELINE UI
@@ -133,13 +114,6 @@ function SecondaryWindow:timelineGroupUI()
 	end)
 end
 
-function SecondaryWindow:timeline()
-	if not self._timeline then
-		self._timeline = Timeline:new(self, true)
-	end
-	return self._timeline
-end
-
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 -- BROWSER
@@ -147,13 +121,6 @@ end
 -----------------------------------------------------------------------
 function SecondaryWindow:browserGroupUI()
 	return self:rootGroupUI()
-end
-
-function SecondaryWindow:browser()
-	if not self._browser then
-		self._browser = Browser:new(self, true)
-	end
-	return self._browser
 end
 
 return SecondaryWindow

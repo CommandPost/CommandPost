@@ -17,10 +17,11 @@ local hacksconsole = {}
 
 local chooser									= require("hs.chooser")
 local drawing 									= require("hs.drawing")
-local settings									= require("hs.settings")
 local fnutils 									= require("hs.fnutils")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
+local screen									= require("hs.screen")
+local settings									= require("hs.settings")
 local timer										= require("hs.timer")
 
 local ax 										= require("hs._asm.axuielement")
@@ -30,6 +31,7 @@ hacksconsole.hacksChooser						= nil 		-- the actual hs.chooser
 hacksconsole.active 							= false		-- is the Hacks Console Active?
 hacksconsole.chooserChoices						= nil		-- Choices Table
 hacksconsole.mode 								= "normal"	-- normal, remove, restore
+hacksconsole.reduceTransparency					= false
 
 --------------------------------------------------------------------------------
 -- LOAD HACKS CONSOLE:
@@ -40,10 +42,22 @@ function hacksconsole.new()
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
 	hacksconsole.hacksChooser = chooser.new(hacksconsole.completionAction):bgDark(true)
-											         				 	  :fgColor({alpha = 1, blue = 0.98, green = 0.98, red = 1.0})
-											         					  :subTextColor({alpha = 1, blue = 0.98, green = 0.98, red = 1.0})
 											           				 	  :rightClickCallback(hacksconsole.rightClickAction)
 											        				 	  :choices(hacksconsole.choices)
+
+	--------------------------------------------------------------------------------
+	-- Allow for Reduce Transparency:
+	--------------------------------------------------------------------------------
+	local reduceTransparency = screen.accessibilitySettings()["ReduceTransparency"]
+	hacksconsole.reduceTransparency = reduceTransparency
+	if reduceTransparency then
+		hacksconsole.hacksChooser:fgColor(nil)
+								 :subTextColor(nil)
+	else
+		hacksconsole.hacksChooser:fgColor(drawing.color.x11.snow)
+								 :subTextColor(drawing.color.x11.snow)
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running, lets preemptively refresh the choices:
@@ -63,6 +77,14 @@ end
 -- SHOW HACKS CONSOLE:
 --------------------------------------------------------------------------------
 function hacksconsole.show()
+
+	--------------------------------------------------------------------------------
+	-- Reload Console if Reduce Transparency
+	--------------------------------------------------------------------------------
+	local reduceTransparency = screen.accessibilitySettings()["ReduceTransparency"]
+	if reduceTransparency ~= hacksconsole.reduceTransparency then
+		hacksconsole.new()
+	end
 
 	--------------------------------------------------------------------------------
 	-- The Hacks Console always loads in 'normal' mode:
