@@ -251,9 +251,12 @@ function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 
 end
 
+--------------------------------------------------------------------------------
+-- DISPLAY ALERT NOTIFICATION:
+--------------------------------------------------------------------------------
 function dialog.displayNotification(whatMessage)
 	alert.closeAll(0)
-	alert.show(whatMessage)
+	alert.show(whatMessage, { textStyle = { paragraphStyle = { alignment = "center" } } })
 end
 
 --------------------------------------------------------------------------------
