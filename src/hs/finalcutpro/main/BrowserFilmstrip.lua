@@ -77,7 +77,7 @@ function Filmstrip:clipsUI()
 					elseif aFrame.y == bFrame.y then
 						if aFrame.x < bFrame.x then -- a is left of b
 							return true
-						elseif aFrame.x == bFrame.y 
+						elseif aFrame.x == bFrame.x 
 						   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
 							return true
 						end
