@@ -180,6 +180,8 @@ mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
 mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
 mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
 
+mod.installedLanguages							= {}											-- Table of Installed Language Files
+
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
@@ -209,11 +211,28 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	local languagePath = "hs/fcpxhacks/languages/"
 	for file in fs.dir(languagePath) do
-		if file ~= "." and file ~= ".." then
-			i18n.loadFile(languagePath .. file)
+		if file:sub(-4) == ".lua" then
+			local languageFile = io.open(hs.configdir .. "/" .. languagePath .. file, "r")
+			if languageFile ~= nil then
+				local languageFileData = languageFile:read("*all")
+				if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
+					local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
+					local languageID = string.sub(file, 1, -5)
+					mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
+					i18n.loadFile(languagePath .. file)
+				end
+				languageFile:close()
+			end
 		end
 	end
-	i18n.setLocale(fcp.currentLanguage())
+	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
+	local userLocale = nil
+	if settings.get("fcpxHacks.language") == nil then
+		userLocale = tools.userLocale()
+	else
+		userLocale = settings.get("fcpxHacks.language")
+	end
+	i18n.setLocale(userLocale)
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -513,7 +532,6 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-
 	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") " .. i18n("hasLoaded"))
 
 	--------------------------------------------------------------------------------
@@ -1744,6 +1762,33 @@ end
 		if enableHacksShortcutsInFinalCutPro then displayShortcutText = i18n("openCommandEditor") end
 
 		--------------------------------------------------------------------------------
+		-- FCPX Hacks Languages:
+		--------------------------------------------------------------------------------
+		local settingsLanguage = {}
+
+		local userLocale = nil
+		if settings.get("fcpxHacks.language") == nil then
+			userLocale = tools.userLocale()
+		else
+			userLocale = settings.get("fcpxHacks.language")
+		end
+
+		local basicUserLocale = nil
+		if string.find(userLocale, "_") ~= nil then
+			basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+		else
+			basicUserLocale = userLocale
+		end
+
+		for i=1, #mod.installedLanguages do
+			settingsLanguage[#settingsLanguage + 1] = { title = mod.installedLanguages[i]["language"], fn = function()
+				settings.set("fcpxHacks.language", mod.installedLanguages[i]["id"])
+				i18n.setLocale(mod.installedLanguages[i]["id"])
+				refreshMenuBar()
+			end, checked = (userLocale == mod.installedLanguages[i]["id"] or basicUserLocale == mod.installedLanguages[i]["id"]), }
+		end
+
+		--------------------------------------------------------------------------------
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
 		local settingsShapeMenuTable = {
@@ -1759,7 +1804,6 @@ end
 		}
 		local settingsHammerspoonSettings = {
 			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
-			{ title = "-" },
 			{ title = "-" },
 			{ title = i18n("showDockIcon"),																fn = toggleHammerspoonDockIcon, 									checked = hammerspoonDockIcon		},
 			{ title = i18n("showMenuIcon"), 															fn = toggleHammerspoonMenuIcon, 									checked = hammerspoonMenuIcon		},
@@ -1788,7 +1832,17 @@ end
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
+		local menuLanguage = {
+			{ title = i18n("german"), 																	fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
+			{ title = i18n("english"), 																	fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
+			{ title = i18n("spanish"), 																	fn = function() changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
+			{ title = i18n("french"), 																	fn = function() changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
+			{ title = i18n("japanese"), 																fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
+			{ title = i18n("chineseChina"), 															fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
+		}
 		local settingsMenuTable = {
+			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
+			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
 			{ title = "-" },
 			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
@@ -1798,7 +1852,6 @@ end
 			{ title = "-" },
 			{ title = i18n("highlightPlayheadColour"), 													menu = settingsColourMenuTable},
 			{ title = i18n("highlightPlayheadShape"), 													menu = settingsShapeMenuTable},
-			{ title = "-" },
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
@@ -1852,14 +1905,6 @@ end
 			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
-		local menuLanguage = {
-			{ title = i18n("german"), 																	fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
-			{ title = i18n("english"), 																	fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
-			{ title = i18n("spanish"), 																	fn = function() changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
-			{ title = i18n("french"), 																	fn = function() changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
-			{ title = i18n("japanese"), 																fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
-			{ title = i18n("chineseChina"), 															fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
-		}
 		local menuTable = {
 			{ title = i18n("open") .. " Final Cut Pro", 												fn = fcp.launch },
 			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
@@ -1903,7 +1948,6 @@ end
 			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
 			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
 			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
-			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
 			{ title = i18n("options"),																	menu = toolsSettings },
 			{ title = "-" },
@@ -3808,8 +3852,6 @@ end
 		-- Change FCPX Hacks Language:
 		--------------------------------------------------------------------------------
 		fcp.currentLanguage(true, language)
-		i18n.setLocale(language)
-		debugMessage("Language Changed to: " .. language)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:

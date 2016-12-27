@@ -19,23 +19,31 @@ local alert										= require("hs.alert")
 local console									= require("hs.console")
 local fs										= require("hs.fs")
 local osascript									= require("hs.osascript")
+local settings									= require("hs.settings")
 local screen									= require("hs.screen")
 local sharing									= require("hs.sharing")
 
 local fcp										= require("hs.finalcutpro")
 
 local i18n										= require("hs.fcpxhacks.modules.i18n")
+local tools										= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
 --------------------------------------------------------------------------------
 local languagePath = "hs/fcpxhacks/languages/"
 for file in fs.dir(languagePath) do
-	if file ~= "." and file ~= ".." then
+	if file:sub(-4) == ".lua" then
 		i18n.loadFile(languagePath .. file)
 	end
 end
-i18n.setLocale(fcp.currentLanguage())
+local userLocale = nil
+if settings.get("fcpxHacks.language") == nil then
+	userLocale = tools.userLocale()
+else
+	userLocale = settings.get("fcpxHacks.language")
+end
+i18n.setLocale(userLocale)
 
 --------------------------------------------------------------------------------
 -- COMMON ERROR MESSAGES:
@@ -153,7 +161,7 @@ function dialog.displayAlertMessage(whatMessage)
 		tell me to activate
 		display dialog whatMessage buttons {okButton} with icon stop
 	]]
-	osascript.applescript(appleScriptA .. appleScriptB)
+	osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
 end
 

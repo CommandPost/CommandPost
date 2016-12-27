@@ -1,3 +1,4 @@
+-- LANGUAGE: German
 return {
 	de = {
     	openFinalCutPro 			=			"Öffnen Sie Final Cut Pro",

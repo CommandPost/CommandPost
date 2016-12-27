@@ -164,4 +164,12 @@ function tools.cleanupButtonText(value)
 
 end
 
+--------------------------------------------------------------------------------
+-- GET USER LOCALE:
+--------------------------------------------------------------------------------
+function tools.userLocale()
+	local a, userLocale = osascript.applescript("return user locale of (get system info)")
+	return userLocale
+end
+
 return tools

@@ -194,19 +194,27 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Setup i18n Languages:
 	--------------------------------------------------------------------------------
-	local fcpLanguage = fcp.currentLanguage()
 	local languagePath = "hs/fcpxhacks/languages/"
 	for file in fs.dir(languagePath) do
-		if file ~= "." and file ~= ".." then
+		if file:sub(-4) == ".lua" then
 			i18n.loadFile(languagePath .. file)
 		end
 	end
-	i18n.setLocale(fcpLanguage)
+	local userLocale = nil
+	if settings.get("fcpxHacks.language") == nil then
+		userLocale = tools.userLocale()
+	else
+		userLocale = settings.get("fcpxHacks.language")
+	end
+	i18n.setLocale(userLocale)
 
 	--------------------------------------------------------------------------------
 	-- Check All The Required Files Exist:
 	--------------------------------------------------------------------------------
 	local requiredFiles = {
+
+		-- NOTE: Only checking for a few files otherwise it slows down startup too much.
+
 		--------------------------------------------------------------------------------
 		-- hs.bench:
 		--------------------------------------------------------------------------------
@@ -221,7 +229,7 @@ function mod.init()
 		-- hs.plist:
 		--------------------------------------------------------------------------------
 		"hs/plist/init.lua",
-		"hs/plist/plistParse.lua",
+		--"hs/plist/plistParse.lua",
 
 		--------------------------------------------------------------------------------
 		-- hs.finalcutpro:
@@ -232,17 +240,17 @@ function mod.init()
 		-- hs._asm.axuielement:
 		--------------------------------------------------------------------------------
 		"hs/_asm/axuielement/init.lua",
-		"hs/_asm/axuielement/internal.so",
-		"hs/_asm/axuielement/internal.so.dSYM",
+		--"hs/_asm/axuielement/internal.so",
+		--"hs/_asm/axuielement/internal.so.dSYM",
 
 		--------------------------------------------------------------------------------
 		-- hs._asm.touchbar:
 		--------------------------------------------------------------------------------
 		"hs/_asm/touchbar/init.lua",
-		"hs/_asm/touchbar/internal.so",
-		"hs/_asm/touchbar/internal.so.dSYM",
-		"hs/_asm/touchbar/supported.so",
-		"hs/_asm/touchbar/supported.so.dSYM",
+		--"hs/_asm/touchbar/internal.so",
+		--"hs/_asm/touchbar/internal.so.dSYM",
+		--"hs/_asm/touchbar/supported.so",
+		--"hs/_asm/touchbar/supported.so.dSYM",
 
 		--------------------------------------------------------------------------------
 		-- hs.fcpxhacks:
@@ -250,83 +258,84 @@ function mod.init()
 		"hs/fcpxhacks/init.lua",
 
 		"hs/fcpxhacks/assets/fcpxhacks.icns",
-		"hs/fcpxhacks/assets/fcpxhacks.png",
+		--"hs/fcpxhacks/assets/fcpxhacks.png",
 
 		"hs/fcpxhacks/languages/en.lua",
 
 		"hs/fcpxhacks/modules/clipboard.lua",
-		"hs/fcpxhacks/modules/dialog.lua",
-		"hs/fcpxhacks/modules/fcpx10-2-3.lua",
-		"hs/fcpxhacks/modules/fcpx10-3.lua",
-		"hs/fcpxhacks/modules/hacksconsole.lua",
-		"hs/fcpxhacks/modules/hackshud.lua",
-		"hs/fcpxhacks/modules/protect.lua",
-		"hs/fcpxhacks/modules/tools.lua",
+		--"hs/fcpxhacks/modules/dialog.lua",
+		--"hs/fcpxhacks/modules/fcpx10-2-3.lua",
+		--"hs/fcpxhacks/modules/fcpx10-3.lua",
+		--"hs/fcpxhacks/modules/hacksconsole.lua",
+		--"hs/fcpxhacks/modules/hackshud.lua",
+		--"hs/fcpxhacks/modules/protect.lua",
+		--"hs/fcpxhacks/modules/tools.lua",
 
 		"hs/fcpxhacks/modules/i18n/init.lua",
-		"hs/fcpxhacks/modules/i18n/interpolate.lua",
-		"hs/fcpxhacks/modules/i18n/plural.lua",
-		"hs/fcpxhacks/modules/i18n/variants.lua",
-		"hs/fcpxhacks/modules/i18n/version.lua",
+		--"hs/fcpxhacks/modules/i18n/interpolate.lua",
+		--"hs/fcpxhacks/modules/i18n/plural.lua",
+		--"hs/fcpxhacks/modules/i18n/variants.lua",
+		--"hs/fcpxhacks/modules/i18n/version.lua",
 
 		"hs/fcpxhacks/modules/semver/semver.lua",
 
 		"hs/fcpxhacks/modules/slaxml/init.lua",
-		"hs/fcpxhacks/modules/slaxml/slaxdom.lua",
-		"hs/fcpxhacks/modules/slaxml/slaxml.lua",
+		--"hs/fcpxhacks/modules/slaxml/slaxdom.lua",
+		--"hs/fcpxhacks/modules/slaxml/slaxml.lua",
 
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-2-3/old/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-2-3/old/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-2-3/old/NSProCommandGroups.plist",
+		--"hs/fcpxhacks/plist/10-2-3/old/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
 
 		"hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/es.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/es.lproj/Default.commandset",
 		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
 
 		"hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/fr.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/fr.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandDescriptions.strings",
 		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings" }
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings"
+		}
 	local checkFailed = false
 	for i=1, #requiredFiles do
 		if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
@@ -342,15 +351,16 @@ function mod.init()
 	local requiredHammerspoonVersion 		= semver("0.9.51")
 	local hammerspoonVersion 				= semver(hs.processInfo["version"])
 	if hammerspoonVersion < requiredHammerspoonVersion then
-		dialog.displayAlertMessage("FCPX Hacks requires Hammerspoon " .. tostring(requiredHammerspoonVersion) .. " or later.\n\nPlease download the latest version of Hammerspoon and try again.")
+		dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
 		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Check Versions:
+	-- Check Versions & Language:
 	--------------------------------------------------------------------------------
-	local fcpVersion = fcp.version()
-	local osVersion = tools.macOSVersion()
+	local fcpVersion 	= fcp.version()
+	local osVersion 	= tools.macOSVersion()
+	local fcpLanguage	= fcp.currentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:

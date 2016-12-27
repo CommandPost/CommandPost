@@ -1,3 +1,4 @@
+-- LANGUAGE: English
 return {
 	en = {
 
@@ -102,6 +103,8 @@ return {
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
+			wrongHammerspoonVersionError		=			"FCPX Hacks requires Hammerspoon %{version} or later.\n\nPlease download the latest version of Hammerspoon and try again.",
+
 			noValidFinalCutPro 					= 			"FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.",
 			missingFiles						=			"FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.",
 
@@ -309,6 +312,7 @@ return {
 			touchBarLocation					=			"Touch Bar Location",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
 			highlightPlayheadShape				=			"Highlight Playhead Shape",
+			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
 			trachFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
 			provideFeedback						=			"Provide Feedback...",
