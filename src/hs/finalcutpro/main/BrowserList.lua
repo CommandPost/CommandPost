@@ -1,4 +1,5 @@
 local axutils							= require("hs.finalcutpro.axutils")
+local fnutils							= require("hs.fnutils")
 
 local Table								= require("hs.finalcutpro.ui.Table")
 
@@ -61,6 +62,14 @@ function List:content()
 		self._content = Table:new(self, "_NS:9")
 	end
 	return self._content
+end
+
+function List:clipsUI()
+	local rowsUI = self:content():rowsUI()
+	if rowsUI then
+		return axutils.childrenWith(rowsUI, "AXDisclosureLevel", 1)
+	end
+	return nil
 end
 
 function List:selectedClipsUI()

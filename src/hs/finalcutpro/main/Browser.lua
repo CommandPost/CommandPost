@@ -186,6 +186,16 @@ function Browser:isFilmstripView()
 	return self:filmstrip():isShowing()
 end
 
+function Browser:clipsUI()
+	if self:isListView() then
+		return self:list():clipsUI()
+	elseif self:isFilmstripView() then
+		return self:filmstrip():clipsUI()
+	else
+		return nil
+	end
+end
+
 function Browser:selectedClipsUI()
 	if self:isListView() then
 		return self:list():selectedClipsUI()

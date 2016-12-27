@@ -45,6 +45,11 @@ function Table:horizontalScrollBarUI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
+function Table:isFocused()
+	local ui = self:rowsUI()
+	return ui and axutils.childWith(ui, "AXFocused", true) ~= nil
+end
+
 -- Returns the list of rows in the table
 function Table:rowsUI()
 	local ui = self:outlineUI()
@@ -128,7 +133,7 @@ function Table:showRow(rowUI)
 			local scrollHeight = oFrame.h - vFrame.h
 			
 			local vValue = nil
-			if rowTop < top then
+			if rowTop < top or rowFrame.h > scrollHeight then
 				vValue = (rowTop-oFrame.y)/scrollHeight
 			else
 				vValue = 1.0 - (oFrame.y + oFrame.h - rowBottom)/scrollHeight
