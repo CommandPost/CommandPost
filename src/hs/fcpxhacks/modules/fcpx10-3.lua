@@ -9896,7 +9896,7 @@ function scrollingTimelineWatcher()
 				--------------------------------------------------------------------------------
 				-- Make sure the Command Editor is closed:
 				--------------------------------------------------------------------------------
-				if fcps.app():commandEditor():isHidden() and not hacksconsole.active then
+				if not fcp.app():commandEditor():isShowing() and not hacksconsole.active then
 
 					--------------------------------------------------------------------------------
 					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
