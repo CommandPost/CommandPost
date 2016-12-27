@@ -2205,6 +2205,10 @@ end
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
 			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+			if finalCutProEffectsTransitionsBrowserGroup == nil then
+				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateEffectsList().")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2246,6 +2250,10 @@ end
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
 					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+					if finalCutProEffectsTransitionsBrowserGroup == nil then
+						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateEffectsList().")
+						return "Failed"
+					end
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -2547,6 +2555,10 @@ end
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
 			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+			if finalCutProEffectsTransitionsBrowserGroup == nil then
+				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -2588,6 +2600,10 @@ end
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
 					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+					if finalCutProEffectsTransitionsBrowserGroup == nil then
+						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
+						return "Failed"
+					end
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -6004,7 +6020,7 @@ end
 				end
 			end
 		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel\n\nError occured in transitionsShortcut()..")
+			dialog.displayErrorMessage("Unable to activate Video Effects Panel\n\nError occured in transitionsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -6017,6 +6033,10 @@ end
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
 			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+			if finalCutProEffectsTransitionsBrowserGroup == nil then
+				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in transitionsShortcut().")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -6058,6 +6078,10 @@ end
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
 					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+					if finalCutProEffectsTransitionsBrowserGroup == nil then
+						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in transitionsShortcut().")
+						return "Failed"
+					end
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
@@ -6400,6 +6424,10 @@ end
 			-- Get Transitions Browser Group:
 			--------------------------------------------------------------------------------
 			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+			if finalCutProEffectsTransitionsBrowserGroup == nil then
+				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in effectsShortcut().")
+				return "Failed"
+			end
 
 			--------------------------------------------------------------------------------
 			-- Get Transitions Browser Split Group:
@@ -6441,6 +6469,10 @@ end
 				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
 					installedEffectsPopup:performAction("AXPress")
 					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
+					if finalCutProEffectsTransitionsBrowserGroup == nil then
+						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in effectsShortcut().")
+						return "Failed"
+					end
 					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
 					installedEffectsPopupMenuItem:performAction("AXPress")
 				end
