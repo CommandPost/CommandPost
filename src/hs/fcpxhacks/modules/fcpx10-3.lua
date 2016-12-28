@@ -7905,33 +7905,55 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Display Dialog to make sure the current path is acceptable:
-		--------------------------------------------------------------------------------
-		local howManyClips = #(browser:selectedClipsUI())
-		local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=howManyClips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-		if result == nil then return end
-		
-		--------------------------------------------------------------------------------
 		-- Check if we have any currently-selected clips:
 		--------------------------------------------------------------------------------
 		local selectedClips = browser:selectedClipsUI()
 		local failedExports = 0
 		
 		if selectedClips and #selectedClips > 0 then
+			-- Some clips are selected in the list, just export those
+			--------------------------------------------------------------------------------
+			-- Display Dialog to make sure the current path is acceptable:
+			--------------------------------------------------------------------------------
+			local howManyClips = #(browser:selectedClipsUI())
+			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=howManyClips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			if result == nil then return end
+		
 			failedExports = batchExportClips(browser, selectedClips)
+		elseif browser:sidebar():isShowing() then
+			-- Export all clips in all selected collections in the library sidebar.
+			--------------------------------------------------------------------------------
+			-- Display Dialog to make sure the current path is acceptable:
+			--------------------------------------------------------------------------------
+			local howManyClips = #(browser:selectedClipsUI())
+			local result = dialog.displayMessage(i18n("batchExportCheckPathSidebar", {path=lastSavePath}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			if result == nil then return end
+		
+			local sidebar = browser:sidebar()
+			local collections = sidebar:selectedRowsUI()
+			for i,collection in ipairs(collections) do
+				sidebar:selectRow(collection)
+
+				local clips = browser:clipsUI()
+				if clips and #clips > 0 then
+					failedExports = failedExports + batchExportClips(browser, clips)
+				end
+			end
 		else
-			-- TODO: Add the ability to select all clips inside selected event/libraries in the sidebar
+			-- No clips are selected, and the sidebar is not visible.
 			dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
 		end
 		
 		--------------------------------------------------------------------------------
 		-- Batch Export Complete:
 		--------------------------------------------------------------------------------
-		local completeMessage = i18n("batchExportComplete")
-		if failedExports ~= 0 then
-			completeMessage = completeMessage .. "\n\n" .. i18n("batchExportSkipped", {count=failedExports})
+		if failedExports >= 0 then
+			local completeMessage = i18n("batchExportComplete")
+			if failedExports > 0 then
+				completeMessage = completeMessage .. "\n\n" .. i18n("batchExportSkipped", {count=failedExports})
+			end
+			dialog.displayMessage(completeMessage, {i18n("done")})
 		end
-		dialog.displayMessage(completeMessage, {i18n("done")})
 	end
 	
 	function batchExportClips(browser, clips)
@@ -7944,7 +7966,7 @@ end
 			--------------------------------------------------------------------------------
 			if not keyStrokeFromPlist("ShareDefaultDestination") then
 				dialog.displayErrorMessage(i18n("batchExportNoShortcut"))
-				return "Failed"
+				return -1
 			end
 
 			--------------------------------------------------------------------------------
@@ -7953,7 +7975,7 @@ end
 			local exportDialog = fcp.app():exportDialog()
 			if not just.doUntil(function() return exportDialog:isShowing() end) then
 				dialog.displayErrorMessage("Failed to open the 'Export' window.")
-				return "Failed"
+				return -2
 			end
 
 			exportDialog:pressNext()
@@ -7964,7 +7986,7 @@ end
 			local saveSheet = exportDialog:saveSheet()
 			if not just.doUntil(function() return saveSheet:isShowing() end) then
 				dialog.displayErrorMessage("Failed to open the 'Save' window.")
-				return "Failed"
+				return -3
 			end
 			
 			saveSheet:pressSave()
