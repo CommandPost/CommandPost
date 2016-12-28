@@ -28,8 +28,8 @@ local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local App = {}
 
 --- Constants
-App.BUNDLE_ID 							= "com.apple.FinalCut"
-App.PASTEBOARD_UTI 						= "com.apple.flexo.proFFPasteboardUTI"
+App.BUNDLE_ID 									= "com.apple.FinalCut"
+App.PASTEBOARD_UTI 								= "com.apple.flexo.proFFPasteboardUTI"
 
 --- hs.finalcutpro.App:new() -> App
 --- Function
@@ -155,7 +155,7 @@ function App:timeline()
 		self._timeline = Timeline:new(self)
 	end
 	return self._timeline
-end	
+end
 
 
 --- hs.finalcutpro.App:viewer() -> Viewer
@@ -172,7 +172,7 @@ function App:viewer()
 		self._viewer = Viewer:new(self, false)
 	end
 	return self._viewer
-end	
+end
 
 --- hs.finalcutpro.App:eventViewer() -> Viewer
 --- Function
@@ -188,7 +188,7 @@ function App:eventViewer()
 		self._eventViewer = Viewer:new(self, true)
 	end
 	return self._eventViewer
-end	
+end
 
 --- hs.finalcutpro.App:browser() -> Browser
 --- Function
@@ -217,7 +217,7 @@ end
 ---  * the Inspector
 function App:inspector()
 	return self:primaryWindow():inspector()
-end	
+end
 
 --- hs.finalcutpro.App:colorBoard() -> ColorBoard
 --- Function
@@ -230,11 +230,11 @@ end
 ---  * the ColorBoard
 function App:colorBoard()
 	return self:primaryWindow():colorBoard()
-end	
+end
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
--- 
+--
 -- DEBUG FUNCTIONS
 --
 ----------------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ function App:_listWindows()
 	for i,w in ipairs(windows) do
 		debugMessage(string.format("%7d", i)..": "..self:_describeWindow(w))
 	end
-	
+
 	debugMessage("")
 	debugMessage("   Main: "..self:_describeWindow(self:UI():mainWindow()))
 	debugMessage("Focused: "..self:_describeWindow(self:UI():focusedWindow()))

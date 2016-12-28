@@ -60,7 +60,15 @@ end
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
 ---
-function finalcutpro.currentLanguage(forceReload)
+function finalcutpro.currentLanguage(forceReload, forceLanguage)
+
+	--------------------------------------------------------------------------------
+	-- Force a Language:
+	--------------------------------------------------------------------------------
+	if forceReload and forceLanguage ~= nil then
+		finalcutpro.cachedCurrentLanguage = forceLanguage
+		return finalcutpro.cachedCurrentLanguage
+	end
 
 	--------------------------------------------------------------------------------
 	-- Caching:
@@ -524,6 +532,10 @@ end
 ---
 function finalcutpro.getActiveCommandSetPath()
 	local result = finalcutpro.getPreference("Active Command Set") or nil
+	if result == nil then
+		-- In the unlikely scenario that this is the first time FCPX has been run:
+		return "/Applications/Final Cut Pro.app/Contents/Resources/" .. finalcutpro.currentLanguage() .. ".lproj/Default.commandset"
+	end
 	return result
 end
 

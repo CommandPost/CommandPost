@@ -7,7 +7,7 @@ local windowfilter					= require("hs.window.filter")
 
 local CommandEditor = {}
 
-CommandEditor.GROUP						= "_NS:9"
+CommandEditor.GROUP					= "_NS:9"
 
 function CommandEditor.matches(element)
 	if element then
@@ -17,7 +17,6 @@ function CommandEditor.matches(element)
 	end
 	return false
 end
-
 
 function CommandEditor:new(app)
 	o = {_app = app}
@@ -107,7 +106,7 @@ function CommandEditor:watch(events)
 	end
 	self._watchers[#(self._watchers)+1] = {show = events.show, hide = events.hide}
 	local id = {id=#(self._watchers)}
-	
+
 	if startWatching then
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro Window Filter:
@@ -125,7 +124,7 @@ function CommandEditor:watch(events)
 				self.windowID = window:id()
 				debugMessage("Command Editor Opened.")
 				--------------------------------------------------------------------------------
-				
+
 				for i,watcher in ipairs(self._watchers) do
 					if watcher.show then
 						watcher.show(self)
@@ -145,7 +144,7 @@ function CommandEditor:watch(events)
 			if (window:id() == self.windowID) then
 				self.windowID = nil
 				debugMessage("Command Editor Closed.")
-				
+
 				for i,watcher in ipairs(self._watchers) do
 					if watcher.hide then
 						watcher.hide(self)
@@ -155,7 +154,7 @@ function CommandEditor:watch(events)
 		end), true)
 		self.windowFilter = filter
 	end
-	
+
 	return id
 end
 

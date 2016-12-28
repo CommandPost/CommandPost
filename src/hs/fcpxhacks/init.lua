@@ -160,8 +160,11 @@ end
 -- CUSTOM EXTENSIONS:
 --------------------------------------------------------------------------------
 
-local dialog					= require("hs.fcpxhacks.modules.dialog")
 local fcp 						= require("hs.finalcutpro")
+
+local dialog					= require("hs.fcpxhacks.modules.dialog")
+local i18n						= require("hs.fcpxhacks.modules.i18n")
+local semver					= require("hs.fcpxhacks.modules.semver.semver")
 local tools						= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
@@ -189,93 +192,184 @@ function mod.init()
 	writeToConsole("-----------------------------", true)
 
 	--------------------------------------------------------------------------------
+	-- Setup i18n Languages:
+	--------------------------------------------------------------------------------
+	local languagePath = "hs/fcpxhacks/languages/"
+	for file in fs.dir(languagePath) do
+		if file:sub(-4) == ".lua" then
+			i18n.loadFile(languagePath .. file)
+		end
+	end
+	local userLocale = nil
+	if settings.get("fcpxHacks.language") == nil then
+		userLocale = tools.userLocale()
+	else
+		userLocale = settings.get("fcpxHacks.language")
+	end
+	i18n.setLocale(userLocale)
+
+	--------------------------------------------------------------------------------
 	-- Check All The Required Files Exist:
 	--------------------------------------------------------------------------------
 	local requiredFiles = {
+
+		-- NOTE: Only checking for a few files otherwise it slows down startup too much.
+
+		--------------------------------------------------------------------------------
+		-- hs.bench:
+		--------------------------------------------------------------------------------
+		"hs/bench/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.just:
+		--------------------------------------------------------------------------------
+		"hs/just/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.plist:
+		--------------------------------------------------------------------------------
+		"hs/plist/init.lua",
+		--"hs/plist/plistParse.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs.finalcutpro:
+		--------------------------------------------------------------------------------
+		"hs/finalcutpro/init.lua",
+
+		--------------------------------------------------------------------------------
+		-- hs._asm.axuielement:
+		--------------------------------------------------------------------------------
+		"hs/_asm/axuielement/init.lua",
+		--"hs/_asm/axuielement/internal.so",
+		--"hs/_asm/axuielement/internal.so.dSYM",
+
+		--------------------------------------------------------------------------------
+		-- hs._asm.touchbar:
+		--------------------------------------------------------------------------------
+		"hs/_asm/touchbar/init.lua",
+		--"hs/_asm/touchbar/internal.so",
+		--"hs/_asm/touchbar/internal.so.dSYM",
+		--"hs/_asm/touchbar/supported.so",
+		--"hs/_asm/touchbar/supported.so.dSYM",
+
+		--------------------------------------------------------------------------------
+		-- hs.fcpxhacks:
+		--------------------------------------------------------------------------------
 		"hs/fcpxhacks/init.lua",
+
 		"hs/fcpxhacks/assets/fcpxhacks.icns",
-		"hs/fcpxhacks/assets/fcpxhacks.png",
+		--"hs/fcpxhacks/assets/fcpxhacks.png",
+
+		"hs/fcpxhacks/languages/en.lua",
+
 		"hs/fcpxhacks/modules/clipboard.lua",
-		"hs/fcpxhacks/modules/dialog.lua",
-		"hs/fcpxhacks/modules/fcpx10-2-3.lua",
-		"hs/fcpxhacks/modules/fcpx10-3.lua",
-		"hs/fcpxhacks/modules/protect.lua",
-		"hs/fcpxhacks/modules/tools.lua",
+		--"hs/fcpxhacks/modules/dialog.lua",
+		--"hs/fcpxhacks/modules/fcpx10-2-3.lua",
+		--"hs/fcpxhacks/modules/fcpx10-3.lua",
+		--"hs/fcpxhacks/modules/hacksconsole.lua",
+		--"hs/fcpxhacks/modules/hackshud.lua",
+		--"hs/fcpxhacks/modules/protect.lua",
+		--"hs/fcpxhacks/modules/tools.lua",
+
+		"hs/fcpxhacks/modules/i18n/init.lua",
+		--"hs/fcpxhacks/modules/i18n/interpolate.lua",
+		--"hs/fcpxhacks/modules/i18n/plural.lua",
+		--"hs/fcpxhacks/modules/i18n/variants.lua",
+		--"hs/fcpxhacks/modules/i18n/version.lua",
+
+		"hs/fcpxhacks/modules/semver/semver.lua",
+
+		"hs/fcpxhacks/modules/slaxml/init.lua",
+		--"hs/fcpxhacks/modules/slaxml/slaxdom.lua",
+		--"hs/fcpxhacks/modules/slaxml/slaxml.lua",
+
 		"hs/fcpxhacks/plist/10-2-3/new/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-2-3/old/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-2-3/old/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-2-3/new/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-2-3/new/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-2-3/old/NSProCommandGroups.plist",
+		--"hs/fcpxhacks/plist/10-2-3/old/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-2-3/old/en.lproj/NSProCommandNames.strings",
+
 		"hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/es.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/de.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/es.lproj/Default.commandset",
 		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/es.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/fr.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/ja.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/old/zh_CN.lproj/NSProCommandNames.strings",
+
 		"hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist",
-		"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/fr.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/NSProCommands.plist",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/en.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/de.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/es.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/fr.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandDescriptions.strings",
 		"hs/fcpxhacks/plist/10-3/new/fr.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandNames.strings",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/Default.commandset",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandDescriptions.strings",
-		"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings" }
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/ja.lproj/NSProCommandNames.strings",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/Default.commandset",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandDescriptions.strings",
+		--"hs/fcpxhacks/plist/10-3/new/zh_CN.lproj/NSProCommandNames.strings"
+		}
 	local checkFailed = false
 	for i=1, #requiredFiles do
 		if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
 	end
 	if checkFailed then
-		writeToConsole("[FCPX Hacks] FATAL ERROR: Missing required files.")
-		dialog.displayAlertMessage("FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage(i18n("missingFiles"))
 		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Check Final Cut Pro Version:
+	-- Check Hammerspoon Version:
 	--------------------------------------------------------------------------------
-	local fcpVersion = fcp.version()
-	local osVersion = tools.macOSVersion()
-	local fcpLanguage = fcp.currentLanguage()
+	local requiredHammerspoonVersion 		= semver("0.9.51")
+	local hammerspoonVersion 				= semver(hs.processInfo["version"])
+	if hammerspoonVersion < requiredHammerspoonVersion then
+		dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
+		application.applicationsForBundleID(hsBundleID)[1]:kill()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Check Versions & Language:
+	--------------------------------------------------------------------------------
+	local fcpVersion 	= fcp.version()
+	local osVersion 	= tools.macOSVersion()
+	local fcpLanguage	= fcp.currentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
-												writeToConsole("Hammerspoon Version: 			" .. hs.processInfo["version"], true)
-	if osVersion ~= nil then 					writeToConsole("macOS Version: 					" .. tostring(osVersion), true) 					end
-	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: 			" .. tostring(fcpVersion), true)					end
-	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: 		" .. tostring(fcpLanguage), true)					end
-	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: 		" .. tostring(keycodes.currentLayout()), true) 		end
+												writeToConsole("Hammerspoon Version: 			" .. tostring(hammerspoonVersion), 			true)
+	if osVersion ~= nil then 					writeToConsole("macOS Version: 					" .. tostring(osVersion), 					true) end
+	if fcpVersion ~= nil then					writeToConsole("Final Cut Pro Version: 			" .. tostring(fcpVersion), 					true) end
+	if fcpLanguage ~= nil then 					writeToConsole("Final Cut Pro Language: 		" .. tostring(fcpLanguage), 				true) end
+	if keycodes.currentLayout() ~= nil then 	writeToConsole("Current Keyboard Layout: 		" .. tostring(keycodes.currentLayout()), 	true) end
 												writeToConsole("", true)
 
 	local validFinalCutProVersion = false
@@ -288,12 +382,12 @@ function mod.init()
 		require("hs.fcpxhacks.modules.fcpx10-3")
 	end
 	if not validFinalCutProVersion then
-		writeToConsole("[FCPX Hacks] FATAL ERROR: Could not find Final Cut Pro X.")
-		dialog.displayAlertMessage("FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.")
+		dialog.displayAlertMessage(i18n("noValidFinalCutPro"))
 		application.applicationsForBundleID(hsBundleID)[1]:kill()
 	end
 
 	return self
+
 end
 
 --------------------------------------------------------------------------------
