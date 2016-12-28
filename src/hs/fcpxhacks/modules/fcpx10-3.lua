@@ -7765,19 +7765,19 @@ end
 	function moveToPlayhead()
 
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
 		if enableClipboardHistory then clipboard.stopWatching() end
 
 		if not keyStrokeFromPlist("Cut") then
 			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occured in moveToPlayhead().")
-			return "Failed"
+			goto moveToPlayheadEnd
 		end
 
 		if not keyStrokeFromPlist("Paste") then
 			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occured in moveToPlayhead().")
-			return "Failed"
+			goto moveToPlayheadEnd
 		end
 
+		::moveToPlayheadEnd::
 		if enableClipboardHistory then
 			timer.usleep(1000000) -- Not sure why this is needed, but it is.
 			clipboard.startWatching()
