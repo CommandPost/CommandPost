@@ -162,7 +162,10 @@ function Table:showRow(rowUI)
 			else
 				vValue = 1.0 - (oFrame.y + oFrame.h - rowBottom)/scrollHeight
 			end
-			vScroll:setAttributeValue("AXValue", vValue)
+			local vScroll = self:verticalScrollBarUI()
+			if vScroll then
+				vScroll:setAttributeValue("AXValue", vValue)
+			end
 		end
 	end
 	return self
