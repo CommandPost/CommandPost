@@ -102,21 +102,26 @@ local windowfilter								= require("hs.window.filter")
 local ax 										= require("hs._asm.axuielement")
 local touchbar 									= require("hs._asm.touchbar")
 
---------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
---------------------------------------------------------------------------------
-
 local fcp										= require("hs.finalcutpro")
 local plist										= require("hs.plist")
 
-local clipboard									= require("hs.fcpxhacks.modules.clipboard")
+--------------------------------------------------------------------------------
+-- MODULES:
+--------------------------------------------------------------------------------
+
 local dialog									= require("hs.fcpxhacks.modules.dialog")
-local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
-local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local i18n										= require("hs.fcpxhacks.modules.i18n")
 local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local slaxml									= require("hs.fcpxhacks.modules.slaxml")
 local tools										= require("hs.fcpxhacks.modules.tools")
+
+--------------------------------------------------------------------------------
+-- PLUGINS:
+--------------------------------------------------------------------------------
+
+local clipboard									= require("hs.fcpxhacks.plugins.clipboard")
+local hacksconsole								= require("hs.fcpxhacks.plugins.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:

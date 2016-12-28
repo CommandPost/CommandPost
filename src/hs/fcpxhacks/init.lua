@@ -262,12 +262,13 @@ function mod.init()
 
 		"hs/fcpxhacks/languages/en.lua",
 
-		"hs/fcpxhacks/modules/clipboard.lua",
-		--"hs/fcpxhacks/modules/dialog.lua",
+		"hs/fcpxhacks/plugins/clipboard.lua",
+		--"hs/fcpxhacks/plugins/hacksconsole.lua",
+		--"hs/fcpxhacks/plugins/hackshud.lua",
+
+		"hs/fcpxhacks/modules/dialog.lua",
 		--"hs/fcpxhacks/modules/fcpx10-2-3.lua",
 		--"hs/fcpxhacks/modules/fcpx10-3.lua",
-		--"hs/fcpxhacks/modules/hacksconsole.lua",
-		--"hs/fcpxhacks/modules/hackshud.lua",
 		--"hs/fcpxhacks/modules/protect.lua",
 		--"hs/fcpxhacks/modules/tools.lua",
 
