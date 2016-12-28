@@ -21,6 +21,7 @@ local host										= require("hs.host")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
+local just										= require("hs.just")
 
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
@@ -92,9 +93,15 @@ end
 --------------------------------------------------------------------------------
 -- NINJA MOUSE CLICK:
 --------------------------------------------------------------------------------
-function tools.ninjaMouseClick(position)
+function tools.ninjaMouseClick(position, checkFn)
 		local originalMousePoint = mouse.getAbsolutePosition()
 		eventtap.leftClick(position)
+		if checkFn then
+			local result = just.doUntil(checkFn)
+			if not result then
+				debugMessage("Checking the ninja mouse click failed")
+			end
+		end
 		mouse.setAbsolutePosition(originalMousePoint)
 end
 

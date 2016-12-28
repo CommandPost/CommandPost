@@ -1,5 +1,7 @@
 local log							= require("hs.logger").new("Table")
 local inspect						= require("hs.inspect")
+local drawing						= require("hs.drawing")
+
 
 local axutils						= require("hs.finalcutpro.axutils")
 local tools							= require("hs.fcpxhacks.modules.tools")
@@ -188,8 +190,7 @@ function Table:selectRow(rowUI)
 	debugMessage("viewFrame: "..inspect(self:viewFrame()))
 	local mouseTarget = geometry.rect(rowUI[1]:frame()).center
 	debugMessage("ninja clicking "..inspect(mouseTarget))
-	tools.ninjaMouseClick(mouseTarget)
-	just.doUntil(function() 
+	tools.ninjaMouseClick(mouseTarget, function()
 		debugMessage("waiting for the row to be selected...")
 		local selected = self:selectedRowsUI()
 		return selected and #selected == 1 and selected[1] == rowUI
