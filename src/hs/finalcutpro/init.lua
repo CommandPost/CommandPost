@@ -632,7 +632,7 @@ end
 ---  * True if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
 ---
 function finalcutpro.launch()
-
+	debugMessage("finalcutpro.launch() called")
 	local result = nil
 
 	local fcpx = finalcutpro.application()
