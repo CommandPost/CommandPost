@@ -132,14 +132,23 @@ return {
 
 			touchBarError						=			"Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
+			item								= 
+			{
+				one								=			"item",
+				other							=			"items"
+			},
+
 			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.",
-			batchExportCheckPathOne				=			"Final Cut Pro will export the contents of the selected item using your default export settings to the following location:",
-			batchExportCheckPathTwo				=			"If you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.",
-			batchExportCheckPathThree			=			"Final Cut Pro will export the contents of the",
-			batchExportCheckPathFour			=			"selected items using your default export settings to the following location:",
+			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
+			batchExportCheckPath				=			"Final Cut Pro will export the %{count} selected %{item} using your default export settings to the following location:\n\n\t%{path}\n\nIf you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.",
+			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
+			batchExportNoShortcut				=			"Please assign the 'Export using Default Share Destination' to a shortcut key.",
 			batchExportComplete					=			"Batch Export is now complete.",
-			batchExportOneClipSkipped			=			"One clip was skipped as a file with the same name already existed.",
-			batchExportClipsSkipped				=			"clips were skipped as files with the same names already existed.",
+			batchExportSkipped					=
+			{
+				one								=			"One clip was skipped as a file with the same name already existed.",
+				other							=			"%{count} clips were skipped as files with the same names already existed."
+			},
 
 			activeCommandSetError				= 			"Something went wrong whilst attempting to read the Active Command Set.",
 			activeCommandSetResetError			=			"Failed to set the Active Command Set to the default value.",

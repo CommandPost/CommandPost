@@ -596,7 +596,7 @@ function defaultShortcutKeys()
 		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBatchExportFromBrowser 								= { characterString = keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
+		FCPXHackBatchExportFromBrowser 								= { characterString = keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExport() end, 									releasedFn = nil,														repeatFn = nil },
 		FCPXHackChangeBackupInterval 								= { characterString = keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackToggleTimecodeOverlays 								= { characterString = keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackToggleMovingMarkers 								= { characterString = keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
@@ -7881,15 +7881,15 @@ end
 	--------------------------------------------------------------------------------
 	-- BATCH EXPORT FROM BROWSER:
 	--------------------------------------------------------------------------------
-	function batchExportToCompressor()
+	function batchExport()
 		deleteAllHighlights()
 		
 		--------------------------------------------------------------------------------
 		-- Check that there's a default destination:
 		--------------------------------------------------------------------------------
 		if fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil) == nil then
-			dialog.displayMessage("It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.")
-			return
+			dialog.displayMessage(i18n("batchExportNoDestination"))
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
@@ -7900,19 +7900,15 @@ end
 		local browser = fcp.app():browser()
 		
 		if not browser:isShowing() then
-			dialog.displayErrorMessage("Please ensure that the browser is enabled before exporting.")
+			dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Display Dialog to make sure the current path is acceptable:
 		--------------------------------------------------------------------------------
 		local howManyClips = #(browser:selectedClipsUI())
-		local clipCountMsg = "this clip"
-		if howManyClips >= 1 then
-			clipCountMsg = "these " .. howManyClips .. " clips"
-		end
-		
-		local result = dialog.displayMessage("Final Cut Pro will export "..clipCountMsg.." using your default export settings to the following location:\n\n" .. lastSavePath .. "\n\nIf you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.", {"Continue Batch Export", "Cancel"})
+		local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=howManyClips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
 		if result == nil then return end
 		
 		--------------------------------------------------------------------------------
@@ -7925,21 +7921,17 @@ end
 			failedExports = batchExportClips(browser, selectedClips)
 		else
 			-- TODO: Add the ability to select all clips inside selected event/libraries in the sidebar
-			dialog.displayErrorMessage("Please ensure that at least one clip is selected for export.")
+			dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
 		end
 		
 		--------------------------------------------------------------------------------
 		-- Batch Export Complete:
 		--------------------------------------------------------------------------------
-		local failedMsg = ""
-		if failedExports == 0 then
-		elseif failedExports == 1 then
-			failedMsg = "\n\nOne clip was skipped as a file with the same name already existed."
-		else
-			failedMsg = "\n\n" .. failedExports .." clips were skipped as files with the same names already existed."
+		local completeMessage = i18n("batchExportComplete")
+		if failedExports ~= 0 then
+			completeMessage = completeMessage .. "\n\n" .. i18n("batchExportSkipped", {count=failedExports})
 		end
-		
-		dialog.displayMessage("Batch Export is now complete."..failedMsg, {"Done"})
+		dialog.displayMessage(completeMessage, {i18n("done")})
 	end
 	
 	function batchExportClips(browser, clips)
@@ -7951,7 +7943,7 @@ end
 			-- Trigger CMD+E (Export Using Default Share):
 			--------------------------------------------------------------------------------
 			if not keyStrokeFromPlist("ShareDefaultDestination") then
-				dialog.displayErrorMessage("Please assign the 'Export using Default Share Destination' to a shortcut key.")
+				dialog.displayErrorMessage(i18n("batchExportNoShortcut"))
 				return "Failed"
 			end
 
@@ -7993,7 +7985,7 @@ end
 		return failedExports
 	end
 	
-	function batchExportToCompressorOld()
+	function batchExportOld()
 
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
@@ -8024,7 +8016,7 @@ end
 		--------------------------------------------------------------------------------
 		local fcpxBrowserMode = fcp.getBrowserMode()
 		if fcpxBrowserMode == nil then
-			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.\n\nError occured in batchExportToCompressor().")
+			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.\n\nError occured in batchExport().")
 			return
 		end
 
@@ -8033,7 +8025,7 @@ end
 		--------------------------------------------------------------------------------
 		local browserSplitGroup = fcp.getBrowserSplitGroup()
 		if browserSplitGroup == nil then
-			displayErrorMessage("Failed to find the Browser Split Group.\n\nError occured in batchExportToCompressor().")
+			displayErrorMessage("Failed to find the Browser Split Group.\n\nError occured in batchExport().")
 			return
 		end
 
@@ -8047,7 +8039,7 @@ end
 			end
 		end
 		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExportToCompressor().")
+			dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExport().")
 			return "Failed"
 		end
 
@@ -8267,7 +8259,7 @@ end
 					end
 				end
 				if whichGroup == nil then
-					dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExportToCompressor().")
+					dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExport().")
 					return "Failed"
 				end
 
@@ -8759,7 +8751,7 @@ end
 						end
 					end
 					if whichNextButton == nil then
-						dialog.displayErrorMessage("Unable to locate Share Button.\n\nError occured in batchExportToCompressor().")
+						dialog.displayErrorMessage("Unable to locate Share Button.\n\nError occured in batchExport().")
 						return "Failed"
 					end
 
@@ -8768,7 +8760,7 @@ end
 					--------------------------------------------------------------------------------
 					local pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
 					if pressNextButtonResult == nil then
-						dialog.displayErrorMessage("Failed to press Share Button.\n\nError occured in batchExportToCompressor().")
+						dialog.displayErrorMessage("Failed to press Share Button.\n\nError occured in batchExport().")
 						return "Failed"
 					end
 

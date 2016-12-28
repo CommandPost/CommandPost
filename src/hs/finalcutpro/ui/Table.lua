@@ -114,11 +114,28 @@ function Table:selectedRowsUI()
 	return nil
 end
 
+function Table:viewFrame()
+	local vFrame = ui:frame()
+	local vScroll = self:verticalScrollBarUI()
+	if vScroll then
+		local vsFrame = vScroll:frame()
+		vFrame.w = vFrame.w - vsFrame.w
+		vFrame.h = vsFrame.h
+	else
+		local hScroll = self:horizontalScrolLBarUI()
+		if hScroll then
+			local hsFrame = hScroll:frame()
+			vFrame.w = hScroll.w
+			vFrame.h = vFrame.h - hScroll.h
+		end
+	end
+	return vFrame
+end
+
 function Table:showRow(rowUI)
 	local ui = self:UI()
 	if ui then
-		local vScroll = self:verticalScrollBarUI()
-		local vFrame = vScroll:frame()
+		local vFrame = self:viewFrame()
 		local rowFrame = rowUI:frame()
 		
 		local top = vFrame.y
