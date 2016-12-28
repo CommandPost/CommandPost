@@ -113,6 +113,7 @@ local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local plist										= require("hs.plist")
 local tools										= require("hs.fcpxhacks.modules.tools")
+local just										= require("hs.just")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -7831,11 +7832,123 @@ end
 			mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
 
 		end
-
+	
 	--------------------------------------------------------------------------------
 	-- BATCH EXPORT FROM BROWSER:
 	--------------------------------------------------------------------------------
 	function batchExportToCompressor()
+		deleteAllHighlights()
+		
+		--------------------------------------------------------------------------------
+		-- Check that there's a default destination:
+		--------------------------------------------------------------------------------
+		if fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil) == nil then
+			dialog.displayMessage("It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Current FCPX Save Location:
+		--------------------------------------------------------------------------------
+		local lastSavePath = fcp.getPreference("NSNavLastRootDirectory", "~/Desktop")
+		
+		local browser = fcp.app():browser()
+		
+		if not browser:isShowing() then
+			dialog.displayErrorMessage("Please ensure that the browser is enabled before exporting.")
+		end
+
+		--------------------------------------------------------------------------------
+		-- Display Dialog to make sure the current path is acceptable:
+		--------------------------------------------------------------------------------
+		local howManyClips = #(browser:selectedClipsUI())
+		local clipCountMsg = "this clip"
+		if howManyClips >= 1 then
+			clipCountMsg = "these " .. howManyClips .. " clips"
+		end
+		
+		local result = dialog.displayMessage("Final Cut Pro will export "..clipCountMsg.." using your default export settings to the following location:\n\n" .. lastSavePath .. "\n\nIf you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.", {"Continue Batch Export", "Cancel"})
+		if result == nil then return end
+		
+		--------------------------------------------------------------------------------
+		-- Check if we have any currently-selected clips:
+		--------------------------------------------------------------------------------
+		local selectedClips = browser:selectedClipsUI()
+		local failedExports = 0
+		
+		if selectedClips and #selectedClips > 0 then
+			failedExports = batchExportClips(browser, selectedClips)
+		else
+			-- TODO: Add the ability to select all clips inside selected event/libraries in the sidebar
+			dialog.displayErrorMessage("Please ensure that at least one clip is selected for export.")
+		end
+		
+		--------------------------------------------------------------------------------
+		-- Batch Export Complete:
+		--------------------------------------------------------------------------------
+		local failedMsg = ""
+		if failedExports == 0 then
+		elseif failedExports == 1 then
+			failedMsg = "\n\nOne clip was skipped as a file with the same name already existed."
+		else
+			failedMsg = "\n\n" .. failedExports .." clips were skipped as files with the same names already existed."
+		end
+		
+		dialog.displayMessage("Batch Export is now complete."..failedMsg, {"Done"})
+	end
+	
+	function batchExportClips(browser, clips)
+		local failedExports = 0
+		for i,clip in ipairs(clips) do
+			browser:selectClip(clip)
+			
+			--------------------------------------------------------------------------------
+			-- Trigger CMD+E (Export Using Default Share):
+			--------------------------------------------------------------------------------
+			if not keyStrokeFromPlist("ShareDefaultDestination") then
+				dialog.displayErrorMessage("Please assign the 'Export using Default Share Destination' to a shortcut key.")
+				return "Failed"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Wait for Export Dialog to open:
+			--------------------------------------------------------------------------------
+			local exportDialog = fcp.app():exportDialog()
+			if not just.doUntil(function() return exportDialog:isShowing() end) then
+				dialog.displayErrorMessage("Failed to open the 'Export' window.")
+				return "Failed"
+			end
+
+			exportDialog:pressNext()
+			
+			--------------------------------------------------------------------------------
+			-- Click 'save' on the save sheet
+			--------------------------------------------------------------------------------
+			local saveSheet = exportDialog:saveSheet()
+			if not just.doUntil(function() return saveSheet:isShowing() end) then
+				dialog.displayErrorMessage("Failed to open the 'Save' window.")
+				return "Failed"
+			end
+			
+			saveSheet:pressSave()
+			
+			--------------------------------------------------------------------------------
+			-- Make sure Save Window is closed:
+			--------------------------------------------------------------------------------
+			if saveSheet:isShowing() then
+				local replaceAlert = saveSheet:replaceAlert()
+				if replaceAlert:isShowing() then
+					replaceAlert:pressCancel()
+				end
+				saveSheet:pressCancel()
+				exportDialog:pressCancel()
+				failedExports = failedExports + 1
+			end
+		end
+		return failedExports
+	end
+	
+	function batchExportToCompressorOld()
 
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:

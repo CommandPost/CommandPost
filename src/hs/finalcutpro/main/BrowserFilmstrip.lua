@@ -1,8 +1,6 @@
 local axutils							= require("hs.finalcutpro.axutils")
 
 local tools								= require("hs.fcpxhacks.modules.tools")
-local geometry							= require("hs.geometry")
-local inspect 							= require("hs.inspect")
 
 local Filmstrip = {}
 

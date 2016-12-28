@@ -682,7 +682,7 @@ function finalcutpro.restart()
 		finalcutpro.application():kill()
 
 		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 10 seconds):
-		just.doWhile(function() return finalcutpro.running() end, 100000, 100)
+		just.doWhile(function() return finalcutpro.running() end, 10, 0.1)
 
 		-- Launch Final Cut Pro:
 		local result = finalcutpro.launch()

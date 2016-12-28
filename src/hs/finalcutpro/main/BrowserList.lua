@@ -1,5 +1,4 @@
 local axutils							= require("hs.finalcutpro.axutils")
-local fnutils							= require("hs.fnutils")
 
 local Table								= require("hs.finalcutpro.ui.Table")
 
