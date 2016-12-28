@@ -119,7 +119,9 @@ function MenuBar:findMenuUI(...)
 	
 	for i=1,select('#', ...) do
 		step = select(i, ...)
-		if menuMap and menuMap[step] then
+		if type(step) == "number" then
+			menuItemUI = menuUI[step]
+		elseif menuMap and menuMap[step] then
 			-- We have the menu name in our list
 			local item = menuMap[step]
 			menuItemUI = menuUI[item.id]

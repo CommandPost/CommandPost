@@ -183,12 +183,18 @@ function Table:showRowAt(index)
 end
 
 function Table:selectRow(rowUI)
+	debugMessage("row selected started")
 	self:showRow(rowUI)
-	tools.ninjaMouseClick(geometry.rect(rowUI[1]:frame()).center)
+	debugMessage("viewFrame: "..inspect(self:viewFrame()))
+	local mouseTarget = geometry.rect(rowUI[1]:frame()).center
+	debugMessage("ninja clicking "..inspect(mouseTarget))
+	tools.ninjaMouseClick(mouseTarget)
 	just.doUntil(function() 
+		debugMessage("waiting for the row to be selected...")
 		local selected = self:selectedRowsUI()
 		return selected and #selected == 1 and selected[1] == rowUI
 	end)
+	debugMessage("row selection complete")
 end
 
 function Table:selectRowAt(index)
