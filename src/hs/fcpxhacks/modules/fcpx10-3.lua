@@ -1452,15 +1452,6 @@ end
 		--------------------------------------------------------------------------------
 		local displayHighlightColour = nil
 		displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
-		local displayHighlightColourRed = false
-		local displayHighlightColourBlue = false
-		local displayHighlightColourGreen = false
-		local displayHighlightColourYellow = false
-		if displayHighlightColour == nil then 		displayHighlightColourRed 		= true 		end
-		if displayHighlightColour == "Red" then 	displayHighlightColourRed 		= true 		end
-		if displayHighlightColour == "Blue" then 	displayHighlightColourBlue 		= true 		end
-		if displayHighlightColour == "Green" then 	displayHighlightColourGreen 	= true 		end
-		if displayHighlightColour == "Yellow" then 	displayHighlightColourYellow	= true 		end
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
@@ -1802,10 +1793,12 @@ end
 			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
 		}
 		local settingsColourMenuTable = {
-			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColourRed		},
-			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColourBlue	},
-			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColourGreen	},
-			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColourYellow	},
+			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColour == "Red" },
+			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColour == "Blue" },
+			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColour == "Green"	},
+			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColour == "Yellow" },
+			{ title = "-" },
+			{ title = i18n("custom"), 																	fn = function() changeHighlightColour("Custom") end, 				checked = displayHighlightColour == "Custom" },
 		}
 		local settingsHammerspoonSettings = {
 			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
@@ -3915,6 +3908,12 @@ end
 	-- CHANGE HIGHLIGHT COLOUR:
 	--------------------------------------------------------------------------------
 	function changeHighlightColour(value)
+		if value=="Custom" then
+			local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour") or nil
+			local result = dialog.displayColorPicker(displayHighlightCustomColour)
+			if result == nil then return nil end
+			settings.set("fcpxHacks.displayHighlightCustomColour", result)
+		end
 		settings.set("fcpxHacks.displayHighlightColour", value)
 		refreshMenuBar()
 	end
@@ -7842,13 +7841,15 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Highlight Colour Preferences:
 			--------------------------------------------------------------------------------
-			local displayHighlightColour = nil
-			displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
-			if displayHighlightColour == nil then 		displayHighlightColour = "Red" 												end
+			local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or "Red"
 			if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 			if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
 			if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
 			if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
+			if displayHighlightColour == "Custom" then
+				local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour")
+				displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
+			end
 
 			--------------------------------------------------------------------------------
 			-- Highlight the FCPX Browser Playhead:

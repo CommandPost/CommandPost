@@ -351,6 +351,7 @@ return {
 			blue								=			"Blue",
 			green								=			"Green",
 			yellow								=			"Yellow",
+			custom								=			"Custom",
 
 			--------------------------------------------------------------------------------
 			-- Highlight Shape:
