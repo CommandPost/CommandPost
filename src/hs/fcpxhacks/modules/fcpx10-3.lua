@@ -9360,6 +9360,7 @@ end
 		if mod.finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
 		if mod.finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
 		if next(mod.finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and mod.finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
+		fcp.launch()
 		eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
 		return true
 	end
