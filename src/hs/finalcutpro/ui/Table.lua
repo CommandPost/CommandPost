@@ -10,8 +10,8 @@ local Table = {}
 --- hs.finalcutpro.ui.Table:new(axuielement, table) -> Table
 --- Function:
 --- Creates a new Table
-function Table:new(parent, id)
-	o = {_parent = parent, _id = id}
+function Table:new(parent, finder)
+	o = {_parent = parent, _finder = finder}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -23,8 +23,7 @@ end
 
 function Table:UI()
 	return axutils.cache(self, "_ui", function()
-		local parentUI = self:parent():UI()
-		return parentUI and axutils.childWithID(parentUI, self._id)
+		return self._finder()
 	end)
 end
 
@@ -43,6 +42,10 @@ end
 function Table:horizontalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
+end
+
+function Table:isShowing()
+	return self:UI() ~= nil
 end
 
 function Table:isFocused()
@@ -115,21 +118,25 @@ function Table:selectedRowsUI()
 end
 
 function Table:viewFrame()
-	local vFrame = ui:frame()
-	local vScroll = self:verticalScrollBarUI()
-	if vScroll then
-		local vsFrame = vScroll:frame()
-		vFrame.w = vFrame.w - vsFrame.w
-		vFrame.h = vsFrame.h
-	else
-		local hScroll = self:horizontalScrolLBarUI()
-		if hScroll then
-			local hsFrame = hScroll:frame()
-			vFrame.w = hScroll.w
-			vFrame.h = vFrame.h - hScroll.h
+	local ui = self:UI()
+	if ui then
+		local vFrame = ui:frame()
+		local vScroll = self:verticalScrollBarUI()
+		if vScroll then
+			local vsFrame = vScroll:frame()
+			vFrame.w = vFrame.w - vsFrame.w
+			vFrame.h = vsFrame.h
+		else
+			local hScroll = self:horizontalScrollBarUI()
+			if hScroll then
+				local hsFrame = hScroll:frame()
+				vFrame.w = hsFrame.w
+				vFrame.h = vFrame.h - hsFrame.h
+			end
 		end
+		return vFrame
 	end
-	return vFrame
+	return nil
 end
 
 function Table:showRow(rowUI)

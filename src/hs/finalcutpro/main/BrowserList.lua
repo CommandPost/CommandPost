@@ -58,7 +58,9 @@ end
 
 function List:content()
 	if not self._content then
-		self._content = Table:new(self, "_NS:9")
+		self._content = Table:new(self, function()
+			return axutils.childWithID(self:UI(), "_NS:9")
+		end)
 	end
 	return self._content
 end
@@ -66,7 +68,13 @@ end
 function List:clipsUI()
 	local rowsUI = self:content():rowsUI()
 	if rowsUI then
-		return axutils.childrenWith(rowsUI, "AXDisclosureLevel", 1)
+		local level = 0
+		-- if the first row has no icon (_NS:11), it's a group
+		local firstCell = self:content():findCellUI(1, "filmlist name col")
+		if firstCell and axutils.childWithID(firstCell, "_NS:11") == nil then
+			level = 1
+		end
+		return axutils.childrenWith(rowsUI, "AXDisclosureLevel", level)
 	end
 	return nil
 end

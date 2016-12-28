@@ -9,6 +9,7 @@ local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
 local Button							= require("hs.finalcutpro.ui.Button")
 local BrowserList						= require("hs.finalcutpro.main.BrowserList")
 local BrowserFilmstrip					= require("hs.finalcutpro.main.BrowserFilmstrip")
+local Table								= require("hs.finalcutpro.ui.Table")
 
 local Browser = {}
 
@@ -156,14 +157,6 @@ function Browser:mainGroupUI()
 	end)
 end
 
-function Browser:sidebarUI()
-	return axutils.cache(self, "_sidebar",
-	function()
-		local main = self:mainGroupUI()
-		return main and axutils.childWithID(ui, "_NS:9")
-	end)
-end
-
 function Browser:filmstrip()
 	if not self._filmstrip then
 		self._filmstrip = BrowserFilmstrip:new(self)
@@ -176,6 +169,15 @@ function Browser:list()
 		self._list = BrowserList:new(self)
 	end
 	return self._list
+end
+
+function Browser:sidebar()
+	if not self._sidebar then
+		self._sidebar = Table:new(self, function()
+			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+		end)
+	end
+	return self._sidebar
 end
 
 function Browser:isListView()
