@@ -50,8 +50,8 @@ function Table:isShowing()
 end
 
 function Table:isFocused()
-	local ui = self:rowsUI()
-	return ui and axutils.childWith(ui, "AXFocused", true) ~= nil
+	local ui = self:UI()
+	return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
 end
 
 -- Returns the list of rows in the table

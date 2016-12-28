@@ -219,9 +219,13 @@ end
 
 function Browser:selectClip(clipUI)
 	if self:isListView() then
+		debugMessage("Selecting clip via list")
 		self:list():selectClip(clipUI)
-	else
+	elseif self:isFilmstripView() then
+		debugMessage("Selecting clip via filmstrip")
 		self:filmstrip():selectClip(clipUI)
+	else
+		debugMessage("ERROR: cannot find either list or filmstrip UI")
 	end
 	return self
 end
@@ -233,6 +237,12 @@ function Browser:selectClipAt(index)
 		self:filmstrip():selectClipAt(index)
 	end
 	return self
+end
+
+
+function Browser:isFocused()
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
 end
 
 return Browser

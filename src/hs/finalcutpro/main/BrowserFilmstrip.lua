@@ -133,6 +133,7 @@ function Filmstrip:showClipAt(index)
 end
 
 function Filmstrip:selectClip(clipUI)
+	debugMessage("Filmstrip: selecting clip")
 	local labelUI = axutils.childWithRole(clipUI, "AXTextField")
 	local clickPos = nil
 	self:showClip(clipUI)
