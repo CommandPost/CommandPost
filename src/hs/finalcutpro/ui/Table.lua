@@ -4,6 +4,7 @@ local inspect						= require("hs.inspect")
 local axutils						= require("hs.finalcutpro.axutils")
 local tools							= require("hs.fcpxhacks.modules.tools")
 local geometry						= require("hs.geometry")
+local just							= require("hs.just")
 
 local Table = {}
 
@@ -141,7 +142,7 @@ end
 
 function Table:showRow(rowUI)
 	local ui = self:UI()
-	if ui then
+	if ui and rowUI then
 		local vFrame = self:viewFrame()
 		local rowFrame = rowUI:frame()
 		
@@ -184,6 +185,10 @@ end
 function Table:selectRow(rowUI)
 	self:showRow(rowUI)
 	tools.ninjaMouseClick(geometry.rect(rowUI[1]:frame()).center)
+	just.doUntil(function() 
+		local selected = self:selectedRowsUI()
+		return selected and #selected == 1 and selected[1] == rowUI
+	end)
 end
 
 function Table:selectRowAt(index)

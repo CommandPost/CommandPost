@@ -7907,40 +7907,28 @@ end
 		--------------------------------------------------------------------------------
 		-- Check if we have any currently-selected clips:
 		--------------------------------------------------------------------------------
-		local selectedClips = browser:selectedClipsUI()
+		local clips = browser:selectedClipsUI()
+		
+		if not clips or #clips == 0 then
+			-- use all clips
+			clips = browser:clipsUI()
+		end
+		
 		local failedExports = 0
 		
-		if selectedClips and #selectedClips > 0 then
-			-- Some clips are selected in the list, just export those
+		if clips and #clips > 0 then
 			--------------------------------------------------------------------------------
 			-- Display Dialog to make sure the current path is acceptable:
 			--------------------------------------------------------------------------------
-			local howManyClips = #(browser:selectedClipsUI())
-			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=howManyClips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=#clips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
 			if result == nil then return end
 		
-			failedExports = batchExportClips(browser, selectedClips)
-		elseif browser:sidebar():isShowing() then
-			-- Export all clips in all selected collections in the library sidebar.
 			--------------------------------------------------------------------------------
-			-- Display Dialog to make sure the current path is acceptable:
+			-- Export the clips
 			--------------------------------------------------------------------------------
-			local howManyClips = #(browser:selectedClipsUI())
-			local result = dialog.displayMessage(i18n("batchExportCheckPathSidebar", {path=lastSavePath}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-			if result == nil then return end
-		
-			local sidebar = browser:sidebar()
-			local collections = sidebar:selectedRowsUI()
-			for i,collection in ipairs(collections) do
-				sidebar:selectRow(collection)
-
-				local clips = browser:clipsUI()
-				if clips and #clips > 0 then
-					failedExports = failedExports + batchExportClips(browser, clips)
-				end
-			end
+			failedExports = batchExportClips(browser, clips)
 		else
-			-- No clips are selected, and the sidebar is not visible.
+			-- No clips are available
 			dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
 		end
 		

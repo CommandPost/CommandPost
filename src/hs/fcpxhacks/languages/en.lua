@@ -144,7 +144,7 @@ return {
 			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers using your default export settings to the following location:\n\n\t%{path}\n\nIf you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.",
 			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
 			batchExportNoShortcut				=			"Please assign the 'Export using Default Share Destination' to a shortcut key.",
-			batchExportComplete					=			"Batch Export is now complete.",
+			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
 			batchExportSkipped					=
 			{
 				one								=			"One clip was skipped as a file with the same name already existed.",
