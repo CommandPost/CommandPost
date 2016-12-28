@@ -122,6 +122,7 @@ local tools										= require("hs.fcpxhacks.modules.tools")
 local clipboard									= require("hs.fcpxhacks.plugins.clipboard")
 local hacksconsole								= require("hs.fcpxhacks.plugins.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
+local voicecommands 							= require("hs.fcpxhacks.plugins.voicecommands")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:
@@ -130,6 +131,7 @@ local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
 local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
 												["scrollingTimelineActive"] 					= false,
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
+												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
 												["chooserShowAutomation"] 						= true,
 												["chooserShowShortcuts"] 						= true,
@@ -481,6 +483,13 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.enableHacksHUD") then
 			hackshud.show()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Voice Commands:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableVoiceCommands") then
+			voicecommands.start()
 		end
 
 	else
@@ -1940,6 +1949,8 @@ end
 			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
 			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
+			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
+
 		}
 		local toolsTable = {
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
@@ -4047,6 +4058,25 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE HACKS HUD:
+	--------------------------------------------------------------------------------
+	function toggleEnableVoiceCommands()
+
+		local enableVoiceCommands = settings.get("fcpxHacks.enableVoiceCommands")
+		settings.set("fcpxHacks.enableVoiceCommands", not enableVoiceCommands)
+
+		if enableVoiceCommands then
+			voicecommands:stop()
+		else
+			if fcp.frontmost() then
+				voicecommands:start()
+			end
+		end
+		refreshMenuBar()
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE ENABLE HACKS HUD:
@@ -9485,6 +9515,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
+				-- Enable Voice Commands:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableVoiceCommands") then
+					voicecommands.start()
+				end
+
+				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
 				showTouchbar()
@@ -9524,6 +9561,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				-- Check if we need to hide the Touch Bar:
 				--------------------------------------------------------------------------------
 				hideTouchbar()
+
+				--------------------------------------------------------------------------------
+				-- Disable Voice Commands:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableVoiceCommands") then
+					voicecommands.stop()
+				end
 
 				--------------------------------------------------------------------------------
 				-- Disable hotkeys:
