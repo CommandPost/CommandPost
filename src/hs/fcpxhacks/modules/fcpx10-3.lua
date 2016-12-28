@@ -7947,11 +7947,13 @@ end
 	function batchExportClips(browser, clips)
 		local failedExports = 0
 		for i,clip in ipairs(clips) do
+			debugMessage("selecting clip "..i)
 			browser:selectClip(clip)
 			
 			--------------------------------------------------------------------------------
 			-- Trigger CMD+E (Export Using Default Share):
 			--------------------------------------------------------------------------------
+			debugMessage("triggering 'ShareDefaultDestination' shortcut")
 			if not keyStrokeFromPlist("ShareDefaultDestination") then
 				dialog.displayErrorMessage(i18n("batchExportNoShortcut"))
 				return -1
@@ -7961,6 +7963,7 @@ end
 			-- Wait for Export Dialog to open:
 			--------------------------------------------------------------------------------
 			local exportDialog = fcp.app():exportDialog()
+			debugMessage("checking if the Export dialog is showing.")
 			if not just.doUntil(function() return exportDialog:isShowing() end) then
 				dialog.displayErrorMessage("Failed to open the 'Export' window.")
 				return -2
