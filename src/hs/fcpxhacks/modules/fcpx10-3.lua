@@ -1844,6 +1844,8 @@ end
 		local settingsBatchExportOptions = {
 			{ title = i18n("setDestinationPreset"), 													fn = changeBatchExportDestinationPreset, 							disabled = not fcpxRunning },
 			{ title = i18n("setDestinationFolder"), 													fn = changeBatchExportDestinationFolder },
+			{ title = "-" },
+			{ title = i18n("replaceExistingFiles"), 													fn = toggleBatchExportReplaceExistingFiles, 						checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
 		}
 		local settingsMenuTable = {
 			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
@@ -4108,6 +4110,15 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
+	--------------------------------------------------------------------------------
+	function toggleBatchExportReplaceExistingFiles()
+		local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
+		settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
+		refreshMenuBar()
+	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE ENABLE HACKS HUD:
@@ -8024,6 +8035,8 @@ end
 		--------------------------------------------------------------------------------
 		function batchExportClips(browser, clips)
 
+			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
+
 			local failedExports = 0
 			for i,clip in ipairs(clips) do
 
@@ -8092,13 +8105,29 @@ end
 				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
 				if saveSheet:isShowing() then
+					timer.usleep(1000000)
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceAlert:isShowing() then
-						replaceAlert:pressCancel()
+						if batchExportReplaceExistingFiles then
+							debugMessage("Pressed Replace.")
+							--replaceAlert:pressReplace()
+							replaceAlert:pressCancel()
+						else
+							debugMessage("Pressed Cancel.")
+							replaceAlert:pressCancel()
+						end
+					else
+						debugMessage("No Replace Alert.")
 					end
-					saveSheet:pressCancel()
-					exportDialog:pressCancel()
-					failedExports = failedExports + 1
+					if batchExportReplaceExistingFiles then
+						--saveSheet:pressSave()
+						saveSheet:pressCancel()
+						exportDialog:pressCancel()
+					else
+						saveSheet:pressCancel()
+						exportDialog:pressCancel()
+						failedExports = failedExports + 1
+					end
 				end
 			end
 			return failedExports
@@ -8142,7 +8171,7 @@ end
 			end
 			if whichMenuTwo == nil then return nil end
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-				if FFShareDestinationsDefaultDestinationIndex ~= nil then
+				if value == nil then
 					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
 						whichMenuThree = i
 					end

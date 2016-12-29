@@ -338,6 +338,7 @@ return {
 			--------------------------------------------------------------------------------
 			setDestinationPreset	 			=			"Set Destination Preset",
 			setDestinationFolder				=			"Set Destination Folder",
+			replaceExistingFiles				=			"Replace Existing Files",
 
 			--------------------------------------------------------------------------------
 			-- Menubar Options:
