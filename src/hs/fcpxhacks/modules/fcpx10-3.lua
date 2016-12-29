@@ -7967,23 +7967,6 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		--------------------------------------------------------------------------------
-		-- Get Settings:
-		--------------------------------------------------------------------------------
-		local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
-
-		local lastSavePath = fcp.getPreference("NSNavLastRootDirectory")
-
-		if batchExportDestinationFolder ~= nil then
-			 if tools.doesDirectoryExist(batchExportDestinationFolder) then
-			 	lastSavePath = batchExportDestinationFolder
-			 end
-		else
-			if not tools.doesDirectoryExist(lastSavePath) then
-				lastSavePath = "~/Desktop"
-			end
-		end
-
 		local browser = fcp.app():browser()
 
 		if not browser:isShowing() then
@@ -8071,7 +8054,7 @@ end
 				end
 
 				--------------------------------------------------------------------------------
-				-- Export:
+				-- Trigger Export:
 				--------------------------------------------------------------------------------
 				local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
 				if finalCutProShare(batchExportDestinationPreset) == nil then
@@ -8099,13 +8082,32 @@ end
 					return -3
 				end
 
+				--------------------------------------------------------------------------------
+				-- Set Custom Export Path (or Default to Desktop):
+				--------------------------------------------------------------------------------
+				local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
+				local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
+				local exportPath = "~/Desktop"
+				if batchExportDestinationFolder ~= nil then
+					 if tools.doesDirectoryExist(batchExportDestinationFolder) then
+						exportPath = batchExportDestinationFolder
+					 end
+				else
+					if tools.doesDirectoryExist(NSNavLastRootDirectory) then
+						exportPath = NSNavLastRootDirectory
+					end
+				end
+				eventtap.keyStroke({"cmd", "shift"}, "g")
+				eventtap.keyStrokes(exportPath)
+				eventtap.keyStroke({}, "return")
+
 				saveSheet:pressSave()
 
 				--------------------------------------------------------------------------------
 				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
+				-- TO DO: This doesn't seem to be working?
 				if saveSheet:isShowing() then
-					timer.usleep(1000000)
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceAlert:isShowing() then
 						if batchExportReplaceExistingFiles then
