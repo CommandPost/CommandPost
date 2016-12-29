@@ -132,7 +132,7 @@ return {
 
 			touchBarError						=			"Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
-			item								= 
+			item								=
 			{
 				one								=			"item",
 				other							=			"items"
@@ -195,6 +195,9 @@ return {
 
 			changeBackupIntervalTextbox			=			"What would you like to set your Final Cut Pro Backup Interval to (in minutes)?",
 			changeBackupIntervalError			=			"The backup interval you entered is not valid. Please enter a value in minutes.",
+
+			selectDestinationPreset				=			"Please select a Destination Preset:",
+			selectDestinationFolder				=			"Please select a Destination Folder:",
 
 		--------------------------------------------------------------------------------
 		-- MENUBAR:
@@ -317,6 +320,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Preferences:
 			--------------------------------------------------------------------------------
+			batchExportOptions					=			"Batch Export Options",
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
 			touchBarLocation					=			"Touch Bar Location",
@@ -328,6 +332,12 @@ return {
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",
+
+			--------------------------------------------------------------------------------
+			-- Batch Export Options:
+			--------------------------------------------------------------------------------
+			setDestinationPreset	 			=			"Set Destination Preset",
+			setDestinationFolder				=			"Set Destination Folder",
 
 			--------------------------------------------------------------------------------
 			-- Menubar Options:

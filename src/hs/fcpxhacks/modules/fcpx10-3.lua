@@ -1841,9 +1841,15 @@ end
 			{ title = i18n("japanese"), 																fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
 			{ title = i18n("chineseChina"), 															fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
 		}
+		local settingsBatchExportOptions = {
+			{ title = i18n("setDestinationPreset"), 													fn = changeBatchExportDestinationPreset, 							disabled = not fcpxRunning },
+			{ title = i18n("setDestinationFolder"), 													fn = changeBatchExportDestinationFolder },
+		}
 		local settingsMenuTable = {
 			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
 			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
+			{ title = "-" },
+			{ title = i18n("batchExportOptions"), 														menu = settingsBatchExportOptions},
 			{ title = "-" },
 			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
@@ -3839,6 +3845,64 @@ end
 --------------------------------------------------------------------------------
 -- CHANGE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- CHANGE BATCH EXPORT DESTINATION PRESET:
+	--------------------------------------------------------------------------------
+	function changeBatchExportDestinationPreset()
+
+		local whichMenuBar = nil
+		local whichMenuOne = nil
+		local whichMenuTwo = nil
+
+		local destinations = {}
+
+		local fcpxElements = ax.applicationElement(fcp.application())
+		if fcpxElements == nil then return nil end
+		for i=1, fcpxElements:attributeValueCount("AXChildren") do
+			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+				whichMenuBar = i
+			end
+		end
+		if whichMenuBar == nil then return nil end
+		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == "File" then
+				whichMenuOne = i
+			end
+		end
+		if whichMenuOne == nil then return nil end
+		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
+			if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == "Share" then
+				whichMenuTwo = i
+			end
+		end
+		if whichMenuTwo == nil then return nil end
+		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") - 1 do
+			if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") ~= nil then
+				destinations[#destinations + 1] = string.sub(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), 1, -4)
+			end
+		end
+
+		local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+		local defaultItems = {}
+		if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
+
+		local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
+		if result == false then return end
+
+		settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CHANGE BATCH EXPORT DESTINATION FOLDER:
+	--------------------------------------------------------------------------------
+	function changeBatchExportDestinationFolder()
+		local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
+		if result == false then return end
+
+		settings.set("fcpxHacks.batchExportDestinationFolder", result)
+	end
 
 	--------------------------------------------------------------------------------
 	-- CHANGE FINAL CUT PRO LANGUAGE:
@@ -7877,28 +7941,40 @@ end
 			mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
 
 		end
-	
+
+--------------------------------------------------------------------------------
+-- BATCH EXPORT:
+--------------------------------------------------------------------------------
+
 	--------------------------------------------------------------------------------
 	-- BATCH EXPORT FROM BROWSER:
 	--------------------------------------------------------------------------------
 	function batchExport()
-		deleteAllHighlights()
-		
-		--------------------------------------------------------------------------------
-		-- Check that there's a default destination:
-		--------------------------------------------------------------------------------
-		if fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil) == nil then
-			dialog.displayMessage(i18n("batchExportNoDestination"))
-			return "Failed"
-		end
 
 		--------------------------------------------------------------------------------
-		-- Get Current FCPX Save Location:
+		-- Delete All Highlights:
 		--------------------------------------------------------------------------------
-		local lastSavePath = fcp.getPreference("NSNavLastRootDirectory", "~/Desktop")
-		
+		deleteAllHighlights()
+
+		--------------------------------------------------------------------------------
+		-- Get Settings:
+		--------------------------------------------------------------------------------
+		local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
+
+		local lastSavePath = fcp.getPreference("NSNavLastRootDirectory")
+
+		if batchExportDestinationFolder ~= nil then
+			 if tools.doesDirectoryExist(batchExportDestinationFolder) then
+			 	lastSavePath = batchExportDestinationFolder
+			 end
+		else
+			if not tools.doesDirectoryExist(lastSavePath) then
+				lastSavePath = "~/Desktop"
+			end
+		end
+
 		local browser = fcp.app():browser()
-		
+
 		if not browser:isShowing() then
 			dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
 			return "Failed"
@@ -7908,30 +7984,28 @@ end
 		-- Check if we have any currently-selected clips:
 		--------------------------------------------------------------------------------
 		local clips = browser:selectedClipsUI()
-		
+
 		if not clips or #clips == 0 then
-			-- use all clips
+			--------------------------------------------------------------------------------
+			-- Use All Clips:
+			--------------------------------------------------------------------------------
 			clips = browser:clipsUI()
 		end
-		
+
 		local failedExports = 0
-		
+
 		if clips and #clips > 0 then
 			--------------------------------------------------------------------------------
-			-- Display Dialog to make sure the current path is acceptable:
-			--------------------------------------------------------------------------------
-			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=#clips, path=lastSavePath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-			if result == nil then return end
-		
-			--------------------------------------------------------------------------------
-			-- Export the clips
+			-- Export the clips:
 			--------------------------------------------------------------------------------
 			failedExports = batchExportClips(browser, clips)
 		else
-			-- No clips are available
+			--------------------------------------------------------------------------------
+			-- No Clips are Available:
+			--------------------------------------------------------------------------------
 			dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Batch Export Complete:
 		--------------------------------------------------------------------------------
@@ -7942,1230 +8016,146 @@ end
 			end
 			dialog.displayMessage(completeMessage, {i18n("done")})
 		end
+
 	end
-	
-	function batchExportClips(browser, clips)
-		local failedExports = 0
-		for i,clip in ipairs(clips) do
-			debugMessage("selecting clip "..i)
-			browser:selectClip(clip)
-			
-			--------------------------------------------------------------------------------
-			-- Trigger CMD+E (Export Using Default Share):
-			--------------------------------------------------------------------------------
-			debugMessage("triggering 'ShareDefaultDestination' shortcut")
-			if not keyStrokeFromPlist("ShareDefaultDestination") then
-				dialog.displayErrorMessage(i18n("batchExportNoShortcut"))
-				return -1
-			end
-
-			--------------------------------------------------------------------------------
-			-- Wait for Export Dialog to open:
-			--------------------------------------------------------------------------------
-			local exportDialog = fcp.app():exportDialog()
-			debugMessage("checking if the Export dialog is showing.")
-			if not just.doUntil(function() return exportDialog:isShowing() end) then
-				dialog.displayErrorMessage("Failed to open the 'Export' window.")
-				return -2
-			end
-
-			exportDialog:pressNext()
-			
-			--------------------------------------------------------------------------------
-			-- Click 'save' on the save sheet
-			--------------------------------------------------------------------------------
-			local saveSheet = exportDialog:saveSheet()
-			if not just.doUntil(function() return saveSheet:isShowing() end) then
-				dialog.displayErrorMessage("Failed to open the 'Save' window.")
-				return -3
-			end
-			
-			saveSheet:pressSave()
-			
-			--------------------------------------------------------------------------------
-			-- Make sure Save Window is closed:
-			--------------------------------------------------------------------------------
-			if saveSheet:isShowing() then
-				local replaceAlert = saveSheet:replaceAlert()
-				if replaceAlert:isShowing() then
-					replaceAlert:pressCancel()
-				end
-				saveSheet:pressCancel()
-				exportDialog:pressCancel()
-				failedExports = failedExports + 1
-			end
-		end
-		return failedExports
-	end
-	
-	function batchExportOld()
 
 		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
+		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		function batchExportClips(browser, clips)
 
-		--------------------------------------------------------------------------------
-		-- Check that there's a default destination:
-		--------------------------------------------------------------------------------
-		local FFShareDestinationsDefaultDestinationIndex = fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil)
-		if FFShareDestinationsDefaultDestinationIndex == nil then
-			dialog.displayMessage(i18n("batchExportNoDestination"))
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Current FCPX Save Location:
-		--------------------------------------------------------------------------------
-		local lastSavePath = fcp.getPreference("NSNavLastRootDirectory", "~/Desktop")
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro:
-		--------------------------------------------------------------------------------
-		fcpx = fcp.application()
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip or List Mode?
-		--------------------------------------------------------------------------------
-		local fcpxBrowserMode = fcp.getBrowserMode()
-		if fcpxBrowserMode == nil then
-			dialog.displayErrorMessage("Unable to determine if Filmstrip or List Mode.\n\nError occured in batchExport().")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Browser Split Group (_NS:344):
-		--------------------------------------------------------------------------------
-		local browserSplitGroup = fcp.getBrowserSplitGroup()
-		if browserSplitGroup == nil then
-			displayErrorMessage("Failed to find the Browser Split Group.\n\nError occured in batchExport().")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Group contains the browser (last group):
-		--------------------------------------------------------------------------------
-		whichGroup = nil
-		for i=1, (browserSplitGroup:attributeValueCount("AXChildren")) do
-			if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
-				whichGroup = i
-			end
-		end
-		if whichGroup == nil then
-			dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExport().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- List Mode:
-		--------------------------------------------------------------------------------
-		if fcpxBrowserMode == "List" then
-
-			--------------------------------------------------------------------------------
-			-- Which Split Group Three:
-			--------------------------------------------------------------------------------
-			whichSplitGroupThree = nil
-			for i=1, (browserSplitGroup[whichGroup]:attributeValueCount("AXChildren")) do
-				if whichSplitGroupThree == nil then
-					if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
-						whichSplitGroupThree = i
-						goto listSplitGroupThree
-					end
-				end
-			end
-			::listSplitGroupThree::
-			if whichSplitGroupThree == nil then
-				dialog.displayErrorMessage("Unable to locate Split Group Three.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Scroll Area:
-			--------------------------------------------------------------------------------
-			whichScrollArea = nil
-			for i=1, (browserSplitGroup[whichGroup][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
-					whichScrollArea = i
-				end
-			end
-			if whichScrollArea == nil then
-				dialog.displayErrorMessage("Unable to locate Scroll Area.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Outline:
-			--------------------------------------------------------------------------------
-			whichOutline = nil
-			for i=1, (browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
-					whichOutline = i
-				end
-			end
-			if whichOutline == nil then
-				dialog.displayErrorMessage("Unable to locate Outline.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Rows's (can be multiple):
-			--------------------------------------------------------------------------------
-			whichRows = {}
-			for i=1, (browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXRole") == "AXRow" then
-					if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][i]:attributeValue("AXSelected") == true then
-						whichRows[#whichRows + 1] = i
-					end
-				end
-			end
-
-		--------------------------------------------------------------------------------
-		-- Filmstrip Mode:
-		--------------------------------------------------------------------------------
-		elseif fcpxBrowserMode == "Filmstrip" then
-
-			--------------------------------------------------------------------------------
-			-- Which Scroll Area:
-			--------------------------------------------------------------------------------
-			whichScrollArea = nil
-			for i=1, (browserSplitGroup[whichGroup]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXScrollArea" then
-					whichScrollArea = i
-				end
-			end
-			if whichScrollArea == nil then
-				dialog.displayErrorMessage("Unable to locate Scroll Area.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Two:
-			--------------------------------------------------------------------------------
-			whichGroupTwo = nil
-			for i=1, (browserSplitGroup[whichGroup][whichScrollArea]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][whichScrollArea][i]:attributeValue("AXRole") == "AXGroup" then
-					whichGroupTwo = i
-				end
-			end
-			if whichGroupTwo == nil then
-				dialog.displayErrorMessage("Unable to locate Group Two.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Which Group Three's (can be multiple):
-			--------------------------------------------------------------------------------
-			whichGroupThree = {}
-			for i=1, (browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][i]:attributeValue("AXRole") == "AXGroup" then
-					if browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][i]:attributeValue("AXSelectedChildren")[1] ~= nil then
-						whichGroupThree[#whichGroupThree + 1] = i
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- How many clips (regardless of Filmstrip or List mode)?
-		--------------------------------------------------------------------------------
-		local howManyClips = 0
-		if fcpxBrowserMode == "Filmstrip" then howManyClips = #whichGroupThree end
-		if fcpxBrowserMode == "List" then howManyClips = #whichRows end
-
-		--------------------------------------------------------------------------------
-		-- How many times cancel is forced during the Batch Export:
-		--------------------------------------------------------------------------------
-		cancelCount = 0
-
-		--------------------------------------------------------------------------------
-		-- If no clips are selected, then what about Keywords, Events or Libraries?
-		--------------------------------------------------------------------------------
-		if howManyClips == 0 then
-
-			--------------------------------------------------------------------------------
-			-- Which Library Scroll Area:
-			-- Left Panel AXScrollArea (lives within a AXSplitGroup of the whole browser area)
-			--------------------------------------------------------------------------------
-			whichLibraryScrollArea = nil
-			for i=1, (browserSplitGroup:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[i]:attributeValue("AXRole") == "AXScrollArea" then
-					if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:9" then
-						whichLibraryScrollArea = i
-					end
-				end
-			end
-			if whichLibraryScrollArea == nil then
-				dialog.displayErrorMessage("Unable to locate Library Scroll Area.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- NOTE: There's only one AXOutline next so just use [1].
-			--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Which Library Role:
-			--------------------------------------------------------------------------------
-			whichLibraryRows = {}
-			for i=1, (browserSplitGroup[whichLibraryScrollArea][1]:attributeValueCount("AXChildren")) do
-				if browserSplitGroup[whichLibraryScrollArea][1][i]:attributeValue("AXRole") == "AXRow" then
-					if browserSplitGroup[whichLibraryScrollArea][1][i]:attributeValue("AXSelected") == true then
-						whichLibraryRows[#whichLibraryRows + 1] = i
-					end
-				end
-			end
-			if #whichLibraryRows == 0 then
-				dialog.displayErrorMessage("Unable to locate Library Role.")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Display Dialog to make sure the current path is acceptable:
-			--------------------------------------------------------------------------------
-			if #whichLibraryRows == 1 then
-				local result = dialog.displayMessage(i18n("batchExportCheckPathOne") .. "\n\n" .. lastSavePath .. "\n\n" .. i18n("batchExportCheckPathTwo"), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-				if result == nil then return end
-			else
-				local result = dialog.displayMessage(i18n("batchExportCheckPathThree") .. " " .. howManyClips .. " " .. i18n("batchExportCheckPathFour") .. "\n\n" .. lastSavePath .. "\n\n" .. i18n("batchExportCheckPathTwo"), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-				if result == nil then return end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back on FCPX:
-			--------------------------------------------------------------------------------
-			fcp.launch()
-
-			--------------------------------------------------------------------------------
-			-- If was previously in Filmstrip mode - need to get data as if from list:
-			--------------------------------------------------------------------------------
-			if fcpxBrowserMode == "Filmstrip" then
-
-				local menuBar = fcp:app():menuBar()
+			local failedExports = 0
+			for i,clip in ipairs(clips) do
 
 				--------------------------------------------------------------------------------
-				-- Switch to list mode:
+				-- Select Item:
 				--------------------------------------------------------------------------------
-				if menuBar:isEnabled("View", "Browser", "Toggle Filmstrip/List View") then
-					menuBar:selectMenu("View", "Browser", "Toggle Filmstrip/List View")
+				if browser:isListView() then
+
+					clips[i]:setAttributeValue("AXSelected", true)
+					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", false)
+					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", true)
+
 				else
-					dialog.displayErrorMessage("Failed to switch to list mode.")
-					return "Failed"
+
+					local framePosition = clips[i]:attributeValue("AXParent"):attributeValue("AXPosition")
+					local point = { x = (framePosition["x"] + 1), y = (framePosition["y"] + 2) }
+
+					timer.usleep(1000000)
+
+					local clickState = eventtap.event.properties.mouseEventClickState
+
+					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
+					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
+
+					timer.usleep(1000000)
+
+					local point = geometry.rect(clips[i][3]:attributeValue("AXFrame")).center
+
+					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
+					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
+
 				end
 
 				--------------------------------------------------------------------------------
-				-- Trigger Group clips by None:
+				-- Export:
 				--------------------------------------------------------------------------------
-				if menuBar:isEnabled("View", "Browser", "Group Clips By", "None") then
-					menuBar:selectMenu("View", "Browser", "Group Clips By", "None")
-				else
-					dialog.displayErrorMessage("Failed to switch to Group Clips by None.")
-					return "Failed"
+				local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+				if finalCutProShare(batchExportDestinationPreset) == nil then
+					dialog.displayErrorMessage("Could not trigger Share Menu Item.")
+					return -1
 				end
 
 				--------------------------------------------------------------------------------
-				-- Which Group contains the browser (last group):
+				-- Wait for Export Dialog to open:
 				--------------------------------------------------------------------------------
-				whichGroup = nil
-				for i=1, (browserSplitGroup:attributeValueCount("AXChildren")) do
-					if browserSplitGroup[i]:attributeValue("AXRole") == "AXGroup" then
-						whichGroup = i
-					end
-				end
-				if whichGroup == nil then
-					dialog.displayErrorMessage("Unable to locate Group.\n\nError occured in batchExport().")
-					return "Failed"
+				local exportDialog = fcp.app():exportDialog()
+				if not just.doUntil(function() return exportDialog:isShowing() end) then
+					dialog.displayErrorMessage("Failed to open the 'Export' window.")
+					return -2
 				end
 
+				exportDialog:pressNext()
+
 				--------------------------------------------------------------------------------
-				-- Which Split Group Three:
+				-- Click 'Save' on the save sheet
 				--------------------------------------------------------------------------------
-				whichSplitGroupThree = nil
-				for i=1, (browserSplitGroup[whichGroup]:attributeValueCount("AXChildren")) do
-					if whichSplitGroupThree == nil then
-						if browserSplitGroup[whichGroup][i]:attributeValue("AXRole") == "AXSplitGroup" then
-							whichSplitGroupThree = i
-							goto listSplitGroupThreeA
-						end
-					end
-				end
-				::listSplitGroupThreeA::
-				if whichSplitGroupThree == nil then
-					dialog.displayErrorMessage("Unable to locate Split Group Three.")
-					return "Failed"
+				local saveSheet = exportDialog:saveSheet()
+				if not just.doUntil(function() return saveSheet:isShowing() end) then
+					dialog.displayErrorMessage("Failed to open the 'Save' window.")
+					return -3
 				end
 
-				--------------------------------------------------------------------------------
-				-- Which Scroll Area:
-				--------------------------------------------------------------------------------
-				whichScrollArea = nil
-				for i=1, (browserSplitGroup[whichGroup][whichSplitGroupThree]:attributeValueCount("AXChildren")) do
-					if browserSplitGroup[whichGroup][whichSplitGroupThree][i]:attributeValue("AXRole") == "AXScrollArea" then
-						whichScrollArea = i
-					end
-				end
-				if whichScrollArea == nil then
-					dialog.displayErrorMessage("Unable to locate Scroll Area.")
-					return "Failed"
-				end
+				saveSheet:pressSave()
 
 				--------------------------------------------------------------------------------
-				-- Which Outline:
+				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
-				whichOutline = nil
-				for i=1, (browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea]:attributeValueCount("AXChildren")) do
-					if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][i]:attributeValue("AXRole") == "AXOutline" then
-						whichOutline = i
+				if saveSheet:isShowing() then
+					local replaceAlert = saveSheet:replaceAlert()
+					if replaceAlert:isShowing() then
+						replaceAlert:pressCancel()
 					end
-				end
-				if whichOutline == nil then
-					dialog.displayErrorMessage("Unable to locate Outline.")
-					return "Failed"
-				end
-
-			end
-
-			--------------------------------------------------------------------------------
-			-- Now we need to apply to each row:
-			--------------------------------------------------------------------------------
-			for i=1, #whichLibraryRows do
-
-				--------------------------------------------------------------------------------
-				-- Select Left Panel Item:
-				--------------------------------------------------------------------------------
-				browserSplitGroup[whichLibraryScrollArea][1][whichLibraryRows[i]]:setAttributeValue("AXSelected", true)
-
-				--------------------------------------------------------------------------------
-				-- Get all individual items from right panel:
-				--------------------------------------------------------------------------------
-				local whichRows = {}
-				if whichRows ~= nil then -- Clear whichRows if needed.
-					for k in pairs (whichRows) do
-						whichRows[k] = nil
-					end
-				end
-				for ii=1, (browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValueCount("AXChildren")) do
-					if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii]:attributeValue("AXRole") == "AXRow" then
-						if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1]:attributeValue("AXRole") == "AXCell" then
-							if browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline]:attributeValue("AXChildren")[ii][1][1]:attributeValue("AXIdentifier") == "_NS:11" then
-								whichRows[#whichRows + 1] = ii
-							end
-						end
-					end
-				end
-
-				if #whichRows == 0 then
-					dialog.displayErrorMessage("Nothing in the selected item.")
-					return "Failed"
-				end
-
-				debugMessage("number of clips: " .. tostring(#whichRows))
-
-				--------------------------------------------------------------------------------
-				-- Bring Focus Back to Clips:
-				--------------------------------------------------------------------------------
-				local listPosition = browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea]:attributeValue("AXPosition")
-				tools.ninjaMouseClick(listPosition)
-
-				--------------------------------------------------------------------------------
-				-- Begin Clip Loop:
-				--------------------------------------------------------------------------------
-				debugMessage("#whichRows: " .. tostring(#whichRows))
-				for x=1, #whichRows do
-
-					--------------------------------------------------------------------------------
-					-- Focus on FCPX:
-					--------------------------------------------------------------------------------
-					fcp.launch()
-
-					--------------------------------------------------------------------------------
-					-- Select clip:
-					--------------------------------------------------------------------------------
-					browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[x]]:setAttributeValue("AXSelected", true)
-
-					local clipPosition = browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[x]]:attributeValue("AXPosition")
-					local clickHere = {}
-					clickHere['x'] = clipPosition['x'] + 60
-					clickHere['y'] = clipPosition['y'] + 15
-					tools.ninjaMouseClick(clickHere)
-
-					--------------------------------------------------------------------------------
-					-- Trigger CMD+E (Export Using Default Share)
-					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Wait for window to open:
-					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
-
-					local timeoutCount = 0
-					local exportWindowOpen = false
-
-					::waitForExportWindowA::
-					whichExportWindow = nil
-					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-									if fcpxExportWindow[yi][yx]:attributeValue("AXIdentifier") == "_NS:17" then
-										exportWindowOpen = true
-										whichExportWindow = yi
-									end
-								end
-							end
-						end
-					end
-
-					if exportWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 3 then
-							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up (Instance 1).")
-							return "Failed"
-						else
-							timer.usleep(1000000)
-							goto waitForExportWindowA
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find Next Button:
-					--------------------------------------------------------------------------------
-					whichNextButton = nil
-					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Next…" then
-								whichNextButton = yi
-							end
-						end
-					end
-					if whichNextButton == nil then
-						dialog.displayErrorMessage("Unable to locate Group Two.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Then press it:
-					--------------------------------------------------------------------------------
-					pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-					if pressNextButtonResult == nil then
-						dialog.displayErrorMessage("Unable to press Next Button.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Wait for Save Window to Open:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-					local saveWindowOpen = false
-
-					whichSaveSheet = nil
-
-					::waitForSaveWindowA::
-					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "save" then
-								whichSaveSheet = yi
-								saveWindowOpen = true
-							end
-						end
-					end
-					if whichSaveSheet == nil then
-						dialog.displayErrorMessage("Unable to locate Save Window.")
-						return "Failed"
-					end
-
-					if saveWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 10 then
-							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto waitForSaveWindowA
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find Save Button:
-					--------------------------------------------------------------------------------
-					whichSaveButton = nil
-					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
-								whichSaveButton = yi
-							end
-						end
-					end
-					if whichSaveButton == nil then
-						dialog.displayErrorMessage("Unable to locate Group Two.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Press Save Button:
-					--------------------------------------------------------------------------------
-					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-					if pressSaveButtonResult == nil then
-						dialog.displayErrorMessage("Unable to press Save Button.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Make sure Save Window is closed:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-
-					::checkSaveWindowIsClosedA::
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-						-- Continue on...
-					else
-						--------------------------------------------------------------------------------
-						-- If an alert appears, click Cancel:
-						--------------------------------------------------------------------------------
-						whichAlertSheet = nil
-						whichAlertButton = nil
-						performCancel = false
-						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
-									for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
-											if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
-												whichAlertSheet = yi
-												whichAlertButton = yx
-												performCancel = true
-											end
-										end
-									end
-								end
-							end
-						end
-						if performCancel then
-							cancelCount = cancelCount + 1
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Alert:
-							--------------------------------------------------------------------------------
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press Cancel Button on the Alert.")
-								return "Failed"
-							end
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Save Dialog:
-							--------------------------------------------------------------------------------
-							whichCancelButton = nil
-							for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelButton = yi
-									end
-								end
-							end
-							if whichCancelButton == nil then
-								dialog.displayErrorMessage("Unable to locate the cancel button.")
-								return "Failed"
-							end
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press Cancel Button on Save Dialog.")
-								return "Failed"
-							end
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Export Window:
-							--------------------------------------------------------------------------------
-							whichCancelExportButton = nil
-							for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelExportButton = yi
-									end
-								end
-							end
-							if whichCancelExportButton == nil then
-								dialog.displayErrorMessage("Unable to locate Group Two.")
-								return "Failed"
-							end
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press Cancel Button on Export Window.")
-								return "Failed"
-							end
-
-							goto nextClipInListQueueA
-
-						end -- Perform Cancel
-
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 20 then
-							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto checkSaveWindowIsClosedA
-						end
-					end -- Save Sheet Closed
-					::nextClipInListQueueA::
-				end -- x loop
-			end -- i loop
-		else
-		--------------------------------------------------------------------------------
-		-- Single Keyword or Smart Selection:
-		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Display Dialog to make sure the current path is acceptable:
-			--------------------------------------------------------------------------------
-			if howManyClips == 1 then
-				local result = dialog.displayMessage(i18n("batchExportCheckPathOne") .. "\n\n" .. lastSavePath .. "\n\n" .. i18n("batchExportCheckPathTwo"), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-				if result == nil then return end
-			else
-				local result = dialog.displayMessage(i18n("batchExportCheckPathThree") .. " " .. howManyClips .. " " .. i18n("batchExportCheckPathFour") .. "\n\n" .. lastSavePath .. "\n\n" .. i18n("batchExportCheckPathTwo"), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-				if result == nil then return end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Bring Focus Back to Clips:
-			--------------------------------------------------------------------------------
-			if fcpxBrowserMode == "List" then
-				local listPosition = browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][1]:attributeValue("AXPosition")
-				tools.ninjaMouseClick(listPosition)
-			end
-
-			--------------------------------------------------------------------------------
-			-- Let the games begin!
-			--------------------------------------------------------------------------------
-			if fcpxBrowserMode == "Filmstrip" then
-				for i=1, #whichGroupThree do
-
-					--------------------------------------------------------------------------------
-					-- Which Layout Item:
-					--------------------------------------------------------------------------------
-					whichLayoutItem = nil
-					local noRangeSelected = false
-					for x=1, (browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValueCount("AXChildren")) do
-						if browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXLayoutItem" then
-							whichLayoutItem = x
-						else
-							--------------------------------------------------------------------------------
-							-- If one of the clips doesn't have a range selected:
-							--------------------------------------------------------------------------------
-							if browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichGroupThree[i]]:attributeValue("AXChildren")[x]:attributeValue("AXRole") == "AXImage" then
-								whichLayoutItem = x
-								noRangeSelected = true
-							end
-						end
-					end
-					if whichLayoutItem == nil then
-						dialog.displayErrorMessage("Unable to locate Layout Item.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- If one of the clips doesn't have a range selected:
-					--------------------------------------------------------------------------------
-					::checkClipPositionTop::
-					if noRangeSelected then
-						clipPosition = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem]:attributeValue("AXPosition")
-					else
-						clipPosition = browserSplitGroup[whichGroup][whichScrollArea][whichGroupTwo][whichGroupThree[i]][whichLayoutItem][1]:attributeValue("AXPosition")
-					end
-
-					clipPosition['x'] = clipPosition['x'] + 5
-					clipPosition['y'] = clipPosition['y'] + 10
-
-					--------------------------------------------------------------------------------
-					-- Make sure the clip is actually visible:
-					--------------------------------------------------------------------------------
-					local scrollAreaPosition = browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXPosition")
-					local scrollAreaSize = browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXSize")
-
-						--------------------------------------------------------------------------------
-						-- Need to scroll up:
-						--------------------------------------------------------------------------------
-						if clipPosition['y'] < scrollAreaPosition['y'] then
-							local scrollBarValue = browserSplitGroup[whichGroup][whichScrollArea][2][1]:attributeValue("AXValue")
-							browserSplitGroup[whichGroup][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue - 0.02))
-							goto checkClipPositionTop
-						end
-
-						--------------------------------------------------------------------------------
-						-- Need to scroll down:
-						--------------------------------------------------------------------------------
-						if clipPosition['y'] > (scrollAreaPosition['y']+scrollAreaSize['h']) then
-							local scrollBarValue = browserSplitGroup[whichGroup][whichScrollArea][2][1]:attributeValue("AXValue")
-							browserSplitGroup[whichGroup][whichScrollArea][2][1]:setAttributeValue("AXValue", (scrollBarValue + 0.02))
-							goto checkClipPositionTop
-						end
-
-					--------------------------------------------------------------------------------
-					-- Click Thumbnail:
-					--------------------------------------------------------------------------------
-					tools.ninjaMouseClick(browserSplitGroup[whichGroup][whichScrollArea]:attributeValue("AXPosition"))
-					timer.usleep(0.2)
-					tools.ninjaMouseClick(clipPosition)
-
-					--------------------------------------------------------------------------------
-					-- Trigger CMD+E (Export Using Default Share):
-					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Wait for window to open:
-					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
-
-					local timeoutCount = 0
-					local exportWindowOpen = false
-
-					::waitForExportWindowC::
-					whichExportWindow = nil
-					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-									if fcpxExportWindow[yi][yx]:attributeValue("AXIdentifier") == "_NS:17" then
-										exportWindowOpen = true
-										whichExportWindow = yi
-									end
-								end
-							end
-						end
-					end
-
-					if exportWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 5 then
-							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up (Instance 2).")
-							return "Failed"
-						else
-							timer.usleep(1000000)
-							goto waitForExportWindowC
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find 'Share' Button:
-					--------------------------------------------------------------------------------
-					whichNextButton = nil
-					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXIdentifier") == "_NS:139" then
-								whichNextButton = yi
-							end
-						end
-					end
-					if whichNextButton == nil then
-						dialog.displayErrorMessage("Unable to locate Share Button.\n\nError occured in batchExport().")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Then press it:
-					--------------------------------------------------------------------------------
-					local pressNextButtonResult = fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-					if pressNextButtonResult == nil then
-						dialog.displayErrorMessage("Failed to press Share Button.\n\nError occured in batchExport().")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Wait for Save Window to Open:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-					local saveWindowOpen = false
-
-					whichSaveSheet = nil
-
-					::waitForSaveWindowC::
-					for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][yi]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow][yi]:attributeValue("AXDescription") == "save" then
-								whichSaveSheet = yi
-								saveWindowOpen = true
-							end
-						end
-					end
-					if whichSaveSheet == nil then
-						dialog.displayErrorMessage("Unable to locate Save Window.")
-						return "Failed"
-					end
-
-					if saveWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 10 then
-							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto waitForSaveWindowC
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find Save Button:
-					--------------------------------------------------------------------------------
-					whichSaveButton = nil
-					for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Save" then
-								whichSaveButton = yi
-							end
-						end
-					end
-					if whichSaveButton == nil then
-						dialog.displayErrorMessage("Unable to locate Group Two.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Press Save Button:
-					--------------------------------------------------------------------------------
-					local pressSaveButtonResult = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-					if pressSaveButtonResult == nil then
-						dialog.displayErrorMessage("Unable to press Save Button.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Make sure Save Window is closed:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-
-					::checkSaveWindowIsClosedC::
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-						-- Continue on...
-					else
-
-						--------------------------------------------------------------------------------
-						-- If an alert appears, click Cancel:
-						--------------------------------------------------------------------------------
-						whichAlertSheet = nil
-						whichAlertButton = nil
-						performCancel = false
-						for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXSheet" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXDescription") == "alert" then
-									for yx=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][yi]:attributeValueCount("AXChildren") do
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXRole") == "AXButton" then
-											if fcpxExportWindow[whichExportWindow][whichSaveSheet][yi][yx]:attributeValue("AXTitle") == "Cancel" then
-												whichAlertSheet = yi
-												whichAlertButton = yx
-												performCancel = true
-											end
-										end
-									end
-								end
-							end
-						end
-						if performCancel then
-							cancelCount = cancelCount + 1
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Alert:
-							--------------------------------------------------------------------------------
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press Cancel on the Alert.")
-								return "Failed"
-							end
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Save Dialog:
-							--------------------------------------------------------------------------------
-							whichCancelButton = nil
-							for yi=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelButton = yi
-									end
-								end
-							end
-							if whichCancelButton == nil then
-								dialog.displayErrorMessage("Unable to locate the cancel button.")
-								return "Failed"
-							end
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press the cancel button on the save dialog.")
-								return "Failed"
-							end
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Export Window:
-							--------------------------------------------------------------------------------
-							whichCancelExportButton = nil
-							for yi=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow]:attributeValue("AXChildren")[yi]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelExportButton = yi
-									end
-								end
-							end
-							if whichCancelExportButton == nil then
-								dialog.displayErrorMessage("Unable to locate Group Two.")
-								return "Failed"
-							end
-							local pressCancelButton = fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-							if pressCancelButton == nil then
-								dialog.displayErrorMessage("Unable to press the Cancel button on the Export Window.")
-								return "Failed"
-							end
-
-							goto nextClipInFilmstripQueueC
-
-						end
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 20 then
-							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto checkSaveWindowIsClosedC
-						end
-					end
-					::nextClipInFilmstripQueueC::
+					saveSheet:pressCancel()
+					exportDialog:pressCancel()
+					failedExports = failedExports + 1
 				end
 			end
-			--------------------------------------------------------------------------------
-			-- List Mode:
-			--------------------------------------------------------------------------------
-			if fcpxBrowserMode == "List" then
-				for i=1, #whichRows do
-
-					--------------------------------------------------------------------------------
-					-- Select clip:
-					--------------------------------------------------------------------------------
-					browserSplitGroup[whichGroup][whichSplitGroupThree][whichScrollArea][whichOutline][whichRows[i]]:setAttributeValue("AXSelected", true)
-
-					--------------------------------------------------------------------------------
-					-- Trigger CMD+E (Export Using Default Share)
-					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
-						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Wait for window to open:
-					--------------------------------------------------------------------------------
-					fcpxExportWindow = ax.applicationElement(fcpx)
-
-					local timeoutCount = 0
-					local exportWindowOpen = false
-
-					::waitForExportWindow::
-					whichExportWindow = nil
-					for yi=1, (fcpxExportWindow:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValue("AXRole") == "AXWindow" then
-							for yx=1, fcpxExportWindow:attributeValue("AXChildren")[yi]:attributeValueCount("AXChildren") do
-								if fcpxExportWindow[yi][yx]:attributeValue("AXRole") == "AXImage" then
-									if fcpxExportWindow[yi][yx]:attributeValue("AXIdentifier") == "_NS:17" then
-										exportWindowOpen = true
-										whichExportWindow = yi
-									end
-								end
-							end
-						end
-					end
-
-					if exportWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 10 then
-							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up (Instance 3).")
-							return "Failed"
-						else
-							keyStrokeFromPlist("ShareDefaultDestination")
-							timer.usleep(500000)
-							goto waitForExportWindow
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find Next Button:
-					--------------------------------------------------------------------------------
-					whichNextButton = nil
-					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Next…" then
-								whichNextButton = i
-							end
-						end
-					end
-					if whichNextButton == nil then
-						dialog.displayErrorMessage("Unable to locate Group Two.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Then press it:
-					--------------------------------------------------------------------------------
-					fcpxExportWindow[whichExportWindow][whichNextButton]:performAction("AXPress")
-
-					--------------------------------------------------------------------------------
-					-- Wait for Save Window to Open:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-					local saveWindowOpen = false
-
-					whichSaveSheet = nil
-
-					::waitForSaveWindow::
-					for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXSheet" then
-							if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXDescription") == "save" then
-								whichSaveSheet = i
-								saveWindowOpen = true
-							end
-						end
-					end
-					if whichSaveSheet == nil then
-						dialog.displayErrorMessage("Unable to locate Save Window.")
-						return "Failed"
-					end
-
-					if saveWindowOpen == false then
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 10 then
-							dialog.displayErrorMessage("It took too long for Save Window to open so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto waitForSaveWindow
-						end
-					end
-
-					--------------------------------------------------------------------------------
-					-- Find Save Button:
-					--------------------------------------------------------------------------------
-					whichSaveButton = nil
-					for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-						if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Save" then
-								whichSaveButton = i
-							end
-						end
-					end
-					if whichSaveButton == nil then
-						dialog.displayErrorMessage("Unable to locate Group Two.")
-						return "Failed"
-					end
-
-					--------------------------------------------------------------------------------
-					-- Press Save Button:
-					--------------------------------------------------------------------------------
-					fcpxExportWindow[whichExportWindow][whichSaveSheet][whichSaveButton]:performAction("AXPress")
-
-					--------------------------------------------------------------------------------
-					-- Make sure Save Window is closed:
-					--------------------------------------------------------------------------------
-					local timeoutCount = 0
-
-					::checkSaveWindowIsClosed::
-					if fcpxExportWindow[whichExportWindow][whichSaveSheet] == nil then
-						-- Continue on...
-					else
-
-						--------------------------------------------------------------------------------
-						-- If an alert appears, click Cancel:
-						--------------------------------------------------------------------------------
-						whichAlertSheet = nil
-						whichAlertButton = nil
-						performCancel = false
-						for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-							if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXSheet" then
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXDescription") == "alert" then
-									for x=1, fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValueCount("AXChildren") do
-										if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXRole") == "AXButton" then
-											if fcpxExportWindow[whichExportWindow][whichSaveSheet][i][x]:attributeValue("AXTitle") == "Cancel" then
-												whichAlertSheet = i
-												whichAlertButton = x
-												performCancel = true
-											end
-										end
-									end
-								end
-							end
-						end
-						if performCancel then
-							cancelCount = cancelCount + 1
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Alert:
-							--------------------------------------------------------------------------------
-							fcpxExportWindow[whichExportWindow][whichSaveSheet][whichAlertSheet][whichAlertButton]:performAction("AXPress")
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Save Dialog:
-							--------------------------------------------------------------------------------
-							whichCancelButton = nil
-							for i=1, (fcpxExportWindow[whichExportWindow][whichSaveSheet]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][whichSaveSheet][i]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelButton = i
-									end
-								end
-							end
-							if whichCancelButton == nil then
-								dialog.displayErrorMessage("Unable to locate the cancel button.")
-								return "Failed"
-							end
-							fcpxExportWindow[whichExportWindow][whichSaveSheet][whichCancelButton]:performAction("AXPress")
-
-							--------------------------------------------------------------------------------
-							-- Press Cancel on the Export Window:
-							--------------------------------------------------------------------------------
-							whichCancelExportButton = nil
-							for i=1, (fcpxExportWindow[whichExportWindow]:attributeValueCount("AXChildren")) do
-								if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXRole") == "AXButton" then
-									if fcpxExportWindow[whichExportWindow][i]:attributeValue("AXTitle") == "Cancel" then
-										whichCancelExportButton = i
-									end
-								end
-							end
-							if whichCancelExportButton == nil then
-								dialog.displayErrorMessage("Unable to locate Group Two.")
-								return "Failed"
-							end
-							fcpxExportWindow[whichExportWindow][whichCancelExportButton]:performAction("AXPress")
-
-							goto nextClipInListQueue
-
-						end
-						timeoutCount = timeoutCount + 1
-						if timeoutCount == 20 then
-							dialog.displayErrorMessage("It took too long for the Save Window to close so I gave up.")
-							return "Failed"
-						else
-							timer.usleep(500000)
-							goto checkSaveWindowIsClosed
-						end
-					end
-					::nextClipInListQueue::
-				end -- i loop
-			end -- List Mode
-		end -- Left Panel or Right Panel
-
-		--------------------------------------------------------------------------------
-		-- Batch Export Complete:
-		--------------------------------------------------------------------------------
-		if cancelCount == 0 then
-			dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
-		elseif cancelCount == 1 then
-			dialog.displayMessage(i18n("batchExportComplete") .. "\n\n" .. i18n("batchExportOneClipSkipped"), {i18n("done")})
-		else
-			dialog.displayMessage(i18n("batchExportComplete") .. "\n\n" .. cancelCount .. " " .. i18n("batchExportClipsSkipped"), {i18n("done")})
+			return failedExports
 		end
 
-	end
+		--------------------------------------------------------------------------------
+		-- EXPORT USING DEFAULT SHARE:
+		--------------------------------------------------------------------------------
+		function finalCutProShare(value)
+
+			local FFShareDestinationsDefaultDestinationIndex = fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil)
+
+			if value==nil then
+				if FFShareDestinationsDefaultDestinationIndex == nil then
+					return nil
+				end
+			end
+
+			local whichMenuBar = nil
+			local whichMenuOne = nil
+			local whichMenuTwo = nil
+			local whichMenuThree = nil
+			local fcpxElements = ax.applicationElement(fcp.application())
+			if fcpxElements == nil then return nil end
+			for i=1, fcpxElements:attributeValueCount("AXChildren") do
+				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+					whichMenuBar = i
+				end
+			end
+			if whichMenuBar == nil then return nil end
+			for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
+				if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == "File" then
+					whichMenuOne = i
+				end
+			end
+			if whichMenuOne == nil then return nil end
+			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
+				if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == "Share" then
+					whichMenuTwo = i
+				end
+			end
+			if whichMenuTwo == nil then return nil end
+			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
+				if FFShareDestinationsDefaultDestinationIndex ~= nil then
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
+						whichMenuThree = i
+					end
+				else
+					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == value .. "…" then
+						whichMenuThree = i
+					end
+				end
+			end
+			if whichMenuThree == nil then return nil end
+			return fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
+
+		end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
