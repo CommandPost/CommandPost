@@ -8106,26 +8106,16 @@ end
 				--------------------------------------------------------------------------------
 				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
-				-- TO DO: This doesn't seem to be working?
 				if saveSheet:isShowing() then
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceAlert:isShowing() then
 						if batchExportReplaceExistingFiles then
-							debugMessage("Pressed Replace.")
-							--replaceAlert:pressReplace()
-							replaceAlert:pressCancel()
+							replaceAlert:pressReplace()
 						else
-							debugMessage("Pressed Cancel.")
 							replaceAlert:pressCancel()
 						end
-					else
-						debugMessage("No Replace Alert.")
 					end
-					if batchExportReplaceExistingFiles then
-						--saveSheet:pressSave()
-						saveSheet:pressCancel()
-						exportDialog:pressCancel()
-					else
+					if not batchExportReplaceExistingFiles then
 						saveSheet:pressCancel()
 						exportDialog:pressCancel()
 						failedExports = failedExports + 1
