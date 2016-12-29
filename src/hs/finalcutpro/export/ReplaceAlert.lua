@@ -10,6 +10,7 @@ local ReplaceAlert = {}
 function ReplaceAlert.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"
+			and element:attributeValue("AXParent"):attributeValue("AXRole") == "AXSheet"
 			-- NOTE: This AXIdentifier seems to be different on different machines and/or macOS versions:
 		   	-- and element:attributeValue("AXIdentifier") == "_NS:79" --"_NS:46"
 	end

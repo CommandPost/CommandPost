@@ -3867,21 +3867,48 @@ end
 			end
 		end
 		if whichMenuBar == nil then return nil end
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		File
+		-- GERMAN: 		Ablage
+		-- SPANISH: 	Archivo
+		-- FRENCH: 		Fichier
+		-- JAPANESE:	ファイル
+		-- CHINESE:		文件
+		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == "File" then
+			local result = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle")
+			if result == "File" or result == "Ablage" or result == "Archivo" or result == "Fichier" or result == "ファイル" or result == "文件" then
 				whichMenuOne = i
 			end
 		end
 		if whichMenuOne == nil then return nil end
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		Share
+		-- GERMAN: 		Bereitstellen
+		-- SPANISH: 	Compartir
+		-- FRENCH: 		Partager
+		-- JAPANESE:	共有
+		-- CHINESE:		共享
+		--------------------------------------------------------------------------------
 		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-			if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == "Share" then
+			local result = fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle")
+			if result == "Share" or result == "Bereitstellen" or result == "Compartir" or result == "Partager" or result == "共有" or result == "共享" then
 				whichMenuTwo = i
 			end
 		end
 		if whichMenuTwo == nil then return nil end
 		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") - 1 do
 			if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") ~= nil then
-				destinations[#destinations + 1] = string.sub(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), 1, -4)
+				local value = string.sub(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), 1, -4)
+				if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
+					-- Remove (default) text:
+					local firstBracket = string.find(value, " %(", 1)
+					if firstBracket == nil then
+						firstBracket = string.find(value, "（", 1)
+					end
+					value = string.sub(value, 1, firstBracket - 1)
+				end
+				destinations[#destinations + 1] = value
 			end
 		end
 
@@ -3916,7 +3943,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp.running() then
-			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. doYouWantToContinue) then
+			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
 				return "Done"
@@ -8018,6 +8045,7 @@ end
 		--------------------------------------------------------------------------------
 		function batchExportClips(browser, clips)
 
+			local firstTime = true
 			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
 
 			local failedExports = 0
@@ -8085,21 +8113,24 @@ end
 				--------------------------------------------------------------------------------
 				-- Set Custom Export Path (or Default to Desktop):
 				--------------------------------------------------------------------------------
-				local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
-				local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
-				local exportPath = "~/Desktop"
-				if batchExportDestinationFolder ~= nil then
-					 if tools.doesDirectoryExist(batchExportDestinationFolder) then
-						exportPath = batchExportDestinationFolder
-					 end
-				else
-					if tools.doesDirectoryExist(NSNavLastRootDirectory) then
-						exportPath = NSNavLastRootDirectory
+				if firstTime then
+					local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
+					local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
+					local exportPath = "~/Desktop"
+					if batchExportDestinationFolder ~= nil then
+						 if tools.doesDirectoryExist(batchExportDestinationFolder) then
+							exportPath = batchExportDestinationFolder
+						 end
+					else
+						if tools.doesDirectoryExist(NSNavLastRootDirectory) then
+							exportPath = NSNavLastRootDirectory
+						end
 					end
+					eventtap.keyStroke({"cmd", "shift"}, "g")
+					eventtap.keyStrokes(exportPath)
+					eventtap.keyStroke({}, "return")
+					firstTime = false
 				end
-				eventtap.keyStroke({"cmd", "shift"}, "g")
-				eventtap.keyStrokes(exportPath)
-				eventtap.keyStroke({}, "return")
 
 				saveSheet:pressSave()
 
@@ -8109,7 +8140,9 @@ end
 				if saveSheet:isShowing() then
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceAlert:isShowing() then
+						debugMessage("Replace Alert Showing")
 						if batchExportReplaceExistingFiles then
+							debugMessage("pressed replace")
 							replaceAlert:pressReplace()
 						else
 							replaceAlert:pressCancel()
@@ -8142,6 +8175,7 @@ end
 			local whichMenuOne = nil
 			local whichMenuTwo = nil
 			local whichMenuThree = nil
+
 			local fcpxElements = ax.applicationElement(fcp.application())
 			if fcpxElements == nil then return nil end
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -8149,26 +8183,45 @@ end
 					whichMenuBar = i
 				end
 			end
-			if whichMenuBar == nil then return nil end
+			--------------------------------------------------------------------------------
+			-- ENGLISH:		File
+			-- GERMAN: 		Ablage
+			-- SPANISH: 	Archivo
+			-- FRENCH: 		Fichier
+			-- JAPANESE:	ファイル
+			-- CHINESE:		文件
+			--------------------------------------------------------------------------------
 			for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") == "File" then
+				local result = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle")
+				if result == "File" or result == "Ablage" or result == "Archivo" or result == "Fichier" or result == "ファイル" or result == "文件" then
 					whichMenuOne = i
 				end
 			end
 			if whichMenuOne == nil then return nil end
+			--------------------------------------------------------------------------------
+			-- ENGLISH:		Share
+			-- GERMAN: 		Bereitstellen
+			-- SPANISH: 	Compartir
+			-- FRENCH: 		Partager
+			-- JAPANESE:	共有
+			-- CHINESE:		共享
+			--------------------------------------------------------------------------------
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				if fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle") == "Share" then
+				local result = fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle")
+				if result == "Share" or result == "Bereitstellen" or result == "Compartir" or result == "Partager" or result == "共有" or result == "共享" then
 					whichMenuTwo = i
 				end
 			end
 			if whichMenuTwo == nil then return nil end
+
+
 			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
 				if value == nil then
 					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
 						whichMenuThree = i
 					end
 				else
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") == value .. "…" then
+					if string.find(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), value) ~= nil then
 						whichMenuThree = i
 					end
 				end
