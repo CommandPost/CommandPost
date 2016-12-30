@@ -64,10 +64,8 @@ function Filmstrip:clipsUI()
 	if ui then
 		local clips = axutils.childrenWithRole(ui, "AXGroup")
 		if clips then
-			debugMessage("sorting "..#clips.." clips.")
-			table.sort(clips, 
+			table.sort(clips,
 				function(a, b)
-					debugMessage("sorting clip")
 					local aFrame = a:frame()
 					local bFrame = b:frame()
 					if aFrame.y < bFrame.y then -- a is above b
@@ -75,7 +73,7 @@ function Filmstrip:clipsUI()
 					elseif aFrame.y == bFrame.y then
 						if aFrame.x < bFrame.x then -- a is left of b
 							return true
-						elseif aFrame.x == bFrame.x 
+						elseif aFrame.x == bFrame.x
 						   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
 							return true
 						end
@@ -100,18 +98,18 @@ function Filmstrip:showClip(clipUI)
 		local vScroll = self:verticalScrollBarUI()
 		local vFrame = vScroll:frame()
 		local clipFrame = clipUI:frame()
-	
+
 		local top = vFrame.y
 		local bottom = vFrame.y + vFrame.h
 
 		local clipTop = clipFrame.y
 		local clipBottom = clipFrame.y + clipFrame.h
-	
+
 		if clipTop < top or clipBottom > bottom then
 			-- we need to scroll
 			local oFrame = self:contentsUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
-		
+
 			local vValue = nil
 			if clipTop < top or clipFrame.h > vFrame.h then
 				vValue = (clipTop-oFrame.y)/scrollHeight
@@ -133,7 +131,6 @@ function Filmstrip:showClipAt(index)
 end
 
 function Filmstrip:selectClip(clipUI)
-	debugMessage("Filmstrip: selecting clip")
 	local labelUI = axutils.childWithRole(clipUI, "AXTextField")
 	local clickPos = nil
 	self:showClip(clipUI)

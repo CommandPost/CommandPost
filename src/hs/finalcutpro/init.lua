@@ -632,7 +632,7 @@ end
 ---  * True if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
 ---
 function finalcutpro.launch()
-	debugMessage("finalcutpro.launch() called")
+
 	local result = nil
 
 	local fcpx = finalcutpro.application()
@@ -1282,17 +1282,17 @@ function finalcutpro._inspectElement(e, options, i)
 	i = i or 0
 	local depth = options and options.depth or 1
 	local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
-	
+
 	local id = e:attributeValue("AXIdentifier")
 	if id then
 		out = out.. "\n      Identifier = " .. inspect(id)
 	end
-	
+
 	out = out.. "\n      Children   = " .. inspect(#e)
-			
+
 	out = out.. "\n==============================================" ..
 				"\n" .. inspect(e:buildTree(depth)) .. "\n"
-	
+
 	return out
 end
 
@@ -1322,10 +1322,8 @@ function finalcutpro._highlightElement(e)
 	--------------------------------------------------------------------------------
 	local highlightTimer = timer.doAfter(3,
 	function()
-		-- debugMessage("Deleting element highlight...")
 		highlight:delete()
 		highlightTimer = nil
-		-- debugMessage("Deleted element highlight.")
 	end)
 end
 

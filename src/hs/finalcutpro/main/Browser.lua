@@ -72,7 +72,7 @@ end
 function Browser:showOnPrimary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
-	
+
 	-- if the browser is on the secondary, we need to turn it off before enabling in primary
 	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Browser")
 	-- Then enable it in the primary
@@ -83,7 +83,7 @@ end
 function Browser:showOnSecondary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
-	
+
 	menuBar:checkMenu("Window", "Show in Secondary Display", "Browser")
 	return self
 end
@@ -150,7 +150,7 @@ function Browser:selectClipFiltering(filterType)
 end
 
 function Browser:mainGroupUI()
-	return axutils.cache(self, "_mainGroup", 
+	return axutils.cache(self, "_mainGroup",
 	function()
 		local ui = self:UI()
 		return ui and axutils.childWithID(ui, "_NS:344")
@@ -219,10 +219,8 @@ end
 
 function Browser:selectClip(clipUI)
 	if self:isListView() then
-		debugMessage("Selecting clip via list")
 		self:list():selectClip(clipUI)
 	elseif self:isFilmstripView() then
-		debugMessage("Selecting clip via filmstrip")
 		self:filmstrip():selectClip(clipUI)
 	else
 		debugMessage("ERROR: cannot find either list or filmstrip UI")

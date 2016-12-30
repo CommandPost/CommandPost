@@ -147,18 +147,18 @@ function Table:showRow(rowUI)
 	if ui and rowUI then
 		local vFrame = self:viewFrame()
 		local rowFrame = rowUI:frame()
-		
+
 		local top = vFrame.y
 		local bottom = vFrame.y + vFrame.h
 
 		local rowTop = rowFrame.y
 		local rowBottom = rowFrame.y + rowFrame.h
-		
+
 		if rowTop < top or rowBottom > bottom then
 			-- we need to scroll
 			local oFrame = self:outlineUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
-			
+
 			local vValue = nil
 			if rowTop < top or rowFrame.h > scrollHeight then
 				vValue = (rowTop-oFrame.y)/scrollHeight
@@ -185,17 +185,12 @@ function Table:showRowAt(index)
 end
 
 function Table:selectRow(rowUI)
-	debugMessage("row selected started")
 	self:showRow(rowUI)
-	debugMessage("viewFrame: "..inspect(self:viewFrame()))
 	local mouseTarget = geometry.rect(rowUI[1]:frame()).center
-	debugMessage("ninja clicking "..inspect(mouseTarget))
 	tools.ninjaMouseClick(mouseTarget, function()
-		debugMessage("waiting for the row to be selected...")
 		local selected = self:selectedRowsUI()
 		return selected and #selected == 1 and selected[1] == rowUI
 	end)
-	debugMessage("row selection complete")
 end
 
 function Table:selectRowAt(index)
