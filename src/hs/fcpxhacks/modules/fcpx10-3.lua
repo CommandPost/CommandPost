@@ -7913,24 +7913,7 @@ end
 				if browser:isListView() then
 					browser:selectClip(clip)
 				else
-
-					local framePosition = clips[i]:attributeValue("AXParent"):attributeValue("AXPosition")
-					local point = { x = (framePosition["x"] + 1), y = (framePosition["y"] + 2) }
-
-					timer.usleep(1000000)
-
-					local clickState = eventtap.event.properties.mouseEventClickState
-
-					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-
-					timer.usleep(1000000)
-
-					local point = geometry.rect(clips[i][3]:attributeValue("AXFrame")).center
-
-					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-					eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-
+					clips[i]:attributeValue("AXParent"):setAttributeValue("AXSelectedChildren", { clips[i] } )
 				end
 
 				--------------------------------------------------------------------------------
