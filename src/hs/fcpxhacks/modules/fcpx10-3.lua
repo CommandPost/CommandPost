@@ -1016,7 +1016,7 @@ end
 --------------------------------------------------------------------------------
 function getShortcutsFromActiveCommandSet()
 
-	local activeCommandSetTable = fcp.getActiveCommandSetAsTable()
+	local activeCommandSetTable = fcp.getActiveCommandSet()
 
 	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
@@ -1035,22 +1035,22 @@ function getShortcutsFromActiveCommandSet()
 
 						if activeCommandSetTable[k][x]["modifiers"] ~= nil then
 							if string.find(activeCommandSetTable[k][x]["modifiers"], "keypad") then keypadModifier = true end
-							tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
+							tempModifiers = fcp.translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
 						end
 
 						if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
-							tempModifiers = translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+							tempModifiers = fcp.translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
 						end
 
 						if activeCommandSetTable[k][x]["characterString"] ~= nil then
-							tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
+							tempCharacterString = fcp.translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
 						end
 
 						if activeCommandSetTable[k][x]["character"] ~= nil then
 							if keypadModifier then
-								tempCharacterString = translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
+								tempCharacterString = fcp.translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
 							else
-								tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
+								tempCharacterString = fcp.translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
 							end
 						end
 
@@ -1079,22 +1079,22 @@ function getShortcutsFromActiveCommandSet()
 					local keypadModifier = false
 
 					if activeCommandSetTable[k]["modifiers"] ~= nil then
-						tempModifiers = translateKeyboardModifiers(activeCommandSetTable[k]["modifiers"])
+						tempModifiers = fcp.translateKeyboardModifiers(activeCommandSetTable[k]["modifiers"])
 					end
 
 					if activeCommandSetTable[k]["modifierMask"] ~= nil then
-						tempModifiers = translateModifierMask(activeCommandSetTable[k]["modifierMask"])
+						tempModifiers = fcp.translateModifierMask(activeCommandSetTable[k]["modifierMask"])
 					end
 
 					if activeCommandSetTable[k]["characterString"] ~= nil then
-						tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k]["characterString"])
+						tempCharacterString = fcp.translateKeyboardCharacters(activeCommandSetTable[k]["characterString"])
 					end
 
 					if activeCommandSetTable[k]["character"] ~= nil then
 						if keypadModifier then
-							tempCharacterString = translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
+							tempCharacterString = fcp.translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
 						else
-							tempCharacterString = translateKeyboardCharacters(activeCommandSetTable[k]["character"])
+							tempCharacterString = fcp.translateKeyboardCharacters(activeCommandSetTable[k]["character"])
 						end
 					end
 
@@ -1118,118 +1118,6 @@ function getShortcutsFromActiveCommandSet()
 	end
 
 end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM COMMAND SET TO HS FORMAT:
-	--------------------------------------------------------------------------------
-	function translateKeyboardCharacters(input)
-
-		local result = tostring(input)
-
-		if input == " " 									then result = "space"		end
-		if string.find(input, "NSF1FunctionKey") 			then result = "f1" 			end
-		if string.find(input, "NSF2FunctionKey") 			then result = "f2" 			end
-		if string.find(input, "NSF3FunctionKey") 			then result = "f3" 			end
-		if string.find(input, "NSF4FunctionKey") 			then result = "f4" 			end
-		if string.find(input, "NSF5FunctionKey") 			then result = "f5" 			end
-		if string.find(input, "NSF6FunctionKey") 			then result = "f6" 			end
-		if string.find(input, "NSF7FunctionKey") 			then result = "f7" 			end
-		if string.find(input, "NSF8FunctionKey") 			then result = "f8" 			end
-		if string.find(input, "NSF9FunctionKey") 			then result = "f9" 			end
-		if string.find(input, "NSF10FunctionKey") 			then result = "f10" 		end
-		if string.find(input, "NSF11FunctionKey") 			then result = "f11" 		end
-		if string.find(input, "NSF12FunctionKey") 			then result = "f12" 		end
-		if string.find(input, "NSF13FunctionKey") 			then result = "f13" 		end
-		if string.find(input, "NSF14FunctionKey") 			then result = "f14" 		end
-		if string.find(input, "NSF15FunctionKey") 			then result = "f15" 		end
-		if string.find(input, "NSF16FunctionKey") 			then result = "f16" 		end
-		if string.find(input, "NSF17FunctionKey") 			then result = "f17" 		end
-		if string.find(input, "NSF18FunctionKey") 			then result = "f18" 		end
-		if string.find(input, "NSF19FunctionKey") 			then result = "f19" 		end
-		if string.find(input, "NSF20FunctionKey") 			then result = "f20" 		end
-		if string.find(input, "NSUpArrowFunctionKey") 		then result = "up" 			end
-		if string.find(input, "NSDownArrowFunctionKey") 	then result = "down" 		end
-		if string.find(input, "NSLeftArrowFunctionKey") 	then result = "left" 		end
-		if string.find(input, "NSRightArrowFunctionKey") 	then result = "right" 		end
-		if string.find(input, "NSDeleteFunctionKey") 		then result = "delete" 		end
-		if string.find(input, "NSHomeFunctionKey") 			then result = "home" 		end
-		if string.find(input, "NSEndFunctionKey") 			then result = "end" 		end
-		if string.find(input, "NSPageUpFunctionKey") 		then result = "pageup" 		end
-		if string.find(input, "NSPageDownFunctionKey") 		then result = "pagedown" 	end
-
-		--------------------------------------------------------------------------------
-		-- Convert to lowercase:
-		--------------------------------------------------------------------------------
-		result = string.lower(result)
-
-		local convertedToKeycode = tools.keyCodeTranslator(result)
-		if convertedToKeycode == nil then
-			writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
-			result = ""
-		else
-			result = convertedToKeycode
-		end
-
-		return result
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD CHARACTER STRINGS FROM COMMAND SET TO HS FORMAT:
-	--------------------------------------------------------------------------------
-	function translateKeyboardKeypadCharacters(input)
-
-		local result = nil
-		local padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "enter" }
-		for i=1, #padKeys do
-			if input == padKeys[i] then result = "pad" .. input end
-		end
-
-		return translateKeyboardCharacters(result)
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD MODIFIERS FROM COMMAND SET TO HS TABLE FORMAT:
-	--------------------------------------------------------------------------------
-	function translateKeyboardModifiers(input)
-
-		local result = {}
-		if string.find(input, "command") then result[#result + 1] = "command" end
-		if string.find(input, "control") then result[#result + 1] = "control" end
-		if string.find(input, "option") then result[#result + 1] = "option" end
-		if string.find(input, "shift") then result[#result + 1] = "shift" end
-		return result
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TRANSLATE KEYBOARD MODIFIERS FROM COMMAND SET TO HS TABLE FORMAT:
-	--------------------------------------------------------------------------------
-	function translateModifierMask(value)
-
-		local modifiers = {
-			--AlphaShift = 1 << 16,
-			shift      = 1 << 17,
-			control    = 1 << 18,
-			option	   = 1 << 19,
-			command    = 1 << 20,
-			--NumericPad = 1 << 21,
-			--Help       = 1 << 22,
-			--Function   = 1 << 23,
-		}
-
-		local answer = {}
-
-		for k, v in pairs(modifiers) do
-			if (value & v) == v then
-				table.insert(answer, k)
-			end
-		end
-
-		return answer
-
-	end
 
 --------------------------------------------------------------------------------
 -- UPDATE KEYBOARD SHORTCUTS:
@@ -4901,7 +4789,7 @@ end
 		-- Paste in FCPX:
 		--------------------------------------------------------------------------------
 		fcp.launch()
-		if not keyStrokeFromPlist("Paste") then
+		if not fcp.performShortcut("Paste") then
 			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in finalCutProPasteFromClipboardHistory().")
 			return "Failed"
 		end
@@ -4933,7 +4821,7 @@ end
 				-- Paste in FCPX:
 				--------------------------------------------------------------------------------
 				fcp.launch()
-				if not keyStrokeFromPlist("Paste") then
+				if not fcp.performShortcut("Paste") then
 					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occured in pasteFromSharedClipboard().")
 					return "Failed"
 				end
@@ -7770,27 +7658,27 @@ end
 	function cutAndSwitchMulticam(whichMode, whichAngle)
 
 		if whichMode == "Audio" then
-			if not keyStrokeFromPlist("MultiAngleEditStyleAudio") then
+			if not fcp.performShortcut("MultiAngleEditStyleAudio") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Video" then
-			if not keyStrokeFromPlist("MultiAngleEditStyleVideo") then
+			if not fcp.performShortcut("MultiAngleEditStyleVideo") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Both" then
-			if not keyStrokeFromPlist("MultiAngleEditStyleAudioVideo") then
+			if not fcp.performShortcut("MultiAngleEditStyleAudioVideo") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
-		if not keyStrokeFromPlist("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
+		if not fcp.performShortcut("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
 			dialog.displayErrorMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 			return "Failed"
 		end
@@ -7805,12 +7693,12 @@ end
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 		if enableClipboardHistory then clipboard.stopWatching() end
 
-		if not keyStrokeFromPlist("Cut") then
+		if not fcp.performShortcut("Cut") then
 			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occured in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
 
-		if not keyStrokeFromPlist("Paste") then
+		if not fcp.performShortcut("Paste") then
 			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occured in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
@@ -8313,7 +8201,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share)
 					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
+					if not fcp.performShortcut("ShareDefaultDestination") then
 						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
@@ -8635,7 +8523,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share):
 					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
+					if not fcp.performShortcut("ShareDefaultDestination") then
 						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
@@ -8871,7 +8759,7 @@ end
 					--------------------------------------------------------------------------------
 					-- Trigger CMD+E (Export Using Default Share)
 					--------------------------------------------------------------------------------
-					if not keyStrokeFromPlist("ShareDefaultDestination") then
+					if not fcp.performShortcut("ShareDefaultDestination") then
 						dialog.displayErrorMessage("Failed to trigger the 'Export using Default Share Destination' Shortcut.")
 						return "Failed"
 					end
@@ -8905,7 +8793,7 @@ end
 							dialog.displayErrorMessage("It took too long for Export Window to open so I gave up (Instance 3).")
 							return "Failed"
 						else
-							keyStrokeFromPlist("ShareDefaultDestination")
+							fcp.performShortcut("ShareDefaultDestination")
 							timer.usleep(500000)
 							goto waitForExportWindow
 						end
@@ -9269,21 +9157,6 @@ end
 		--------------------------------------------------------------------------------
 		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
-	end
-
---------------------------------------------------------------------------------
--- SHORTCUT RELATED:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- PERFORM KEYSTROKE FROM PLIST DATA:
-	--------------------------------------------------------------------------------
-	function keyStrokeFromPlist(whichShortcut)
-		if mod.finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
-		if mod.finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
-		if next(mod.finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and mod.finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-		eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcut]['modifiers'], 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
-		return true
 	end
 
 --------------------------------------------------------------------------------

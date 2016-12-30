@@ -349,7 +349,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check Hammerspoon Version:
 	--------------------------------------------------------------------------------
-	local requiredHammerspoonVersion 		= semver("0.9.51")
+	local requiredHammerspoonVersion 		= semver("0.9.52")
 	local hammerspoonVersion 				= semver(hs.processInfo["version"])
 	if hammerspoonVersion < requiredHammerspoonVersion then
 		dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
