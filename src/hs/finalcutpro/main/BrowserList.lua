@@ -5,7 +5,7 @@ local Table								= require("hs.finalcutpro.ui.Table")
 local List = {}
 
 function List.matches(element)
-	return element and element:attributeValue("AXIdentifier") == "_NS:658"
+	return element and element:attributeValue("AXRole") == "AXSplitGroup"
 end
 
 function List:new(parent)

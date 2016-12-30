@@ -208,8 +208,6 @@ end
 
 function Table:deselectRow(rowUI)
 	rowUI:setAttributeValue("AXSelected", false)
-	rowUI:parent():setAttributeValue("AXFocused", false)
-	rowUI:parent():setAttributeValue("AXFocused", true)
 	return self
 end
 
@@ -224,15 +222,16 @@ end
 -- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
 function Table:selectAll(rowsUI)
 	rowsUI = rowsUI or self:rowsUI()
-	for i,row in ipairs(rowsUI) do
-		self:selectRow(row)
+	local outline = self:outlineUI()
+	if rowsUI and outline then
+		outline:setAttributeValue("AXSelectedRows", rowsUI)
 	end
 	return self
 end
 
 -- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
 function Table:deselectAll(rowsUI)
-	rowsUI = rowsUI or self:rowsUI()
+	rowsUI = rowsUI or self:selectedRowsUI()
 	if rowsUI then
 		for i,row in ipairs(rowsUI) do
 			self:deselectRow(row)

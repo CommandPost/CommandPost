@@ -3,6 +3,7 @@ local inspect						= require("hs.inspect")
 
 local axutils						= require("hs.finalcutpro.axutils")
 local just							= require("hs.just")
+local eventtap						= require("hs.eventtap")
 
 local GoToPrompt = {}
 
@@ -35,6 +36,13 @@ function GoToPrompt:UI()
 		return axutils.childMatching(self:parent():UI(), GoToPrompt.matches)
 	end,
 	GoToPrompt.matches)
+end
+
+function GoToPrompt:show()
+	if self:parent():isShowing() then
+		eventtap.keyStroke({"cmd", "shift"}, "g")
+	end
+	return self
 end
 
 function GoToPrompt:isShowing()

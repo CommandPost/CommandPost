@@ -13,7 +13,6 @@ local SaveSheet = {}
 function SaveSheet.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"
-		   and axutils.childWithID(element, "_NS:115") ~= nil
 	end
 	return false
 end
@@ -88,6 +87,13 @@ function SaveSheet:getTitle()
 	return ui and ui:title()
 end
 
+function SaveSheet:setPath(path)
+	if self:isShowing() then
+		-- Display the 'Go To' prompt
+		self:goToPrompt():show():setValue(path):pressDefault()
+	end
+	return self
+end
 
 function SaveSheet:replaceAlert()
 	if not self._replaceAlert then

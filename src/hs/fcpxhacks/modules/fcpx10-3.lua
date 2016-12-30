@@ -8007,7 +8007,7 @@ end
 		--------------------------------------------------------------------------------
 		local clips = browser:selectedClipsUI()
 
-		if not clips or #clips == 0 then
+		if browser:sidebar():isFocused() then
 			--------------------------------------------------------------------------------
 			-- Use All Clips:
 			--------------------------------------------------------------------------------
@@ -8056,11 +8056,7 @@ end
 				-- Select Item:
 				--------------------------------------------------------------------------------
 				if browser:isListView() then
-
-					clips[i]:setAttributeValue("AXSelected", true)
-					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", false)
-					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", true)
-
+					browser:selectClip(clip)
 				else
 
 					local framePosition = clips[i]:attributeValue("AXParent"):attributeValue("AXPosition")
@@ -8127,9 +8123,7 @@ end
 							exportPath = NSNavLastRootDirectory
 						end
 					end
-					eventtap.keyStroke({"cmd", "shift"}, "g")
-					eventtap.keyStrokes(exportPath)
-					eventtap.keyStroke({}, "return")
+					saveSheet:setPath(exportPath)
 					firstTime = false
 				end
 
