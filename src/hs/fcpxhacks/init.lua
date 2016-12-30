@@ -349,7 +349,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check Hammerspoon Version:
 	--------------------------------------------------------------------------------
-	local requiredHammerspoonVersion 		= semver("0.9.51")
+	local requiredHammerspoonVersion 		= semver("0.9.52")
 	local hammerspoonVersion 				= semver(hs.processInfo["version"])
 	if hammerspoonVersion < requiredHammerspoonVersion then
 		dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
@@ -448,7 +448,8 @@ function writeToConsole(value, overrideLabel)
 		if not overrideLabel then
 			value = "> "..value
 		end
-		local consoleStyledText = styledtext.new(value, {
+		if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+		local consoleStyledText = styledtext.new(tostring(value), {
 			color = drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },
 		})

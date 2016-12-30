@@ -151,6 +151,10 @@ function hackshud.new()
 			if hsFrontmost ~= nil then
 				if not fcp.frontmost() and hsFrontmost then
 					hackshud.hide()
+				else
+					if not fcp.frontmost() and window.frontmostWindow():title() == "Hammerspoon Console" then
+						hackshud.hide()
+					end
 				end
 			end
 		end
