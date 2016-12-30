@@ -94,7 +94,7 @@ end
 
 function ExportDialog:saveSheet()
 	if not self._saveSheet then
-		self._saveSheet = SaveSheet:new(self:app())
+		self._saveSheet = SaveSheet:new(self)
 	end
 	return self._saveSheet
 end

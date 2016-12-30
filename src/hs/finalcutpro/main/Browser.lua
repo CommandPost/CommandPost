@@ -153,7 +153,7 @@ function Browser:mainGroupUI()
 	return axutils.cache(self, "_mainGroup",
 	function()
 		local ui = self:UI()
-		return ui and axutils.childWithID(ui, "_NS:344")
+		return ui and axutils.childWithRole(ui, "AXSplitGroup")
 	end)
 end
 

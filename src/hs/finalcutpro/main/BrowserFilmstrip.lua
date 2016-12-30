@@ -158,4 +158,15 @@ function Filmstrip:selectClipAt(index)
 	return self
 end
 
+function Filmstrip:selectAll(clipsUI)
+	clipsUI = clipsUI or self:clipsUI()
+	for i,clip in ipairs(clipsUI) do
+		self:selectClip(clip)
+	end
+end
+
+function Filmstrip:deselectAll(clipsUI)
+	-- TODO: figure out how to deselect everything
+end
+
 return Filmstrip

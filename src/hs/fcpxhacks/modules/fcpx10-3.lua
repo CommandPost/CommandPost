@@ -3861,55 +3861,21 @@ end
 	-- CHANGE BATCH EXPORT DESTINATION PRESET:
 	--------------------------------------------------------------------------------
 	function changeBatchExportDestinationPreset()
-
-		local whichMenuBar = nil
-		local whichMenuOne = nil
-		local whichMenuTwo = nil
+		local shareMenu = fcp.app():menuBar():findMenuUI("File", "Share")
+		if not shareMenu or not shareMenu[1] then
+			dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
+			return
+		end
+		local shareMenuItems = shareMenu[1]
 
 		local destinations = {}
 
-		local fcpxElements = ax.applicationElement(fcp.application())
-		if fcpxElements == nil then return nil end
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-				whichMenuBar = i
-			end
-		end
-		if whichMenuBar == nil then return nil end
-		--------------------------------------------------------------------------------
-		-- ENGLISH:		File
-		-- GERMAN: 		Ablage
-		-- SPANISH: 	Archivo
-		-- FRENCH: 		Fichier
-		-- JAPANESE:	ファイル
-		-- CHINESE:		文件
-		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-			local result = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle")
-			if result == "File" or result == "Ablage" or result == "Archivo" or result == "Fichier" or result == "ファイル" or result == "文件" then
-				whichMenuOne = i
-			end
-		end
-		if whichMenuOne == nil then return nil end
-		--------------------------------------------------------------------------------
-		-- ENGLISH:		Share
-		-- GERMAN: 		Bereitstellen
-		-- SPANISH: 	Compartir
-		-- FRENCH: 		Partager
-		-- JAPANESE:	共有
-		-- CHINESE:		共享
-		--------------------------------------------------------------------------------
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-			local result = fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle")
-			if result == "Share" or result == "Bereitstellen" or result == "Compartir" or result == "Partager" or result == "共有" or result == "共享" then
-				whichMenuTwo = i
-			end
-		end
-		if whichMenuTwo == nil then return nil end
-		for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") - 1 do
-			if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle") ~= nil then
-				local value = string.sub(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), 1, -4)
-				if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
+		for i = 1, #shareMenuItems-2 do
+			local item = shareMenuItems[i]
+			local title = item:attributeValue("AXTitle")
+			if title ~= nil then
+				local value = string.sub(title, 1, -4)
+				if item:attributeValue("AXMenuItemCmdChar") then -- it's the default
 					-- Remove (default) text:
 					local firstBracket = string.find(value, " %(", 1)
 					if firstBracket == nil then
@@ -3926,10 +3892,9 @@ end
 		if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
 
 		local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
-		if result == false then return end
-
-		settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
-
+		if result and #result > 0 then
+			settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -8042,7 +8007,7 @@ end
 		--------------------------------------------------------------------------------
 		local clips = browser:selectedClipsUI()
 
-		if not clips or #clips == 0 then
+		if browser:sidebar():isFocused() then
 			--------------------------------------------------------------------------------
 			-- Use All Clips:
 			--------------------------------------------------------------------------------
@@ -8091,11 +8056,7 @@ end
 				-- Select Item:
 				--------------------------------------------------------------------------------
 				if browser:isListView() then
-
-					clips[i]:setAttributeValue("AXSelected", true)
-					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", false)
-					clips[i]:attributeValue("AXParent"):setAttributeValue("AXFocused", true)
-
+					browser:selectClip(clip)
 				else
 
 					local framePosition = clips[i]:attributeValue("AXParent"):attributeValue("AXPosition")
@@ -8162,9 +8123,7 @@ end
 							exportPath = NSNavLastRootDirectory
 						end
 					end
-					eventtap.keyStroke({"cmd", "shift"}, "g")
-					eventtap.keyStrokes(exportPath)
-					eventtap.keyStroke({}, "return")
+					saveSheet:setPath(exportPath)
 					firstTime = false
 				end
 
