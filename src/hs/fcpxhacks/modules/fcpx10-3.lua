@@ -605,50 +605,50 @@ end
 function defaultShortcutKeys()
 	local defaultShortcutKeys = {
 
-		FCPXHackLaunchFinalCutPro									= { characterString = tools.keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
-		FCPXHackShowListOfShortcutKeys 								= { characterString = tools.keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
+		FCPXHackLaunchFinalCutPro									= { characterString = fcp.keyCodeTranslator("l"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
+		FCPXHackShowListOfShortcutKeys 								= { characterString = fcp.keyCodeTranslator("f1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
-		FCPXHackHighlightBrowserPlayhead 							= { characterString = tools.keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealInBrowserAndHighlight 						= { characterString = tools.keyCodeTranslator("f"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, 	releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = tools.keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = tools.keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = tools.keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBatchExportFromBrowser 								= { characterString = tools.keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
-		FCPXHackChangeBackupInterval 								= { characterString = tools.keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackToggleTimecodeOverlays 								= { characterString = tools.keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackToggleMovingMarkers 								= { characterString = tools.keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackAllowTasksDuringPlayback 							= { characterString = tools.keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackHighlightBrowserPlayhead 							= { characterString = fcp.keyCodeTranslator("h"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealInBrowserAndHighlight 						= { characterString = fcp.keyCodeTranslator("f"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, 	releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = fcp.keyCodeTranslator("s"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = fcp.keyCodeTranslator("d"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = fcp.keyCodeTranslator("g"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackBatchExportFromBrowser 								= { characterString = fcp.keyCodeTranslator("e"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
+		FCPXHackChangeBackupInterval 								= { characterString = fcp.keyCodeTranslator("b"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleTimecodeOverlays 								= { characterString = fcp.keyCodeTranslator("t"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleMovingMarkers 								= { characterString = fcp.keyCodeTranslator("y"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackAllowTasksDuringPlayback 							= { characterString = fcp.keyCodeTranslator("p"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, 			releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSelectColorBoardPuckOne 							= { characterString = tools.keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "global") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckTwo 							= { characterString = tools.keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "shadows") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckThree 							= { characterString = tools.keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckFour 							= { characterString = tools.keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckOne 							= { characterString = fcp.keyCodeTranslator("m"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "global") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckTwo 							= { characterString = fcp.keyCodeTranslator(","), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "shadows") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckThree 							= { characterString = fcp.keyCodeTranslator("."), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckFour 							= { characterString = fcp.keyCodeTranslator("/"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackRestoreKeywordPresetOne 							= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetTwo 							= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetThree 							= { characterString = tools.keyCodeTranslator("3"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFour 							= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFive 							= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSix 							= { characterString = tools.keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSeven 							= { characterString = tools.keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetEight 							= { characterString = tools.keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetNine 							= { characterString = tools.keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetOne 							= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetTwo 							= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetThree 							= { characterString = fcp.keyCodeTranslator("3"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFour 							= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFive 							= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSix 							= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSeven 							= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetEight 							= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetNine 							= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSaveKeywordPresetOne 								= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetTwo 								= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetThree 								= { characterString = tools.keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFour 								= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFive 								= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSix 								= { characterString = tools.keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSeven 								= { characterString = tools.keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetEight 								= { characterString = tools.keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetNine 								= { characterString = tools.keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetOne 								= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetTwo 								= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetThree 								= { characterString = fcp.keyCodeTranslator("3"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFour 								= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFive 								= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSix 								= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSeven 								= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetEight 								= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetNine 								= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackEffectsOne			 								= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsTwo			 								= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsThree			 							= { characterString = tools.keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsFour			 								= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsFive			 								= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsOne			 								= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsTwo			 								= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsThree			 							= { characterString = fcp.keyCodeTranslator("3"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsFour			 								= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsFive			 								= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackTransitionsOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(1) end, 						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackTransitionsTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(2) end, 						releasedFn = nil, 														repeatFn = nil },
@@ -668,7 +668,7 @@ function defaultShortcutKeys()
 		FCPXHackGeneratorsFour			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackGeneratorsFive			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackScrollingTimeline	 								= { characterString = tools.keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackScrollingTimeline	 								= { characterString = fcp.keyCodeTranslator("w"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackColorPuckOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global") end,					releasedFn = nil, 											repeatFn = nil },
 		FCPXHackColorPuckTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows") end,					releasedFn = nil, 											repeatFn = nil },
@@ -725,8 +725,8 @@ function defaultShortcutKeys()
 		FCPXHackExposurePuckThreeDown		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 		FCPXHackExposurePuckFourDown	 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackChangeTimelineClipHeightUp 							= { characterString = tools.keyCodeTranslator("+"),		 	modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
-		FCPXHackChangeTimelineClipHeightDown						= { characterString = tools.keyCodeTranslator("-"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+		FCPXHackChangeTimelineClipHeightUp 							= { characterString = fcp.keyCodeTranslator("+"),		 	modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+		FCPXHackChangeTimelineClipHeightDown						= { characterString = fcp.keyCodeTranslator("-"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 
 		FCPXHackCreateOptimizedMediaOn								= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
 		FCPXHackCreateOptimizedMediaOff								= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
@@ -825,58 +825,15 @@ function defaultShortcutKeys()
 		FCPXHackCutSwitchAngle15Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
 		FCPXHackCutSwitchAngle16Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackConsole				 								= { characterString = tools.keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
+		FCPXHackConsole				 								= { characterString = fcp.keyCodeTranslator("space"), 		modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
 
-		FCPXHackHUD					 								= { characterString = tools.keyCodeTranslator("a"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackHUD					 								= { characterString = fcp.keyCodeTranslator("a"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackToggleTouchBar				 						= { characterString = tools.keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleTouchBar				 						= { characterString = fcp.keyCodeTranslator("z"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackLockPlayhead										= { characterString = "", 									modifiers = {}, 									fn = function() toggleLockPlayhead() end, 							releasedFn = nil, 														repeatFn = nil },
 	}
 	return defaultShortcutKeys
-end
-
---------------------------------------------------------------------------------
--- REQUIRED SHORTCUT KEYS:
---------------------------------------------------------------------------------
-function requiredShortcutKeys()
-	local requiredBuiltInShortcuts = {
-			["SetSelectionStart"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["SetSelectionEnd"]											= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["AnchorWithSelectedMedia"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["AnchorWithSelectedMediaBacktimed"]						= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["InsertMedia"]												= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["AppendWithSelectedMedia"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["ToggleEventLibraryBrowser"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["PlayFullscreen"]											= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["ShowTimecodeEntryPlayhead"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["ShareDefaultDestination"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["Paste"]													= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["ToggleKeywordEditor"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["Cut"]														= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["MultiAngleEditStyleAudio"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["MultiAngleEditStyleAudioVideo"]							= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["MultiAngleEditStyleVideo"]								= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle01"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle02"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle03"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle04"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle05"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle06"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle07"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle08"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle09"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle10"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle11"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle12"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle13"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle14"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle15"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["CutSwitchAngle16"]										= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["IncreaseThumbnailSize"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-			["DecreaseThumbnailSize"]									= { characterString = "", modifiers = {}, fn = nil, releasedFn = nil, repeatFn = nil },
-	}
-	return requiredBuiltInShortcuts
 end
 
 --------------------------------------------------------------------------------
@@ -889,11 +846,6 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
-
-	--------------------------------------------------------------------------------
-	-- Table of built-in FCPX Shortcuts we'll use for various things:
-	--------------------------------------------------------------------------------
-	local requiredBuiltInShortcuts = requiredShortcutKeys()
 
 	--------------------------------------------------------------------------------
 	-- Hacks Shortcuts Enabled:
@@ -917,13 +869,6 @@ function bindKeyboardShortcuts()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Merge Above Table with Built-in Final Cut Pro Shortcuts Table:
-		--------------------------------------------------------------------------------
-		for k, v in pairs(requiredBuiltInShortcuts) do
-			mod.finalCutProShortcutKeyPlaceholders[k] = requiredBuiltInShortcuts[k]
-		end
-
-		--------------------------------------------------------------------------------
 		-- If something goes wrong:
 		--------------------------------------------------------------------------------
 		if getShortcutsFromActiveCommandSet() ~= true then
@@ -939,19 +884,15 @@ function bindKeyboardShortcuts()
 	if not enableHacksShortcutsInFinalCutPro then
 
 		--------------------------------------------------------------------------------
+		-- Update Active Command Set for hs.finalcutpro.performShortcut():
+		--------------------------------------------------------------------------------
+		fcp.getActiveCommandSet(nil, true)
+
+		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
 		--------------------------------------------------------------------------------
 		mod.finalCutProShortcutKey = nil
 		mod.finalCutProShortcutKey = defaultShortcutKeys()
-
-		--------------------------------------------------------------------------------
-		-- Get Values of Shortcuts built into Final Cut Pro:
-		--------------------------------------------------------------------------------
-		mod.finalCutProShortcutKeyPlaceholders = requiredBuiltInShortcuts
-		if getShortcutsFromActiveCommandSet() ~= true then
-			dialog.displayErrorMessage(i18n("activeCommandSetError"))
-			return "Fail"
-		end
 
 	end
 
@@ -1016,7 +957,7 @@ end
 --------------------------------------------------------------------------------
 function getShortcutsFromActiveCommandSet()
 
-	local activeCommandSetTable = fcp.getActiveCommandSet()
+	local activeCommandSetTable = fcp.getActiveCommandSet(nil, true)
 
 	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
@@ -5376,7 +5317,7 @@ end
 					--------------------------------------------------------------------------------
 					local whichValueIndicator = nil
 					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
+						if timelineScrollArea[1][i]:attributeValue("AXDescription") == fcp.getTranslation("Playhead") then
 							whichValueIndicator = i
 							goto performScrollingTimelineValueIndicatorExit
 						end
@@ -5458,9 +5399,9 @@ end
 					--------------------------------------------------------------------------------
 					-- If you change the edit the location of the Value Indicator will change:
 					--------------------------------------------------------------------------------
-					if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= mod.labelPlayhead then
+					if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= fcp.getTranslation("Playhead") then
 						for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-							if timelineScrollArea[1][i]:attributeValue("AXDescription") == mod.labelPlayhead then
+							if timelineScrollArea[1][i]:attributeValue("AXDescription") == fcp.getTranslation("Playhead") then
 								whichValueIndicator = i
 								goto performScrollingTimelineValueIndicatorExitX
 							end
@@ -8995,14 +8936,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- UPDATE TRANSLATIONS:
-	--------------------------------------------------------------------------------
-	function updateTranslations()
-		mod.labelPlayhead 			= fcp.getTranslation("Playhead")
-		mod.labelMediaImport		= fcp.getTranslation("Media Import")
-	end
-
-	--------------------------------------------------------------------------------
 	-- PROWL API KEY VALID:
 	--------------------------------------------------------------------------------
 	function prowlAPIKeyValid(input)
@@ -9327,11 +9260,6 @@ end
 		timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
 
 		--------------------------------------------------------------------------------
-		-- Update Translations:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function() updateTranslations() end)
-
-		--------------------------------------------------------------------------------
 		-- Enable Hotkeys:
 		--------------------------------------------------------------------------------
 		hotkeys:enter()
@@ -9538,7 +9466,7 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				-- Get keypress information:
 				--------------------------------------------------------------------------------
-				local whichKey = event:getKeyCode()			-- EXAMPLE: tools.keyCodeTranslator(whichKey) == "c"
+				local whichKey = event:getKeyCode()			-- EXAMPLE: fcp.keyCodeTranslator(whichKey) == "c"
 				local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
 
 				--------------------------------------------------------------------------------
@@ -9574,7 +9502,7 @@ function fullscreenKeyboardWatcher()
 						--------------------------------------------------------------------------------
 						-- Get keypress information:
 						--------------------------------------------------------------------------------
-						local whichKey = event:getKeyCode()			-- EXAMPLE: tools.keyCodeTranslator(whichKey) == "c"
+						local whichKey = event:getKeyCode()			-- EXAMPLE: fcp.keyCodeTranslator(whichKey) == "c"
 						local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
 
 						--------------------------------------------------------------------------------
@@ -9636,7 +9564,7 @@ function mediaImportWatcher()
 						local fcpx = fcp.application()
 						local fcpxElements = ax.applicationElement(fcpx)
 						if fcpxElements[1] ~= nil then
-							if fcpxElements[1]:attributeValue("AXTitle") == mod.labelMediaImport then
+							if fcpxElements[1]:attributeValue("AXTitle") == fcp.getTranslation("Media Import") then
 								if mediaImportCount ~= 0 then
 									--------------------------------------------------------------------------------
 									-- Media Import Window was not open:

@@ -1,11 +1,11 @@
 --- === hs.finalcutpro ===
 ---
---- Controls for Final Cut Pro
+--- API for Final Cut Pro
 ---
 --- Authors:
 ---
 ---   Chris Hocking 	https://latenitefilms.com
----   David Peterson 	https://randomphotons.com/
+---   David Peterson 	https://randomphotons.com
 ---
 
 local finalcutpro = {}
@@ -16,23 +16,22 @@ local finalCutProPreferencesPlistPath 		= "~/Library/Preferences/com.apple.Final
 local finalCutProLanguages 					= {"de", "en", "es", "fr", "ja", "zh_CN"}
 local finalCutProFlexoLanguages				= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
+local App									= require("hs.finalcutpro.App")
 local ax 									= require("hs._asm.axuielement")
+local just									= require("hs.just")
 local plist 								= require("hs.plist")
 
 local application 							= require("hs.application")
-local fs 									= require("hs.fs")
-local osascript 							= require("hs.osascript")
-local json									= require("hs.json")
-
-local App									= require("hs.finalcutpro.App")
-local just									= require("hs.just")
-
-local log									= require("hs.logger").new("fcp")
-local inspect								= require("hs.inspect")
 local drawing								= require("hs.drawing")
-local geometry								= require("hs.geometry")
-local timer									= require("hs.timer")
 local eventtap								= require("hs.eventtap")
+local fs 									= require("hs.fs")
+local geometry								= require("hs.geometry")
+local inspect								= require("hs.inspect")
+local json									= require("hs.json")
+local keycodes								= require("hs.keycodes")
+local log									= require("hs.logger").new("fcp")
+local osascript 							= require("hs.osascript")
+local timer									= require("hs.timer")
 
 finalcutpro.cachedCurrentLanguage 			= nil
 finalcutpro.cachedActiveCommandSet 			= nil
@@ -54,7 +53,7 @@ end
 
 --- keyCodeTranslator() -> string
 --- Function
---- Returns true if Directory Exists else False
+--- Translates string into Keycode
 ---
 --- Parameters:
 ---  * input - string
@@ -62,7 +61,7 @@ end
 --- Returns:
 ---  * Keycode as String or ""
 ---
-local function keyCodeTranslator(input)
+function finalcutpro.keyCodeTranslator(input)
 
 	local englishKeyCodes = {
 		["'"] = 39,
@@ -681,8 +680,10 @@ end
 ---
 function finalcutpro.getActiveCommandSet(optionalPath, forceReload)
 
-	if finalcutpro.cachedActiveCommandSet ~= nil then
-		return finalcutpro.cachedActiveCommandSet
+	if not forceReload then
+		if finalcutpro.cachedActiveCommandSet ~= nil then
+			return finalcutpro.cachedActiveCommandSet
+		end
 	end
 
 	local result = nil
@@ -1383,7 +1384,7 @@ function finalcutpro.translateKeyboardCharacters(input)
 	--------------------------------------------------------------------------------
 	result = string.lower(result)
 
-	local convertedToKeycode = keyCodeTranslator(result)
+	local convertedToKeycode = finalcutpro.keyCodeTranslator(result)
 	if convertedToKeycode == nil then
 		writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
 		result = ""
