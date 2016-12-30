@@ -294,6 +294,7 @@ return {
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
 				enableXMLSharing				=			"Enable XML Sharing",
+				enableVoiceCommands				=			"Enable Voice Commands",
 
 		--------------------------------------------------------------------------------
     	-- Hacks:
@@ -372,6 +373,7 @@ return {
 			blue								=			"Blue",
 			green								=			"Green",
 			yellow								=			"Yellow",
+			custom								=			"Custom",
 
 			--------------------------------------------------------------------------------
 			-- Highlight Shape:

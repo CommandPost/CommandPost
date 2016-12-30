@@ -18,9 +18,10 @@ local dialog = {}
 local alert										= require("hs.alert")
 local console									= require("hs.console")
 local fs										= require("hs.fs")
+local inspect									= require("hs.inspect")
 local osascript									= require("hs.osascript")
-local settings									= require("hs.settings")
 local screen									= require("hs.screen")
+local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local inspect									= require("hs.inspect")
 
@@ -82,7 +83,7 @@ function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, 
 		end repeat
 		return usersInput
 	]]
-	a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
 	if returnToFinalCutPro then fcp.launch() end
 	return result
 end
@@ -126,7 +127,7 @@ function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnsw
 		end repeat
 		return response
 	]]
-	a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
 	if returnToFinalCutPro then fcp.launch() end
 	return result
 end
@@ -147,7 +148,7 @@ function dialog.displayChooseFolder(whatMessage)
 			return false
 		end try
 	]]
-	a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
 	return result
 end
@@ -162,7 +163,7 @@ function dialog.displayAlertMessage(whatMessage)
 		tell me to activate
 		display dialog whatMessage buttons {okButton} with icon stop
 	]]
-	osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
 end
 
@@ -190,7 +191,7 @@ function dialog.displayErrorMessage(whatError)
 			return false
 		end if
 	]]
-	a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 
 	--------------------------------------------------------------------------------
 	-- Send bug report:
@@ -246,7 +247,7 @@ function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 			return false
 		end if
 	]]
-	a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
 	if returnToFinalCutPro then fcp.launch() end
 	return result
 
@@ -282,6 +283,40 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 	local a,result = osascript.applescript(appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
 	if returnToFinalCutPro then fcp.launch() end
 	return result
+end
+
+--------------------------------------------------------------------------------
+-- DISPLAY COLOR PICKER:
+--------------------------------------------------------------------------------
+function dialog.displayColorPicker(customColor) -- Accepts RGB Table
+	local returnToFinalCutPro = fcp.frontmost()
+	local defaultColor = {65535, 65535, 65535}
+	if type(customColor) == "table" then
+		local validColor = true
+		if customColor["red"] == nil then validColor = false end
+		if customColor["green"] == nil then validColor = false end
+		if customColor["blue"] == nil then validColor = false end
+		if validColor then
+			defaultColor = { customColor["red"] * 257 * 255, customColor["green"] * 257 * 255, customColor["blue"] * 257 * 255 }
+		end
+	end
+	local appleScriptA = 'set defaultColor to ' .. inspect(defaultColor) .. '\n\n'
+	local appleScriptB = [[
+		tell me to activate
+		return choose color default color defaultColor
+	]]
+	local a,result = osascript.applescript(appleScriptA .. appleScriptB)
+	if type(result) == "table" then
+		local red = result[1] / 257 / 255
+		local green = result[2] / 257 / 255
+		local blue = result[3] / 257 / 255
+		if red ~= nil and green ~= nil and blue ~= nil then
+			if returnToFinalCutPro then fcp.launch() end
+			return {red=red, green=green, blue=blue, alpha=1}
+		end
+	end
+	if returnToFinalCutPro then fcp.launch() end
+	return nil
 
 end
 

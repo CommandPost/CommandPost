@@ -102,22 +102,28 @@ local windowfilter								= require("hs.window.filter")
 local ax 										= require("hs._asm.axuielement")
 local touchbar 									= require("hs._asm.touchbar")
 
---------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
---------------------------------------------------------------------------------
-
 local fcp										= require("hs.finalcutpro")
 local plist										= require("hs.plist")
 
-local clipboard									= require("hs.fcpxhacks.modules.clipboard")
+--------------------------------------------------------------------------------
+-- MODULES:
+--------------------------------------------------------------------------------
+
 local dialog									= require("hs.fcpxhacks.modules.dialog")
-local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
-local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local i18n										= require("hs.fcpxhacks.modules.i18n")
 local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local slaxml									= require("hs.fcpxhacks.modules.slaxml")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local just										= require("hs.just")
+
+--------------------------------------------------------------------------------
+-- PLUGINS:
+--------------------------------------------------------------------------------
+
+local clipboard									= require("hs.fcpxhacks.plugins.clipboard")
+local hacksconsole								= require("hs.fcpxhacks.plugins.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
+local voicecommands 							= require("hs.fcpxhacks.plugins.voicecommands")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:
@@ -126,6 +132,7 @@ local just										= require("hs.just")
 local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
 												["scrollingTimelineActive"] 					= false,
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
+												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
 												["chooserShowAutomation"] 						= true,
 												["chooserShowShortcuts"] 						= true,
@@ -477,6 +484,13 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.enableHacksHUD") then
 			hackshud.show()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Voice Commands:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableVoiceCommands") then
+			voicecommands.start()
 		end
 
 	else
@@ -1448,15 +1462,6 @@ end
 		--------------------------------------------------------------------------------
 		local displayHighlightColour = nil
 		displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
-		local displayHighlightColourRed = false
-		local displayHighlightColourBlue = false
-		local displayHighlightColourGreen = false
-		local displayHighlightColourYellow = false
-		if displayHighlightColour == nil then 		displayHighlightColourRed 		= true 		end
-		if displayHighlightColour == "Red" then 	displayHighlightColourRed 		= true 		end
-		if displayHighlightColour == "Blue" then 	displayHighlightColourBlue 		= true 		end
-		if displayHighlightColour == "Green" then 	displayHighlightColourGreen 	= true 		end
-		if displayHighlightColour == "Yellow" then 	displayHighlightColourYellow	= true 		end
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
@@ -1798,10 +1803,12 @@ end
 			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
 		}
 		local settingsColourMenuTable = {
-			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColourRed		},
-			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColourBlue	},
-			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColourGreen	},
-			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColourYellow	},
+			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColour == "Red" },
+			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColour == "Blue" },
+			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColour == "Green"	},
+			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColour == "Yellow" },
+			{ title = "-" },
+			{ title = i18n("custom"), 																	fn = function() changeHighlightColour("Custom") end, 				checked = displayHighlightColour == "Custom" },
 		}
 		local settingsHammerspoonSettings = {
 			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
@@ -1951,6 +1958,8 @@ end
 			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
 			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
+			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
+
 		}
 		local toolsTable = {
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
@@ -4004,6 +4013,12 @@ end
 	-- CHANGE HIGHLIGHT COLOUR:
 	--------------------------------------------------------------------------------
 	function changeHighlightColour(value)
+		if value=="Custom" then
+			local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour") or nil
+			local result = dialog.displayColorPicker(displayHighlightCustomColour)
+			if result == nil then return nil end
+			settings.set("fcpxHacks.displayHighlightCustomColour", result)
+		end
 		settings.set("fcpxHacks.displayHighlightColour", value)
 		refreshMenuBar()
 	end
@@ -4145,6 +4160,25 @@ end
 		local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
 		settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
 		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE ENABLE HACKS HUD:
+	--------------------------------------------------------------------------------
+	function toggleEnableVoiceCommands()
+
+		local enableVoiceCommands = settings.get("fcpxHacks.enableVoiceCommands")
+		settings.set("fcpxHacks.enableVoiceCommands", not enableVoiceCommands)
+
+		if enableVoiceCommands then
+			voicecommands:stop()
+		else
+			if fcp.frontmost() then
+				voicecommands:start()
+			end
+		end
+		refreshMenuBar()
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -7940,13 +7974,15 @@ end
 			--------------------------------------------------------------------------------
 			-- Get Highlight Colour Preferences:
 			--------------------------------------------------------------------------------
-			local displayHighlightColour = nil
-			displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
-			if displayHighlightColour == nil then 		displayHighlightColour = "Red" 												end
+			local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or "Red"
 			if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 			if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
 			if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
 			if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
+			if displayHighlightColour == "Custom" then
+				local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour")
+				displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
+			end
 
 			--------------------------------------------------------------------------------
 			-- Highlight the FCPX Browser Playhead:
@@ -8662,6 +8698,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				end
 
 				--------------------------------------------------------------------------------
+				-- Enable Voice Commands:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableVoiceCommands") then
+					voicecommands.start()
+				end
+
+				--------------------------------------------------------------------------------
 				-- Check if we need to show the Touch Bar:
 				--------------------------------------------------------------------------------
 				showTouchbar()
@@ -8701,6 +8744,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 				-- Check if we need to hide the Touch Bar:
 				--------------------------------------------------------------------------------
 				hideTouchbar()
+
+				--------------------------------------------------------------------------------
+				-- Disable Voice Commands:
+				--------------------------------------------------------------------------------
+				if settings.get("fcpxHacks.enableVoiceCommands") then
+					voicecommands.stop()
+				end
 
 				--------------------------------------------------------------------------------
 				-- Disable hotkeys:
