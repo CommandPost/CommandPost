@@ -1,47 +1,46 @@
 local axutils						= require("hs.finalcutpro.axutils")
 
-local ReplaceAlert = {}
+local Alert = {}
 
-function ReplaceAlert.matches(element)
+function Alert.matches(element)
 	if element then
-		return element:attributeValue("AXRole") == "AXSheet"			-- it's a sheet
-		   and axutils.childWithRole(element, "AXTextField") == nil 	-- with no text fields
+		return element:attributeValue("AXRole") == "AXSheet"
 	end
 	return false
 end
 
 
-function ReplaceAlert:new(parent)
+function Alert:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function ReplaceAlert:parent()
+function Alert:parent()
 	return self._parent
 end
 
-function ReplaceAlert:app()
+function Alert:app()
 	return self:parent():app()
 end
 
-function ReplaceAlert:UI()
+function Alert:UI()
 	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:parent():UI(), ReplaceAlert.matches)
+		axutils.childMatching(self:parent():UI(), Alert.matches)
 	end,
-	ReplaceAlert.matches)
+	Alert.matches)
 end
 
-function ReplaceAlert:isShowing()
+function Alert:isShowing()
 	return self:UI() ~= nil
 end
 
-function ReplaceAlert:hide()
+function Alert:hide()
 	self:pressCancel()
 end
 
-function ReplaceAlert:pressCancel()
+function Alert:pressCancel()
 	local ui = self:UI()
 	if ui then
 		local btn = ui:cancelButton()
@@ -52,7 +51,7 @@ function ReplaceAlert:pressCancel()
 	return self
 end
 
-function ReplaceAlert:pressReplace()
+function Alert:pressDefault()
 	local ui = self:UI()
 	if ui then
 		local btn = ui:defaultButton()
@@ -63,9 +62,9 @@ function ReplaceAlert:pressReplace()
 	return self
 end
 
-function ReplaceAlert:getTitle()
+function Alert:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()
 end
 
-return ReplaceAlert
+return Alert

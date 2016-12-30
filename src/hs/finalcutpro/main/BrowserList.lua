@@ -98,6 +98,16 @@ function List:selectClipAt(index)
 	return self
 end
 
+function List:selectAll(clipsUI)
+	self:content():selectAll(clipsUI)
+	return self
+end
+
+function List:deselectAll(clipsUI)
+	self:content():deselectAll(clipsUI)
+	return self
+end
+
 function List:isFocused()
 	local player = self:playerUI()
 	return self:content():isFocused() or player and player:focused()

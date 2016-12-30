@@ -138,6 +138,7 @@ return {
 				other							=			"items"
 			},
 
+			batchExportDestinationsNotFound		=			"We were unable to find the list of Share Destinations.",
 			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.",
 			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
 			batchExportCheckPath				=			"Final Cut Pro will export the %{count} selected %{item} using your default export settings to the following location:\n\n\t%{path}\n\nIf you wish to change this location, export something else with your preferred destination first.\n\nPlease do not move the mouse or interrupt Final Cut Pro once you press the Continue button as it may break the automation.\n\nIf there's already a file with the same name in the export destination then that clip will be skipped.",

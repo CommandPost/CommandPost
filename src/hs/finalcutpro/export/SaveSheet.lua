@@ -6,6 +6,7 @@ local just							= require("hs.just")
 local windowfilter					= require("hs.window.filter")
 
 local ReplaceAlert					= require("hs.finalcutpro.export.ReplaceAlert")
+local GoToPrompt					= require("hs.finalcutpro.export.GoToPrompt")
 
 local SaveSheet = {}
 
@@ -18,24 +19,24 @@ function SaveSheet.matches(element)
 end
 
 
-function SaveSheet:new(app)
-	o = {_app = app}
+function SaveSheet:new(parent)
+	o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
+function SaveSheet:parent()
+	return self._parent
+end
+
 function SaveSheet:app()
-	return self._app
+	return self:parent():app()
 end
 
 function SaveSheet:UI()
 	return axutils.cache(self, "_ui", function()
-		local focusedWindowUI = self:app():UI():focusedWindow()
-		if focusedWindowUI and SaveSheet.matches(focusedWindowUI) then
-			return focusedWindowUI
-		end
-		return nil
+		return axutils.childMatching(self:parent():UI(), SaveSheet.matches)
 	end,
 	SaveSheet.matches)
 end
@@ -90,9 +91,16 @@ end
 
 function SaveSheet:replaceAlert()
 	if not self._replaceAlert then
-		self._replaceAlert = ReplaceAlert:new(self:app())
+		self._replaceAlert = ReplaceAlert:new(self)
 	end
 	return self._replaceAlert
+end
+
+function SaveSheet:goToPrompt()
+	if not self._goToPrompt then
+		self._goToPrompt = GoToPrompt:new(self)
+	end
+	return self._goToPrompt
 end
 
 
