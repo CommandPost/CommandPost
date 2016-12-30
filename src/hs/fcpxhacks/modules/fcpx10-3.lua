@@ -189,6 +189,8 @@ mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
 
 mod.installedLanguages							= {}											-- Table of Installed Language Files
 
+mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
+
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
@@ -554,6 +556,8 @@ function loadScript()
 	local checkForUpdatesInterval = settings.get("fcpxHacks.checkForUpdatesInterval")
 	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
+
+	mod.hacksLoaded = true
 
 end
 
@@ -9457,141 +9461,9 @@ end
 function finalCutProWatcher(appName, eventType, appObject)
 	if (appName == "Final Cut Pro") then
 		if (eventType == application.watcher.activated) then
-			--------------------------------------------------------------------------------
-	  		-- Final Cut Pro Activated:
-	  		--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Update Current Language:
-				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
-
-				--------------------------------------------------------------------------------
-				-- Update Translations:
-				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() updateTranslations() end)
-
-				--------------------------------------------------------------------------------
-				-- Enable Hotkeys:
-				--------------------------------------------------------------------------------
-				hotkeys:enter()
-
-				--------------------------------------------------------------------------------
-				-- Enable Menubar Items:
-				--------------------------------------------------------------------------------
-				refreshMenuBar()
-
-				--------------------------------------------------------------------------------
-				-- Full Screen Keyboard Watcher:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-					fullscreenKeyboardWatcherUp:start()
-					fullscreenKeyboardWatcherDown:start()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Enable Scrolling Timeline Watcher:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-					if scrollingTimelineWatcherUp ~= nil then
-						scrollingTimelineWatcherUp:start()
-						scrollingTimelineWatcherDown:start()
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Enable Lock Timeline Playhead:
-				--------------------------------------------------------------------------------
-				local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-				if lockTimelinePlayhead then
-					fcp.app():timeline():lockPlayhead()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Enable Hacks HUD:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableHacksHUD") then
-					hackshud:show()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Enable Voice Commands:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableVoiceCommands") then
-					voicecommands.start()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Check if we need to show the Touch Bar:
-				--------------------------------------------------------------------------------
-				showTouchbar()
-
+			finalCutProActive()
 		elseif (eventType == application.watcher.deactivated) or (eventType == application.watcher.terminated) then
-			--------------------------------------------------------------------------------
-			-- Final Cut Pro Lost Focus:
-			--------------------------------------------------------------------------------
-
-				--------------------------------------------------------------------------------
-				-- Full Screen Keyboard Watcher:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-					fullscreenKeyboardWatcherUp:stop()
-					fullscreenKeyboardWatcherDown:stop()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Disable Scrolling Timeline Watcher:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-					if scrollingTimelineWatcherUp ~= nil then
-						scrollingTimelineWatcherUp:stop()
-						scrollingTimelineWatcherDown:stop()
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Disable Lock Timeline Playhead:
-				--------------------------------------------------------------------------------
-				local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-				if lockTimelinePlayhead then
-					fcp.app():timeline():unlockPlayhead()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Check if we need to hide the Touch Bar:
-				--------------------------------------------------------------------------------
-				hideTouchbar()
-
-				--------------------------------------------------------------------------------
-				-- Disable Voice Commands:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableVoiceCommands") then
-					voicecommands.stop()
-				end
-
-				--------------------------------------------------------------------------------
-				-- Disable hotkeys:
-				--------------------------------------------------------------------------------
-				hotkeys:exit()
-
-				--------------------------------------------------------------------------------
-				-- Delete the Mouse Circle:
-				--------------------------------------------------------------------------------
-				deleteAllHighlights()
-
-				-------------------------------------------------------------------------------
-				-- If not focussed on Hammerspoon then hide HUD:
-				--------------------------------------------------------------------------------
-				if settings.get("fcpxHacks.enableHacksHUD") then
-					if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
-						hackshud:hide()
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Disable Menubar Items:
-				--------------------------------------------------------------------------------
-				timer.doAfter(0.0000000000001, function() refreshMenuBar() end)
+			finalCutProNotActive()
 		end
 	end
 end
@@ -9706,7 +9578,171 @@ function finalCutProWindowWatcher()
 		end
 	end, true)
 
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Not On Screen:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowNotOnScreen, function()
+		finalCutProNotActive()
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window On Screen:
+	--------------------------------------------------------------------------------
+	finalCutProWindowFilter:subscribe(windowfilter.windowOnScreen, function()
+		finalCutProActive()
+	end, true)
+
 end
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Active:
+	--------------------------------------------------------------------------------
+	function finalCutProActive()
+
+		--------------------------------------------------------------------------------
+		-- Don't trigger until after FCPX Hacks has loaded:
+		--------------------------------------------------------------------------------
+		if not mod.hacksLoaded then return end
+
+		--------------------------------------------------------------------------------
+		-- Update Current Language:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
+
+		--------------------------------------------------------------------------------
+		-- Update Translations:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function() updateTranslations() end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Hotkeys:
+		--------------------------------------------------------------------------------
+		hotkeys:enter()
+
+		--------------------------------------------------------------------------------
+		-- Enable Menubar Items:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
+		--------------------------------------------------------------------------------
+		-- Full Screen Keyboard Watcher:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+			fullscreenKeyboardWatcherUp:start()
+			fullscreenKeyboardWatcherDown:start()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Scrolling Timeline Watcher:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+			if scrollingTimelineWatcherUp ~= nil then
+				scrollingTimelineWatcherUp:start()
+				scrollingTimelineWatcherDown:start()
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Lock Timeline Playhead:
+		--------------------------------------------------------------------------------
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+		if lockTimelinePlayhead then
+			fcp.app():timeline():lockPlayhead()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Hacks HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			hackshud:show()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Enable Voice Commands:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableVoiceCommands") then
+			voicecommands.start()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check if we need to show the Touch Bar:
+		--------------------------------------------------------------------------------
+		showTouchbar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Not Active:
+	--------------------------------------------------------------------------------
+	function finalCutProNotActive()
+
+		--------------------------------------------------------------------------------
+		-- Don't trigger until after FCPX Hacks has loaded:
+		--------------------------------------------------------------------------------
+		if not mod.hacksLoaded then return end
+
+		--------------------------------------------------------------------------------
+		-- Full Screen Keyboard Watcher:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+			fullscreenKeyboardWatcherUp:stop()
+			fullscreenKeyboardWatcherDown:stop()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Disable Scrolling Timeline Watcher:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+			if scrollingTimelineWatcherUp ~= nil then
+				scrollingTimelineWatcherUp:stop()
+				scrollingTimelineWatcherDown:stop()
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Disable Lock Timeline Playhead:
+		--------------------------------------------------------------------------------
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+		if lockTimelinePlayhead then
+			fcp.app():timeline():unlockPlayhead()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check if we need to hide the Touch Bar:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		--------------------------------------------------------------------------------
+		-- Disable Voice Commands:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableVoiceCommands") then
+			voicecommands.stop()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Disable hotkeys:
+		--------------------------------------------------------------------------------
+		hotkeys:exit()
+
+		--------------------------------------------------------------------------------
+		-- Delete the Mouse Circle:
+		--------------------------------------------------------------------------------
+		deleteAllHighlights()
+
+		-------------------------------------------------------------------------------
+		-- If not focussed on Hammerspoon then hide HUD:
+		--------------------------------------------------------------------------------
+		if settings.get("fcpxHacks.enableHacksHUD") then
+			if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
+				hackshud:hide()
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Disable Menubar Items:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function() refreshMenuBar() end)
+	end
 
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY DO THINGS WHEN FCPX PLIST IS UPDATED:
