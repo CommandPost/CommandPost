@@ -7839,6 +7839,11 @@ end
 		end
 
 		--------------------------------------------------------------------------------
+		-- Destination Preset:
+		--------------------------------------------------------------------------------
+		local destinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+
+		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
@@ -7869,13 +7874,16 @@ end
 			--------------------------------------------------------------------------------
 			-- Display Dialog to make sure the current path is acceptable:
 			--------------------------------------------------------------------------------
-			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=#clips, path=exportPath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			local countText = " "
+			if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
+			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
 			if result == nil then return end
 
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
 			failedExports = batchExportClips(browser, clips, exportPath)
+
 		else
 			--------------------------------------------------------------------------------
 			-- No Clips are Available:
@@ -7899,7 +7907,7 @@ end
 		--------------------------------------------------------------------------------
 		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		function batchExportClips(browser, clips, exportPath)
+		function batchExportClips(browser, clips, exportPath, destinationPreset)
 
 			local firstTime = true
 			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
@@ -7913,14 +7921,14 @@ end
 				if browser:isListView() then
 					browser:selectClip(clip)
 				else
+					-- TODO: Move below code to hs.finalcutpro:
 					clips[i]:attributeValue("AXParent"):setAttributeValue("AXSelectedChildren", { clips[i] } )
 				end
 
 				--------------------------------------------------------------------------------
 				-- Trigger Export:
 				--------------------------------------------------------------------------------
-				local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
-				if finalCutProShare(batchExportDestinationPreset) == nil then
+				if fcp.share(destinationPreset) == nil then
 					dialog.displayErrorMessage("Could not trigger Share Menu Item.")
 					return -1
 				end
@@ -7933,11 +7941,10 @@ end
 					dialog.displayErrorMessage("Failed to open the 'Export' window.")
 					return -2
 				end
-
 				exportDialog:pressNext()
 
 				--------------------------------------------------------------------------------
-				-- Click 'Save' on the save sheet
+				-- Click 'Save' on the save sheet:
 				--------------------------------------------------------------------------------
 				local saveSheet = exportDialog:saveSheet()
 				if not just.doUntil(function() return saveSheet:isShowing() end) then
@@ -7952,7 +7959,6 @@ end
 					saveSheet:setPath(exportPath)
 					firstTime = false
 				end
-
 				saveSheet:pressSave()
 
 				--------------------------------------------------------------------------------
@@ -7961,9 +7967,7 @@ end
 				if saveSheet:isShowing() then
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceAlert:isShowing() then
-						debugMessage("Replace Alert Showing")
 						if batchExportReplaceExistingFiles then
-							debugMessage("pressed replace")
 							replaceAlert:pressReplace()
 						else
 							replaceAlert:pressCancel()
@@ -7977,77 +7981,6 @@ end
 				end
 			end
 			return failedExports
-		end
-
-		--------------------------------------------------------------------------------
-		-- EXPORT USING DEFAULT SHARE:
-		--------------------------------------------------------------------------------
-		function finalCutProShare(value)
-
-			local FFShareDestinationsDefaultDestinationIndex = fcp.getPreference("FFShareDestinationsDefaultDestinationIndex", nil)
-
-			if value==nil then
-				if FFShareDestinationsDefaultDestinationIndex == nil then
-					return nil
-				end
-			end
-
-			local whichMenuBar = nil
-			local whichMenuOne = nil
-			local whichMenuTwo = nil
-			local whichMenuThree = nil
-
-			local fcpxElements = ax.applicationElement(fcp.application())
-			if fcpxElements == nil then return nil end
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-					whichMenuBar = i
-				end
-			end
-			--------------------------------------------------------------------------------
-			-- ENGLISH:		File
-			-- GERMAN: 		Ablage
-			-- SPANISH: 	Archivo
-			-- FRENCH: 		Fichier
-			-- JAPANESE:	ファイル
-			-- CHINESE:		文件
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
-				local result = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle")
-				if result == "File" or result == "Ablage" or result == "Archivo" or result == "Fichier" or result == "ファイル" or result == "文件" then
-					whichMenuOne = i
-				end
-			end
-			if whichMenuOne == nil then return nil end
-			--------------------------------------------------------------------------------
-			-- ENGLISH:		Share
-			-- GERMAN: 		Bereitstellen
-			-- SPANISH: 	Compartir
-			-- FRENCH: 		Partager
-			-- JAPANESE:	共有
-			-- CHINESE:		共享
-			--------------------------------------------------------------------------------
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
-				local result = fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle")
-				if result == "Share" or result == "Bereitstellen" or result == "Compartir" or result == "Partager" or result == "共有" or result == "共享" then
-					whichMenuTwo = i
-				end
-			end
-			if whichMenuTwo == nil then return nil end
-			for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
-				if value == nil then
-					if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
-						whichMenuThree = i
-					end
-				else
-					if string.find(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), value) ~= nil then
-						whichMenuThree = i
-					end
-				end
-			end
-			if whichMenuThree == nil then return nil end
-			return fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
-
 		end
 
 --------------------------------------------------------------------------------

@@ -179,6 +179,84 @@ function finalcutpro.keyCodeTranslator(input)
 
 end
 
+--- hs.finalcutpro.share() -> string
+--- Function
+--- Triggers the Final Cut Pro Share Menubar
+---
+--- Parameters:
+---  * value - the Share item you want to select
+---
+--- Returns:
+---  * true or nil if an error has occurred
+---
+function finalcutpro.share(value)
+
+	local FFShareDestinationsDefaultDestinationIndex = finalcutpro.getPreference("FFShareDestinationsDefaultDestinationIndex", nil)
+
+	if value==nil then
+		if FFShareDestinationsDefaultDestinationIndex == nil then
+			return nil
+		end
+	end
+
+	local whichMenuBar = nil
+	local whichMenuOne = nil
+	local whichMenuTwo = nil
+	local whichMenuThree = nil
+
+	local fcpxElements = ax.applicationElement(finalcutpro.application())
+	if fcpxElements == nil then return nil end
+	for i=1, fcpxElements:attributeValueCount("AXChildren") do
+		if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
+			whichMenuBar = i
+		end
+	end
+	--------------------------------------------------------------------------------
+	-- ENGLISH:		File
+	-- GERMAN: 		Ablage
+	-- SPANISH: 	Archivo
+	-- FRENCH: 		Fichier
+	-- JAPANESE:	ファイル
+	-- CHINESE:		文件
+	--------------------------------------------------------------------------------
+	for i=1, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") do
+		local result = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle")
+		if result == "File" or result == "Ablage" or result == "Archivo" or result == "Fichier" or result == "ファイル" or result == "文件" then
+			whichMenuOne = i
+		end
+	end
+	if whichMenuOne == nil then return nil end
+	--------------------------------------------------------------------------------
+	-- ENGLISH:		Share
+	-- GERMAN: 		Bereitstellen
+	-- SPANISH: 	Compartir
+	-- FRENCH: 		Partager
+	-- JAPANESE:	共有
+	-- CHINESE:		共享
+	--------------------------------------------------------------------------------
+	for i=1, fcpxElements[whichMenuBar][whichMenuOne][1]:attributeValueCount("AXChildren") do
+		local result = fcpxElements[whichMenuBar][whichMenuOne][1][i]:attributeValue("AXTitle")
+		if result == "Share" or result == "Bereitstellen" or result == "Compartir" or result == "Partager" or result == "共有" or result == "共享" then
+			whichMenuTwo = i
+		end
+	end
+	if whichMenuTwo == nil then return nil end
+	for i=1, fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1]:attributeValueCount("AXChildren") do
+		if value == nil then
+			if fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXMenuItemCmdChar") ~= nil then
+				whichMenuThree = i
+			end
+		else
+			if string.find(fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][i]:attributeValue("AXTitle"), value) ~= nil then
+				whichMenuThree = i
+			end
+		end
+	end
+	if whichMenuThree == nil then return nil end
+	return fcpxElements[whichMenuBar][whichMenuOne][1][whichMenuTwo][1][whichMenuThree]:performAction("AXPress")
+
+end
+
 --- hs.finalcutpro.currentLanguage() -> string
 --- Function
 --- Returns the language Final Cut Pro is currently using.
