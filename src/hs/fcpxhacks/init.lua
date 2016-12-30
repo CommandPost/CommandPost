@@ -448,7 +448,8 @@ function writeToConsole(value, overrideLabel)
 		if not overrideLabel then
 			value = "> "..value
 		end
-		local consoleStyledText = styledtext.new(value, {
+		if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
+		local consoleStyledText = styledtext.new(tostring(value), {
 			color = drawing.color.definedCollections.hammerspoon["blue"],
 			font = { name = "Menlo", size = 12 },
 		})

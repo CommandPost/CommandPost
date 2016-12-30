@@ -212,7 +212,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	console.titleVisibility("hidden")
 	hotkey.setLogLevel("warning")
-	windowfilter.setLogLevel(1)
+	windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
 	windowfilter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
