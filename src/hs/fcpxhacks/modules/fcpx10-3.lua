@@ -605,233 +605,233 @@ end
 function defaultShortcutKeys()
 	local defaultShortcutKeys = {
 
-		FCPXHackLaunchFinalCutPro									= { characterString = keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
-		FCPXHackShowListOfShortcutKeys 								= { characterString = keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
+		FCPXHackLaunchFinalCutPro									= { characterString = tools.keyCodeTranslator("l"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
+		FCPXHackShowListOfShortcutKeys 								= { characterString = tools.keyCodeTranslator("f1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
-		FCPXHackHighlightBrowserPlayhead 							= { characterString = keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealInBrowserAndHighlight 						= { characterString = keyCodeTranslator("f"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, 	releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBatchExportFromBrowser 								= { characterString = keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
-		FCPXHackChangeBackupInterval 								= { characterString = keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackToggleTimecodeOverlays 								= { characterString = keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackToggleMovingMarkers 								= { characterString = keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackAllowTasksDuringPlayback 							= { characterString = keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackHighlightBrowserPlayhead 							= { characterString = tools.keyCodeTranslator("h"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealInBrowserAndHighlight 						= { characterString = tools.keyCodeTranslator("f"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end, 	releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = tools.keyCodeTranslator("s"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = tools.keyCodeTranslator("d"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = tools.keyCodeTranslator("g"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackBatchExportFromBrowser 								= { characterString = tools.keyCodeTranslator("e"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
+		FCPXHackChangeBackupInterval 								= { characterString = tools.keyCodeTranslator("b"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleTimecodeOverlays 								= { characterString = tools.keyCodeTranslator("t"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleMovingMarkers 								= { characterString = tools.keyCodeTranslator("y"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackAllowTasksDuringPlayback 							= { characterString = tools.keyCodeTranslator("p"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() togglePerformTasksDuringPlayback() end, 			releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSelectColorBoardPuckOne 							= { characterString = keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "global") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckTwo 							= { characterString = keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "shadows") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckThree 							= { characterString = keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectColorBoardPuckFour 							= { characterString = keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckOne 							= { characterString = tools.keyCodeTranslator("m"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "global") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckTwo 							= { characterString = tools.keyCodeTranslator(","), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "shadows") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckThree 							= { characterString = tools.keyCodeTranslator("."), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectColorBoardPuckFour 							= { characterString = tools.keyCodeTranslator("/"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackRestoreKeywordPresetOne 							= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetTwo 							= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetThree 							= { characterString = keyCodeTranslator("3"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFour 							= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFive 							= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSix 							= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSeven 							= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetEight 							= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetNine 							= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetOne 							= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetTwo 							= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetThree 							= { characterString = tools.keyCodeTranslator("3"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFour 							= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFive 							= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSix 							= { characterString = tools.keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSeven 							= { characterString = tools.keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetEight 							= { characterString = tools.keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetNine 							= { characterString = tools.keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSaveKeywordPresetOne 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetTwo 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetThree 								= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFour 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFive 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSix 								= { characterString = keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSeven 								= { characterString = keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetEight 								= { characterString = keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetNine 								= { characterString = keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetOne 								= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetTwo 								= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetThree 								= { characterString = tools.keyCodeTranslator("3"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFour 								= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFive 								= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSix 								= { characterString = tools.keyCodeTranslator("6"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSeven 								= { characterString = tools.keyCodeTranslator("7"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetEight 								= { characterString = tools.keyCodeTranslator("8"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetNine 								= { characterString = tools.keyCodeTranslator("9"), 		modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackEffectsOne			 								= { characterString = keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsTwo			 								= { characterString = keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsThree			 							= { characterString = keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsFour			 								= { characterString = keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackEffectsFive			 								= { characterString = keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsOne			 								= { characterString = tools.keyCodeTranslator("1"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsTwo			 								= { characterString = tools.keyCodeTranslator("2"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsThree			 							= { characterString = tools.keyCodeTranslator("3"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsFour			 								= { characterString = tools.keyCodeTranslator("4"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackEffectsFive			 								= { characterString = tools.keyCodeTranslator("5"), 		modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackTransitionsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(1) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTransitionsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(2) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTransitionsThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTransitionsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTransitionsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTransitionsOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(1) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTransitionsTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(2) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTransitionsThree			 						= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(3) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTransitionsFour			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(4) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTransitionsFive			 							= { characterString = "", 									modifiers = {}, 									fn = function() transitionsShortcut(5) end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackTitlesOne			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(1) end, 								releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTitlesTwo			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(2) end, 								releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTitlesThree			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(3) end, 								releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTitlesFour			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(4) end, 								releasedFn = nil, 														repeatFn = nil },
-		FCPXHackTitlesFive			 								= { characterString = "", 							modifiers = {}, 									fn = function() titlesShortcut(5) end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTitlesOne			 								= { characterString = "", 									modifiers = {}, 									fn = function() titlesShortcut(1) end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTitlesTwo			 								= { characterString = "", 									modifiers = {}, 									fn = function() titlesShortcut(2) end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTitlesThree			 								= { characterString = "", 									modifiers = {}, 									fn = function() titlesShortcut(3) end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTitlesFour			 								= { characterString = "", 									modifiers = {}, 									fn = function() titlesShortcut(4) end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackTitlesFive			 								= { characterString = "", 									modifiers = {}, 									fn = function() titlesShortcut(5) end, 								releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackGeneratorsOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackGeneratorsTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackGeneratorsThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackGeneratorsFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackGeneratorsFive			 							= { characterString = "", 							modifiers = {}, 									fn = function() generatorsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackGeneratorsOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackGeneratorsTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackGeneratorsThree			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(3) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackGeneratorsFour			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(4) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackGeneratorsFive			 							= { characterString = "", 									modifiers = {}, 									fn = function() generatorsShortcut(5) end, 							releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackScrollingTimeline	 								= { characterString = keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackScrollingTimeline	 								= { characterString = tools.keyCodeTranslator("w"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleScrollingTimeline() end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackColorPuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global") end,					releasedFn = nil, 											repeatFn = nil },
-		FCPXHackColorPuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows") end,					releasedFn = nil, 											repeatFn = nil },
-		FCPXHackColorPuckThree			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones") end,					releasedFn = nil, 											repeatFn = nil },
-		FCPXHackColorPuckFour			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckThree			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackColorPuckFour			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackSaturationPuckOne			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global") end, 				releasedFn = nil, 											repeatFn = nil },
-		FCPXHackSaturationPuckTwo			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows") end, 				releasedFn = nil, 											repeatFn = nil },
-		FCPXHackSaturationPuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones") end, 			releasedFn = nil, 											repeatFn = nil },
-		FCPXHackSaturationPuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights") end, 			releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckOne			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global") end, 				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckTwo			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows") end, 				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckThree			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones") end, 			releasedFn = nil, 											repeatFn = nil },
+		FCPXHackSaturationPuckFour			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights") end, 			releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackExposurePuckOne			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global") end,					releasedFn = nil, 											repeatFn = nil },
-		FCPXHackExposurePuckTwo			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows") end,				releasedFn = nil, 											repeatFn = nil },
-		FCPXHackExposurePuckThree			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones") end,				releasedFn = nil, 											repeatFn = nil },
-		FCPXHackExposurePuckFour			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckOne			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global") end,					releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckTwo			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckThree			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones") end,				releasedFn = nil, 											repeatFn = nil },
+		FCPXHackExposurePuckFour			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights") end,				releasedFn = nil, 											repeatFn = nil },
 
-		FCPXHackColorPuckOneUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckTwoUp			 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "up") end,				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckFourUp		 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckOneUp			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "up") end, 				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoUp			 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "up") end,				releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeUp		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourUp		 								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "up") end,			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckThreeDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckFourDown	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckOneDown		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoDown		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeDown		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "down") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourDown	 								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckTwoLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckThreeLeft		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckFourLeft	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckOneLeft		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoLeft		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeLeft		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourLeft	 								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "left") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackColorPuckOneRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckTwoRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckThreeRight		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackColorPuckFourRight	 								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckOneRight		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "global", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckTwoRight		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "shadows", "right") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckThreeRight		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "midtones", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackColorPuckFourRight	 								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("color", "highlights", "right") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackSaturationPuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckThreeUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckFourUp		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "up") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckOneUp			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckTwoUp			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckThreeUp		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckFourUp		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "up") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackSaturationPuckOneDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckTwoDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackSaturationPuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckOneDown		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckTwoDown		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckThreeDown		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "midtones", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackSaturationPuckFourDown	 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("saturation", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackExposurePuckOneUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckTwoUp			 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckThreeUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckFourUp		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckOneUp			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckTwoUp			 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "up") end, 			releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckThreeUp		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckFourUp		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "up") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackExposurePuckOneDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckTwoDown		 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckThreeDown		 						= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
-		FCPXHackExposurePuckFourDown	 							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckOneDown		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "global", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckTwoDown		 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "shadows", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckThreeDown		 						= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end, 		releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
+		FCPXHackExposurePuckFourDown	 							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end, 	releasedFn = function() colorBoardSelectPuckRelease() end,	repeatFn = nil },
 
-		FCPXHackChangeTimelineClipHeightUp 							= { characterString = keyCodeTranslator("+"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
-		FCPXHackChangeTimelineClipHeightDown						= { characterString = keyCodeTranslator("-"),		modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+		FCPXHackChangeTimelineClipHeightUp 							= { characterString = tools.keyCodeTranslator("+"),		 	modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("up") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
+		FCPXHackChangeTimelineClipHeightDown						= { characterString = tools.keyCodeTranslator("-"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() changeTimelineClipHeight("down") end, 				releasedFn = function() changeTimelineClipHeightRelease() end, 			repeatFn = nil },
 
-		FCPXHackCreateOptimizedMediaOn								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCreateOptimizedMediaOff								= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCreateMulticamOptimizedMediaOn						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(true) end, 		releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCreateProxyMediaOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCreateProxyMediaOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackLeaveInPlaceOn										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackLeaveInPlaceOff										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBackgroundRenderOn									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBackgroundRenderOff									= { characterString = "", 							modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateOptimizedMediaOn								= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(true) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateOptimizedMediaOff								= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateOptimizedMedia(false) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateMulticamOptimizedMediaOn						= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(true) end, 		releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateMulticamOptimizedMediaOff						= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateMulticamOptimizedMedia(false) end, 		releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateProxyMediaOn									= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateProxyMedia(true) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCreateProxyMediaOff									= { characterString = "", 									modifiers = {}, 									fn = function() toggleCreateProxyMedia(false) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackLeaveInPlaceOn										= { characterString = "", 									modifiers = {}, 									fn = function() toggleLeaveInPlace(true) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackLeaveInPlaceOff										= { characterString = "", 									modifiers = {}, 									fn = function() toggleLeaveInPlace(false) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackBackgroundRenderOn									= { characterString = "", 									modifiers = {}, 									fn = function() toggleBackgroundRender(true) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackBackgroundRenderOff									= { characterString = "", 									modifiers = {}, 									fn = function() toggleBackgroundRender(false) end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 							modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackChangeSmartCollectionsLabel							= { characterString = "", 									modifiers = {}, 									fn = function() changeSmartCollectionsLabel() end, 					releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSelectClipAtLaneOne									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(1) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneTwo									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(2) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneThree								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(3) end,							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneFour								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(4) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneFive								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(5) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneSix									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(6) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneSeven								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(7) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneEight								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(8) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneNine								= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(9) end, 							releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSelectClipAtLaneTen									= { characterString = "", 							modifiers = {}, 									fn = function() selectClipAtLane(10) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneOne									= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(1) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneTwo									= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(2) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneThree								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(3) end,							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneFour								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(4) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneFive								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(5) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneSix									= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(6) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneSeven								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(7) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneEight								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(8) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneNine								= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(9) end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectClipAtLaneTen									= { characterString = "", 									modifiers = {}, 									fn = function() selectClipAtLane(10) end, 							releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackPuckOneMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "global") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckTwoMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "shadows") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckThreeMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckFourMouse										= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckOneMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "global") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckTwoMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "shadows") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckThreeMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckFourMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackColorPuckOneMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "global") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckTwoMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "shadows") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckThreeMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourMouse									= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckOneMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "global") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckTwoMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "shadows") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckThreeMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckFourMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackSaturationPuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "global") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "shadows") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckThreeMouse							= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackSaturationPuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "highlights") end,releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckOneMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "global") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "shadows") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckThreeMouse							= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackSaturationPuckFourMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "highlights") end,releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackExposurePuckOneMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "global") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckTwoMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "shadows") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckThreeMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackExposurePuckFourMouse								= { characterString = "", 							modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "highlights") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckOneMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "global") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckTwoMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "shadows") end,		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckThreeMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "midtones") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackExposurePuckFourMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("exposure", "highlights") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
-		FCPXHackMoveToPlayhead										= { characterString = "", 							modifiers = {}, 									fn = function() moveToPlayhead() end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackMoveToPlayhead										= { characterString = "", 									modifiers = {}, 									fn = function() moveToPlayhead() end, 								releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackCutSwitchAngle01Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 1) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle02Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 2) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle03Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 3) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle04Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 4) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle05Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 5) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle06Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 6) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle07Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 7) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle08Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 8) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle09Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 9) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle10Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 10) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle11Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 11) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle12Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 12) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle13Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 13) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle14Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 14) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle15Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 15) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle16Video								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 16) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle01Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 1) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle02Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 2) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle03Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 3) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle04Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 4) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle05Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 5) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle06Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 6) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle07Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 7) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle08Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 8) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle09Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 9) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle10Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 10) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle11Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 11) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle12Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 12) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle13Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 13) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle14Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 14) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle15Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 15) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle16Video								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Video", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackCutSwitchAngle01Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 1) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle02Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 2) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle03Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 3) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle04Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 4) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle05Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 5) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle06Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 6) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle07Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 7) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle08Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 8) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle09Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 9) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle10Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 10) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle11Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 11) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle12Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 12) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle13Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 13) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle14Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 14) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle15Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 15) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle16Audio								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 16) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle01Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 1) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle02Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 2) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle03Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 3) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle04Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 4) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle05Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 5) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle06Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 6) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle07Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 7) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle08Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 8) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle09Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 9) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle10Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 10) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle11Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 11) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle12Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 12) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle13Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 13) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle14Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 14) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle15Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 15) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle16Audio								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Audio", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackCutSwitchAngle01Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 1) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle02Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 2) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle03Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 3) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle04Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 4) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle05Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 5) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle06Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 6) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle07Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 7) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle08Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 8) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle09Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 9) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle10Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 10) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle11Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 11) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle12Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 12) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle13Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 13) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle14Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 14) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle15Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
-		FCPXHackCutSwitchAngle16Both								= { characterString = "", 							modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle01Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 1) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle02Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 2) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle03Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 3) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle04Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 4) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle05Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 5) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle06Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 6) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle07Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 7) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle08Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 8) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle09Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 9) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle10Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 10) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle11Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 11) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle12Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 12) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle13Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 13) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle14Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 14) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle15Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 15) end, 				releasedFn = nil, 														repeatFn = nil },
+		FCPXHackCutSwitchAngle16Both								= { characterString = "", 									modifiers = {}, 									fn = function() cutAndSwitchMulticam("Both", 16) end, 				releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackConsole				 								= { characterString = keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
+		FCPXHackConsole				 								= { characterString = tools.keyCodeTranslator("space"), 	modifiers = {"ctrl"}, 								fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil, 									repeatFn = nil },
 
-		FCPXHackHUD					 								= { characterString = keyCodeTranslator("a"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackHUD					 								= { characterString = tools.keyCodeTranslator("a"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleEnableHacksHUD() end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackToggleTouchBar				 						= { characterString = keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
+		FCPXHackToggleTouchBar				 						= { characterString = tools.keyCodeTranslator("z"), 		modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackLockPlayhead										= { characterString = "", 							modifiers = {}, 									fn = function() toggleLockPlayhead() end, 							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackLockPlayhead										= { characterString = "", 									modifiers = {}, 									fn = function() toggleLockPlayhead() end, 							releasedFn = nil, 														repeatFn = nil },
 	}
 	return defaultShortcutKeys
 end
@@ -1162,7 +1162,7 @@ end
 		--------------------------------------------------------------------------------
 		result = string.lower(result)
 
-		local convertedToKeycode = keyCodeTranslator(result)
+		local convertedToKeycode = tools.keyCodeTranslator(result)
 		if convertedToKeycode == nil then
 			writeToConsole("NON-FATAL ERROR: Failed to translate keyboard character (" .. tostring(input) .. ").")
 			result = ""
@@ -9282,164 +9282,8 @@ end
 		if mod.finalCutProShortcutKey[whichShortcut]['modifiers'] == nil then return false end
 		if mod.finalCutProShortcutKey[whichShortcut]['characterString'] == nil then return false end
 		if next(mod.finalCutProShortcutKey[whichShortcut]['modifiers']) == nil and mod.finalCutProShortcutKey[whichShortcut]['characterString'] == "" then return false end
-		eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcut]['modifiers']), 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
+		eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcut]['modifiers'], 	keycodes.map[mod.finalCutProShortcutKey[whichShortcut]['characterString']])
 		return true
-	end
-
-	--------------------------------------------------------------------------------
-	-- MODIFIER MATCH:
-	--------------------------------------------------------------------------------
-	function modifierMatch(inputA, inputB)
-
-		local match = true
-
-		if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-		if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-		if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-		if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
-
-		return match
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- CONVERTS MODIFIERS KEYS INTO SOMETHING EVENTTAP CAN UNDERSTAND:
-	--------------------------------------------------------------------------------
-	function convertModifiersKeysForEventTap(input)
-
-		for i in pairs(input) do
-			if input[i] == "control" 	then input[i] = "ctrl" end
-			if input[i] == "option" 	then input[i] = "alt" end
-			if input[i] == "command" 	then input[i] = "cmd" end
-			if input[i] == "⌃" 			then input[i] = "ctrl" end
-			if input[i] == "⌥" 			then input[i] = "alt" end
-			if input[i] == "⌘" 			then input[i] = "cmd" end
-			if input[i] == "⇧" 			then input[i] = "shift" end
-		end
-
-		return input
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- KEYCODE TRANSLATOR:
-	--------------------------------------------------------------------------------
-	function keyCodeTranslator(input)
-
-		local englishKeyCodes = {
-			["'"] = 39,
-			[","] = 43,
-			["-"] = 27,
-			["."] = 47,
-			["/"] = 44,
-			["0"] = 29,
-			["1"] = 18,
-			["2"] = 19,
-			["3"] = 20,
-			["4"] = 21,
-			["5"] = 23,
-			["6"] = 22,
-			["7"] = 26,
-			["8"] = 28,
-			["9"] = 25,
-			[";"] = 41,
-			["="] = 24,
-			["["] = 33,
-			["\\"] = 42,
-			["]"] = 30,
-			["`"] = 50,
-			["a"] = 0,
-			["b"] = 11,
-			["c"] = 8,
-			["d"] = 2,
-			["delete"] = 51,
-			["down"] = 125,
-			["e"] = 14,
-			["end"] = 119,
-			["escape"] = 53,
-			["f"] = 3,
-			["f1"] = 122,
-			["f10"] = 109,
-			["f11"] = 103,
-			["f12"] = 111,
-			["f13"] = 105,
-			["f14"] = 107,
-			["f15"] = 113,
-			["f16"] = 106,
-			["f17"] = 64,
-			["f18"] = 79,
-			["f19"] = 80,
-			["f2"] = 120,
-			["f20"] = 90,
-			["f3"] = 99,
-			["f4"] = 118,
-			["f5"] = 96,
-			["f6"] = 97,
-			["f7"] = 98,
-			["f8"] = 100,
-			["f9"] = 101,
-			["forwarddelete"] = 117,
-			["g"] = 5,
-			["h"] = 4,
-			["help"] = 114,
-			["home"] = 115,
-			["i"] = 34,
-			["j"] = 38,
-			["k"] = 40,
-			["l"] = 37,
-			["left"] = 123,
-			["m"] = 46,
-			["n"] = 45,
-			["o"] = 31,
-			["p"] = 35,
-			["pad*"] = 67,
-			["pad+"] = 69,
-			["pad-"] = 78,
-			["pad."] = 65,
-			["pad/"] = 75,
-			["pad0"] = 82,
-			["pad1"] = 83,
-			["pad2"] = 84,
-			["pad3"] = 85,
-			["pad4"] = 86,
-			["pad5"] = 87,
-			["pad6"] = 88,
-			["pad7"] = 89,
-			["pad8"] = 91,
-			["pad9"] = 92,
-			["pad="] = 81,
-			["padclear"] = 71,
-			["padenter"] = 76,
-			["pagedown"] = 121,
-			["pageup"] = 116,
-			["q"] = 12,
-			["r"] = 15,
-			["return"] = 36,
-			["right"] = 124,
-			["s"] = 1,
-			["space"] = 49,
-			["t"] = 17,
-			["tab"] = 48,
-			["u"] = 32,
-			["up"] = 126,
-			["v"] = 9,
-			["w"] = 13,
-			["x"] = 7,
-			["y"] = 16,
-			["z"] = 6,
-			["§"] = 10
-		}
-
-		if englishKeyCodes[input] == nil then
-			if keycodes.map[input] == nil then
-				return ""
-			else
-				return keycodes.map[input]
-			end
-		else
-			return englishKeyCodes[input]
-		end
-
 	end
 
 --------------------------------------------------------------------------------
@@ -9821,7 +9665,7 @@ function fullscreenKeyboardWatcher()
 				--------------------------------------------------------------------------------
 				-- Get keypress information:
 				--------------------------------------------------------------------------------
-				local whichKey = event:getKeyCode()			-- EXAMPLE: keyCodeTranslator(whichKey) == "c"
+				local whichKey = event:getKeyCode()			-- EXAMPLE: tools.keyCodeTranslator(whichKey) == "c"
 				local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
 
 				--------------------------------------------------------------------------------
@@ -9833,11 +9677,11 @@ function fullscreenKeyboardWatcher()
 					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
 						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+									eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+									eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+									eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 									return true
 								end
 							end
@@ -9857,7 +9701,7 @@ function fullscreenKeyboardWatcher()
 						--------------------------------------------------------------------------------
 						-- Get keypress information:
 						--------------------------------------------------------------------------------
-						local whichKey = event:getKeyCode()			-- EXAMPLE: keyCodeTranslator(whichKey) == "c"
+						local whichKey = event:getKeyCode()			-- EXAMPLE: tools.keyCodeTranslator(whichKey) == "c"
 						local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
 
 						--------------------------------------------------------------------------------
@@ -9868,11 +9712,11 @@ function fullscreenKeyboardWatcher()
 							if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
 								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
 									if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-										if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+										if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
 											eventtap.keyStroke({""}, "escape")
-											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']), keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-											eventtap.keyStroke(convertModifiersKeysForEventTap(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers']), keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
+											eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
+											eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
+											eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
 											return true
 										end
 									end
