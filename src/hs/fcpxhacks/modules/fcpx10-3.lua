@@ -605,7 +605,7 @@ end
 --------------------------------------------------------------------------------
 function defaultShortcutKeys()
 	local defaultShortcutKeys = {
-		FCPXHackLaunchFinalCutPro									= { characterString = fcp.keyCodeTranslator("l"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 			releasedFn = nil,														repeatFn = nil, 		global = true },
+		FCPXHackLaunchFinalCutPro									= { characterString = fcp.keyCodeTranslator("l"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 					releasedFn = nil,														repeatFn = nil, 		global = true },
 		FCPXHackShowListOfShortcutKeys 								= { characterString = fcp.keyCodeTranslator("f1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
 		FCPXHackHighlightBrowserPlayhead 							= { characterString = fcp.keyCodeTranslator("h"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
@@ -613,7 +613,7 @@ function defaultShortcutKeys()
 		FCPXHackSingleMatchFrameAndHighlight 						= { characterString = fcp.keyCodeTranslator("s"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() singleMatchFrame() end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackRevealMulticamClipInBrowserAndHighlight 			= { characterString = fcp.keyCodeTranslator("d"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(true) end, 						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackRevealMulticamClipInAngleEditorAndHighlight 		= { characterString = fcp.keyCodeTranslator("g"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() multicamMatchFrame(false) end, 						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackBatchExportFromBrowser 								= { characterString = fcp.keyCodeTranslator("e"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExportToCompressor() end, 						releasedFn = nil,														repeatFn = nil },
+		FCPXHackBatchExportFromBrowser 								= { characterString = fcp.keyCodeTranslator("e"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() batchExport() end, 									releasedFn = nil,														repeatFn = nil },
 		FCPXHackChangeBackupInterval 								= { characterString = fcp.keyCodeTranslator("b"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() changeBackupInterval() end, 						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackToggleTimecodeOverlays 								= { characterString = fcp.keyCodeTranslator("t"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTimecodeOverlay() end,						releasedFn = nil, 														repeatFn = nil },
 		FCPXHackToggleMovingMarkers 								= { characterString = fcp.keyCodeTranslator("y"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleMovingMarkers() end, 							releasedFn = nil, 														repeatFn = nil },
@@ -624,25 +624,25 @@ function defaultShortcutKeys()
 		FCPXHackSelectColorBoardPuckThree 							= { characterString = fcp.keyCodeTranslator("."), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "midtones") end, 			releasedFn = nil, 														repeatFn = nil },
 		FCPXHackSelectColorBoardPuckFour 							= { characterString = fcp.keyCodeTranslator("/"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() colorBoardSelectPuck("*", "highlights") end, 		releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackRestoreKeywordPresetOne 							= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetTwo 							= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetThree 							= { characterString = fcp.keyCodeTranslator("3"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFour 							= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetFive 							= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSix 							= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetSeven 							= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetEight 							= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackRestoreKeywordPresetNine 							= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetOne 							= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(1) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetTwo 							= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(2) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetThree 							= { characterString = fcp.keyCodeTranslator("3"),			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(3) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFour 							= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(4) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetFive 							= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(5) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSix 							= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(6) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetSeven 							= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(7) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetEight 							= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(8) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackRestoreKeywordPresetNine 							= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() restoreKeywordSearches(9) end, 						releasedFn = nil, 														repeatFn = nil },
 
-		FCPXHackSaveKeywordPresetOne 								= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetTwo 								= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,						releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetThree 								= { characterString = fcp.keyCodeTranslator("3"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFour 								= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetFive 								= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSix 								= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetSeven 								= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetEight 								= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 					releasedFn = nil, 														repeatFn = nil },
-		FCPXHackSaveKeywordPresetNine 								= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetOne 								= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(1) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetTwo 								= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(2) end,							releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetThree 								= { characterString = fcp.keyCodeTranslator("3"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(3) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFour 								= { characterString = fcp.keyCodeTranslator("4"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(4) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetFive 								= { characterString = fcp.keyCodeTranslator("5"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(5) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSix 								= { characterString = fcp.keyCodeTranslator("6"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(6) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetSeven 								= { characterString = fcp.keyCodeTranslator("7"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(7) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetEight 								= { characterString = fcp.keyCodeTranslator("8"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(8) end, 						releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSaveKeywordPresetNine 								= { characterString = fcp.keyCodeTranslator("9"), 			modifiers = {"ctrl", "option", "command", "shift"}, fn = function() saveKeywordSearches(9) end, 						releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackEffectsOne			 								= { characterString = fcp.keyCodeTranslator("1"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(1) end, 							releasedFn = nil, 														repeatFn = nil },
 		FCPXHackEffectsTwo			 								= { characterString = fcp.keyCodeTranslator("2"), 			modifiers = {"ctrl", "shift"}, 						fn = function() effectsShortcut(2) end, 							releasedFn = nil, 														repeatFn = nil },
@@ -755,12 +755,12 @@ function defaultShortcutKeys()
 		FCPXHackPuckOneMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "global") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackPuckTwoMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "shadows") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackPuckThreeMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "midtones") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackPuckFourMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 			releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackPuckFourMouse										= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("*", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		FCPXHackColorPuckOneMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "global") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackColorPuckTwoMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "shadows") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackColorPuckThreeMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "midtones") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
-		FCPXHackColorPuckFourMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 		releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
+		FCPXHackColorPuckFourMouse									= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("color", "highlights") end, 	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 
 		FCPXHackSaturationPuckOneMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "global") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
 		FCPXHackSaturationPuckTwoMouse								= { characterString = "", 									modifiers = {}, 									fn = function() colorBoardMousePuck("saturation", "shadows") end,	releasedFn = function() colorBoardMousePuckRelease() end, 				repeatFn = nil },
@@ -7823,6 +7823,22 @@ end
 	function batchExport()
 
 		--------------------------------------------------------------------------------
+		-- Set Custom Export Path (or Default to Desktop):
+		--------------------------------------------------------------------------------
+		local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
+		local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
+		local exportPath = "~/Desktop"
+		if batchExportDestinationFolder ~= nil then
+			 if tools.doesDirectoryExist(batchExportDestinationFolder) then
+				exportPath = batchExportDestinationFolder
+			 end
+		else
+			if tools.doesDirectoryExist(NSNavLastRootDirectory) then
+				exportPath = NSNavLastRootDirectory
+			end
+		end
+
+		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
@@ -7849,10 +7865,17 @@ end
 		local failedExports = 0
 
 		if clips and #clips > 0 then
+
+			--------------------------------------------------------------------------------
+			-- Display Dialog to make sure the current path is acceptable:
+			--------------------------------------------------------------------------------
+			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=#clips, path=exportPath, item=i18n("item", {count=howManyClips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			if result == nil then return end
+
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
-			failedExports = batchExportClips(browser, clips)
+			failedExports = batchExportClips(browser, clips, exportPath)
 		else
 			--------------------------------------------------------------------------------
 			-- No Clips are Available:
@@ -7876,7 +7899,7 @@ end
 		--------------------------------------------------------------------------------
 		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		function batchExportClips(browser, clips)
+		function batchExportClips(browser, clips, exportPath)
 
 			local firstTime = true
 			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
@@ -7943,18 +7966,6 @@ end
 				-- Set Custom Export Path (or Default to Desktop):
 				--------------------------------------------------------------------------------
 				if firstTime then
-					local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
-					local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
-					local exportPath = "~/Desktop"
-					if batchExportDestinationFolder ~= nil then
-						 if tools.doesDirectoryExist(batchExportDestinationFolder) then
-							exportPath = batchExportDestinationFolder
-						 end
-					else
-						if tools.doesDirectoryExist(NSNavLastRootDirectory) then
-							exportPath = NSNavLastRootDirectory
-						end
-					end
 					saveSheet:setPath(exportPath)
 					firstTime = false
 				end
