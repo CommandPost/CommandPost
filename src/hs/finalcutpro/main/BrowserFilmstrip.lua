@@ -131,21 +131,8 @@ function Filmstrip:showClipAt(index)
 end
 
 function Filmstrip:selectClip(clipUI)
-	local labelUI = axutils.childWithRole(clipUI, "AXTextField")
-	local clickPos = nil
-	self:showClip(clipUI)
-	if labelUI then -- use the label to find the front of the clip
-		-- click half way between the top of the label and the top of the clip
-		-- which should be right at the beginning of the clip.
-		local labelPos = labelUI:position()
-		local y = (labelPos.y + clipUI:position().y)/2
-		clickPos = {x = labelPos.x, y = y}
-	else -- click the top-right of the clip, which should always be safe.
-		local clipFrame = clipUI:frame()
-		clickPos = {x = clipFrame.x + clipFrame.w - 10, y = clipFrame.y+10}
-	end
-	if clickPos then
-		tools.ninjaMouseClick(clickPos)
+	if clipUI then
+		clipUI:parent():setAttributeValue("AXSelectedChildren", { clipUI } )
 	end
 	return self
 end
@@ -163,10 +150,15 @@ function Filmstrip:selectAll(clipsUI)
 	for i,clip in ipairs(clipsUI) do
 		self:selectClip(clip)
 	end
+	return self
 end
 
-function Filmstrip:deselectAll(clipsUI)
-	-- TODO: figure out how to deselect everything
+function Filmstrip:deselectAll()
+	local contents = self:contentsUI()
+	if contents then
+		contents.setAttributeValue("AXSelectedChildren", {})
+	end
+	return self
 end
 
 return Filmstrip

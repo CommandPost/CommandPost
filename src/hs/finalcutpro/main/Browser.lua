@@ -237,6 +237,14 @@ function Browser:selectClipAt(index)
 	return self
 end
 
+function Browser:deselectAll()
+	if self:isListView() then
+		self:list():deselectAll()
+	else
+		self:filmstrip():deselectAll()
+	end
+end
+
 
 function Browser:isFocused()
 	local ui = self:UI()

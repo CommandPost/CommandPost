@@ -7918,12 +7918,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Select Item:
 				--------------------------------------------------------------------------------
-				if browser:isListView() then
-					browser:selectClip(clip)
-				else
-					-- TODO: Move below code to hs.finalcutpro:
-					clips[i]:attributeValue("AXParent"):setAttributeValue("AXSelectedChildren", { clips[i] } )
-				end
+				browser:selectClip(clip)
 
 				--------------------------------------------------------------------------------
 				-- Trigger Export:
