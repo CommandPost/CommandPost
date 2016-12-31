@@ -139,11 +139,11 @@ end
 --- The (sometimes hidden) Effect Browser.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:effectsBrowser()
-	if not self._effectsBrowser then
-		self._effectsBrowser = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
+function Timeline:effects()
+	if not self._effects then
+		self._effects = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
 	end
-	return self._effectsBrowser
+	return self._effects
 end
 
 -----------------------------------------------------------------------
@@ -152,11 +152,11 @@ end
 --- The (sometimes hidden) Transitions Browser.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:transitionsBrowser()
-	if not self._transitionsBrowser then
-		self._transitionsBrowser = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
+function Timeline:transitions()
+	if not self._transitions then
+		self._transitions = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
 	end
-	return self._transitionsBrowser
+	return self._transitions
 end
 
 

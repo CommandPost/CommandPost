@@ -66,13 +66,17 @@ function Table:isFocused()
 end
 
 -- Returns the list of rows in the table
-function Table:rowsUI()
+-- An optional filter function may be provided. It will be passed a single `AXRow` element
+-- and should return `true` if the row should be included.
+function Table:rowsUI(filterFn)
 	local ui = self:contentUI()
 	if ui then
 		local rows = {}
 		for i,child in ipairs(ui) do
 			if child:attributeValue("AXRole") == "AXRow" then
-				rows[#rows + 1] = child
+				if not filterFn or filterFn(child) then
+					rows[#rows + 1] = child
+				end
 			end
 		end
 		return rows

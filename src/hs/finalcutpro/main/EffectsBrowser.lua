@@ -9,6 +9,9 @@ local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
 local Button							= require("hs.finalcutpro.ui.Button")
 local Table								= require("hs.finalcutpro.ui.Table")
 local ScrollArea						= require("hs.finalcutpro.ui.ScrollArea")
+local CheckBox							= require("hs.finalcutpro.ui.CheckBox")
+local PopUpButton						= require("hs.finalcutpro.ui.PopUpButton")
+local TextField							= require("hs.finalcutpro.ui.TextField")
 
 local Browser = {}
 
@@ -85,20 +88,6 @@ function Browser:mainGroupUI()
 	end)
 end
 
-function Browser:filmstrip()
-	if not self._filmstrip then
-		self._filmstrip = BrowserFilmstrip:new(self)
-	end
-	return self._filmstrip
-end
-
-function Browser:list()
-	if not self._list then
-		self._list = BrowserList:new(self)
-	end
-	return self._list
-end
-
 function Browser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
@@ -115,6 +104,33 @@ function Browser:contents()
 		end)
 	end
 	return self._contents
+end
+
+function Browser:sidebarHidden()
+	if not self._sidebarHidden then
+		self._sidebarHidden = CheckBox:new(self, function()
+			return axutils.childWithRole(self:UI(), "AXCheckBox")
+		end)
+	end
+	return self._sidebarHidden
+end
+
+function Browser:group()
+	if not self._group then
+		self._group = PopUpButton:new(self, function()
+			return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
+		end)
+	end
+	return self._group
+end
+
+function Browser:search()
+	if not self._search then
+		self._search = TextField:new(self, function()
+			return axutils.childWithRole(self:UI(), "AXTextField")
+		end)
+	end
+	return self._search
 end
 
 return Browser
