@@ -141,9 +141,22 @@ end
 -----------------------------------------------------------------------
 function Timeline:effectsBrowser()
 	if not self._effectsBrowser then
-		self._effectsBrowser = EffectsBrowser:new(self)
+		self._effectsBrowser = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
 	end
 	return self._effectsBrowser
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- TRANSITIONS BROWSER
+--- The (sometimes hidden) Transitions Browser.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:transitionsBrowser()
+	if not self._transitionsBrowser then
+		self._transitionsBrowser = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
+	end
+	return self._transitionsBrowser
 end
 
 

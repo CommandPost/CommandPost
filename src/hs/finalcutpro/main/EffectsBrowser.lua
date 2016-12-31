@@ -12,13 +12,16 @@ local ScrollArea						= require("hs.finalcutpro.ui.ScrollArea")
 
 local Browser = {}
 
+Browser.EFFECTS = "Effects"
+Browser.TRANSITIONS = "Transitions"
+
 function Browser.matches(element)
 	return element and element:attributeValue("AXRole") == "AXGroup"
 	   and axutils.childWithID(element, "_NS:452") ~= nil
 end
 
-function Browser:new(parent)
-	o = {_parent = parent}
+function Browser:new(parent, type)
+	o = {_parent = parent, _type = type}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -29,7 +32,11 @@ function Browser:parent()
 end
 
 function Browser:app()
-	return self.parent():app()
+	return self:parent():app()
+end
+
+function Browser:type()
+	return self._type
 end
 
 -----------------------------------------------------------------------
@@ -38,27 +45,29 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Browser:UI()
-	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:parent():mainUI(), Browser.matches)
-	end,
-	Browser.matches)
+	if self:isShowing() then
+		return axutils.cache(self, "_ui", function()
+			return axutils.childMatching(self:parent():mainUI(), Browser.matches)
+		end,
+		Browser.matches)
+	end
 end
 
 function Browser:isShowing()
-	return self:UI() ~= nil
+	return self:app():menuBar():isChecked("Window", "Show in Workspace", self:type())
 end
 
 function Browser:show()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the workspace
-	menuBar:uncheckMenu("Window", "Show in Workspace", "Effects")
+	menuBar:checkMenu("Window", "Show in Workspace", self:type())
 	return self
 end
 
 function Browser:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the workspace
-	menuBar:uncheckMenu("Window", "Show in Workspace", "Effects")
+	menuBar:uncheckMenu("Window", "Show in Workspace", self:type())
 	return self
 end
 
