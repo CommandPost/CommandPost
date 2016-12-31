@@ -8,6 +8,7 @@ local timer								= require("hs.timer")
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
+local EffectsBrowser					= require("hs.finalcutpro.main.EffectsBrowser")
 
 local Timeline = {}
 
@@ -131,6 +132,21 @@ function Timeline:content()
 	return self._content
 end
 
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- EFFECT BROWSER
+--- The (sometimes hidden) Effect Browser.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:effectsBrowser()
+	if not self._effectsBrowser then
+		self._effectsBrowser = EffectsBrowser:new(self)
+	end
+	return self._effectsBrowser
+end
+
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- PLAYHEAD
@@ -151,7 +167,7 @@ end
 function Timeline:toolbarUI()
 	return axutils.cache(self, "_toolbar", function()
 		local ui = self:UI()
-		return ui and axutil.childMatching(ui, Timeline.matchesToolbar)
+		return ui and axutils.childMatching(ui, Timeline.matchesToolbar)
 	end,
 	Timeline.matchesToolbar)
 end

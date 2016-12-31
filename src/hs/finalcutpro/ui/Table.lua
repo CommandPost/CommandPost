@@ -30,11 +30,20 @@ function Table:UI()
 	end)
 end
 
-function Table:outlineUI()
+function Table:contentUI()
 	return axutils.cache(self, "_outline", function()
 		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXOutline")
-	end)
+		return ui and axutils.childMatching(ui, Table.matchesContent)
+	end,
+	Table.matchesContent)
+end
+
+function Table.matchesContent(element)
+	if element then
+		local role = element:attributeValue("AXRole")
+		return role == "AXOutline" or role == "AXTable"
+	end
+	return false
 end
 
 function Table:verticalScrollBarUI()
@@ -58,7 +67,7 @@ end
 
 -- Returns the list of rows in the table
 function Table:rowsUI()
-	local ui = self:outlineUI()
+	local ui = self:contentUI()
 	if ui then
 		local rows = {}
 		for i,child in ipairs(ui) do
@@ -72,7 +81,7 @@ function Table:rowsUI()
 end
 
 function Table:columnsUI()
-	local ui = self:outlineUI()
+	local ui = self:contentUI()
 	if ui then
 		local columns = {}
 		for i,child in ipairs(ui) do
@@ -156,7 +165,7 @@ function Table:showRow(rowUI)
 
 		if rowTop < top or rowBottom > bottom then
 			-- we need to scroll
-			local oFrame = self:outlineUI():frame()
+			local oFrame = self:contentUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
 
 			local vValue = nil
@@ -222,7 +231,7 @@ end
 -- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
 function Table:selectAll(rowsUI)
 	rowsUI = rowsUI or self:rowsUI()
-	local outline = self:outlineUI()
+	local outline = self:contentUI()
 	if rowsUI and outline then
 		outline:setAttributeValue("AXSelectedRows", rowsUI)
 	end
