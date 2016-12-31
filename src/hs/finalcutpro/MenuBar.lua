@@ -70,15 +70,15 @@ end
 ---            select("View", "Browser", "as List")
 ---
 --- Returns:
----  * The MenuBar, for further operations
+---  * `true` if the press was successful.
 ---
 function MenuBar:selectMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	
 	if menuItemUI then
-		menuItemUI:doPress()
+		return menuItemUI:doPress()
 	end
-	return self
+	return false
 end
 
 function MenuBar:isChecked(...)
@@ -98,19 +98,21 @@ end
 function MenuBar:checkMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
-		menuItemUI:doPress()
+		return menuItemUI:doPress()
 	end
-	return self
+	return false
 end
 
 function MenuBar:uncheckMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
-		menuItemUI:doPress()
+		return menuItemUI:doPress()
 	end
-	return self
+	return false
 end
 
+--- Finds a specific Menu UI element for the provided path. 
+--- Eg `findMenuUI("Edit", "Copy")` returns the 'Copy' menu item in the 'Edit' menu.
 function MenuBar:findMenuUI(...)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
@@ -121,6 +123,13 @@ function MenuBar:findMenuUI(...)
 		step = select(i, ...)
 		if type(step) == "number" then
 			menuItemUI = menuUI[step]
+		elseif type(step) == "function" then
+			for i,child in ipairs(menuUI) do
+				if step(child) then
+					menuItemUI = child
+					break
+				end
+			end
 		elseif menuMap and menuMap[step] then
 			-- We have the menu name in our list
 			local item = menuMap[step]
@@ -144,6 +153,16 @@ function MenuBar:findMenuUI(...)
 		end
 	end
 	return menuItemUI
+end
+
+--- Returns the set of menu items in the provided path. If the path contains a menu, the
+--- actual children of that menu are returned, otherwise the menu item itself is returned.
+function MenuBar:findMenuItemsUI(...)
+	local menu = self:findMenuUI(...)
+	if menu and #menu == 1 then
+		return menu[1]:children()
+	end
+	return menu
 end
 
 --- hs.finalcutpro.MenuBar:generateMenuMap() -> boolean

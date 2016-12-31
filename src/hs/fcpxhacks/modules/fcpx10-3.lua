@@ -3693,12 +3693,11 @@ end
 	-- CHANGE BATCH EXPORT DESTINATION PRESET:
 	--------------------------------------------------------------------------------
 	function changeBatchExportDestinationPreset()
-		local shareMenu = fcp.app():menuBar():findMenuUI("File", "Share")
-		if not shareMenu or not shareMenu[1] then
+		local shareMenuItems = fcp.app():menuBar():findMenuItemsUI("File", "Share")
+		if not shareMenuItems then
 			dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
 			return
 		end
-		local shareMenuItems = shareMenu[1]
 
 		local destinations = {}
 
@@ -7882,7 +7881,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
-			failedExports = batchExportClips(browser, clips, exportPath)
+			failedExports = batchExportClips(browser, clips, exportPath, destinationPreset)
 
 		else
 			--------------------------------------------------------------------------------
@@ -7923,7 +7922,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Trigger Export:
 				--------------------------------------------------------------------------------
-				if fcp.share(destinationPreset) == nil then
+				if not selectShare(destinationPreset) then
 					dialog.displayErrorMessage("Could not trigger Share Menu Item.")
 					return -1
 				end
@@ -7961,21 +7960,32 @@ end
 				--------------------------------------------------------------------------------
 				if saveSheet:isShowing() then
 					local replaceAlert = saveSheet:replaceAlert()
-					if replaceAlert:isShowing() then
-						if batchExportReplaceExistingFiles then
-							replaceAlert:pressReplace()
-						else
-							replaceAlert:pressCancel()
-						end
-					end
-					if not batchExportReplaceExistingFiles then
-						saveSheet:pressCancel()
-						exportDialog:pressCancel()
+					if batchExportReplaceExistingFiles and replaceAlert:isShowing() then
+						replaceAlert:pressReplace()
+					else
+						replaceAlert:pressCancel()
 						failedExports = failedExports + 1
 					end
+					saveSheet:pressCancel()
+					exportDialog:pressCancel()
 				end
 			end
 			return failedExports
+		end
+		
+		--------------------------------------------------------------------------------
+		-- Trigger Export:
+		--------------------------------------------------------------------------------
+		function selectShare(destinationPreset)
+			return fcp.app():menuBar():selectMenu("File", "Share", function(menuItem)
+				if destinationPreset == nil then
+					return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil 
+				else
+					local title = menuItem:attributeValue("AXTitle")
+					return title and string.find(title, destinationPreset) ~= nil
+				end
+			end)
+			
 		end
 
 --------------------------------------------------------------------------------

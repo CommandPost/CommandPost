@@ -44,18 +44,6 @@ function SaveSheet:isShowing()
 	return self:UI() ~= nil or self:replaceAlert():isShowing()
 end
 
---- Ensures the SaveSheet is showing
-function SaveSheet:show()
-	if not self:isShowing() then
-		-- open the window
-		if self:app():menuBar():isEnabled("Final Cut Pro", "Commands", "Customize…") then
-			self:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
-			local ui = just.doUntil(function() return self:UI() end)
-		end
-	end
-	return self
-end
-
 function SaveSheet:hide()
 	self:pressCancel()
 end
