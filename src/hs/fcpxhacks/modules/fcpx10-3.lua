@@ -7574,21 +7574,9 @@ end
 		-- Sort the table:
 		--------------------------------------------------------------------------------
 		table.sort(clips, function(a, b) return a:position().y > b:position().y end)
+		
+		content:selectClip(clips[whichLane])
 
-		--------------------------------------------------------------------------------
-		-- Which clip to we need:
-		--------------------------------------------------------------------------------
-		local clipFrame = clips[whichLane]:frame()
-
-		--------------------------------------------------------------------------------
-		-- Click the clip:
-		--------------------------------------------------------------------------------
-		local clipCentrePosition = {
-			x = playheadX,
-			y = clipFrame.y + clipFrame.h/2
-		}
-
-		tools.ninjaMouseClick(clipCentrePosition)
 		return true
 	end
 
