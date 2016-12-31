@@ -2061,7 +2061,7 @@ end
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[1])
 		
-		effectsList = effects:contents():childrenUI()
+		local effectsList = effects:contents():childrenUI()
 		local allVideoEffects = {}
 		if effectsList ~= nil then
 			for i=1, #effectsList do
@@ -2094,10 +2094,14 @@ end
 		sidebar:selectAll(selectedRows)
 		if wasEffectsShowing then
 			effects:show()
+		else
+			effects:hide()
 		end
 		
 		if wasTransitionsShowing then
 			timeline:transitions():show()
+		else
+			timeline:transitions():hide()
 		end
 
 		showTouchbar()
@@ -2154,255 +2158,78 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTransitionsListWarning"))
 
+		local timeline = fcp.app():timeline()
+		local transitions = timeline:transitions()
+		
+		local wasEffectsShowing = timeline:effects():isShowing()
+		local wasTransitionsShowing = transitions:isShowing()
+		
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
+		-- Make sure Video Effects panel is open:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
-		if finalCutProTimelineButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in updateTransitionsList() whilst using fcp.getTimelineButtonBar().")
+		if not transitions:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
-
+		
 		--------------------------------------------------------------------------------
-		-- Find Transitions Browser Button:
+		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
-		local whichRadioGroup = nil
-		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
-				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
-					whichRadioGroup = i
-				end
-			end
-		end
-		if whichRadioGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in updateTransitionsList().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects or Transitions Panel Open?
-		--------------------------------------------------------------------------------
-		local whichPanelActivated = "None"
-		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
-			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
-			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Transitions panel is open:
-		--------------------------------------------------------------------------------
-		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][2]
-		if effectsBrowserButton ~= nil then
-			if effectsBrowserButton:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.\n\nError occured in updateTransitionsList().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel.\n\nError occured in updateTransitionsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Group:
-			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-			if finalCutProEffectsTransitionsBrowserGroup == nil then
-				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserSplitGroup = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
-						whichEffectsBrowserSplitGroup = i
-					--end
-				end
-			end
-			if whichEffectsBrowserSplitGroup == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserPopupButton = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
-					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
-						whichEffectsBrowserPopupButton = i
-					end
-				end
-			end
-			if whichEffectsBrowserPopupButton == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Check that "Installed Effects" is selected:
-			--------------------------------------------------------------------------------
-			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
-			if installedEffectsPopup ~= nil then
-				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-					if finalCutProEffectsTransitionsBrowserGroup == nil then
-						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
-						return "Failed"
-					end
-					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
-					installedEffectsPopupMenuItem:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
+		transitions:group():selectItem(1)
+		
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		transitions:search():setValue("")
 
 		--------------------------------------------------------------------------------
-		-- Click 'All' Transitions:
+		-- Click 'All':
 		--------------------------------------------------------------------------------
-		local allVideoAndAudioButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-					end
-				end
-			end
+		local sidebar = transitions:sidebar()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure the sidebar is visible:
+		--------------------------------------------------------------------------------
+		if not sidebar:isShowing() and transitions:sidebarHidden():uncheck():isChecked() then
+			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
+			showTouchbar()
+			return "Fail"
 		end
-		if allVideoAndAudioButton ~= nil then
-			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-		else
-
-			--------------------------------------------------------------------------------
-			-- Make sure Transitions Browser Sidebar is Visible:
-			--------------------------------------------------------------------------------
-			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
-			if effectsBrowserSidebar ~= nil then
-				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-					effectsBrowserSidebar:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Click 'All' Transitions:
-			--------------------------------------------------------------------------------
-			local allVideoAndAudioButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-						end
-					end
-				end
-			end
-			if allVideoAndAudioButton ~= nil then
-				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-			else
-				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
+		
+		sidebar:selectRowAt(1)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		local transitionsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		local effectsList = transitions:contents():childrenUI()
 		local allTransitions = {}
-		if transitionsList ~= nil then
-			for i=1, #transitionsList:attributeValue("AXChildren") do
-				allTransitions[i] = transitionsList[i]:attributeValue("AXTitle")
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allTransitions[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
-			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occured in updateTransitionsList().")
+			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check to make sure it all worked:
-		--------------------------------------------------------------------------------
-		if #allTransitions == 0 or #allTransitions == 0 then
-			dialog.displayMessage(i18n("updateTransitionsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
 		end
 
 		--------------------------------------------------------------------------------
 		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
-		if whichPanelActivated == "Effects" then
-			finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
-		elseif whichPanelActivated == "None" then
-			finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
+		sidebar:selectAll(selectedRows)
+		if wasEffectsShowing then
+			timeline:effects():show()
+		else
+			timeline:effects():hide()
 		end
+		
+		if wasTransitionsShowing then
+			transitions:show()
+		else
+			transitions:hide()
+		end
+
+		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -3120,13 +2947,13 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
-			end
 
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
+				--------------------------------------------------------------------------------
+				-- Put focus back in Final Cut Pro:
+				--------------------------------------------------------------------------------
+				if result["wasFinalCutProOpen"] then
+					fcp.launch()
+				end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3240,13 +3067,13 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
-			end
 
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
+				--------------------------------------------------------------------------------
+				-- Put focus back in Final Cut Pro:
+				--------------------------------------------------------------------------------
+				if result["wasFinalCutProOpen"] then
+					fcp.launch()
+				end
 			end
 
 			--------------------------------------------------------------------------------
