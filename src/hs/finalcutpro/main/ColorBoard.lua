@@ -223,10 +223,14 @@ function ColorBoard:reset(aspect)
 	return self
 end
 
+function ColorBoard:puckUI(aspect, property)
+	local details = self:getAspect(aspect, property)
+	return self:childUI(details.puck)
+end
+
 function ColorBoard:selectPuck(aspect, property)
 	self:showPanel(aspect)
-	local details = self:getAspect(aspect, property)
-	local puckUI = self:childUI(details.puck)
+	local puckUI = self:puckUI(aspect, property)
 	if puckUI then
 		local f = puckUI:frame()
 		local centre = geometry(f.x + f.w/2, f.y + f.h/2)
