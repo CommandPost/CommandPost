@@ -10,11 +10,11 @@ local GoToPrompt = {}
 function GoToPrompt.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"			-- it's a sheet
-		   and axutils.childWithRole(element, "AXTextField") ~= nil 	-- with a text field
+		   and (axutils.childWithRole(element, "AXTextField") ~= nil 	-- with a text field
+		    or axutils.childWithRole(element, "AXComboBox") ~= nil)
 	end
 	return false
 end
-
 
 function GoToPrompt:new(parent)
 	o = {_parent = parent}
@@ -68,6 +68,11 @@ function GoToPrompt:setValue(value)
 	local textField = axutils.childWithRole(self:UI(), "AXTextField")
 	if textField then
 		textField:setAttributeValue("AXValue", value)
+	else
+		local comboBox = axutils.childWithRole(self:UI(), "AXComboBox")
+		if comboBox then
+			comboBox:setAttributeValue("AXValue", value)
+		end
 	end
 	return self
 end
