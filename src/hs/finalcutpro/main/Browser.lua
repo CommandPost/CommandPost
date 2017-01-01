@@ -195,11 +195,8 @@ function Browser:loadLayout(layout)
 		self:media():loadLayout(layout.media)
 		self:libraries():loadLayout(layout.libraries)
 		
-		debugMessage("Browser:loadLayout: showGenerators")
 		self:showGenerators():loadLayout(layout.showGenerators)
-		debugMessage("Browser:loadLayout: showMedia")
 		self:showMedia():loadLayout(layout.showMedia)
-		debugMessage("Browser:loadLayout: showLibraries")
 		self:showLibraries():loadLayout(layout.showLibraries)
 	end
 end

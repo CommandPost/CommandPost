@@ -78,10 +78,8 @@ end
 function CheckBox:loadLayout(layout)
 	if layout then
 		if layout.checked then
-			debugMessage("CheckBox:loadLayout: checking")
 			self:check()
 		else
-			debugMessage("CheckBox:loadLayout: unchecking")
 			self:uncheck()
 		end
 	end

@@ -47,7 +47,13 @@ function Libraries:isShowing()
 end
 
 function Libraries:show()
-	self:app():menuBar():selectMenu("Window", "Go To", "Libraries")
+	local browser = self:parent()
+	if browser then
+		if not browser:isShowing() then
+			browser:showOnPrimary()
+		end
+		browser:showLibraries():check()
+	end
 	return self
 end
 
@@ -236,7 +242,6 @@ end
 
 function Libraries:loadLayout(layout)
 	if layout and layout.showing then
-		debugMessage("LibrariesBrowser:loadLayout")
 		self:show()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:selectAll(layout.selectedClips)
