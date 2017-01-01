@@ -37,7 +37,8 @@ function Button:isEnabled()
 end
 
 function Button:press()
-	return self:UI():doPress()
+	self:UI():doPress()
+	return self
 end
 
 return Button

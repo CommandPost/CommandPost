@@ -22,6 +22,7 @@ local Timeline									= require("hs.finalcutpro.main.Timeline")
 local Browser									= require("hs.finalcutpro.main.Browser")
 local Viewer									= require("hs.finalcutpro.main.Viewer")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
+local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 
 --- The App module
 local App = {}
@@ -116,6 +117,13 @@ function App:commandEditor()
 		self._commandEditor = CommandEditor:new(self)
 	end
 	return self._commandEditor
+end
+
+function App:exportDialog()
+	if not self._exportDialog then
+		self._exportDialog = ExportDialog:new(self)
+	end
+	return self._exportDialog
 end
 
 --- hs.finalcutpro.App:windowsUI() -> axuielement

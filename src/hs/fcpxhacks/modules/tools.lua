@@ -22,6 +22,7 @@ local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
+local just										= require("hs.just")
 
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:

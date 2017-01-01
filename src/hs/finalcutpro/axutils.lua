@@ -4,6 +4,10 @@ local fnutils					= require("hs.fnutils")
 
 local axutils = {}
 
+function axutils.hasAttribute(element, name, value)
+	return element and element:attributeValue(name) == value
+end
+
 --- hs.finalcutpro.axutil.childWith(axuielement, string, anything) -> axuielement
 --- Function:
 --- This searches for the first child of the specified element which has an attribute
@@ -16,14 +20,15 @@ local axutils = {}
 --- Returns:
 --- The first matching child, or nil if none was found
 function axutils.childWith(element, name, value)
-	if element then
-		for i,child in ipairs(element) do
-			if child:attributeValue(name) == value then
-				return child
-			end
-		end
-	end
-	return nil
+	return axutils.childMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
+end
+
+function axutils.childWithID(element, value)
+	return axutils.childWith(element, "AXIdentifier", value)
+end
+
+function axutils.childWithRole(element, value)
+	return axutils.childWith(element, "AXRole", value)
 end
 
 --- hs.finalcutpro.axutil.childWith(axuielement, string, anything) -> axuielement
@@ -46,6 +51,44 @@ function axutils.childMatching(element, matcherFn)
 	end
 	return nil
 end
+
+--- hs.finalcutpro.axutil.childrenWith(axuielement, string, anything) -> axuielement
+--- Function:
+--- This searches for all children of the specified element which has an attribute
+--- with the matching name and value.
+---
+--- Params:
+--- * element	- the axuielement
+--- * name		- the name of the attribute
+--- * value		- the value of the attribute
+--- Returns:
+--- The first matching child, or nil if none was found
+function axutils.childrenWith(element, name, value)
+	return axutils.childrenMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
+end
+
+function axutils.childrenWithRole(element, value)
+	return axutils.childrenWith(element, "AXRole", value)
+end
+
+
+--- hs.finalcutpro.axutil.childrenMatching(axuielement, function) -> {axuielement}
+--- Function:
+--- This searches for all children of the specified element for which the provided
+--- function returns true. The function will receive one parameter - the current child.
+---
+--- Params:
+--- * element	- the axuielement
+--- * matcherFn	- the function which checks if the child matches the requirements.
+--- Returns:
+--- The first matching child, or nil if none was found
+function axutils.childrenMatching(element, matcherFn)
+	if element then
+		return fnutils.ifilter(element, matcherFn)
+	end
+	return nil
+end
+
 
 --- hs.finalcutpro.axutil.isValid(axuielement) -> boolean
 --- Function:

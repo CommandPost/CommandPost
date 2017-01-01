@@ -23,6 +23,7 @@ local osascript									= require("hs.osascript")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
+local inspect									= require("hs.inspect")
 
 local fcp										= require("hs.finalcutpro")
 
@@ -261,6 +262,30 @@ function dialog.displayNotification(whatMessage)
 end
 
 --------------------------------------------------------------------------------
+-- DISPLAY CHOOSE FROM LIST:
+--------------------------------------------------------------------------------
+function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
+
+	if dialogPrompt == "nil" then dialogPrompt = "Please make your selection:" end
+	if dialogPrompt == "" then dialogPrompt = "Please make your selection:" end
+
+	if defaultItems == nil then defaultItems = {} end
+	if type(defaultItems) ~= "table" then defaultItems = {} end
+
+	local returnToFinalCutPro = fcp.frontmost()
+	local appleScriptA = 'set dialogPrompt to "' .. dialogPrompt .. '"\n\n'
+	local appleScriptB = 'set listOptions to ' .. inspect(listOptions) .. '\n\n'
+	local appleScriptC = 'set defaultItems to ' .. inspect(defaultItems) .. '\n\n'
+	local appleScriptD = [[
+		tell me to activate
+		return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
+	]]
+	local a,result = osascript.applescript(appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
+	if returnToFinalCutPro then fcp.launch() end
+	return result
+end
+
+--------------------------------------------------------------------------------
 -- DISPLAY COLOR PICKER:
 --------------------------------------------------------------------------------
 function dialog.displayColorPicker(customColor) -- Accepts RGB Table
@@ -292,6 +317,7 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 	end
 	if returnToFinalCutPro then fcp.launch() end
 	return nil
+
 end
 
 --------------------------------------------------------------------------------

@@ -27,16 +27,20 @@ local timer 					= require("hs.timer")
 ---
 --- Parameters:
 ---  * actionFn	- a fuction which is called on each loop. It should return a 'truthy' value.
----  * period	- (optional) the number of microseconds between each loop. Defaults to 10 microseconds.
----  * loops	- (optional) the number of loops to perform before giving up. Defaults to 100.
+---  * `timeout`	- (optional) the number of seconds after which we will give up. Defaults to 1 second.
+---  * `frequency`	- (optional) the number of loops to perform before giving up. Defaults to 1 millisecond.
 ---
 --- Returns:
 ---  * The last return value of the action function.
 ---
-function just.doWhile(actionFn, period, loops)
-	loops = loops or 1000
-	period = period or 1000
-	
+function just.doWhile(actionFn, timeout, frequency)
+	timeout = timeout or 1.0
+	frequency = frequency or 0.001
+	local loops, extra = math.modf(timeout / frequency)
+	if extra > 0 then
+		loops = loops + 1
+	end
+	local period = frequency * 1000000
 	local count = 0
 	local result = true
 	while count <= loops and result do
@@ -49,22 +53,27 @@ function just.doWhile(actionFn, period, loops)
 	return result
 end
 
---- hs.fcpxhacks.modules.just.doUntil(actionFn, period, loops) -> UI
+--- hs.fcpxhacks.modules.just.doUntil(actionFn, period, loops) -> result
 --- Function
---- Performs an 'action' function, looping until the result of the function evaluates to 'true'.
---- It will halt after 'loops' repetitions if the result is always 'false'.
+--- Performs an `action` function, looping until the result of the function evaluates to `true` (or a non-nil value).
+--- It will halt after the `timeout` (default)
 ---
 --- Parameters:
----  * actionFn	- a fuction which is called on each loop. It should return a 'truthy' value.
----  * period	- (optional) the number of microseconds between each loop. Defaults to 1000 microseconds.
----  * loops	- (optional) the number of loops to perform before giving up. Defaults to 1000.
+---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
+---  * `timeout`	- (optional) the number of seconds after which we will give up. Defaults to 1 second.
+---  * `frequency`	- (optional) the number of loops to perform before giving up. Defaults to 1 millisecond.
 ---
 --- Returns:
 ---  * The last return value of the action function.
 ---
-function just.doUntil(actionFn, period, loops)
-	loops = loops or 1000
-	period = period or 1000
+function just.doUntil(actionFn, timeout, frequency)
+	timeout = timeout or 1.0
+	frequency = frequency or 0.001
+	local loops, extra = math.modf(timeout / frequency)
+	if extra > 0 then
+		loops = loops + 1
+	end
+	local period = frequency * 1000000
 	local count = 0
 	local result = nil
 	while count <= loops and not result do
@@ -77,18 +86,18 @@ function just.doUntil(actionFn, period, loops)
 	return result
 end
 
---- hs.fcpxhacks.modules.just.wait(periodInMicrosecs) -> UI
+--- hs.fcpxhacks.modules.just.wait(integer) -> nil
 --- Function
---- Pauses the application for the specified number of microseconds.
+--- Pauses the application for the specified number of seconds.
 ---
 --- Parameters:
----  * periodInMicrosecs - the number of microseconds to pause for.
+---  * periodInSeconds - the number of seconds to pause for.
 ---
 --- Returns:
 ---  * N/A
 ---
-function just.wait(periodInMicrosecs)
-	timer.usleep(periodInMicrosecs)
+function just.wait(periodInSeconds)
+	timer.usleep(periodInSeconds * 1000000)
 end
 
 return just
