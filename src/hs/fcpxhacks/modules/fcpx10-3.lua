@@ -2086,8 +2086,8 @@ end
 		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		effects:loadLayout(effectsLayout)
-		if not effectsShowing then effects:hide() end
 		transitions:loadLayout(transitionsLayout)
+		if not effectsShowing then effects:hide() end
 
 		showTouchbar()
 
@@ -2204,8 +2204,8 @@ end
 		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		transitions:loadLayout(transitionsLayout)
-		if not transitionsShowing then transitions:hide() end
 		effects:loadLayout(effectsLayout)
+		if not transitionsShowing then transitions:hide() end
 
 		showTouchbar()
 
@@ -2261,9 +2261,6 @@ end
 		local generators = app:generators()
 		
 		local browserLayout = app:browser():saveLayout()
-		-- local wasGeneratorsShowing = generators:isShowing()
-		-- local wasLibrariesShowing = app:libraries():isShowing()
-		-- local selectedRows = generators:sidebar():selectedRowsUI()
 		
 		--------------------------------------------------------------------------------
 		-- Make sure Titles and Generators panel is open:
@@ -2275,19 +2272,19 @@ end
 		end
 		
 		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:group():selectItem(1)
-		
-		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		generators:search():setValue("")
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
 		-- Click 'Titles':
 		--------------------------------------------------------------------------------
 		generators:showAllTitles()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Titles" is selected:
+		--------------------------------------------------------------------------------
+		generators:group():selectItem(1)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
@@ -2299,7 +2296,7 @@ end
 				allTitles[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
 			return "Fail"
 		end
 
@@ -2307,14 +2304,6 @@ end
 		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
 		app:browser():loadLayout(browserLayout)
-		-- generators:sidebar():selectAll(selectedRows)
-		-- if wasGeneratorsShowing then
-		-- 	generators:show()
-		-- elseif wasLibrariesShowing then
-		-- 	app:libraries():show()
-		-- else
-		-- 	app:browser():hide()
-		-- end
 
 		showTouchbar()
 
@@ -2361,257 +2350,53 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateGeneratorsListWarning"))
 
+		local app = fcp.app()
+		local generators = app:generators()
+		
+		local browserLayout = app:browser():saveLayout()
+		
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using fcp.getBrowserButtonBar().")
+		if not generators:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Click 'Generators':
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showAllGenerators()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Titles" is selected:
+		--------------------------------------------------------------------------------
+		generators:group():selectItem(1)
 
 		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
+		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-
-		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Find Generators Row:
-		--------------------------------------------------------------------------------
-		local generatorsRow = nil
-		local foundTitles = false
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][i][1]:attributeValue("AXRole") == "AXGroup" then
-				if foundTitles == false then
-					foundTitles = true
-				else
-					generatorsRow = i
-					goto generatorsRowExit
-				end
-			end
-		end
-		::generatorsRowExit::
-		if generatorsRow == nil then
-			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Generators Row:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Generators" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Get list of all Generators:
-		--------------------------------------------------------------------------------
+		local effectsList = generators:contents():childrenUI()
 		local allGenerators = {}
-		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
-			allGenerators[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
-		end
-
-		--------------------------------------------------------------------------------
-		-- No Titles Found:
-		--------------------------------------------------------------------------------
-		if next(allGenerators) == nil then
-			dialog.displayMessage(i18n("updateGeneratorsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			showTouchbar()
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allGenerators[i] = effectsList[i]:attributeValue("AXTitle")
+			end
+		else
+			dialog.displayErrorMessage("Unable to get list of all Generators.\n\nError occurred in updateGeneratorsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs Again:
+		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
-		local checkBoxCount = 1
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Go back to previously selected panel:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen == "Library" then
-			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		app:browser():loadLayout(browserLayout)
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -3060,7 +2845,7 @@ end
 			for i=1, #allGenerators do
 				individualEffect = {
 					["text"] = allGenerators[i],
-					["subText"] = "Title",
+					["subText"] = "Generator",
 					["function"] = "transitionsShortcut",
 					["function1"] = allGenerators[i],
 					["function2"] = "",

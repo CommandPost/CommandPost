@@ -226,13 +226,17 @@ end
 
 function Libraries:saveLayout()
 	local layout = {}
-	layout.sidebar = self:sidebar():saveLayout()
-	layout.selectedClips = self:selectedClipsUI()
+	if self:isShowing() then
+		layout.showing = true
+		layout.sidebar = self:sidebar():saveLayout()
+		layout.selectedClips = self:selectedClipsUI()
+	end
 	return layout
 end
 
 function Libraries:loadLayout(layout)
-	if layout then
+	if layout and layout.showing then
+		self:show()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:selectAll(layout.selectedClips)
 	end

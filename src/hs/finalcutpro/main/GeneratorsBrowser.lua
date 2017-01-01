@@ -88,7 +88,9 @@ end
 function GeneratorsBrowser:contents()
 	if not self._contents then
 		self._contents = ScrollArea:new(self, function()
-			local group = axutils.childWithRole(self:mainGroupUI(), "AXGroup")
+			local group = axutils.childMatching(self:mainGroupUI(), function(child)
+				return child:role() == "AXGroup" and #child == 1
+			end)
 			return group and group[1]
 		end)
 	end
@@ -143,14 +145,18 @@ end
 
 function GeneratorsBrowser:saveLayout()
 	local layout = {}
-	layout.sidebar = self:sidebar():saveLayout()
-	layout.contents = self:contents():saveLayout()
-	layout.search = self:search():saveLayout()
+	if self:isShowing() then
+		layout.showing = true
+		layout.sidebar = self:sidebar():saveLayout()
+		layout.contents = self:contents():saveLayout()
+		layout.search = self:search():saveLayout()
+	end
 	return layout
 end
 
 function GeneratorsBrowser:loadLayout(layout)
-	if layout then
+	if layout and layout.showing then
+		self:show()
 		self:search():loadLayout(layout.search)
 		self:sidebar():loadLayout(layout.sidebar)
 		self:contents():loadLayout(layout.contents)

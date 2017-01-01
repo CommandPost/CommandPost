@@ -146,13 +146,17 @@ end
 
 function MediaBrowser:saveLayout()
 	local layout = {}
-	layout.sidebar = self:sidebar():saveLayout()
-	layout.search = self:search():saveLayout()
+	if self:isShowing() then
+		layout.showing = true
+		layout.sidebar = self:sidebar():saveLayout()
+		layout.search = self:search():saveLayout()
+	end
 	return layout
 end
 
 function MediaBrowser:loadLayout(layout)
-	if layout then
+	if layout and layout.showing then
+		self:show()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:search():loadLayout(layout.sidebar)
 	end
