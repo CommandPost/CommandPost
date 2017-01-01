@@ -69,4 +69,20 @@ function CheckBox:press()
 	return self
 end
 
+function CheckBox:saveLayout()
+	return {
+		checked = self:isChecked()
+	}
+end
+
+function CheckBox:loadLayout(layout)
+	if layout then
+		if layout.checked then
+			self:check()
+		else
+			self:uncheck()
+		end
+	end
+end
+
 return CheckBox

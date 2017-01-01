@@ -147,8 +147,10 @@ end
 
 function Filmstrip:selectAll(clipsUI)
 	clipsUI = clipsUI or self:clipsUI()
-	for i,clip in ipairs(clipsUI) do
-		self:selectClip(clip)
+	if clipsUI then
+		for i,clip in ipairs(clipsUI) do
+			self:selectClip(clip)
+		end
 	end
 	return self
 end

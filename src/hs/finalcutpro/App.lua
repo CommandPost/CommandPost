@@ -91,6 +91,14 @@ function App:menuBar()
 	return self._menuBar
 end
 
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- WINDOWS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
 function App:preferencesWindow()
 	if not self._preferencesWindow then
 		self._preferencesWindow = PreferencesWindow:new(self)
@@ -140,6 +148,15 @@ function App:windowsUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXWindows")
 end
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- APP SECTIONS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
 
 --- hs.finalcutpro.App:timeline() -> Timeline
 --- Function
@@ -204,6 +221,45 @@ function App:browser()
 		self._browser = Browser:new(self)
 	end
 	return self._browser
+end
+
+--- hs.finalcutpro.App:libraries() -> LibrariesBrowser
+--- Function
+--- Returns the LibrariesBrowser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the LibrariesBrowser
+function App:libraries()
+	return self:browser():libraries()
+end
+
+--- hs.finalcutpro.App:media() -> MediaBrowser
+--- Function
+--- Returns the MediaBrowser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the MediaBrowser
+function App:media()
+	return self:browser():media()
+end
+
+--- hs.finalcutpro.App:generators() -> GeneratorsBrowser
+--- Function
+--- Returns the GeneratorsBrowser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the GeneratorsBrowser
+function App:generators()
+	return self:browser():generators()
 end
 
 --- hs.finalcutpro.App:inspector() -> Inspector

@@ -38,6 +38,11 @@ function ScrollArea:verticalScrollBarUI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+function ScrollArea:horizontalScrollBarUI()
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXHorizontalScrollBar")
+end
+
 function ScrollArea:isShowing()
 	return self:UI() ~= nil
 end
@@ -140,8 +145,10 @@ end
 
 function ScrollArea:selectAll(childrenUI)
 	childrenUI = childrenUI or self:childrenUI()
-	for i,clip in ipairs(childrenUI) do
-		self:selectChild(child)
+	if childrenUI then
+		for i,clip in ipairs(childrenUI) do
+			self:selectChild(child)
+		end
 	end
 	return self
 end
@@ -149,9 +156,38 @@ end
 function ScrollArea:deselectAll()
 	local contents = self:contentsUI()
 	if contents then
-		contents.setAttributeValue("AXSelectedChildren", {})
+		contents:setAttributeValue("AXSelectedChildren", {})
 	end
 	return self
+end
+
+function ScrollArea:saveLayout()
+	local layout = {}
+	local hScroll = self:horizontalScrollBarUI()
+	if hScroll then
+		layout.horizontalScrollBar = hScroll:value()
+	end
+	local vScroll = self:verticalScrollBarUI()
+	if vScroll then
+		layout.verticalScrollBar = vScroll:value()
+	end
+	layout.selectedChildren = self:selectedChildrenUI()
+	
+	return layout
+end
+
+function ScrollArea:loadLayout(layout)
+	if layout then
+		self:selectAll(layout.selectedChildren)
+		local vScroll = self:verticalScrollBarUI()
+		if vScroll then
+			vScroll:setValue(layout.verticalScrollBar)
+		end
+		local hScroll = self:horizontalScrollBarUI()
+		if hScroll then
+			hScroll:setValue(layout.horizontalScrollBar)
+		end
+	end
 end
 
 return ScrollArea

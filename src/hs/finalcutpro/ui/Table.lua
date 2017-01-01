@@ -253,4 +253,32 @@ function Table:deselectAll(rowsUI)
 	return self
 end
 
+function Table:saveLayout()
+	local layout = {}
+	local hScroll = self:horizontalScrollBarUI()
+	if hScroll then
+		layout.horizontalScrollBar = hScroll:value()
+	end
+	local vScroll = self:verticalScrollBarUI()
+	if vScroll then
+		layout.verticalScrollBar = vScroll:value()
+	end
+	layout.selectedRows = self:selectedRowsUI()
+	
+	return layout
+end
+
+function Table:loadLayout(layout)
+	if layout then
+		self:selectAll(layout.selectedRows)
+		local vScroll = self:verticalScrollBarUI()
+		if vScroll then
+			vScroll:setValue(layout.verticalScrollBar)
+		end
+		local hScroll = self:horizontalScrollBarUI()
+		if hScroll then
+			hScroll:setValue(layout.horizontalScrollBar)
+		end
+	end
+end
 return Table

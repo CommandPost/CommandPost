@@ -2279,227 +2279,66 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTitlesListWarning"))
 
+		local app = fcp.app()
+		local generators = app:generators()
+		
+		local browserLayout = app:browser():saveLayout()
+		-- local wasGeneratorsShowing = generators:isShowing()
+		-- local wasLibrariesShowing = app:libraries():isShowing()
+		-- local selectedRows = generators:sidebar():selectedRowsUI()
+		
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using fcp.getBrowserButtonBar().")
+		if not generators:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Titles" is selected:
+		--------------------------------------------------------------------------------
+		generators:group():selectItem(1)
+		
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		generators:search():setValue("")
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Click 'Titles':
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showAllTitles()
 
 		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
+		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles is selected:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Get list of all Titles:
-		--------------------------------------------------------------------------------
+		local effectsList = generators:contents():childrenUI()
 		local allTitles = {}
-		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
-			allTitles[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
-		end
-
-		--------------------------------------------------------------------------------
-		-- No Titles Found:
-		--------------------------------------------------------------------------------
-		if next(allTitles) == nil then
-			dialog.displayMessage(i18n("updateTitlesListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			showTouchbar()
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allTitles[i] = effectsList[i]:attributeValue("AXTitle")
+			end
+		else
+			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs Again:
+		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
-		local checkBoxCount = 1
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
+		app:browser():loadLayout(browserLayout)
+		-- generators:sidebar():selectAll(selectedRows)
+		-- if wasGeneratorsShowing then
+		-- 	generators:show()
+		-- elseif wasLibrariesShowing then
+		-- 	app:libraries():show()
+		-- else
+		-- 	app:browser():hide()
+		-- end
 
-		--------------------------------------------------------------------------------
-		-- Go back to previously selected panel:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen == "Library" then
-			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -7473,9 +7312,9 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		local browser = fcp.app():browser()
+		local libraries = fcp.app():browser():libraries()
 
-		if not browser:isShowing() then
+		if not libraries:isShowing() then
 			dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
 			return "Failed"
 		end
@@ -7483,13 +7322,13 @@ end
 		--------------------------------------------------------------------------------
 		-- Check if we have any currently-selected clips:
 		--------------------------------------------------------------------------------
-		local clips = browser:selectedClipsUI()
+		local clips = libraries:selectedClipsUI()
 
-		if browser:sidebar():isFocused() then
+		if libraries:sidebar():isFocused() then
 			--------------------------------------------------------------------------------
 			-- Use All Clips:
 			--------------------------------------------------------------------------------
-			clips = browser:clipsUI()
+			clips = libraries:clipsUI()
 		end
 
 		local failedExports = 0
@@ -7507,7 +7346,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
-			failedExports = batchExportClips(browser, clips, exportPath, destinationPreset)
+			failedExports = batchExportClips(libraries, clips, exportPath, destinationPreset)
 
 		else
 			--------------------------------------------------------------------------------
@@ -7532,7 +7371,7 @@ end
 		--------------------------------------------------------------------------------
 		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		function batchExportClips(browser, clips, exportPath, destinationPreset)
+		function batchExportClips(libraries, clips, exportPath, destinationPreset)
 
 			local firstTime = true
 			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
@@ -7543,7 +7382,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Select Item:
 				--------------------------------------------------------------------------------
-				browser:selectClip(clip)
+				libraries:selectClip(clip)
 
 				--------------------------------------------------------------------------------
 				-- Trigger Export:

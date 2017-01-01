@@ -45,4 +45,16 @@ function TextField:isEnabled()
 	return ui and ui:enabled()
 end
 
+function TextField:saveLayout()
+	local layout = {}
+	layout.value = self:getValue()
+	return layout
+end
+
+function TextField:loadLayout(layout)
+	if layout then
+		self:setValue(layout.value)
+	end
+end
+
 return TextField
