@@ -30,11 +30,20 @@ function Table:UI()
 	end)
 end
 
-function Table:outlineUI()
+function Table:contentUI()
 	return axutils.cache(self, "_outline", function()
 		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXOutline")
-	end)
+		return ui and axutils.childMatching(ui, Table.matchesContent)
+	end,
+	Table.matchesContent)
+end
+
+function Table.matchesContent(element)
+	if element then
+		local role = element:attributeValue("AXRole")
+		return role == "AXOutline" or role == "AXTable"
+	end
+	return false
 end
 
 function Table:verticalScrollBarUI()
@@ -57,13 +66,17 @@ function Table:isFocused()
 end
 
 -- Returns the list of rows in the table
-function Table:rowsUI()
-	local ui = self:outlineUI()
+-- An optional filter function may be provided. It will be passed a single `AXRow` element
+-- and should return `true` if the row should be included.
+function Table:rowsUI(filterFn)
+	local ui = self:contentUI()
 	if ui then
 		local rows = {}
 		for i,child in ipairs(ui) do
 			if child:attributeValue("AXRole") == "AXRow" then
-				rows[#rows + 1] = child
+				if not filterFn or filterFn(child) then
+					rows[#rows + 1] = child
+				end
 			end
 		end
 		return rows
@@ -72,7 +85,7 @@ function Table:rowsUI()
 end
 
 function Table:columnsUI()
-	local ui = self:outlineUI()
+	local ui = self:contentUI()
 	if ui then
 		local columns = {}
 		for i,child in ipairs(ui) do
@@ -156,7 +169,7 @@ function Table:showRow(rowUI)
 
 		if rowTop < top or rowBottom > bottom then
 			-- we need to scroll
-			local oFrame = self:outlineUI():frame()
+			local oFrame = self:contentUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
 
 			local vValue = nil
@@ -186,15 +199,6 @@ end
 
 function Table:selectRow(rowUI)
 	rowUI:setAttributeValue("AXSelected", true)
-	-- rowUI:parent():setAttributeValue("AXFocused", false)
-	-- rowUI:parent():setAttributeValue("AXFocused", true)
-	
-	-- self:showRow(rowUI)
-	-- local mouseTarget = geometry.rect(rowUI[1]:frame()).center
-	-- tools.ninjaMouseClick(mouseTarget, function()
-	-- 	local selected = self:selectedRowsUI()
-	-- 	return selected and #selected == 1 and selected[1] == rowUI
-	-- end)
 	return self
 end
 
@@ -222,7 +226,7 @@ end
 -- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
 function Table:selectAll(rowsUI)
 	rowsUI = rowsUI or self:rowsUI()
-	local outline = self:outlineUI()
+	local outline = self:contentUI()
 	if rowsUI and outline then
 		outline:setAttributeValue("AXSelectedRows", rowsUI)
 	end
@@ -240,4 +244,32 @@ function Table:deselectAll(rowsUI)
 	return self
 end
 
+function Table:saveLayout()
+	local layout = {}
+	local hScroll = self:horizontalScrollBarUI()
+	if hScroll then
+		layout.horizontalScrollBar = hScroll:value()
+	end
+	local vScroll = self:verticalScrollBarUI()
+	if vScroll then
+		layout.verticalScrollBar = vScroll:value()
+	end
+	layout.selectedRows = self:selectedRowsUI()
+	
+	return layout
+end
+
+function Table:loadLayout(layout)
+	if layout then
+		self:selectAll(layout.selectedRows)
+		local vScroll = self:verticalScrollBarUI()
+		if vScroll then
+			vScroll:setValue(layout.verticalScrollBar)
+		end
+		local hScroll = self:horizontalScrollBarUI()
+		if hScroll then
+			hScroll:setValue(layout.horizontalScrollBar)
+		end
+	end
+end
 return Table

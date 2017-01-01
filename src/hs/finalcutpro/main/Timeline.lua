@@ -8,6 +8,7 @@ local timer								= require("hs.timer")
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
+local EffectsBrowser					= require("hs.finalcutpro.main.EffectsBrowser")
 
 local Timeline = {}
 
@@ -131,6 +132,34 @@ function Timeline:content()
 	return self._content
 end
 
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- EFFECT BROWSER
+--- The (sometimes hidden) Effect Browser.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:effects()
+	if not self._effects then
+		self._effects = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
+	end
+	return self._effects
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- TRANSITIONS BROWSER
+--- The (sometimes hidden) Transitions Browser.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:transitions()
+	if not self._transitions then
+		self._transitions = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
+	end
+	return self._transitions
+end
+
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- PLAYHEAD
@@ -151,7 +180,7 @@ end
 function Timeline:toolbarUI()
 	return axutils.cache(self, "_toolbar", function()
 		local ui = self:UI()
-		return ui and axutil.childMatching(ui, Timeline.matchesToolbar)
+		return ui and axutils.childMatching(ui, Timeline.matchesToolbar)
 	end,
 	Timeline.matchesToolbar)
 end

@@ -2002,302 +2002,111 @@ end
 		dialog.displayMessage(i18n("updateEffectsListWarning"))
 
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
+		-- Save the layout of the Transitions panel in case we switch away...
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
-		if finalCutProTimelineButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in updateEffectsList() whilst using fcp.getTimelineButtonBar().")
+		local transitions = fcp.app():transitions()
+		local transitionsLayout = transitions:saveLayout()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure Effects panel is open:
+		--------------------------------------------------------------------------------
+		local effects = fcp.app():effects()
+		local effectsShowing = effects:isShowing()
+		if not effects:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
 
-		--------------------------------------------------------------------------------
-		-- Find Effects Browser Button:
-		--------------------------------------------------------------------------------
-		local whichRadioGroup = nil
-		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
-				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
-					whichRadioGroup = i
-				end
-			end
-		end
-		if whichRadioGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in updateEffectsList().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects or Transitions Panel Open?
-		--------------------------------------------------------------------------------
-		local whichPanelActivated = "None"
-		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
-			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
-			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Video Effects panel is open:
-		--------------------------------------------------------------------------------
-		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][1]
-		if effectsBrowserButton ~= nil then
-			if effectsBrowserButton:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.\n\nError occured in updateEffectsList().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel.\n\nError occured in updateEffectsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
+		local effectsLayout = effects:saveLayout()
+		
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
 		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Group:
-			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-			if finalCutProEffectsTransitionsBrowserGroup == nil then
-				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateEffectsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserSplitGroup = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
-						whichEffectsBrowserSplitGroup = i
-					--end
-				end
-			end
-			if whichEffectsBrowserSplitGroup == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in updateEffectsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserPopupButton = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
-					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
-						whichEffectsBrowserPopupButton = i
-					end
-				end
-			end
-			if whichEffectsBrowserPopupButton == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in updateEffectsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Check that "Installed Effects" is selected:
-			--------------------------------------------------------------------------------
-			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
-			if installedEffectsPopup ~= nil then
-				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-					if finalCutProEffectsTransitionsBrowserGroup == nil then
-						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateEffectsList().")
-						return "Failed"
-					end
-					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
-					installedEffectsPopupMenuItem:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in updateEffectsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
+		effects:group():selectItem(1)
+		
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateEffectsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		effects:search():clear()
 
 		--------------------------------------------------------------------------------
 		-- Click 'All Video':
 		--------------------------------------------------------------------------------
-		local allVideoAndAudioButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][3] ~= nil then
-						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][3]
-					end
-				end
-			end
+		local sidebar = effects:sidebar()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure the sidebar is visible:
+		--------------------------------------------------------------------------------
+		if effects:sidebarHidden():uncheck():isChecked() then
+			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
+			showTouchbar()
+			return "Fail"
 		end
-		if allVideoAndAudioButton ~= nil then
-			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-		else
-
-			--------------------------------------------------------------------------------
-			-- Make sure Effects Browser Sidebar is Visible:
-			--------------------------------------------------------------------------------
-			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
-			if effectsBrowserSidebar ~= nil then
-				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-					effectsBrowserSidebar:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in updateEffectsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Click 'All Video':
-			--------------------------------------------------------------------------------
-			local allVideoAndAudioButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][3] ~= nil then
-							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][3]
-						end
-					end
-				end
-			end
-			if allVideoAndAudioButton ~= nil then
-				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-			else
-				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in updateEffectsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
+		
 		--------------------------------------------------------------------------------
-		-- Add a bit of a delay...
+		-- Find the two 'All' rows (Video/Audio)
 		--------------------------------------------------------------------------------
-		timer.usleep(100000)
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Video Effects:
-		--------------------------------------------------------------------------------
-		effectsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
-		local allVideoEffects = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList:attributeValue("AXChildren") do
-				allVideoEffects[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occured in updateEffectsList().")
+		local allRows = sidebar:rowsUI(function(row)
+			local label = row[1][1]
+			local value = label and label:attributeValue("AXValue")
+			--------------------------------------------------------------------------------
+			-- ENGLISH:		All
+			-- GERMAN: 		Alle
+			-- SPANISH: 	Todo
+			-- FRENCH: 		Tous
+			-- JAPANESE:	すべて
+			-- CHINESE:		全部
+			--------------------------------------------------------------------------------
+			-- TODO: Use i18n to get the appropriate value for the current language
+			return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
+		end)
+		
+		if not allRows or #allRows ~= 2 then
+			dialog.displayErrorMessage("Was expecting two 'All' categories.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Click 'All Audio':
+		-- Get list of All Video Effects:
 		--------------------------------------------------------------------------------
-		allAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1]
-		local secondAll = false
-		local whichAudioButton = nil
-		if allAudioButton ~= nil then
-			for i=1, #allAudioButton:attributeValue("AXChildren") do
-				if allAudioButton[i][1] ~= nil then
-					if allAudioButton[i][1][1] ~= nil then
-						--------------------------------------------------------------------------------
-						-- ENGLISH:		All
-						-- GERMAN: 		Alle
-						-- SPANISH: 	Todo
-						-- FRENCH: 		Tous
-						-- JAPANESE:	すべて
-						-- CHINESE:		全部
-						--------------------------------------------------------------------------------
-						local value = allAudioButton[i][1][1]:attributeValue("AXValue")
-						if (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部") then
-							if secondAll then
-								whichAudioButton = i
-							else
-								secondAll = true
-							end
-						end
-					end
-				end
+		sidebar:selectRow(allRows[1])
+		
+		local effectsList = effects:contents():childrenUI()
+		local allVideoEffects = {}
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allVideoEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
-			allAudioButton[whichAudioButton]:setAttributeValue("AXSelected", true)
 		else
-			dialog.displayErrorMessage("Unable to locate 'All Audio' button.\n\nError occured in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Audio Effects:
 		--------------------------------------------------------------------------------
-		effectsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		sidebar:selectRow(allRows[2])
+		
+		effectsList = effects:contents():childrenUI()
 		local allAudioEffects = {}
 		if effectsList ~= nil then
-			for i=1, #effectsList:attributeValue("AXChildren") do
+			for i=1, #effectsList do
 				allAudioEffects[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occured in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
+		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
+		effects:loadLayout(effectsLayout)
+		transitions:loadLayout(transitionsLayout)
+		if not effectsShowing then effects:hide() end
 
-			--------------------------------------------------------------------------------
-			-- Make sure there's nothing in the search box:
-			--------------------------------------------------------------------------------
-			local effectsSearchCancelButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-					effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-				end
-			end
-			if effectsSearchCancelButton ~= nil then
-				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-				if effectsSearchCancelButtonResult == nil then
-					dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateEffectsList().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Restore Effects or Transitions Panel:
-			--------------------------------------------------------------------------------
-			if whichPanelActivated == "None" then
-				finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
-			elseif whichPanelActivated == "Transitions" then
-				finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
-			end
-
-			--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			showTouchbar()
-
-		end)
+		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- All done!
@@ -2352,254 +2161,70 @@ end
 		dialog.displayMessage(i18n("updateTransitionsListWarning"))
 
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
+		-- Save the layout of the Effects panel, in case we switch away...
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
-		if finalCutProTimelineButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in updateTransitionsList() whilst using fcp.getTimelineButtonBar().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Find Transitions Browser Button:
-		--------------------------------------------------------------------------------
-		local whichRadioGroup = nil
-		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
-				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
-					whichRadioGroup = i
-				end
-			end
-		end
-		if whichRadioGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in updateTransitionsList().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects or Transitions Panel Open?
-		--------------------------------------------------------------------------------
-		local whichPanelActivated = "None"
-		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
-			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
-			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
-		end
-
+		local effects = fcp.app():effects()
+		local effectsLayout = effects:saveLayout()
+		
 		--------------------------------------------------------------------------------
 		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
-		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][2]
-		if effectsBrowserButton ~= nil then
-			if effectsBrowserButton:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.\n\nError occured in updateTransitionsList().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel.\n\nError occured in updateTransitionsList().")
+		local transitions = fcp.app():transitions()
+		local transitionsShowing = transitions:isShowing()
+		if not transitions:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
 
+		local transitionsLayout = transitions:saveLayout()
+		
 		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
+		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Group:
-			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-			if finalCutProEffectsTransitionsBrowserGroup == nil then
-				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserSplitGroup = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
-						whichEffectsBrowserSplitGroup = i
-					--end
-				end
-			end
-			if whichEffectsBrowserSplitGroup == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserPopupButton = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
-					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
-						whichEffectsBrowserPopupButton = i
-					end
-				end
-			end
-			if whichEffectsBrowserPopupButton == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in updateTransitionsList().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Check that "Installed Effects" is selected:
-			--------------------------------------------------------------------------------
-			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
-			if installedEffectsPopup ~= nil then
-				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-					if finalCutProEffectsTransitionsBrowserGroup == nil then
-						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in updateTransitionsList().")
-						return "Failed"
-					end
-					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
-					installedEffectsPopupMenuItem:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
+		transitions:group():selectItem(1)
+		
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		transitions:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Click 'All' Transitions:
+		-- Click 'All':
 		--------------------------------------------------------------------------------
-		local allVideoAndAudioButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-					end
-				end
-			end
+		--------------------------------------------------------------------------------
+		-- Make sure the sidebar is visible:
+		--------------------------------------------------------------------------------
+		if transitions:sidebarHidden():uncheck():isChecked() then
+			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateEffectsList().")
+			showTouchbar()
+			return "Fail"
 		end
-		if allVideoAndAudioButton ~= nil then
-			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-		else
-
-			--------------------------------------------------------------------------------
-			-- Make sure Transitions Browser Sidebar is Visible:
-			--------------------------------------------------------------------------------
-			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
-			if effectsBrowserSidebar ~= nil then
-				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-					effectsBrowserSidebar:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Click 'All' Transitions:
-			--------------------------------------------------------------------------------
-			local allVideoAndAudioButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-						end
-					end
-				end
-			end
-			if allVideoAndAudioButton ~= nil then
-				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-			else
-				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
+		
+		transitions:sidebar():selectRowAt(1)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		local transitionsList = finalCutProEffectsTransitionsBrowserGroup[1][4][1]
+		local effectsList = transitions:contents():childrenUI()
 		local allTransitions = {}
-		if transitionsList ~= nil then
-			for i=1, #transitionsList:attributeValue("AXChildren") do
-				allTransitions[i] = transitionsList[i]:attributeValue("AXTitle")
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allTransitions[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
-			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occured in updateTransitionsList().")
+			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Check to make sure it all worked:
+		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
-		if #allTransitions == 0 or #allTransitions == 0 then
-			dialog.displayMessage(i18n("updateTransitionsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			return "Fail"
-		end
+		transitions:loadLayout(transitionsLayout)
+		effects:loadLayout(effectsLayout)
+		if not transitionsShowing then transitions:hide() end
 
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in updateTransitionsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
-		--------------------------------------------------------------------------------
-		if whichPanelActivated == "Effects" then
-			finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
-		elseif whichPanelActivated == "None" then
-			finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
-		end
+		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -2649,227 +2274,55 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTitlesListWarning"))
 
+		local app = fcp.app()
+		local generators = app:generators()
+		
+		local browserLayout = app:browser():saveLayout()
+		
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateTitlesList() whilst using fcp.getBrowserButtonBar().")
+		if not generators:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Click 'Titles':
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showAllTitles()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Titles" is selected:
+		--------------------------------------------------------------------------------
+		generators:group():selectItem(1)
 
 		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
+		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles is selected:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Get list of all Titles:
-		--------------------------------------------------------------------------------
+		local effectsList = generators:contents():childrenUI()
 		local allTitles = {}
-		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
-			allTitles[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
-		end
-
-		--------------------------------------------------------------------------------
-		-- No Titles Found:
-		--------------------------------------------------------------------------------
-		if next(allTitles) == nil then
-			dialog.displayMessage(i18n("updateTitlesListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			showTouchbar()
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allTitles[i] = effectsList[i]:attributeValue("AXTitle")
+			end
+		else
+			dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs Again:
+		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
-		local checkBoxCount = 1
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
+		app:browser():loadLayout(browserLayout)
 
-		--------------------------------------------------------------------------------
-		-- Go back to previously selected panel:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen == "Library" then
-			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateTitlesList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -2914,257 +2367,53 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateGeneratorsListWarning"))
 
+		local app = fcp.app()
+		local generators = app:generators()
+		
+		local browserLayout = app:browser():saveLayout()
+		
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in updateGeneratorsList() whilst using fcp.getBrowserButtonBar().")
+		if not generators:show():isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Click 'Generators':
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showAllGenerators()
+		
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Titles" is selected:
+		--------------------------------------------------------------------------------
+		generators:group():selectItem(1)
 
 		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
+		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-
-		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Which Split Group?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Find Generators Row:
-		--------------------------------------------------------------------------------
-		local generatorsRow = nil
-		local foundTitles = false
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][i][1]:attributeValue("AXRole") == "AXGroup" then
-				if foundTitles == false then
-					foundTitles = true
-				else
-					generatorsRow = i
-					goto generatorsRowExit
-				end
-			end
-		end
-		::generatorsRowExit::
-		if generatorsRow == nil then
-			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Generators Row:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Generators" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Get list of all Generators:
-		--------------------------------------------------------------------------------
+		local effectsList = generators:contents():childrenUI()
 		local allGenerators = {}
-		for i=1, #finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1]:attributeValue("AXChildren") do
-			allGenerators[i] = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][i]:attributeValue("AXTitle")
-		end
-
-		--------------------------------------------------------------------------------
-		-- No Titles Found:
-		--------------------------------------------------------------------------------
-		if next(allGenerators) == nil then
-			dialog.displayMessage(i18n("updateGeneratorsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			showTouchbar()
+		if effectsList ~= nil then
+			for i=1, #effectsList do
+				allGenerators[i] = effectsList[i]:attributeValue("AXTitle")
+			end
+		else
+			dialog.displayErrorMessage("Unable to get list of all Generators.\n\nError occurred in updateGeneratorsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs Again:
+		-- Restore Effects or Transitions Panel:
 		--------------------------------------------------------------------------------
-		local checkBoxCount = 1
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in updateGeneratorsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Go back to previously selected panel:
-		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen == "Library" then
-			local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-			local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in updateGeneratorsList().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		app:browser():loadLayout(browserLayout)
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -3317,13 +2566,13 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
-			end
 
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
+				--------------------------------------------------------------------------------
+				-- Put focus back in Final Cut Pro:
+				--------------------------------------------------------------------------------
+				if result["wasFinalCutProOpen"] then
+					fcp.launch()
+				end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3437,13 +2686,13 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
-			end
 
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
+				--------------------------------------------------------------------------------
+				-- Put focus back in Final Cut Pro:
+				--------------------------------------------------------------------------------
+				if result["wasFinalCutProOpen"] then
+					fcp.launch()
+				end
 			end
 
 			--------------------------------------------------------------------------------
@@ -3613,7 +2862,7 @@ end
 			for i=1, #allGenerators do
 				individualEffect = {
 					["text"] = allGenerators[i],
-					["subText"] = "Title",
+					["subText"] = "Generator",
 					["function"] = "transitionsShortcut",
 					["function1"] = allGenerators[i],
 					["function2"] = "",
@@ -7874,9 +7123,9 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		local browser = fcp.app():browser()
+		local libraries = fcp.app():browser():libraries()
 
-		if not browser:isShowing() then
+		if not libraries:isShowing() then
 			dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
 			return "Failed"
 		end
@@ -7884,13 +7133,13 @@ end
 		--------------------------------------------------------------------------------
 		-- Check if we have any currently-selected clips:
 		--------------------------------------------------------------------------------
-		local clips = browser:selectedClipsUI()
+		local clips = libraries:selectedClipsUI()
 
-		if browser:sidebar():isFocused() then
+		if libraries:sidebar():isFocused() then
 			--------------------------------------------------------------------------------
 			-- Use All Clips:
 			--------------------------------------------------------------------------------
-			clips = browser:clipsUI()
+			clips = libraries:clipsUI()
 		end
 
 		local failedExports = 0
@@ -7910,7 +7159,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
-			failedExports = batchExportClips(browser, clips, exportPath, destinationPreset)
+			failedExports = batchExportClips(libraries, clips, exportPath, destinationPreset)
 
 		else
 			--------------------------------------------------------------------------------
@@ -7935,7 +7184,7 @@ end
 		--------------------------------------------------------------------------------
 		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		function batchExportClips(browser, clips, exportPath, destinationPreset)
+		function batchExportClips(libraries, clips, exportPath, destinationPreset)
 
 			local firstTime = true
 			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
@@ -7946,7 +7195,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Select Item:
 				--------------------------------------------------------------------------------
-				browser:selectClip(clip)
+				libraries:selectClip(clip)
 
 				--------------------------------------------------------------------------------
 				-- Trigger Export:

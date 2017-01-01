@@ -6,15 +6,17 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
-local Button							= require("hs.finalcutpro.ui.Button")
-local BrowserList						= require("hs.finalcutpro.main.BrowserList")
-local BrowserFilmstrip					= require("hs.finalcutpro.main.BrowserFilmstrip")
-local Table								= require("hs.finalcutpro.ui.Table")
+local LibrariesBrowser					= require("hs.finalcutpro.main.LibrariesBrowser")
+local MediaBrowser						= require("hs.finalcutpro.main.MediaBrowser")
+local GeneratorsBrowser					= require("hs.finalcutpro.main.GeneratorsBrowser")
+
+local CheckBox							= require("hs.finalcutpro.ui.CheckBox")
 
 local Browser = {}
 
 function Browser.matches(element)
-	return axutils.childWith(element, "AXIdentifier", "_NS:82") ~= nil
+	local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
+	return checkBoxes and #checkBoxes == 3
 end
 
 function Browser:new(app)
@@ -96,159 +98,107 @@ function Browser:hide()
 	return self
 end
 
------------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Buttons
------------------------------------------------------------------------------
------------------------------------------------------------------------------
 
-function Browser:toggleViewMode()
-	if not self._viewMode then
-		self._viewMode = Button:new(self, {id = "_NS:82"})
-	end
-	return self._viewMode
-end
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- Sections
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 
-function Browser:appearanceAndFiltering()
-	if not self._appearanceAndFiltering then
-		self._appearanceAndFiltering = Button:new(self, {id = "_NS:68"})
-	end
-	return self._appearanceAndFiltering
-end
-
-function Browser:toggleSearchBar()
-	if not self._toggleSearchBar then
-		self._toggleSearchBar = Button:new(self, {id = "_NS:92"})
-	end
-	return self._toggleSearchBar
-end
-
-Browser.ALL_CLIPS = 1
-Browser.HIDE_REJECTED = 2
-Browser.NO_RATINGS_OR_KEYWORDS = 3
-Browser.FAVORITES = 4
-Browser.REJECTED = 5
-Browser.UNUSED = 6
-
-function Browser:selectClipFiltering(filterType)
-	local ui = self:UI()
-	if ui then
-		button = axutils.childWithID(ui, "_NS:9")
-		if button then
-			local menu = button[1]
-			if not menu then
-				button:doPress()
-				menu = button[1]
+function Browser:showLibraries()
+	if not self._showLibraries then
+		self._showLibraries = CheckBox:new(self, function()
+			local ui = self:UI()
+			if ui and #ui > 3 then
+				-- The library toggle is always the last element.
+				return ui[#ui]
 			end
-			local menuItem = menu[filterType]
-			if menuItem then
-				menuItem:doPress()
-			end
-		end
-	end
-	return self
-end
-
-function Browser:mainGroupUI()
-	return axutils.cache(self, "_mainGroup",
-	function()
-		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXSplitGroup")
-	end)
-end
-
-function Browser:filmstrip()
-	if not self._filmstrip then
-		self._filmstrip = BrowserFilmstrip:new(self)
-	end
-	return self._filmstrip
-end
-
-function Browser:list()
-	if not self._list then
-		self._list = BrowserList:new(self)
-	end
-	return self._list
-end
-
-function Browser:sidebar()
-	if not self._sidebar then
-		self._sidebar = Table:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			return nil
 		end)
 	end
-	return self._sidebar
+	return self._showLibraries
 end
 
-function Browser:isListView()
-	return self:list():isShowing()
-end
-
-function Browser:isFilmstripView()
-	return self:filmstrip():isShowing()
-end
-
-function Browser:clipsUI()
-	if self:isListView() then
-		return self:list():clipsUI()
-	elseif self:isFilmstripView() then
-		return self:filmstrip():clipsUI()
-	else
-		return nil
+function Browser:showMedia()
+	if not self._showMedia then
+		self._showMedia = CheckBox:new(self, function()
+			local ui = self:UI()
+			if ui and #ui > 3 then
+				-- The media toggle is always the second-last element.
+				return ui[#ui-1]
+			end
+			return nil
+		end)
 	end
+	return self._showMedia
 end
 
-function Browser:selectedClipsUI()
-	if self:isListView() then
-		return self:list():selectedClipsUI()
-	elseif self:isFilmstripView() then
-		return self:filmstrip():selectedClipsUI()
-	else
-		return nil
+function Browser:showGenerators()
+	if not self._showGenerators then
+		self._showGenerators = CheckBox:new(self, function()
+			local ui = self:UI()
+			if ui and #ui > 3 then
+				-- The generators toggle is always the third-last element.
+				return ui[#ui-2]
+			end
+			return nil
+		end)
 	end
+	return self._showGenerators
 end
 
-function Browser:showClip(clipUI)
-	if self:isListView() then
-		self:list():showClip(clipUI)
-	else
-		self:filmstrip():showClip(clipUI)
+function Browser:libraries()
+	if not self._libraries then
+		self._libraries = LibrariesBrowser:new(self)
 	end
-	return self
+	return self._libraries
 end
 
-function Browser:selectClip(clipUI)
-	if self:isListView() then
-		self:list():selectClip(clipUI)
-	elseif self:isFilmstripView() then
-		self:filmstrip():selectClip(clipUI)
-	else
-		debugMessage("ERROR: cannot find either list or filmstrip UI")
+function Browser:media()
+	if not self._media then
+		self._media = MediaBrowser:new(self)
 	end
-	return self
+	return self._media
 end
 
-function Browser:selectClipAt(index)
-	if self:isListView() then
-		self:list():selectClipAt(index)
-	else
-		self:filmstrip():selectClipAt(index)
+function Browser:generators()
+	if not self._generators then
+		self._generators = GeneratorsBrowser:new(self)
 	end
-	return self
+	return self._generators
 end
 
-function Browser:deselectAll()
-	if self:isListView() then
-		self:list():deselectAll()
-	else
-		self:filmstrip():deselectAll()
+function Browser:saveLayout()
+	local layout = {}
+	if self:isShowing() then
+		layout.showing = true
+		layout.onPrimary = self:isOnPrimary()
+		layout.onSecondary = self:isOnSecondary()
+		
+		layout.showLibraries = self:showLibraries():saveLayout()
+		layout.showMedia = self:showMedia():saveLayout()
+		layout.showGenerators = self:showGenerators():saveLayout()
+		
+		layout.libraries = self:libraries():saveLayout()
+		layout.media = self:media():saveLayout()
+		layout.generators = self:generators():saveLayout()
 	end
+	return layout
 end
 
-
-function Browser:isFocused()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
+function Browser:loadLayout(layout)
+	if layout and layout.showing then
+		if layout.onPrimary then self:showOnPrimary() end
+		if layout.onSecondary then self:showOnSecondary() end
+		
+		self:generators():loadLayout(layout.generators)
+		self:media():loadLayout(layout.media)
+		self:libraries():loadLayout(layout.libraries)
+		
+		self:showGenerators():loadLayout(layout.showGenerators)
+		self:showMedia():loadLayout(layout.showMedia)
+		self:showLibraries():loadLayout(layout.showLibraries)
+	end
 end
 
 return Browser
