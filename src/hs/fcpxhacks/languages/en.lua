@@ -14,6 +14,11 @@ return {
 			three								=			"3",
 			four								=			"4",
 			five								=			"5",
+			six									=			"6",
+			seven								=			"7",
+			eight								=			"8",
+			nine								=			"9",
+			ten									=			"10",
 
 			--------------------------------------------------------------------------------
 			-- Common Strings:
@@ -391,6 +396,17 @@ return {
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
 			checkForUpdates						=			"Check for Updates",
+
+	--------------------------------------------------------------------------------
+	-- VOICE COMMANDS:
+	--------------------------------------------------------------------------------
+
+			keyboardShortcuts					=			"Keyboard Shortcuts",
+			scrollingTimeline					=			"Scrolling Timeline",
+			highlight							=			"Highlight",
+			reveal								=			"Reveal",
+			play								=			"Play",
+			lane								=			"Lane",
 
 	}
 }

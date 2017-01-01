@@ -43,21 +43,21 @@ local function openCommandEditor()
 end
 
 local listenerCommands = {
-						 	["Keyboard Shortcuts"] 		= function() openCommandEditor() end,
-						 	["Scrolling Timeline"] 		= function() toggleScrollingTimeline() end,
-						 	["Highlight"]				= function() highlightFCPXBrowserPlayhead() end,
-						 	["Reveal"]					= function() matchFrameThenHighlightFCPXBrowserPlayhead() end,
-						 	["Lane 1"]					= function() selectClipAtLane(1) end,
-						 	["Lane 2"]					= function() selectClipAtLane(2) end,
-						 	["Lane 3"]					= function() selectClipAtLane(3) end,
-						 	["Lane 4"]					= function() selectClipAtLane(4) end,
-						 	["Lane 5"]					= function() selectClipAtLane(5) end,
-						 	["Lane 6"]					= function() selectClipAtLane(6) end,
-						 	["Lane 7"]					= function() selectClipAtLane(7) end,
-						 	["Lane 8"]					= function() selectClipAtLane(8) end,
-						 	["Lane 9"]					= function() selectClipAtLane(9) end,
-						 	["Lane 10"]					= function() selectClipAtLane(10) end,
-						 	["Play"]					= function() eventtap.keyStroke({}, "space") end,
+						 	[i18n("keyboardShortcuts")] 				= function() openCommandEditor() end,
+						 	[i18n("scrollingTimeline")] 				= function() toggleScrollingTimeline() end,
+						 	[i18n("highlight")]							= function() highlightFCPXBrowserPlayhead() end,
+						 	[i18n("reveal")]							= function() matchFrameThenHighlightFCPXBrowserPlayhead() end,
+						 	[i18n("lane") .. " " .. i18n("one")]		= function() selectClipAtLane(1) end,
+						 	[i18n("lane") .. " " .. i18n("two")]		= function() selectClipAtLane(2) end,
+						 	[i18n("lane") .. " " .. i18n("three")]		= function() selectClipAtLane(3) end,
+						 	[i18n("lane") .. " " .. i18n("four")]		= function() selectClipAtLane(4) end,
+						 	[i18n("lane") .. " " .. i18n("five")]		= function() selectClipAtLane(5) end,
+						 	[i18n("lane") .. " " .. i18n("six")]		= function() selectClipAtLane(6) end,
+						 	[i18n("lane") .. " " .. i18n("seven")]		= function() selectClipAtLane(7) end,
+						 	[i18n("lane") .. " " .. i18n("eight")]		= function() selectClipAtLane(8) end,
+						 	[i18n("lane") .. " " .. i18n("nine")]		= function() selectClipAtLane(9) end,
+						 	[i18n("lane") .. " " .. i18n("ten")]		= function() selectClipAtLane(10) end,
+						 	[i18n("play")]								= function() eventtap.keyStroke({}, "space") end,
 						 }
 
 --------------------------------------------------------------------------------
