@@ -27,64 +27,88 @@ local inspect									= require("hs.inspect")
 
 local fcp										= require("hs.finalcutpro")
 
-local i18n										= require("hs.fcpxhacks.modules.i18n")
 local tools										= require("hs.fcpxhacks.modules.tools")
 
 --------------------------------------------------------------------------------
--- SETUP I18N LANGUAGES:
+-- COMMON APPLESCRIPT:
 --------------------------------------------------------------------------------
-local languagePath = "hs/fcpxhacks/languages/"
-for file in fs.dir(languagePath) do
-	if file:sub(-4) == ".lua" then
-		i18n.loadFile(languagePath .. file)
-	end
-end
-local userLocale = nil
-if settings.get("fcpxHacks.language") == nil then
-	userLocale = tools.userLocale()
-else
-	userLocale = settings.get("fcpxHacks.language")
-end
-i18n.setLocale(userLocale)
+local commonAppleScript = [[
+	set yesButton to "]] .. i18n("yes") .. [["
+	set noButton to "]] .. i18n("no") .. [["
 
---------------------------------------------------------------------------------
--- COMMON ERROR MESSAGES:
---------------------------------------------------------------------------------
-local commonErrorMessageStart 					= i18n("commonErrorMessageStart") .. "\n\n"
-local commonErrorMessageEnd 					= "\n\n" .. i18n("commonErrorMessageEnd")
-local commonErrorMessageAppleScript 			= 'set noButton to "' .. i18n("no") .. '"' .. '\n\nset yesButton to "' .. i18n("yes") .. '"' .. '\n\nset okButton to "' .. i18n("ok") .. '"' .. '\n\nset cancelButton to "' .. i18n("cancel") .. '"' .. '\n\nset fcpxIcon to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)\n\nset commonErrorMessageStart to "' .. commonErrorMessageStart .. '"\nset commonErrorMessageEnd to "' .. commonErrorMessageEnd .. '"\n'
+	set okButton to "]] .. i18n("ok") .. [["
+	set cancelButton to "]] .. i18n("cancel") .. [["
+
+	set iconPath to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)
+
+	set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [["
+	set errorMessageEnd to "]] .. i18n("commonErrorMessageEnd") .. [["
+
+	set finalCutProBundleID to "]] .. fcp.bundleID() .. [["
+
+	set isFinalCutProFrontmost to true
+	tell application "System Events"
+		set runningProcesses to processes whose bundle identifier is finalCutProBundleID
+		set activeApp to name of first application process whose frontmost is true
+	end tell
+	if "Final Cut Pro" is not in activeApp then set isFinalCutProFrontmost to false
+	if runningProcesses is {} then set isFinalCutProFrontmost to false
+
+]]
 
 --------------------------------------------------------------------------------
 -- DISPLAY SMALL NUMBER TEXT BOX MESSAGE:
 --------------------------------------------------------------------------------
 function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-	local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-	local appleScriptD = [[
-		repeat
-			try
-				tell me to activate
-				set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} with icon fcpxIcon)
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-			try
-				set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
-				if usersInput is not equal to missing value then
-					if usersInput is not 0 then
-						exit repeat
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+		set whatErrorMessage to "]] .. whatErrorMessage .. [["
+		set defaultAnswer to "]] .. defaultAnswer .. [["
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				repeat
+					try
+						set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} with icon iconPath)
+					on error
+						-- Cancel Pressed:
+						return false
+					end try
+					try
+						set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
+						if usersInput is not equal to missing value then
+							if usersInput is not 0 then
+								exit repeat
+							end if
+						end if
+					end try
+					display dialog whatErrorMessage buttons {okButton} with icon iconPath
+				end repeat
+				return usersInput
+			end tell
+		else
+			repeat
+				try
+					tell me to activate
+					set dialogResult to (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} with icon iconPath)
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+				try
+					set usersInput to (text returned of dialogResult) as number -- To accept only entries that coerce directly to class integer.
+					if usersInput is not equal to missing value then
+						if usersInput is not 0 then
+							exit repeat
+						end if
 					end if
-				end if
-			end try
-			display dialog whatErrorMessage buttons {okButton} with icon fcpxIcon
-		end repeat
-		return usersInput
+				end try
+				display dialog whatErrorMessage buttons {okButton} with icon iconPath
+			end repeat
+			return usersInput
+		end if
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 end
 
@@ -92,43 +116,72 @@ end
 -- DISPLAY TEXT BOX MESSAGE:
 --------------------------------------------------------------------------------
 function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = 'set whatErrorMessage to "' .. whatErrorMessage .. '"' .. '\n\n'
-	local appleScriptC = 'set defaultAnswer to "' .. defaultAnswer .. '"' .. '\n\n'
-	local appleScriptD = [[
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+		set whatErrorMessage to "]] .. whatErrorMessage .. [["
+		set defaultAnswer to "]] .. defaultAnswer .. [["
+
 		set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
 		set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
 		set allowedAll to allowedLetters & allowedNumbers & space
 
-		repeat
-			try
-				tell me to activate
-				set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon fcpxIcon)
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-			try
-				set invalidCharacters to false
-				repeat with aCharacter in response
-					if (aCharacter as text) is not in allowedAll then
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				repeat
+					try
+						set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon iconPath)
+					on error
+						-- Cancel Pressed:
+						return false
+					end try
+					try
+						set invalidCharacters to false
+						repeat with aCharacter in response
+							if (aCharacter as text) is not in allowedAll then
+								set invalidCharacters to true
+							end if
+						end repeat
+						if length of response is 0 then
+							set invalidCharacters to true
+						end if
+						if invalidCharacters is false then
+							exit repeat
+						end
+					end try
+					display dialog whatErrorMessage buttons {okButton} with icon iconPath
+				end repeat
+				return response
+			end tell
+		else
+			repeat
+				try
+					tell me to activate
+					set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon iconPath)
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+				try
+					set invalidCharacters to false
+					repeat with aCharacter in response
+						if (aCharacter as text) is not in allowedAll then
+							set invalidCharacters to true
+						end if
+					end repeat
+					if length of response is 0 then
 						set invalidCharacters to true
 					end if
-				end repeat
-				if length of response is 0 then
-					set invalidCharacters to true
-				end if
-				if invalidCharacters is false then
-					exit repeat
-				end
-			end try
-			display dialog whatErrorMessage buttons {okButton} with icon fcpxIcon
-		end repeat
-		return response
+					if invalidCharacters is false then
+						exit repeat
+					end
+				end try
+				display dialog whatErrorMessage buttons {okButton} with icon iconPath
+			end repeat
+			return response
+		end if
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 end
 
@@ -136,20 +189,31 @@ end
 -- DISPLAY CHOOSE FOLDER DIALOG:
 --------------------------------------------------------------------------------
 function dialog.displayChooseFolder(whatMessage)
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		try
-			set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
-			return whichFolder
-		on error
-			-- Cancel Pressed:
-			return false
-		end try
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				try
+					set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
+					return whichFolder
+				on error
+					-- Cancel Pressed:
+					return false
+				end try
+			end tell
+		else
+			tell me to activate
+			try
+				set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
+				return whichFolder
+			on error
+				-- Cancel Pressed:
+				return false
+			end try
+		end if
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 end
 
@@ -157,14 +221,19 @@ end
 -- DISPLAY ALERT MESSAGE:
 --------------------------------------------------------------------------------
 function dialog.displayAlertMessage(whatMessage)
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {okButton} with icon stop
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				display dialog whatMessage buttons {okButton} with icon stop
+			end tell
+		else
+			tell me to activate
+			display dialog whatMessage buttons {okButton} with icon stop
+		end if
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 end
 
 --------------------------------------------------------------------------------
@@ -180,24 +249,35 @@ function dialog.displayErrorMessage(whatError)
 	--------------------------------------------------------------------------------
 	-- Display Dialog Box:
 	--------------------------------------------------------------------------------
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatError to "' .. whatError .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog commonErrorMessageStart & whatError & commonErrorMessageEnd buttons {yesButton, noButton} with icon fcpxIcon
-		if the button returned of the result is equal to yesButton then
-			return true
+	local appleScript = [[
+		set whatError to "]] .. whatError .. [["
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				display dialog errorMessageStart & whatError & errorMessageEnd buttons {yesButton, noButton} with icon iconPath
+				if the button returned of the result is equal to yesButton then
+					return true
+				else
+					return false
+				end if
+			end tell
 		else
-			return false
+			tell me to activate
+			display dialog errorMessageStart & whatError & errorMessageEnd buttons {yesButton, noButton} with icon iconPath
+			if the button returned of the result is equal to yesButton then
+				return true
+			else
+				return false
+			end if
 		end if
+
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 
 	--------------------------------------------------------------------------------
 	-- Send bug report:
 	--------------------------------------------------------------------------------
-	if result then dialog.emailBugReport() end
-	if returnToFinalCutPro then fcp.launch() end
+	if result then emailBugReport() end
 
 end
 
@@ -217,16 +297,20 @@ function dialog.displayMessage(whatMessage, optionalButtons)
 	end
 	buttons = buttons .. "}"
 
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		set result to button returned of (display dialog whatMessage ]] .. buttons .. [[ with icon fcpxIcon)
-		return result
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				set result to button returned of (display dialog whatMessage ]] .. buttons .. [[ with icon iconPath)
+				return result
+			end tell
+		else
+			tell me to activate
+			set result to button returned of (display dialog whatMessage ]] .. buttons .. [[ with icon iconPath)
+			return result
+		end if
 	]]
-	local a, result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then fcp.launch() end
-
+	local a, result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 
 end
@@ -236,29 +320,30 @@ end
 --------------------------------------------------------------------------------
 function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set whatMessage to "' .. whatMessage .. '"' .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon fcpxIcon
-		if the button returned of the result is equal to yesButton then
-			return true
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon iconPath
+				if the button returned of the result is equal to yesButton then
+					return true
+				else
+					return false
+				end if
+			end tell
 		else
-			return false
+			tell me to activate
+			display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon iconPath
+			if the button returned of the result is equal to yesButton then
+				return true
+			else
+				return false
+			end if
 		end if
 	]]
-	local a,result = osascript.applescript(commonErrorMessageAppleScript .. appleScriptA .. appleScriptB)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 
-end
-
---------------------------------------------------------------------------------
--- DISPLAY ALERT NOTIFICATION:
---------------------------------------------------------------------------------
-function dialog.displayNotification(whatMessage)
-	alert.closeAll(0)
-	alert.show(whatMessage, { textStyle = { paragraphStyle = { alignment = "center" } } })
 end
 
 --------------------------------------------------------------------------------
@@ -272,24 +357,30 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 	if defaultItems == nil then defaultItems = {} end
 	if type(defaultItems) ~= "table" then defaultItems = {} end
 
-	local returnToFinalCutPro = fcp.frontmost()
-	local appleScriptA = 'set dialogPrompt to "' .. dialogPrompt .. '"\n\n'
-	local appleScriptB = 'set listOptions to ' .. inspect(listOptions) .. '\n\n'
-	local appleScriptC = 'set defaultItems to ' .. inspect(defaultItems) .. '\n\n'
-	local appleScriptD = [[
-		tell me to activate
-		return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
+	local appleScript = [[
+		set dialogPrompt to "]] .. dialogPrompt .. [["
+		set listOptions to ]] .. inspect(listOptions) .. [[
+		set defaultItems to ]] .. inspect(defaultItems) .. [[
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
+			end tell
+		else
+			tell me to activate
+			return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
+		end if
 	]]
-	local a,result = osascript.applescript(appleScriptA .. appleScriptB .. appleScriptC .. appleScriptD)
-	if returnToFinalCutPro then fcp.launch() end
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
+
 end
 
 --------------------------------------------------------------------------------
 -- DISPLAY COLOR PICKER:
 --------------------------------------------------------------------------------
 function dialog.displayColorPicker(customColor) -- Accepts RGB Table
-	local returnToFinalCutPro = fcp.frontmost()
+
 	local defaultColor = {65535, 65535, 65535}
 	if type(customColor) == "table" then
 		local validColor = true
@@ -300,12 +391,20 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 			defaultColor = { customColor["red"] * 257 * 255, customColor["green"] * 257 * 255, customColor["blue"] * 257 * 255 }
 		end
 	end
-	local appleScriptA = 'set defaultColor to ' .. inspect(defaultColor) .. '\n\n'
-	local appleScriptB = [[
-		tell me to activate
-		return choose color default color defaultColor
+
+	local appleScript = [[
+		set defaultColor to ]] .. inspect(defaultColor) .. [[
+
+		if isFinalCutProFrontmost is true then
+			tell application id finalCutProBundleID
+				return choose color default color defaultColor
+			end tell
+		else
+			tell me to activate
+			return choose color default color defaultColor
+		end if
 	]]
-	local a,result = osascript.applescript(appleScriptA .. appleScriptB)
+	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	if type(result) == "table" then
 		local red = result[1] / 257 / 255
 		local green = result[2] / 257 / 255
@@ -315,17 +414,16 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 			return {red=red, green=green, blue=blue, alpha=1}
 		end
 	end
-	if returnToFinalCutPro then fcp.launch() end
 	return nil
 
 end
 
 --------------------------------------------------------------------------------
--- EMAIL BUG REPORT:
+-- DISPLAY ALERT NOTIFICATION:
 --------------------------------------------------------------------------------
-function dialog.emailBugReport()
-	local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxhacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
-															       :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
+function dialog.displayNotification(whatMessage)
+	alert.closeAll(0)
+	alert.show(whatMessage, { textStyle = { paragraphStyle = { alignment = "center" } } })
 end
 
 return dialog
