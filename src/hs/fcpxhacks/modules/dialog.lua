@@ -41,8 +41,8 @@ local commonAppleScript = [[
 
 	set iconPath to (((POSIX path of ((path to home folder as Unicode text) & ".hammerspoon:hs:fcpxhacks:assets:fcpxhacks.icns")) as Unicode text) as POSIX file)
 
-	set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [["
-	set errorMessageEnd to "]] .. i18n("commonErrorMessageEnd") .. [["
+	set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [[\n\n"
+	set errorMessageEnd to "\n\n]] .. i18n("commonErrorMessageEnd") .. [["
 
 	set finalCutProBundleID to "]] .. fcp.bundleID() .. [["
 
