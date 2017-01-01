@@ -1491,10 +1491,15 @@ function finalcutpro.performShortcut(whichShortcut)
 	if activeCommandSet[whichShortcut] == nil then return false end
 
 	local currentShortcut = nil
-	if type(activeCommandSet[whichShortcut]) == "table" then
+	if activeCommandSet[whichShortcut][1] ~= nil then
 		currentShortcut = activeCommandSet[whichShortcut][1]
 	else
 		currentShortcut = activeCommandSet[whichShortcut]
+	end
+
+	if currentShortcut == nil then
+		print("error")
+		return false
 	end
 
 	local tempModifiers = nil

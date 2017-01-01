@@ -454,6 +454,11 @@ function loadScript()
 	if fcp.frontmost() then
 
 		--------------------------------------------------------------------------------
+		-- Used by Watchers to prevent double-ups:
+		--------------------------------------------------------------------------------
+		mod.isFinalCutProActive = true
+
+		--------------------------------------------------------------------------------
 		-- Enable Final Cut Pro Shortcut Keys:
 		--------------------------------------------------------------------------------
 		hotkeys:enter()
@@ -489,6 +494,11 @@ function loadScript()
 		end
 
 	else
+
+		--------------------------------------------------------------------------------
+		-- Used by Watchers to prevent double-ups:
+		--------------------------------------------------------------------------------
+		mod.isFinalCutProActive = false
 
 		--------------------------------------------------------------------------------
 		-- Disable Final Cut Pro Shortcut Keys:
@@ -7679,7 +7689,10 @@ end
 	function moveToPlayhead()
 
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-		if enableClipboardHistory then clipboard.stopWatching() end
+
+		if enableClipboardHistory then
+			clipboard.stopWatching()
+		end
 
 		if not fcp.performShortcut("Cut") then
 			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occured in moveToPlayhead().")
@@ -7693,8 +7706,7 @@ end
 
 		::moveToPlayheadEnd::
 		if enableClipboardHistory then
-			timer.usleep(1000000) -- Not sure why this is needed, but it is.
-			clipboard.startWatching()
+			timer.doAfter(2, function() clipboard.startWatching() end)
 		end
 
 	end

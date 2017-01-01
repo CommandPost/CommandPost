@@ -43,6 +43,7 @@ local log										= require("hs.logger").new("clipboard")
 clipboard.timer									= nil									-- Clipboard Watcher Timer
 clipboard.watcherFrequency 						= 0.5									-- Clipboard Watcher Update Frequency
 clipboard.lastChange 							= pasteboard.changeCount()				-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
+clipboard.currentChange 						= pasteboard.changeCount()				-- Current Change Count
 clipboard.history								= {}									-- Clipboard History
 clipboard.historyMaximumSize 					= 5										-- Maximum Size of Clipboard History
 clipboard.hostname								= host.localizedName()					-- Hostname
@@ -332,7 +333,7 @@ function clipboard.startWatching()
 	--------------------------------------------------------------------------------
 	-- Reset:
 	--------------------------------------------------------------------------------
-	local clipboardCurrentChange = pasteboard.changeCount()
+	clipboard.currentChange = pasteboard.changeCount()
 	clipboard.lastChange = pasteboard.changeCount()
 
 	--------------------------------------------------------------------------------
@@ -340,9 +341,9 @@ function clipboard.startWatching()
 	--------------------------------------------------------------------------------
 	clipboard.timer = timer.new(clipboard.watcherFrequency, function()
 
-		clipboardCurrentChange = pasteboard.changeCount()
+		clipboard.currentChange = pasteboard.changeCount()
 
-			if (clipboardCurrentChange > clipboard.lastChange) then
+			if (clipboard.currentChange > clipboard.lastChange) then
 
 		 	local clipboardContent = pasteboard.allContentTypes()
 		 	if clipboardContent[1][1] == CLIPBOARD.UTI then
@@ -518,7 +519,7 @@ local newPlist = [[
 					refreshMenuBar()
 				end
 		 	end
-			clipboard.lastChange = clipboardCurrentChange
+			clipboard.lastChange = clipboard.currentChange
 		end
 	end)
 	clipboard.timer:start()
@@ -555,7 +556,7 @@ end
 function clipboard.clearHistory()
 	clipboard.history = {}
 	settings.set("fcpxHacks.clipboardHistory", clipboard.history)
-	clipboardCurrentChange = pasteboard.changeCount()
+	clipboard.currentChange = pasteboard.changeCount()
 end
 
 return clipboard
