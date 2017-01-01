@@ -59,28 +59,28 @@ function Filmstrip:contentsUI()
 	return ui and ui:contents()[1]
 end
 
+function Filmstrip.sortClips(a, b)
+	local aFrame = a:frame()
+	local bFrame = b:frame()
+	if aFrame.y < bFrame.y then -- a is above b
+		return true
+	elseif aFrame.y == bFrame.y then
+		if aFrame.x < bFrame.x then -- a is left of b
+			return true
+		elseif aFrame.x == bFrame.x
+		   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
+			return true
+		end
+	end
+	return false -- b is first
+end
+
 function Filmstrip:clipsUI()
 	local ui = self:contentsUI()
 	if ui then
 		local clips = axutils.childrenWithRole(ui, "AXGroup")
 		if clips then
-			table.sort(clips,
-				function(a, b)
-					local aFrame = a:frame()
-					local bFrame = b:frame()
-					if aFrame.y < bFrame.y then -- a is above b
-						return true
-					elseif aFrame.y == bFrame.y then
-						if aFrame.x < bFrame.x then -- a is left of b
-							return true
-						elseif aFrame.x == bFrame.x
-						   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
-							return true
-						end
-					end
-					return false -- b is first
-				end
-			)
+			table.sort(clips, Filmstrip.sortClips)
 			return clips
 		end
 	end
@@ -89,7 +89,16 @@ end
 
 function Filmstrip:selectedClipsUI()
 	local ui = self:contentsUI()
-	return ui and ui:selectedChildren()
+	if ui then
+		local children = ui:selectedChildren()
+		local clips = {}
+		for i,child in ipairs(children) do
+			clips[i] = child
+		end
+		table.sort(clips, Filmstrip.sortClips)
+		return clips
+	end
+	return nil
 end
 
 function Filmstrip:showClip(clipUI)
@@ -131,7 +140,7 @@ function Filmstrip:showClipAt(index)
 end
 
 function Filmstrip:selectClip(clipUI)
-	if clipUI then
+	if axutils.isValid(clipUI) then
 		clipUI:parent():setAttributeValue("AXSelectedChildren", { clipUI } )
 	end
 	return self
