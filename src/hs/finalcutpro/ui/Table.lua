@@ -199,15 +199,6 @@ end
 
 function Table:selectRow(rowUI)
 	rowUI:setAttributeValue("AXSelected", true)
-	-- rowUI:parent():setAttributeValue("AXFocused", false)
-	-- rowUI:parent():setAttributeValue("AXFocused", true)
-	
-	-- self:showRow(rowUI)
-	-- local mouseTarget = geometry.rect(rowUI[1]:frame()).center
-	-- tools.ninjaMouseClick(mouseTarget, function()
-	-- 	local selected = self:selectedRowsUI()
-	-- 	return selected and #selected == 1 and selected[1] == rowUI
-	-- end)
 	return self
 end
 

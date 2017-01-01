@@ -36,8 +36,13 @@ function TextField:setValue(value)
 	local ui = self:UI()
 	if ui then
 		ui:setAttributeValue("AXValue", value)
+		ui:performAction("AXConfirm")
 	end
 	return self
+end
+
+function TextField:clear()
+	self:setValue("")
 end
 
 function TextField:isEnabled()

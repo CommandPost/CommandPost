@@ -158,9 +158,9 @@ function Browser:loadLayout(layout)
 		self:sidebar():loadLayout(layout.sidebar)
 		self:sidebarHidden():loadLayout(layout.sidebarHidden)
 
-		self:search():loadLayout(layout.search)
 		self:group():loadLayout(layout.group)
 		
+		self:search():loadLayout(layout.search)
 		self:contents():loadLayout(layout.contents)
 	else
 		self:hide()

@@ -1984,20 +1984,24 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateEffectsListWarning"))
 
-		local effects = fcp.app():effects()
+		--------------------------------------------------------------------------------
+		-- Save the layout of the Transitions panel in case we switch away...
+		--------------------------------------------------------------------------------
 		local transitions = fcp.app():transitions()
-		
-		local effectsLayout = effects:saveLayout()
 		local transitionsLayout = transitions:saveLayout()
 		
 		--------------------------------------------------------------------------------
-		-- Make sure Video Effects panel is open:
+		-- Make sure Effects panel is open:
 		--------------------------------------------------------------------------------
+		local effects = fcp.app():effects()
+		local effectsShowing = effects:isShowing()
 		if not effects:show():isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+
+		local effectsLayout = effects:saveLayout()
 		
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
@@ -2007,7 +2011,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		effects:search():setValue("")
+		effects:search():clear()
 
 		--------------------------------------------------------------------------------
 		-- Click 'All Video':
@@ -2017,7 +2021,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
-		if not sidebar:isShowing() and effects:sidebarHidden():uncheck():isChecked() then
+		if effects:sidebarHidden():uncheck():isChecked() then
 			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
@@ -2026,7 +2030,6 @@ end
 		--------------------------------------------------------------------------------
 		-- Find the two 'All' rows (Video/Audio)
 		--------------------------------------------------------------------------------
-		local selectedRows = sidebar:selectedRowsUI()
 		local allRows = sidebar:rowsUI(function(row)
 			local label = row[1][1]
 			local value = label and label:attributeValue("AXValue")
@@ -2080,9 +2083,10 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
+		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		effects:loadLayout(effectsLayout)
+		if not effectsShowing then effects:hide() end
 		transitions:loadLayout(transitionsLayout)
 
 		showTouchbar()
@@ -2149,7 +2153,7 @@ end
 		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
 		local transitions = fcp.app():transitions()
-
+		local transitionsShowing = transitions:isShowing()
 		if not transitions:show():isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
@@ -2166,23 +2170,21 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		transitions:search():setValue("")
+		transitions:search():clear()
 
 		--------------------------------------------------------------------------------
 		-- Click 'All':
 		--------------------------------------------------------------------------------
-		local sidebar = transitions:sidebar()
-		
 		--------------------------------------------------------------------------------
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
-		if not sidebar:isShowing() and transitions:sidebarHidden():uncheck():isChecked() then
+		if transitions:sidebarHidden():uncheck():isChecked() then
 			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
 		
-		sidebar:selectRowAt(1)
+		transitions:sidebar():selectRowAt(1)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
@@ -2202,6 +2204,7 @@ end
 		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		transitions:loadLayout(transitionsLayout)
+		if not transitionsShowing then transitions:hide() end
 		effects:loadLayout(effectsLayout)
 
 		showTouchbar()
