@@ -835,6 +835,11 @@ function defaultShortcutKeys()
 		FCPXHackToggleTouchBar				 						= { characterString = fcp.keyCodeTranslator("z"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() toggleTouchBar() end, 								releasedFn = nil, 														repeatFn = nil },
 
 		FCPXHackLockPlayhead										= { characterString = "", 									modifiers = {}, 									fn = function() toggleLockPlayhead() end, 							releasedFn = nil, 														repeatFn = nil },
+
+		FCPXHackSelectForward										= { characterString = "", 									modifiers = {}, 									fn = function() selectAllTimelineClips(true) end, 					releasedFn = nil, 														repeatFn = nil },
+		FCPXHackSelectBackwards										= { characterString = "", 									modifiers = {}, 									fn = function() selectAllTimelineClips(false) end, 					releasedFn = nil, 														repeatFn = nil },
+
+		FCPXHackToggleVoiceCommands				 					= { characterString = "", 									modifiers = {}, 									fn = function() toggleEnableVoiceCommands() end, 					releasedFn = nil, 														repeatFn = nil },
 	}
 	return defaultShortcutKeys
 end
@@ -7804,6 +7809,35 @@ end
 			mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
 
 		end
+
+
+	--------------------------------------------------------------------------------
+	-- SELECT ALL TIMELINE CLIPS IN SPECIFIC DIRECTION:
+	--------------------------------------------------------------------------------
+	function selectAllTimelineClips(forwards)
+
+		local content = fcp:app():timeline():content()
+		local playheadX = content:playhead():getPosition()
+
+		local clips = content:clipsUI(false, function(clip)
+			local frame = clip:frame()
+			if forwards then
+				return playheadX <= frame.x
+			else
+				return playheadX >= frame.x
+			end
+		end)
+
+		if clips == nil then
+			displayErrorMessage("No clips could be detected.\n\nError occurred in selectAllTimelineClips().")
+			return false
+		end
+
+		content:selectClips(clips)
+
+		return true
+
+	end
 
 --------------------------------------------------------------------------------
 -- BATCH EXPORT:
