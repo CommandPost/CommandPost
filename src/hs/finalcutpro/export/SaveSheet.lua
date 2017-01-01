@@ -6,42 +6,54 @@ local just							= require("hs.just")
 local windowfilter					= require("hs.window.filter")
 
 local ReplaceAlert					= require("hs.finalcutpro.export.ReplaceAlert")
-local GoToPrompt					= require("hs.finalcutpro.export.GoToPrompt")
 
 local SaveSheet = {}
 
 function SaveSheet.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"
+		   and axutils.childWithID(element, "_NS:115") ~= nil
 	end
 	return false
 end
 
 
-function SaveSheet:new(parent)
-	o = {_parent = parent}
+function SaveSheet:new(app)
+	o = {_app = app}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function SaveSheet:parent()
-	return self._parent
-end
-
 function SaveSheet:app()
-	return self:parent():app()
+	return self._app
 end
 
 function SaveSheet:UI()
 	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:parent():UI(), SaveSheet.matches)
+		local focusedWindowUI = self:app():UI():focusedWindow()
+		if focusedWindowUI and SaveSheet.matches(focusedWindowUI) then
+			return focusedWindowUI
+		end
+		return nil
 	end,
 	SaveSheet.matches)
 end
 
 function SaveSheet:isShowing()
 	return self:UI() ~= nil or self:replaceAlert():isShowing()
+end
+
+--- Ensures the SaveSheet is showing
+function SaveSheet:show()
+	if not self:isShowing() then
+		-- open the window
+		if self:app():menuBar():isEnabled("Final Cut Pro", "Commands", "Customize…") then
+			self:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+			local ui = just.doUntil(function() return self:UI() end)
+		end
+	end
+	return self
 end
 
 function SaveSheet:hide()
@@ -75,26 +87,12 @@ function SaveSheet:getTitle()
 	return ui and ui:title()
 end
 
-function SaveSheet:setPath(path)
-	if self:isShowing() then
-		-- Display the 'Go To' prompt
-		self:goToPrompt():show():setValue(path):pressDefault()
-	end
-	return self
-end
 
 function SaveSheet:replaceAlert()
 	if not self._replaceAlert then
-		self._replaceAlert = ReplaceAlert:new(self)
+		self._replaceAlert = ReplaceAlert:new(self:app())
 	end
 	return self._replaceAlert
-end
-
-function SaveSheet:goToPrompt()
-	if not self._goToPrompt then
-		self._goToPrompt = GoToPrompt:new(self)
-	end
-	return self._goToPrompt
 end
 
 

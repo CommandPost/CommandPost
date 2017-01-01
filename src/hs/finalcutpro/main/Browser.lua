@@ -153,7 +153,7 @@ function Browser:mainGroupUI()
 	return axutils.cache(self, "_mainGroup",
 	function()
 		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXSplitGroup")
+		return ui and axutils.childWithID(ui, "_NS:344")
 	end)
 end
 
@@ -235,14 +235,6 @@ function Browser:selectClipAt(index)
 		self:filmstrip():selectClipAt(index)
 	end
 	return self
-end
-
-function Browser:deselectAll()
-	if self:isListView() then
-		self:list():deselectAll()
-	else
-		self:filmstrip():deselectAll()
-	end
 end
 
 

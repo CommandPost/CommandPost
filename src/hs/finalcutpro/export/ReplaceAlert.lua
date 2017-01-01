@@ -1,34 +1,41 @@
+local log							= require("hs.logger").new("PrefsDlg")
+local inspect						= require("hs.inspect")
+
 local axutils						= require("hs.finalcutpro.axutils")
+local just							= require("hs.just")
+local windowfilter					= require("hs.window.filter")
 
 local ReplaceAlert = {}
 
 function ReplaceAlert.matches(element)
 	if element then
-		return element:attributeValue("AXRole") == "AXSheet"			-- it's a sheet
-		   and axutils.childWithRole(element, "AXTextField") == nil 	-- with no text fields
+		return element:attributeValue("AXRole") == "AXSheet"
+			and element:attributeValue("AXParent"):attributeValue("AXRole") == "AXSheet"
+			-- NOTE: This AXIdentifier seems to be different on different machines and/or macOS versions:
+		   	-- and element:attributeValue("AXIdentifier") == "_NS:79" --"_NS:46"
 	end
 	return false
 end
 
 
-function ReplaceAlert:new(parent)
-	o = {_parent = parent}
+function ReplaceAlert:new(app)
+	o = {_app = app}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function ReplaceAlert:parent()
-	return self._parent
-end
-
 function ReplaceAlert:app()
-	return self:parent():app()
+	return self._app
 end
 
 function ReplaceAlert:UI()
 	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:parent():UI(), ReplaceAlert.matches)
+		local focusedWindowUI = self:app():UI():focusedWindow()
+		if focusedWindowUI and ReplaceAlert.matches(focusedWindowUI) then
+			return focusedWindowUI
+		end
+		return nil
 	end,
 	ReplaceAlert.matches)
 end

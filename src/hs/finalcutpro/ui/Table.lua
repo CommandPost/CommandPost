@@ -185,17 +185,12 @@ function Table:showRowAt(index)
 end
 
 function Table:selectRow(rowUI)
-	rowUI:setAttributeValue("AXSelected", true)
-	-- rowUI:parent():setAttributeValue("AXFocused", false)
-	-- rowUI:parent():setAttributeValue("AXFocused", true)
-	
-	-- self:showRow(rowUI)
-	-- local mouseTarget = geometry.rect(rowUI[1]:frame()).center
-	-- tools.ninjaMouseClick(mouseTarget, function()
-	-- 	local selected = self:selectedRowsUI()
-	-- 	return selected and #selected == 1 and selected[1] == rowUI
-	-- end)
-	return self
+	self:showRow(rowUI)
+	local mouseTarget = geometry.rect(rowUI[1]:frame()).center
+	tools.ninjaMouseClick(mouseTarget, function()
+		local selected = self:selectedRowsUI()
+		return selected and #selected == 1 and selected[1] == rowUI
+	end)
 end
 
 function Table:selectRowAt(index)
@@ -203,41 +198,7 @@ function Table:selectRowAt(index)
 	if ui and #ui >= index then
 		self:selectRow(ui[index])
 	end
-	return self
 end
 
-function Table:deselectRow(rowUI)
-	rowUI:setAttributeValue("AXSelected", false)
-	return self
-end
-
-function Table:deselectRowAt(index)
-	local ui = self:rowsUI()
-	if ui and #ui >= index then
-		self:deselectRow(ui[index])
-	end
-	return self
-end
-
--- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
-function Table:selectAll(rowsUI)
-	rowsUI = rowsUI or self:rowsUI()
-	local outline = self:outlineUI()
-	if rowsUI and outline then
-		outline:setAttributeValue("AXSelectedRows", rowsUI)
-	end
-	return self
-end
-
--- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
-function Table:deselectAll(rowsUI)
-	rowsUI = rowsUI or self:selectedRowsUI()
-	if rowsUI then
-		for i,row in ipairs(rowsUI) do
-			self:deselectRow(row)
-		end
-	end
-	return self
-end
 
 return Table

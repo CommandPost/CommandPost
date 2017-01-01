@@ -5,7 +5,7 @@ local Table								= require("hs.finalcutpro.ui.Table")
 local List = {}
 
 function List.matches(element)
-	return element and element:attributeValue("AXRole") == "AXSplitGroup"
+	return element and element:attributeValue("AXIdentifier") == "_NS:658"
 end
 
 function List:new(parent)
@@ -95,16 +95,6 @@ end
 
 function List:selectClipAt(index)
 	self:content():selectRowAt(index)
-	return self
-end
-
-function List:selectAll(clipsUI)
-	self:content():selectAll(clipsUI)
-	return self
-end
-
-function List:deselectAll(clipsUI)
-	self:content():deselectAll(clipsUI)
 	return self
 end
 

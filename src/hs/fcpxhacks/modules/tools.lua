@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
--- Module created by Chris Hocking (https://latenitefilms.com).
+-- Module created by Chris Hocking (https://github.com/latenitefilms).
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -18,7 +18,6 @@ local tools = {}
 local eventtap									= require("hs.eventtap")
 local fs										= require("hs.fs")
 local host										= require("hs.host")
-local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
@@ -94,21 +93,24 @@ end
 --------------------------------------------------------------------------------
 -- NINJA MOUSE CLICK:
 --------------------------------------------------------------------------------
-function tools.ninjaMouseClick(point)
-	local originalMousePoint = mouse.getAbsolutePosition()
-	local clickState = eventtap.event.properties.mouseEventClickState
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-	timer.usleep(1000)
-	mouse.setAbsolutePosition(originalMousePoint)
+function tools.ninjaMouseClick(position, checkFn)
+		local originalMousePoint = mouse.getAbsolutePosition()
+		eventtap.leftClick(position)
+		if checkFn then
+			local result = just.doUntil(checkFn)
+			if not result then
+				debugMessage("Checking the ninja mouse click failed")
+			end
+		end
+		mouse.setAbsolutePosition(originalMousePoint)
 end
 
 --------------------------------------------------------------------------------
 -- NINJA MOUSE ACTION:
 --------------------------------------------------------------------------------
-function tools.ninjaMouseAction(point, fn)
+function tools.ninjaMouseAction(position, fn)
 	local originalMousePoint = mouse.getAbsolutePosition()
-	mouse.setAbsolutePosition(point)
+	mouse.setAbsolutePosition(position)
 	fn()
 	mouse.setAbsolutePosition(originalMousePoint)
 end
@@ -175,22 +177,6 @@ end
 function tools.userLocale()
 	local a, userLocale = osascript.applescript("return user locale of (get system info)")
 	return userLocale
-end
-
---------------------------------------------------------------------------------
--- MODIFIER MATCH:
---------------------------------------------------------------------------------
-function tools.modifierMatch(inputA, inputB)
-
-	local match = true
-
-	if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-	if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-	if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-	if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
-
-	return match
-
 end
 
 return tools

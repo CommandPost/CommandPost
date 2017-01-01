@@ -83,23 +83,38 @@ function TimelineContent:playhead()
 	return self._playhead
 end
 
-function TimelineContent:horizontalScrollBarUI()
-	local ui = self:scrollAreaUI()
-	return ui and ui:attributeValue("AXHorizontalScrollBar")
+
+function TimelineContent.matchesHorizontalScroll(element)
+	return element and element:attributeValue("AXOrientation") == "AXHorizontalOrientation"
 end
 
-function TimelineContent:verticalScrollBarUI()
-	local ui = self:scrollAreaUI()
-	return ui and ui:attributeValue("AXVerticalScrollBar")
+function TimelineContent:horizontalScrollUI()
+	return axutils.cache(self, "_horizontal", function()
+		local ui = self:scrollAreaUI()
+		return ui and axutils.childMatching(ui, TimelineContent.matchesHorizontalScroll)
+	end,
+	TimelineContent.matchesHorizontalScroll)
+end
+
+function TimelineContent.matchesVerticalScroll(element)
+	return element and element:attributeValue("AXOrientation") == "AXVerticalOrientation"
+end
+
+function TimelineContent:verticalScrollUI()
+	return axutils.cache(self, "_vertical", function()
+		local ui = self:scrollAreaUI()
+		return ui and axutils.childMatching(ui, TimelineContent.matchesVerticalScroll)
+	end,
+	TimelineContent.matchesVerticalScroll)
 end
 
 function TimelineContent:viewWidth()
-	local hScroll = self:horizontalScrollBarUI()
+	local hScroll = self:horizontalScrollUI()
 	return hScroll and hScroll:size().w or nil
 end
 
 function TimelineContent:viewFrame()
-	local hScroll = self:horizontalScrollBarUI()
+	local hScroll = self:horizontalScrollUI()
 	if hScroll then
 		local scrollArea = hScroll:parent()
 		local sap = scrollArea:position()
@@ -121,7 +136,7 @@ function TimelineContent:timelineFrame()
 end
 
 function TimelineContent:scrollHorizontalBy(shift)
-	local ui = self:horizontalScrollBarUI()
+	local ui = self:horizontalScrollUI()
 	if ui then
 		local indicator = ui[1]
 		local value = indicator:attributeValue("AXValue")
@@ -130,7 +145,7 @@ function TimelineContent:scrollHorizontalBy(shift)
 end
 
 function TimelineContent:scrollHorizontalTo(value)
-	local ui = self:horizontalScrollBarUI()
+	local ui = self:horizontalScrollUI()
 	if ui then
 		local indicator = ui[1]
 		value = math.max(0, math.min(1, value))
@@ -141,12 +156,12 @@ function TimelineContent:scrollHorizontalTo(value)
 end
 
 function TimelineContent:getScrollHorizontal()
-	local ui = self:horizontalScrollBarUI()
+	local ui = self:horizontalScrollUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
 function TimelineContent:scrollVerticalBy(shift)
-	local ui = self:verticalScrollBarUI()
+	local ui = self:verticalScrollUI()
 	if ui then
 		local indicator = ui[1]
 		local value = indicator:attributeValue("AXValue")
@@ -155,7 +170,7 @@ function TimelineContent:scrollVerticalBy(shift)
 end
 
 function TimelineContent:scrollVerticalTo(value)
-	local ui = self:verticalScrollBarUI()
+	local ui = self:verticalScrollUI()
 	if ui then
 		local indicator = ui[1]
 		value = math.max(0, math.min(1, value))
@@ -166,7 +181,7 @@ function TimelineContent:scrollVerticalTo(value)
 end
 
 function TimelineContent:getScrollVertical()
-	local ui = self:verticalScrollBarUI()
+	local ui = self:verticalScrollUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
@@ -251,22 +266,6 @@ function TimelineContent:_expandClips(clips, filterFn)
 		end
 		return {}
 	end)
-end
-
-function TimelineContent:selectClips(clipsUI)
-	local ui = self:UI()
-	if ui then
-		local selectedClips = {}
-		for i,clip in ipairs(clipsUI) do
-			selectedClips[i] = clip
-		end
-		ui:setAttributeValue("AXSelectedChildren", selectedClips)
-	end
-	return self
-end
-
-function TimelineContent:selectClip(clipUI)
-	return self:selectClips({clipUI})
 end
 
 return TimelineContent
