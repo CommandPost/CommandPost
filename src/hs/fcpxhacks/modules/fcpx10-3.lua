@@ -2045,8 +2045,8 @@ end
 			return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
 		end)
 		
-		if #allRows ~= 2 then
-			dialog.displayErrorMessage("Was expecting two 'All' categories but got "..#allRows..".\n\nError occurred in updateEffectsList().")
+		if not allRows or #allRows ~= 2 then
+			dialog.displayErrorMessage("Was expecting two 'All' categories.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 

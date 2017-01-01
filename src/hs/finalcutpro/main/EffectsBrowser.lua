@@ -20,7 +20,7 @@ Browser.TRANSITIONS = "Transitions"
 
 function Browser.matches(element)
 	return element and element:attributeValue("AXRole") == "AXGroup"
-	   and axutils.childWithID(element, "_NS:452") ~= nil
+	   and #element == 4
 end
 
 function Browser:new(parent, type)
