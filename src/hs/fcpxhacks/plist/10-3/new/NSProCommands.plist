@@ -2,6 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FCPXHackSelectForward</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectForward:</string>
+	</dict>
+	<key>FCPXHackSelectBackwards</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackSelectBackwards:</string>
+	</dict>
+	<key>FCPXHackToggleVoiceCommands</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>FCPXHackToggleVoiceCommands:</string>
+	</dict>
 	<key>FCPXHackLockPlayhead</key>
 	<dict>
 		<key>downRepeats</key>
