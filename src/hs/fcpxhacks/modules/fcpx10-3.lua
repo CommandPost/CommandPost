@@ -191,6 +191,8 @@ mod.installedLanguages							= {}											-- Table of Installed Language Files
 
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 
+mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
+
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
@@ -8237,7 +8239,7 @@ function finalCutProWindowWatcher()
 			-- Disable Hotkeys:
 			--------------------------------------------------------------------------------
 			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
-				debugMessage("Disabling hotkeys")
+				debugMessage("Disabling Hotkeys")
 				hotkeys:exit()
 			end
 			--------------------------------------------------------------------------------
@@ -8280,7 +8282,7 @@ function finalCutProWindowWatcher()
 	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
 
 	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
-		debugMessage("Window Resized.")
+		debugMessage("Final Cut Pro Window Resized")
 		if touchBarSupported then
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
@@ -8291,7 +8293,9 @@ function finalCutProWindowWatcher()
 	-- Final Cut Pro Window Not On Screen:
 	--------------------------------------------------------------------------------
 	finalCutProWindowFilter:subscribe(windowfilter.windowNotOnScreen, function()
-		finalCutProNotActive()
+		if not fcp.frontmost() then
+			finalCutProNotActive()
+		end
 	end, true)
 
 	--------------------------------------------------------------------------------
@@ -8307,6 +8311,12 @@ end
 	-- Final Cut Pro Active:
 	--------------------------------------------------------------------------------
 	function finalCutProActive()
+
+		--------------------------------------------------------------------------------
+		-- Only do once:
+		--------------------------------------------------------------------------------
+		if mod.isFinalCutProActive then return end
+		mod.isFinalCutProActive = true
 
 		--------------------------------------------------------------------------------
 		-- Don't trigger until after FCPX Hacks has loaded:
@@ -8379,6 +8389,12 @@ end
 	-- Final Cut Pro Not Active:
 	--------------------------------------------------------------------------------
 	function finalCutProNotActive()
+
+		--------------------------------------------------------------------------------
+		-- Only do once:
+		--------------------------------------------------------------------------------
+		if not mod.isFinalCutProActive then return end
+		mod.isFinalCutProActive = false
 
 		--------------------------------------------------------------------------------
 		-- Don't trigger until after FCPX Hacks has loaded:
