@@ -174,9 +174,11 @@ function Browser:saveLayout()
 		layout.showing = true
 		layout.onPrimary = self:isOnPrimary()
 		layout.onSecondary = self:isOnSecondary()
+		
 		layout.showLibraries = self:showLibraries():saveLayout()
 		layout.showMedia = self:showMedia():saveLayout()
 		layout.showGenerators = self:showGenerators():saveLayout()
+		
 		layout.libraries = self:libraries():saveLayout()
 		layout.media = self:media():saveLayout()
 		layout.generators = self:generators():saveLayout()
@@ -188,11 +190,16 @@ function Browser:loadLayout(layout)
 	if layout and layout.showing then
 		if layout.onPrimary then self:showOnPrimary() end
 		if layout.onSecondary then self:showOnSecondary() end
+		
 		self:generators():loadLayout(layout.generators)
 		self:media():loadLayout(layout.media)
 		self:libraries():loadLayout(layout.libraries)
+		
+		debugMessage("Browser:loadLayout: showGenerators")
 		self:showGenerators():loadLayout(layout.showGenerators)
+		debugMessage("Browser:loadLayout: showMedia")
 		self:showMedia():loadLayout(layout.showMedia)
+		debugMessage("Browser:loadLayout: showLibraries")
 		self:showLibraries():loadLayout(layout.showLibraries)
 	end
 end

@@ -156,6 +156,7 @@ end
 
 function GeneratorsBrowser:loadLayout(layout)
 	if layout and layout.showing then
+		debugMessage("GeneratorsBrowser:loadLayout")
 		self:show()
 		self:search():loadLayout(layout.search)
 		self:sidebar():loadLayout(layout.sidebar)

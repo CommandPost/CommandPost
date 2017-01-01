@@ -236,6 +236,7 @@ end
 
 function Libraries:loadLayout(layout)
 	if layout and layout.showing then
+		debugMessage("LibrariesBrowser:loadLayout")
 		self:show()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:selectAll(layout.selectedClips)
