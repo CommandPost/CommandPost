@@ -2148,20 +2148,24 @@ end
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTransitionsListWarning"))
 
-		local transitions = fcp.app():transitions()
+		--------------------------------------------------------------------------------
+		-- Save the layout of the Effects panel, in case we switch away...
+		--------------------------------------------------------------------------------
 		local effects = fcp.app():effects()
-		
 		local effectsLayout = effects:saveLayout()
-		local transitionsLayout = transitions:saveLayout()
 		
 		--------------------------------------------------------------------------------
-		-- Make sure Video Effects panel is open:
+		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
+		local transitions = fcp.app():transitions()
+
 		if not transitions:show():isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
 		end
+
+		local transitionsLayout = transitions:saveLayout()
 		
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Transitions" is selected:
@@ -2204,7 +2208,7 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
+		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		transitions:loadLayout(transitionsLayout)
 		effects:loadLayout(effectsLayout)
