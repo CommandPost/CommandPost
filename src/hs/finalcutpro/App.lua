@@ -262,6 +262,32 @@ function App:generators()
 	return self:browser():generators()
 end
 
+--- hs.finalcutpro.App:effects() -> EffectsBrowser
+--- Function
+--- Returns the EffectsBrowser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the EffectsBrowser
+function App:effects()
+	return self:timeline():effects()
+end
+
+--- hs.finalcutpro.App:transitions() -> TransitionsBrowser
+--- Function
+--- Returns the TransitionsBrowser instance, whether it is in the primary or secondary window.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * the TransitionsBrowser
+function App:transitions()
+	return self:timeline():transitions()
+end
+
 --- hs.finalcutpro.App:inspector() -> Inspector
 --- Function
 --- Returns the Inspector instance from the primary window

@@ -133,4 +133,38 @@ function Browser:search()
 	return self._search
 end
 
+function Browser:saveLayout()
+	local layout = {}
+	if self:isShowing() then
+		layout.showing = true
+		layout.sidebarHidden = self:sidebarHidden():saveLayout()
+		-- reveal the sidebar temporarily so we can save it
+		self:sidebarHidden():uncheck()
+		layout.sidebar = self:sidebar():saveLayout()
+		self:sidebarHidden():loadLayout(layout.sidebarHidden)
+		
+		layout.contents = self:contents():saveLayout()
+		layout.group = self:group():saveLayout()
+		layout.search = self:search():saveLayout()
+	end
+	return layout
+end
+
+function Browser:loadLayout(layout)
+	if layout and layout.showing then
+		self:show()
+		
+		self:sidebarHidden():uncheck()
+		self:sidebar():loadLayout(layout.sidebar)
+		self:sidebarHidden():loadLayout(layout.sidebarHidden)
+
+		self:search():loadLayout(layout.search)
+		self:group():loadLayout(layout.group)
+		
+		self:contents():loadLayout(layout.contents)
+	else
+		self:hide()
+	end
+end
+
 return Browser

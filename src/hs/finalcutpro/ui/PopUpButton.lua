@@ -43,6 +43,26 @@ function PopUpButton:selectItem(index)
 	return self
 end
 
+function PopUpButton:getValue()
+	local ui = self:UI()
+	return ui and ui:value()
+end
+
+function PopUpButton:setValue(value)
+	local ui = self:UI()
+	if ui and not ui:value() == value then
+		local items = ui:doPress()[1]
+		for i,item in items do
+			if item:title() == value then
+				item:doPress()
+				return
+			end
+		end
+		items:doCancel()
+	end
+	return self
+end
+
 function PopUpButton:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
@@ -54,6 +74,18 @@ function PopUpButton:press()
 		ui:doPress()
 	end
 	return self
+end
+
+function PopUpButton:saveLayout()
+	local layout = {}
+	layout.value = self:getValue()
+	return layout
+end
+
+function PopUpButton:loadLayout(layout)
+	if layout then
+		self:setValue(layout.value)
+	end
 end
 
 return PopUpButton
