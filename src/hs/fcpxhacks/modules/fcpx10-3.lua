@@ -110,7 +110,6 @@ local plist										= require("hs.plist")
 --------------------------------------------------------------------------------
 
 local dialog									= require("hs.fcpxhacks.modules.dialog")
-local i18n										= require("hs.fcpxhacks.modules.i18n")
 local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local slaxml									= require("hs.fcpxhacks.modules.slaxml")
 local tools										= require("hs.fcpxhacks.modules.tools")
@@ -229,20 +228,12 @@ function loadScript()
 					local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
 					local languageID = string.sub(file, 1, -5)
 					mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
-					i18n.loadFile(languagePath .. file)
 				end
 				languageFile:close()
 			end
 		end
 	end
 	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
-	local userLocale = nil
-	if settings.get("fcpxHacks.language") == nil then
-		userLocale = tools.userLocale()
-	else
-		userLocale = settings.get("fcpxHacks.language")
-	end
-	i18n.setLocale(userLocale)
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -1706,7 +1697,7 @@ end
 			{ title = "-" },
 			{ title = i18n("trachFCPXHacksPreferences"), 												fn = resetSettings },
 			{ title = "-" },
-			{ title = i18n("provideFeedback"),															fn = dialog.emailBugReport },
+			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 			{ title = "-" },
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
 			{ title = i18n("scriptVersion") .. " " .. fcpxhacks.scriptVersion,							disabled = true },
@@ -7035,7 +7026,7 @@ end
 		-- Sort the table:
 		--------------------------------------------------------------------------------
 		table.sort(clips, function(a, b) return a:position().y > b:position().y end)
-		
+
 		content:selectClip(clips[whichLane])
 
 		return true
@@ -7327,6 +7318,8 @@ end
 			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
 			if result == nil then return end
 
+			--os.execute([[osascript -e 'tell app "Final Cut Pro" to display dialog "Hello World"']])
+
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
@@ -7421,20 +7414,20 @@ end
 			end
 			return failedExports
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Trigger Export:
 		--------------------------------------------------------------------------------
 		function selectShare(destinationPreset)
 			return fcp.app():menuBar():selectMenu("File", "Share", function(menuItem)
 				if destinationPreset == nil then
-					return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil 
+					return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
 				else
 					local title = menuItem:attributeValue("AXTitle")
 					return title and string.find(title, destinationPreset) ~= nil
 				end
 			end)
-			
+
 		end
 
 --------------------------------------------------------------------------------
@@ -7453,6 +7446,14 @@ end
 --------------------------------------------------------------------------------
 -- GENERAL:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- EMAIL BUG REPORT:
+	--------------------------------------------------------------------------------
+	function emailBugReport()
+		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxhacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
+																	   :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
+	end
 
 	--------------------------------------------------------------------------------
 	-- PROWL API KEY VALID:
