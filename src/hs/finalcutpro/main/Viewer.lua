@@ -89,7 +89,7 @@ function Viewer:findViewerUI(...)
 					end
 				end
 			end
-			if ui then return ui end
+			return ui
 		end
 	end
 	return nil
@@ -184,6 +184,24 @@ function Viewer:topToolbarUI()
 		end
 		return nil
 	end)
+end
+
+function Viewer:bottomToolbarUI()
+	return axutils.cache(self, "_bottomToolbar", function()
+		local ui = self:UI()
+		if ui then
+			for i,child in ipairs(ui) do
+				if axutils.childWith(child, "AXIdentifier", "_NS:31") then
+					return child
+				end
+			end
+		end
+		return nil
+	end)
+end
+
+function Viewer:hasPlayerControls()
+	return self:bottomToolbarUI() ~= nil
 end
 
 function Viewer:formatUI()

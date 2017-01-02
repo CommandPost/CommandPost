@@ -10,8 +10,6 @@
 
 local finalcutpro = {}
 
-local finalCutProBundleID 					= "com.apple.FinalCut"
-local finalCutProClipboardUTI 				= "com.apple.flexo.proFFPasteboardUTI"
 local finalCutProPreferencesPlistPath 		= "~/Library/Preferences/com.apple.FinalCut.plist"
 local finalCutProLanguages 					= {"de", "en", "es", "fr", "ja", "zh_CN"}
 local finalCutProFlexoLanguages				= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
@@ -35,21 +33,6 @@ local timer									= require("hs.timer")
 
 finalcutpro.cachedCurrentLanguage 			= nil
 finalcutpro.cachedActiveCommandSet 			= nil
-
---- doesDirectoryExist() -> boolean
---- Function
---- Returns true if Directory Exists else False
----
---- Parameters:
----  * None
----
---- Returns:
----  * True is Directory Exists otherwise False
----
-local function doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.mode == 'directory'
-end
 
 --- keyCodeTranslator() -> string
 --- Function
@@ -442,46 +425,6 @@ function finalcutpro.app()
 	return finalcutpro._app
 end
 
---- hs.finalcutpro.applicationAX() -> hs._asm.axuielement
---- Function
---- Returns the Final Cut Pro AX
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro AX.
----
-function finalcutpro.applicationAX()
-	local fcp = finalcutpro.application()
-	return fcp and ax.applicationElement(fcp)
-end
-
---- hs.finalcutpro.getMenuMap() -> table
---- Function
---- Returns the Final Cut Pro Menu Map
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Menu Map.
----
-function finalcutpro.getMenuMap()
-	if not finalcutpro._menuMap then
-		local file = io.open(menuMapFile, "r")
-		if file then
-			local content = file:read("*all")
-			file:close()
-			finalcutpro._menuMap = json.decode(content)
-			log.d("Loaded menu map from '"..menuMapFile.."'")
-		else
-			finalcutpro._menuMap = {}
-		end
-	end
-	return finalcutpro._menuMap
-end
-
 --- hs.finalcutpro.importXML() -> boolean
 --- Function
 --- Imports an XML file into Final Cut Pro
@@ -547,7 +490,7 @@ end
 ---  * A string containing the Final Cut Pro Bundle ID
 ---
 function finalcutpro.bundleID()
-	return finalCutProBundleID
+	return App.BUNDLE_ID
 end
 
 --- hs.finalcutpro.clipboardUTI() -> string
@@ -561,7 +504,7 @@ end
 ---  * A string containing the Final Cut Pro Clipboard UTI
 ---
 function finalcutpro.clipboardUTI()
-	return finalCutProClipboardUTI
+	return App.PASTEBOARD_UTI
 end
 
 --- hs.finalcutpro.getPreferences() -> table or nil
@@ -720,8 +663,7 @@ end
 ---  * Boolean value
 ---
 function finalcutpro.installed()
-	local path = application.pathForBundleID(finalCutProBundleID)
-	return doesDirectoryExist(path)
+	return finalcutpro.app():isInstalled()
 end
 
 --- hs.finalcutpro.version() -> string or nil
@@ -735,11 +677,7 @@ end
 ---  * Version as string or nil if an error occurred
 ---
 function finalcutpro.version()
-	local version = nil
-	if finalcutpro.installed() then
-		ok,version = osascript.applescript('return version of application id "'..finalCutProBundleID..'"')
-	end
-	return version or nil
+	return finalcutpro.app():getVersion()
 end
 
 --- hs.finalcutpro.application() -> hs.application or nil
@@ -753,13 +691,7 @@ end
 ---  * The Final Cut Pro application (as hs.application) or nil if an error occurred
 ---
 function finalcutpro.application()
-	local result = application.applicationsForBundleID(finalCutProBundleID) or nil
-	if next(result) == nil then
-		return nil
-	else
-		return result[1]
-	end
-	return result
+	return finalcutpro.app():application()
 end
 
 --- hs.finalcutpro.launch() -> boolean
@@ -770,30 +702,10 @@ end
 ---  * None
 ---
 --- Returns:
----  * True if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
+---  * `true` if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
 ---
 function finalcutpro.launch()
-
-	local result = nil
-
-	local fcpx = finalcutpro.application()
-
-	if fcpx == nil then
-		-- Final Cut Pro is Closed:
-		result = application.launchOrFocusByBundleID(finalCutProBundleID)
-	else
-		-- Final Cut Pro is Open:
-		if not fcpx:isFrontmost() then
-			-- Open by not Active:
-			result = application.launchOrFocusByBundleID(finalCutProBundleID)
-		else
-			-- Already frontmost:
-			return true
-		end
-	end
-
-	return result
-
+	return finalcutpro.app():launch()
 end
 
 --- hs.finalcutpro.running() -> boolean
@@ -807,14 +719,7 @@ end
 ---  * True if Final Cut Pro is running otherwise False
 ---
 function finalcutpro.running()
-
-	local fcpx = finalcutpro.application()
-	if fcpx == nil then
-		return false
-	else
-		return fcpx:isRunning()
-	end
-
+	return finalcutpro.app():isRunning()
 end
 
 --- hs.finalcutpro.restart() -> boolean
@@ -828,24 +733,7 @@ end
 ---  * True if Final Cut Pro is running otherwise False if Final Cut Pro is not running, or fails to close or restart
 ---
 function finalcutpro.restart()
-
-	if finalcutpro.application() ~= nil then
-
-		-- Kill Final Cut Pro:
-		finalcutpro.application():kill()
-
-		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 10 seconds):
-		just.doWhile(function() return finalcutpro.running() end, 10, 0.1)
-
-		-- Launch Final Cut Pro:
-		local result = finalcutpro.launch()
-
-		return result
-
-	else
-		return false
-	end
-
+	return finalcutpro.app():restart()
 end
 
 --- hs.finalcutpro.frontmost() -> boolean
@@ -859,14 +747,7 @@ end
 ---  * True if Final Cut Pro is Frontmost otherwise false.
 ---
 function finalcutpro.frontmost()
-
-	local fcpx = finalcutpro.application()
-	if fcpx == nil then
-		return false
-	else
-		return fcpx:isFrontmost()
-	end
-
+	return finalcutpro.app():isFrontmost()
 end
 
 --- hs.finalcutpro.getTimelineSplitGroup() -> axuielementObject or nil

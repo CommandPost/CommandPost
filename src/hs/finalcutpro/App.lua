@@ -8,6 +8,10 @@
 --- Standard Modules
 local application								= require("hs.application")
 local ax 										= require("hs._asm.axuielement")
+local osascript 								= require("hs.osascript")
+local just										= require("hs.just")
+local fs 										= require("hs.fs")
+
 local inspect									= require("hs.inspect")
 local log										= require("hs.logger").new("fcpxapp")
 
@@ -31,6 +35,22 @@ local App = {}
 --- Constants
 App.BUNDLE_ID 									= "com.apple.FinalCut"
 App.PASTEBOARD_UTI 								= "com.apple.flexo.proFFPasteboardUTI"
+
+--- doesDirectoryExist() -> boolean
+--- Function
+--- Returns true if Directory Exists else False
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * True is Directory Exists otherwise False
+---
+local function doesDirectoryExist(path)
+    local attr = fs.attributes(path)
+    return attr and attr.mode == 'directory'
+end
+
 
 --- hs.finalcutpro.App:new() -> App
 --- Function
@@ -60,7 +80,12 @@ end
 ---  * The hs.application, or nil if the application is not installed.
 ---
 function App:application()
-	return application(App.BUNDLE_ID) or nil
+	local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
+	-- If there is at least one copy installed, return the first one
+	if result and #result > 0 then
+		return result[1]
+	end
+	return nil
 end
 
 function App:UI()
@@ -70,7 +95,7 @@ function App:UI()
 	end)
 end
 
---- hs.finalcutpro.running() -> boolean
+--- hs.finalcutpro.App:running() -> boolean
 --- Function
 --- Is Final Cut Pro Running?
 ---
@@ -85,11 +110,132 @@ function App:isRunning()
 	return fcpx and fcpx:isRunning()
 end
 
+
+--- hs.finalcutpro.App:launch() -> boolean
+--- Function
+--- Launches Final Cut Pro, or brings it to the front if it was already running.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
+---
+function App:launch()
+
+	local result = nil
+
+	local fcpx = self:application()
+	if fcpx == nil then
+		-- Final Cut Pro is Closed:
+		result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
+	else
+		-- Final Cut Pro is Open:
+		if not fcpx:isFrontmost() then
+			-- Open by not Active:
+			result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
+		else
+			-- Already frontmost:
+			return true
+		end
+	end
+
+	return result
+end
+
+
+--- hs.finalcutpro.App:restart() -> boolean
+--- Function
+--- Restart Final Cut Pro X
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if Final Cut Pro X was running and restarted successfully.
+---
+function App:restart()
+	local app = self:application()
+	if app then
+		-- Kill Final Cut Pro:
+		app:kill()
+
+		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 20 seconds):
+		just.doWhile(function() return self:isRunning() end, 20, 0.1)
+
+		-- Launch Final Cut Pro:
+		return self:launch()
+	end
+	return false
+end
+
+
+--- hs.finalcutpro.App:installed() -> boolean
+--- Function
+--- Is Final Cut Pro X Installed?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if a version of FCPX is installed.
+---
+function App:isInstalled()
+	local path = application.pathForBundleID(App.BUNDLE_ID)
+	return doesDirectoryExist(path)
+end
+
+--- hs.finalcutpro.App:isFrontmost() -> boolean
+--- Function
+--- Is Final Cut Pro X Frontmost?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if Final Cut Pro is Frontmost.
+---
+function App:isFrontmost()
+	local fcpx = self:application()
+	return fcpx and fcpx:isFrontmost()
+end
+
+
+--- hs.finalcutpro.App:version() -> string or nil
+--- Function
+--- Version of Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Version as string or nil if an error occurred
+---
+function App:getVersion()
+	local version = nil
+	if self:isInstalled() then
+		ok,version = osascript.applescript('return version of application id "'..App.BUNDLE_ID..'"')
+	end
+	return version or nil
+end
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- MENU BAR
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
 	end
 	return self._menuBar
+end
+
+function App:selectMenu(...)
+	return self:menuBar():selectMenu(...)
 end
 
 ----------------------------------------------------------------------------------------
