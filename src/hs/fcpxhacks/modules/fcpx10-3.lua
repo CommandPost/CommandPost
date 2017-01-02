@@ -2003,7 +2003,7 @@ end
 		--------------------------------------------------------------------------------
 		local transitions = fcp.app():transitions()
 		local transitionsLayout = transitions:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Effects panel is open:
 		--------------------------------------------------------------------------------
@@ -2016,12 +2016,12 @@ end
 		end
 
 		local effectsLayout = effects:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
 		--------------------------------------------------------------------------------
 		effects:group():selectItem(1)
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2031,7 +2031,7 @@ end
 		-- Click 'All Video':
 		--------------------------------------------------------------------------------
 		local sidebar = effects:sidebar()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
@@ -2040,7 +2040,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Find the two 'All' rows (Video/Audio)
 		--------------------------------------------------------------------------------
@@ -2058,7 +2058,7 @@ end
 			-- TODO: Use i18n to get the appropriate value for the current language
 			return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
 		end)
-		
+
 		if not allRows or #allRows ~= 2 then
 			dialog.displayErrorMessage("Was expecting two 'All' categories.\n\nError occurred in updateEffectsList().")
 			return "Fail"
@@ -2068,7 +2068,7 @@ end
 		-- Get list of All Video Effects:
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[1])
-		
+
 		local effectsList = effects:contents():childrenUI()
 		local allVideoEffects = {}
 		if effectsList ~= nil then
@@ -2084,7 +2084,7 @@ end
 		-- Get list of All Audio Effects:
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[2])
-		
+
 		effectsList = effects:contents():childrenUI()
 		local allAudioEffects = {}
 		if effectsList ~= nil then
@@ -2162,7 +2162,7 @@ end
 		--------------------------------------------------------------------------------
 		local effects = fcp.app():effects()
 		local effectsLayout = effects:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
@@ -2175,12 +2175,12 @@ end
 		end
 
 		local transitionsLayout = transitions:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
 		transitions:group():selectItem(1)
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2197,7 +2197,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		transitions:sidebar():selectRowAt(1)
 
 		--------------------------------------------------------------------------------
@@ -2273,9 +2273,9 @@ end
 
 		local app = fcp.app()
 		local generators = app:generators()
-		
+
 		local browserLayout = app:browser():saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
@@ -2284,7 +2284,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2294,7 +2294,7 @@ end
 		-- Click 'Titles':
 		--------------------------------------------------------------------------------
 		generators:showAllTitles()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
@@ -2366,9 +2366,9 @@ end
 
 		local app = fcp.app()
 		local generators = app:generators()
-		
+
 		local browserLayout = app:browser():saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
@@ -2377,7 +2377,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2387,7 +2387,7 @@ end
 		-- Click 'Generators':
 		--------------------------------------------------------------------------------
 		generators:showAllGenerators()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
@@ -4545,7 +4545,7 @@ end
 	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
 	--------------------------------------------------------------------------------
 	function checkScrollingTimeline()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure the Command Editor and hacks console are closed:
 		--------------------------------------------------------------------------------
@@ -4561,7 +4561,7 @@ end
 			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
 			return "Stop"
 		end
-		
+
 		local timeline = fcp.app():timeline()
 
 		--------------------------------------------------------------------------------
@@ -6947,6 +6947,24 @@ end
 		-- Destination Preset:
 		--------------------------------------------------------------------------------
 		local destinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+		if destinationPreset == nil then
+
+			destinationPreset = fcp.app():menuBar():findMenuUI("File", "Share", function(menuItem)
+				return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
+			end):attributeValue("AXTitle")
+
+			if destinationPreset == nil then
+				displayErrorMessage(i18n("batchExportNoDestination"))
+			else
+				-- Remove (default) text:
+				local firstBracket = string.find(destinationPreset, " %(", 1)
+				if firstBracket == nil then
+					firstBracket = string.find(destinationPreset, "（", 1)
+				end
+				destinationPreset = string.sub(destinationPreset, 1, firstBracket - 1)
+			end
+
+		end
 
 		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
@@ -7794,14 +7812,14 @@ end
 -- FCPX SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
-	
+
 	local timeline = fcp.app():timeline()
 
 	--------------------------------------------------------------------------------
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
 	mod.scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-		
+
 		--------------------------------------------------------------------------------
 		-- Don't do anything if we're already locked.
 		--------------------------------------------------------------------------------
