@@ -120,6 +120,13 @@ function App:secondaryWindow()
 	return self._secondaryWindow
 end
 
+function App:fullScreenWindow()
+	if not self._fullScreenWindow then
+		self._fullScreenWindow = FullScreenWindow:new(self)
+	end
+	return self._fullScreenWindow
+end
+
 function App:commandEditor()
 	if not self._commandEditor then
 		self._commandEditor = CommandEditor:new(self)
