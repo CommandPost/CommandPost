@@ -199,82 +199,121 @@ end
 
 Timeline.lockActive = 0.01
 Timeline.lockInactive = 0.1
-Timeline.lockThreshold = 5
+Timeline.stopThreshold = 15
 
-Timeline.LOCKED = 1
+Timeline.STOPPED = 1
 Timeline.TRACKING = 2
 Timeline.DEADZONE = 3
 Timeline.INVISIBLE = 4
 
-function Timeline:lockPlayhead()
+function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	if self._locked then
 		-- already locked.
 		return self
 	end
+
 	local content = self:content()
 	local playhead = content:playhead()
 	local check = nil
 	local status = 0
+	local lastPosition = nil
+	local playheadStopped = 0
+	local originalOffset = 0
+	
+	local incPlayheadStopped = function()
+		playheadStopped = math.min(Timeline.stopThreshold, playheadStopped + 1)
+	end
+	
+	local playheadHasStopped = function()
+		return playheadStopped == Timeline.stopThreshold
+	end
 
 	-- Setting this to false unlocks the playhead.
 	self._locked = true
 
-	-- local playheadOffset = self.timeline:playhead():getX()
-	local playheadStopped = 0
+	-- Calculate the original offset of the playhead
+	local viewFrame = content:viewFrame()
+	if viewFrame then
+		originalOffset = playhead:getPosition() - viewFrame.x
+		if lockInCentre or originalOffset <= 0 or originalOffset >= viewFrame.w then
+			-- align the playhead to the centre of the timeline view
+			originalOffset = math.floor(viewFrame.w/2)
+		end
+	end
 
+	-- Create the 'check' function that will loop to keep the playhead in position
 	check = function()
 		if not self._locked then
+			-- We have stopped locking. Bail.
 			return
 		end
 
 		local viewFrame = content:viewFrame()
-		if viewFrame == nil then
-			-- The timeline is not visible.
+		local playheadPosition = playhead:getPosition()
+		
+		if viewFrame == nil or playheadPosition == nil then
+			-- The timeline and/or playhead does not exist.
 			if status ~= Timeline.INVISIBLE then
 				status = Timeline.INVISIBLE
 				debugMessage("Timeline not visible.")
 			end
 			
-			playheadStopped = Timeline.lockThreshold
+			playheadStopped = Timeline.stopThreshold
+			if deactivateWhenStopped then
+				debugMessage("Deactivating lock.")
+				self:unlockPlayhead()
+			end
 		else
-			local playheadOffset = viewFrame.x + math.floor(viewFrame.w/2)
-			local playheadX = playhead:getPosition()
-			if playheadOffset == nil or playheadX == nil or playheadOffset == playheadX then
-				-- it is on the offset or doesn't exist.
-				playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
-				if playheadStopped == Timeline.lockThreshold and status ~= Timeline.LOCKED then
-					status = Timeline.LOCKED
-					debugMessage("Playhead locked.")
+			-- The timeline is visible. Let's track it!
+			-- Reset the original offset if the viewFrame gets too narrow
+			if originalOffset >= viewFrame.w then originalOffset = math.floor(viewFrame.w/2) end
+			-- Calculate the target offset
+			local targetPosition = viewFrame.x + originalOffset
+			
+			if playheadPosition == lastPosition then
+				-- it hasn't moved since the last check
+				incPlayheadStopped()
+				if playheadHasStopped() and status ~= Timeline.STOPPED then
+					status = Timeline.STOPPED
+					debugMessage("Playhead stopped.")
+					if deactivateWhenStopped then
+						debugMessage("Deactivating lock.")
+						self:unlockPlayhead()
+					end
 				end
 			else
 				-- it's moving
 				local timelineFrame = content:timelineFrame()
 				local scrollWidth = timelineFrame.w - viewFrame.w
-				local scrollPoint = timelineFrame.x*-1 + viewFrame.x + playheadX - playheadOffset
+				local scrollPoint = timelineFrame.x*-1 + viewFrame.x + playheadPosition - targetPosition
 				local scrollTarget = scrollPoint/scrollWidth
 				local scrollValue = content:getScrollHorizontal()
+
+				playheadStopped = 0
 
 				if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
 					if status ~= Timeline.DEADZONE then
 						status = Timeline.DEADZONE
 						debugMessage("In the deadzone.")
 					end
-					playheadStopped = math.min(Timeline.lockThreshold, playheadStopped + 1)
 				else
 					if status ~= Timeline.TRACKING then
 						status = Timeline.TRACKING
 						debugMessage("Tracking the playhead.")
 					end
 					content:scrollHorizontalTo(scrollTarget)
-					playheadStopped = 0
 				end
 			end
 		end
 
+		-- Check how quickly we should check again.
 		local next = Timeline.lockActive
-		if playheadStopped == Timeline.lockThreshold then
+		if playheadHasStopped() then
 			next = Timeline.lockInactive
 		end
+		
+		-- Update last postion to the current position.
+		lastPosition = playheadPosition
 
 		if next ~= nil then
 			timer.doAfter(next, check)
