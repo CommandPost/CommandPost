@@ -467,7 +467,6 @@ function loadScript()
 		-- Enable Fullscreen Playback Shortcut Keys:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
-			fullscreenKeyboardWatcherUp:start()
 			fullscreenKeyboardWatcherDown:start()
 		end
 
@@ -475,8 +474,7 @@ function loadScript()
 		-- Enable Scrolling Timeline:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.scrollingTimelineActive") then
-			scrollingTimelineWatcherUp:start()
-			scrollingTimelineWatcherDown:start()
+			mod.scrollingTimelineWatcherDown:start()
 		end
 
 		--------------------------------------------------------------------------------
@@ -516,9 +514,8 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Disable Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		if scrollingTimelineWatcherUp ~= nil then
-			scrollingTimelineWatcherUp:stop()
-			scrollingTimelineWatcherDown:stop()
+		if mod.scrollingTimelineWatcherDown ~= nil then
+			mod.scrollingTimelineWatcherDown:stop()
 		end
 
 	end
@@ -4496,19 +4493,8 @@ end
 			--------------------------------------------------------------------------------
 			-- Stop Watchers:
 			--------------------------------------------------------------------------------
-			scrollingTimelineWatcherUp:stop()
-			scrollingTimelineWatcherDown:stop()
-
-			--------------------------------------------------------------------------------
-			-- Stop Scrolling Timeline Loops:
-			--------------------------------------------------------------------------------
-			if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
-			if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
-
-			--------------------------------------------------------------------------------
-			-- Turn off variable:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineSpacebarPressed = false
+			mod.scrollingTimelineWatcherDown:stop()
+			fcp.app():timeline():unlockPlayhead()
 
 			--------------------------------------------------------------------------------
 			-- Display Notification:
@@ -4534,15 +4520,12 @@ end
 			--------------------------------------------------------------------------------
 			-- Start Watchers:
 			--------------------------------------------------------------------------------
-			scrollingTimelineWatcherUp:start()
-			scrollingTimelineWatcherDown:start()
+			mod.scrollingTimelineWatcherDown:start()
 
 			--------------------------------------------------------------------------------
 			-- If activated whilst already playing, then turn on Scrolling Timeline:
 			--------------------------------------------------------------------------------
-			-- TO DO: it would be great to be able to do this if possible?
-				-- scrollingTimelineSpacebarCheck = true
-				-- timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.00000001)
+			checkScrollingTimeline()
 
 			--------------------------------------------------------------------------------
 			-- Display Notification:
@@ -4558,206 +4541,53 @@ end
 
 	end
 
+	--------------------------------------------------------------------------------
+	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
+	--------------------------------------------------------------------------------
+	function checkScrollingTimeline()
+		
 		--------------------------------------------------------------------------------
-		-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
+		-- Make sure the Command Editor and hacks console are closed:
 		--------------------------------------------------------------------------------
-		function checkScrollingTimelinePress()
-
-			--------------------------------------------------------------------------------
-			-- Define FCPX:
-			--------------------------------------------------------------------------------
-			local fcpx 				= fcp.application()
-			local fcpxElements 		= ax.applicationElement(fcpx)
-
-			--------------------------------------------------------------------------------
-			-- Don't activate scrollbar in fullscreen mode:
-			--------------------------------------------------------------------------------
-			local fullscreenActive = false
-
-				--------------------------------------------------------------------------------
-				-- No player controls visible:
-				--------------------------------------------------------------------------------
-				if fcpxElements[1][1] ~= nil then
-					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
-						fullscreenActive = true
-					end
-				end
-
-				--------------------------------------------------------------------------------
-				-- Player controls visible:
-				--------------------------------------------------------------------------------
-				if fcpxElements[1][1] ~= nil then
-					if fcpxElements[1][1][1] ~= nil then
-						if fcpxElements[1][1][1][1] ~= nil then
-							if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
-								fullscreenActive = true
-							end
-						end
-					end
-				end
-
-			--------------------------------------------------------------------------------
-			-- If Full Screen is Active then abort:
-			--------------------------------------------------------------------------------
-			if fullscreenActive then
-				debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-				return "Stop"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Timeline Scroll Area:
-			--------------------------------------------------------------------------------
-			local timelineScrollArea = fcp.getTimelineScrollArea()
-			if timelineScrollArea == nil then
-				writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-				return "Stop"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Check mouse is in timeline area:
-			--------------------------------------------------------------------------------
-			local mouseLocation = mouse.getAbsolutePosition()
-			local timelinePosition = timelineScrollArea:attributeValue("AXPosition")
-			local timelineSize = timelineScrollArea:attributeValue("AXSize")
-			local isMouseInTimelineArea = true
-			if (mouseLocation['y'] <= timelinePosition['y']) then isMouseInTimelineArea = false end 							-- Too High
-			if (mouseLocation['y'] >= (timelinePosition['y']+timelineSize['h'])) then isMouseInTimelineArea = false end 		-- Too Low
-			if (mouseLocation['x'] <= timelinePosition['x']) then isMouseInTimelineArea = false end 							-- Too Left
-			if (mouseLocation['x'] >= (timelinePosition['x']+timelineSize['w'])) then isMouseInTimelineArea = false end 		-- Too Right
-			if isMouseInTimelineArea then
-
-				--------------------------------------------------------------------------------
-				-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-				--------------------------------------------------------------------------------
-
-					--------------------------------------------------------------------------------
-					-- Debug Mode:
-					--------------------------------------------------------------------------------
-					debugMessage("Mouse inside Timeline Area.")
-
-					--------------------------------------------------------------------------------
-					-- Which Value Indicator:
-					--------------------------------------------------------------------------------
-					local whichValueIndicator = nil
-					for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-						if timelineScrollArea[1][i]:attributeValue("AXDescription") == fcp.getTranslation("Playhead") then
-							whichValueIndicator = i
-							goto performScrollingTimelineValueIndicatorExit
-						end
-					end
-					if whichValueIndicator == nil then
-						dialog.displayErrorMessage("Sorry, but we were unable to locate Value Indicator.\n\nWe will now disable the scrolling timeline.\n\nError occured in checkScrollingTimelinePress().")
-						toggleScrollingTimeline()
-						return "Failed"
-					end
-					::performScrollingTimelineValueIndicatorExit::
-
-					local initialPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-					performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
-			else
-
-				--------------------------------------------------------------------------------
-				-- Debug Mode:
-				--------------------------------------------------------------------------------
-				debugMessage("Mouse outside of Timeline Area.")
-
-			end
+		if fcp.app():commandEditor():isShowing() or hacksconsole.active then
+			debugMessage("Spacebar pressed while other windows are visible.")
+			return "Stop"
 		end
 
 		--------------------------------------------------------------------------------
-		-- PERFORM SCROLLING TIMELINE:
+		-- Don't activate scrollbar in fullscreen mode:
 		--------------------------------------------------------------------------------
-		function performScrollingTimelineLoops(timelineScrollArea, whichValueIndicator, initialPlayheadXPosition)
-
-			--------------------------------------------------------------------------------
-			-- Define Scrollbar Check Timer:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineScrollbarTimer = timer.new(0.001, function()
-				if timelineScrollArea[2] ~= nil then
-					performScrollingTimelineLoops(whichSplitGroup, whichGroup)
-					scrollbarSearchLoopActivated = false
-				end
-			end)
-
-			--------------------------------------------------------------------------------
-			-- Trigger Scrollbar Check Timer if No Scrollbar Visible:
-			--------------------------------------------------------------------------------
-			if timelineScrollArea[2] == nil then
-				mod.scrollingTimelineScrollbarTimer:start()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Make sure Playhead is actually visible:
-			--------------------------------------------------------------------------------
-			local scrollAreaX = timelineScrollArea:attributeValue("AXPosition")['x']
-			local scrollAreaW = timelineScrollArea:attributeValue("AXSize")['w']
-			local endOfTimelineXPosition = (scrollAreaX + scrollAreaW)
-			if initialPlayheadXPosition > endOfTimelineXPosition or initialPlayheadXPosition < scrollAreaX then
-				local timelineWidth = timelineScrollArea:attributeValue("AXSize")['w']
-				initialPlayheadXPosition = (timelineWidth / 2)
-			end
-
-			--------------------------------------------------------------------------------
-			-- Initial Scrollbar Value:
-			--------------------------------------------------------------------------------
-			local initialScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-
-			--------------------------------------------------------------------------------
-			-- Define the Loop of Death:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineTimer = timer.new(0.000001, function()
-
-				--------------------------------------------------------------------------------
-				-- Does the scrollbar still exist?
-				--------------------------------------------------------------------------------
-				if timelineScrollArea[1] ~= nil and timelineScrollArea[2] ~= nil then
-
-					local scrollbarWidth = timelineScrollArea[2][1]:attributeValue("AXSize")['w']
-					local timelineWidth = timelineScrollArea[1]:attributeValue("AXSize")['w']
-
-					local howMuchBiggerTimelineIsThanScrollbar = scrollbarWidth / timelineWidth
-
-					--------------------------------------------------------------------------------
-					-- If you change the edit the location of the Value Indicator will change:
-					--------------------------------------------------------------------------------
-					if timelineScrollArea[1][whichValueIndicator]:attributeValue("AXDescription") ~= fcp.getTranslation("Playhead") then
-						for i=1, timelineScrollArea[1]:attributeValueCount("AXChildren") do
-							if timelineScrollArea[1][i]:attributeValue("AXDescription") == fcp.getTranslation("Playhead") then
-								whichValueIndicator = i
-								goto performScrollingTimelineValueIndicatorExitX
-							end
-						end
-						if whichValueIndicator == nil then
-							dialog.displayErrorMessage("Unable to locate Value Indicator.\n\nError occured in performScrollingTimelineLoops().")
-							return "Failed"
-						end
-						::performScrollingTimelineValueIndicatorExitX::
-					end
-
-					local currentPlayheadXPosition = timelineScrollArea[1][whichValueIndicator]:attributeValue("AXPosition")['x']
-
-					initialPlayheadPecentage = initialPlayheadXPosition / scrollbarWidth
-					currentPlayheadPecentage = currentPlayheadXPosition / scrollbarWidth
-
-					x = initialPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
-					y = currentPlayheadPecentage * howMuchBiggerTimelineIsThanScrollbar
-
-					scrollbarStep = y - x
-
-					local currentScrollbarValue = timelineScrollArea[2][1]:attributeValue("AXValue")
-					timelineScrollArea[2][1]:setAttributeValue("AXValue", currentScrollbarValue + scrollbarStep)
-				end
-
-			end)
-
-			--------------------------------------------------------------------------------
-			-- Begin the Loop of Death:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineTimer:start()
-
+		if fcp.app():fullScreenWindow():isShowing() then
+			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
+			return "Stop"
 		end
+		
+		local timeline = fcp.app():timeline()
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Scroll Area:
+		--------------------------------------------------------------------------------
+		if not timeline:isShowing() then
+			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
+			return "Stop"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check mouse is in timeline area:
+		--------------------------------------------------------------------------------
+		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+		local viewFrame = geometry.rect(timeline:content():viewFrame())
+		if mouseLocation:inside(viewFrame) then
+
+			--------------------------------------------------------------------------------
+			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			--------------------------------------------------------------------------------
+			debugMessage("Mouse inside Timeline Area.")
+			timeline:lockPlayhead(true)
+		else
+			debugMessage("Mouse outside of Timeline Area.")
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LOCK PLAYHEAD:
@@ -7645,9 +7475,8 @@ end
 		-- Enable Scrolling Timeline Watcher:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if scrollingTimelineWatcherUp ~= nil then
-				scrollingTimelineWatcherUp:start()
-				scrollingTimelineWatcherDown:start()
+			if mod.scrollingTimelineWatcherDown ~= nil then
+				mod.scrollingTimelineWatcherDown:start()
 			end
 		end
 
@@ -7708,9 +7537,8 @@ end
 		-- Disable Scrolling Timeline Watcher:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if scrollingTimelineWatcherUp ~= nil then
-				scrollingTimelineWatcherUp:stop()
-				scrollingTimelineWatcherDown:stop()
+			if mod.scrollingTimelineWatcherDown ~= nil then
+				mod.scrollingTimelineWatcherDown:stop()
 			end
 		end
 
@@ -7966,57 +7794,24 @@ end
 -- FCPX SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
-
-	--------------------------------------------------------------------------------
-	-- Key Press Up Watcher:
-	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
-		mod.scrollingTimelineWatcherWorking = false
-	end)
+	
+	local timeline = fcp.app():timeline()
 
 	--------------------------------------------------------------------------------
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
-	scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-
+	mod.scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
+		
 		--------------------------------------------------------------------------------
-		-- Don't repeat if key is held down:
+		-- Don't do anything if we're already locked.
 		--------------------------------------------------------------------------------
-		if mod.scrollingTimelineWatcherWorking then
+		if timeline:isLockedPlayhead() then
 			return false
-		else
-			--------------------------------------------------------------------------------
-			-- Prevent Key Being Held Down:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherWorking = true
-
+		elseif event:getKeyCode() == 49 and next(event:getFlags()) == nil then
 			--------------------------------------------------------------------------------
 			-- Spacebar Pressed:
 			--------------------------------------------------------------------------------
-			if event:getKeyCode() == 49 and next(event:getFlags()) == nil then
-				--------------------------------------------------------------------------------
-				-- Make sure the Command Editor is closed:
-				--------------------------------------------------------------------------------
-				if not fcp.app():commandEditor():isShowing() and not hacksconsole.active then
-
-					--------------------------------------------------------------------------------
-					-- Toggle Scrolling Timeline Spacebar Pressed Variable:
-					--------------------------------------------------------------------------------
-					mod.scrollingTimelineSpacebarPressed = not mod.scrollingTimelineSpacebarPressed
-
-					--------------------------------------------------------------------------------
-					-- Either stop or start the Scrolling Timeline:
-					--------------------------------------------------------------------------------
-					if mod.scrollingTimelineSpacebarPressed then
-						scrollingTimelineSpacebarCheck = true
-						timer.waitUntil(function() return scrollingTimelineSpacebarCheck end, function() checkScrollingTimelinePress() end, 0.0000000000001)
-					else
-						if mod.scrollingTimelineTimer ~= nil then mod.scrollingTimelineTimer:stop() end
-						if mod.scrollingTimelineScrollbarTimer ~= nil then mod.scrollingTimelineScrollbarTimer:stop() end
-					end
-
-				end
-			end
+			checkScrollingTimeline()
 		end
 	end)
 end

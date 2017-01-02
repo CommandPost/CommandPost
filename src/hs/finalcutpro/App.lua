@@ -18,6 +18,7 @@ local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("hs.finalcutpro.main.SecondaryWindow")
+local FullScreenWindow							= require("hs.finalcutpro.main.FullScreenWindow")
 local Timeline									= require("hs.finalcutpro.main.Timeline")
 local Browser									= require("hs.finalcutpro.main.Browser")
 local Viewer									= require("hs.finalcutpro.main.Viewer")
@@ -118,6 +119,13 @@ function App:secondaryWindow()
 		self._secondaryWindow = SecondaryWindow:new(self)
 	end
 	return self._secondaryWindow
+end
+
+function App:fullScreenWindow()
+	if not self._fullScreenWindow then
+		self._fullScreenWindow = FullScreenWindow:new(self)
+	end
+	return self._fullScreenWindow
 end
 
 function App:commandEditor()

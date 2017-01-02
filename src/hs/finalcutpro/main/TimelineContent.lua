@@ -11,7 +11,9 @@ local Playhead							= require("hs.finalcutpro.main.Playhead")
 local TimelineContent = {}
 
 function TimelineContent.matches(element)
-	return element and element:attributeValue("AXIdentifier") == "_NS:16"
+	return element 
+	    and element:attributeValue("AXIdentifier") == "_NS:16"
+		and element:attributeValue("AXRole") == "AXLayoutArea"
 		and element:attributeValueCount("AXAuditIssues") < 1
 end
 
@@ -50,8 +52,10 @@ function TimelineContent:scrollAreaUI()
 	local main = self:parent():mainUI()
 	if main then
 		return axutils.childMatching(main, function(child)
-			return child:attributeValue("AXIdentifier") == "_NS:9" 
-			   and child:attributeValue("AXHorizontalScrollBar") ~= nil
+			if child:attributeValue("AXIdentifier") == "_NS:9" and child:attributeValue("AXRole") == "AXScrollArea" then
+				return axutils.childMatching(child:attributeValue("AXContents"), TimelineContent.matches) ~= nil
+			end
+			return false
 		end)
 	end
 	return nil
@@ -105,7 +109,7 @@ function TimelineContent:viewFrame()
 		local sap = scrollArea:position()
 		local hsFrame = hScroll:frame()
 		if sap and hsFrame then
-			return {x = sap.x, y = sap.y, w = hsFrame.w, h = hsFrame.x-sap.x}
+			return {x = sap.x, y = sap.y, w = hsFrame.w, h = hsFrame.y-sap.y}
 		end
 	end
 	local scrollArea = self:scrollAreaUI()
