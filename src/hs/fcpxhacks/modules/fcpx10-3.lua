@@ -6955,6 +6955,7 @@ end
 
 			if destinationPreset == nil then
 				displayErrorMessage(i18n("batchExportNoDestination"))
+				return false
 			else
 				-- Remove (default) text:
 				local firstBracket = string.find(destinationPreset, " %(", 1)
