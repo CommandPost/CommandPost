@@ -18,11 +18,12 @@ local tools = {}
 local eventtap									= require("hs.eventtap")
 local fs										= require("hs.fs")
 local host										= require("hs.host")
+local inspect									= require("hs.inspect")
+local just										= require("hs.just")
 local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
-local just										= require("hs.just")
 
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
@@ -64,19 +65,37 @@ end
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
 --------------------------------------------------------------------------------
 function tools.executeWithAdministratorPrivileges(input)
-	local appleScriptA = 'set shellScriptInput to "' .. input .. '"\n\n'
-	local appleScriptB = [[
-		try
-			tell me to activate
-			do shell script shellScriptInput with administrator privileges
-			return true
-		on error
-			return false
-		end try
-	]]
+	if type(input) == "table" then
+		local appleScript = [[
+			set shellScriptInputs to ]] .. inspect(input) .. "\n\n" .. [[
+			try
+				repeat with theItem in shellScriptInputs
+					do shell script theItem with administrator privileges
+				end repeat
+				return true
+			on error
+				return false
+			end try
+		]]
+		ok,result = osascript.applescript(appleScript)
+		return result
+	elseif type(input) == "string" then
+		local appleScript = [[
+			set shellScriptInput to "]] .. input .. [["
 
-	ok,result = osascript.applescript(appleScriptA .. appleScriptB)
-	return result
+			try
+				tell me to activate
+				do shell script shellScriptInput with administrator privileges
+				return true
+			on error
+				return false
+			end try
+		]]
+		ok,result = osascript.applescript(appleScript)
+		return result
+	else
+		return nil
+	end
 end
 
 --------------------------------------------------------------------------------

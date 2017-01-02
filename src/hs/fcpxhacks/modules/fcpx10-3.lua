@@ -1082,7 +1082,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
+	local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
 	if not result then
 		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 		return false
@@ -1094,41 +1094,43 @@ end
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function enableHacksShortcuts()
-	local appleScriptA = "set finalCutProLanguages to " .. tostring(hs.inspect(require("hs.finalcutpro").languages())) .. "\n\n"
-	local appleScriptB = [[
+	local appleScript = [[
+		set finalCutProPath to "]] .. fcp.path() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+
 		--------------------------------------------------------------------------------
 		-- Replace Files:
 		--------------------------------------------------------------------------------
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				return "NSProCommandGroups.plist"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				return "NSProCommands.plist"
 		end try
 		repeat with whichLanguage in finalCutProLanguages
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/Default.commandset"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandNames.strings"
 			end try
 		end repeat
 		return "Done"
 	]]
-	ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+	ok,result = osascript.applescript(appleScript)
 	return result
 end
 
@@ -1136,38 +1138,40 @@ end
 -- DISABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function disableHacksShortcuts()
-	local appleScriptA = "set finalCutProLanguages to " .. tostring(hs.inspect(require("hs.finalcutpro").languages())) .. "\n\n"
-	local appleScriptB = [[
+	local appleScript = [[
+		set finalCutProPath to "]] .. fcp.path() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				return "NSProCommandGroups.plist"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				return "NSProCommands.plist"
 		end try
 		repeat with whichLanguage in finalCutProLanguages
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/Default.commandset"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandNames.strings"
 			end try
 		end repeat
 		return "Done"
 	]]
-	ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+	ok,result = osascript.applescript(appleScript)
 	return result
 end
 
@@ -1227,7 +1231,8 @@ end
 			-- Get plist values for Allow Moving Markers:
 			--------------------------------------------------------------------------------
 			mod.allowMovingMarkers = false
-			local result = plist.fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
+
+			local result = plist.fileToTable(fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
 			if result ~= nil then
 				if result["TLKMarkerHandler"] ~= nil then
 					if result["TLKMarkerHandler"]["Configuration"] ~= nil then
@@ -3115,11 +3120,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local result = fcp.setPreference("FFPeriodicBackupInterval", userSelectedBackupInterval)
+		local result = fcp.setPreference("FFPeriodicBackupInterval", tostring(userSelectedBackupInterval))
 		if result == nil then
 			dialog.displayErrorMessage(i18n("backupIntervalFail"))
 			return "Failed"
 		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar(true)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -3149,7 +3159,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
 		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
 
 		--------------------------------------------------------------------------------
@@ -3175,13 +3185,15 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist for every Flexo language:
 		--------------------------------------------------------------------------------
+		local executeCommands = {}
 		for k, v in pairs(fcp.flexoLanguages()) do
-			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'")
-			if executeStatus == nil then
-				writeToConsole("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
-				dialog.displayErrorMessage("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
-				return "Failed"
-			end
+			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
+			executeCommands[#executeCommands + 1] = executeCommand
+		end
+		local result = tools.executeWithAdministratorPrivileges(executeCommands)
+		if not result then
+			dialog.displayErrorMessage("Failed to change Smart Collection Label.")
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
@@ -3634,7 +3646,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3652,7 +3664,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3734,7 +3746,7 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		mod.allowMovingMarkers = false
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '" .. fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
@@ -3753,13 +3765,13 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.allowMovingMarkers then
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
 			end
 		else
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
@@ -3820,7 +3832,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if FFSuspendBGOpsDuringPlay then
+		if mod.FFSuspendBGOpsDuringPlay then
 			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", false)
 			if result == nil then
 				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))

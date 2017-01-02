@@ -596,10 +596,13 @@ end
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
 ---
-function finalcutpro.getPreference(value, default)
+function finalcutpro.getPreference(value, default, forceReload)
+
+	if forceReload == nil then forceReload = false end
+
 	local result = nil
 
-	local preferencesTable = finalcutpro.getPreferences()
+	local preferencesTable = finalcutpro.getPreferences(forceReload)
 	if preferencesTable ~= nil then
 		result = preferencesTable[value]
 	end
@@ -609,6 +612,7 @@ function finalcutpro.getPreference(value, default)
 	end
 
 	return result
+
 end
 
 --- hs.finalcutpro.setPreference(key, value) -> boolean
@@ -720,8 +724,23 @@ end
 ---  * Boolean value
 ---
 function finalcutpro.installed()
-	local path = application.pathForBundleID(finalCutProBundleID)
+	local path = finalcutpro.path()
 	return doesDirectoryExist(path)
+end
+
+--- hs.finalcutpro.path() -> string or nil
+--- Function
+--- Path to Final Cut Pro Application
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing Final Cut Pro's filesystem path, or nil if the bundle identifier could not be located
+---
+function finalcutpro.path()
+	local path = application.pathForBundleID(finalCutProBundleID)
+	return path
 end
 
 --- hs.finalcutpro.version() -> string or nil
