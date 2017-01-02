@@ -3204,6 +3204,106 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- TOGGLE SCROLLING TIMELINE:
+	--------------------------------------------------------------------------------
+	function toggleScrollingTimeline()
+
+		--------------------------------------------------------------------------------
+		-- Toggle Scrolling Timeline:
+		--------------------------------------------------------------------------------
+		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		if scrollingTimelineActivated then
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", false)
+
+			--------------------------------------------------------------------------------
+			-- Stop Watchers:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineWatcherDown:stop()
+			fcp.app():timeline():unlockPlayhead()
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
+
+		else
+			--------------------------------------------------------------------------------
+			-- Ensure that Playhead Lock is Off:
+			--------------------------------------------------------------------------------
+			local message = ""
+			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+			if lockTimelinePlayhead then
+				toggleLockPlayhead()
+				message = i18n("playheadLockDeactivated") .. "\n"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", true)
+
+			--------------------------------------------------------------------------------
+			-- Start Watchers:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineWatcherDown:start()
+
+			--------------------------------------------------------------------------------
+			-- If activated whilst already playing, then turn on Scrolling Timeline:
+			--------------------------------------------------------------------------------
+			checkScrollingTimeline()
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menu Bar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE LOCK PLAYHEAD:
+	--------------------------------------------------------------------------------
+	function toggleLockPlayhead()
+
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+
+		if lockTimelinePlayhead then
+			if fcp.running() then
+				fcp.app():timeline():unlockPlayhead()
+			end
+			dialog.displayNotification(i18n("playheadLockDeactivated"))
+			settings.set("fcpxHacks.lockTimelinePlayhead", false)
+		else
+			local message = ""
+			--------------------------------------------------------------------------------
+			-- Ensure that Scrolling Timeline is off
+			--------------------------------------------------------------------------------
+			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
+			if scrollingTimeline then
+				toggleScrollingTimeline()
+				message = i18n("scrollingTimelineDeactivated") .. "\n"
+			end
+			if fcp.running() then
+				fcp.app():timeline():lockPlayhead()
+			end
+			dialog.displayNotification(message..i18n("playheadLockActivated"))
+			settings.set("fcpxHacks.lockTimelinePlayhead", true)
+		end
+
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
 	--------------------------------------------------------------------------------
 	function toggleBatchExportReplaceExistingFiles()
@@ -4143,7 +4243,7 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- MISC:
+-- OTHER:
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -4468,158 +4568,6 @@ end
 		-- Successfully Restored:
 		--------------------------------------------------------------------------------
 		dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(whichButton))
-
-	end
-
---------------------------------------------------------------------------------
--- TIMELINE RELATED:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- ACTIVE SCROLLING TIMELINE WATCHER:
-	--------------------------------------------------------------------------------
-	function toggleScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Toggle Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
-		if scrollingTimelineActivated then
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", false)
-
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:stop()
-			fcp.app():timeline():unlockPlayhead()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
-
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Playhead Lock is off
-			--------------------------------------------------------------------------------
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				toggleLockPlayhead()
-				message = i18n("playheadLockDeactivated") .. "\n"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", true)
-
-			--------------------------------------------------------------------------------
-			-- Start Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:start()
-
-			--------------------------------------------------------------------------------
-			-- If activated whilst already playing, then turn on Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function checkScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Make sure the Command Editor and hacks console are closed:
-		--------------------------------------------------------------------------------
-		if fcp.app():commandEditor():isShowing() or hacksconsole.active then
-			debugMessage("Spacebar pressed while other windows are visible.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Don't activate scrollbar in fullscreen mode:
-		--------------------------------------------------------------------------------
-		if fcp.app():fullScreenWindow():isShowing() then
-			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-			return "Stop"
-		end
-
-		local timeline = fcp.app():timeline()
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		if not timeline:isShowing() then
-			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-		local viewFrame = geometry.rect(timeline:content():viewFrame())
-		if mouseLocation:inside(viewFrame) then
-
-			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-			--------------------------------------------------------------------------------
-			debugMessage("Mouse inside Timeline Area.")
-			timeline:lockPlayhead(true)
-		else
-			debugMessage("Mouse outside of Timeline Area.")
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE LOCK PLAYHEAD:
-	--------------------------------------------------------------------------------
-	function toggleLockPlayhead()
-
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		if lockTimelinePlayhead then
-			if fcp.running() then
-				fcp.app():timeline():unlockPlayhead()
-			end
-			dialog.displayNotification(i18n("playheadLockDeactivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", false)
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Scrolling Timeline is off
-			--------------------------------------------------------------------------------
-			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
-			if scrollingTimeline then
-				toggleScrollingTimeline()
-				message = i18n("scrollingTimelineDeactivated") .. "\n"
-			end
-			if fcp.running() then
-				fcp.app():timeline():lockPlayhead()
-			end
-			dialog.displayNotification(message..i18n("playheadLockActivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", true)
-		end
-
-		refreshMenuBar()
 
 	end
 
@@ -6889,7 +6837,6 @@ end
 
 		end
 
-
 	--------------------------------------------------------------------------------
 	-- SELECT ALL TIMELINE CLIPS IN SPECIFIC DIRECTION:
 	--------------------------------------------------------------------------------
@@ -7222,7 +7169,7 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- TOUCH BAR RELATED:
+-- TOUCH BAR:
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -7465,66 +7412,87 @@ end
 		--------------------------------------------------------------------------------
 		-- Don't trigger until after FCPX Hacks has loaded:
 		--------------------------------------------------------------------------------
-		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Update Current Language:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
+		if not mod.hacksLoaded then
+			mod.isFinalCutProActive = false
+			return
+		end
 
 		--------------------------------------------------------------------------------
 		-- Enable Hotkeys:
 		--------------------------------------------------------------------------------
-		hotkeys:enter()
-
-		--------------------------------------------------------------------------------
-		-- Enable Menubar Items:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-			fullscreenKeyboardWatcherUp:start()
-			fullscreenKeyboardWatcherDown:start()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if mod.scrollingTimelineWatcherDown ~= nil then
-				mod.scrollingTimelineWatcherDown:start()
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-		if lockTimelinePlayhead then
-			fcp.app():timeline():lockPlayhead()
-		end
+		timer.doAfter(0.0000000000001, function()
+			hotkeys:enter()
+		end)
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableHacksHUD") then
-			hackshud:show()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Voice Commands:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableVoiceCommands") then
-			voicecommands.start()
-		end
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableHacksHUD") then
+				hackshud:show()
+			end
+		end)
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to show the Touch Bar:
 		--------------------------------------------------------------------------------
-		showTouchbar()
+		timer.doAfter(0.0000000000001, function()
+			showTouchbar()
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Full Screen Keyboard Watcher:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				fullscreenKeyboardWatcherUp:start()
+				fullscreenKeyboardWatcherDown:start()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Scrolling Timeline Watcher:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if mod.scrollingTimelineWatcherDown ~= nil then
+					mod.scrollingTimelineWatcherDown:start()
+				end
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Lock Timeline Playhead:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+			if lockTimelinePlayhead then
+				fcp.app():timeline():lockPlayhead()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Voice Commands:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableVoiceCommands") then
+				voicecommands.start()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Update Menubar:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			refreshMenuBar()
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Update Current Language:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			fcp.currentLanguage(true)
+		end)
 
 	end
 
@@ -7806,11 +7774,10 @@ function mediaImportWatcher()
 		end
 	end)
 	mod.newDeviceMounted:start()
-
 end
 
 --------------------------------------------------------------------------------
--- FCPX SCROLLING TIMELINE WATCHER:
+-- SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
 
@@ -7834,6 +7801,54 @@ function scrollingTimelineWatcher()
 		end
 	end)
 end
+
+	--------------------------------------------------------------------------------
+	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
+	--------------------------------------------------------------------------------
+	function checkScrollingTimeline()
+
+		--------------------------------------------------------------------------------
+		-- Make sure the Command Editor and hacks console are closed:
+		--------------------------------------------------------------------------------
+		if fcp.app():commandEditor():isShowing() or hacksconsole.active then
+			debugMessage("Spacebar pressed while other windows are visible.")
+			return "Stop"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Don't activate scrollbar in fullscreen mode:
+		--------------------------------------------------------------------------------
+		if fcp.app():fullScreenWindow():isShowing() then
+			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
+			return "Stop"
+		end
+
+		local timeline = fcp.app():timeline()
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Scroll Area:
+		--------------------------------------------------------------------------------
+		if not timeline:isShowing() then
+			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
+			return "Stop"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check mouse is in timeline area:
+		--------------------------------------------------------------------------------
+		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+		local viewFrame = geometry.rect(timeline:content():viewFrame())
+		if mouseLocation:inside(viewFrame) then
+
+			--------------------------------------------------------------------------------
+			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			--------------------------------------------------------------------------------
+			debugMessage("Mouse inside Timeline Area.")
+			timeline:lockPlayhead(true)
+		else
+			debugMessage("Mouse outside of Timeline Area.")
+		end
+	end
 
 --------------------------------------------------------------------------------
 -- NOTIFICATION WATCHER:
