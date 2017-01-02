@@ -163,7 +163,7 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- PLAYHEAD
---- The timline Playhead.
+--- The timeline Playhead.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:playhead()
@@ -217,15 +217,15 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	local check = nil
 	local status = 0
 	local lastPosition = nil
-	local playheadStopped = 0
+	local stopCounter = 0
 	local originalOffset = 0
 	
 	local incPlayheadStopped = function()
-		playheadStopped = math.min(Timeline.stopThreshold, playheadStopped + 1)
+		stopCounter = math.min(Timeline.stopThreshold, stopCounter + 1)
 	end
 	
 	local playheadHasStopped = function()
-		return playheadStopped == Timeline.stopThreshold
+		return stopCounter == Timeline.stopThreshold
 	end
 
 	-- Setting this to false unlocks the playhead.
@@ -258,7 +258,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 				debugMessage("Timeline not visible.")
 			end
 			
-			playheadStopped = Timeline.stopThreshold
+			stopCounter = Timeline.stopThreshold
 			if deactivateWhenStopped then
 				debugMessage("Deactivating lock.")
 				self:unlockPlayhead()
@@ -289,7 +289,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 				local scrollTarget = scrollPoint/scrollWidth
 				local scrollValue = content:getScrollHorizontal()
 
-				playheadStopped = 0
+				stopCounter = 0
 
 				if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
 					if status ~= Timeline.DEADZONE then
