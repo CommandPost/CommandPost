@@ -4924,9 +4924,9 @@ end
 		transitions:show()
 
 		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
+		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
-		-- transitions:showInstalledTransitions()
+		transitions:showInstalledTransitions()
 
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
@@ -4993,11 +4993,6 @@ end
 	function effectsShortcut(whichShortcut)
 
 		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
 		local currentShortcut = nil
@@ -5024,357 +5019,84 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
+		-- Save the Transitions Browser layout:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
-		if finalCutProTimelineButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in effectsShortcut() whilst using fcp.getTimelineButtonBar().")
-			showTouchbar()
-			return "Fail"
-		end
+		local transitions = fcp.app():transitions()
+		local transitionsLayout = transitions:saveLayout()
+		
+		--------------------------------------------------------------------------------
+		-- Get Effects Browser:
+		--------------------------------------------------------------------------------
+		local effects = fcp.app():effects()
+		local effectsShowing = effects:isShowing()
+		local effectsLayout = effects:saveLayout()
 
 		--------------------------------------------------------------------------------
-		-- Find Effects Browser Button:
+		-- Make sure panel is open:
 		--------------------------------------------------------------------------------
-		local whichRadioGroup = nil
-		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
-				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
-					whichRadioGroup = i
-				end
-			end
-		end
-		if whichRadioGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in effectsShortcut().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects or Transitions Panel Open?
-		--------------------------------------------------------------------------------
-		local whichPanelActivated = "None"
-		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
-			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
-			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Video Effects panel is open:
-		--------------------------------------------------------------------------------
-		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][1]
-		if effectsBrowserButton ~= nil then
-			if effectsBrowserButton:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.\n\nError occured in effectsShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel.\n\nError occured in effectsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		effects:show()
 
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
 		--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Group:
-			--------------------------------------------------------------------------------
-			local finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-			if finalCutProEffectsTransitionsBrowserGroup == nil then
-				dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in effectsShortcut().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browser Split Group:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserSplitGroup = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXRole") == "AXSplitGroup" then
-					--if finalCutProEffectsTransitionsBrowserGroup[i]:attributeValue("AXIdentifier") == "_NS:452" then
-						whichEffectsBrowserSplitGroup = i
-					--end
-				end
-			end
-			if whichEffectsBrowserSplitGroup == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Split Group.\n\nError occured in effectsShortcut().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Transitions Browsers Popup Button:
-			--------------------------------------------------------------------------------
-			local whichEffectsBrowserPopupButton = nil
-			for i=1, finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup]:attributeValueCount("AXChildren") do
-				if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXRole") == "AXPopUpButton" then
-					if finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][i]:attributeValue("AXIdentifier") == "_NS:45" then
-						whichEffectsBrowserPopupButton = i
-					end
-				end
-			end
-			if whichEffectsBrowserPopupButton == nil then
-				dialog.displayErrorMessage("Unable to detect Transitions Browser's Popup Button.\n\nError occured in effectsShortcut().")
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Check that "Installed Effects" is selected:
-			--------------------------------------------------------------------------------
-			local installedEffectsPopup = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton]
-			if installedEffectsPopup ~= nil then
-				if installedEffectsPopup:attributeValue("AXValue") ~= "Installed Effects" then
-					installedEffectsPopup:performAction("AXPress")
-					finalCutProEffectsTransitionsBrowserGroup = fcp.getEffectsTransitionsBrowserGroup()
-					if finalCutProEffectsTransitionsBrowserGroup == nil then
-						dialog.displayErrorMessage("Unable to get Transitions Browser Group.\n\nError occured in effectsShortcut().")
-						return "Failed"
-					end
-					installedEffectsPopupMenuItem = finalCutProEffectsTransitionsBrowserGroup[whichEffectsBrowserSplitGroup][whichEffectsBrowserPopupButton][1][1]
-					installedEffectsPopupMenuItem:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to find 'Installed Effects' popup.\n\nError occured in effectsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
+		effects:showInstalledEffects()
 
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local effectsSearchCancelButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-				effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-			end
-		end
-		if effectsSearchCancelButton ~= nil then
-			effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-			if effectsSearchCancelButtonResult == nil then
-				dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		effects:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Click 'All Video & Audio':
+		-- Click 'All':
 		--------------------------------------------------------------------------------
-		local allVideoAndAudioButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-						allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-					end
-				end
-			end
-		end
-		if allVideoAndAudioButton ~= nil then
-			allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-		else
-
-			--------------------------------------------------------------------------------
-			-- Make sure Effects Browser Sidebar is Visible:
-			--------------------------------------------------------------------------------
-			effectsBrowserSidebar = finalCutProEffectsTransitionsBrowserGroup[2]
-			if effectsBrowserSidebar ~= nil then
-				if effectsBrowserSidebar:attributeValue("AXValue") == 1 then
-					effectsBrowserSidebar:performAction("AXPress")
-				end
-			else
-				dialog.displayErrorMessage("Unable to locate Effects Browser Sidebar button.\n\nError occured in effectsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Click 'All Video & Audio':
-			--------------------------------------------------------------------------------
-			local allVideoAndAudioButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][1][1] ~= nil then
-						if finalCutProEffectsTransitionsBrowserGroup[1][1][1][1] ~= nil then
-							allVideoAndAudioButton = finalCutProEffectsTransitionsBrowserGroup[1][1][1][1]
-						end
-					end
-				end
-			end
-			if allVideoAndAudioButton ~= nil then
-				allVideoAndAudioButton:setAttributeValue("AXSelected", true)
-			else
-				dialog.displayErrorMessage("Unable to locate 'All Video & Audio' button.\n\nError occured in effectsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay...
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
+		effects:showAllTransitions()
 
 		--------------------------------------------------------------------------------
 		-- Perform Search:
 		--------------------------------------------------------------------------------
-		local effectsSearchField = nil
-		if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
-		if effectsSearchField ~= nil then
-			effectsSearchField:setAttributeValue("AXValue", currentShortcut)
-			effectsSearchField[1]:performAction("AXPress")
-		else
-			dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in effectsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
+		effects:search():setValue(currentShortcut)
+		
 		--------------------------------------------------------------------------------
-		-- Make sure scroll bar is at top:
+		-- Get the list of matching effects
 		--------------------------------------------------------------------------------
-		local effectsScrollBar = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][4][2] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][4][2][1] ~= nil then
-						effectsScrollBar = finalCutProEffectsTransitionsBrowserGroup[1][4][2][1]
-					end
-				end
-			end
-		end
-		if effectsScrollBar ~= nil then
-			effectsScrollBar:setAttributeValue("AXValue", 0)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Double click on effect:
-		--------------------------------------------------------------------------------
-		local effectButton = nil
-		if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-			if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
-						effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Needed, Search Again Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		if effectButton == nil then
-
+		local matches = effects:getCurrentTransitions()
+		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
-			-- Remove first dash:
+			-- If Needed, Search Again Without Text Before First Dash:
 			--------------------------------------------------------------------------------
-			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
-
-			writeToConsole("currentShortcut: " .. currentShortcut)
-
-			--------------------------------------------------------------------------------
-			-- Perform Search:
-			--------------------------------------------------------------------------------
-			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then effectsSearchField = finalCutProEffectsTransitionsBrowserGroup[4] end
-			if effectsSearchField ~= nil then
-				effectsSearchField:setAttributeValue("AXValue", currentShortcut)
-				effectsSearchField[1]:performAction("AXPress")
-			else
-				dialog.displayErrorMessage("Unable to type search request in search box.\n\nError occured in effectsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get First Item in Browser:
-			--------------------------------------------------------------------------------
-			if finalCutProEffectsTransitionsBrowserGroup[1] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[1][4] ~= nil then
-					if finalCutProEffectsTransitionsBrowserGroup[1][4][1] ~= nil then
-						if finalCutProEffectsTransitionsBrowserGroup[1][4][1][1] ~= nil then
-							effectButton = finalCutProEffectsTransitionsBrowserGroup[1][4][1][1]
-						end
-					end
-				end
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get First Item in Browser:
-		--------------------------------------------------------------------------------
-		if effectButton ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Original Mouse Position:
-			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
-
-			--------------------------------------------------------------------------------
-			-- Get centre of button:
-			--------------------------------------------------------------------------------
-			local effectButtonPosition = {}
-			effectButtonPosition['x'] = effectButton:attributeValue("AXPosition")['x'] + (effectButton:attributeValue("AXSize")['w'] / 2)
-			effectButtonPosition['y'] = effectButton:attributeValue("AXPosition")['y'] + (effectButton:attributeValue("AXSize")['h'] / 2)
-
-			--------------------------------------------------------------------------------
-			-- Double Click:
-			--------------------------------------------------------------------------------
-			tools.doubleLeftClick(effectButtonPosition)
-
-			--------------------------------------------------------------------------------
-			-- Put it back:
-			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
-
-		else
-			dialog.displayErrorMessage("Unable to locate effect.\n\nError occured in effectsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-
-			--------------------------------------------------------------------------------
-			-- Make sure there's nothing in the search box:
-			--------------------------------------------------------------------------------
-			local effectsSearchCancelButton = nil
-			if finalCutProEffectsTransitionsBrowserGroup[4] ~= nil then
-				if finalCutProEffectsTransitionsBrowserGroup[4][2] ~= nil then
-					effectsSearchCancelButton = finalCutProEffectsTransitionsBrowserGroup[4][2]
-				end
-			end
-			if effectsSearchCancelButton ~= nil then
-				effectsSearchCancelButtonResult = effectsSearchCancelButton:performAction("AXPress")
-				if effectsSearchCancelButtonResult == nil then
-					dialog.displayErrorMessage("Unable to cancel effects search.\n\nError occured in effectsShortcut().")
-					showTouchbar()
+			local index = string.find(currentShortcut, "-")
+			if index ~= nil then
+				local trimmedShortcut = string.sub(currentShortcut, index + 2)
+				effects:search():setValue(trimmedShortcut)
+			
+				matches = effects:getCurrentTransitions()
+				if not matches or #matches == 0 then
+					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
 					return "Fail"
 				end
 			end
+		end
 
-			--------------------------------------------------------------------------------
-			-- Restore Effects or Transitions Panel:
-			--------------------------------------------------------------------------------
-			if whichPanelActivated == "None" then
-				finalCutProTimelineButtonBar[whichRadioGroup][1]:performAction("AXPress")
-			elseif whichPanelActivated == "Transitions" then
-				finalCutProTimelineButtonBar[whichRadioGroup][2]:performAction("AXPress")
-			end
+		local effect = matches[1]
+		
+		--------------------------------------------------------------------------------
+		-- Make sure the transition is visible
+		--------------------------------------------------------------------------------
+		effects:contents():showChild(effect)
 
-			--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			showTouchbar()
-
-		end)
+		--------------------------------------------------------------------------------
+		-- Double Click on the selected Transition:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+		
+		local targetPoint = geometry.rect(effect:frame()).center
+		tools.ninjaDoubleClick(targetPoint)
+		
+		showTouchbar()
+	
+		effects:loadLayout(effectsLayout)
+		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+		if not effectsShowing then effects:hide() end
 
 	end
 
