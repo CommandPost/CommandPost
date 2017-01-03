@@ -10,6 +10,10 @@ local just							= require("hs.just")
 
 local Table = {}
 
+function Table.matches(element)
+	return element ~= nil
+end
+
 --- hs.finalcutpro.ui.Table:new(axuielement, table) -> Table
 --- Function:
 --- Creates a new Table
@@ -20,18 +24,28 @@ function Table:new(parent, finder)
 	return o
 end
 
+function Table:uncached()
+	self._uncached = true
+	return self
+end
+
 function Table:parent()
 	return self._parent
 end
 
 function Table:UI()
-	return axutils.cache(self, "_ui", function()
+	if not self._uncached then
+		return axutils.cache(self, "_ui", function()
+			return self._finder()
+		end,
+		Table.matches)
+	else
 		return self._finder()
-	end)
+	end
 end
 
 function Table:contentUI()
-	return axutils.cache(self, "_outline", function()
+	return axutils.cache(self, "_content", function()
 		local ui = self:UI()
 		return ui and axutils.childMatching(ui, Table.matchesContent)
 	end,

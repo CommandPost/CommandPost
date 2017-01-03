@@ -147,7 +147,7 @@ function Libraries:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
 			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
-		end)
+		end):uncached()
 	end
 	return self._sidebar
 end
