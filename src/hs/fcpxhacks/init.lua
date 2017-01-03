@@ -250,6 +250,7 @@ function mod.init()
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
     local fcpVersion    = fcp.version()
+    local fcpPath		= fcp.path()
     local osVersion     = tools.macOSVersion()
     local fcpLanguage   = fcp.currentLanguage()
 
@@ -260,7 +261,9 @@ function mod.init()
     if osVersion ~= nil then                    writeToConsole("macOS Version:                  " .. tostring(osVersion),                   true) end
     if fcpVersion ~= nil then                   writeToConsole("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
     if fcpLanguage ~= nil then                  writeToConsole("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
+        										writeToConsole("FCPX Hacks Locale:              " .. tostring(i18n.getLocale()),          	true)
     if keycodes.currentLayout() ~= nil then     writeToConsole("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
+	if fcpPath ~= nil then						writeToConsole("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
                                                 writeToConsole("", true)
 
     local validFinalCutProVersion = false

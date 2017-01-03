@@ -169,8 +169,21 @@ function App:restart()
 	return false
 end
 
+--- hs.finalcutpro.App:path() -> string or nil
+--- Function
+--- Path to Final Cut Pro Application
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing Final Cut Pro's filesystem path, or nil if the bundle identifier could not be located
+---
+function App:getPath()
+	return application.pathForBundleID(App.BUNDLE_ID)
+end
 
---- hs.finalcutpro.App:installed() -> boolean
+--- hs.finalcutpro.App:isInstalled() -> boolean
 --- Function
 --- Is Final Cut Pro X Installed?
 ---
@@ -181,7 +194,7 @@ end
 ---  * `true` if a version of FCPX is installed.
 ---
 function App:isInstalled()
-	local path = application.pathForBundleID(App.BUNDLE_ID)
+	local path = self:getPath()
 	return doesDirectoryExist(path)
 end
 

@@ -1082,7 +1082,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
+	local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
 	if not result then
 		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 		return false
@@ -1094,41 +1094,43 @@ end
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function enableHacksShortcuts()
-	local appleScriptA = "set finalCutProLanguages to " .. tostring(hs.inspect(require("hs.finalcutpro").languages())) .. "\n\n"
-	local appleScriptB = [[
+	local appleScript = [[
+		set finalCutProPath to "]] .. fcp.path() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+
 		--------------------------------------------------------------------------------
 		-- Replace Files:
 		--------------------------------------------------------------------------------
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				return "NSProCommandGroups.plist"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				return "NSProCommands.plist"
 		end try
 		repeat with whichLanguage in finalCutProLanguages
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/Default.commandset"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandNames.strings"
 			end try
 		end repeat
 		return "Done"
 	]]
-	ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+	ok,result = osascript.applescript(appleScript)
 	return result
 end
 
@@ -1136,38 +1138,40 @@ end
 -- DISABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function disableHacksShortcuts()
-	local appleScriptA = "set finalCutProLanguages to " .. tostring(hs.inspect(require("hs.finalcutpro").languages())) .. "\n\n"
-	local appleScriptB = [[
+	local appleScript = [[
+		set finalCutProPath to "]] .. fcp.path() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
 			on error
 				return "NSProCommandGroups.plist"
 		end try
 		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '/Applications/Final Cut Pro.app/Contents/Resources/NSProCommands.plist'" with administrator privileges
+			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
 			on error
 				return "NSProCommands.plist"
 		end try
 		repeat with whichLanguage in finalCutProLanguages
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/Default.commandset"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
 			end try
 			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '/Applications/Final Cut Pro.app/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
+				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
 				on error
 					return whichLanguage & ".lproj/NSProCommandNames.strings"
 			end try
 		end repeat
 		return "Done"
 	]]
-	ok,result = osascript.applescript(appleScriptA .. appleScriptB)
+	ok,result = osascript.applescript(appleScript)
 	return result
 end
 
@@ -1227,7 +1231,8 @@ end
 			-- Get plist values for Allow Moving Markers:
 			--------------------------------------------------------------------------------
 			mod.allowMovingMarkers = false
-			local result = plist.fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
+
+			local result = plist.fileToTable(fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
 			if result ~= nil then
 				if result["TLKMarkerHandler"] ~= nil then
 					if result["TLKMarkerHandler"]["Configuration"] ~= nil then
@@ -2003,7 +2008,7 @@ end
 		--------------------------------------------------------------------------------
 		local transitions = fcp.app():transitions()
 		local transitionsLayout = transitions:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Effects panel is open:
 		--------------------------------------------------------------------------------
@@ -2016,12 +2021,12 @@ end
 		end
 
 		local effectsLayout = effects:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
 		--------------------------------------------------------------------------------
 		effects:group():selectItem(1)
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2031,7 +2036,7 @@ end
 		-- Click 'All Video':
 		--------------------------------------------------------------------------------
 		local sidebar = effects:sidebar()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
@@ -2040,7 +2045,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Find the two 'All' rows (Video/Audio)
 		--------------------------------------------------------------------------------
@@ -2058,7 +2063,7 @@ end
 			-- TODO: Use i18n to get the appropriate value for the current language
 			return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
 		end)
-		
+
 		if not allRows or #allRows ~= 2 then
 			dialog.displayErrorMessage("Was expecting two 'All' categories.\n\nError occurred in updateEffectsList().")
 			return "Fail"
@@ -2068,7 +2073,7 @@ end
 		-- Get list of All Video Effects:
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[1])
-		
+
 		local effectsList = effects:contents():childrenUI()
 		local allVideoEffects = {}
 		if effectsList ~= nil then
@@ -2084,7 +2089,7 @@ end
 		-- Get list of All Audio Effects:
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[2])
-		
+
 		effectsList = effects:contents():childrenUI()
 		local allAudioEffects = {}
 		if effectsList ~= nil then
@@ -2162,7 +2167,7 @@ end
 		--------------------------------------------------------------------------------
 		local effects = fcp.app():effects()
 		local effectsLayout = effects:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
@@ -2175,12 +2180,12 @@ end
 		end
 
 		local transitionsLayout = transitions:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
 		transitions:group():selectItem(1)
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2197,7 +2202,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		transitions:sidebar():selectRowAt(1)
 
 		--------------------------------------------------------------------------------
@@ -2273,9 +2278,9 @@ end
 
 		local app = fcp.app()
 		local generators = app:generators()
-		
+
 		local browserLayout = app:browser():saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
@@ -2284,7 +2289,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2294,7 +2299,7 @@ end
 		-- Click 'Titles':
 		--------------------------------------------------------------------------------
 		generators:showAllTitles()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
@@ -2366,9 +2371,9 @@ end
 
 		local app = fcp.app()
 		local generators = app:generators()
-		
+
 		local browserLayout = app:browser():saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
@@ -2377,7 +2382,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
@@ -2387,7 +2392,7 @@ end
 		-- Click 'Generators':
 		--------------------------------------------------------------------------------
 		generators:showAllGenerators()
-		
+
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
@@ -3115,11 +3120,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local result = fcp.setPreference("FFPeriodicBackupInterval", userSelectedBackupInterval)
+		local result = fcp.setPreference("FFPeriodicBackupInterval", tostring(userSelectedBackupInterval))
 		if result == nil then
 			dialog.displayErrorMessage(i18n("backupIntervalFail"))
 			return "Failed"
 		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar(true)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -3149,7 +3159,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
 		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
 
 		--------------------------------------------------------------------------------
@@ -3175,13 +3185,15 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist for every Flexo language:
 		--------------------------------------------------------------------------------
+		local executeCommands = {}
 		for k, v in pairs(fcp.flexoLanguages()) do
-			local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'")
-			if executeStatus == nil then
-				writeToConsole("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
-				dialog.displayErrorMessage("Failed to write to '" .. fcp.flexoLanguages()[k] .. ".lproj' plist.")
-				return "Failed"
-			end
+			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
+			executeCommands[#executeCommands + 1] = executeCommand
+		end
+		local result = tools.executeWithAdministratorPrivileges(executeCommands)
+		if not result then
+			dialog.displayErrorMessage("Failed to change Smart Collection Label.")
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
@@ -3202,6 +3214,106 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE SCROLLING TIMELINE:
+	--------------------------------------------------------------------------------
+	function toggleScrollingTimeline()
+
+		--------------------------------------------------------------------------------
+		-- Toggle Scrolling Timeline:
+		--------------------------------------------------------------------------------
+		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		if scrollingTimelineActivated then
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", false)
+
+			--------------------------------------------------------------------------------
+			-- Stop Watchers:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineWatcherDown:stop()
+			fcp.app():timeline():unlockPlayhead()
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
+
+		else
+			--------------------------------------------------------------------------------
+			-- Ensure that Playhead Lock is Off:
+			--------------------------------------------------------------------------------
+			local message = ""
+			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+			if lockTimelinePlayhead then
+				toggleLockPlayhead()
+				message = i18n("playheadLockDeactivated") .. "\n"
+			end
+
+			--------------------------------------------------------------------------------
+			-- Update Settings:
+			--------------------------------------------------------------------------------
+			settings.set("fcpxHacks.scrollingTimelineActive", true)
+
+			--------------------------------------------------------------------------------
+			-- Start Watchers:
+			--------------------------------------------------------------------------------
+			mod.scrollingTimelineWatcherDown:start()
+
+			--------------------------------------------------------------------------------
+			-- If activated whilst already playing, then turn on Scrolling Timeline:
+			--------------------------------------------------------------------------------
+			checkScrollingTimeline()
+
+			--------------------------------------------------------------------------------
+			-- Display Notification:
+			--------------------------------------------------------------------------------
+			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menu Bar:
+		--------------------------------------------------------------------------------
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE LOCK PLAYHEAD:
+	--------------------------------------------------------------------------------
+	function toggleLockPlayhead()
+
+		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+
+		if lockTimelinePlayhead then
+			if fcp.running() then
+				fcp.app():timeline():unlockPlayhead()
+			end
+			dialog.displayNotification(i18n("playheadLockDeactivated"))
+			settings.set("fcpxHacks.lockTimelinePlayhead", false)
+		else
+			local message = ""
+			--------------------------------------------------------------------------------
+			-- Ensure that Scrolling Timeline is off
+			--------------------------------------------------------------------------------
+			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
+			if scrollingTimeline then
+				toggleScrollingTimeline()
+				message = i18n("scrollingTimelineDeactivated") .. "\n"
+			end
+			if fcp.running() then
+				fcp.app():timeline():lockPlayhead()
+			end
+			dialog.displayNotification(message..i18n("playheadLockActivated"))
+			settings.set("fcpxHacks.lockTimelinePlayhead", true)
+		end
+
+		refreshMenuBar()
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
@@ -3534,7 +3646,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3552,7 +3664,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", "/Applications/Final Cut Pro.app/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3634,7 +3746,7 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		mod.allowMovingMarkers = false
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '" .. fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
@@ -3653,13 +3765,13 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.allowMovingMarkers then
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
 			end
 		else
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" '/Applications/Final Cut Pro.app/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
@@ -3720,7 +3832,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if FFSuspendBGOpsDuringPlay then
+		if mod.FFSuspendBGOpsDuringPlay then
 			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", false)
 			if result == nil then
 				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
@@ -4143,7 +4255,7 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- MISC:
+-- OTHER:
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -4468,158 +4580,6 @@ end
 		-- Successfully Restored:
 		--------------------------------------------------------------------------------
 		dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(whichButton))
-
-	end
-
---------------------------------------------------------------------------------
--- TIMELINE RELATED:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- ACTIVE SCROLLING TIMELINE WATCHER:
-	--------------------------------------------------------------------------------
-	function toggleScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Toggle Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
-		if scrollingTimelineActivated then
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", false)
-
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:stop()
-			fcp.app():timeline():unlockPlayhead()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
-
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Playhead Lock is off
-			--------------------------------------------------------------------------------
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				toggleLockPlayhead()
-				message = i18n("playheadLockDeactivated") .. "\n"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", true)
-
-			--------------------------------------------------------------------------------
-			-- Start Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:start()
-
-			--------------------------------------------------------------------------------
-			-- If activated whilst already playing, then turn on Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function checkScrollingTimeline()
-		
-		--------------------------------------------------------------------------------
-		-- Make sure the Command Editor and hacks console are closed:
-		--------------------------------------------------------------------------------
-		if fcp.app():commandEditor():isShowing() or hacksconsole.active then
-			debugMessage("Spacebar pressed while other windows are visible.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Don't activate scrollbar in fullscreen mode:
-		--------------------------------------------------------------------------------
-		if fcp.app():fullScreenWindow():isShowing() then
-			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-			return "Stop"
-		end
-		
-		local timeline = fcp.app():timeline()
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		if not timeline:isShowing() then
-			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-		local viewFrame = geometry.rect(timeline:content():viewFrame())
-		if mouseLocation:inside(viewFrame) then
-
-			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-			--------------------------------------------------------------------------------
-			debugMessage("Mouse inside Timeline Area.")
-			timeline:lockPlayhead(true)
-		else
-			debugMessage("Mouse outside of Timeline Area.")
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE LOCK PLAYHEAD:
-	--------------------------------------------------------------------------------
-	function toggleLockPlayhead()
-
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		if lockTimelinePlayhead then
-			if fcp.running() then
-				fcp.app():timeline():unlockPlayhead()
-			end
-			dialog.displayNotification(i18n("playheadLockDeactivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", false)
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Scrolling Timeline is off
-			--------------------------------------------------------------------------------
-			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
-			if scrollingTimeline then
-				toggleScrollingTimeline()
-				message = i18n("scrollingTimelineDeactivated") .. "\n"
-			end
-			if fcp.running() then
-				fcp.app():timeline():lockPlayhead()
-			end
-			dialog.displayNotification(message..i18n("playheadLockActivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", true)
-		end
-
-		refreshMenuBar()
 
 	end
 
@@ -6889,7 +6849,6 @@ end
 
 		end
 
-
 	--------------------------------------------------------------------------------
 	-- SELECT ALL TIMELINE CLIPS IN SPECIFIC DIRECTION:
 	--------------------------------------------------------------------------------
@@ -6947,6 +6906,25 @@ end
 		-- Destination Preset:
 		--------------------------------------------------------------------------------
 		local destinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+		if destinationPreset == nil then
+
+			destinationPreset = fcp.app():menuBar():findMenuUI("File", "Share", function(menuItem)
+				return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
+			end):attributeValue("AXTitle")
+
+			if destinationPreset == nil then
+				displayErrorMessage(i18n("batchExportNoDestination"))
+				return false
+			else
+				-- Remove (default) text:
+				local firstBracket = string.find(destinationPreset, " %(", 1)
+				if firstBracket == nil then
+					firstBracket = string.find(destinationPreset, "（", 1)
+				end
+				destinationPreset = string.sub(destinationPreset, 1, firstBracket - 1)
+			end
+
+		end
 
 		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
@@ -7203,7 +7181,7 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- TOUCH BAR RELATED:
+-- TOUCH BAR:
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
@@ -7446,66 +7424,87 @@ end
 		--------------------------------------------------------------------------------
 		-- Don't trigger until after FCPX Hacks has loaded:
 		--------------------------------------------------------------------------------
-		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Update Current Language:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function() fcp.currentLanguage(true) end)
+		if not mod.hacksLoaded then
+			mod.isFinalCutProActive = false
+			return
+		end
 
 		--------------------------------------------------------------------------------
 		-- Enable Hotkeys:
 		--------------------------------------------------------------------------------
-		hotkeys:enter()
-
-		--------------------------------------------------------------------------------
-		-- Enable Menubar Items:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-			fullscreenKeyboardWatcherUp:start()
-			fullscreenKeyboardWatcherDown:start()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if mod.scrollingTimelineWatcherDown ~= nil then
-				mod.scrollingTimelineWatcherDown:start()
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-		if lockTimelinePlayhead then
-			fcp.app():timeline():lockPlayhead()
-		end
+		timer.doAfter(0.0000000000001, function()
+			hotkeys:enter()
+		end)
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableHacksHUD") then
-			hackshud:show()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Voice Commands:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableVoiceCommands") then
-			voicecommands.start()
-		end
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableHacksHUD") then
+				hackshud:show()
+			end
+		end)
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to show the Touch Bar:
 		--------------------------------------------------------------------------------
-		showTouchbar()
+		timer.doAfter(0.0000000000001, function()
+			showTouchbar()
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Full Screen Keyboard Watcher:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+				fullscreenKeyboardWatcherUp:start()
+				fullscreenKeyboardWatcherDown:start()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Scrolling Timeline Watcher:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.scrollingTimelineActive") == true then
+				if mod.scrollingTimelineWatcherDown ~= nil then
+					mod.scrollingTimelineWatcherDown:start()
+				end
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Lock Timeline Playhead:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
+			if lockTimelinePlayhead then
+				fcp.app():timeline():lockPlayhead()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Enable Voice Commands:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			if settings.get("fcpxHacks.enableVoiceCommands") then
+				voicecommands.start()
+			end
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Update Menubar:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			refreshMenuBar()
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Update Current Language:
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.0000000000001, function()
+			fcp.currentLanguage(true)
+		end)
 
 	end
 
@@ -7787,21 +7786,20 @@ function mediaImportWatcher()
 		end
 	end)
 	mod.newDeviceMounted:start()
-
 end
 
 --------------------------------------------------------------------------------
--- FCPX SCROLLING TIMELINE WATCHER:
+-- SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
 function scrollingTimelineWatcher()
-	
+
 	local timeline = fcp.app():timeline()
 
 	--------------------------------------------------------------------------------
 	-- Key Press Down Watcher:
 	--------------------------------------------------------------------------------
 	mod.scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-		
+
 		--------------------------------------------------------------------------------
 		-- Don't do anything if we're already locked.
 		--------------------------------------------------------------------------------
@@ -7815,6 +7813,54 @@ function scrollingTimelineWatcher()
 		end
 	end)
 end
+
+	--------------------------------------------------------------------------------
+	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
+	--------------------------------------------------------------------------------
+	function checkScrollingTimeline()
+
+		--------------------------------------------------------------------------------
+		-- Make sure the Command Editor and hacks console are closed:
+		--------------------------------------------------------------------------------
+		if fcp.app():commandEditor():isShowing() or hacksconsole.active then
+			debugMessage("Spacebar pressed while other windows are visible.")
+			return "Stop"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Don't activate scrollbar in fullscreen mode:
+		--------------------------------------------------------------------------------
+		if fcp.app():fullScreenWindow():isShowing() then
+			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
+			return "Stop"
+		end
+
+		local timeline = fcp.app():timeline()
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Scroll Area:
+		--------------------------------------------------------------------------------
+		if not timeline:isShowing() then
+			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
+			return "Stop"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Check mouse is in timeline area:
+		--------------------------------------------------------------------------------
+		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+		local viewFrame = geometry.rect(timeline:content():viewFrame())
+		if mouseLocation:inside(viewFrame) then
+
+			--------------------------------------------------------------------------------
+			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			--------------------------------------------------------------------------------
+			debugMessage("Mouse inside Timeline Area.")
+			timeline:lockPlayhead(true)
+		else
+			debugMessage("Mouse outside of Timeline Area.")
+		end
+	end
 
 --------------------------------------------------------------------------------
 -- NOTIFICATION WATCHER:
