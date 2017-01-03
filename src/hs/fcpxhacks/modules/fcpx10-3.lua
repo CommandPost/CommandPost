@@ -2042,7 +2042,7 @@ end
 			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Click 'All Video':
 		--------------------------------------------------------------------------------
@@ -4892,13 +4892,13 @@ end
 			dialog.displayMessage(i18n("noTransitionShortcut"))
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Save the Effects Browser layout:
 		--------------------------------------------------------------------------------
 		local effects = fcp.app():effects()
 		local effectsLayout = effects:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Get Transitions Browser:
 		--------------------------------------------------------------------------------
@@ -4930,7 +4930,7 @@ end
 		-- Perform Search:
 		--------------------------------------------------------------------------------
 		transitions:search():setValue(currentShortcut)
-		
+
 		--------------------------------------------------------------------------------
 		-- Get the list of matching transitions
 		--------------------------------------------------------------------------------
@@ -4943,7 +4943,7 @@ end
 			if index ~= nil then
 				local trimmedShortcut = string.sub(currentShortcut, index + 2)
 				transitions:search():setValue(trimmedShortcut)
-			
+
 				matches = transitions:currentItemsUI()
 				if not matches or #matches == 0 then
 					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in transitionsShortcut().")
@@ -4953,16 +4953,16 @@ end
 		end
 
 		local transition = matches[1]
-		
+
 		--------------------------------------------------------------------------------
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-		
+
 		transitions:applyItem(transition)
-		
+
 		showTouchbar()
-	
+
 		transitions:loadLayout(transitionsLayout)
 		if effectsLayout then effects:loadLayout(effectsLayout) end
 		if not transitionsShowing then transitions:hide() end
@@ -5005,7 +5005,7 @@ end
 		--------------------------------------------------------------------------------
 		local transitions = fcp.app():transitions()
 		local transitionsLayout = transitions:saveLayout()
-		
+
 		--------------------------------------------------------------------------------
 		-- Get Effects Browser:
 		--------------------------------------------------------------------------------
@@ -5037,7 +5037,7 @@ end
 		-- Perform Search:
 		--------------------------------------------------------------------------------
 		effects:search():setValue(currentShortcut)
-		
+
 		--------------------------------------------------------------------------------
 		-- Get the list of matching effects
 		--------------------------------------------------------------------------------
@@ -5050,7 +5050,7 @@ end
 			if index ~= nil then
 				local trimmedShortcut = string.sub(currentShortcut, index + 2)
 				effects:search():setValue(trimmedShortcut)
-			
+
 				matches = effects:currentItemsUI()
 				if not matches or #matches == 0 then
 					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
@@ -5060,19 +5060,21 @@ end
 		end
 
 		local effect = matches[1]
-		
+
 		--------------------------------------------------------------------------------
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-		
+
 		effects:applyItem(effect)
-		
-		showTouchbar()
-	
-		effects:loadLayout(effectsLayout)
-		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-		if not effectsShowing then effects:hide() end
+
+		timer.doAfter(0.1, function()
+			showTouchbar()
+
+			effects:loadLayout(effectsLayout)
+			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+			if not effectsShowing then effects:hide() end
+		end)
 
 	end
 
@@ -5908,7 +5910,7 @@ end
 			shiftClipHeight(direction)
 		end, eventtap.keyRepeatInterval())
 	end
-	
+
 	function shiftClipHeight(direction)
 		--------------------------------------------------------------------------------
 		-- Find the Timeline Appearance Button:
@@ -6560,7 +6562,7 @@ end
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
 			local viewFrame = timeline:content():viewFrame()
-			
+
 			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
 			mod.touchBarWindow:topLeft(topLeft)
 		else

@@ -203,7 +203,6 @@ function Browser:applyItem(itemUI)
 		self:contents():showChild(itemUI)
 		local targetPoint = geometry.rect(itemUI:frame()).center
 		tools.ninjaDoubleClick(targetPoint)
-		just.doUntil(function() return self:itemIsSelected(itemUI) end)
 	end
 	return self
 end
@@ -287,7 +286,7 @@ function Browser:saveLayout()
 		self:showSidebar()
 		layout.sidebar = self:sidebar():saveLayout()
 		self:sidebarToggle():loadLayout(layout.sidebarToggle)
-		
+
 		layout.contents = self:contents():saveLayout()
 		layout.group = self:group():saveLayout()
 		layout.search = self:search():saveLayout()
@@ -298,13 +297,13 @@ end
 function Browser:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()
-		
+
 		self:showSidebar()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:sidebarToggle():loadLayout(layout.sidebarToggle)
 
 		self:group():loadLayout(layout.group)
-		
+
 		self:search():loadLayout(layout.search)
 		self:contents():loadLayout(layout.contents)
 	else
