@@ -5897,21 +5897,23 @@ end
 		deleteAllHighlights()
 
 		--------------------------------------------------------------------------------
-		-- Find the Timeline Appearance Button:
-		--------------------------------------------------------------------------------
-		local appearance = fcp.app():timeline():toolbar():appearance()
-
-		--------------------------------------------------------------------------------
 		-- Change Value of Zoom Slider:
 		--------------------------------------------------------------------------------
-		shiftClipHeight(appearance, direction)
+		shiftClipHeight(direction)
 
+		--------------------------------------------------------------------------------
+		-- Keep looping it until the key is released.
+		--------------------------------------------------------------------------------
 		timer.doUntil(function() return not mod.changeTimelineClipHeightAlreadyInProgress end, function()
-			shiftClipHeight(appearance, direction)
+			shiftClipHeight(direction)
 		end, eventtap.keyRepeatInterval())
 	end
 	
-	function shiftClipHeight(appearance, direction)
+	function shiftClipHeight(direction)
+		--------------------------------------------------------------------------------
+		-- Find the Timeline Appearance Button:
+		--------------------------------------------------------------------------------
+		local appearance = fcp.app():timeline():toolbar():appearance()
 		appearance:show()
 		if direction == "up" then
 			appearance:clipHeight():increment()
