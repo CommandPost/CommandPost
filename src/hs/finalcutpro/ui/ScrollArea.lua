@@ -110,7 +110,7 @@ end
 
 function ScrollArea:showChild(childUI)
 	local ui = self:UI()
-	if ui then
+	if ui and childUI then
 		local vFrame = self:viewFrame()
 		local childFrame = childUI:frame()
 

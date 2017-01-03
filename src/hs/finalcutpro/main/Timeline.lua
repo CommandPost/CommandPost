@@ -6,6 +6,7 @@ local axutils							= require("hs.finalcutpro.axutils")
 local timer								= require("hs.timer")
 
 local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+local TimelineToolbar					= require("hs.finalcutpro.main.TimelineToolbar")
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
 local EffectsBrowser					= require("hs.finalcutpro.main.EffectsBrowser")
@@ -68,6 +69,12 @@ end
 function Timeline:isShowing()
 	local ui = self:UI()
 	return ui ~= nil and #ui > 0
+end
+
+function Timeline:show()
+	if not self:isShowing() then
+		self:showOnPrimary()
+	end
 end
 
 function Timeline:showOnPrimary()
@@ -159,7 +166,6 @@ function Timeline:transitions()
 	return self._transitions
 end
 
-
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- PLAYHEAD
@@ -172,21 +178,15 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- MAIN UI
---- The Canvas is the main body of the timeline, containing the
---- Timeline Index, the canvas, and the Effects/Transitions panels.
+--- TOOLBAR
+--- The bar at the top of the timeline.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:toolbarUI()
-	return axutils.cache(self, "_toolbar", function()
-		local ui = self:UI()
-		return ui and axutils.childMatching(ui, Timeline.matchesToolbar)
-	end,
-	Timeline.matchesToolbar)
-end
-
-function Timeline.matchesToolbar(element)
-	return not Timeline.matchesMain(element)
+function Timeline:toolbar()
+	if not self._toolbar then
+		self._toolbar = TimelineToolbar:new(self)
+	end
+	return self._toolbar
 end
 
 -----------------------------------------------------------------------

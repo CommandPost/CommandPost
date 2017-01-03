@@ -4951,13 +4951,16 @@ end
 			--------------------------------------------------------------------------------
 			-- If Needed, Search Again Without Text Before First Dash:
 			--------------------------------------------------------------------------------
-			local trimmedShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
-			transitions:search():setValue(trimmedShortcut)
+			local index = string.find(currentShortcut, "-")
+			if index ~= nil then
+				local trimmedShortcut = string.sub(currentShortcut, index + 2)
+				transitions:search():setValue(trimmedShortcut)
 			
-			matches = transitions:getCurrentTransitions()
-			if not matches or #matches == 0 then
-				dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in transitionsShortcut().")
-				return "Fail"
+				matches = transitions:getCurrentTransitions()
+				if not matches or #matches == 0 then
+					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in transitionsShortcut().")
+					return "Fail"
+				end
 			end
 		end
 

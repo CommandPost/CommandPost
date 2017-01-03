@@ -57,21 +57,35 @@ function Browser:UI()
 	end
 end
 
+function Browser:toggleButton()
+	if not self._toggleButton then
+		local toolbar = self:app():timeline():toolbar()
+		local button = nil
+		local type = self:type()
+		if type == Browser.EFFECTS then
+			button = toolbar:effectsToggle()
+		elseif type == Browser.TRANSITIONS then
+			button = toolbar:transitionsToggle()
+		end
+		self._toggleButton = button
+	end
+	return self._toggleButton
+end
+
 function Browser:isShowing()
-	return self:app():menuBar():isChecked("Window", "Show in Workspace", self:type())
+	return self:toggleButton():isChecked()
 end
 
 function Browser:show()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the workspace
-	menuBar:checkMenu("Window", "Show in Workspace", self:type())
+	self:app():timeline():show()
+	self:toggleButton():check()
 	return self
 end
 
 function Browser:hide()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the workspace
-	menuBar:uncheckMenu("Window", "Show in Workspace", self:type())
+	if self:app():timeline():isShowing() then
+		self:toggleButton():uncheck()
+	end
 	return self
 end
 
