@@ -92,7 +92,7 @@ function Browser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
 			return axutils.childWithID(self:mainGroupUI(), "_NS:66")
-		end)
+		end):uncached()
 	end
 	return self._sidebar
 end
@@ -106,13 +106,13 @@ function Browser:contents()
 	return self._contents
 end
 
-function Browser:sidebarHidden()
-	if not self._sidebarHidden then
-		self._sidebarHidden = CheckBox:new(self, function()
+function Browser:sidebarToggle()
+	if not self._sidebarToggle then
+		self._sidebarToggle = CheckBox:new(self, function()
 			return axutils.childWithRole(self:UI(), "AXCheckBox")
 		end)
 	end
-	return self._sidebarHidden
+	return self._sidebarToggle
 end
 
 function Browser:group()
@@ -133,15 +133,35 @@ function Browser:search()
 	return self._search
 end
 
+function Browser:showSidebar()
+	if not self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+		just.doUntil(function() return self:sidebar():isShowing() end)
+	end
+end
+
+function Browser:hideSidebar()
+	if self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+		just.doWhile(function() return self:sidebar():isShowing() end)
+	end
+end
+
+function Browser:toggleSidebar()
+	local isShowing = self:sidebar():isShowing()
+	self:sidebarToggle():toggle()
+	just.doUntil(function() return self:sidebar():isShowing() ~= isShowing end)
+end
+
 function Browser:saveLayout()
 	local layout = {}
 	if self:isShowing() then
 		layout.showing = true
-		layout.sidebarHidden = self:sidebarHidden():saveLayout()
+		layout.sidebarToggle = self:sidebarToggle():saveLayout()
 		-- reveal the sidebar temporarily so we can save it
-		self:sidebarHidden():uncheck()
+		self:showSidebar()
 		layout.sidebar = self:sidebar():saveLayout()
-		self:sidebarHidden():loadLayout(layout.sidebarHidden)
+		self:sidebarToggle():loadLayout(layout.sidebarToggle)
 		
 		layout.contents = self:contents():saveLayout()
 		layout.group = self:group():saveLayout()
@@ -154,9 +174,9 @@ function Browser:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()
 		
-		self:sidebarHidden():uncheck()
+		self:showSidebar()
 		self:sidebar():loadLayout(layout.sidebar)
-		self:sidebarHidden():loadLayout(layout.sidebarHidden)
+		self:sidebarToggle():loadLayout(layout.sidebarToggle)
 
 		self:group():loadLayout(layout.group)
 		

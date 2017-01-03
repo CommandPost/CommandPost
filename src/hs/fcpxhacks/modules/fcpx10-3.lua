@@ -2032,15 +2032,17 @@ end
 		--------------------------------------------------------------------------------
 		effects:search():clear()
 
-		--------------------------------------------------------------------------------
-		-- Click 'All Video':
-		--------------------------------------------------------------------------------
 		local sidebar = effects:sidebar()
 
 		--------------------------------------------------------------------------------
-		-- Make sure the sidebar is visible:
+		-- Ensure the sidebar is visible
 		--------------------------------------------------------------------------------
-		if effects:sidebarHidden():uncheck():isChecked() then
+		effects:showSidebar()
+		
+		--------------------------------------------------------------------------------
+		-- If it's still invisible, we have a problem.
+		--------------------------------------------------------------------------------
+		if not sidebar:isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
 			showTouchbar()
 			return "Fail"
@@ -2070,10 +2072,13 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get list of All Video Effects:
+		-- Click 'All Video':
 		--------------------------------------------------------------------------------
 		sidebar:selectRow(allRows[1])
 
+		--------------------------------------------------------------------------------
+		-- Get list of All Video Effects:
+		--------------------------------------------------------------------------------
 		local effectsList = effects:contents():childrenUI()
 		local allVideoEffects = {}
 		if effectsList ~= nil then
@@ -2192,18 +2197,22 @@ end
 		transitions:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		--------------------------------------------------------------------------------
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
-		if transitions:sidebarHidden():uncheck():isChecked() then
-			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateEffectsList().")
+		local sidebar = transitions:sidebar()
+		
+		transitions:showSidebar()
+		
+		if not sidebar:isShowing() then
+			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
 			showTouchbar()
 			return "Fail"
 		end
 
-		transitions:sidebar():selectRowAt(1)
+		--------------------------------------------------------------------------------
+		-- Click 'All':
+		--------------------------------------------------------------------------------
+		sidebar:selectRowAt(1)
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
@@ -2215,7 +2224,7 @@ end
 				allTransitions[i] = effectsList[i]:attributeValue("AXTitle")
 			end
 		else
-			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
 			return "Fail"
 		end
 
