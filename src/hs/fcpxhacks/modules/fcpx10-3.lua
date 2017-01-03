@@ -5888,8 +5888,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Prevent multiple keypresses:
 		--------------------------------------------------------------------------------
-		if changeTimelineClipHeightAlreadyInProgress then return end
-		changeTimelineClipHeightAlreadyInProgress = true
+		if mod.changeTimelineClipHeightAlreadyInProgress then return end
+		mod.changeTimelineClipHeightAlreadyInProgress = true
 
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
@@ -5897,83 +5897,36 @@ end
 		deleteAllHighlights()
 
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
-		--------------------------------------------------------------------------------
-		timelineButtonBar = fcp.getTimelineButtonBar()
-		if timelineButtonBar == nil then
-			displayErrorMessage("Unable to locate the Timeline Button Bar.\n\nError Occurred in changeTimelineClipHeight().")
-			return
-		end
-
-		--------------------------------------------------------------------------------
 		-- Find the Timeline Appearance Button:
 		--------------------------------------------------------------------------------
-		timelineApperanceButtonID = nil
-		for i=1, timelineButtonBar:attributeValueCount("AXChildren") do
-			if timelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:154" then
-				timelineApperanceButtonID = i
-			end
-		end
-		if timelineApperanceButtonID == nil then
-			displayErrorMessage("Unable to locate the Timeline Apperance Button.\n\nError Occurred in changeTimelineClipHeight().")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Open Appearance Popup if not already open:
-		--------------------------------------------------------------------------------
-		if timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXValue") == 0 then
-			-- Appearance Popup Closed:
-			local result = timelineButtonBar[timelineApperanceButtonID]:performAction("AXPress")
-			if result == nil then
-				displayErrorMessage("Unable to open the Timeline Apperance Popup.\n\nError Occurred in changeTimelineClipHeight().")
-				return
-			end
-		end
+		local appearance = fcp.app():timeline():toolbar():appearance()
 
 		--------------------------------------------------------------------------------
 		-- Change Value of Zoom Slider:
 		--------------------------------------------------------------------------------
-		local AXPopoverID = 1
-		local AXSliderID = 8
-		local AXValueIndicator = 1
-		local value = 0
+		shiftClipHeight(appearance, direction)
 
-		if direction == "up" then value = 0.2 else value = -0.2 end
-
-		if timelineButtonBar[timelineApperanceButtonID][AXPopoverID] ~= nil then
-			local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
-			timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
-
-			if changeTimelineClipHeightAlreadyInProgress then
-				timer.doUntil(function() return not changeTimelineClipHeightAlreadyInProgress end, function()
-					local currentZoomValue = timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:attributeValue("AXValue")
-					timelineButtonBar[timelineApperanceButtonID][AXPopoverID][AXSliderID][AXValueIndicator]:setAttributeValue("AXValue", currentZoomValue + value)
-				end, eventtap.keyRepeatInterval())
-			end
+		timer.doUntil(function() return not mod.changeTimelineClipHeightAlreadyInProgress end, function()
+			shiftClipHeight(appearance, direction)
+		end, eventtap.keyRepeatInterval())
+	end
+	
+	function shiftClipHeight(appearance, direction)
+		appearance:show()
+		if direction == "up" then
+			appearance:clipHeight():increment()
+		else
+			appearance:clipHeight():decrement()
 		end
-
 	end
 
-		--------------------------------------------------------------------------------
-		-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
-		--------------------------------------------------------------------------------
-		function changeTimelineClipHeightRelease()
-
-			changeTimelineClipHeightAlreadyInProgress = false
-
-			--------------------------------------------------------------------------------
-			-- Close the popup via mouse (as GUI Scripting fails):
-			--------------------------------------------------------------------------------
-			local changeAppearanceButtonSize 			= timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXSize")
-			local changeAppearanceButtonPosition 		= timelineButtonBar[timelineApperanceButtonID]:attributeValue("AXPosition")
-			local changeAppearanceButtonLocation 		= {}
-			changeAppearanceButtonLocation['x'] 	= changeAppearanceButtonPosition['x'] + (changeAppearanceButtonSize['w'] / 2 )
-			changeAppearanceButtonLocation['y'] 	= changeAppearanceButtonPosition['y'] + (changeAppearanceButtonSize['h'] / 2 )
-
-			tools.ninjaMouseClick(changeAppearanceButtonLocation)
-
-		end
+	--------------------------------------------------------------------------------
+	-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
+	--------------------------------------------------------------------------------
+	function changeTimelineClipHeightRelease()
+		mod.changeTimelineClipHeightAlreadyInProgress = false
+		fcp.app():timeline():toolbar():appearance():hide()
+	end
 
 	--------------------------------------------------------------------------------
 	-- SELECT CLIP AT LANE:

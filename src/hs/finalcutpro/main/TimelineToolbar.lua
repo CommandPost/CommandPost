@@ -1,6 +1,9 @@
 local axutils							= require("hs.finalcutpro.axutils")
 
+local CheckBox							= require("hs.finalcutpro.ui.CheckBox")
 local RadioButton						= require("hs.finalcutpro.ui.RadioButton")
+
+local TimelineAppearance				= require("hs.finalcutpro.main.TimelineAppearance")
 
 local TimelineToolbar = {}
 
@@ -57,6 +60,13 @@ end
 --- THE BUTTONS
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
+
+function TimelineToolbar:appearance()
+	if not self._appearance then
+		self._appearance = TimelineAppearance:new(self)
+	end
+	return self._appearance
+end
 
 function TimelineToolbar:effectsToggle()
 	if not self._effectsToggle then
