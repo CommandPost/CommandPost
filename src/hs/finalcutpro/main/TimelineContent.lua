@@ -103,20 +103,20 @@ function TimelineContent:viewWidth()
 end
 
 function TimelineContent:viewFrame()
+	local ui = self:scrollAreaUI()
 	local hScroll = self:horizontalScrollBarUI()
+	local vScroll = self:verticalScrollBarUI()
+	
+	local frame = ui:frame()
+	
 	if hScroll then
-		local scrollArea = hScroll:parent()
-		local sap = scrollArea:position()
-		local hsFrame = hScroll:frame()
-		if sap and hsFrame then
-			return {x = sap.x, y = sap.y, w = hsFrame.w, h = hsFrame.y-sap.y}
-		end
+		frame.h = frame.h - hScroll:frame().h
 	end
-	local scrollArea = self:scrollAreaUI()
-	if scrollArea then
-		return scrollArea:frame()
+	
+	if vScroll then
+		frame.w = frame.w - vScroll:frame().w
 	end
-	return nil
+	return frame
 end
 
 function TimelineContent:timelineFrame()

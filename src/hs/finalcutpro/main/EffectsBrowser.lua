@@ -112,6 +112,7 @@ function Browser:showInstalledTransitions()
 end
 
 function Browser:showAllEffects()
+	self:showSidebar()
 	self:sidebar():selectRowAt(1)
 	return self
 end
@@ -162,6 +163,14 @@ function Browser:showAllAudioEffects()
 		return true
 	end
 	return false
+end
+
+function Browser:getCurrentEffects()
+	return self:contents():childrenUI()
+end
+
+function Browser:getCurrentTransitions()
+	return self:contents():childrenUI()
 end
 
 --- Returns the list of titles for all effects/transitions currently visible
