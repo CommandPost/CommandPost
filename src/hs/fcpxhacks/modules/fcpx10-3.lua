@@ -1994,11 +1994,6 @@ end
 		fcp.launch()
 
 		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateEffectsListWarning"))
@@ -2025,7 +2020,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
 		--------------------------------------------------------------------------------
-		effects:group():selectItem(1)
+		effects:showInstalledEffects()
 
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
@@ -2044,64 +2039,39 @@ end
 		--------------------------------------------------------------------------------
 		if not sidebar:isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
-			showTouchbar()
 			return "Fail"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Find the two 'All' rows (Video/Audio)
-		--------------------------------------------------------------------------------
-		local allRows = sidebar:rowsUI(function(row)
-			local label = row[1][1]
-			local value = label and label:attributeValue("AXValue")
-			--------------------------------------------------------------------------------
-			-- ENGLISH:		All
-			-- GERMAN: 		Alle
-			-- SPANISH: 	Todo
-			-- FRENCH: 		Tous
-			-- JAPANESE:	すべて
-			-- CHINESE:		全部
-			--------------------------------------------------------------------------------
-			-- TODO: Use i18n to get the appropriate value for the current language
-			return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
-		end)
-
-		if not allRows or #allRows ~= 2 then
-			dialog.displayErrorMessage("Was expecting two 'All' categories.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
+		
 		--------------------------------------------------------------------------------
 		-- Click 'All Video':
 		--------------------------------------------------------------------------------
-		sidebar:selectRow(allRows[1])
+		if not effects:showAllVideoEffects() then
+			dialog.displayErrorMessage("Unable to select all video effects.\n\nError occurred in updateEffectsList().")
+			return "Fail"
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Video Effects:
 		--------------------------------------------------------------------------------
-		local effectsList = effects:contents():childrenUI()
-		local allVideoEffects = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allVideoEffects[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
+		local allVideoEffects = effects:getCurrentTitles()
+		if not allVideoEffects then
 			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Click 'All Audio':
+		--------------------------------------------------------------------------------
+		if not effects:showAllAudioEffects() then
+			dialog.displayErrorMessage("Unable to select all audio effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Audio Effects:
 		--------------------------------------------------------------------------------
-		sidebar:selectRow(allRows[2])
-
-		effectsList = effects:contents():childrenUI()
-		local allAudioEffects = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allAudioEffects[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
+		local allAudioEffects = effects:getCurrentTitles()
+		if not allAudioEffects then
 			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
 			return "Fail"
 		end
@@ -2112,8 +2082,6 @@ end
 		effects:loadLayout(effectsLayout)
 		transitions:loadLayout(transitionsLayout)
 		if not effectsShowing then effects:hide() end
-
-		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- All done!
@@ -2158,11 +2126,6 @@ end
 		fcp.launch()
 
 		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
 		-- Warning message:
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTransitionsListWarning"))
@@ -2171,7 +2134,10 @@ end
 		-- Save the layout of the Effects panel, in case we switch away...
 		--------------------------------------------------------------------------------
 		local effects = fcp.app():effects()
-		local effectsLayout = effects:saveLayout()
+		local effectsLayout = nil
+		if effects:isShowing() then
+			effectsLayout = effects:saveLayout()
+		end
 
 		--------------------------------------------------------------------------------
 		-- Make sure Transitions panel is open:
@@ -2180,7 +2146,6 @@ end
 		local transitionsShowing = transitions:isShowing()
 		if not transitions:show():isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
-			showTouchbar()
 			return "Fail"
 		end
 
@@ -2189,7 +2154,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Transitions" is selected:
 		--------------------------------------------------------------------------------
-		transitions:group():selectItem(1)
+		transitions:showInstalledTransitions()
 
 		--------------------------------------------------------------------------------
 		-- Make sure there's nothing in the search box:
@@ -2205,25 +2170,19 @@ end
 		
 		if not sidebar:isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-			showTouchbar()
 			return "Fail"
 		end
 
 		--------------------------------------------------------------------------------
-		-- Click 'All':
+		-- Click 'All' in the sidebar:
 		--------------------------------------------------------------------------------
-		sidebar:selectRowAt(1)
+		transitions:showAllTransitions()
 
 		--------------------------------------------------------------------------------
 		-- Get list of All Transitions:
 		--------------------------------------------------------------------------------
-		local effectsList = transitions:contents():childrenUI()
-		local allTransitions = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allTransitions[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
+		local allTransitions = transitions:getCurrentTitles()
+		if allTransitions == nil then
 			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
 			return "Fail"
 		end
@@ -2232,10 +2191,8 @@ end
 		-- Restore Effects and Transitions Panels:
 		--------------------------------------------------------------------------------
 		transitions:loadLayout(transitionsLayout)
-		effects:loadLayout(effectsLayout)
+		if effectsLayout then effects:loadLayout(effectsLayout) end
 		if not transitionsShowing then transitions:hide() end
-
-		showTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -2257,11 +2214,6 @@ end
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateTransitionsListDone"))
-
-		--------------------------------------------------------------------------------
-		-- Show the Touch Bar:
-		--------------------------------------------------------------------------------
-		showTouchbar()
 
 	end
 
@@ -4959,60 +4911,16 @@ end
 			dialog.displayMessage(i18n("noTransitionShortcut"))
 			return "Fail"
 		end
-
+		
 		--------------------------------------------------------------------------------
-		-- Get Timeline Button Bar:
+		-- Get Transitions Browser:
 		--------------------------------------------------------------------------------
-		local finalCutProTimelineButtonBar = fcp.getTimelineButtonBar()
-		if finalCutProTimelineButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar.\n\nError occured in transitionsShortcut() whilst using fcp.getTimelineButtonBar().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Find Transitions Browser Button:
-		--------------------------------------------------------------------------------
-		local whichRadioGroup = nil
-		for i=1, finalCutProTimelineButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProTimelineButtonBar[i]:attributeValue("AXRole") == "AXRadioGroup" then
-				if finalCutProTimelineButtonBar[i]:attributeValue("AXIdentifier") == "_NS:165" then
-					whichRadioGroup = i
-				end
-			end
-		end
-		if whichRadioGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Timeline Button Bar Radio Group.\n\nError occured in transitionsShortcut().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Effects or Transitions Panel Open?
-		--------------------------------------------------------------------------------
-		local whichPanelActivated = "None"
-		if finalCutProTimelineButtonBar[whichRadioGroup][1] ~= nil then
-			if finalCutProTimelineButtonBar[whichRadioGroup][1]:attributeValue("AXValue") == 1 then whichPanelActivated = "Effects" end
-			if finalCutProTimelineButtonBar[whichRadioGroup][2]:attributeValue("AXValue") == 1 then whichPanelActivated = "Transitions" end
-		end
+		local transitions = fcp.app():transitions()
 
 		--------------------------------------------------------------------------------
 		-- Make sure Transitions panel is open:
 		--------------------------------------------------------------------------------
-		local effectsBrowserButton = finalCutProTimelineButtonBar[whichRadioGroup][2]
-		if effectsBrowserButton ~= nil then
-			if effectsBrowserButton:attributeValue("AXValue") == 0 then
-				local presseffectsBrowserButtonResult = effectsBrowserButton:performAction("AXPress")
-				if presseffectsBrowserButtonResult == nil then
-					dialog.displayErrorMessage("Unable to press Effects Browser Button icon.\n\nError occured in transitionsShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-		else
-			dialog.displayErrorMessage("Unable to activate Video Effects Panel\n\nError occured in transitionsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		transitions:show()
 
 		--------------------------------------------------------------------------------
 		-- Make sure "Installed Effects" is selected:
@@ -7229,28 +7137,16 @@ end
 		--------------------------------------------------------------------------------
 		-- Show Touch Bar at Top Centre of Timeline:
 		--------------------------------------------------------------------------------
-		if displayTouchBarLocation == "TimelineTopCentre" then
-
+		local timeline = fcp.app():timeline()
+		if displayTouchBarLocation == "TimelineTopCentre" and timeline:isShowing() then
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
-			local timelineScrollArea = fcp.getTimelineScrollArea()
-			if timelineScrollArea == nil then
-				displayTouchBarLocation = "Mouse"
-			else
-				local timelineScrollAreaPosition = {}
-				timelineScrollAreaPosition['x'] = timelineScrollArea:attributeValue("AXPosition")['x'] + (timelineScrollArea:attributeValue("AXSize")['w'] / 2) - (mod.touchBarWindow:getFrame()['w'] / 2)
-				timelineScrollAreaPosition['y'] = timelineScrollArea:attributeValue("AXPosition")['y'] + 20
-				mod.touchBarWindow:topLeft(timelineScrollAreaPosition)
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Touch Bar at Mouse Pointer Position:
-		--------------------------------------------------------------------------------
-		if displayTouchBarLocation == "Mouse" then
-
+			local viewFrame = timeline:content():viewFrame()
+			
+			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
+			mod.touchBarWindow:topLeft(topLeft)
+		else
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Mouse Pointer Location:
 			--------------------------------------------------------------------------------

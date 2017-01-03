@@ -3,6 +3,7 @@ local inspect							= require("hs.inspect")
 
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
+local fnutils							= require("hs.fnutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
@@ -76,6 +77,106 @@ end
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
+-- Actions
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+function Browser:showSidebar()
+	if not self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+	end
+	return self
+end
+
+function Browser:hideSidebar()
+	if self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+	end
+	return self
+end
+
+function Browser:toggleSidebar()
+	local isShowing = self:sidebar():isShowing()
+	self:sidebarToggle():toggle()
+	return self
+end
+
+function Browser:showInstalledEffects()
+	self:group():selectItem(1)
+	return self
+end
+
+function Browser:showInstalledTransitions()
+	self:showInstalledEffects()
+	return self
+end
+
+function Browser:showAllEffects()
+	self:sidebar():selectRowAt(1)
+	return self
+end
+
+function Browser:showAllTransitions()
+	return self:showAllEffects()
+end
+
+function Browser:_allRowsUI()
+	--------------------------------------------------------------------------------
+	-- Find the two 'All' rows (Video/Audio)
+	--------------------------------------------------------------------------------
+	return self:sidebar():rowsUI(function(row)
+		local label = row[1][1]
+		local value = label and label:attributeValue("AXValue")
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		All
+		-- GERMAN: 		Alle
+		-- SPANISH: 	Todo
+		-- FRENCH: 		Tous
+		-- JAPANESE:	すべて
+		-- CHINESE:		全部
+		--------------------------------------------------------------------------------
+		-- TODO: Use i18n to get the appropriate value for the current language
+		return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
+	end)
+end
+
+function Browser:showAllVideoEffects()
+	local allRows = self:_allRowsUI()
+	if allRows and #allRows == 2 then
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		self:sidebar():selectRow(allRows[1])
+		return true
+	end
+	return false
+end
+
+function Browser:showAllAudioEffects()
+	local allRows = self:_allRowsUI()
+	if allRows and #allRows == 2 then
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		self:sidebar():selectRow(allRows[2])
+		return true
+	end
+	return false
+end
+
+--- Returns the list of titles for all effects/transitions currently visible
+function Browser:getCurrentTitles()
+	local contents = self:contents():childrenUI()
+	if contents ~= nil then
+		return fnutils.map(contents, function(child)
+			return child:attributeValue("AXTitle")
+		end)
+	end
+	return nil
+end
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 -- UI Sections
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
@@ -131,26 +232,6 @@ function Browser:search()
 		end)
 	end
 	return self._search
-end
-
-function Browser:showSidebar()
-	if not self:sidebar():isShowing() then
-		self:sidebarToggle():toggle()
-		just.doUntil(function() return self:sidebar():isShowing() end)
-	end
-end
-
-function Browser:hideSidebar()
-	if self:sidebar():isShowing() then
-		self:sidebarToggle():toggle()
-		just.doWhile(function() return self:sidebar():isShowing() end)
-	end
-end
-
-function Browser:toggleSidebar()
-	local isShowing = self:sidebar():isShowing()
-	self:sidebarToggle():toggle()
-	just.doUntil(function() return self:sidebar():isShowing() ~= isShowing end)
 end
 
 function Browser:saveLayout()
