@@ -4934,7 +4934,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get the list of matching transitions
 		--------------------------------------------------------------------------------
-		local matches = transitions:getCurrentTransitions()
+		local matches = transitions:currentItemsUI()
 		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
 			-- If Needed, Search Again Without Text Before First Dash:
@@ -4944,7 +4944,7 @@ end
 				local trimmedShortcut = string.sub(currentShortcut, index + 2)
 				transitions:search():setValue(trimmedShortcut)
 			
-				matches = transitions:getCurrentTransitions()
+				matches = transitions:currentItemsUI()
 				if not matches or #matches == 0 then
 					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in transitionsShortcut().")
 					return "Fail"
@@ -4955,17 +4955,11 @@ end
 		local transition = matches[1]
 		
 		--------------------------------------------------------------------------------
-		-- Make sure the transition is visible
-		--------------------------------------------------------------------------------
-		transitions:contents():showChild(transition)
-
-		--------------------------------------------------------------------------------
-		-- Double Click on the selected Transition:
+		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
 		
-		local targetPoint = geometry.rect(transition:frame()).center
-		tools.ninjaDoubleClick(targetPoint)
+		transitions:applyItem(transition)
 		
 		showTouchbar()
 	
@@ -5047,7 +5041,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get the list of matching effects
 		--------------------------------------------------------------------------------
-		local matches = effects:getCurrentTransitions()
+		local matches = effects:currentItemsUI()
 		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
 			-- If Needed, Search Again Without Text Before First Dash:
@@ -5057,7 +5051,7 @@ end
 				local trimmedShortcut = string.sub(currentShortcut, index + 2)
 				effects:search():setValue(trimmedShortcut)
 			
-				matches = effects:getCurrentTransitions()
+				matches = effects:currentItemsUI()
 				if not matches or #matches == 0 then
 					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
 					return "Fail"
@@ -5068,17 +5062,11 @@ end
 		local effect = matches[1]
 		
 		--------------------------------------------------------------------------------
-		-- Make sure the transition is visible
-		--------------------------------------------------------------------------------
-		effects:contents():showChild(effect)
-
-		--------------------------------------------------------------------------------
-		-- Double Click on the selected Transition:
+		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
 		
-		local targetPoint = geometry.rect(effect:frame()).center
-		tools.ninjaDoubleClick(targetPoint)
+		effects:applyItem(effect)
 		
 		showTouchbar()
 	

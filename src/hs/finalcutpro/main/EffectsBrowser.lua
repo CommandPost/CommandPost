@@ -1,8 +1,7 @@
-local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
-
 local just								= require("hs.just")
+local geometry							= require("hs.geometry")
 local axutils							= require("hs.finalcutpro.axutils")
+local tools								= require("hs.fcpxhacks.modules.tools")
 local fnutils							= require("hs.fnutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
@@ -179,12 +178,34 @@ function Browser:showAllAudioEffects()
 	return false
 end
 
-function Browser:getCurrentEffects()
+function Browser:currentItemsUI()
 	return self:contents():childrenUI()
 end
 
-function Browser:getCurrentTransitions()
-	return self:contents():childrenUI()
+function Browser:selectedItemsUI()
+	return self:contents():selectedChildrenUI()
+end
+
+function Browser:itemIsSelected(itemUI)
+	local selectedItems = self:selectedItemsUI()
+	if selectedItems and #selectedItems > 0 then
+		for _,selected in ipairs(selectedItems) do
+			if selected == itemUI then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function Browser:applyItem(itemUI)
+	if itemUI then
+		self:contents():showChild(itemUI)
+		local targetPoint = geometry.rect(itemUI:frame()).center
+		tools.ninjaDoubleClick(targetPoint)
+		just.doUntil(function() return self:itemIsSelected(itemUI) end)
+	end
+	return self
 end
 
 --- Returns the list of titles for all effects/transitions currently visible
