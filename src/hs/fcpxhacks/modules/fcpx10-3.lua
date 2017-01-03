@@ -192,6 +192,7 @@ mod.installedLanguages							= {}											-- Table of Installed Language Files
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 
 mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
+mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Effects/Titles/Generators Shortcut
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -2033,7 +2034,7 @@ end
 		-- Ensure the sidebar is visible
 		--------------------------------------------------------------------------------
 		effects:showSidebar()
-		
+
 		--------------------------------------------------------------------------------
 		-- If it's still invisible, we have a problem.
 		--------------------------------------------------------------------------------
@@ -2165,9 +2166,9 @@ end
 		-- Make sure the sidebar is visible:
 		--------------------------------------------------------------------------------
 		local sidebar = transitions:sidebar()
-		
+
 		transitions:showSidebar()
-		
+
 		if not sidebar:isShowing() then
 			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
 			return "Fail"
@@ -2413,7 +2414,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2452,7 +2453,6 @@ end
 					["function2"] = "",
 					["function3"] = "",
 					["whichShortcut"] = whichShortcut,
-					["wasFinalCutProOpen"] = wasFinalCutProOpen,
 				}
 				table.insert(effectChooserChoices, 1, individualEffect)
 			end
@@ -2471,7 +2471,6 @@ end
 					["function2"] = "",
 					["function3"] = "",
 					["whichShortcut"] = whichShortcut,
-					["wasFinalCutProOpen"] = wasFinalCutProOpen,
 				}
 				table.insert(effectChooserChoices, 1, individualEffect)
 			end
@@ -2529,14 +2528,12 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
-
-				--------------------------------------------------------------------------------
-				-- Put focus back in Final Cut Pro:
-				--------------------------------------------------------------------------------
-				if result["wasFinalCutProOpen"] then
-					fcp.launch()
-				end
 			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if mod.wasFinalCutProOpen then fcp.launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2553,7 +2550,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2591,7 +2588,6 @@ end
 					["function2"] = "",
 					["function3"] = "",
 					["whichShortcut"] = whichShortcut,
-					["wasFinalCutProOpen"] = wasFinalCutProOpen,
 				}
 				table.insert(transitionChooserChoices, 1, individualEffect)
 			end
@@ -2649,14 +2645,12 @@ end
 				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
 				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
 				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
-
-				--------------------------------------------------------------------------------
-				-- Put focus back in Final Cut Pro:
-				--------------------------------------------------------------------------------
-				if result["wasFinalCutProOpen"] then
-					fcp.launch()
-				end
 			end
+
+			--------------------------------------------------------------------------------
+			-- Put focus back in Final Cut Pro:
+			--------------------------------------------------------------------------------
+			if mod.wasFinalCutProOpen then fcp.launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2673,7 +2667,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2711,7 +2705,6 @@ end
 					["function2"] = "",
 					["function3"] = "",
 					["whichShortcut"] = whichShortcut,
-					["wasFinalCutProOpen"] = wasFinalCutProOpen,
 				}
 				table.insert(titlesChooserChoices, 1, individualEffect)
 			end
@@ -2774,9 +2767,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
-			end
+			if mod.wasFinalCutProOpen then fcp.launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2793,7 +2784,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		local wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.frontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2831,7 +2822,6 @@ end
 					["function2"] = "",
 					["function3"] = "",
 					["whichShortcut"] = whichShortcut,
-					["wasFinalCutProOpen"] = wasFinalCutProOpen,
 				}
 				table.insert(generatorsChooserChoices, 1, individualEffect)
 			end
@@ -2894,9 +2884,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if result["wasFinalCutProOpen"] then
-				fcp.launch()
-			end
+			if mod.wasFinalCutProOpen then fcp.launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
