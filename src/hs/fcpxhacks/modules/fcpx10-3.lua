@@ -5937,7 +5937,7 @@ end
 	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
 	function selectClipAtLane(whichLane)
-		local content = fcp:app():timeline():content()
+		local content = fcp:app():timeline():contents()
 		local playheadX = content:playhead():getPosition()
 
 		local clips = content:clipsUI(false, function(clip)
@@ -6191,7 +6191,7 @@ end
 	--------------------------------------------------------------------------------
 	function selectAllTimelineClips(forwards)
 
-		local content = fcp:app():timeline():content()
+		local content = fcp:app():timeline():contents()
 		local playheadX = content:playhead():getPosition()
 
 		local clips = content:clipsUI(false, function(clip)
@@ -6562,7 +6562,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 			--------------------------------------------------------------------------------
-			local viewFrame = timeline:content():viewFrame()
+			local viewFrame = timeline:contents():viewFrame()
 
 			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
 			mod.touchBarWindow:topLeft(topLeft)
@@ -7174,7 +7174,7 @@ end
 		-- Check mouse is in timeline area:
 		--------------------------------------------------------------------------------
 		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-		local viewFrame = geometry.rect(timeline:content():viewFrame())
+		local viewFrame = geometry.rect(timeline:contents():viewFrame())
 		if mouseLocation:inside(viewFrame) then
 
 			--------------------------------------------------------------------------------
