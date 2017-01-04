@@ -924,17 +924,17 @@ function bindKeyboardShortcuts()
 	-- Enable Hotkeys Loop:
 	--------------------------------------------------------------------------------
 	for k, v in pairs(mod.finalCutProShortcutKey) do
-		if mod.finalCutProShortcutKey[k]['characterString'] ~= "" and mod.finalCutProShortcutKey[k]['fn'] ~= nil then
-			if mod.finalCutProShortcutKey[k]['global'] == true then
+		if v['characterString'] ~= "" and v['fn'] ~= nil then
+			if v['global'] == true then
 				--------------------------------------------------------------------------------
 				-- Global Shortcut:
 				--------------------------------------------------------------------------------
-				hotkey.bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
+				hotkey.bind(v['modifiers'], v['characterString'], v['fn'], v['releasedFn'], v['repeatFn'])
 			else
 				--------------------------------------------------------------------------------
 				-- Final Cut Pro Specific Shortcut:
 				--------------------------------------------------------------------------------
-				hotkeys:bind(mod.finalCutProShortcutKey[k]['modifiers'], mod.finalCutProShortcutKey[k]['characterString'], mod.finalCutProShortcutKey[k]['fn'], mod.finalCutProShortcutKey[k]['releasedFn'], mod.finalCutProShortcutKey[k]['repeatFn'])
+				hotkeys:bind(v['modifiers'], v['characterString'], v['fn'], v['releasedFn'], v['repeatFn'])
 			end
 		end
 	end
@@ -4144,7 +4144,7 @@ end
 				--------------------------------------------------------------------------------
 				fcp.launch()
 				if not fcp.performShortcut("Paste") then
-					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occured in pasteFromSharedClipboard().")
+					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteFromSharedClipboard().")
 					return "Failed"
 				end
 
@@ -4490,7 +4490,7 @@ end
 					return "Failed"
 				end
 			else
-				dialog.displayErrorMessage("Could not find keyword disclosure triangle.\n\nError occured in restoreKeywordSearches().")
+				dialog.displayErrorMessage("Could not find keyword disclosure triangle.\n\nError occurred in restoreKeywordSearches().")
 				return "Failed"
 			end
 		end
@@ -4560,7 +4560,7 @@ end
 		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
 			menuBar:selectMenu("Clip", "Open in Angle Editor")
 		else
-			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?\n\nError occurred in multicamMatchFrame().")
 			return "Failed"
 		end
 
@@ -4570,7 +4570,7 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to return to timeline.\n\nError occurred in multicamMatchFrame().")
 			return
 		end
 
@@ -4580,7 +4580,7 @@ end
 		if menuBar:isEnabled("Edit", "Select Clip") then
 			menuBar:selectMenu("Edit", "Select Clip")
 		else
-			dialog.displayErrorMessage("Unable to select clip.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to select clip.\n\nError occurred in multicamMatchFrame().")
 			return
 		end
 
@@ -4590,7 +4590,7 @@ end
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to Reveal in Browser.\n\nError occurred in multicamMatchFrame().")
 			return
 		end
 
@@ -4601,7 +4601,7 @@ end
 			if menuBar:isEnabled("View", "Timeline History Back") then
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
-				dialog.displayErrorMessage("Unable to go back to previous timeline.\n\nError occured in multicamMatchFrame().")
+				dialog.displayErrorMessage("Unable to go back to previous timeline.\n\nError occurred in multicamMatchFrame().")
 				return
 			end
 		end
@@ -4652,7 +4652,7 @@ end
 		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
 			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -4661,7 +4661,7 @@ end
 		--------------------------------------------------------------------------------
  		local browserPersistentPlayhead = fcp.getBrowserPersistentPlayhead()
 		if browserPersistentPlayhead == nil then
-			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -4675,7 +4675,7 @@ end
 
 		local currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
 		if currentElement == nil then
-			dialog.displayErrorMessage("FCPX Hacks was unable to find the clip name. This can sometimes happen when Final Cut Pro fails to 'Reveal in Browser' properly, so it's worth trying again.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("FCPX Hacks was unable to find the clip name. This can sometimes happen when Final Cut Pro fails to 'Reveal in Browser' properly, so it's worth trying again.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -4686,7 +4686,7 @@ end
 		local searchTerm = currentElement:attributeValue("AXParent")[1]:attributeValue("AXValue")
 
 		if searchTerm == nil or searchTerm == "" then
-			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -4711,7 +4711,7 @@ end
 			local result = browserSearchButton:performAction("AXPress")
 
 			if result == nil then
-				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occured in singleMatchFrame().")
+				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occurred in singleMatchFrame().")
 				return nil
 			end
 
@@ -4728,7 +4728,7 @@ end
 			end
 
 			if searchTextFieldID == nil then
-				dialog.displayErrorMessage("Failed to find Search Text Box.\n\nError occured in singleMatchFrame().")
+				dialog.displayErrorMessage("Failed to find Search Text Box.\n\nError occurred in singleMatchFrame().")
 				return nil
 			end
 
@@ -4739,7 +4739,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = browserSplitGroup[searchTextFieldID]:setAttributeValue("AXValue", searchTerm)
 		if result == nil then
-			dialog.displayErrorMessage("Failed enter value into the Search Text Field.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("Failed enter value into the Search Text Field.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -4748,7 +4748,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = browserSplitGroup[searchTextFieldID][1]:performAction("AXPress")
 		if result == nil then
-			dialog.displayErrorMessage("Failed trigger search button.\n\nError occured in singleMatchFrame().")
+			dialog.displayErrorMessage("Failed trigger search button.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
@@ -5120,7 +5120,7 @@ end
 		--------------------------------------------------------------------------------
 		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in titlesShortcut() whilst using fcp.getBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occurred in titlesShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5149,7 +5149,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5168,7 +5168,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5186,7 +5186,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5205,7 +5205,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5216,7 +5216,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5234,7 +5234,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5246,14 +5246,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5281,7 +5281,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5292,7 +5292,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 		if result == nil then
-			dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5302,7 +5302,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 		if result == nil then
-			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5336,7 +5336,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 			if result == nil then
-				dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5346,7 +5346,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5394,7 +5394,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			dialog.displayErrorMessage("Unable to locate Title.\n\nError occured in titlesShortcut().")
+			dialog.displayErrorMessage("Unable to locate Title.\n\nError occurred in titlesShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5409,7 +5409,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5427,7 +5427,7 @@ end
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in titlesShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in titlesShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5438,7 +5438,7 @@ end
 			if whichBrowserPanelWasOpen == "Library" then
 				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in titlesShortcut().")
+					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occurred in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5446,7 +5446,7 @@ end
 			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in titlesShortcut().")
+					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occurred in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5454,7 +5454,7 @@ end
 			if titlesGeneratorsSideBarClosed then
 				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in titlesShortcut().")
+					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5509,7 +5509,7 @@ end
 		--------------------------------------------------------------------------------
 		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
 		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occured in generatorsShortcut() whilst using fcp.getBrowserButtonBar().")
+			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occurred in generatorsShortcut() whilst using fcp.getBrowserButtonBar().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5538,7 +5538,7 @@ end
 			end
 		end
 		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5557,7 +5557,7 @@ end
 		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5575,7 +5575,7 @@ end
 		end
 		::titlesGeneratorsSplitGroupExit::
 		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5594,7 +5594,7 @@ end
 		if titlesGeneratorsSideBarClosed then
 			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5617,7 +5617,7 @@ end
 		end
 		::generatorsRowExit::
 		if generatorsRow == nil then
-			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5627,7 +5627,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
 		if result == nil then
-			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5645,7 +5645,7 @@ end
 			end
 		end
 		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5657,14 +5657,14 @@ end
 		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
 			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
 
 			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5692,7 +5692,7 @@ end
 			end
 		end
 		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5703,7 +5703,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 		if result == nil then
-			dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5713,7 +5713,7 @@ end
 		--------------------------------------------------------------------------------
 		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 		if result == nil then
-			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5747,7 +5747,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
 			if result == nil then
-				dialog.displayErrorMessage("Unable to enter search value.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5757,7 +5757,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5805,7 +5805,7 @@ end
 			mouse.setAbsolutePosition(originalMousePosition)
 
 		else
-			dialog.displayErrorMessage("Unable to locate Generator.\n\nError occured in generatorsShortcut().")
+			dialog.displayErrorMessage("Unable to locate Generator.\n\nError occurred in generatorsShortcut().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -5820,7 +5820,7 @@ end
 			--------------------------------------------------------------------------------
 			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
 			if result == nil then
-				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5838,7 +5838,7 @@ end
 				end
 			end
 			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occured in generatorsShortcut().")
+				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in generatorsShortcut().")
 				showTouchbar()
 				return "Fail"
 			end
@@ -5849,7 +5849,7 @@ end
 			if whichBrowserPanelWasOpen == "Library" then
 				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occurred in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5857,7 +5857,7 @@ end
 			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
 				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occurred in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5865,7 +5865,7 @@ end
 			if titlesGeneratorsSideBarClosed then
 				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
 				if result == nil then
-					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occured in generatorsShortcut().")
+					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
 					showTouchbar()
 					return "Fail"
 				end
@@ -5979,7 +5979,7 @@ end
 		end
 
 		if whichMenuBar == nil then
-			displayErrorMessage("Failed to find menu bar.\n\nError occured in menuItemShortcut().")
+			displayErrorMessage("Failed to find menu bar.\n\nError occurred in menuItemShortcut().")
 			return
 		end
 
@@ -6076,12 +6076,12 @@ end
 		end
 
 		if not fcp.performShortcut("Cut") then
-			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occured in moveToPlayhead().")
+			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
 
 		if not fcp.performShortcut("Paste") then
-			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occured in moveToPlayhead().")
+			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
 
