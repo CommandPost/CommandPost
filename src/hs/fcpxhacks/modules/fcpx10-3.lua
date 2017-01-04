@@ -4974,101 +4974,102 @@ end
 	--------------------------------------------------------------------------------
 	function effectsShortcut(whichShortcut)
 
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
+		timer.doAfter(0.00001, function()
 
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noEffectShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the Transitions Browser layout:
-		--------------------------------------------------------------------------------
-		local transitions = fcp.app():transitions()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Effects Browser:
-		--------------------------------------------------------------------------------
-		local effects = fcp.app():effects()
-		local effectsShowing = effects:isShowing()
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		effects:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-		effects:showInstalledEffects()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		effects:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		effects:showAllTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		effects:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = effects:currentItemsUI()
-		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
+			-- Get settings:
 			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = effects:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
+			local currentShortcut = nil
+			if whichShortcut == 1 then
+				currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
+			elseif whichShortcut == 2 then
+				currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
+			elseif whichShortcut == 3 then
+				currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
+			elseif whichShortcut == 4 then
+				currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
+			elseif whichShortcut == 5 then
+				currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
+			else
+				if tostring(whichShortcut) ~= "" then
+					currentShortcut = tostring(whichShortcut)
 				end
 			end
-		end
 
-		local effect = matches[1]
+			if currentShortcut == nil then
+				dialog.displayMessage(i18n("noEffectShortcut"))
+				showTouchbar()
+				return "Fail"
+			end
 
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
+			--------------------------------------------------------------------------------
+			-- Save the Transitions Browser layout:
+			--------------------------------------------------------------------------------
+			local transitions = fcp.app():transitions()
+			local transitionsLayout = transitions:saveLayout()
 
-		effects:applyItem(effect)
+			--------------------------------------------------------------------------------
+			-- Get Effects Browser:
+			--------------------------------------------------------------------------------
+			local effects = fcp.app():effects()
+			local effectsShowing = effects:isShowing()
+			local effectsLayout = effects:saveLayout()
 
-		timer.doAfter(0.1, function()
+			--------------------------------------------------------------------------------
+			-- Make sure panel is open:
+			--------------------------------------------------------------------------------
+			effects:show()
+
+			--------------------------------------------------------------------------------
+			-- Make sure "Installed Effects" is selected:
+			--------------------------------------------------------------------------------
+			effects:showInstalledEffects()
+
+			--------------------------------------------------------------------------------
+			-- Make sure there's nothing in the search box:
+			--------------------------------------------------------------------------------
+			effects:search():clear()
+
+			--------------------------------------------------------------------------------
+			-- Click 'All':
+			--------------------------------------------------------------------------------
+			effects:showAllTransitions()
+
+			--------------------------------------------------------------------------------
+			-- Perform Search:
+			--------------------------------------------------------------------------------
+			effects:search():setValue(currentShortcut)
+
+			--------------------------------------------------------------------------------
+			-- Get the list of matching effects
+			--------------------------------------------------------------------------------
+			local matches = effects:currentItemsUI()
+			if not matches or #matches == 0 then
+				--------------------------------------------------------------------------------
+				-- If Needed, Search Again Without Text Before First Dash:
+				--------------------------------------------------------------------------------
+				local index = string.find(currentShortcut, "-")
+				if index ~= nil then
+					local trimmedShortcut = string.sub(currentShortcut, index + 2)
+					effects:search():setValue(trimmedShortcut)
+
+					matches = effects:currentItemsUI()
+					if not matches or #matches == 0 then
+						dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
+						return "Fail"
+					end
+				end
+			end
+
+			local effect = matches[1]
+
+			--------------------------------------------------------------------------------
+			-- Apply the selected Transition:
+			--------------------------------------------------------------------------------
+			hideTouchbar()
+
+			effects:applyItem(effect)
+
 			showTouchbar()
 
 			effects:loadLayout(effectsLayout)
