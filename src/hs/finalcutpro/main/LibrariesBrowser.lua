@@ -62,6 +62,30 @@ function Libraries:hide()
 	return self
 end
 
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-- Playheads
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+function Libraries:playhead()
+	if self:list():isShowing() then
+		return self:list():playhead()
+	else
+		return self:filmstrip():playhead()
+	end
+end
+
+function Libraries:skimmingPlayhead()
+	if self:list():isShowing() then
+		return self:list():skimmingPlayhead()
+	else
+		return self:filmstrip():skimmingPlayhead()
+	end
+end
+
+
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 -- Buttons

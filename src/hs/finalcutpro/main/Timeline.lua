@@ -5,7 +5,7 @@ local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 local timer								= require("hs.timer")
 
-local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+local TimelineContent					= require("hs.finalcutpro.main.TimelineContents")
 local TimelineToolbar					= require("hs.finalcutpro.main.TimelineToolbar")
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
@@ -132,7 +132,7 @@ end
 --- Timeline Index, the Content, and the Effects/Transitions panels.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:content()
+function Timeline:contents()
 	if not self._content then
 		self._content = TimelineContent:new(self)
 	end
@@ -173,7 +173,17 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:playhead()
-	return self:content():playhead()
+	return self:contents():playhead()
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEAD
+--- The Playhead that tracks under the mouse while skimming.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:skimmingPlayhead()
+	return self:contents():skimmingPlayhead()
 end
 
 -----------------------------------------------------------------------
@@ -212,7 +222,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 		return self
 	end
 
-	local content = self:content()
+	local content = self:contents()
 	local playhead = content:playhead()
 	local check = nil
 	local status = 0

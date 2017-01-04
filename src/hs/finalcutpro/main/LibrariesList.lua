@@ -2,6 +2,8 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Table								= require("hs.finalcutpro.ui.Table")
 
+local Playhead							= require("hs.finalcutpro.main.Playhead")
+
 local List = {}
 
 function List.matches(element)
@@ -25,7 +27,7 @@ end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- TIMELINE CONTENT UI
+--- UI
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function List:UI()
@@ -49,6 +51,11 @@ function List:isShowing()
 	return self:UI() ~= nil
 end
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PREVIEW PLAYER
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 function List:playerUI()
 	return axutils.cache(self, "_player", function()
 		local ui = self:UI()
@@ -56,7 +63,33 @@ function List:playerUI()
 	end)
 end
 
-function List:content()
+
+function List:playhead()
+	if not self._playhead then
+		self._playhead = Playhead:new(self, false, function()
+			return self:playerUI()
+		end)
+	end
+	return self._playhead
+end
+
+function List:skimmingPlayhead()
+	if not self._skimmingPlayhead then
+		self._skimmingPlayhead = Playhead:new(self, true, function()
+			return self:playerUI()
+		end)
+	end
+	return self._skimmingPlayhead
+end
+
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- LIBRARY CONTENT
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+function List:contents()
 	if not self._content then
 		self._content = Table:new(self, function()
 			return axutils.childWithID(self:UI(), "_NS:9")
@@ -66,11 +99,11 @@ function List:content()
 end
 
 function List:clipsUI()
-	local rowsUI = self:content():rowsUI()
+	local rowsUI = self:contents():rowsUI()
 	if rowsUI then
 		local level = 0
 		-- if the first row has no icon (_NS:11), it's a group
-		local firstCell = self:content():findCellUI(1, "filmlist name col")
+		local firstCell = self:contents():findCellUI(1, "filmlist name col")
 		if firstCell and axutils.childWithID(firstCell, "_NS:11") == nil then
 			level = 1
 		end
@@ -80,37 +113,37 @@ function List:clipsUI()
 end
 
 function List:selectedClipsUI()
-	return self:content():selectedRowsUI()
+	return self:contents():selectedRowsUI()
 end
 
 function List:showClip(clipUI)
-	self:content():showRow(clipUI)
+	self:contents():showRow(clipUI)
 	return self
 end
 
 function List:selectClip(clipUI)
-	self:content():selectRow(clipUI)
+	self:contents():selectRow(clipUI)
 	return self
 end
 
 function List:selectClipAt(index)
-	self:content():selectRowAt(index)
+	self:contents():selectRowAt(index)
 	return self
 end
 
 function List:selectAll(clipsUI)
-	self:content():selectAll(clipsUI)
+	self:contents():selectAll(clipsUI)
 	return self
 end
 
 function List:deselectAll(clipsUI)
-	self:content():deselectAll(clipsUI)
+	self:contents():deselectAll(clipsUI)
 	return self
 end
 
 function List:isFocused()
 	local player = self:playerUI()
-	return self:content():isFocused() or player and player:focused()
+	return self:contents():isFocused() or player and player:focused()
 end
 
 return List

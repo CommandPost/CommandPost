@@ -1,6 +1,7 @@
 local axutils							= require("hs.finalcutpro.axutils")
 
 local tools								= require("hs.fcpxhacks.modules.tools")
+local Playhead							= require("hs.finalcutpro.main.Playhead")
 
 local Filmstrip = {}
 
@@ -59,6 +60,35 @@ function Filmstrip:contentsUI()
 	return ui and ui:contents()[1]
 end
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- PLAYHEADS
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+function Filmstrip:playhead()
+	if not self._playhead then
+		self._playhead = Playhead:new(self, false, function()
+			return self:contentsUI()
+		end)
+	end
+	return self._playhead
+end
+
+function Filmstrip:skimmingPlayhead()
+	if not self._skimmingPlayhead then
+		self._skimmingPlayhead = Playhead:new(self, true, function()
+			return self:contentsUI()
+		end)
+	end
+	return self._skimmingPlayhead
+end
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- CLIPS
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 function Filmstrip.sortClips(a, b)
 	local aFrame = a:frame()
 	local bFrame = b:frame()
