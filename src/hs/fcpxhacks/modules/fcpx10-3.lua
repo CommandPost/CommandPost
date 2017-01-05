@@ -584,95 +584,241 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	-- Clear Console:
 	--------------------------------------------------------------------------------
-	--console.clearConsole()
+	console.clearConsole()
 
-
-	print(getMulticamAngleFromSelectedClip())
+	--------------------------------------------------------------------------------
+	-- Get Multicam Angle From Selected Clip:
+	--------------------------------------------------------------------------------
+	local result = getMulticamAngleFromSelectedClip()
 
 end
 
-	--------------------------------------------------------------------------------
-	-- NINJA PASTEBOARD COPY:
-	--------------------------------------------------------------------------------
-	function getMulticamAngleFromSelectedClip()
-		local clipboardData = ninjaPasteboardCopy()
+--------------------------------------------------------------------------------
+-- GET MULTICAM ANGLE FROM SELECTED CLIP:
+--------------------------------------------------------------------------------
+function getMulticamAngleFromSelectedClip()
 
-		print(clipboardData)
+	--------------------------------------------------------------------------------
+	-- Ninja Pasteboard Copy:
+	--------------------------------------------------------------------------------
+	local result, clipboardData = ninjaPasteboardCopy()
+	if not result then
+		dialog.displayErrorMessage("Ninja Pasteboard Copy Failed.")
+		return false
+	end
 
-		if clipboardData ~= false then
-			local clipboardTable = plist.binaryToTable(clipboardData)
-			local fcpxData = clipboard.clipboardTable[ffpasteboardobject]
-			if fcpxData then
-				local fcpxTable = plist.base64ToTable(fcpxData)
-				return "yay"
-			else
-				return "error"
+	--------------------------------------------------------------------------------
+	-- Convert Binary Data to Table:
+	--------------------------------------------------------------------------------
+	local clipboardTable = plist.binaryToTable(clipboardData)
+	if clipboardTable == nil then
+		dialog.displayErrorMessage("Converting Binary Data to Table failed.")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Read ffpasteboardobject from Table:
+	--------------------------------------------------------------------------------
+	local fcpxData = clipboardTable["ffpasteboardobject"]
+	if fcpxData == nil then
+		dialog.displayErrorMessage("Reading 'ffpasteboardobject' from Table failed.")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Convert base64 Data to Table:
+	--------------------------------------------------------------------------------
+	local fcpxTable = plist.base64ToTable(fcpxData)
+	if fcpxTable == nil then
+		dialog.displayErrorMessage("Converting Binary Data to Table failed.")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- DEBUG:
+	--------------------------------------------------------------------------------
+	--writeToConsole(inspect(fcpxTable, {indent="\t"}), true)
+	tt = fcpxTable -- Global value for testing.
+
+	--------------------------------------------------------------------------------
+	-- Check the item isMultiAngle:
+	--------------------------------------------------------------------------------
+	local isMultiAngle = false
+	for k, v in pairs(fcpxTable["$objects"]) do
+
+		if type(fcpxTable["$objects"][k]) == "table" then
+			if fcpxTable["$objects"][k]["isMultiAngle"] then
+				isMultiAngle = true
+
+				print(fcpxTable["$objects"][k])
+			end
+		end
+
+	end
+	if not isMultiAngle then
+		dialog.displayErrorMessage("The selected item is not a multi-angle clip.")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get FFAnchoredCollection ID:
+	--------------------------------------------------------------------------------
+	local FFAnchoredCollectionID = nil
+	for k, v in pairs(fcpxTable["$objects"]) do
+		if type(fcpxTable["$objects"][k]) == "table" then
+			if fcpxTable["$objects"][k]["$classname"] ~= nil then
+				if fcpxTable["$objects"][k]["$classname"] == "FFAnchoredCollection" then
+					FFAnchoredCollectionID = k - 1
+				end
 			end
 		end
 	end
 
 	--------------------------------------------------------------------------------
-	-- NINJA PASTEBOARD COPY:
+	-- Find all FFAnchoredCollection's:
 	--------------------------------------------------------------------------------
-	function ninjaPasteboardCopy()
+	local FFAnchoredCollectionTable = {}
+	for k, v in pairs(fcpxTable["$objects"]) do
+		if type(fcpxTable["$objects"][k]) == "table" then
+			for a, b in pairs(fcpxTable["$objects"][k]) do
+				if fcpxTable["$objects"][k][a] == FFAnchoredCollectionID then
+					FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+				end
+				if type(fcpxTable["$objects"][k][a]) == "table" then
+					for c, d in pairs(fcpxTable["$objects"][k][a]) do
+						if fcpxTable["$objects"][k][a][c] == FFAnchoredCollectionID then
+							FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+						end
+						if type(fcpxTable["$objects"][k][a][c]) == "table" then
+							for e, f in pairs(fcpxTable["$objects"][k][a][c]) do
+								if fcpxTable["$objects"][k][a][c][e] == FFAnchoredCollectionID then
+									FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
 
-		--------------------------------------------------------------------------------
-		-- Variables:
-		--------------------------------------------------------------------------------
-		local ninjaPasteboardCopyError = false
-		local finalCutProClipboardUTI = fcp.clipboardUTI()
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	print("FFAnchoredCollectionTable:")
+	writeToConsole(inspect(FFAnchoredCollectionTable), true)
 
-		--------------------------------------------------------------------------------
-		-- Stop Watching Clipboard:
-		--------------------------------------------------------------------------------
-		if enableClipboardHistory then clipboard.stopWatching() end
+	-- TO DO: Work out how the hell to detect which is the active multi-cam angle.
 
-		--------------------------------------------------------------------------------
-		-- Save Current Clipboard Contents for later:
-		--------------------------------------------------------------------------------
-		local originalClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
-		just.wait(0.5) -- For some reason we need this after reading from Pasteboard?
+	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
+	do return end
+	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 
-		--------------------------------------------------------------------------------
-		-- Trigger 'copy' from Menubar:
-		--------------------------------------------------------------------------------
-		local menuBar = fcp:app():menuBar()
-		if menuBar:isEnabled("Edit", "Copy") then
-			menuBar:selectMenu("Edit", "Copy")
-		else
-			dialog.displayErrorMessage("Failed to select Copy from Menubar.")
+
+
+	--------------------------------------------------------------------------------
+	-- Get the videoAngle:
+	--------------------------------------------------------------------------------
+	local videoAngle = nil
+	for k, v in pairs(fcpxTable["$objects"]) do
+
+		if type(fcpxTable["$objects"][k]) == "table" then
+			if fcpxTable["$objects"][k]["videoAngle"] then
+				videoAngle = fcpxTable["$objects"][k]["videoAngle"]
+			end
+		end
+
+	end
+	if videoAngle == nil then
+		dialog.displayErrorMessage("Could not get videoAngle.")
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get the videoAngle Reference:
+	--------------------------------------------------------------------------------
+	local videoAngleReference = fcpxTable["$objects"][videoAngle["CF$UID"] + 1]
+
+	if videoAngleReference == nil then
+		dialog.displayErrorMessage("Could not get videoAngleReference.")
+		return false
+	end
+	print("videoAngleReference: " .. tostring(videoAngleReference))
+
+end
+
+--------------------------------------------------------------------------------
+-- NINJA PASTEBOARD COPY:
+--------------------------------------------------------------------------------
+function ninjaPasteboardCopy()
+
+	--------------------------------------------------------------------------------
+	-- Variables:
+	--------------------------------------------------------------------------------
+	local ninjaPasteboardCopyError = false
+	local finalCutProClipboardUTI = fcp.clipboardUTI()
+	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+	--------------------------------------------------------------------------------
+	-- Stop Watching Clipboard:
+	--------------------------------------------------------------------------------
+	if enableClipboardHistory then clipboard.stopWatching() end
+
+	--------------------------------------------------------------------------------
+	-- Save Current Clipboard Contents for later:
+	--------------------------------------------------------------------------------
+	local originalClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+
+	--------------------------------------------------------------------------------
+	-- Trigger 'copy' from Menubar:
+	--------------------------------------------------------------------------------
+	local menuBar = fcp:app():menuBar()
+	if menuBar:isEnabled("Edit", "Copy") then
+		menuBar:selectMenu("Edit", "Copy")
+	else
+		debugMessage("ERROR: Failed to select Copy from Menubar.")
+		if enableClipboardHistory then clipboard.startWatching() end
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Wait until something new is actually on the Pasteboard:
+	--------------------------------------------------------------------------------
+	local newClipboard = nil
+	just.doUntil(function()
+		newClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+		if newClipboard ~= originalClipboard then
+			return true
+		end
+	end, 10)
+	if newClipboard == nil then
+		debugMessage("ERROR: Failed to get new clipboard contents.")
+		if enableClipboardHistory then clipboard.startWatching() end
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Restore Original Clipboard Contents:
+	--------------------------------------------------------------------------------
+	if originalClipboard ~= nil then
+		local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
+		if not result then
+			debugMessage("ERROR: Failed to restore original Clipboard item.")
 			if enableClipboardHistory then clipboard.startWatching() end
 			return false
 		end
-
-		local newClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
-		print(newClipboard)
-		just.wait(0.5) -- For some reason we need this after reading from Pasteboard?
-
-		--------------------------------------------------------------------------------
-		-- Restore Original Clipboard Contents:
-		--------------------------------------------------------------------------------
-		if originalClipboard ~= nil then
-			local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
-			if not result then
-				dialog.displayErrorMessage("Failed to restore original Clipboard item.")
-				if enableClipboardHistory then clipboard.startWatching() end
-				return false
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Start Watching Clipboard:
-		--------------------------------------------------------------------------------
-		if enableClipboardHistory then clipboard.startWatching() end
-
-		--------------------------------------------------------------------------------
-		-- Return New Clipboard:
-		--------------------------------------------------------------------------------
-		return newClipboard
-
 	end
+
+	--------------------------------------------------------------------------------
+	-- Start Watching Clipboard:
+	--------------------------------------------------------------------------------
+	if enableClipboardHistory then clipboard.startWatching() end
+
+	--------------------------------------------------------------------------------
+	-- Return New Clipboard:
+	--------------------------------------------------------------------------------
+	return true, newClipboard
+
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
