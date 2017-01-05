@@ -4633,21 +4633,36 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Press Angle Button:
+		-- Get Timeline Scroll Area:
 		--------------------------------------------------------------------------------
 		local timelineScrollArea = fcp.getTimelineScrollArea()
-		local AXLayoutArea = 1
-		local AXGroup = multicamAngle
-		local AXButton = 5
+		if timelineScrollArea == nil then
+			dialog.displayErrorMessage("Unable to find Timeline Scroll Area." .. errorFunction)
+			return
+		end
 
-		local angleButtonFound = false
+		--------------------------------------------------------------------------------
+		-- Press Angle Button:
+		--------------------------------------------------------------------------------
+		local angleButtonFound 		= false
+		local AXLayoutArea 			= 1
+		local AXGroup 				= multicamAngle
+		local AXButton 				= 5
 		if timelineScrollArea[AXLayoutArea] ~= nil then
 			if timelineScrollArea[AXLayoutArea][AXGroup] ~= nil then
 				if timelineScrollArea[AXLayoutArea][AXGroup][AXButton] ~= nil then
 					if timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1] ~= nil then
-						angleButtonFound = true
-						timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress") 		-- Switch Video
-						timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1]:performAction("AXPress") 	-- Switch Audio
+						--------------------------------------------------------------------------------
+						-- Switch Video Angle:
+						--------------------------------------------------------------------------------
+						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress")
+						if result ~= nil and result ~= false then angleButtonFound = true end
+
+						--------------------------------------------------------------------------------
+						-- Switch Audio Angle:
+						--------------------------------------------------------------------------------
+						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1]:performAction("AXPress")
+						if result ~= nil and result ~= false then angleButtonFound = true end
 					end
 				end
 			end
