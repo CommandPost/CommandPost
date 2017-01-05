@@ -5489,23 +5489,21 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-
 		--------------------------------------------------------------------------------
 		-- Get Browser Persistent Playhead:
 		--------------------------------------------------------------------------------
-		local persistentPlayhead = fcp.getBrowserPersistentPlayhead()
-		if persistentPlayhead ~= nil then
+		local playhead = fcp.app():libraries():playhead()
+		if playhead:isShowing() then
 
 			--------------------------------------------------------------------------------
 			-- Playhead Position:
 			--------------------------------------------------------------------------------
-			persistentPlayheadPosition = persistentPlayhead:attributeValue("AXPosition")
-			persistentPlayheadSize = persistentPlayhead:attributeValue("AXSize")
+			local frame = playhead:getFrame()
 
 			--------------------------------------------------------------------------------
 			-- Highlight Mouse:
 			--------------------------------------------------------------------------------
-			mouseHighlight(persistentPlayheadPosition["x"], persistentPlayheadPosition["y"], persistentPlayheadSize["w"], persistentPlayheadSize["h"])
+			mouseHighlight(frame.x, frame.y, frame.w, frame.h)
 
 		end
 
