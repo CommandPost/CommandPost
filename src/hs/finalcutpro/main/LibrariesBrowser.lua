@@ -6,10 +6,12 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
-local Button							= require("hs.finalcutpro.ui.Button")
 local LibrariesList						= require("hs.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("hs.finalcutpro.main.LibrariesFilmstrip")
+
+local Button							= require("hs.finalcutpro.ui.Button")
 local Table								= require("hs.finalcutpro.ui.Table")
+local TextField							= require("hs.finalcutpro.ui.TextField")
 
 local Libraries = {}
 
@@ -110,13 +112,34 @@ function Libraries:appearanceAndFiltering()
 	return self._appearanceAndFiltering
 end
 
-function Libraries:toggleSearchBar()
-	if not self._toggleSearchBar then
-		self._toggleSearchBar = Button:new(self, function()
+function Libraries:searchToggle()
+	if not self._searchToggle then
+		self._searchToggle = Button:new(self, function()
 			return axutils.childWithID(self:UI(), "_NS:92")
 		end)
 	end
-	return self._toggleSearchBar
+	return self._searchToggle
+end
+
+function Libraries:search()
+	if not self._search then
+		self._search = TextField:new(self, function()
+			return axutils.childWithID(self:mainGroupUI(), "_NS:34")
+		end)
+	end
+	return self._search
+end
+
+function Libraries:filterToggle()
+	if not self._filterToggle then
+		self._filterToggle = Button:new(self, function()
+			return axutils.childMatching(self:mainGroupUI(), function(child)
+				return child:attributeValue("AXIdentifier") == "_NS:9"
+				   and child:attributeValue("AXRole") == "AXButton"
+			end)
+		end)
+	end
+	return self._filterToggle
 end
 
 Libraries.ALL_CLIPS = 1
@@ -170,10 +193,15 @@ end
 function Libraries:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			return axutils.childMatching(self:mainGroupUI(), Libraries.matchesSidebar)
 		end):uncached()
 	end
 	return self._sidebar
+end
+
+function Libraries.matchesSidebar(element)
+	return element and element:attributeValue("AXRole") == "AXScrollArea" 
+		and element:attributeValue("AXIdentifier") == "_NS:9"
 end
 
 function Libraries:isListView()

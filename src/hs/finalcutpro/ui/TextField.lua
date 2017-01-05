@@ -27,6 +27,10 @@ function TextField:UI()
 	TextField.matches)
 end
 
+function TextField:isShowing()
+	return self:UI() ~= nil
+end
+
 function TextField:getValue()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXValue")

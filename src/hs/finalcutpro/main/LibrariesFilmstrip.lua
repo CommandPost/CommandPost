@@ -171,7 +171,7 @@ end
 
 function Filmstrip:selectClip(clipUI)
 	if axutils.isValid(clipUI) then
-		clipUI:parent():setAttributeValue("AXSelectedChildren", { clipUI } )
+		clipUI:parent():setSelectedChildren( { clipUI } )
 	end
 	return self
 end
@@ -197,7 +197,7 @@ end
 function Filmstrip:deselectAll()
 	local contents = self:contentsUI()
 	if contents then
-		contents.setAttributeValue("AXSelectedChildren", {})
+		contents:setSelectedChildren({})
 	end
 	return self
 end

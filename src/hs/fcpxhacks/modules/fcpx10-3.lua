@@ -4642,121 +4642,81 @@ end
 	function singleMatchFrame()
 
 		--------------------------------------------------------------------------------
+		-- Check the option is available in the current context
+		--------------------------------------------------------------------------------
+		if not fcp.app():menuBar():isEnabled("File", "Reveal in Browser") then
+			return nil
+		end
+		
+		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
+		local libraries = fcp.app():libraries()
+		local selectedClips
+		
+		
 		--------------------------------------------------------------------------------
-		-- Click on 'Reveal in Browser':
+		-- Clear the selection first
 		--------------------------------------------------------------------------------
-		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
-			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
-		else
-			dialog.displayErrorMessage("Unable to trigger Reveal in Browser.\n\nError occurred in singleMatchFrame().")
-			return nil
-		end
+		libraries:deselectAll()
+		
+		--------------------------------------------------------------------------------
+		-- Trigger the menu item to reveal the clip
+		--------------------------------------------------------------------------------
+		fcp.app():menuBar():selectMenu("File", "Reveal in Browser")
 
 		--------------------------------------------------------------------------------
-		-- Get Browser Persistent Playhead:
+		-- Give FCPX time to find the clip
 		--------------------------------------------------------------------------------
- 		local browserPersistentPlayhead = fcp.getBrowserPersistentPlayhead()
-		if browserPersistentPlayhead == nil then
+		just.doUntil(function()
+			selectedClips = libraries:selectedClipsUI()
+			return selectedClips and #selectedClips > 0
+		end)
+		
+		--------------------------------------------------------------------------------
+		-- Get Check that there is exactly one Selected Clip
+		--------------------------------------------------------------------------------
+		if not selectedClips or #selectedClips ~= 1 then
+			dialog.displayErrorMessage("Expected exactly 1 selected clip in the Libraries Browser.\n\nError occurred in singleMatchFrame().")
+			return nil
+		end
+		
+		--------------------------------------------------------------------------------
+		-- Get Browser Playhead:
+		--------------------------------------------------------------------------------
+		local playhead = libraries:playhead()
+		if not playhead:isShowing() then
 			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Description Based off Playhead:
+		-- Get Clip Name from the Viewer
 		--------------------------------------------------------------------------------
-		local persistentPlayheadPosition = browserPersistentPlayhead:attributeValue("AXPosition")
-
-		persistentPlayheadPosition['x'] = persistentPlayheadPosition['x'] + 20
-		persistentPlayheadPosition['y'] = persistentPlayheadPosition['y'] + 20
-
-		local currentElement = ax.systemWideElement():elementAtPosition(persistentPlayheadPosition)
-		if currentElement == nil then
-			dialog.displayErrorMessage("FCPX Hacks was unable to find the clip name. This can sometimes happen when Final Cut Pro fails to 'Reveal in Browser' properly, so it's worth trying again.\n\nError occurred in singleMatchFrame().")
-			return nil
-		end
-
-		if currentElement:attributeValue("AXRole") == "AXHandle" then
-			currentElement = currentElement:attributeValue("AXParent")
-		end
-
-		local searchTerm = currentElement:attributeValue("AXParent")[1]:attributeValue("AXValue")
-
-		if searchTerm == nil or searchTerm == "" then
-			dialog.displayErrorMessage("Unable to work out clip name.\n\nError occurred in singleMatchFrame().")
-			return nil
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check to see if Search Bar is already visible:
-		--------------------------------------------------------------------------------
-		local browserSplitGroup = fcp.getBrowserSplitGroup()
-		local searchTextFieldID = nil
-		for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-			if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
-				if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
-					searchTextFieldID = i
-				end
-			end
-		end
-		if searchTextFieldID == nil then
-
+		local clipName = fcp.app():viewer():getTitle()
+		
+		if clipName then
 			--------------------------------------------------------------------------------
-			-- Maybe the search bar is not visible?
+			-- Ensure the Search Bar is visible
 			--------------------------------------------------------------------------------
-			browserSearchButton = fcp.getBrowserSearchButton()
-			local result = browserSearchButton:performAction("AXPress")
-
-			if result == nil then
-				dialog.displayErrorMessage("Failed to press Search Button.\n\nError occurred in singleMatchFrame().")
-				return nil
+			if not libraries:search():isShowing() then
+				libraries:searchToggle():press()
 			end
-
+		
 			--------------------------------------------------------------------------------
-			-- Try searching for it again:
+			-- Search for the title
 			--------------------------------------------------------------------------------
-			browserSplitGroup = fcp.getBrowserSplitGroup()
-			for i=1, browserSplitGroup:attributeValueCount("AXChildren") do
-				if browserSplitGroup[i]:attributeValue("AXRole") == "AXTextField" then
-					if browserSplitGroup[i]:attributeValue("AXIdentifier") == "_NS:34" then
-						searchTextFieldID = i
-					end
-				end
-			end
-
-			if searchTextFieldID == nil then
-				dialog.displayErrorMessage("Failed to find Search Text Box.\n\nError occurred in singleMatchFrame().")
-				return nil
-			end
-
+			libraries:search():setValue(clipName)
+		else
+			debugMessage("Unable to find the clip title.")
 		end
-
-		--------------------------------------------------------------------------------
-		-- Enter in search value:
-		--------------------------------------------------------------------------------
-		local result = browserSplitGroup[searchTextFieldID]:setAttributeValue("AXValue", searchTerm)
-		if result == nil then
-			dialog.displayErrorMessage("Failed enter value into the Search Text Field.\n\nError occurred in singleMatchFrame().")
-			return nil
-		end
-
-		--------------------------------------------------------------------------------
-		-- Press search button:
-		--------------------------------------------------------------------------------
-		local result = browserSplitGroup[searchTextFieldID][1]:performAction("AXPress")
-		if result == nil then
-			dialog.displayErrorMessage("Failed trigger search button.\n\nError occurred in singleMatchFrame().")
-			return nil
-		end
-
+		
 		--------------------------------------------------------------------------------
 		-- Highlight Browser Playhead:
 		--------------------------------------------------------------------------------
 		highlightFCPXBrowserPlayhead()
-
 	end
 
 --------------------------------------------------------------------------------

@@ -89,7 +89,7 @@ function Viewer:findViewerUI(...)
 					end
 				end
 			end
-			return ui
+			if ui then return ui end
 		end
 	end
 	return nil
@@ -177,7 +177,7 @@ function Viewer:topToolbarUI()
 		local ui = self:UI()
 		if ui then
 			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", "_NS:274") then
+				if axutils.childWith(child, "AXIdentifier", "_NS:16") then
 					return child
 				end
 			end
@@ -220,6 +220,11 @@ function Viewer:getFramerate()
 	local format = self:getFormat()
 	local framerate = format and string.match(format, ' %d%d%.?%d?%d?[pi]')
 	return framerate and tonumber(string.sub(framerate, 1,-2))
+end
+
+function Viewer:getTitle()
+	local titleText = axutils.childWithID(self:topToolbarUI(), "_NS:16")
+	return titleText and titleText:value()
 end
 
 return Viewer

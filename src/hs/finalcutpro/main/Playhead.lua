@@ -1,4 +1,5 @@
 local axutils							= require("hs.finalcutpro.axutils")
+local geometry							= require("hs.geometry")
 
 local Playhead = {}
 
@@ -101,13 +102,19 @@ function Playhead:getX()
 	return ui and ui:position().x
 end
 
-function Playhead:getPosition()
+function Playhead:getFrame()
 	local ui = self:UI()
-	if ui then
-		local frame = ui:frame()
-		return frame.x + frame.w/2 + 1.0
-	end
-	return nil
+	return ui and ui:frame()
+end
+
+function Playhead:getPosition()
+	local frame = self:frame()
+	return frame and (frame.x + frame.w/2 + 1.0)
+end
+
+function Playhead:getCenter()
+	local frame = self:getFrame()
+	return frame and geometry.rect(frame).center
 end
 
 return Playhead
