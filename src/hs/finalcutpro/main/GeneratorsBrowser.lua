@@ -3,6 +3,8 @@ local inspect							= require("hs.inspect")
 
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
+local tools								= require("hs.fcpxhacks.modules.tools")
+local geometry							= require("hs.geometry")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
@@ -125,6 +127,16 @@ function GeneratorsBrowser:topCategoriesUI()
 	end)
 end
 
+function GeneratorsBrowser:showInstalledTitles()
+	self:group():selectItem(1)
+	return self
+end
+
+function GeneratorsBrowser:showInstalledGenerators()
+	self:showInstalledTitles()
+	return self
+end
+
 function GeneratorsBrowser:showAllTitles()
 	self:showSidebar()
 	local topCategories = self:topCategoriesUI()
@@ -142,6 +154,49 @@ function GeneratorsBrowser:showAllGenerators()
 	end
 	return self
 end
+
+
+function GeneratorsBrowser:currentItemsUI()
+	return self:contents():childrenUI()
+end
+
+function GeneratorsBrowser:selectedItemsUI()
+	return self:contents():selectedChildrenUI()
+end
+
+function GeneratorsBrowser:itemIsSelected(itemUI)
+	local selectedItems = self:selectedItemsUI()
+	if selectedItems and #selectedItems > 0 then
+		for _,selected in ipairs(selectedItems) do
+			if selected == itemUI then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function GeneratorsBrowser:applyItem(itemUI)
+	if itemUI then
+		self:contents():showChild(itemUI)
+		local targetPoint = geometry.rect(itemUI:frame()).center
+		tools.ninjaDoubleClick(targetPoint)
+	end
+	return self
+end
+
+--- Returns the list of titles for all effects/transitions currently visible
+function GeneratorsBrowser:getCurrentTitles()
+	local contents = self:contents():childrenUI()
+	if contents ~= nil then
+		return fnutils.map(contents, function(child)
+			return child:attributeValue("AXTitle")
+		end)
+	end
+	return nil
+end
+
+-------- Layouts ---------------
 
 function GeneratorsBrowser:saveLayout()
 	local layout = {}

@@ -4921,12 +4921,14 @@ end
 
 		transitions:applyItem(transition)
 
-		showTouchbar()
+		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+		timer.doAfter(0.000001, function()
+			showTouchbar()
 
-		transitions:loadLayout(transitionsLayout)
-		if effectsLayout then effects:loadLayout(effectsLayout) end
-		if not transitionsShowing then transitions:hide() end
-
+			transitions:loadLayout(transitionsLayout)
+			if effectsLayout then effects:loadLayout(effectsLayout) end
+			if not transitionsShowing then transitions:hide() end
+		end)
 	end
 
 	--------------------------------------------------------------------------------
@@ -4934,120 +4936,115 @@ end
 	--------------------------------------------------------------------------------
 	function effectsShortcut(whichShortcut)
 
-		timer.doAfter(0.00001, function()
+		--------------------------------------------------------------------------------
+		-- Get settings:
+		--------------------------------------------------------------------------------
+		local currentShortcut = nil
+		if whichShortcut == 1 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
+		elseif whichShortcut == 2 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
+		elseif whichShortcut == 3 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
+		elseif whichShortcut == 4 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
+		elseif whichShortcut == 5 then
+			currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
+		else
+			if tostring(whichShortcut) ~= "" then
+				currentShortcut = tostring(whichShortcut)
+			end
+		end
 
+		if currentShortcut == nil then
+			dialog.displayMessage(i18n("noEffectShortcut"))
+			showTouchbar()
+			return "Fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- Save the Transitions Browser layout:
+		--------------------------------------------------------------------------------
+		local transitions = fcp.app():transitions()
+		local transitionsLayout = transitions:saveLayout()
+
+		--------------------------------------------------------------------------------
+		-- Get Effects Browser:
+		--------------------------------------------------------------------------------
+		local effects = fcp.app():effects()
+		local effectsShowing = effects:isShowing()
+		local effectsLayout = effects:saveLayout()
+
+		--------------------------------------------------------------------------------
+		-- Make sure panel is open:
+		--------------------------------------------------------------------------------
+		effects:show()
+
+		--------------------------------------------------------------------------------
+		-- Make sure "Installed Effects" is selected:
+		--------------------------------------------------------------------------------
+		effects:showInstalledEffects()
+
+		--------------------------------------------------------------------------------
+		-- Make sure there's nothing in the search box:
+		--------------------------------------------------------------------------------
+		effects:search():clear()
+
+		--------------------------------------------------------------------------------
+		-- Click 'All':
+		--------------------------------------------------------------------------------
+		effects:showAllTransitions()
+
+		--------------------------------------------------------------------------------
+		-- Perform Search:
+		--------------------------------------------------------------------------------
+		effects:search():setValue(currentShortcut)
+
+		--------------------------------------------------------------------------------
+		-- Get the list of matching effects
+		--------------------------------------------------------------------------------
+		local matches = effects:currentItemsUI()
+		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
-			-- Get settings:
+			-- If Needed, Search Again Without Text Before First Dash:
 			--------------------------------------------------------------------------------
-			local currentShortcut = nil
-			if whichShortcut == 1 then
-				currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
-			elseif whichShortcut == 2 then
-				currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
-			elseif whichShortcut == 3 then
-				currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
-			elseif whichShortcut == 4 then
-				currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
-			elseif whichShortcut == 5 then
-				currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
-			else
-				if tostring(whichShortcut) ~= "" then
-					currentShortcut = tostring(whichShortcut)
+			local index = string.find(currentShortcut, "-")
+			if index ~= nil then
+				local trimmedShortcut = string.sub(currentShortcut, index + 2)
+				effects:search():setValue(trimmedShortcut)
+
+				matches = effects:currentItemsUI()
+				if not matches or #matches == 0 then
+					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
+					return "Fail"
 				end
 			end
+		end
 
-			if currentShortcut == nil then
-				dialog.displayMessage(i18n("noEffectShortcut"))
-				showTouchbar()
-				return "Fail"
-			end
+		local effect = matches[1]
 
-			--------------------------------------------------------------------------------
-			-- Save the Transitions Browser layout:
-			--------------------------------------------------------------------------------
-			local transitions = fcp.app():transitions()
-			local transitionsLayout = transitions:saveLayout()
+		--------------------------------------------------------------------------------
+		-- Apply the selected Transition:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
 
-			--------------------------------------------------------------------------------
-			-- Get Effects Browser:
-			--------------------------------------------------------------------------------
-			local effects = fcp.app():effects()
-			local effectsShowing = effects:isShowing()
-			local effectsLayout = effects:saveLayout()
+		effects:applyItem(effect)
 
-			--------------------------------------------------------------------------------
-			-- Make sure panel is open:
-			--------------------------------------------------------------------------------
-			effects:show()
-
-			--------------------------------------------------------------------------------
-			-- Make sure "Installed Effects" is selected:
-			--------------------------------------------------------------------------------
-			effects:showInstalledEffects()
-
-			--------------------------------------------------------------------------------
-			-- Make sure there's nothing in the search box:
-			--------------------------------------------------------------------------------
-			effects:search():clear()
-
-			--------------------------------------------------------------------------------
-			-- Click 'All':
-			--------------------------------------------------------------------------------
-			effects:showAllTransitions()
-
-			--------------------------------------------------------------------------------
-			-- Perform Search:
-			--------------------------------------------------------------------------------
-			effects:search():setValue(currentShortcut)
-
-			--------------------------------------------------------------------------------
-			-- Get the list of matching effects
-			--------------------------------------------------------------------------------
-			local matches = effects:currentItemsUI()
-			if not matches or #matches == 0 then
-				--------------------------------------------------------------------------------
-				-- If Needed, Search Again Without Text Before First Dash:
-				--------------------------------------------------------------------------------
-				local index = string.find(currentShortcut, "-")
-				if index ~= nil then
-					local trimmedShortcut = string.sub(currentShortcut, index + 2)
-					effects:search():setValue(trimmedShortcut)
-
-					matches = effects:currentItemsUI()
-					if not matches or #matches == 0 then
-						dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-						return "Fail"
-					end
-				end
-			end
-
-			local effect = matches[1]
-
-			--------------------------------------------------------------------------------
-			-- Apply the selected Transition:
-			--------------------------------------------------------------------------------
-			hideTouchbar()
-
-			effects:applyItem(effect)
-
+		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+		timer.doAfter(0.000001, function()
 			showTouchbar()
 
 			effects:loadLayout(effectsLayout)
 			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 			if not effectsShowing then effects:hide() end
 		end)
-
+		
 	end
 
 	--------------------------------------------------------------------------------
 	-- TITLES SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function titlesShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -5074,356 +5071,82 @@ end
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Save the main Browser layout:
+		--------------------------------------------------------------------------------
+		local browser = fcp.app():browser()
+		local browserLayout = browser:saveLayout()
 
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Get Titles Browser:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occurred in titlesShortcut() whilst using fcp.getBrowserButtonBar().")
-			showTouchbar()
-			return "Fail"
-		end
+		local generators = fcp.app():generators()
+		local generatorsShowing = generators:isShowing()
+		local generatorsLayout = generators:saveLayout()
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Make sure panel is open:
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:show()
 
 		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
+		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
+		-- Click 'All':
 		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		generators:showAllTitles()
 
 		--------------------------------------------------------------------------------
-		-- Which Split Group?
+		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showInstalledTitles()
 
 		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
+		-- Perform Search:
 		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		generators:search():setValue(currentShortcut)
 
 		--------------------------------------------------------------------------------
-		-- Make sure Titles is selected:
+		-- Get the list of matching effects
 		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Titles from List.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				--if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				--end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay...
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						--if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						--end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Enter text into Search box:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Trigger Search:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
-		if result == nil then
-			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Selected Title:
-		--------------------------------------------------------------------------------
-		local selectedTitle = nil
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
-						selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Needed, Search Again Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		if selectedTitle == nil then
-
+		local matches = generators:currentItemsUI()
+		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
-			-- Remove first dash:
+			-- If Needed, Search Again Without Text Before First Dash:
 			--------------------------------------------------------------------------------
-			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+			local index = string.find(currentShortcut, "-")
+			if index ~= nil then
+				local trimmedShortcut = string.sub(currentShortcut, index + 2)
+				effects:search():setValue(trimmedShortcut)
 
-			--------------------------------------------------------------------------------
-			-- Enter text into Search box:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
-			if result == nil then
-				dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger Search:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Selected Title:
-			--------------------------------------------------------------------------------
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
-							selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
-						end
-					end
-				end
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click First Item in Browser:
-		--------------------------------------------------------------------------------
-		if selectedTitle ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Original Mouse Position:
-			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
-
-			--------------------------------------------------------------------------------
-			-- Get centre of button:
-			--------------------------------------------------------------------------------
-			local selectedTitlePosition = {}
-			selectedTitlePosition['x'] = selectedTitle:attributeValue("AXPosition")['x'] + (selectedTitle:attributeValue("AXSize")['w'] / 2)
-			selectedTitlePosition['y'] = selectedTitle:attributeValue("AXPosition")['y'] + (selectedTitle:attributeValue("AXSize")['h'] / 2)
-
-			--------------------------------------------------------------------------------
-			-- Double Click:
-			--------------------------------------------------------------------------------
-			tools.doubleLeftClick(selectedTitlePosition)
-
-			--------------------------------------------------------------------------------
-			-- Put it back:
-			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
-
-		else
-			dialog.displayErrorMessage("Unable to locate Title.\n\nError occurred in titlesShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-
-			--------------------------------------------------------------------------------
-			-- Make sure there's nothing in the search box:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Button IDs Again:
-			--------------------------------------------------------------------------------
-			local checkBoxCount = 1
-			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-					if checkBoxCount == 3 then libariesButtonID = i end
-					if checkBoxCount == 2 then photosAudioButtonID = i end
-					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-					checkBoxCount = checkBoxCount + 1
-				end
-			end
-			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in titlesShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Go back to previously selected panel:
-			--------------------------------------------------------------------------------
-			if whichBrowserPanelWasOpen == "Library" then
-				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occurred in titlesShortcut().")
-					showTouchbar()
+				matches = generators:currentItemsUI()
+				if not matches or #matches == 0 then
+					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
 					return "Fail"
 				end
 			end
-			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occurred in titlesShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-			if titlesGeneratorsSideBarClosed then
-				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in titlesShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
+		end
 
-			--------------------------------------------------------------------------------
-			-- Restore Touch Bar:
-			--------------------------------------------------------------------------------
+		local generator = matches[1]
+
+		--------------------------------------------------------------------------------
+		-- Apply the selected Transition:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		generators:applyItem(generator)
+
+		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+		timer.doAfter(0.000001, function()
 			showTouchbar()
+
+			generators:loadLayout(generatorsLayout)
+			if browserLayout then browser:loadLayout(browserLayout) end
+			if not generatorsShowing then generators:hide() end
 		end)
 
 	end
@@ -5463,378 +5186,82 @@ end
 			showTouchbar()
 			return "Fail"
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Save the main Browser layout:
+		--------------------------------------------------------------------------------
+		local browser = fcp.app():browser()
+		local browserLayout = browser:saveLayout()
 
 		--------------------------------------------------------------------------------
-		-- Get Browser Button Bar:
+		-- Get Titles Browser:
 		--------------------------------------------------------------------------------
-		local finalCutProBrowserButtonBar = fcp.getBrowserButtonBar()
-		if finalCutProBrowserButtonBar == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Button Bar.\n\nError occurred in generatorsShortcut() whilst using fcp.getBrowserButtonBar().")
-			showTouchbar()
-			return "Fail"
-		end
+		local generators = fcp.app():generators()
+		local generatorsShowing = generators:isShowing()
+		local generatorsLayout = generators:saveLayout()
 
 		--------------------------------------------------------------------------------
-		-- Get Button IDs:
+		-- Make sure panel is open:
 		--------------------------------------------------------------------------------
-		local libariesButtonID = nil
-		local photosAudioButtonID = nil
-		local titlesGeneratorsButtonID = nil
-		local checkBoxCount = 1
-		local whichBrowserPanelWasOpen = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXValue") == 1 then
-					if checkBoxCount == 3 then whichBrowserPanelWasOpen = "Library" end
-					if checkBoxCount == 2 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-					if checkBoxCount == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
-				end
-				if checkBoxCount == 3 then libariesButtonID = i end
-				if checkBoxCount == 2 then photosAudioButtonID = i end
-				if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-				checkBoxCount = checkBoxCount + 1
-
-			end
-		end
-		if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-			dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:show()
 
 		--------------------------------------------------------------------------------
-		-- Which Browser Panel is Open?
+		-- Make sure there's nothing in the search box:
 		--------------------------------------------------------------------------------
-		local whichBrowserPanelWasOpen = nil
-		if finalCutProBrowserButtonBar[libariesButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "Library" end
-		if finalCutProBrowserButtonBar[photosAudioButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "PhotosAndAudio" end
-		if finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:attributeValue("AXValue") == 1 then whichBrowserPanelWasOpen = "TitlesAndGenerators" end
+		generators:search():clear()
 
 		--------------------------------------------------------------------------------
-		-- If Titles & Generators is Closed, let's open it:
+		-- Click 'All':
 		--------------------------------------------------------------------------------
-		if whichBrowserPanelWasOpen ~= "TitlesAndGenerators" then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		generators:showAllGenerators()
 
 		--------------------------------------------------------------------------------
-		-- Which Split Group?
+		-- Make sure "Installed Titles" is selected:
 		--------------------------------------------------------------------------------
-		local titlesGeneratorsSplitGroup = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXSplitGroup" then
-				titlesGeneratorsSplitGroup = i
-				goto titlesGeneratorsSplitGroupExit
-			end
-		end
-		::titlesGeneratorsSplitGroupExit::
-		if titlesGeneratorsSplitGroup == nil then
-			dialog.displayErrorMessage("Unable to find Titles/Generators Split Group.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
+		generators:showInstalledGenerators()
 
 		--------------------------------------------------------------------------------
-		-- Is the Side Bar Closed?
+		-- Perform Search:
 		--------------------------------------------------------------------------------
-		local titlesGeneratorsSideBarClosed = true
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][1] ~= nil then
-					titlesGeneratorsSideBarClosed = false
-				end
-			end
-		end
-		if titlesGeneratorsSideBarClosed then
-			result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
+		generators:search():setValue(currentShortcut)
 
 		--------------------------------------------------------------------------------
-		-- Find Generators Row:
+		-- Get the list of matching effects
 		--------------------------------------------------------------------------------
-		local generatorsRow = nil
-		local foundTitles = false
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][i][1]:attributeValue("AXRole") == "AXGroup" then
-				if foundTitles == false then
-					foundTitles = true
-				else
-					generatorsRow = i
-					goto generatorsRowExit
-				end
-			end
-		end
-		::generatorsRowExit::
-		if generatorsRow == nil then
-			dialog.displayErrorMessage("Unable to find Generators Row.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Generators Row:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][1][1][generatorsRow]:setAttributeValue("AXSelected", true)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to select Generators from Sidebar.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Popup Button:
-		--------------------------------------------------------------------------------
-		local titlesPopupButton = nil
-		for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXPopUpButton" then
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXIdentifier") == "_NS:46" then
-					titlesPopupButton = i
-					goto titlesGeneratorsDropdownExit
-				end
-			end
-		end
-		if titlesPopupButton == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Popup Button.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsDropdownExit::
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles/Generators Popup Button is set to Installed Titles:
-		--------------------------------------------------------------------------------
-		if finalCutProBrowserButtonBar[titlesPopupButton]:attributeValue("AXValue") ~= "Installed Titles" then
-			local result = finalCutProBrowserButtonBar[titlesPopupButton]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Titles/Generators Popup Button.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			local result = finalCutProBrowserButtonBar[titlesPopupButton][1][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press First Popup Item.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay...
-		--------------------------------------------------------------------------------
-		timer.usleep(100000)
-
-		--------------------------------------------------------------------------------
-		-- Get Titles/Generators Group:
-		--------------------------------------------------------------------------------
-		local titlesGeneratorsGroup = nil
-		for i=1, finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup]:attributeValueCount("AXChildren") do
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i]:attributeValue("AXRole") == "AXGroup" then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXRole") == "AXScrollArea" then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][i][1]:attributeValue("AXIdentifier") == "_NS:9" then
-							titlesGeneratorsGroup = i
-							goto titlesGeneratorsGroupExit
-						end
-					end
-				end
-			end
-		end
-		if titlesGeneratorsGroup == nil then
-			dialog.displayErrorMessage("Unable to detect Titles/Generators Group.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-		::titlesGeneratorsGroupExit::
-
-		--------------------------------------------------------------------------------
-		-- Enter text into Search box:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
-		if result == nil then
-			dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Trigger Search:
-		--------------------------------------------------------------------------------
-		local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
-		if result == nil then
-			dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Selected Title:
-		--------------------------------------------------------------------------------
-		local selectedTitle = nil
-		if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
-						selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Needed, Search Again Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		if selectedTitle == nil then
-
+		local matches = generators:currentItemsUI()
+		if not matches or #matches == 0 then
 			--------------------------------------------------------------------------------
-			-- Remove first dash:
+			-- If Needed, Search Again Without Text Before First Dash:
 			--------------------------------------------------------------------------------
-			currentShortcut = string.sub(currentShortcut, string.find(currentShortcut, "-") + 2)
+			local index = string.find(currentShortcut, "-")
+			if index ~= nil then
+				local trimmedShortcut = string.sub(currentShortcut, index + 2)
+				effects:search():setValue(trimmedShortcut)
 
-			--------------------------------------------------------------------------------
-			-- Enter text into Search box:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3]:setAttributeValue("AXValue", currentShortcut)
-			if result == nil then
-				dialog.displayErrorMessage("Unable to enter search value.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Trigger Search:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][1]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Search Button.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Selected Title:
-			--------------------------------------------------------------------------------
-			if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup] ~= nil then
-				if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1] ~= nil then
-					if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1] ~= nil then
-						if finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1] ~= nil then
-							selectedTitle = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][titlesGeneratorsGroup][1][1][1]
-						end
-					end
-				end
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click First Item in Browser:
-		--------------------------------------------------------------------------------
-		if selectedTitle ~= nil then
-
-			--------------------------------------------------------------------------------
-			-- Original Mouse Position:
-			--------------------------------------------------------------------------------
-			local originalMousePosition = mouse.getAbsolutePosition()
-
-			--------------------------------------------------------------------------------
-			-- Get centre of button:
-			--------------------------------------------------------------------------------
-			local selectedTitlePosition = {}
-			selectedTitlePosition['x'] = selectedTitle:attributeValue("AXPosition")['x'] + (selectedTitle:attributeValue("AXSize")['w'] / 2)
-			selectedTitlePosition['y'] = selectedTitle:attributeValue("AXPosition")['y'] + (selectedTitle:attributeValue("AXSize")['h'] / 2)
-
-			--------------------------------------------------------------------------------
-			-- Double Click:
-			--------------------------------------------------------------------------------
-			tools.doubleLeftClick(selectedTitlePosition)
-
-			--------------------------------------------------------------------------------
-			-- Put it back:
-			--------------------------------------------------------------------------------
-			mouse.setAbsolutePosition(originalMousePosition)
-
-		else
-			dialog.displayErrorMessage("Unable to locate Generator.\n\nError occurred in generatorsShortcut().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add a bit of a delay:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-
-			--------------------------------------------------------------------------------
-			-- Make sure there's nothing in the search box:
-			--------------------------------------------------------------------------------
-			local result = finalCutProBrowserButtonBar[titlesGeneratorsSplitGroup][3][2]:performAction("AXPress")
-			if result == nil then
-				dialog.displayErrorMessage("Unable to press Cancel Search Button.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get Button IDs Again:
-			--------------------------------------------------------------------------------
-			local checkBoxCount = 1
-			for i=1, finalCutProBrowserButtonBar:attributeValueCount("AXChildren") do
-				if finalCutProBrowserButtonBar[i]:attributeValue("AXRole") == "AXCheckBox" then
-					if checkBoxCount == 3 then libariesButtonID = i end
-					if checkBoxCount == 2 then photosAudioButtonID = i end
-					if checkBoxCount == 1 then titlesGeneratorsButtonID = i end
-					checkBoxCount = checkBoxCount + 1
-				end
-			end
-			if libariesButtonID == nil or photosAudioButtonID == nil or titlesGeneratorsButtonID == nil then
-				dialog.displayErrorMessage("Unable to detect Browser Buttons.\n\nError occurred in generatorsShortcut().")
-				showTouchbar()
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Go back to previously selected panel:
-			--------------------------------------------------------------------------------
-			if whichBrowserPanelWasOpen == "Library" then
-				local result = finalCutProBrowserButtonBar[libariesButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Libraries Button.\n\nError occurred in generatorsShortcut().")
-					showTouchbar()
+				matches = generators:currentItemsUI()
+				if not matches or #matches == 0 then
+					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
 					return "Fail"
 				end
 			end
-			if whichBrowserPanelWasOpen == "PhotosAndAudio" then
-				local result = finalCutProBrowserButtonBar[photosAudioButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Photos & Audio Button.\n\nError occurred in generatorsShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
-			if titlesGeneratorsSideBarClosed then
-				local result = finalCutProBrowserButtonBar[titlesGeneratorsButtonID]:performAction("AXPress")
-				if result == nil then
-					dialog.displayErrorMessage("Unable to press Titles/Generator Button.\n\nError occurred in generatorsShortcut().")
-					showTouchbar()
-					return "Fail"
-				end
-			end
+		end
 
-			--------------------------------------------------------------------------------
-			-- Restore Touch Bar:
-			--------------------------------------------------------------------------------
+		local generator = matches[1]
+
+		--------------------------------------------------------------------------------
+		-- Apply the selected Transition:
+		--------------------------------------------------------------------------------
+		hideTouchbar()
+
+		generators:applyItem(generator)
+
+		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+		timer.doAfter(0.000001, function()
 			showTouchbar()
+
+			generators:loadLayout(generatorsLayout)
+			if browserLayout then browser:loadLayout(browserLayout) end
+			if not generatorsShowing then generators:hide() end
 		end)
 
 	end
