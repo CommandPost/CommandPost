@@ -586,7 +586,93 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	--console.clearConsole()
 
+
+	print(getMulticamAngleFromSelectedClip())
+
 end
+
+	--------------------------------------------------------------------------------
+	-- NINJA PASTEBOARD COPY:
+	--------------------------------------------------------------------------------
+	function getMulticamAngleFromSelectedClip()
+		local clipboardData = ninjaPasteboardCopy()
+
+		print(clipboardData)
+
+		if clipboardData ~= false then
+			local clipboardTable = plist.binaryToTable(clipboardData)
+			local fcpxData = clipboard.clipboardTable[ffpasteboardobject]
+			if fcpxData then
+				local fcpxTable = plist.base64ToTable(fcpxData)
+				return "yay"
+			else
+				return "error"
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- NINJA PASTEBOARD COPY:
+	--------------------------------------------------------------------------------
+	function ninjaPasteboardCopy()
+
+		--------------------------------------------------------------------------------
+		-- Variables:
+		--------------------------------------------------------------------------------
+		local ninjaPasteboardCopyError = false
+		local finalCutProClipboardUTI = fcp.clipboardUTI()
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+		--------------------------------------------------------------------------------
+		-- Stop Watching Clipboard:
+		--------------------------------------------------------------------------------
+		if enableClipboardHistory then clipboard.stopWatching() end
+
+		--------------------------------------------------------------------------------
+		-- Save Current Clipboard Contents for later:
+		--------------------------------------------------------------------------------
+		local originalClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+		just.wait(0.5) -- For some reason we need this after reading from Pasteboard?
+
+		--------------------------------------------------------------------------------
+		-- Trigger 'copy' from Menubar:
+		--------------------------------------------------------------------------------
+		local menuBar = fcp:app():menuBar()
+		if menuBar:isEnabled("Edit", "Copy") then
+			menuBar:selectMenu("Edit", "Copy")
+		else
+			dialog.displayErrorMessage("Failed to select Copy from Menubar.")
+			if enableClipboardHistory then clipboard.startWatching() end
+			return false
+		end
+
+		local newClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+		print(newClipboard)
+		just.wait(0.5) -- For some reason we need this after reading from Pasteboard?
+
+		--------------------------------------------------------------------------------
+		-- Restore Original Clipboard Contents:
+		--------------------------------------------------------------------------------
+		if originalClipboard ~= nil then
+			local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
+			if not result then
+				dialog.displayErrorMessage("Failed to restore original Clipboard item.")
+				if enableClipboardHistory then clipboard.startWatching() end
+				return false
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Start Watching Clipboard:
+		--------------------------------------------------------------------------------
+		if enableClipboardHistory then clipboard.startWatching() end
+
+		--------------------------------------------------------------------------------
+		-- Return New Clipboard:
+		--------------------------------------------------------------------------------
+		return newClipboard
+
+	end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
