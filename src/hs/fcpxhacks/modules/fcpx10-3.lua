@@ -4589,6 +4589,8 @@ end
 	--------------------------------------------------------------------------------
 	function multicamMatchFrame(goBackToTimeline) -- True or False
 
+		local errorFunction = "\n\nError occured in multicamMatchFrame()."
+
 		--------------------------------------------------------------------------------
 		-- Just in case:
 		--------------------------------------------------------------------------------
@@ -4616,7 +4618,7 @@ end
 		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
 			menuBar:selectMenu("Clip", "Open in Angle Editor")
 		else
-			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
 			return "Failed"
 		end
 
@@ -4626,7 +4628,7 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
 			return
 		end
 
@@ -4637,7 +4639,23 @@ end
 		local AXLayoutArea = 1
 		local AXGroup = multicamAngle
 		local AXButton = 5
-		timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress")
+
+		local angleButtonFound = false
+		if timelineScrollArea[AXLayoutArea] ~= nil then
+			if timelineScrollArea[AXLayoutArea][AXGroup] ~= nil then
+				if timelineScrollArea[AXLayoutArea][AXGroup][AXButton] ~= nil then
+					if timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1] ~= nil then
+						angleButtonFound = true
+						timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress") 		-- Switch Video
+						timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1]:performAction("AXPress") 	-- Switch Audio
+					end
+				end
+			end
+		end
+		if not angleButtonFound then
+			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
+			return
+		end
 
 		--------------------------------------------------------------------------------
 		-- Select Clip:
@@ -4645,7 +4663,7 @@ end
 		if menuBar:isEnabled("Edit", "Select Clip") then
 			menuBar:selectMenu("Edit", "Select Clip")
 		else
-			dialog.displayErrorMessage("Unable to select clip.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to select clip." .. errorFunction)
 			return
 		end
 
@@ -4655,7 +4673,7 @@ end
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to Reveal in Browser." .. errorFunction)
 			return
 		end
 
@@ -4666,7 +4684,7 @@ end
 			if menuBar:isEnabled("View", "Timeline History Back") then
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
-				dialog.displayErrorMessage("Unable to go back to previous timeline.\n\nError occured in multicamMatchFrame().")
+				dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
 				return
 			end
 		end
@@ -4683,12 +4701,14 @@ end
 		--------------------------------------------------------------------------------
 		function getMulticamAngleFromSelectedClip()
 
+			local errorFunction =  " Error occurred in getMulticamAngleFromSelectedClip()."
+
 			--------------------------------------------------------------------------------
 			-- Ninja Pasteboard Copy:
 			--------------------------------------------------------------------------------
 			local result, clipboardData = ninjaPasteboardCopy()
 			if not result then
-				debugMessage("Ninja Pasteboard Copy Failed.")
+				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
 				return false
 			end
 
@@ -4697,7 +4717,7 @@ end
 			--------------------------------------------------------------------------------
 			local clipboardTable = plist.binaryToTable(clipboardData)
 			if clipboardTable == nil then
-				debugMessage("Converting Binary Data to Table failed.")
+				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 				return false
 			end
 
@@ -4706,7 +4726,7 @@ end
 			--------------------------------------------------------------------------------
 			local fcpxData = clipboardTable["ffpasteboardobject"]
 			if fcpxData == nil then
-				debugMessage("Reading 'ffpasteboardobject' from Table failed.")
+				debugMessage("ERROR: Reading 'ffpasteboardobject' from Table failed." .. errorFunction)
 				return false
 			end
 
@@ -4715,7 +4735,7 @@ end
 			--------------------------------------------------------------------------------
 			local fcpxTable = plist.base64ToTable(fcpxData)
 			if fcpxTable == nil then
-				debugMessage("Converting Binary Data to Table failed.")
+				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 				return false
 			end
 
@@ -4731,7 +4751,7 @@ end
 				end
 			end
 			if not isMultiAngle then
-				debugMessage("The selected item is not a multi-angle clip.")
+				debugMessage("ERROR: The selected item is not a multi-angle clip." .. errorFunction)
 				return false
 			end
 
@@ -4749,7 +4769,7 @@ end
 				end
 			end
 			if FFAnchoredCollectionID == nil then
-				debugMessage("Failed to get FFAnchoredCollectionID.")
+				debugMessage("ERROR: Failed to get FFAnchoredCollectionID." .. errorFunction)
 				return false
 			end
 
@@ -4781,7 +4801,7 @@ end
 				end
 			end
 			if next(FFAnchoredCollectionTable) == nil then
-				debugMessage("Failed to get FFAnchoredCollectionTable.")
+				debugMessage("ERROR: Failed to get FFAnchoredCollectionTable." .. errorFunction)
 				return false
 			end
 
@@ -4797,7 +4817,7 @@ end
 				end
 			end
 			if videoAngle == nil then
-				debugMessage("Could not get videoAngle.")
+				debugMessage("ERROR: Could not get videoAngle." .. errorFunction)
 				return false
 			end
 
@@ -4806,7 +4826,7 @@ end
 			--------------------------------------------------------------------------------
 			local videoAngleReference = fcpxTable["$objects"][videoAngle["CF$UID"] + 1]
 			if videoAngleReference == nil then
-				debugMessage("Could not get videoAngleReference.")
+				debugMessage("ERROR: Could not get videoAngleReference." .. errorFunction)
 				return false
 			end
 
@@ -4823,7 +4843,7 @@ end
 				end
 			end
 			if result == nil then
-				debugMessage("Failed to get anchoredLane.")
+				debugMessage("ERROR: Failed to get anchoredLane." .. errorFunction)
 				return false
 			end
 
@@ -7266,6 +7286,8 @@ end
 	--------------------------------------------------------------------------------
 	function ninjaPasteboardCopy()
 
+		local errorFunction = " Error occurred in ninjaPasteboardCopy()."
+
 		--------------------------------------------------------------------------------
 		-- Variables:
 		--------------------------------------------------------------------------------
@@ -7290,7 +7312,7 @@ end
 		if menuBar:isEnabled("Edit", "Copy") then
 			menuBar:selectMenu("Edit", "Copy")
 		else
-			debugMessage("ERROR: Failed to select Copy from Menubar.")
+			debugMessage("ERROR: Failed to select Copy from Menubar." .. errorFunction)
 			if enableClipboardHistory then clipboard.startWatching() end
 			return false
 		end
@@ -7306,7 +7328,7 @@ end
 			end
 		end, 30, 0.5)
 		if newClipboard == nil then
-			debugMessage("ERROR: Failed to get new clipboard contents.")
+			debugMessage("ERROR: Failed to get new clipboard contents." .. errorFunction)
 			if enableClipboardHistory then clipboard.startWatching() end
 			return false
 		end
@@ -7317,7 +7339,7 @@ end
 		if originalClipboard ~= nil then
 			local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
 			if not result then
-				debugMessage("ERROR: Failed to restore original Clipboard item.")
+				debugMessage("ERROR: Failed to restore original Clipboard item." .. errorFunction)
 				if enableClipboardHistory then clipboard.startWatching() end
 				return false
 			end
