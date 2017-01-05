@@ -586,12 +586,6 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	console.clearConsole()
 
-	--------------------------------------------------------------------------------
-	-- Get Multicam Angle From Selected Clip:
-	--------------------------------------------------------------------------------
-	local result = getMulticamAngleFromSelectedClip()
-	print(result)
-
 end
 
 --------------------------------------------------------------------------------
@@ -7310,7 +7304,7 @@ end
 			if newClipboard ~= originalClipboard then
 				return true
 			end
-		end, 15)
+		end, 20)
 		if newClipboard == nil then
 			debugMessage("ERROR: Failed to get new clipboard contents.")
 			if enableClipboardHistory then clipboard.startWatching() end
