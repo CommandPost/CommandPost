@@ -7304,7 +7304,7 @@ end
 			if newClipboard ~= originalClipboard then
 				return true
 			end
-		end, 20)
+		end, 30, 0.5)
 		if newClipboard == nil then
 			debugMessage("ERROR: Failed to get new clipboard contents.")
 			if enableClipboardHistory then clipboard.startWatching() end
