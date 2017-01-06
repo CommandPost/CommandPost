@@ -584,7 +584,7 @@ function testingGround()
 	--------------------------------------------------------------------------------
 	-- Clear Console:
 	--------------------------------------------------------------------------------
-	--console.clearConsole()
+	console.clearConsole()
 
 end
 
@@ -4589,6 +4589,8 @@ end
 	--------------------------------------------------------------------------------
 	function multicamMatchFrame(goBackToTimeline) -- True or False
 
+		local errorFunction = "\n\nError occured in multicamMatchFrame()."
+
 		--------------------------------------------------------------------------------
 		-- Just in case:
 		--------------------------------------------------------------------------------
@@ -4600,15 +4602,23 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		local menuBar = fcp:app():menuBar()
+		--------------------------------------------------------------------------------
+		-- Get Multicam Angle:
+		--------------------------------------------------------------------------------
+		local multicamAngle = getMulticamAngleFromSelectedClip()
+		if multicamAngle == false then
+			dialog.displayErrorMessage("Unfortunately we were not able to determine the currently selected Angle.\n\nPlease make sure you actually have a multicam clip selected.")
+			return "Failed"
+		end
 
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
+		local menuBar = fcp:app():menuBar()
 		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
 			menuBar:selectMenu("Clip", "Open in Angle Editor")
 		else
-			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
 			return "Failed"
 		end
 
@@ -4618,7 +4628,47 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Timeline Scroll Area:
+		--------------------------------------------------------------------------------
+		local timelineScrollArea = fcp.getTimelineScrollArea()
+		if timelineScrollArea == nil then
+			dialog.displayErrorMessage("Unable to find Timeline Scroll Area." .. errorFunction)
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Press Angle Button:
+		--------------------------------------------------------------------------------
+		local angleButtonFound 		= false
+		local AXLayoutArea 			= 1
+		local AXGroup 				= multicamAngle
+		local AXButton 				= 5
+		if timelineScrollArea[AXLayoutArea] ~= nil then
+			if timelineScrollArea[AXLayoutArea][AXGroup] ~= nil then
+				if timelineScrollArea[AXLayoutArea][AXGroup][AXButton] ~= nil then
+					if timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1] ~= nil then
+						--------------------------------------------------------------------------------
+						-- Switch Video Angle:
+						--------------------------------------------------------------------------------
+						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress")
+						if result ~= nil and result ~= false then angleButtonFound = true end
+
+						--------------------------------------------------------------------------------
+						-- Switch Audio Angle:
+						--------------------------------------------------------------------------------
+						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1]:performAction("AXPress")
+						if result ~= nil and result ~= false then angleButtonFound = true end
+					end
+				end
+			end
+		end
+		if not angleButtonFound then
+			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
 			return
 		end
 
@@ -4628,7 +4678,7 @@ end
 		if menuBar:isEnabled("Edit", "Select Clip") then
 			menuBar:selectMenu("Edit", "Select Clip")
 		else
-			dialog.displayErrorMessage("Unable to select clip.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to select clip." .. errorFunction)
 			return
 		end
 
@@ -4638,7 +4688,7 @@ end
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser.\n\nError occured in multicamMatchFrame().")
+			dialog.displayErrorMessage("Unable to Reveal in Browser." .. errorFunction)
 			return
 		end
 
@@ -4649,7 +4699,7 @@ end
 			if menuBar:isEnabled("View", "Timeline History Back") then
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
-				dialog.displayErrorMessage("Unable to go back to previous timeline.\n\nError occured in multicamMatchFrame().")
+				dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
 				return
 			end
 		end
@@ -4660,6 +4710,164 @@ end
 		highlightFCPXBrowserPlayhead()
 
 	end
+
+		--------------------------------------------------------------------------------
+		-- GET MULTICAM ANGLE FROM SELECTED CLIP:
+		--------------------------------------------------------------------------------
+		function getMulticamAngleFromSelectedClip()
+
+			local errorFunction =  " Error occurred in getMulticamAngleFromSelectedClip()."
+
+			--------------------------------------------------------------------------------
+			-- Ninja Pasteboard Copy:
+			--------------------------------------------------------------------------------
+			local result, clipboardData = ninjaPasteboardCopy()
+			if not result then
+				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Convert Binary Data to Table:
+			--------------------------------------------------------------------------------
+			local clipboardTable = plist.binaryToTable(clipboardData)
+			if clipboardTable == nil then
+				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Read ffpasteboardobject from Table:
+			--------------------------------------------------------------------------------
+			local fcpxData = clipboardTable["ffpasteboardobject"]
+			if fcpxData == nil then
+				debugMessage("ERROR: Reading 'ffpasteboardobject' from Table failed." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Convert base64 Data to Table:
+			--------------------------------------------------------------------------------
+			local fcpxTable = plist.base64ToTable(fcpxData)
+			if fcpxTable == nil then
+				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Check the item isMultiAngle:
+			--------------------------------------------------------------------------------
+			local isMultiAngle = false
+			for k, v in pairs(fcpxTable["$objects"]) do
+				if type(fcpxTable["$objects"][k]) == "table" then
+					if fcpxTable["$objects"][k]["isMultiAngle"] then
+						isMultiAngle = true
+					end
+				end
+			end
+			if not isMultiAngle then
+				debugMessage("ERROR: The selected item is not a multi-angle clip." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get FFAnchoredCollection ID:
+			--------------------------------------------------------------------------------
+			local FFAnchoredCollectionID = nil
+			for k, v in pairs(fcpxTable["$objects"]) do
+				if type(fcpxTable["$objects"][k]) == "table" then
+					if fcpxTable["$objects"][k]["$classname"] ~= nil then
+						if fcpxTable["$objects"][k]["$classname"] == "FFAnchoredCollection" then
+							FFAnchoredCollectionID = k - 1
+						end
+					end
+				end
+			end
+			if FFAnchoredCollectionID == nil then
+				debugMessage("ERROR: Failed to get FFAnchoredCollectionID." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Find all FFAnchoredCollection's:
+			--------------------------------------------------------------------------------
+			local FFAnchoredCollectionTable = {}
+			for k, v in pairs(fcpxTable["$objects"]) do
+				if type(fcpxTable["$objects"][k]) == "table" then
+					for a, b in pairs(fcpxTable["$objects"][k]) do
+						if fcpxTable["$objects"][k][a] == FFAnchoredCollectionID then
+							FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+						end
+						if type(fcpxTable["$objects"][k][a]) == "table" then
+							for c, d in pairs(fcpxTable["$objects"][k][a]) do
+								if fcpxTable["$objects"][k][a][c] == FFAnchoredCollectionID then
+									FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+								end
+								if type(fcpxTable["$objects"][k][a][c]) == "table" then
+									for e, f in pairs(fcpxTable["$objects"][k][a][c]) do
+										if fcpxTable["$objects"][k][a][c][e] == FFAnchoredCollectionID then
+											FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+			if next(FFAnchoredCollectionTable) == nil then
+				debugMessage("ERROR: Failed to get FFAnchoredCollectionTable." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get the videoAngle:
+			--------------------------------------------------------------------------------
+			local videoAngle = nil
+			for k, v in pairs(fcpxTable["$objects"]) do
+				if type(fcpxTable["$objects"][k]) == "table" then
+					if fcpxTable["$objects"][k]["videoAngle"] then
+						videoAngle = fcpxTable["$objects"][k]["videoAngle"]
+					end
+				end
+			end
+			if videoAngle == nil then
+				debugMessage("ERROR: Could not get videoAngle." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Get the videoAngle Reference:
+			--------------------------------------------------------------------------------
+			local videoAngleReference = fcpxTable["$objects"][videoAngle["CF$UID"] + 1]
+			if videoAngleReference == nil then
+				debugMessage("ERROR: Could not get videoAngleReference." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Match the FFAnchoredCollectionTable Video Angle with videoAngle:
+			--------------------------------------------------------------------------------
+			local result = nil
+			for a, b in pairs(FFAnchoredCollectionTable) do
+				local angleID = fcpxTable["$objects"][b["angleID"]["CF$UID"] + 1]
+				if angleID ~= nil then
+					if angleID == videoAngleReference then
+						result = b["anchoredLane"]
+					end
+				end
+			end
+			if result == nil then
+				debugMessage("ERROR: Failed to get anchoredLane." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Return Result:
+			--------------------------------------------------------------------------------
+			return result
+
+		end
 
 	--------------------------------------------------------------------------------
 	-- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
@@ -7087,6 +7295,82 @@ end
 --------------------------------------------------------------------------------
 -- GENERAL:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- NINJA PASTEBOARD COPY:
+	--------------------------------------------------------------------------------
+	function ninjaPasteboardCopy()
+
+		local errorFunction = " Error occurred in ninjaPasteboardCopy()."
+
+		--------------------------------------------------------------------------------
+		-- Variables:
+		--------------------------------------------------------------------------------
+		local ninjaPasteboardCopyError = false
+		local finalCutProClipboardUTI = fcp.clipboardUTI()
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
+		--------------------------------------------------------------------------------
+		-- Stop Watching Clipboard:
+		--------------------------------------------------------------------------------
+		if enableClipboardHistory then clipboard.stopWatching() end
+
+		--------------------------------------------------------------------------------
+		-- Save Current Clipboard Contents for later:
+		--------------------------------------------------------------------------------
+		local originalClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+
+		--------------------------------------------------------------------------------
+		-- Trigger 'copy' from Menubar:
+		--------------------------------------------------------------------------------
+		local menuBar = fcp:app():menuBar()
+		if menuBar:isEnabled("Edit", "Copy") then
+			menuBar:selectMenu("Edit", "Copy")
+		else
+			debugMessage("ERROR: Failed to select Copy from Menubar." .. errorFunction)
+			if enableClipboardHistory then clipboard.startWatching() end
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Wait until something new is actually on the Pasteboard:
+		--------------------------------------------------------------------------------
+		local newClipboard = nil
+		just.doUntil(function()
+			newClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+			if newClipboard ~= originalClipboard then
+				return true
+			end
+		end, 30, 0.5)
+		if newClipboard == nil then
+			debugMessage("ERROR: Failed to get new clipboard contents." .. errorFunction)
+			if enableClipboardHistory then clipboard.startWatching() end
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restore Original Clipboard Contents:
+		--------------------------------------------------------------------------------
+		if originalClipboard ~= nil then
+			local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
+			if not result then
+				debugMessage("ERROR: Failed to restore original Clipboard item." .. errorFunction)
+				if enableClipboardHistory then clipboard.startWatching() end
+				return false
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Start Watching Clipboard:
+		--------------------------------------------------------------------------------
+		if enableClipboardHistory then clipboard.startWatching() end
+
+		--------------------------------------------------------------------------------
+		-- Return New Clipboard:
+		--------------------------------------------------------------------------------
+		return true, newClipboard
+
+	end
 
 	--------------------------------------------------------------------------------
 	-- EMAIL BUG REPORT:
