@@ -524,6 +524,8 @@ local newPlist = [[
 	end)
 	clipboard.timer:start()
 
+	debugMessage("Started Clipboard Watcher")
+
 end
 
 --------------------------------------------------------------------------------
@@ -533,6 +535,7 @@ function clipboard.stopWatching()
 	if clipboard.timer then
 		clipboard.timer:stop()
 		clipboard.timer = nil
+		debugMessage("Stopped Clipboard Watcher")
 	end
 end
 
