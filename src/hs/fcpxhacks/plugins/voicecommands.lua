@@ -64,8 +64,20 @@ local listenerCommands = {
 -- LISTENER CALLBACK:
 --------------------------------------------------------------------------------
 local listenerCallback = function(listenerObj, text)
-	module.talker:speak(text)
+
+	local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
+	local voiceCommandEnableAnnouncements = settings.get("fcpxHacks.voiceCommandEnableAnnouncements")
+
+	if voiceCommandEnableAnnouncements then
+		module.talker:speak(text)
+	end
+
+	if voiceCommandEnableVisualAlerts then
+		dialog.displayNotification(text)
+	end
+
 	listenerCommands[text]()
+
 end
 
 --------------------------------------------------------------------------------
@@ -73,21 +85,25 @@ end
 --------------------------------------------------------------------------------
 module.new = function()
 
-	module.listener = listener.new("FCPX Hacks")
-	if module.listener ~= nil then
-		local commands = {}
-		for i,v in pairs(listenerCommands) do
-			commands[#commands + 1] = i
+	if module.listener == nil then
+		module.listener = listener.new("FCPX Hacks")
+		if module.listener ~= nil then
+			local commands = {}
+			for i,v in pairs(listenerCommands) do
+				commands[#commands + 1] = i
+			end
+			module.listener:foregroundOnly(false)
+						   :blocksOtherRecognizers(true)
+						   :commands(commands)
+						   :setCallback(listenerCallback)
+		else
+			-- Something went wrong:
+			return false
 		end
-		module.listener:foregroundOnly(false)
-					   :blocksOtherRecognizers(true)
-					   :commands(commands)
-					   :setCallback(listenerCallback)
-	else
-		dialog.displayMessage("Dictation Commands could not be activated.\n\nPlease try again.")
-	end
 
-	module.talker = speech.new()
+		module.talker = speech.new()
+	end
+	return true
 
 end
 
@@ -97,10 +113,14 @@ end
 module.start = function()
 
 	if module.listener == nil then
-		module.new()
+		local result = module.new()
+		if result == false then
+			return false
+		end
 	end
 	if module.listener ~= nil then
 		module.listener:start()
+		return true
 	end
 
 end

@@ -359,8 +359,8 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 
 	local appleScript = [[
 		set dialogPrompt to "]] .. dialogPrompt .. [["
-		set listOptions to ]] .. inspect(listOptions) .. [[
-		set defaultItems to ]] .. inspect(defaultItems) .. [[
+		set listOptions to ]] .. inspect(listOptions) .. "\n\n" .. [[
+		set defaultItems to ]] .. inspect(defaultItems) .. "\n\n" .. [[
 
 		if isFinalCutProFrontmost is true then
 			tell application id finalCutProBundleID
@@ -371,6 +371,7 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 			return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
 		end if
 	]]
+
 	local a,result = osascript.applescript(commonAppleScript .. appleScript)
 	return result
 
@@ -393,8 +394,7 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 	end
 
 	local appleScript = [[
-		set defaultColor to ]] .. inspect(defaultColor) .. [[
-
+		set defaultColor to ]] .. inspect(defaultColor) .. "\n\n" .. [[
 		if isFinalCutProFrontmost is true then
 			tell application id finalCutProBundleID
 				return choose color default color defaultColor
