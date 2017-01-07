@@ -249,10 +249,10 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
-    local fcpVersion    = fcp.app():getVersion()
-    local fcpPath		= fcp.app():getPath()
+    local fcpVersion    = fcp:getVersion()
+    local fcpPath		= fcp:getPath()
     local osVersion     = tools.macOSVersion()
-    local fcpLanguage   = fcp.app():getCurrentLanguage()
+    local fcpLanguage   = fcp:getCurrentLanguage()
 
     --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:

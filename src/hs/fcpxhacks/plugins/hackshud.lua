@@ -149,10 +149,10 @@ function hackshud.new()
 		if window:id() ~= hackshud.windowID then
 			local hsFrontmost = application.applicationsForBundleID(hackshud.hsBundleID)[1]:isFrontmost()
 			if hsFrontmost ~= nil then
-				if not fcp.app():isFrontmost() and hsFrontmost then
+				if not fcp:isFrontmost() and hsFrontmost then
 					hackshud.hide()
 				else
-					if not fcp.app():isFrontmost() and window.frontmostWindow():title() == "Hammerspoon Console" then
+					if not fcp:isFrontmost() and window.frontmostWindow():title() == "Hammerspoon Console" then
 						hackshud.hide()
 					end
 				end
@@ -236,7 +236,7 @@ function hackshud.reload()
 	hackshud.windowID			= nil
 	hackshud.new()
 
-	if hudActive and fcp.app():isFrontmost() then
+	if hudActive and fcp:isFrontmost() then
 		hackshud.show()
 	end
 
@@ -259,7 +259,7 @@ function hackshud.assignButton(button)
 	--------------------------------------------------------------------------------
 	-- Was Final Cut Pro Open?
 	--------------------------------------------------------------------------------
-	hackshud.wasFinalCutProOpen = fcp.app():isFrontmost()
+	hackshud.wasFinalCutProOpen = fcp:isFrontmost()
 	hackshud.whichButton = button
 
 	hudButtonChooser = chooser.new(hackshud.chooserAction):bgDark(true)
@@ -296,7 +296,7 @@ function hackshud.chooserAction(result)
 	-- Put focus back in Final Cut Pro:
 	--------------------------------------------------------------------------------
 	if hackshud.wasFinalCutProOpen then
-		fcp.app():launch()
+		fcp:launch()
 	end
 
 	--------------------------------------------------------------------------------
@@ -614,7 +614,7 @@ function hackshud.choices()
 	local chooserMenuItems = settings.get("fcpxHacks.chooserMenuItems") or {}
 	if next(chooserMenuItems) == nil then
 		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
-		local fcpxElements = ax.applicationElement(fcp.app():application())
+		local fcpxElements = ax.applicationElement(fcp:application())
 		if fcpxElements ~= nil then
 			local whichMenuBar = nil
 			for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -871,7 +871,7 @@ function generateHTML()
 	--------------------------------------------------------------------------------
 	-- Get Final Cut Pro Preferences:
 	--------------------------------------------------------------------------------
-	local preferences = fcp.app():getPreferences()
+	local preferences = fcp:getPreferences()
 
 	--------------------------------------------------------------------------------
 	-- FFPlayerQuality
@@ -1107,7 +1107,7 @@ function hackshud.hudCallback(eventName, params)
 
 	timer.doAfter(0.0000000001, function() _G[params["function"]](f1, f2, f3, f4) end )
 
-	fcp.app():launch()
+	fcp:launch()
 
 end
 
