@@ -6320,15 +6320,21 @@ function finalCutProWindowWatcher()
 		if applicationName == "Final Cut Pro" then
 			if window:title() == "" then
 				local fcpx = fcp:application()
-				local fcpxElements = ax.applicationElement(fcpx)
-				if fcpxElements[1][1] ~= nil then
-					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
-						-------------------------------------------------------------------------------
-						-- Hide HUD:
-						--------------------------------------------------------------------------------
-						if settings.get("fcpxHacks.enableHacksHUD") then
-								hackshud:hide()
-								wasInFullscreenMode = true
+				if fcpx ~= nil then
+					local fcpxElements = ax.applicationElement(fcpx)
+					if fcpxElements ~= nil then
+						if fcpxElements[1] ~= nil then
+							if fcpxElements[1][1] ~= nil then
+								if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+									-------------------------------------------------------------------------------
+									-- Hide HUD:
+									--------------------------------------------------------------------------------
+									if settings.get("fcpxHacks.enableHacksHUD") then
+											hackshud:hide()
+											wasInFullscreenMode = true
+									end
+								end
+							end
 						end
 					end
 				end
