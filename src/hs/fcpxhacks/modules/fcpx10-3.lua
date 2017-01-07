@@ -269,7 +269,13 @@ function loadScript()
 		settings.set("fcpxHacks.lastFinalCutProVersion", fcp:getVersion())
 	else
 		if lastFinalCutProVersion ~= fcp:getVersion() then
-			settings.set("fcpxHacks.chooserMenuItems", nil) -- Reset Chooser Menu Items.
+			for i, v in ipairs(settings.getKeys()) do
+				if (v:sub(1,10)) == "fcpxHacks." then
+					if v:sub(-16) == "chooserMenuItems" then
+						settings.set(v, nil)
+					end
+				end
+			end
 			settings.set("fcpxHacks.lastFinalCutProVersion", fcp:getVersion())
 		end
 	end

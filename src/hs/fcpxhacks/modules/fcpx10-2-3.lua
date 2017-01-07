@@ -194,44 +194,44 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Settings Defaults:
 		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", false) end
-		if hs.settings.get("fcpxHacks.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks.scrollingTimelineActive", false) end
-		if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false) end
+		if hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") == nil then hs.settings.set("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback", false) end
+		if hs.settings.get("fcpxHacks1023.scrollingTimelineActive") == nil then hs.settings.set("fcpxHacks1023.scrollingTimelineActive", false) end
+		if hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro") == nil then hs.settings.set("fcpxHacks1023.enableHacksShortcutsInFinalCutPro", false) end
 
 		--------------------------------------------------------------------------------
 		-- Useful Debugging Information:
 		--------------------------------------------------------------------------------
-		local settingsDebug1 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
-		local settingsDebug2 = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or ""
-		local settingsDebug3 = hs.settings.get("fcpxHacks.allEffects") or ""
-		local settingsDebug4 = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or ""
-		local settingsDebug5 = hs.settings.get("fcpxHacks.effectsListUpdated") or ""
-		local settingsDebug6 = hs.settings.get("fcpxHacks.displayHighlightShape") or ""
-		local settingsDebug7 = hs.settings.get("fcpxHacks.displayHighlightColour") or ""
-		local settingsDebug8 = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or ""
-		local settingsDebug9 = hs.settings.get("fcpxHacks.effectsShortcutOne") or ""
-		local settingsDebug10 = hs.settings.get("fcpxHacks.effectsShortcutTwo") or ""
-		local settingsDebug11 = hs.settings.get("fcpxHacks.effectsShortcutThree") or ""
-		local settingsDebug12 = hs.settings.get("fcpxHacks.effectsShortcutFour") or ""
-		local settingsDebug13 = hs.settings.get("fcpxHacks.effectsShortcutFive") or ""
-		local settingsDebug14 = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or ""
-		local settingsDebug15 = hs.settings.get("fcpxHacks.scrollingTimelineActive") or ""
-		local settingsDebug16 = hs.settings.get("fcpxHacks.lastVersion") or ""
-		local settingsDebug17 = hs.settings.get("fcpxHacks.enableClipboardHistory") or ""
+		local settingsDebug1 = hs.settings.get("fcpxHacks1023.effectsShortcutThree") or ""
+		local settingsDebug2 = hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro") or ""
+		local settingsDebug3 = hs.settings.get("fcpxHacks1023.allEffects") or ""
+		local settingsDebug4 = hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") or ""
+		local settingsDebug5 = hs.settings.get("fcpxHacks1023.effectsListUpdated") or ""
+		local settingsDebug6 = hs.settings.get("fcpxHacks1023.displayHighlightShape") or ""
+		local settingsDebug7 = hs.settings.get("fcpxHacks1023.displayHighlightColour") or ""
+		local settingsDebug8 = hs.settings.get("fcpxHacks1023.displayMenubarAsIcon") or ""
+		local settingsDebug9 = hs.settings.get("fcpxHacks1023.effectsShortcutOne") or ""
+		local settingsDebug10 = hs.settings.get("fcpxHacks1023.effectsShortcutTwo") or ""
+		local settingsDebug11 = hs.settings.get("fcpxHacks1023.effectsShortcutThree") or ""
+		local settingsDebug12 = hs.settings.get("fcpxHacks1023.effectsShortcutFour") or ""
+		local settingsDebug13 = hs.settings.get("fcpxHacks1023.effectsShortcutFive") or ""
+		local settingsDebug14 = hs.settings.get("fcpxHacks1023.enableProxyMenuIcon") or ""
+		local settingsDebug15 = hs.settings.get("fcpxHacks1023.scrollingTimelineActive") or ""
+		local settingsDebug16 = hs.settings.get("fcpxHacks1023.lastVersion") or ""
+		local settingsDebug17 = hs.settings.get("fcpxHacks1023.enableClipboardHistory") or ""
 		local settingsDebug18 = nil
-		if hs.settings.get("fcpxHacks.clipboardHistory") ~= nil then
+		if hs.settings.get("fcpxHacks1023.clipboardHistory") ~= nil then
 			settingsDebug18 = "X"
 		else
 			settingsDebug18 = ""
 		end
 		local settingsDebug19 = nil
-		if hs.settings.get("fcpxHacks.prowlAPIKey") ~= nil then
+		if hs.settings.get("fcpxHacks1023.prowlAPIKey") ~= nil then
 			settingsDebug19 = "X"
 		else
 			settingsDebug19 = ""
 		end
-		local settingsDebug20 = hs.settings.get("fcpxHacks.enableMobileNotifications") or ""
-		local settingsDebug21 = hs.settings.get("fcpxHacks.enableMediaImportWatcher") or ""
+		local settingsDebug20 = hs.settings.get("fcpxHacks1023.enableMobileNotifications") or ""
+		local settingsDebug21 = hs.settings.get("fcpxHacks1023.enableMediaImportWatcher") or ""
 		print("[FCPX Hacks] Settings: " .. tostring(settingsDebug1) .. ";" .. tostring(settingsDebug2) .. ";"  .. tostring(settingsDebug3) .. ";"  .. tostring(settingsDebug4) .. ";"  .. tostring(settingsDebug5) .. ";"  .. tostring(settingsDebug6) .. ";"  .. tostring(settingsDebug7) .. ";"  .. tostring(settingsDebug8) .. ";"  .. tostring(settingsDebug9) .. ";"  .. tostring(settingsDebug10) .. ";"  .. tostring(settingsDebug11) .. ";"  .. tostring(settingsDebug12) .. ";"  .. tostring(settingsDebug13) .. ";"  .. tostring(settingsDebug14) .. ";"  .. tostring(settingsDebug15) .. ";"  .. tostring(settingsDebug16) .. ";" .. tostring(settingsDebug17) .. ";" .. tostring(settingsDebug18) .. ";" .. tostring(settingsDebug19) .. ";" .. tostring(settingsDebug20) .. ";" .. tostring(settingsDebug21) .. ".")
 
 		-------------------------------------------------------------------------------
@@ -249,12 +249,12 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
 		--------------------------------------------------------------------------------
-		if hs.settings.get("fcpxHacks.lastVersion") == nil then
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
-			hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+		if hs.settings.get("fcpxHacks1023.lastVersion") == nil then
+			hs.settings.set("fcpxHacks1023.lastVersion", scriptVersion)
+			hs.settings.set("fcpxHacks1023.enableHacksShortcutsInFinalCutPro", false)
 		else
-			if tonumber(hs.settings.get("fcpxHacks.lastVersion")) < tonumber(scriptVersion) then
-				if hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
+			if tonumber(hs.settings.get("fcpxHacks1023.lastVersion")) < tonumber(scriptVersion) then
+				if hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro") then
 					local finalCutProRunning = isFinalCutProRunning()
 					if finalCutProRunning then
 						displayMessage("This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.")
@@ -272,7 +272,7 @@ function loadScript()
 					end
 				end
 			end
-			hs.settings.set("fcpxHacks.lastVersion", scriptVersion)
+			hs.settings.set("fcpxHacks1023.lastVersion", scriptVersion)
 		end
 
 		--------------------------------------------------------------------------------
@@ -324,19 +324,19 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			-- Clipboard Watcher:
 			--------------------------------------------------------------------------------
-			local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+			local enableClipboardHistory = settings.get("fcpxHacks1023.enableClipboardHistory") or false
 			if enableClipboardHistory then clipboardWatcher() end
 
 			--------------------------------------------------------------------------------
 			-- Notification Watcher:
 			--------------------------------------------------------------------------------
-			local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+			local enableMobileNotifications = settings.get("fcpxHacks1023.enableMobileNotifications") or false
 			if enableMobileNotifications then notificationWatcher() end
 
 			--------------------------------------------------------------------------------
 			-- Media Import Watcher:
 			--------------------------------------------------------------------------------
-			local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+			local enableMediaImportWatcher = settings.get("fcpxHacks1023.enableMediaImportWatcher") or false
 			if enableMediaImportWatcher then mediaImportWatcher() end
 
 		--------------------------------------------------------------------------------
@@ -358,7 +358,7 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			-- Enable Fullscreen Playback Shortcut Keys:
 			--------------------------------------------------------------------------------
-			if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
+			if hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") then
 				fullscreenKeyboardWatcherUp:start()
 				fullscreenKeyboardWatcherDown:start()
 			end
@@ -366,7 +366,7 @@ function loadScript()
 			--------------------------------------------------------------------------------
 			-- Enable Scrolling Timeline:
 			--------------------------------------------------------------------------------
-			if hs.settings.get("fcpxHacks.scrollingTimelineActive") then
+			if hs.settings.get("fcpxHacks1023.scrollingTimelineActive") then
 				scrollingTimelineWatcherUp:start()
 				scrollingTimelineWatcherDown:start()
 			end
@@ -454,7 +454,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -1309,7 +1309,7 @@ function chooserChoices()
 	--------------------------------------------------------------------------------
 	-- Effects List:
 	--------------------------------------------------------------------------------
-	local allEffects = hs.settings.get("fcpxHacks.allEffects")
+	local allEffects = hs.settings.get("fcpxHacks1023.allEffects")
 	if allEffects ~= nil and next(allEffects) ~= nil then
 		for i=1, #allEffects do
 			individualEffect = {
@@ -1479,13 +1479,13 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Menubar Display Mode from Settings:
 	--------------------------------------------------------------------------------
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon") or false
+	local displayMenubarAsIcon = hs.settings.get("fcpxHacks1023.displayMenubarAsIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = hs.settings.get("fcpxHacks1023.displayHighlightShape")
 	local displayHighlightShapeRectangle = false
 	local displayHighlightShapeCircle = false
 	local displayHighlightShapeDiamond = false
@@ -1498,7 +1498,7 @@ function refreshMenuBar(refreshPlistValues)
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = hs.settings.get("fcpxHacks1023.displayHighlightColour")
 	local displayHighlightColourRed = false
 	local displayHighlightColourBlue = false
 	local displayHighlightColourGreen = false
@@ -1512,22 +1512,22 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Get Enable Shortcuts During Fullscreen Playback from Settings:
 	--------------------------------------------------------------------------------
-	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
+	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Effects List Updated from Settings:
 	--------------------------------------------------------------------------------
-	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated") or false
+	local effectsListUpdated = hs.settings.get("fcpxHacks1023.effectsListUpdated") or false
 
 	--------------------------------------------------------------------------------
 	-- Get Enable Proxy Menu Item:
 	--------------------------------------------------------------------------------
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon") or false
+	local enableProxyMenuIcon = hs.settings.get("fcpxHacks1023.enableProxyMenuIcon") or false
 
 	--------------------------------------------------------------------------------
 	-- Hammerspoon Settings:
@@ -1540,22 +1540,22 @@ function refreshMenuBar(refreshPlistValues)
 	--------------------------------------------------------------------------------
 	-- Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	scrollingTimelineActive = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
+	scrollingTimelineActive = hs.settings.get("fcpxHacks1023.scrollingTimelineActive") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Clipboard History:
 	--------------------------------------------------------------------------------
-	enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	enableClipboardHistory = settings.get("fcpxHacks1023.enableClipboardHistory") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Mobile Notifications:
 	--------------------------------------------------------------------------------
-	enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+	enableMobileNotifications = settings.get("fcpxHacks1023.enableMobileNotifications") or false
 
 	--------------------------------------------------------------------------------
 	-- Enable Media Import Watcher:
 	--------------------------------------------------------------------------------
-	enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+	enableMediaImportWatcher = settings.get("fcpxHacks1023.enableMediaImportWatcher") or false
 
 	--------------------------------------------------------------------------------
 	-- Clipboard History Menu:
@@ -1682,7 +1682,7 @@ end
 --------------------------------------------------------------------------------
 function displayShortcutList()
 
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	if enableHacksShortcutsInFinalCutPro then
@@ -1740,13 +1740,13 @@ end
 -- TOGGLE MEDIA IMPORT WATCHER:
 --------------------------------------------------------------------------------
 function toggleMediaImportWatcher()
-	local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+	local enableMediaImportWatcher = settings.get("fcpxHacks1023.enableMediaImportWatcher") or false
 	if not enableMediaImportWatcher then
 		mediaImportWatcher()
 	else
 		newDeviceMounted:stop()
 	end
-	settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
+	settings.set("fcpxHacks1023.enableMediaImportWatcher", not enableMediaImportWatcher)
 	refreshMenuBar()
 end
 
@@ -1754,13 +1754,13 @@ end
 -- TOGGLE CLIPBOARD HISTORY:
 --------------------------------------------------------------------------------
 function toggleEnableClipboardHistory()
-	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	local enableClipboardHistory = settings.get("fcpxHacks1023.enableClipboardHistory") or false
 	if not enableClipboardHistory then
 		clipboardWatcher()
 	else
 		clipboardTimer:stop()
 	end
-	settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
+	settings.set("fcpxHacks1023.enableClipboardHistory", not enableClipboardHistory)
 	refreshMenuBar()
 end
 
@@ -1768,8 +1768,8 @@ end
 -- TOGGLE MOBILE NOTIFICATIONS:
 --------------------------------------------------------------------------------
 function toggleEnableMobileNotifications()
-	local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
-	local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
+	local enableMobileNotifications 	= settings.get("fcpxHacks1023.enableMobileNotifications") or false
+	local prowlAPIKey 					= settings.get("fcpxHacks1023.prowlAPIKey") or ""
 
 	if not enableMobileNotifications then
 
@@ -1814,9 +1814,9 @@ function toggleEnableMobileNotifications()
 		local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
 		if prowlAPIKeyValidResult then
 			if returnToFinalCutPro then launchFinalCutPro() end
-			settings.set("fcpxHacks.prowlAPIKey", result)
+			settings.set("fcpxHacks1023.prowlAPIKey", result)
 			notificationWatcher()
-			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+			settings.set("fcpxHacks1023.enableMobileNotifications", not enableMobileNotifications)
 		else
 			displayMessage("The Prowl API Key failed to validate due to the following error: " .. prowlAPIKeyValidError .. ".\n\nPlease try again.")
 			goto retryProwlAPIKeyEntry
@@ -1824,7 +1824,7 @@ function toggleEnableMobileNotifications()
 	else
 		shareSuccessNotificationWatcher:stop()
 		shareFailedNotificationWatcher:stop()
-		settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
+		settings.set("fcpxHacks1023.enableMobileNotifications", not enableMobileNotifications)
 	end
 	refreshMenuBar()
 end
@@ -1999,7 +1999,7 @@ function resetSettings()
 			-- Trash all FCPX Hacks Settings:
 			--------------------------------------------------------------------------------
 			for i, v in ipairs(hs.settings.getKeys()) do
-				if (v:sub(1,10)) == "fcpxHacks." then
+				if (v:sub(1,10)) == "fcpxHacks1023." then
 					hs.settings.set(v, nil)
 				end
 			end
@@ -2295,8 +2295,8 @@ function updateEffectsList()
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.allEffects", allEffects)
-		hs.settings.set("fcpxHacks.effectsListUpdated", true)
+		hs.settings.set("fcpxHacks1023.allEffects", allEffects)
+		hs.settings.set("fcpxHacks1023.effectsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -2326,8 +2326,8 @@ function assignEffectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Just in case...
 	--------------------------------------------------------------------------------
-	local effectsListUpdated = hs.settings.get("fcpxHacks.effectsListUpdated")
-	local allEffects = hs.settings.get("fcpxHacks.allEffects")
+	local effectsListUpdated = hs.settings.get("fcpxHacks1023.effectsListUpdated")
+	local allEffects = hs.settings.get("fcpxHacks1023.allEffects")
 
 	if not effectsListUpdated then
 		displayErrorMessage("The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.")
@@ -2397,11 +2397,11 @@ function effectChooserAction(result)
 		-- Save the selection:
 		--------------------------------------------------------------------------------
 		whichShortcut = result["whichShortcut"]
-		if whichShortcut == 1 then hs.settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
-		if whichShortcut == 2 then hs.settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
-		if whichShortcut == 3 then hs.settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
-		if whichShortcut == 4 then hs.settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
-		if whichShortcut == 5 then hs.settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
+		if whichShortcut == 1 then hs.settings.set("fcpxHacks1023.effectsShortcutOne", 		result["text"]) end
+		if whichShortcut == 2 then hs.settings.set("fcpxHacks1023.effectsShortcutTwo", 		result["text"]) end
+		if whichShortcut == 3 then hs.settings.set("fcpxHacks1023.effectsShortcutThree", 	result["text"]) end
+		if whichShortcut == 4 then hs.settings.set("fcpxHacks1023.effectsShortcutFour", 	result["text"]) end
+		if whichShortcut == 5 then hs.settings.set("fcpxHacks1023.effectsShortcutFive", 	result["text"]) end
 	end
 
 	--------------------------------------------------------------------------------
@@ -2417,12 +2417,12 @@ end
 -- TOGGLE ENABLE PROXY MENU ICON:
 --------------------------------------------------------------------------------
 function toggleEnableProxyMenuIcon()
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
+	local enableProxyMenuIcon = hs.settings.get("fcpxHacks1023.enableProxyMenuIcon")
 	if enableProxyMenuIcon == nil then
-		hs.settings.set("fcpxHacks.enableProxyMenuIcon", true)
+		hs.settings.set("fcpxHacks1023.enableProxyMenuIcon", true)
 		enableProxyMenuIcon = true
 	else
-		hs.settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
+		hs.settings.set("fcpxHacks1023.enableProxyMenuIcon", not enableProxyMenuIcon)
 	end
 
 	updateMenubarIcon()
@@ -2437,8 +2437,8 @@ function updateMenubarIcon()
 
 	local fcpxHacksIcon = hs.image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
 	local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
-	local enableProxyMenuIcon = hs.settings.get("fcpxHacks.enableProxyMenuIcon")
+	local displayMenubarAsIcon = hs.settings.get("fcpxHacks1023.displayMenubarAsIcon")
+	local enableProxyMenuIcon = hs.settings.get("fcpxHacks1023.enableProxyMenuIcon")
 	local proxyMenuIcon = ""
 	local proxyStatusIcon = getProxyStatusIcon()
 
@@ -2482,7 +2482,7 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 	--------------------------------------------------------------------------------
 	-- Get current value from settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = hs.settings.get("fcpxHacks1023.enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -2622,7 +2622,7 @@ function toggleEnableHacksShortcutsInFinalCutPro()
 		--------------------------------------------------------------------------------
 		-- Save new value to settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
+		hs.settings.set("fcpxHacks1023.enableHacksShortcutsInFinalCutPro", not enableHacksShortcutsInFinalCutPro)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -2656,9 +2656,9 @@ end
 --------------------------------------------------------------------------------
 function toggleEnableShortcutsDuringFullscreenPlayback()
 
-	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
+	local enableShortcutsDuringFullscreenPlayback = hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback")
 	if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
-	hs.settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
+	hs.settings.set("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
 
 	if enableShortcutsDuringFullscreenPlayback == true then
 	 	fullscreenKeyboardWatcherUp:stop()
@@ -2690,7 +2690,7 @@ end
 -- CHANGE HIGHLIGHT SHAPE:
 --------------------------------------------------------------------------------
 function changeHighlightShape(value)
-	hs.settings.set("fcpxHacks.displayHighlightShape", value)
+	hs.settings.set("fcpxHacks1023.displayHighlightShape", value)
 	refreshMenuBar()
 end
 
@@ -2698,7 +2698,7 @@ end
 -- CHANGE HIGHLIGHT COLOUR:
 --------------------------------------------------------------------------------
 function changeHighlightColour(value)
-	hs.settings.set("fcpxHacks.displayHighlightColour", value)
+	hs.settings.set("fcpxHacks1023.displayHighlightColour", value)
 	refreshMenuBar()
 end
 
@@ -2707,16 +2707,16 @@ end
 --------------------------------------------------------------------------------
 function toggleMenubarDisplayMode()
 
-	local displayMenubarAsIcon = hs.settings.get("fcpxHacks.displayMenubarAsIcon")
+	local displayMenubarAsIcon = hs.settings.get("fcpxHacks1023.displayMenubarAsIcon")
 
 
 	if displayMenubarAsIcon == nil then
-		 hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
+		 hs.settings.set("fcpxHacks1023.displayMenubarAsIcon", true)
 	else
 		if displayMenubarAsIcon then
-			hs.settings.set("fcpxHacks.displayMenubarAsIcon", false)
+			hs.settings.set("fcpxHacks1023.displayMenubarAsIcon", false)
 		else
-			hs.settings.set("fcpxHacks.displayMenubarAsIcon", true)
+			hs.settings.set("fcpxHacks1023.displayMenubarAsIcon", true)
 		end
 	end
 
@@ -3580,7 +3580,7 @@ end
 --------------------------------------------------------------------------------
 function clearClipboardHistory()
 	clipboardHistory = {}
-	settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+	settings.set("fcpxHacks1023.clipboardHistory", clipboardHistory)
 	clipboardCurrentChange = pasteboard.changeCount()
 	refreshMenuBar()
 end
@@ -3632,7 +3632,7 @@ end
 --------------------------------------------------------------------------------
 function moveToPlayhead()
 
-	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	local enableClipboardHistory = settings.get("fcpxHacks1023.enableClipboardHistory") or false
 
 	if enableClipboardHistory then clipboardTimer:stop() end
 
@@ -4071,12 +4071,12 @@ function toggleScrollingTimeline()
 	--------------------------------------------------------------------------------
 	-- Toggle Scrolling Timeline:
 	--------------------------------------------------------------------------------
-	scrollingTimelineActivated = hs.settings.get("fcpxHacks.scrollingTimelineActive") or false
+	scrollingTimelineActivated = hs.settings.get("fcpxHacks1023.scrollingTimelineActive") or false
 	if scrollingTimelineActivated then
 		--------------------------------------------------------------------------------
 		-- Update Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.scrollingTimelineActive", false)
+		hs.settings.set("fcpxHacks1023.scrollingTimelineActive", false)
 
 		--------------------------------------------------------------------------------
 		-- Stop Watchers:
@@ -4103,7 +4103,7 @@ function toggleScrollingTimeline()
 		--------------------------------------------------------------------------------
 		-- Update Settings:
 		--------------------------------------------------------------------------------
-		hs.settings.set("fcpxHacks.scrollingTimelineActive", true)
+		hs.settings.set("fcpxHacks1023.scrollingTimelineActive", true)
 
 		--------------------------------------------------------------------------------
 		-- Start Watchers:
@@ -4232,11 +4232,11 @@ function effectsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentShortcut = nil
-	if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutOne") end
-	if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutTwo") end
-	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutThree") end
-	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFour") end
-	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks.effectsShortcutFive") end
+	if whichShortcut == 1 then currentShortcut = hs.settings.get("fcpxHacks1023.effectsShortcutOne") end
+	if whichShortcut == 2 then currentShortcut = hs.settings.get("fcpxHacks1023.effectsShortcutTwo") end
+	if whichShortcut == 3 then currentShortcut = hs.settings.get("fcpxHacks1023.effectsShortcutThree") end
+	if whichShortcut == 4 then currentShortcut = hs.settings.get("fcpxHacks1023.effectsShortcutFour") end
+	if whichShortcut == 5 then currentShortcut = hs.settings.get("fcpxHacks1023.effectsShortcutFive") end
 	if type(whichShortcut) == "string" then currentShortcut = whichShortcut end
 
 	if currentShortcut == nil then
@@ -7349,7 +7349,7 @@ function fcpxSaveKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Save Values to Settings:
 	--------------------------------------------------------------------------------
-	local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
+	local savedKeywords = hs.settings.get("fcpxHacks1023.savedKeywords")
 	if savedKeywords == nil then savedKeywords = {} end
 	for i=1, 9 do
 		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
@@ -7357,7 +7357,7 @@ function fcpxSaveKeywordSearches(whichButton)
 		end
 		savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
 	end
-	hs.settings.set("fcpxHacks.savedKeywords", savedKeywords)
+	hs.settings.set("fcpxHacks1023.savedKeywords", savedKeywords)
 
 	--------------------------------------------------------------------------------
 	-- Saved:
@@ -7379,7 +7379,7 @@ function fcpxRestoreKeywordSearches(whichButton)
 	--------------------------------------------------------------------------------
 	-- Get Values from FCPX's plist:
 	--------------------------------------------------------------------------------
-	local savedKeywords = hs.settings.get("fcpxHacks.savedKeywords")
+	local savedKeywords = hs.settings.get("fcpxHacks1023.savedKeywords")
 	local restoredKeywordValues = {}
 
 	if savedKeywords == nil then
@@ -8776,14 +8776,14 @@ function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouse
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = hs.settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = hs.settings.get("fcpxHacks1023.displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightColour = nil
-	displayHighlightColour = hs.settings.get("fcpxHacks.displayHighlightColour")
+	displayHighlightColour = hs.settings.get("fcpxHacks1023.displayHighlightColour")
 	if displayHighlightColour == nil then 		displayHighlightColour = "Red" 												end
 	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
@@ -9606,7 +9606,7 @@ end
 --------------------------------------------------------------------------------
 function notificationWatcherAction(name, object, userInfo)
 
-	local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+	local prowlAPIKey = settings.get("fcpxHacks1023.prowlAPIKey") or nil
 	if prowlAPIKey ~= nil then
 
 		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
@@ -9658,13 +9658,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 	  		refreshMenuBar()
 
 	  		-- Full Screen Keyboard Watcher:
-	  		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+	  		if hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") == true then
 		  		fullscreenKeyboardWatcherUp:start()
 				fullscreenKeyboardWatcherDown:start()
 			end
 
 			-- Disable Scrolling Timeline Watcher:
-			if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
+			if hs.settings.get("fcpxHacks1023.scrollingTimelineActive") == true then
 				if scrollingTimelineWatcherUp ~= nil then
 					scrollingTimelineWatcherUp:start()
 					scrollingTimelineWatcherDown:start()
@@ -9677,13 +9677,13 @@ function finalCutProWatcher(appName, eventType, appObject)
 			--------------------------------------------------------------------------------
 
 	   		-- Full Screen Keyboard Watcher:
-	   		if hs.settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
+	   		if hs.settings.get("fcpxHacks1023.enableShortcutsDuringFullscreenPlayback") == true then
 		  		fullscreenKeyboardWatcherUp:stop()
 				fullscreenKeyboardWatcherDown:stop()
 			end
 
 			-- Disable Scrolling Timeline Watcher:
-			if hs.settings.get("fcpxHacks.scrollingTimelineActive") == true then
+			if hs.settings.get("fcpxHacks1023.scrollingTimelineActive") == true then
 				if scrollingTimelineWatcherUp ~= nil then
 					scrollingTimelineWatcherUp:stop()
 					scrollingTimelineWatcherDown:stop()
@@ -9926,7 +9926,7 @@ function clipboardWatcher()
 	--------------------------------------------------------------------------------
 	-- Get Clipboard History from Settings:
 	--------------------------------------------------------------------------------
-	clipboardHistory = settings.get("fcpxHacks.clipboardHistory") or {}
+	clipboardHistory = settings.get("fcpxHacks1023.clipboardHistory") or {}
 
 	--------------------------------------------------------------------------------
 	-- Reset:
@@ -10105,7 +10105,7 @@ function clipboardWatcher()
 					--------------------------------------------------------------------------------
 					-- Update Settings:
 					--------------------------------------------------------------------------------
-					settings.set("fcpxHacks.clipboardHistory", clipboardHistory)
+					settings.set("fcpxHacks1023.clipboardHistory", clipboardHistory)
 
 					--------------------------------------------------------------------------------
 					-- Refresh Menubar:
