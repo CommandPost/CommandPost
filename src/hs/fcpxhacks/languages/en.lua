@@ -29,6 +29,9 @@ return {
 			secs								=			"secs",
 			mins								=			"mins",
 			version								=			"Version",
+			unassigned							=			"Unassigned",
+			enabled								=			"Enabled",
+			disabled							=			"Disabled",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -416,6 +419,50 @@ return {
 	reveal								=			"Reveal",
 	play								=			"Play",
 	lane								=			"Lane",
+
+	--------------------------------------------------------------------------------
+	-- HACKS HUD:
+	--------------------------------------------------------------------------------
+	hacksHUD							=			"Hacks HUD",
+	originalOptimised					=			"Original/Optimised",
+	betterQuality						=			"Better Quality",
+	betterPerformance					=			"Better Performance",
+	proxy								=			"Proxy",
+	hudDropZoneText						=			"Drag from Browser to Here",
+	hudDropZoneError					=			"Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?",
+	hudButtonError						=			"There is currently no action assigned to this button.\n\nYou can allocate a function to this button via the FCPX Hacks menubar.",
+	hudXMLNameDialog					=			"How would you like to label this XML file?",
+	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
+	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the FCPX Hacks menu and try again.",
+
+	--------------------------------------------------------------------------------
+	-- CONSOLE:
+	--------------------------------------------------------------------------------
+	highlightedItem						=			"Highlighted Item",
+	removeFromList						=			"Remove from List",
+	mode								=			"Mode",
+	normal								=			"Normal",
+	removeFromList						=			"Remove from List",
+	restoreToList						=			"Restore to List",
+	displayOptions						=			"Display Options",
+	showNone							=			"Show None",
+	showAll								=			"Show All",
+	showAutomation						=			"Show Automation",
+	showHacks							=			"Show Hacks",
+	showShortcuts						=			"Show Shortcuts",
+	showVideoEffects					=			"Show Video Effects",
+	showAudioEffects					=			"Show Audio Effects",
+	showTransitions						=			"Show Transitions",
+	showTitles							=			"Show Titles",
+	showGenerators						=			"Show Generators",
+	showMenuItems						=			"Show Menu Items",
+	rememberLastQuery					=			"Remember Last Query",
+	update								=			"Update",
+	effectsShortcuts					=			"Effects Shortcuts",
+	transitionsShortcuts				=			"Transitions Shortcuts",
+	titlesShortcuts						=			"Titles Shortcuts",
+	generatorsShortcuts					=			"Generators Shortcuts",
+	menuItems							=			"Menu Items",
 
 	}
 }

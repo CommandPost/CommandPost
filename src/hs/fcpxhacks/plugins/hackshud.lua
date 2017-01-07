@@ -41,7 +41,7 @@ local tools										= require("hs.fcpxhacks.modules.tools")
 -- SETTINGS:
 --------------------------------------------------------------------------------
 
-hackshud.name									= "Hacks HUD"
+hackshud.name									= i18n("hacksHUD")
 hackshud.width									= 350
 hackshud.heightInspector						= 75
 hackshud.heightDropTargets						= 75
@@ -286,10 +286,11 @@ function hackshud.chooserAction(result)
 		--------------------------------------------------------------------------------
 		-- Save the selection:
 		--------------------------------------------------------------------------------
-		if hackshud.whichButton == 1 then settings.set("fcpxHacks.hudButtonOne", 	result) end
-		if hackshud.whichButton == 2 then settings.set("fcpxHacks.hudButtonTwo", 	result) end
-		if hackshud.whichButton == 3 then settings.set("fcpxHacks.hudButtonThree", 	result) end
-		if hackshud.whichButton == 4 then settings.set("fcpxHacks.hudButtonFour", 	result) end
+		local currentLanguage = fcp:getCurrentLanguage()
+		if hackshud.whichButton == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonOne", 	result) end
+		if hackshud.whichButton == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonTwo", 	result) end
+		if hackshud.whichButton == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonThree", 	result) end
+		if hackshud.whichButton == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonFour", 	result) end
 	end
 
 	--------------------------------------------------------------------------------
@@ -611,7 +612,8 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Menu Items:
 	--------------------------------------------------------------------------------
-	local chooserMenuItems = settings.get("fcpxHacks.chooserMenuItems") or {}
+	local currentLanguage = fcp:getCurrentLanguage()
+	local chooserMenuItems = settings.get("fcpxHacks." .. currentLanguage .. ".chooserMenuItems") or {}
 	if next(chooserMenuItems) == nil then
 		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
 		local fcpxElements = ax.applicationElement(fcp:application())
@@ -679,7 +681,7 @@ function hackshud.choices()
 				end
 			end
 		end
-		settings.set("fcpxHacks.chooserMenuItems", chooserMenuItems)
+		settings.set("fcpxHacks." .. currentLanguage .. ".chooserMenuItems", chooserMenuItems)
 	else
 		--------------------------------------------------------------------------------
 		-- Insert Menu Items from Settings:
@@ -693,7 +695,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
-	local allVideoEffects = settings.get("fcpxHacks.allVideoEffects")
+	local allVideoEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
 	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 		for i=1, #allVideoEffects do
 			individualEffect = {
@@ -712,7 +714,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Audio Effects List:
 	--------------------------------------------------------------------------------
-	local allAudioEffects = settings.get("fcpxHacks.allAudioEffects")
+	local allAudioEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
 	if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 		for i=1, #allAudioEffects do
 			individualEffect = {
@@ -731,7 +733,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Transitions List:
 	--------------------------------------------------------------------------------
-	local allTransitions = settings.get("fcpxHacks.allTransitions")
+	local allTransitions = settings.get("fcpxHacks." .. currentLanguage .. ".allTransitions")
 	if allTransitions ~= nil and next(allTransitions) ~= nil then
 		for i=1, #allTransitions do
 			local individualEffect = {
@@ -750,7 +752,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Titles List:
 	--------------------------------------------------------------------------------
-	local allTitles = settings.get("fcpxHacks.allTitles")
+	local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
 	if allTitles ~= nil and next(allTitles) ~= nil then
 		for i=1, #allTitles do
 			individualEffect = {
@@ -769,7 +771,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Generators List:
 	--------------------------------------------------------------------------------
-	local allGenerators = settings.get("fcpxHacks.allGenerators")
+	local allGenerators = settings.get("fcpxHacks." .. currentLanguage .. ".allGenerators")
 	if allGenerators ~= nil and next(allGenerators) ~= nil then
 		for i=1, #allGenerators do
 			local individualEffect = {
@@ -850,7 +852,7 @@ function generateHTML()
 	-- Get Custom HUD Button Values:
 	--------------------------------------------------------------------------------
 	local unallocatedButton = {
-		["text"] = "Unassigned",
+		["text"] = i18n("unassigned"),
 		["subText"] = "",
 		["function"] = "",
 		["function1"] = "",
@@ -858,10 +860,11 @@ function generateHTML()
 		["function3"] = "",
 		["function4"] = "",
 	}
-	local hudButtonOne 		= settings.get("fcpxHacks.hudButtonOne") 	or unallocatedButton
-	local hudButtonTwo 		= settings.get("fcpxHacks.hudButtonTwo") 	or unallocatedButton
-	local hudButtonThree 	= settings.get("fcpxHacks.hudButtonThree") 	or unallocatedButton
-	local hudButtonFour 	= settings.get("fcpxHacks.hudButtonFour") 	or unallocatedButton
+	local currentLanguage 	= fcp:getCurrentLanguage()
+	local hudButtonOne 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or unallocatedButton
+	local hudButtonTwo 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or unallocatedButton
+	local hudButtonThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonThree") 	or unallocatedButton
+	local hudButtonFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonFour") 	or unallocatedButton
 
 	local hudButtonOneURL	= hudButtonFunctionsToURL(hudButtonOne)
 	local hudButtonTwoURL	= hudButtonFunctionsToURL(hudButtonTwo)
@@ -887,15 +890,21 @@ function generateHTML()
 		FFPlayerQuality = preferences["FFPlayerQuality"]
 	end
 	local playerQuality = nil
+
+	local originalOptimised = i18n("originalOptimised")
+	local betterQuality = i18n("betterQuality")
+	local betterPerformance = i18n("betterPerformance")
+	local proxy = i18n("proxy")
+
 	if FFPlayerQuality == 10 then
-		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">Original/Optimised</span>'
-		playerQuality = '<span style="color: ' .. hackshud.fcpGreen .. ';">Better Quality</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. originalOptimised .. '</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. betterQuality .. '</span>'
 	elseif FFPlayerQuality == 5 then
-		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">Original/Optimised</span>'
-		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">Better Performance</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. originalOptimised .. '</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">' .. betterPerformance .. '</span>'
 	elseif FFPlayerQuality == 4 then
-		playerMedia = '<span style="color: ' .. hackshud.fcpRed .. ';">Proxy</span>'
-		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">Proxy</span>'
+		playerMedia = '<span style="color: ' .. hackshud.fcpRed .. ';">' .. proxy .. '</span>'
+		playerQuality = '<span style="color: ' .. hackshud.fcpRed .. ';">' .. proxy .. '</span>'
 	end
 	if preferences["FFAutoRenderDelay"] == nil then
 		FFAutoRenderDelay = "0.3"
@@ -910,9 +919,9 @@ function generateHTML()
 
 	local backgroundRender = nil
 	if FFAutoStartBGRender then
-		backgroundRender = '<span style="color: ' .. hackshud.fcpGreen .. ';">Enabled (' .. FFAutoRenderDelay .. 'secs)</span>'
+		backgroundRender = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. i18n("enabled") .. ' (' .. FFAutoRenderDelay .. 'secs)</span>'
 	else
-		backgroundRender = '<span style="color: ' .. hackshud.fcpRed .. ';">Disabled</span>'
+		backgroundRender = '<span style="color: ' .. hackshud.fcpRed .. ';">' .. i18n("disabled") .. '</span>'
 	end
 
 	local html = [[<!DOCTYPE html>
@@ -1002,7 +1011,7 @@ function generateHTML()
 				console.log('The controller does not exist yet');
 				}
 
-				x.value = "DROP FROM FINAL CUT PRO BROWSER TO HERE";
+				x.value = "]] .. string.upper(i18n("hudDropZoneText")) .. [[";
 			}
 
 		</script>
@@ -1041,7 +1050,7 @@ function generateHTML()
 		<table>
 			<tr>
 				<th style="width: 30%;">XML Sharing:</th>
-				<th style="width: 70%;"><form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="DRAG FROM BROWSER TO HERE"></form></th>
+				<th style="width: 70%;"><form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="]] .. string.upper(i18n("hudDropZoneText")) .. [["></form></th>
 			<tr>
 		</table>]]
 	end
@@ -1085,7 +1094,7 @@ function hackshud.javaScriptCallback(message)
 		if string.find(message["body"], "<!DOCTYPE fcpxml>") ~= nil then
 			hackshud.shareXML(message["body"])
 		else
-			dialog.displayMessage("Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?")
+			dialog.displayMessage(i18n("hudDropZoneError"))
 		end
 	end
 end
@@ -1115,7 +1124,7 @@ end
 -- DISPLAY UNALLOCATED HUD MESSAGE:
 --------------------------------------------------------------------------------
 function displayUnallocatedHUDMessage()
-	dialog.displayMessage("There is currently no action assigned to this button.\n\nYou can allocate a function to this button via the FCPX Hacks menubar.")
+	dialog.displayMessage(i18n("hudButtonError"))
 end
 
 --------------------------------------------------------------------------------
@@ -1161,7 +1170,7 @@ function hackshud.shareXML(incomingXML)
 		--------------------------------------------------------------------------------
 		-- Display Text Box:
 		--------------------------------------------------------------------------------
-		local textboxResult = dialog.displayTextBoxMessage("How would you like to label this XML file?", "The label you entered has special characters that cannot be used.\n\nPlease try again.", "")
+		local textboxResult = dialog.displayTextBoxMessage(i18n("hudXMLNameDialog"), i18n("hudXMLNameError"), "")
 
 		--------------------------------------------------------------------------------
 		-- Save the XML content to the Shared XML Folder:
@@ -1177,7 +1186,7 @@ function hackshud.shareXML(incomingXML)
 		file:close()
 
 	else
-		dialog.displayMessage("XML Sharing is currently disabled.\n\nPlease enable it via the FCPX Hacks menu and try again.")
+		dialog.displayMessage(i18n("hudXMLSharingDisabled"))
 	end
 
 end
