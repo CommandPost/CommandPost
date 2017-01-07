@@ -121,6 +121,11 @@ function MenuBar:findMenuUI(...)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
 	local menuUI = self:UI()
+	
+	if not menuUI then
+		return nil
+	end
+	
 	local menuItemUI = nil
 	
 	for i=1,select('#', ...) do
