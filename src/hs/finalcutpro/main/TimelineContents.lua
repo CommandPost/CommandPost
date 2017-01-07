@@ -8,27 +8,27 @@ local axutils							= require("hs.finalcutpro.axutils")
 
 local Playhead							= require("hs.finalcutpro.main.Playhead")
 
-local TimelineContent = {}
+local TimelineContents = {}
 
-function TimelineContent.matches(element)
+function TimelineContents.matches(element)
 	return element 
 	    and element:attributeValue("AXIdentifier") == "_NS:16"
 		and element:attributeValue("AXRole") == "AXLayoutArea"
 		and element:attributeValueCount("AXAuditIssues") < 1
 end
 
-function TimelineContent:new(parent)
+function TimelineContents:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function TimelineContent:parent()
+function TimelineContents:parent()
 	return self._parent
 end
 
-function TimelineContent:app()
+function TimelineContents:app()
 	return self:parent():app()
 end
 
@@ -37,23 +37,23 @@ end
 --- TIMELINE CONTENT UI
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function TimelineContent:UI()
+function TimelineContents:UI()
 	return axutils.cache(self, "_ui", function()
 		local scrollArea = self:scrollAreaUI()
 		if scrollArea then
-			return axutils.childMatching(scrollArea, TimelineContent.matches)
+			return axutils.childMatching(scrollArea, TimelineContents.matches)
 		end
 		return nil
 	end,
-	TimelineContent.matches)
+	TimelineContents.matches)
 end
 
-function TimelineContent:scrollAreaUI()
+function TimelineContents:scrollAreaUI()
 	local main = self:parent():mainUI()
 	if main then
 		return axutils.childMatching(main, function(child)
 			if child:attributeValue("AXIdentifier") == "_NS:9" and child:attributeValue("AXRole") == "AXScrollArea" then
-				return axutils.childMatching(child:attributeValue("AXContents"), TimelineContent.matches) ~= nil
+				return axutils.childMatching(child:attributeValue("AXContents"), TimelineContents.matches) ~= nil
 			end
 			return false
 		end)
@@ -61,16 +61,16 @@ function TimelineContent:scrollAreaUI()
 	return nil
 end
 
-function TimelineContent:isShowing()
+function TimelineContents:isShowing()
 	return self:UI() ~= nil
 end
 
-function TimelineContent:show()
+function TimelineContents:show()
 	self:parent():show()
 	return self
 end
 
-function TimelineContent:hide()
+function TimelineContents:hide()
 	self:parent():hide()
 	return self
 end
@@ -80,51 +80,55 @@ end
 --- PLAYHEAD
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function TimelineContent:playhead()
+function TimelineContents:playhead()
 	if not self._playhead then
-		self._playhead = Playhead:new(self)
+		self._playhead = Playhead:new(self, false, function()
+			return self:UI()
+		end)
 	end
 	return self._playhead
 end
 
-function TimelineContent:horizontalScrollBarUI()
+function TimelineContents:skimmingPlayhead()
+	if not self._skimmingPlayhead then
+		self._skimmingPlayhead = Playhead:new(self, true)
+	end
+	return self._skimmingPlayhead
+end
+
+function TimelineContents:horizontalScrollBarUI()
 	local ui = self:scrollAreaUI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
-function TimelineContent:verticalScrollBarUI()
+function TimelineContents:verticalScrollBarUI()
 	local ui = self:scrollAreaUI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
-function TimelineContent:viewWidth()
+function TimelineContents:viewFrame()
+	local ui = self:scrollAreaUI()
 	local hScroll = self:horizontalScrollBarUI()
-	return hScroll and hScroll:size().w or nil
-end
-
-function TimelineContent:viewFrame()
-	local hScroll = self:horizontalScrollBarUI()
+	local vScroll = self:verticalScrollBarUI()
+	
+	local frame = ui:frame()
+	
 	if hScroll then
-		local scrollArea = hScroll:parent()
-		local sap = scrollArea:position()
-		local hsFrame = hScroll:frame()
-		if sap and hsFrame then
-			return {x = sap.x, y = sap.y, w = hsFrame.w, h = hsFrame.y-sap.y}
-		end
+		frame.h = frame.h - hScroll:frame().h
 	end
-	local scrollArea = self:scrollAreaUI()
-	if scrollArea then
-		return scrollArea:frame()
+	
+	if vScroll then
+		frame.w = frame.w - vScroll:frame().w
 	end
-	return nil
+	return frame
 end
 
-function TimelineContent:timelineFrame()
+function TimelineContents:timelineFrame()
 	local ui = self:UI()
 	return ui and ui:frame()
 end
 
-function TimelineContent:scrollHorizontalBy(shift)
+function TimelineContents:scrollHorizontalBy(shift)
 	local ui = self:horizontalScrollBarUI()
 	if ui then
 		local indicator = ui[1]
@@ -133,7 +137,7 @@ function TimelineContent:scrollHorizontalBy(shift)
 	end
 end
 
-function TimelineContent:scrollHorizontalTo(value)
+function TimelineContents:scrollHorizontalTo(value)
 	local ui = self:horizontalScrollBarUI()
 	if ui then
 		local indicator = ui[1]
@@ -144,12 +148,12 @@ function TimelineContent:scrollHorizontalTo(value)
 	end
 end
 
-function TimelineContent:getScrollHorizontal()
+function TimelineContents:getScrollHorizontal()
 	local ui = self:horizontalScrollBarUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
-function TimelineContent:scrollVerticalBy(shift)
+function TimelineContents:scrollVerticalBy(shift)
 	local ui = self:verticalScrollBarUI()
 	if ui then
 		local indicator = ui[1]
@@ -158,7 +162,7 @@ function TimelineContent:scrollVerticalBy(shift)
 	end
 end
 
-function TimelineContent:scrollVerticalTo(value)
+function TimelineContents:scrollVerticalTo(value)
 	local ui = self:verticalScrollBarUI()
 	if ui then
 		local indicator = ui[1]
@@ -169,7 +173,7 @@ function TimelineContent:scrollVerticalTo(value)
 	end
 end
 
-function TimelineContent:getScrollVertical()
+function TimelineContents:getScrollVertical()
 	local ui = self:verticalScrollBarUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
@@ -180,7 +184,7 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
---- hs.finalcutpro.main.TimelineContent:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- hs.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table containing the list of selected clips. 
 ---
@@ -196,7 +200,7 @@ end
 --- Returns:
 ---  * The table of selected axuielements that match the conditions
 ---
-function TimelineContent:selectedClipsUI(expandGroups, filterFn)
+function TimelineContents:selectedClipsUI(expandGroups, filterFn)
 	local ui = self:UI()
 	if ui then
 		local clips = ui:attributeValue("AXSelectedChildren")
@@ -205,7 +209,7 @@ function TimelineContent:selectedClipsUI(expandGroups, filterFn)
 	return nil
 end
 
---- hs.finalcutpro.main.TimelineContent:clipsUI(expandedGroups, filterFn) -> table of axuielements
+--- hs.finalcutpro.main.TimelineContents:clipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table containing the list of clips in the Timeline.
 ---
@@ -221,7 +225,7 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 ---
-function TimelineContent:clipsUI(expandGroups, filterFn)
+function TimelineContents:clipsUI(expandGroups, filterFn)
 	local ui = self:UI()
 	if ui then
 		local clips = fnutils.filter(ui:children(), function(child)
@@ -233,7 +237,7 @@ function TimelineContent:clipsUI(expandGroups, filterFn)
 	return nil
 end
 
-function TimelineContent:_filterClips(clips, expandGroups, filterFn)
+function TimelineContents:_filterClips(clips, expandGroups, filterFn)
 	if expandGroups then
 		return self:_expandClips(clips, filterFn)
 	elseif filterFn ~= nil then
@@ -243,7 +247,7 @@ function TimelineContent:_filterClips(clips, expandGroups, filterFn)
 	end
 end
 
-function TimelineContent:_expandClips(clips, filterFn)
+function TimelineContents:_expandClips(clips, filterFn)
 	return fnutils.mapCat(clips, function(child)
 		local role = child:attributeValue("AXRole")
 		if role == "AXLayoutItem" then
@@ -257,7 +261,7 @@ function TimelineContent:_expandClips(clips, filterFn)
 	end)
 end
 
-function TimelineContent:selectClips(clipsUI)
+function TimelineContents:selectClips(clipsUI)
 	local ui = self:UI()
 	if ui then
 		local selectedClips = {}
@@ -269,8 +273,8 @@ function TimelineContent:selectClips(clipsUI)
 	return self
 end
 
-function TimelineContent:selectClip(clipUI)
+function TimelineContents:selectClip(clipUI)
 	return self:selectClips({clipUI})
 end
 
-return TimelineContent
+return TimelineContents

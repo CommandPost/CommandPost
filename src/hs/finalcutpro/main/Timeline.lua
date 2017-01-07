@@ -5,7 +5,8 @@ local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 local timer								= require("hs.timer")
 
-local TimelineContent					= require("hs.finalcutpro.main.TimelineContent")
+local TimelineContent					= require("hs.finalcutpro.main.TimelineContents")
+local TimelineToolbar					= require("hs.finalcutpro.main.TimelineToolbar")
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
 local EffectsBrowser					= require("hs.finalcutpro.main.EffectsBrowser")
@@ -70,6 +71,12 @@ function Timeline:isShowing()
 	return ui ~= nil and #ui > 0
 end
 
+function Timeline:show()
+	if not self:isShowing() then
+		self:showOnPrimary()
+	end
+end
+
 function Timeline:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
@@ -125,7 +132,7 @@ end
 --- Timeline Index, the Content, and the Effects/Transitions panels.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:content()
+function Timeline:contents()
 	if not self._content then
 		self._content = TimelineContent:new(self)
 	end
@@ -159,7 +166,6 @@ function Timeline:transitions()
 	return self._transitions
 end
 
-
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- PLAYHEAD
@@ -167,26 +173,30 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Timeline:playhead()
-	return self:content():playhead()
+	return self:contents():playhead()
 end
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
---- MAIN UI
---- The Canvas is the main body of the timeline, containing the
---- Timeline Index, the canvas, and the Effects/Transitions panels.
+--- PLAYHEAD
+--- The Playhead that tracks under the mouse while skimming.
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
-function Timeline:toolbarUI()
-	return axutils.cache(self, "_toolbar", function()
-		local ui = self:UI()
-		return ui and axutils.childMatching(ui, Timeline.matchesToolbar)
-	end,
-	Timeline.matchesToolbar)
+function Timeline:skimmingPlayhead()
+	return self:contents():skimmingPlayhead()
 end
 
-function Timeline.matchesToolbar(element)
-	return not Timeline.matchesMain(element)
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- TOOLBAR
+--- The bar at the top of the timeline.
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+function Timeline:toolbar()
+	if not self._toolbar then
+		self._toolbar = TimelineToolbar:new(self)
+	end
+	return self._toolbar
 end
 
 -----------------------------------------------------------------------
@@ -212,7 +222,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 		return self
 	end
 
-	local content = self:content()
+	local content = self:contents()
 	local playhead = content:playhead()
 	local check = nil
 	local status = 0

@@ -32,13 +32,13 @@ local dialog								= require("hs.fcpxhacks.modules.dialog")
 --------------------------------------------------------------------------------
 
 local function openFinalCutPro()
-	fcp.launch()
+	fcp:launch()
 end
 
 local function openCommandEditor()
-	if fcp.running() then
-		fcp.launch()
-		fcp:app():commandEditor():show()
+	if fcp:isRunning() then
+		fcp:launch()
+		fcp:commandEditor():show()
 	end
 end
 

@@ -90,11 +90,28 @@ function ScrollArea:selectedChildrenUI()
 	return ui and ui:selectedChildren()
 end
 
+
+function ScrollArea:viewFrame()
+	local ui = self:UI()
+	local hScroll = self:horizontalScrollBarUI()
+	local vScroll = self:verticalScrollBarUI()
+	
+	local frame = ui:frame()
+	
+	if hScroll then
+		frame.h = frame.h - hScroll:frame().h
+	end
+	
+	if vScroll then
+		frame.w = frame.w - vScroll:frame().w
+	end
+	return frame
+end
+
 function ScrollArea:showChild(childUI)
 	local ui = self:UI()
-	if ui then
-		local vScroll = self:verticalScrollBarUI()
-		local vFrame = vScroll:frame()
+	if ui and childUI then
+		local vFrame = self:viewFrame()
 		local childFrame = childUI:frame()
 
 		local top = vFrame.y

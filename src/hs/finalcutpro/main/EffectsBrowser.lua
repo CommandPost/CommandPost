@@ -1,8 +1,8 @@
-local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
-
 local just								= require("hs.just")
+local geometry							= require("hs.geometry")
 local axutils							= require("hs.finalcutpro.axutils")
+local tools								= require("hs.fcpxhacks.modules.tools")
+local fnutils							= require("hs.fnutils")
 
 local PrimaryWindow						= require("hs.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("hs.finalcutpro.main.SecondaryWindow")
@@ -56,22 +56,166 @@ function Browser:UI()
 	end
 end
 
+function Browser:toggleButton()
+	if not self._toggleButton then
+		local toolbar = self:app():timeline():toolbar()
+		local button = nil
+		local type = self:type()
+		if type == Browser.EFFECTS then
+			button = toolbar:effectsToggle()
+		elseif type == Browser.TRANSITIONS then
+			button = toolbar:transitionsToggle()
+		end
+		self._toggleButton = button
+	end
+	return self._toggleButton
+end
+
 function Browser:isShowing()
-	return self:app():menuBar():isChecked("Window", "Show in Workspace", self:type())
+	return self:toggleButton():isChecked()
 end
 
 function Browser:show()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the workspace
-	menuBar:checkMenu("Window", "Show in Workspace", self:type())
+	self:app():timeline():show()
+	self:toggleButton():check()
 	return self
 end
 
 function Browser:hide()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the workspace
-	menuBar:uncheckMenu("Window", "Show in Workspace", self:type())
+	if self:app():timeline():isShowing() then
+		self:toggleButton():uncheck()
+	end
 	return self
+end
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-- Actions
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+function Browser:showSidebar()
+	if not self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+	end
+	return self
+end
+
+function Browser:hideSidebar()
+	if self:sidebar():isShowing() then
+		self:sidebarToggle():toggle()
+	end
+	return self
+end
+
+function Browser:toggleSidebar()
+	local isShowing = self:sidebar():isShowing()
+	self:sidebarToggle():toggle()
+	return self
+end
+
+function Browser:showInstalledEffects()
+	self:group():selectItem(1)
+	return self
+end
+
+function Browser:showInstalledTransitions()
+	self:showInstalledEffects()
+	return self
+end
+
+function Browser:showAllEffects()
+	self:showSidebar()
+	self:sidebar():selectRowAt(1)
+	return self
+end
+
+function Browser:showAllTransitions()
+	return self:showAllEffects()
+end
+
+function Browser:_allRowsUI()
+	--------------------------------------------------------------------------------
+	-- Find the two 'All' rows (Video/Audio)
+	--------------------------------------------------------------------------------
+	return self:sidebar():rowsUI(function(row)
+		local label = row[1][1]
+		local value = label and label:attributeValue("AXValue")
+		--------------------------------------------------------------------------------
+		-- ENGLISH:		All
+		-- GERMAN: 		Alle
+		-- SPANISH: 	Todo
+		-- FRENCH: 		Tous
+		-- JAPANESE:	すべて
+		-- CHINESE:		全部
+		--------------------------------------------------------------------------------
+		-- TODO: Use i18n to get the appropriate value for the current language
+		return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
+	end)
+end
+
+function Browser:showAllVideoEffects()
+	local allRows = self:_allRowsUI()
+	if allRows and #allRows == 2 then
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		self:sidebar():selectRow(allRows[1])
+		return true
+	end
+	return false
+end
+
+function Browser:showAllAudioEffects()
+	local allRows = self:_allRowsUI()
+	if allRows and #allRows == 2 then
+		--------------------------------------------------------------------------------
+		-- Click 'All Video':
+		--------------------------------------------------------------------------------
+		self:sidebar():selectRow(allRows[2])
+		return true
+	end
+	return false
+end
+
+function Browser:currentItemsUI()
+	return self:contents():childrenUI()
+end
+
+function Browser:selectedItemsUI()
+	return self:contents():selectedChildrenUI()
+end
+
+function Browser:itemIsSelected(itemUI)
+	local selectedItems = self:selectedItemsUI()
+	if selectedItems and #selectedItems > 0 then
+		for _,selected in ipairs(selectedItems) do
+			if selected == itemUI then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function Browser:applyItem(itemUI)
+	if itemUI then
+		self:contents():showChild(itemUI)
+		local targetPoint = geometry.rect(itemUI:frame()).center
+		tools.ninjaDoubleClick(targetPoint)
+	end
+	return self
+end
+
+--- Returns the list of titles for all effects/transitions currently visible
+function Browser:getCurrentTitles()
+	local contents = self:contents():childrenUI()
+	if contents ~= nil then
+		return fnutils.map(contents, function(child)
+			return child:attributeValue("AXTitle")
+		end)
+	end
+	return nil
 end
 
 -----------------------------------------------------------------------------
@@ -133,26 +277,6 @@ function Browser:search()
 	return self._search
 end
 
-function Browser:showSidebar()
-	if not self:sidebar():isShowing() then
-		self:sidebarToggle():toggle()
-		just.doUntil(function() return self:sidebar():isShowing() end)
-	end
-end
-
-function Browser:hideSidebar()
-	if self:sidebar():isShowing() then
-		self:sidebarToggle():toggle()
-		just.doWhile(function() return self:sidebar():isShowing() end)
-	end
-end
-
-function Browser:toggleSidebar()
-	local isShowing = self:sidebar():isShowing()
-	self:sidebarToggle():toggle()
-	just.doUntil(function() return self:sidebar():isShowing() ~= isShowing end)
-end
-
 function Browser:saveLayout()
 	local layout = {}
 	if self:isShowing() then
@@ -162,7 +286,7 @@ function Browser:saveLayout()
 		self:showSidebar()
 		layout.sidebar = self:sidebar():saveLayout()
 		self:sidebarToggle():loadLayout(layout.sidebarToggle)
-		
+
 		layout.contents = self:contents():saveLayout()
 		layout.group = self:group():saveLayout()
 		layout.search = self:search():saveLayout()
@@ -173,13 +297,13 @@ end
 function Browser:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()
-		
+
 		self:showSidebar()
 		self:sidebar():loadLayout(layout.sidebar)
 		self:sidebarToggle():loadLayout(layout.sidebarToggle)
 
 		self:group():loadLayout(layout.group)
-		
+
 		self:search():loadLayout(layout.search)
 		self:contents():loadLayout(layout.contents)
 	else

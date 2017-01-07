@@ -1,13 +1,45 @@
 local axutils							= require("hs.finalcutpro.axutils")
+local geometry							= require("hs.geometry")
 
 local Playhead = {}
 
-function Playhead.isPlayhead(element)
+function Playhead.matches(element)
 	return element and element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
-function Playhead:new(parent)
-	o = {_parent = parent}
+-- Finds the playhead (either persistent or skimming) in the specified container.
+-- Defaults to persistent.
+function Playhead.find(containerUI, skimming)
+	local ui = containerUI
+	if ui and #ui > 0 then
+		-- The playhead is typically one of the last two children
+		local persistentPlayhead = ui[#ui-1]
+		local skimmingPlayhead = ui[#ui]
+		if not Playhead.matches(persistentPlayhead) then
+			persistentPlayhead = skimmingPlayhead
+			skimmingPlayhead = nil
+			if Playhead.matches(skimmingPlayhead) then
+				persistentPlayhead = nil
+			end
+		end
+		if skimming then
+			return skimmingPlayhead
+		else
+			return persistentPlayhead
+		end
+	end
+	return nil
+end
+
+-- Constructs a new Playhead
+--
+-- Parameters:
+-- * parent 		- The parent object
+-- * skimming		- (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
+-- * containerFn 	- (optional) a function which returns the container axuielement which contains the playheads.
+-- 						If not present, it will use the parent's UI element.
+function Playhead:new(parent, skimming, containerFn)
+	o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -21,6 +53,14 @@ function Playhead:app()
 	return self:parent():app()
 end
 
+function Playhead:isPersistent()
+	return not self._skimming
+end
+
+function Playhead:isSkimming()
+	return self._skimming == true
+end
+
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 --- BROWSER UI
@@ -28,13 +68,10 @@ end
 -----------------------------------------------------------------------
 function Playhead:UI()
 	return axutils.cache(self, "_ui", function()
-		local ui = self:parent():UI()
-		if ui then
-			return axutils.childWith(ui, "AXRole", "AXValueIndicator")
-		end
-		return nil
+		local ui = self.containerUI and self:containerUI() or self:parent():UI()
+		return Playhead.find(ui, self:isSkimming())
 	end,
-	Playhead.isPlayhead)
+	Playhead.matches)
 end
 
 function Playhead:isShowing()
@@ -65,13 +102,19 @@ function Playhead:getX()
 	return ui and ui:position().x
 end
 
-function Playhead:getPosition()
+function Playhead:getFrame()
 	local ui = self:UI()
-	if ui then
-		local frame = ui:frame()
-		return frame.x + frame.w/2 + 1.0
-	end
-	return nil
+	return ui and ui:frame()
+end
+
+function Playhead:getPosition()
+	local frame = self:frame()
+	return frame and (frame.x + frame.w/2 + 1.0)
+end
+
+function Playhead:getCenter()
+	local frame = self:getFrame()
+	return frame and geometry.rect(frame).center
 end
 
 return Playhead

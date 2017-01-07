@@ -98,27 +98,51 @@ function tools.executeWithAdministratorPrivileges(input)
 	end
 end
 
+tools.DEFAULT_DELAY = 0
+
+local leftMouseDown = eventtap.event.types["leftMouseDown"]
+local leftMouseUp = eventtap.event.types["leftMouseUp"]
+local clickState = eventtap.event.properties.mouseEventClickState
+
+--------------------------------------------------------------------------------
+-- LEFT CLICK:
+--------------------------------------------------------------------------------
+function tools.leftClick(point, delay, clickNumber)
+	delay = delay or tools.DEFAULT_DELAY
+	clickNumber = clickNumber or 1
+    eventtap.event.newMouseEvent(leftMouseDown, point):setProperty(clickState, clickNumber):post()
+	if delay > 0 then timer.usleep(delay) end
+	eventtap.event.newMouseEvent(leftMouseUp, point):setProperty(clickState, clickNumber):post()
+end
+
 --------------------------------------------------------------------------------
 -- DOUBLE LEFT CLICK:
 --------------------------------------------------------------------------------
-function tools.doubleLeftClick(point)
-	local clickState = eventtap.event.properties.mouseEventClickState
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-	timer.usleep(1000)
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 2):post()
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 2):post()
+function tools.doubleLeftClick(point, delay)
+	delay = delay or tools.DEFAULT_DELAY
+	tools.leftClick(point, delay, 1)
+	tools.leftClick(point, delay, 2)
 end
 
 --------------------------------------------------------------------------------
 -- NINJA MOUSE CLICK:
 --------------------------------------------------------------------------------
-function tools.ninjaMouseClick(point)
+function tools.ninjaMouseClick(point, delay)
+	delay = delay or tools.DEFAULT_DELAY
 	local originalMousePoint = mouse.getAbsolutePosition()
-	local clickState = eventtap.event.properties.mouseEventClickState
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseDown"], point):setProperty(clickState, 1):post()
-	eventtap.event.newMouseEvent(eventtap.event.types["leftMouseUp"], point):setProperty(clickState, 1):post()
-	timer.usleep(1000)
+	tools.leftClick(point, delay)
+	if delay > 0 then timer.usleep(delay) end
+	mouse.setAbsolutePosition(originalMousePoint)
+end
+
+--------------------------------------------------------------------------------
+-- NINJA DOUBLE MOUSE CLICK:
+--------------------------------------------------------------------------------
+function tools.ninjaDoubleClick(point, delay)
+	delay = delay or tools.DEFAULT_DELAY
+	local originalMousePoint = mouse.getAbsolutePosition()
+	tools.doubleLeftClick(point, delay)
+	if delay > 0 then timer.usleep(delay) end
 	mouse.setAbsolutePosition(originalMousePoint)
 end
 

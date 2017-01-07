@@ -14,27 +14,20 @@ local fcp = require("hs.finalcutpro")
 
 Then, there are the `UpperCase` files, which represent the application itself:
 
-* `App` 		- The root FCPX application.
 * `MenuBar` 	- The main menu bar.
 * `prefs/PreferencesWindow` - The preferences window.
 * etc...
 
-The `App` is the root application. It is accessed like so:
+The `fcp` variable is the root application. It has functions which allow you to perform tasks or access parts of the UI. For example, to open the `Preferences` window, you can do this:
 
 ```lua
-fcp:app()
-```
-
-The `App` has functions which allow you to perform tasks or access parts of the UI. For example, to open the `Preferences` window, you can do this:
-
-```lua
-fcp:app():preferencesWindow():show()
+fcp:preferencesWindow():show()
 ```
 
 In general, as long as FCPX is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
 
 ```lua
-fcp:app():preferencesWindow():importPanel():toggleCreateOptimizedMedia()
+fcp:preferencesWindow():importPanel():toggleCreateOptimizedMedia()
 ```
 
 The API will automatically open the `Preferences` window, navigate to the 'Import' panel and toggle the checkbox.
@@ -46,9 +39,9 @@ This can also be used to 'wait' for an element to be visible before performing a
 ```lua
 local just = require("hs.just")
 
-local prefsWindow = fcp:app():preferencesWindow()
+local prefsWindow = fcp:preferencesWindow()
 
-local prefsUI = just.doUntil(function() return prefsWindow:UI())
+local prefsUI = just.doUntil(function() return prefsWindow:UI() end)
 
 if prefsUI then
 	-- it's open!
@@ -62,7 +55,7 @@ By using the `just` library, we can do a loop waiting until the function returns
 Of course, we have a specific support function for that already, so you could do this instead:
 
 ```lua
-if fcp:app():preferencesWindow():isShowing() then
+if fcp:preferencesWindow():isShowing() then
 	-- it's open!
 else
 	-- it's closed!
