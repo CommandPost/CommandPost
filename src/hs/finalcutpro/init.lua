@@ -1,24 +1,24 @@
---- hs.finalcutpro.App
+--- hs.finalcutpro
 ---
 --- Represents the Final Cut Pro X application, providing functions that allow different tasks to be accomplished.
 ---
 --- Author: David Peterson (david@randombits.org)
 ---
 
---- Standard Modules
+--- Standard Modules:
 local application								= require("hs.application")
 local ax 										= require("hs._asm.axuielement")
-local osascript 								= require("hs.osascript")
-local just										= require("hs.just")
 local fs 										= require("hs.fs")
+local inspect									= require("hs.inspect")
+local just										= require("hs.just")
+local osascript 								= require("hs.osascript")
 local plist										= require("hs.plist")
 
-local inspect									= require("hs.inspect")
-local log										= require("hs.logger").new("fcpxapp")
+local log										= require("hs.logger").new("finalcutpro")
 
+--- Local Modules:
 local axutils									= require("hs.finalcutpro.axutils")
 
---- Local Modules
 local MenuBar									= require("hs.finalcutpro.MenuBar")
 local PreferencesWindow							= require("hs.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("hs.finalcutpro.main.PrimaryWindow")
@@ -31,10 +31,10 @@ local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local MediaImport								= require("hs.finalcutpro.import.MediaImport")
 
---- The App module
+--- The App module:
 local App = {}
 
---- Constants
+--- Constants:
 App.BUNDLE_ID 									= "com.apple.FinalCut"
 App.PASTEBOARD_UTI 								= "com.apple.flexo.proFFPasteboardUTI"
 
@@ -42,7 +42,6 @@ App.PREFS_PLIST_PATH 							= "~/Library/Preferences/com.apple.FinalCut.plist"
 
 App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
-
 
 --- doesDirectoryExist() -> boolean
 --- Function
@@ -59,8 +58,7 @@ local function doesDirectoryExist(path)
     return attr and attr.mode == 'directory'
 end
 
-
---- hs.finalcutpro.App:new() -> App
+--- hs.finalcutpro:new() -> App
 --- Function
 --- Creates a new App instance representing Final Cut Pro
 ---
@@ -77,7 +75,7 @@ function App:new()
 	return o
 end
 
---- hs.finalcutpro.App:application() -> hs.application
+--- hs.finalcutpro:application() -> hs.application
 --- Function
 --- Returns the hs.application for Final Cut Pro X.
 ---
@@ -96,14 +94,44 @@ function App:application()
 	return nil
 end
 
+--- hs.finalcutpro:getBundleID() -> string
+--- Function
+--- Returns the Final Cut Pro Bundle ID
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * A string of the Final Cut Pro Bundle ID
+---
 function App:getBundleID()
 	return App.BUNDLE_ID
 end
 
+--- hs.finalcutpro:getPasteboardUTI() -> string
+--- Function
+--- Returns the Final Cut Pro Pasteboard UTI
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * A string of the Final Cut Pro Pasteboard UTI
+---
 function App:getPasteboardUTI()
 	return App.PASTEBOARD_UTI
 end
 
+--- hs.finalcutpro:getPasteboardUTI() -> axuielementObject
+--- Function
+--- Returns the Final Cut Pro axuielementObject
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * A axuielementObject of Final Cut Pro
+---
 function App:UI()
 	return axutils.cache(self, "_ui", function()
 		local fcp = self:application()
@@ -111,7 +139,7 @@ function App:UI()
 	end)
 end
 
---- hs.finalcutpro.App:isRunning() -> boolean
+--- hs.finalcutpro:isRunning() -> boolean
 --- Function
 --- Is Final Cut Pro Running?
 ---
@@ -126,8 +154,7 @@ function App:isRunning()
 	return fcpx and fcpx:isRunning()
 end
 
-
---- hs.finalcutpro.App:launch() -> boolean
+--- hs.finalcutpro:launch() -> boolean
 --- Function
 --- Launches Final Cut Pro, or brings it to the front if it was already running.
 ---
@@ -159,8 +186,7 @@ function App:launch()
 	return result
 end
 
-
---- hs.finalcutpro.App:restart() -> boolean
+--- hs.finalcutpro:restart() -> boolean
 --- Function
 --- Restart Final Cut Pro X
 ---
@@ -185,6 +211,16 @@ function App:restart()
 	return false
 end
 
+--- hs.finalcutpro:show() -> hs.finalcutpro object
+--- Function
+--- Activate Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An hs.finalcutpro object otherwise nil
+---
 function App:show()
 	local app = self:application()
 	if app then
@@ -198,11 +234,31 @@ function App:show()
 	return self
 end
 
+--- hs.finalcutpro:show() -> hs.finalcutpro object
+--- Function
+--- Activate Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An hs.finalcutpro object otherwise nil
+---
 function App:isShowing()
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
 end
 
+--- hs.finalcutpro:hide() -> hs.finalcutpro object
+--- Function
+--- Hides Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An hs.finalcutpro object otherwise nil
+---
 function App:hide()
 	local app = self:application()
 	if app then
@@ -211,6 +267,16 @@ function App:hide()
 	return self
 end
 
+--- hs.finalcutpro:quit() -> hs.finalcutpro object
+--- Function
+--- Quits Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An hs.finalcutpro object otherwise nil
+---
 function App:quit()
 	local app = self:application()
 	if app then
@@ -219,7 +285,7 @@ function App:quit()
 	return self
 end
 
---- hs.finalcutpro.App:path() -> string or nil
+--- hs.finalcutpro:path() -> string or nil
 --- Function
 --- Path to Final Cut Pro Application
 ---
@@ -233,7 +299,7 @@ function App:getPath()
 	return application.pathForBundleID(App.BUNDLE_ID)
 end
 
---- hs.finalcutpro.App:isInstalled() -> boolean
+--- hs.finalcutpro:isInstalled() -> boolean
 --- Function
 --- Is Final Cut Pro X Installed?
 ---
@@ -248,7 +314,7 @@ function App:isInstalled()
 	return doesDirectoryExist(path)
 end
 
---- hs.finalcutpro.App:isFrontmost() -> boolean
+--- hs.finalcutpro:isFrontmost() -> boolean
 --- Function
 --- Is Final Cut Pro X Frontmost?
 ---
@@ -263,8 +329,7 @@ function App:isFrontmost()
 	return fcpx and fcpx:isFrontmost()
 end
 
-
---- hs.finalcutpro.App:getVersion() -> string or nil
+--- hs.finalcutpro:getVersion() -> string or nil
 --- Function
 --- Version of Final Cut Pro
 ---
@@ -290,6 +355,16 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- hs.finalcutpro:menuBar() -> menuBar object
+--- Function
+--- Returns the Final Cut Pro Menu Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A menuBar object
+---
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
@@ -297,6 +372,17 @@ function App:menuBar()
 	return self._menuBar
 end
 
+--- hs.finalcutpro:selectMenu(...) -> boolean
+--- Function
+--- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
+---
+--- Parameters:
+---  * ... - The list of menu items you'd like to activate, for example:
+---            select("View", "Browser", "as List")
+---
+--- Returns:
+---  * `true` if the press was successful.
+---
 function App:selectMenu(...)
 	return self:menuBar():selectMenu(...)
 end
@@ -309,6 +395,16 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- hs.finalcutpro:preferencesWindow() -> preferenceWindow object
+--- Function
+--- Returns the Final Cut Pro Preferences Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Preferences Window
+---
 function App:preferencesWindow()
 	if not self._preferencesWindow then
 		self._preferencesWindow = PreferencesWindow:new(self)
@@ -316,6 +412,16 @@ function App:preferencesWindow()
 	return self._preferencesWindow
 end
 
+--- hs.finalcutpro:primaryWindow() -> primaryWindow object
+--- Function
+--- Returns the Final Cut Pro Preferences Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Primary Window
+---
 function App:primaryWindow()
 	if not self._primaryWindow then
 		self._primaryWindow = PrimaryWindow:new(self)
@@ -323,6 +429,16 @@ function App:primaryWindow()
 	return self._primaryWindow
 end
 
+--- hs.finalcutpro:secondaryWindow() -> secondaryWindow object
+--- Function
+--- Returns the Final Cut Pro Preferences Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Secondary Window
+---
 function App:secondaryWindow()
 	if not self._secondaryWindow then
 		self._secondaryWindow = SecondaryWindow:new(self)
@@ -330,6 +446,16 @@ function App:secondaryWindow()
 	return self._secondaryWindow
 end
 
+--- hs.finalcutpro:fullScreenWindow() -> fullScreenWindow object
+--- Function
+--- Returns the Final Cut Pro Full Screen Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Full Screen Playback Window
+---
 function App:fullScreenWindow()
 	if not self._fullScreenWindow then
 		self._fullScreenWindow = FullScreenWindow:new(self)
@@ -337,6 +463,16 @@ function App:fullScreenWindow()
 	return self._fullScreenWindow
 end
 
+--- hs.finalcutpro:commandEditor() -> commandEditor object
+--- Function
+--- Returns the Final Cut Pro Command Editor
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Command Editor
+---
 function App:commandEditor()
 	if not self._commandEditor then
 		self._commandEditor = CommandEditor:new(self)
@@ -344,6 +480,16 @@ function App:commandEditor()
 	return self._commandEditor
 end
 
+--- hs.finalcutpro:mediaImport() -> mediaImport object
+--- Function
+--- Returns the Final Cut Pro Media Import Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Media Import Window
+---
 function App:mediaImport()
 	if not self._mediaImport then
 		self._mediaImport = MediaImport:new(self)
@@ -351,6 +497,16 @@ function App:mediaImport()
 	return self._mediaImport
 end
 
+--- hs.finalcutpro:exportDialog() -> exportDialog object
+--- Function
+--- Returns the Final Cut Pro Export Dialog Box
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Export Dialog Box
+---
 function App:exportDialog()
 	if not self._exportDialog then
 		self._exportDialog = ExportDialog:new(self)
@@ -358,7 +514,7 @@ function App:exportDialog()
 	return self._exportDialog
 end
 
---- hs.finalcutpro.App:windowsUI() -> axuielement
+--- hs.finalcutpro:windowsUI() -> axuielement
 --- Function
 --- Returns the UI containing the list of windows in the app.
 ---
@@ -381,8 +537,7 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
-
---- hs.finalcutpro.App:timeline() -> Timeline
+--- hs.finalcutpro:timeline() -> Timeline
 --- Function
 --- Returns the Timeline instance, whether it is in the primary or secondary window.
 ---
@@ -391,6 +546,7 @@ end
 ---
 --- Returns:
 ---  * the Timeline
+---
 function App:timeline()
 	if not self._timeline then
 		self._timeline = Timeline:new(self)
@@ -398,8 +554,7 @@ function App:timeline()
 	return self._timeline
 end
 
-
---- hs.finalcutpro.App:viewer() -> Viewer
+--- hs.finalcutpro:viewer() -> Viewer
 --- Function
 --- Returns the Viewer instance, whether it is in the primary or secondary window.
 ---
@@ -408,6 +563,7 @@ end
 ---
 --- Returns:
 ---  * the Viewer
+---
 function App:viewer()
 	if not self._viewer then
 		self._viewer = Viewer:new(self, false)
@@ -415,7 +571,7 @@ function App:viewer()
 	return self._viewer
 end
 
---- hs.finalcutpro.App:eventViewer() -> Viewer
+--- hs.finalcutpro:eventViewer() -> Event Viewer
 --- Function
 --- Returns the Event Viewer instance, whether it is in the primary or secondary window.
 ---
@@ -424,6 +580,7 @@ end
 ---
 --- Returns:
 ---  * the Event Viewer
+---
 function App:eventViewer()
 	if not self._eventViewer then
 		self._eventViewer = Viewer:new(self, true)
@@ -431,7 +588,7 @@ function App:eventViewer()
 	return self._eventViewer
 end
 
---- hs.finalcutpro.App:browser() -> Browser
+--- hs.finalcutpro:browser() -> Browser
 --- Function
 --- Returns the Browser instance, whether it is in the primary or secondary window.
 ---
@@ -440,6 +597,7 @@ end
 ---
 --- Returns:
 ---  * the Browser
+---
 function App:browser()
 	if not self._browser then
 		self._browser = Browser:new(self)
@@ -447,7 +605,7 @@ function App:browser()
 	return self._browser
 end
 
---- hs.finalcutpro.App:libraries() -> LibrariesBrowser
+--- hs.finalcutpro:libraries() -> LibrariesBrowser
 --- Function
 --- Returns the LibrariesBrowser instance, whether it is in the primary or secondary window.
 ---
@@ -456,11 +614,12 @@ end
 ---
 --- Returns:
 ---  * the LibrariesBrowser
+---
 function App:libraries()
 	return self:browser():libraries()
 end
 
---- hs.finalcutpro.App:media() -> MediaBrowser
+--- hs.finalcutpro:media() -> MediaBrowser
 --- Function
 --- Returns the MediaBrowser instance, whether it is in the primary or secondary window.
 ---
@@ -469,11 +628,12 @@ end
 ---
 --- Returns:
 ---  * the MediaBrowser
+---
 function App:media()
 	return self:browser():media()
 end
 
---- hs.finalcutpro.App:generators() -> GeneratorsBrowser
+--- hs.finalcutpro:generators() -> GeneratorsBrowser
 --- Function
 --- Returns the GeneratorsBrowser instance, whether it is in the primary or secondary window.
 ---
@@ -482,11 +642,12 @@ end
 ---
 --- Returns:
 ---  * the GeneratorsBrowser
+---
 function App:generators()
 	return self:browser():generators()
 end
 
---- hs.finalcutpro.App:effects() -> EffectsBrowser
+--- hs.finalcutpro:effects() -> EffectsBrowser
 --- Function
 --- Returns the EffectsBrowser instance, whether it is in the primary or secondary window.
 ---
@@ -495,11 +656,12 @@ end
 ---
 --- Returns:
 ---  * the EffectsBrowser
+---
 function App:effects()
 	return self:timeline():effects()
 end
 
---- hs.finalcutpro.App:transitions() -> TransitionsBrowser
+--- hs.finalcutpro:transitions() -> TransitionsBrowser
 --- Function
 --- Returns the TransitionsBrowser instance, whether it is in the primary or secondary window.
 ---
@@ -508,11 +670,12 @@ end
 ---
 --- Returns:
 ---  * the TransitionsBrowser
+---
 function App:transitions()
 	return self:timeline():transitions()
 end
 
---- hs.finalcutpro.App:inspector() -> Inspector
+--- hs.finalcutpro:inspector() -> Inspector
 --- Function
 --- Returns the Inspector instance from the primary window
 ---
@@ -521,11 +684,12 @@ end
 ---
 --- Returns:
 ---  * the Inspector
+---
 function App:inspector()
 	return self:primaryWindow():inspector()
 end
 
---- hs.finalcutpro.App:colorBoard() -> ColorBoard
+--- hs.finalcutpro:colorBoard() -> ColorBoard
 --- Function
 --- Returns the ColorBoard instance from the primary window
 ---
@@ -534,6 +698,7 @@ end
 ---
 --- Returns:
 ---  * the ColorBoard
+---
 function App:colorBoard()
 	return self:primaryWindow():colorBoard()
 end
@@ -546,7 +711,7 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- hs.finalcutpro.App:getPreferences() -> table or nil
+--- hs.finalcutpro:getPreferences() -> table or nil
 --- Function
 --- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
 --- file has been modified and reloads when necessary.
@@ -593,7 +758,7 @@ function App:getPreference(value, default, forceReload)
 	return result
 end
 
---- hs.finalcutpro.App:setPreference(key, value) -> boolean
+--- hs.finalcutpro:setPreference(key, value) -> boolean
 --- Function
 --- Sets an individual Final Cut Pro preference
 ---
@@ -607,11 +772,11 @@ end
 function App:setPreference(key, value)
 
 	local executeStatus
-	local type = nil
+	local preferenceType = nil
 
 	if type(value) == "boolean" then
 		value = tostring(value)
-		type = "bool"
+		preferenceType = "bool"
 	elseif type(value) == "table" then
 		local arrayString = ""
 		for i=1, #value do
@@ -620,19 +785,19 @@ function App:setPreference(key, value)
 				arrayString = arrayString .. ","
 			end
 		end
-		type = "array"
+		preferenceType = "array"
 	elseif type(value) == "string" then
-		type = "string"
+		preferenceType = "string"
 	end
-	
-	if type then
-		local _, executeStatus = hs.execute("defaults write " .. App.PREFS_PLIST_PATH .. " '" .. key .. "' -" .. type .. " " .. value)
+
+	if preferenceType then
+		local _, executeStatus = hs.execute("defaults write " .. App.PREFS_PLIST_PATH .. " '" .. key .. "' -" .. preferenceType .. " " .. value)
 		return executeState ~= nil
 	end
 	return false
 end
 
---- hs.finalcutpro.App:importXML() -> boolean
+--- hs.finalcutpro:importXML() -> boolean
 --- Function
 --- Imports an XML file into Final Cut Pro
 ---
@@ -644,14 +809,14 @@ end
 ---
 function App:importXML(path)
 	if self:isRunning() then
-		local appleScriptA = 'set whichSharedXMLPath to "' .. path .. '"' .. '\n\n'
-		local appleScriptB = [[
+		local appleScript = [[
+			set whichSharedXMLPath to "]] .. path .. [["
 			tell application "Final Cut Pro"
 				activate
 				open POSIX file whichSharedXMLPath as string
 			end tell
 		]]
-		local bool, _, _ = osascript.applescript(appleScriptA .. appleScriptB)
+		local bool, _, _ = osascript.applescript(appleScript)
 		return bool
 	end
 end
@@ -664,7 +829,7 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- hs.finalcutpro.App:getActiveCommandSetPath() -> string or nil
+--- hs.finalcutpro:getActiveCommandSetPath() -> string or nil
 --- Function
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 ---
@@ -678,12 +843,12 @@ function App:getActiveCommandSetPath()
 	local result = self:getPreference("Active Command Set") or nil
 	if result == nil then
 		-- In the unlikely scenario that this is the first time FCPX has been run:
-		return "/Applications/Final Cut Pro.app/Contents/Resources/" .. self:getCurrentLanguage() .. ".lproj/Default.commandset"
+		return self:getPath() .. "/Contents/Resources/" .. self:getCurrentLanguage() .. ".lproj/Default.commandset"
 	end
 	return result
 end
 
---- hs.finalcutpro.App:getActiveCommandSet([optionalPath]) -> table or nil
+--- hs.finalcutpro:getActiveCommandSet([optionalPath]) -> table or nil
 --- Function
 --- Returns the 'Active Command Set' as a Table
 ---
@@ -781,8 +946,7 @@ App.fileMenuTitle = {
 	["文件"]			= "zh_CN"
 }
 
-
---- hs.finalcutpro.App:getCurrentLanguage() -> string
+--- hs.finalcutpro:getCurrentLanguage() -> string
 --- Function
 --- Returns the language Final Cut Pro is currently using.
 ---
@@ -814,11 +978,11 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
 		local menuBar = self:menuBar()
-		
+
 		local fileMenu = menuBar:findMenuUI("File")
-		
+
 		fileValue = fileMenu:attributeValue("AXTitle") or nil
-		
+
 		self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
 		if self._currentLanguage then
 			return self._currentLanguage
@@ -896,8 +1060,7 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 
 end
 
-
---- hs.finalcutpro.App:getSupportedLanguages() -> table
+--- hs.finalcutpro:getSupportedLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro supports
 ---
@@ -911,7 +1074,7 @@ function App:getSupportedLanguages()
 	return App.SUPPORTED_LANGUAGES
 end
 
---- hs.finalcutpro.App:getFlexoLanguages() -> table
+--- hs.finalcutpro:getFlexoLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
 ---
