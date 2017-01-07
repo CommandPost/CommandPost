@@ -108,7 +108,7 @@ function Playhead:getFrame()
 end
 
 function Playhead:getPosition()
-	local frame = self:frame()
+	local frame = self:getFrame()
 	return frame and (frame.x + frame.w/2 + 1.0)
 end
 

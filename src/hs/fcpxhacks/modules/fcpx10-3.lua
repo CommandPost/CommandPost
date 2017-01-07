@@ -4566,7 +4566,7 @@ end
 	--------------------------------------------------------------------------------
 	function multicamMatchFrame(goBackToTimeline) -- True or False
 
-		local errorFunction = "\n\nError occured in multicamMatchFrame()."
+		local errorFunction = "\n\nError occurred in multicamMatchFrame()."
 
 		--------------------------------------------------------------------------------
 		-- Just in case:
@@ -4592,8 +4592,8 @@ end
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
 		local menuBar = fcp:menuBar()
-		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
-			menuBar:selectMenu("Clip", "Open in Angle Editor")
+		if menuBar:isEnabled("Clip", "Open Clip") then
+			menuBar:selectMenu("Clip", "Open Clip")
 		else
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
 			return "Failed"
@@ -4608,57 +4608,9 @@ end
 			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
 			return
 		end
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		local timelineScrollArea = fcp.getTimelineScrollArea()
-		if timelineScrollArea == nil then
-			dialog.displayErrorMessage("Unable to find Timeline Scroll Area." .. errorFunction)
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Press Angle Button:
-		--------------------------------------------------------------------------------
-		local angleButtonFound 		= false
-		local AXLayoutArea 			= 1
-		local AXGroup 				= multicamAngle
-		local AXButton 				= 5
-		if timelineScrollArea[AXLayoutArea] ~= nil then
-			if timelineScrollArea[AXLayoutArea][AXGroup] ~= nil then
-				if timelineScrollArea[AXLayoutArea][AXGroup][AXButton] ~= nil then
-					if timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1] ~= nil then
-						--------------------------------------------------------------------------------
-						-- Switch Video Angle:
-						--------------------------------------------------------------------------------
-						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton]:performAction("AXPress")
-						if result ~= nil and result ~= false then angleButtonFound = true end
-
-						--------------------------------------------------------------------------------
-						-- Switch Audio Angle:
-						--------------------------------------------------------------------------------
-						local result = timelineScrollArea[AXLayoutArea][AXGroup][AXButton + 1]:performAction("AXPress")
-						if result ~= nil and result ~= false then angleButtonFound = true end
-					end
-				end
-			end
-		end
-		if not angleButtonFound then
-			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select Clip:
-		--------------------------------------------------------------------------------
-		if menuBar:isEnabled("Edit", "Select Clip") then
-			menuBar:selectMenu("Edit", "Select Clip")
-		else
-			dialog.displayErrorMessage("Unable to select clip." .. errorFunction)
-			return
-		end
-
+		
+		fcp:timeline():contents():selectClipInAngle(multicamAngle)
+		
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
