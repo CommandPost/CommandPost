@@ -1085,7 +1085,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp:currentLanguage() .. ".lproj/Default.commandset")
+	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp:getCurrentLanguage() .. ".lproj/Default.commandset")
 	if not result then
 		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 		return false
