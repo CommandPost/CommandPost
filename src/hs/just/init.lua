@@ -20,7 +20,7 @@ local just = {}
 
 local timer 					= require("hs.timer")
 
---- hs.fcpxhacks.modules.just.doWhile(actionFn, period, loops) -> UI
+--- hs.just.doWhile(actionFn, period, loops) -> UI
 --- Function
 --- Performs an 'action' function, looping while the result of the function evaluates to 'true'.
 --- It will halt after 'loops' repetitions if the result is never 'false'.
@@ -36,24 +36,19 @@ local timer 					= require("hs.timer")
 function just.doWhile(actionFn, timeout, frequency)
 	timeout = timeout or 1.0
 	frequency = frequency or 0.001
-	local loops, extra = math.modf(timeout / frequency)
-	if extra > 0 then
-		loops = loops + 1
-	end
+
 	local period = frequency * 1000000
-	local count = 0
+	local stopTime = timer.secondsSinceEpoch() + timeout
+
 	local result = true
-	while count <= loops and result do
-		if count > 0 then
-			timer.usleep(period)
-		end
+	while result and timer.secondsSinceEpoch() < stopTime do
 		result = actionFn()
-		count = count + 1
+		timer.usleep(period)
 	end
 	return result
 end
 
---- hs.fcpxhacks.modules.just.doUntil(actionFn, period, loops) -> result
+--- hs.just.doUntil(actionFn, period, loops) -> result
 --- Function
 --- Performs an `action` function, looping until the result of the function evaluates to `true` (or a non-nil value).
 --- It will halt after the `timeout` (default)
@@ -69,24 +64,19 @@ end
 function just.doUntil(actionFn, timeout, frequency)
 	timeout = timeout or 1.0
 	frequency = frequency or 0.001
-	local loops, extra = math.modf(timeout / frequency)
-	if extra > 0 then
-		loops = loops + 1
-	end
+
 	local period = frequency * 1000000
-	local count = 0
-	local result = nil
-	while count <= loops and not result do
-		if count > 0 then
-			timer.usleep(period)
-		end
+	local stopTime = timer.secondsSinceEpoch() + timeout
+
+	local result = false
+	while not result and timer.secondsSinceEpoch() < stopTime do
 		result = actionFn()
-		count = count + 1
+		timer.usleep(period)
 	end
 	return result
 end
 
---- hs.fcpxhacks.modules.just.wait(integer) -> nil
+--- hs.just.wait(integer) -> nil
 --- Function
 --- Pauses the application for the specified number of seconds.
 ---
