@@ -96,6 +96,14 @@ function App:application()
 	return nil
 end
 
+function App:getBundleID()
+	return App.BUNDLE_ID
+end
+
+function App:getPasteboardUTI()
+	return App.PASTEBOARD_UTI
+end
+
 function App:UI()
 	return axutils.cache(self, "_ui", function()
 		local fcp = self:application()
@@ -103,7 +111,7 @@ function App:UI()
 	end)
 end
 
---- hs.finalcutpro.App:running() -> boolean
+--- hs.finalcutpro.App:isRunning() -> boolean
 --- Function
 --- Is Final Cut Pro Running?
 ---
@@ -256,7 +264,7 @@ function App:isFrontmost()
 end
 
 
---- hs.finalcutpro.App:version() -> string or nil
+--- hs.finalcutpro.App:getVersion() -> string or nil
 --- Function
 --- Version of Final Cut Pro
 ---
@@ -585,7 +593,7 @@ function App:getPreference(value, default, forceReload)
 	return result
 end
 
---- hs.finalcutpro.setPreference(key, value) -> boolean
+--- hs.finalcutpro.App:setPreference(key, value) -> boolean
 --- Function
 --- Sets an individual Final Cut Pro preference
 ---
@@ -656,7 +664,7 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- hs.finalcutpro.getActiveCommandSetPath() -> string or nil
+--- hs.finalcutpro.App:getActiveCommandSetPath() -> string or nil
 --- Function
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 ---
@@ -670,7 +678,7 @@ function App:getActiveCommandSetPath()
 	local result = self:getPreference("Active Command Set") or nil
 	if result == nil then
 		-- In the unlikely scenario that this is the first time FCPX has been run:
-		return "/Applications/Final Cut Pro.app/Contents/Resources/" .. self:currentLanguage() .. ".lproj/Default.commandset"
+		return "/Applications/Final Cut Pro.app/Contents/Resources/" .. self:getCurrentLanguage() .. ".lproj/Default.commandset"
 	end
 	return result
 end
@@ -774,7 +782,7 @@ App.fileMenuTitle = {
 }
 
 
---- hs.finalcutpro.currentLanguage() -> string
+--- hs.finalcutpro.App:getCurrentLanguage() -> string
 --- Function
 --- Returns the language Final Cut Pro is currently using.
 ---
@@ -784,7 +792,7 @@ App.fileMenuTitle = {
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
 ---
-function App:currentLanguage(forceReload, forceLanguage)
+function App:getCurrentLanguage(forceReload, forceLanguage)
 
 	--------------------------------------------------------------------------------
 	-- Force a Language:
@@ -821,7 +829,7 @@ function App:currentLanguage(forceReload, forceLanguage)
 	-- If FCPX is not running, we next try to determine the language using
 	-- the Final Cut Pro Plist File:
 	--------------------------------------------------------------------------------
-	local finalCutProLanguage = finalcutpro.getPreference("AppleLanguages", nil)
+	local finalCutProLanguage = self:getPreference("AppleLanguages", nil)
 	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
 		if finalCutProLanguage[1] ~= nil then
 			self._currentLanguage = finalCutProLanguage[1]
@@ -903,7 +911,7 @@ function App:getSupportedLanguages()
 	return App.SUPPORTED_LANGUAGES
 end
 
---- hs.finalcutpro.flexoLanguages() -> table
+--- hs.finalcutpro.App:getFlexoLanguages() -> table
 --- Function
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
 ---
@@ -917,14 +925,25 @@ function App:getFlexoLanguages()
 	return App.FLEXO_LANGUAGES
 end
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   D E V E L O P M E N T      T O O L S                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
---
--- DEBUG FUNCTIONS
---
-----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
+--- hs.finalcutpro._generateMenuMap() -> Table
+--- Function
+--- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * True is successful otherwise Nil
+---
+function App:_generateMenuMap()
+	return self:menuBar():generateMenuMap()
+end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")

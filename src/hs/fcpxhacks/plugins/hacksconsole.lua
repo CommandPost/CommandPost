@@ -62,7 +62,7 @@ function hacksconsole.new()
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running, lets preemptively refresh the choices:
 	--------------------------------------------------------------------------------
-	if fcp.running() then timer.doAfter(3, hacksconsole.refresh) end
+	if fcp.app():isRunning() then timer.doAfter(3, hacksconsole.refresh) end
 
 end
 
@@ -138,7 +138,7 @@ function hacksconsole.hide()
 	--------------------------------------------------------------------------------
 	-- Put focus back on Final Cut Pro:
 	--------------------------------------------------------------------------------
-	fcp.launch()
+	fcp.app():launch()
 
 end
 
@@ -470,7 +470,7 @@ function hacksconsole.choices()
 		if chooserShowMenuItems then
 			if next(chooserMenuItems) == nil then
 				debugMessage("Building a list of Final Cut Pro menu items for the first time.")
-				local fcpxElements = ax.applicationElement(fcp.application())
+				local fcpxElements = ax.applicationElement(fcp.app():application())
 				if fcpxElements ~= nil then
 					local whichMenuBar = nil
 					for i=1, fcpxElements:attributeValueCount("AXChildren") do

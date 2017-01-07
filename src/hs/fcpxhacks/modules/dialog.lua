@@ -44,7 +44,7 @@ local commonAppleScript = [[
 	set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [[\n\n"
 	set errorMessageEnd to "\n\n]] .. i18n("commonErrorMessageEnd") .. [["
 
-	set finalCutProBundleID to "]] .. fcp.bundleID() .. [["
+	set finalCutProBundleID to "]] .. fcp.app():getBundleID() .. [["
 
 	set isFinalCutProFrontmost to true
 	tell application "System Events"
@@ -410,7 +410,7 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 		local green = result[2] / 257 / 255
 		local blue = result[3] / 257 / 255
 		if red ~= nil and green ~= nil and blue ~= nil then
-			if returnToFinalCutPro then fcp.launch() end
+			if returnToFinalCutPro then fcp.app():launch() end
 			return {red=red, green=green, blue=blue, alpha=1}
 		end
 	end

@@ -266,11 +266,11 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	local lastFinalCutProVersion = settings.get("fcpxHacks.lastFinalCutProVersion")
 	if lastFinalCutProVersion == nil then
-		settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+		settings.set("fcpxHacks.lastFinalCutProVersion", fcp.app():getVersion())
 	else
-		if lastFinalCutProVersion ~= fcp.version() then
+		if lastFinalCutProVersion ~= fcp.app():getVersion() then
 			settings.set("fcpxHacks.chooserMenuItems", nil) -- Reset Chooser Menu Items.
-			settings.set("fcpxHacks.lastFinalCutProVersion", fcp.version())
+			settings.set("fcpxHacks.lastFinalCutProVersion", fcp.app():getVersion())
 		end
 	end
 
@@ -292,11 +292,11 @@ function loadScript()
 	else
 		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxhacks.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
-				local finalCutProRunning = fcp.running()
+				local finalCutProRunning = fcp.app():isRunning()
 				if finalCutProRunning then
 					dialog.displayMessage(i18n("newKeyboardShortcuts"))
 					updateKeyboardShortcuts()
-					if not fcp.restart() then
+					if not fcp.fcp.app():restart() then
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
 	--------------------------------------------------------------------------------
-	mod.lastCommandSet = fcp.getActiveCommandSetPath()
+	mod.lastCommandSet = fcp.app():getActiveCommandSetPath()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
@@ -454,7 +454,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
-	if fcp.frontmost() then
+	if fcp.app():isFrontmost() then
 
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
@@ -892,9 +892,9 @@ function bindKeyboardShortcuts()
 	if not enableHacksShortcutsInFinalCutPro then
 
 		--------------------------------------------------------------------------------
-		-- Update Active Command Set for hs.finalcutpro.performShortcut():
+		-- Update Active Command Set:
 		--------------------------------------------------------------------------------
-		fcp.getActiveCommandSet(nil, true)
+		fcp.app():getActiveCommandSet(nil, true)
 
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
@@ -965,7 +965,7 @@ end
 --------------------------------------------------------------------------------
 function getShortcutsFromActiveCommandSet()
 
-	local activeCommandSetTable = fcp.getActiveCommandSet(nil, true)
+	local activeCommandSetTable = fcp.app():getActiveCommandSet(nil, true)
 
 	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
@@ -1085,7 +1085,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
+	local result = fcp.app():setPreference("Active Command Set", fcp.app():getPath() .. "/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
 	if not result then
 		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 		return false
@@ -1098,8 +1098,8 @@ end
 --------------------------------------------------------------------------------
 function enableHacksShortcuts()
 	local appleScript = [[
-		set finalCutProPath to "]] .. fcp.path() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+		set finalCutProPath to "]] .. fcp.app():getPath() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.app():getSupportedLanguages()) .. [[
 
 		--------------------------------------------------------------------------------
 		-- Replace Files:
@@ -1142,8 +1142,8 @@ end
 --------------------------------------------------------------------------------
 function disableHacksShortcuts()
 	local appleScript = [[
-		set finalCutProPath to "]] .. fcp.path() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp.languages()) .. [[
+		set finalCutProPath to "]] .. fcp.app():getPath() .. [["
+		set finalCutProLanguages to ]] .. inspect(fcp.app():getSupportedLanguages()) .. [[
 
 		try
 			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
@@ -1208,8 +1208,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Assume FCPX is closed if not told otherwise:
 		--------------------------------------------------------------------------------
-		local fcpxActive = fcp.frontmost()
-		local fcpxRunning = fcp.running()
+		local fcpxActive = fcp.app():isFrontmost()
+		local fcpxRunning = fcp.app():isRunning()
 
 		--------------------------------------------------------------------------------
 		-- We only refresh plist values if necessary as this takes time:
@@ -1224,7 +1224,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Read Final Cut Pro Preferences:
 			--------------------------------------------------------------------------------
-			local preferences = fcp.getPreferences()
+			local preferences = fcp.app():getPreferences()
 			if preferences == nil then
 				dialog.displayErrorMessage(i18n("failedToReadFCPPreferences"))
 				return "Fail"
@@ -1235,7 +1235,7 @@ end
 			--------------------------------------------------------------------------------
 			mod.allowMovingMarkers = false
 
-			local result = plist.fileToTable(fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
+			local result = plist.fileToTable(fcp.app():getPath() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
 			if result ~= nil then
 				if result["TLKMarkerHandler"] ~= nil then
 					if result["TLKMarkerHandler"]["Configuration"] ~= nil then
@@ -1497,7 +1497,7 @@ end
 						if file:sub(-7) == ".fcpxml" then
 							emptySharedXMLFiles = false
 							local xmlPath = xmlSharingPath .. folder .. "/" .. file
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp.importXML(xmlPath) end, disabled = not fcpxRunning})
+							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp.app():importXML(xmlPath) end, disabled = not fcpxRunning})
 						end
 					end
 
@@ -1536,7 +1536,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Current Language:
 		--------------------------------------------------------------------------------
-		local currentLanguage = fcp.currentLanguage()
+		local currentLanguage = fcp.app():getCurrentLanguage()
 
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
@@ -1773,11 +1773,11 @@ end
 		}
 		local shortcutsTable = {
 			{ title = string.upper(i18n("shortcuts")) .. ":", 											disabled = true },
-			{ title = i18n("createOptimizedMedia"), 													fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp.getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
-			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp.getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
-			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp.getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
-			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp.getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
-			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." "..i18n("secs")..")", fn = function() toggleBackgroundRender() end, 						checked = fcp.getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
+			{ title = i18n("createOptimizedMedia"), 													fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp.app():getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
+			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp.app():getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
+			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp.app():getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
+			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp.app():getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
+			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." "..i18n("secs")..")", fn = function() toggleBackgroundRender() end, 						checked = fcp.app():getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
 			{ title = "-" },
 		}
 		local automationOptions = {
@@ -1874,7 +1874,7 @@ end
 		local proxyMenuIcon = ""
 
 		local proxyStatusIcon = nil
-		local FFPlayerQuality = fcp.getPreference("FFPlayerQuality")
+		local FFPlayerQuality = fcp.app():getPreference("FFPlayerQuality")
 		if FFPlayerQuality == 4 then
 			proxyStatusIcon = "🔴" 		-- Proxy (4)
 		else
@@ -1926,8 +1926,8 @@ end
 		if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 		if enableHacksShortcutsInFinalCutPro then
-			if fcp.running() then
-				fcp.launch()
+			if fcp.app():isRunning() then
+				fcp.app():launch()
 				fcp:app():commandEditor():show()
 			end
 		else
@@ -1994,7 +1994,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- Warning message:
@@ -2126,7 +2126,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- Warning message:
@@ -2228,7 +2228,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -2321,7 +2321,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure Final Cut Pro is active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- Hide the Touch Bar:
@@ -2416,7 +2416,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.app():isFrontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2535,7 +2535,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp.launch() end
+			if mod.wasFinalCutProOpen then fcp.app():launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2552,7 +2552,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.app():isFrontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2652,7 +2652,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp.launch() end
+			if mod.wasFinalCutProOpen then fcp.app():launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2669,7 +2669,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.app():isFrontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2769,7 +2769,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp.launch() end
+			if mod.wasFinalCutProOpen then fcp.app():launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2786,7 +2786,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Was Final Cut Pro Open?
 		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp.frontmost()
+		mod.wasFinalCutProOpen = fcp.app():isFrontmost()
 
 		--------------------------------------------------------------------------------
 		-- Get settings:
@@ -2886,7 +2886,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Put focus back in Final Cut Pro:
 			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp.launch() end
+			if mod.wasFinalCutProOpen then fcp.app():launch() end
 
 			--------------------------------------------------------------------------------
 			-- Refresh Menubar:
@@ -2957,7 +2957,7 @@ end
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -2968,7 +2968,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update Final Cut Pro's settings::
 		--------------------------------------------------------------------------------
-		local result = fcp.setPreference("AppleLanguages", {language})
+		local result = fcp.app():setPreference("AppleLanguages", {language})
 		if not result then
 			dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
 		end
@@ -2976,13 +2976,13 @@ end
 		--------------------------------------------------------------------------------
 		-- Change FCPX Hacks Language:
 		--------------------------------------------------------------------------------
-		fcp.currentLanguage(true, language)
+		fcp.app():getCurrentLanguage(true, language)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3042,17 +3042,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		if fcp.getPreference("FFPeriodicBackupInterval") == nil then
+		if fcp.app():getPreference("FFPeriodicBackupInterval") == nil then
 			mod.FFPeriodicBackupInterval = 15
 		else
-			mod.FFPeriodicBackupInterval = fcp.getPreference("FFPeriodicBackupInterval")
+			mod.FFPeriodicBackupInterval = fcp.app():getPreference("FFPeriodicBackupInterval")
 		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("changeBackupInterval") .. "\n\n" .. doYouWantToContinue) then
 				restartStatus = true
 			else
@@ -3071,7 +3071,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local result = fcp.setPreference("FFPeriodicBackupInterval", tostring(userSelectedBackupInterval))
+		local result = fcp.app():setPreference("FFPeriodicBackupInterval", tostring(userSelectedBackupInterval))
 		if result == nil then
 			dialog.displayErrorMessage(i18n("backupIntervalFail"))
 			return "Failed"
@@ -3086,7 +3086,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3110,14 +3110,14 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp.app():getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
 		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -3137,8 +3137,8 @@ end
 		-- Update plist for every Flexo language:
 		--------------------------------------------------------------------------------
 		local executeCommands = {}
-		for k, v in pairs(fcp.flexoLanguages()) do
-			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp.path() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.flexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
+		for k, v in pairs(fcp.app():getFlexoLanguages()) do
+			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp.app():getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.app():getFlexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
 			executeCommands[#executeCommands + 1] = executeCommand
 		end
 		local result = tools.executeWithAdministratorPrivileges(executeCommands)
@@ -3151,7 +3151,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3240,7 +3240,7 @@ end
 		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
 
 		if lockTimelinePlayhead then
-			if fcp.running() then
+			if fcp.app():isRunning() then
 				fcp.app():timeline():unlockPlayhead()
 			end
 			dialog.displayNotification(i18n("playheadLockDeactivated"))
@@ -3255,7 +3255,7 @@ end
 				toggleScrollingTimeline()
 				message = i18n("scrollingTimelineDeactivated") .. "\n"
 			end
-			if fcp.running() then
+			if fcp.app():isRunning() then
 				fcp.app():timeline():lockPlayhead()
 			end
 			dialog.displayNotification(message..i18n("playheadLockActivated"))
@@ -3286,7 +3286,7 @@ end
 		if enableVoiceCommands then
 			voicecommands:stop()
 		else
-			if fcp.frontmost() then
+			if fcp.app():isFrontmost() then
 				voicecommands:start()
 			end
 		end
@@ -3304,7 +3304,7 @@ end
 		if enableHacksHUD then
 			hackshud.hide()
 		else
-			if fcp.frontmost() then
+			if fcp.app():isFrontmost() then
 				hackshud.show()
 			end
 		end
@@ -3473,7 +3473,7 @@ end
 
 		if not enableMobileNotifications then
 
-			local returnToFinalCutPro = fcp.frontmost()
+			local returnToFinalCutPro = fcp.app():isFrontmost()
 			::retryProwlAPIKeyEntry::
 
 			local result = dialog.displayTextBoxMessage(i18n("mobileNotificationsTextbox"), i18n("mobileNotificationsError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
@@ -3483,7 +3483,7 @@ end
 			end
 			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
 			if prowlAPIKeyValidResult then
-				if returnToFinalCutPro then fcp.launch() end
+				if returnToFinalCutPro then fcp.app():launch() end
 				settings.set("fcpxHacks.prowlAPIKey", result)
 				notificationWatcher()
 				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
@@ -3577,7 +3577,7 @@ end
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(enableOrDisableText .. " " .. i18n("hacksShortcutsRestart") .. " " .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -3597,7 +3597,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.app():setPreference("Active Command Set", fcp.app():getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3615,7 +3615,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Revert back to default keyboard layout:
 			--------------------------------------------------------------------------------
-			local result = fcp.setPreference("Active Command Set", fcp.path() .. "/Contents/Resources/en.lproj/Default.commandset")
+			local result = fcp.app():setPreference("Active Command Set", fcp.app():getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
 			if result == nil then
 				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 				return "Failed"
@@ -3641,7 +3641,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3697,14 +3697,14 @@ end
 		-- Get existing value:
 		--------------------------------------------------------------------------------
 		mod.allowMovingMarkers = false
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '" .. fcp.path() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
+		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '" .. fcp.app():getPath() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
 		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -3716,13 +3716,13 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.allowMovingMarkers then
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp.app():getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
 			end
 		else
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp.path() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp.app():getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
 			if executeStatus == false then
 				dialog.displayErrorMessage(i18n("movingMarkersError"))
 				return "Failed"
@@ -3733,7 +3733,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3762,17 +3762,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		if fcp.getPreference("FFSuspendBGOpsDuringPlay") == nil then
+		if fcp.app():getPreference("FFSuspendBGOpsDuringPlay") == nil then
 			mod.FFSuspendBGOpsDuringPlay = false
 		else
-			mod.FFSuspendBGOpsDuringPlay = fcp.getPreference("FFSuspendBGOpsDuringPlay")
+			mod.FFSuspendBGOpsDuringPlay = fcp.app():getPreference("FFSuspendBGOpsDuringPlay")
 		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("togglingBackgroundTasksRestart") .. "\n\n" ..i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -3783,25 +3783,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if mod.FFSuspendBGOpsDuringPlay then
-			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", false)
-			if result == nil then
-				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-				return "Failed"
-			end
-		else
-			local result = fcp.setPreference("FFSuspendBGOpsDuringPlay", true)
-			if result == nil then
-				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-				return "Failed"
-			end
+		local result = fcp.app():setPreference("FFSuspendBGOpsDuringPlay", mod.FFSuspendBGOpsDuringPlay == true)
+		if result == nil then
+			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3830,17 +3822,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get existing value:
 		--------------------------------------------------------------------------------
-		if fcp.getPreference("FFEnableGuards") == nil then
+		if fcp.app():getPreference("FFEnableGuards") == nil then
 			mod.FFEnableGuards = false
 		else
-			mod.FFEnableGuards = fcp.getPreference("FFEnableGuards")
+			mod.FFEnableGuards = fcp.app():getPreference("FFEnableGuards")
 		end
 
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local restartStatus = false
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
@@ -3851,25 +3843,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		if mod.FFEnableGuards then
-			local result = fcp.setPreference("FFEnableGuards", false)
-			if result == nil then
-				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-				return "Failed"
-			end
-		else
-			local result = fcp.setPreference("FFEnableGuards", true)
-			if result == nil then
-				dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-				return "Failed"
-			end
+		local result = fcp.app():setPreference("FFEnableGuards", mod.FFEnableGuards == true)
+		if result == nil then
+			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+			return "Failed"
 		end
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3916,13 +3900,13 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
 		log.d("optionalValue: "..inspect(optionalValue))
-		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
+		if optionalValue ~= nil and optionalValue == fcp.app():getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
 			log.d("optionalValue matches preference value. Bailing.")
 			return
 		end
@@ -3954,12 +3938,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCreateProxyMedia", false) then
+		if optionalValue ~= nil and optionalValue == fcp.app():getPreference("FFImportCreateProxyMedia", false) then
 			return
 		end
 
@@ -3990,12 +3974,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCreateOptimizeMedia", false) then
+		if optionalValue ~= nil and optionalValue == fcp.app():getPreference("FFImportCreateOptimizeMedia", false) then
 			return
 		end
 
@@ -4027,12 +4011,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFImportCopyToMediaFolder", true) then
+		if optionalValue ~= nil and optionalValue == fcp.app():getPreference("FFImportCopyToMediaFolder", true) then
 			return
 		end
 
@@ -4064,12 +4048,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Make sure it's active:
 		--------------------------------------------------------------------------------
-		fcp.launch()
+		fcp.app():launch()
 
 		--------------------------------------------------------------------------------
 		-- If we're setting rather than toggling...
 		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp.getPreference("FFAutoStartBGRender", true) then
+		if optionalValue ~= nil and optionalValue == fcp.app():getPreference("FFAutoStartBGRender", true) then
 			return
 		end
 
@@ -4106,14 +4090,14 @@ end
 		-- Write data back to Clipboard:
 		--------------------------------------------------------------------------------
 		clipboard.stopWatching()
-		pasteboard.writeDataForUTI(fcp.clipboardUTI(), data)
+		pasteboard.writeDataForUTI(fcp.app():getPasteboardUTI(), data)
 		clipboard.startWatching()
 
 		--------------------------------------------------------------------------------
 		-- Paste in FCPX:
 		--------------------------------------------------------------------------------
-		fcp.launch()
-		if not fcp.performShortcut("Paste") then
+		fcp.app():launch()
+		if not fcp.app():performShortcut("Paste") then
 			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in finalCutProPasteFromClipboardHistory().")
 			return "Failed"
 		end
@@ -4138,14 +4122,14 @@ end
 				-- Write data back to Clipboard:
 				--------------------------------------------------------------------------------
 				clipboard.stopWatching()
-				pasteboard.writeDataForUTI(fcp.clipboardUTI(), currentClipboardData)
+				pasteboard.writeDataForUTI(fcp.app():getPasteboardUTI(), currentClipboardData)
 				clipboard.startWatching()
 
 				--------------------------------------------------------------------------------
 				-- Paste in FCPX:
 				--------------------------------------------------------------------------------
-				fcp.launch()
-				if not fcp.performShortcut("Paste") then
+				fcp.app():launch()
+				if not fcp.app():performShortcut("Paste") then
 					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteFromSharedClipboard().")
 					return "Failed"
 				end
@@ -4228,7 +4212,7 @@ end
 	--------------------------------------------------------------------------------
 	function resetSettings()
 
-		local finalCutProRunning = fcp.running()
+		local finalCutProRunning = fcp.app():isRunning()
 
 		local resetMessage = i18n("trashFCPXHacksPreferences")
 		if finalCutProRunning then
@@ -4263,7 +4247,7 @@ end
 		-- Restart Final Cut Pro if running:
 		--------------------------------------------------------------------------------
 		if finalCutProRunning then
-			if not fcp.restart() then
+			if not fcp.fcp.app():restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4322,7 +4306,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local fcpx = fcp.app():application()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -4443,7 +4427,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local fcpx = fcp.app():application()
 		local fcpxElements = ax.applicationElement(fcpx)
 		local whichWindow = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -5566,7 +5550,7 @@ end
 	--------------------------------------------------------------------------------
 	function menuItemShortcut(i, x, y, z)
 
-		local fcpxElements = ax.applicationElement(fcp.application())
+		local fcpxElements = ax.applicationElement(fcp.app():application())
 
 		local whichMenuBar = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
@@ -5612,7 +5596,7 @@ end
 		-- Toggle Touch Bar:
 		--------------------------------------------------------------------------------
 		setTouchBarLocation()
-		if fcp.running() then
+		if fcp.app():isRunning() then
 			mod.touchBarWindow:toggle()
 		end
 
@@ -5634,27 +5618,27 @@ end
 	function cutAndSwitchMulticam(whichMode, whichAngle)
 
 		if whichMode == "Audio" then
-			if not fcp.performShortcut("MultiAngleEditStyleAudio") then
+			if not fcp.app():performShortcut("MultiAngleEditStyleAudio") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Video" then
-			if not fcp.performShortcut("MultiAngleEditStyleVideo") then
+			if not fcp.app():performShortcut("MultiAngleEditStyleVideo") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
 		if whichMode == "Both" then
-			if not fcp.performShortcut("MultiAngleEditStyleAudioVideo") then
+			if not fcp.app():performShortcut("MultiAngleEditStyleAudioVideo") then
 				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 				return "Failed"
 			end
 		end
 
-		if not fcp.performShortcut("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
+		if not fcp.app():performShortcut("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
 			dialog.displayErrorMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
 			return "Failed"
 		end
@@ -5672,12 +5656,12 @@ end
 			clipboard.stopWatching()
 		end
 
-		if not fcp.performShortcut("Cut") then
+		if not fcp.app():performShortcut("Cut") then
 			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
 
-		if not fcp.performShortcut("Paste") then
+		if not fcp.app():performShortcut("Paste") then
 			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
 			goto moveToPlayheadEnd
 		end
@@ -5822,7 +5806,7 @@ end
 		-- Set Custom Export Path (or Default to Desktop):
 		--------------------------------------------------------------------------------
 		local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
-		local NSNavLastRootDirectory = fcp.getPreference("NSNavLastRootDirectory")
+		local NSNavLastRootDirectory = fcp.app():getPreference("NSNavLastRootDirectory")
 		local exportPath = "~/Desktop"
 		if batchExportDestinationFolder ~= nil then
 			 if tools.doesDirectoryExist(batchExportDestinationFolder) then
@@ -6034,7 +6018,7 @@ end
 		-- Variables:
 		--------------------------------------------------------------------------------
 		local ninjaPasteboardCopyError = false
-		local finalCutProClipboardUTI = fcp.clipboardUTI()
+		local finalCutProClipboardUTI = fcp.app():getPasteboardUTI()
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 
 		--------------------------------------------------------------------------------
@@ -6296,7 +6280,7 @@ function finalCutProWindowWatcher()
 	fullscreenPlaybackWatcher:subscribe(windowfilter.windowCreated,(function(window, applicationName)
 		if applicationName == "Final Cut Pro" then
 			if window:title() == "" then
-				local fcpx = fcp.application()
+				local fcpx = fcp.app():application()
 				local fcpxElements = ax.applicationElement(fcpx)
 				if fcpxElements[1][1] ~= nil then
 					if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
@@ -6392,7 +6376,7 @@ function finalCutProWindowWatcher()
 	-- Final Cut Pro Window Not On Screen:
 	--------------------------------------------------------------------------------
 	finalCutProWindowFilter:subscribe(windowfilter.windowNotOnScreen, function()
-		if not fcp.frontmost() then
+		if not fcp.app():isFrontmost() then
 			finalCutProNotActive()
 		end
 	end, true)
@@ -6499,7 +6483,7 @@ end
 		-- Update Current Language:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
-			fcp.currentLanguage(true)
+			fcp.app():getCurrentLanguage(true)
 		end)
 
 	end
@@ -6597,7 +6581,7 @@ function finalCutProSettingsWatcher(files)
 		--------------------------------------------------------------------------------
 		-- Refresh Keyboard Shortcuts if Command Set Changed & Command Editor Closed:
 		--------------------------------------------------------------------------------
-    	if mod.lastCommandSet ~= fcp.getActiveCommandSetPath() then
+    	if mod.lastCommandSet ~= fcp.app():getActiveCommandSetPath() then
     		if not fcp.app():commandEditor():isShowing() then
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
@@ -6642,7 +6626,7 @@ function fullscreenKeyboardWatcher()
 		--------------------------------------------------------------------------------
 		-- Define Final Cut Pro:
 		--------------------------------------------------------------------------------
-		local fcpx = fcp.application()
+		local fcpx = fcp.app():application()
 		local fcpxElements = ax.applicationElement(fcpx)
 
 		--------------------------------------------------------------------------------
@@ -6942,7 +6926,7 @@ function sharedXMLFileWatcher(files)
 				if host.localizedName() ~= editorName then
 
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(function() fcp.importXML(file) end)
+					sharedXMLNotification = notify.new(function() fcp.app():importXML(file) end)
 						:setIdImage(image.imageFromPath(fcpxhacks.iconPath))
 						:title("New XML Recieved")
 						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
