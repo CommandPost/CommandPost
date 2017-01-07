@@ -41,6 +41,7 @@ end
 function GoToPrompt:show()
 	if self:parent():isShowing() then
 		eventtap.keyStroke({"cmd", "shift"}, "g")
+		just.doUntil(function() return self:isShowing() end)
 	end
 	return self
 end
@@ -59,6 +60,7 @@ function GoToPrompt:pressCancel()
 		local btn = ui:cancelButton()
 		if btn then
 			btn:doPress()
+			just.doWhile(function() return self:isShowing() end)
 		end
 	end
 	return self
@@ -83,6 +85,7 @@ function GoToPrompt:pressDefault()
 		local btn = ui:defaultButton()
 		if btn and btn:enabled() then
 			btn:doPress()
+			just.doWhile(function() return self:isShowing() end)
 		end
 	end
 	return self
