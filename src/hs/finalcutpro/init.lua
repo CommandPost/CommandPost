@@ -770,7 +770,6 @@ end
 ---  * True if executed successfully otherwise False
 ---
 function App:setPreference(key, value)
-
 	local executeStatus
 	local preferenceType = nil
 
@@ -785,14 +784,19 @@ function App:setPreference(key, value)
 				arrayString = arrayString .. ","
 			end
 		end
+		value = "'" .. arrayString .. "'"
 		preferenceType = "array"
 	elseif type(value) == "string" then
 		preferenceType = "string"
+		value = "'" .. value .. "'"
+	else
+		return false
 	end
 
 	if preferenceType then
-		local _, executeStatus = hs.execute("defaults write " .. App.PREFS_PLIST_PATH .. " '" .. key .. "' -" .. preferenceType .. " " .. value)
-		return executeState ~= nil
+		local executeString = "defaults write " .. App.PREFS_PLIST_PATH .. " '" .. key .. "' -" .. preferenceType .. " " .. value
+		local _, executeStatus = hs.execute(executeString)
+		return executeStatus ~= nil
 	end
 	return false
 end
@@ -982,7 +986,7 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 		local fileMenu = menuBar:findMenuUI("File")
 		if fileMenu then
 			fileValue = fileMenu:attributeValue("AXTitle") or nil
-		
+
 			self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
 			if self._currentLanguage then
 				return self._currentLanguage

@@ -1212,6 +1212,11 @@ end
 		local fcpxRunning = fcp:isRunning()
 
 		--------------------------------------------------------------------------------
+		-- Current Language:
+		--------------------------------------------------------------------------------
+		local currentLanguage = fcp:getCurrentLanguage()
+
+		--------------------------------------------------------------------------------
 		-- We only refresh plist values if necessary as this takes time:
 		--------------------------------------------------------------------------------
 		if refreshPlistValues == true then
@@ -1234,7 +1239,6 @@ end
 			-- Get plist values for Allow Moving Markers:
 			--------------------------------------------------------------------------------
 			mod.allowMovingMarkers = false
-
 			local result = plist.fileToTable(fcp:getPath() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
 			if result ~= nil then
 				if result["TLKMarkerHandler"] ~= nil then
@@ -1305,8 +1309,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Highlight Colour Preferences:
 		--------------------------------------------------------------------------------
-		local displayHighlightColour = nil
-		displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour")
+		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
@@ -1389,10 +1392,10 @@ end
 		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
 		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
 
-		local hudButtonOne 			= settings.get("fcpxHacks.hudButtonOne") 	or " (Unassigned)"
-		local hudButtonTwo 			= settings.get("fcpxHacks.hudButtonTwo") 	or " (Unassigned)"
-		local hudButtonThree 		= settings.get("fcpxHacks.hudButtonThree") 	or " (Unassigned)"
-		local hudButtonFour 		= settings.get("fcpxHacks.hudButtonFour") 	or " (Unassigned)"
+		local hudButtonOne 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
+		local hudButtonTwo 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
+		local hudButtonThree 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
+		local hudButtonFour 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
 
 		if hudButtonOne ~= " (Unassigned)" then		hudButtonOne = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonOne["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
@@ -1534,19 +1537,14 @@ end
 		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
 
 		--------------------------------------------------------------------------------
-		-- Current Language:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-
-		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated") or false
-		local effectsShortcutOne 	= settings.get("fcpxHacks.effectsShortcutOne")
-		local effectsShortcutTwo 	= settings.get("fcpxHacks.effectsShortcutTwo")
-		local effectsShortcutThree 	= settings.get("fcpxHacks.effectsShortcutThree")
-		local effectsShortcutFour 	= settings.get("fcpxHacks.effectsShortcutFour")
-		local effectsShortcutFive 	= settings.get("fcpxHacks.effectsShortcutFive")
+		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated") or false
+		local effectsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
+		local effectsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
+		local effectsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
+		local effectsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
+		local effectsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
 		if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. tools.stringMaxLength(effectsShortcutOne,maxTextLength,"...") .. ")" end
 		if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. tools.stringMaxLength(effectsShortcutTwo,maxTextLength,"...") .. ")" end
 		if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. tools.stringMaxLength(effectsShortcutThree,maxTextLength,"...") .. ")" end
@@ -1556,12 +1554,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Transition Shortcuts:
 		--------------------------------------------------------------------------------
-		local transitionsListUpdated 	= settings.get("fcpxHacks.transitionsListUpdated") or false
-		local transitionsShortcutOne 	= settings.get("fcpxHacks.transitionsShortcutOne")
-		local transitionsShortcutTwo 	= settings.get("fcpxHacks.transitionsShortcutTwo")
-		local transitionsShortcutThree 	= settings.get("fcpxHacks.transitionsShortcutThree")
-		local transitionsShortcutFour 	= settings.get("fcpxHacks.transitionsShortcutFour")
-		local transitionsShortcutFive 	= settings.get("fcpxHacks.transitionsShortcutFive")
+		local transitionsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated") or false
+		local transitionsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne")
+		local transitionsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo")
+		local transitionsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree")
+		local transitionsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour")
+		local transitionsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive")
 		if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. tools.stringMaxLength(transitionsShortcutOne,maxTextLength,"...") .. ")" 	end
 		if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. tools.stringMaxLength(transitionsShortcutTwo,maxTextLength,"...") .. ")" 	end
 		if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. tools.stringMaxLength(transitionsShortcutThree,maxTextLength,"...") .. ")"	end
@@ -1571,12 +1569,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Titles Shortcuts:
 		--------------------------------------------------------------------------------
-		local titlesListUpdated 	= settings.get("fcpxHacks.titlesListUpdated") or false
-		local titlesShortcutOne 	= settings.get("fcpxHacks.titlesShortcutOne")
-		local titlesShortcutTwo 	= settings.get("fcpxHacks.titlesShortcutTwo")
-		local titlesShortcutThree 	= settings.get("fcpxHacks.titlesShortcutThree")
-		local titlesShortcutFour 	= settings.get("fcpxHacks.titlesShortcutFour")
-		local titlesShortcutFive 	= settings.get("fcpxHacks.titlesShortcutFive")
+		local titlesListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated") or false
+		local titlesShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
+		local titlesShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
+		local titlesShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
+		local titlesShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
+		local titlesShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
 		if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. tools.stringMaxLength(titlesShortcutOne,maxTextLength,"...") .. ")" 	end
 		if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. tools.stringMaxLength(titlesShortcutTwo,maxTextLength,"...") .. ")" 	end
 		if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. tools.stringMaxLength(titlesShortcutThree,maxTextLength,"...") .. ")"	end
@@ -1586,12 +1584,12 @@ end
 		--------------------------------------------------------------------------------
 		-- Generators Shortcuts:
 		--------------------------------------------------------------------------------
-		local generatorsListUpdated 	= settings.get("fcpxHacks.generatorsListUpdated") or false
-		local generatorsShortcutOne 	= settings.get("fcpxHacks.generatorsShortcutOne")
-		local generatorsShortcutTwo 	= settings.get("fcpxHacks.generatorsShortcutTwo")
-		local generatorsShortcutThree 	= settings.get("fcpxHacks.generatorsShortcutThree")
-		local generatorsShortcutFour 	= settings.get("fcpxHacks.generatorsShortcutFour")
-		local generatorsShortcutFive 	= settings.get("fcpxHacks.generatorsShortcutFive")
+		local generatorsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated") or false
+		local generatorsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne")
+		local generatorsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo")
+		local generatorsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree")
+		local generatorsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour")
+		local generatorsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive")
 		if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. tools.stringMaxLength(generatorsShortcutOne,maxTextLength,"...") .. ")" 	end
 		if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. tools.stringMaxLength(generatorsShortcutTwo,maxTextLength,"...") .. ")" 	end
 		if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. tools.stringMaxLength(generatorsShortcutThree,maxTextLength,"...") .. ")"	end
@@ -2109,9 +2107,10 @@ end
 			--------------------------------------------------------------------------------
 			-- Save Results to Settings:
 			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.allVideoEffects", allVideoEffects)
-			settings.set("fcpxHacks.allAudioEffects", allAudioEffects)
-			settings.set("fcpxHacks.effectsListUpdated", true)
+			local currentLanguage = fcp:getCurrentLanguage()
+			settings.set("fcpxHacks." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
+			settings.set("fcpxHacks." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
+			settings.set("fcpxHacks." .. currentLanguage .. ".effectsListUpdated", true)
 
 			--------------------------------------------------------------------------------
 			-- Update Chooser:
@@ -2213,8 +2212,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allTransitions", allTransitions)
-		settings.set("fcpxHacks.transitionsListUpdated", true)
+		local currentLanguage = fcp:getCurrentLanguage()
+		settings.set("fcpxHacks." .. currentLanguage .. ".allTransitions", allTransitions)
+		settings.set("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -2306,8 +2306,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allTitles", allTitles)
-		settings.set("fcpxHacks.titlesListUpdated", true)
+		local currentLanguage = fcp:getCurrentLanguage()
+		settings.set("fcpxHacks." .. currentLanguage .. ".allTitles", allTitles)
+		settings.set("fcpxHacks." .. currentLanguage .. ".titlesListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -2397,8 +2398,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.allGenerators", allGenerators)
-		settings.set("fcpxHacks.generatorsListUpdated", true)
+		local currentLanguage = fcp:getCurrentLanguage()
+		settings.set("fcpxHacks." .. currentLanguage .. ".allGenerators", allGenerators)
+		settings.set("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -2434,9 +2436,10 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= settings.get("fcpxHacks.effectsListUpdated")
-		local allVideoEffects 		= settings.get("fcpxHacks.allVideoEffects")
-		local allAudioEffects 		= settings.get("fcpxHacks.allAudioEffects")
+		local currentLanguage = fcp:getCurrentLanguage()
+		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated")
+		local allVideoEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
+		local allAudioEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -2538,11 +2541,12 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.effectsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.effectsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.effectsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.effectsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.effectsShortcutFive", 	result["text"]) end
+				local currentLanguage = fcp:getCurrentLanguage()
+				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive", 	result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -2570,8 +2574,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local transitionsListUpdated = settings.get("fcpxHacks.transitionsListUpdated")
-		local allTransitions = settings.get("fcpxHacks.allTransitions")
+		local currentLanguage = fcp:getCurrentLanguage()
+		local transitionsListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated")
+		local allTransitions = settings.get("fcpxHacks." .. currentLanguage .. ".allTransitions")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -2655,11 +2660,12 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.transitionsShortcutOne", 	result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.transitionsShortcutTwo", 	result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.transitionsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.transitionsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.transitionsShortcutFive", 	result["text"]) end
+				local currentLanguage = fcp:getCurrentLanguage()
+				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne", 	result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo", 	result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour", 	result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive", 	result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -2687,8 +2693,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local titlesListUpdated = settings.get("fcpxHacks.titlesListUpdated")
-		local allTitles = settings.get("fcpxHacks.allTitles")
+		local currentLanguage = fcp:getCurrentLanguage()
+		local titlesListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated")
+		local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -2772,11 +2779,12 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.titlesShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.titlesShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.titlesShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.titlesShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.titlesShortcutFive", 		result["text"]) end
+				local currentLanguage = fcp:getCurrentLanguage()
+				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive", 		result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -2804,8 +2812,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
-		local generatorsListUpdated = settings.get("fcpxHacks.generatorsListUpdated")
-		local allGenerators = settings.get("fcpxHacks.allGenerators")
+		local currentLanguage = fcp:getCurrentLanguage()
+		local generatorsListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated")
+		local allGenerators = settings.get("fcpxHacks." .. currentLanguage .. ".allGenerators")
 
 		--------------------------------------------------------------------------------
 		-- Error Checking:
@@ -2889,11 +2898,12 @@ end
 				-- Save the selection:
 				--------------------------------------------------------------------------------
 				whichShortcut = result["whichShortcut"]
-				if whichShortcut == 1 then settings.set("fcpxHacks.generatorsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks.generatorsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks.generatorsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks.generatorsShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks.generatorsShortcutFive", 		result["text"]) end
+				local currentLanguage = fcp:getCurrentLanguage()
+				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne", 		result["text"]) end
+				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo", 		result["text"]) end
+				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree", 	result["text"]) end
+				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour", 		result["text"]) end
+				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive", 		result["text"]) end
 			end
 
 			--------------------------------------------------------------------------------
@@ -4608,9 +4618,9 @@ end
 			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
 			return
 		end
-		
+
 		fcp:timeline():contents():selectClipInAngle(multicamAngle)
-		
+
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
@@ -5018,17 +5028,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
+		local currentLanguage = fcp:getCurrentLanguage()
 		local currentShortcut = nil
 		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks.transitionsShortcutOne")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne")
 		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks.transitionsShortcutTwo")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo")
 		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks.transitionsShortcutThree")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree")
 		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFour")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour")
 		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks.transitionsShortcutFive")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive")
 		elseif tostring(whichShortcut) ~= "" then
 			currentShortcut = tostring(whichShortcut)
 		end
@@ -5124,17 +5135,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
+		local currentLanguage = fcp:getCurrentLanguage()
 		local currentShortcut = nil
 		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutOne")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
 		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutTwo")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
 		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutThree")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
 		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutFour")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
 		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks.effectsShortcutFive")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
 		else
 			if tostring(whichShortcut) ~= "" then
 				currentShortcut = tostring(whichShortcut)
@@ -5234,17 +5246,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
+		local currentLanguage = fcp:getCurrentLanguage()
 		local currentShortcut = nil
 		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks.titlesShortcutOne")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
 		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks.titlesShortcutTwo")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
 		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks.titlesShortcutThree")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
 		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks.titlesShortcutFour")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
 		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks.titlesShortcutFive")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
 		else
 			if tostring(whichShortcut) ~= "" then
 				currentShortcut = tostring(whichShortcut)
@@ -5349,17 +5362,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get settings:
 		--------------------------------------------------------------------------------
+		local currentLanguage = fcp:getCurrentLanguage()
 		local currentShortcut = nil
 		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks.generatorsShortcutOne")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne")
 		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks.generatorsShortcutTwo")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo")
 		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks.generatorsShortcutThree")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree")
 		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFour")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour")
 		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks.generatorsShortcutFive")
+			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive")
 		else
 			if tostring(whichShortcut) ~= "" then
 				currentShortcut = tostring(whichShortcut)
@@ -5484,26 +5498,29 @@ end
 		end, eventtap.keyRepeatInterval())
 	end
 
-	function shiftClipHeight(direction)
 		--------------------------------------------------------------------------------
-		-- Find the Timeline Appearance Button:
+		-- SHIFT CLIP HEIGHT:
 		--------------------------------------------------------------------------------
-		local appearance = fcp:timeline():toolbar():appearance()
-		appearance:show()
-		if direction == "up" then
-			appearance:clipHeight():increment()
-		else
-			appearance:clipHeight():decrement()
+		function shiftClipHeight(direction)
+			--------------------------------------------------------------------------------
+			-- Find the Timeline Appearance Button:
+			--------------------------------------------------------------------------------
+			local appearance = fcp:timeline():toolbar():appearance()
+			appearance:show()
+			if direction == "up" then
+				appearance:clipHeight():increment()
+			else
+				appearance:clipHeight():decrement()
+			end
 		end
-	end
 
-	--------------------------------------------------------------------------------
-	-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
-	--------------------------------------------------------------------------------
-	function changeTimelineClipHeightRelease()
-		mod.changeTimelineClipHeightAlreadyInProgress = false
-		fcp:timeline():toolbar():appearance():hide()
-	end
+		--------------------------------------------------------------------------------
+		-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
+		--------------------------------------------------------------------------------
+		function changeTimelineClipHeightRelease()
+			mod.changeTimelineClipHeightAlreadyInProgress = false
+			fcp:timeline():toolbar():appearance():hide()
+		end
 
 	--------------------------------------------------------------------------------
 	-- SELECT CLIP AT LANE:
