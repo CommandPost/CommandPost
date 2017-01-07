@@ -608,7 +608,7 @@ end
 --------------------------------------------------------------------------------
 function defaultShortcutKeys()
 	local defaultShortcutKeys = {
-		FCPXHackLaunchFinalCutPro									= { characterString = kc.keyCodeTranslator("l"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp.launch() end, 				 					releasedFn = nil,														repeatFn = nil, 		global = true },
+		FCPXHackLaunchFinalCutPro									= { characterString = kc.keyCodeTranslator("l"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() fcp:launch() end, 				 					releasedFn = nil,														repeatFn = nil, 		global = true },
 		FCPXHackShowListOfShortcutKeys 								= { characterString = kc.keyCodeTranslator("f1"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() displayShortcutList() end, 							releasedFn = nil, 														repeatFn = nil, 		global = true },
 
 		FCPXHackHighlightBrowserPlayhead 							= { characterString = kc.keyCodeTranslator("h"), 			modifiers = {"ctrl", "option", "command"}, 			fn = function() highlightFCPXBrowserPlayhead() end, 				releasedFn = nil, 														repeatFn = nil },
@@ -1085,7 +1085,7 @@ function updateKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Revert back to default keyboard layout:
 	--------------------------------------------------------------------------------
-	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp.currentLanguage() .. ".lproj/Default.commandset")
+	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp:currentLanguage() .. ".lproj/Default.commandset")
 	if not result then
 		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
 		return false
@@ -1780,7 +1780,7 @@ end
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
 		local menuTable = {
-			{ title = i18n("open") .. " Final Cut Pro", 												fn = fcp.launch },
+			{ title = i18n("open") .. " Final Cut Pro", 												fn = function() fcp:launch() end },
 			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
 			{ title = "-" },
 		}
@@ -4880,7 +4880,7 @@ end
 		if not fcp:menuBar():isEnabled("File", "Reveal in Browser") then
 			return nil
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
@@ -4888,13 +4888,13 @@ end
 
 		local libraries = fcp:libraries()
 		local selectedClips
-		
-		
+
+
 		--------------------------------------------------------------------------------
 		-- Clear the selection first
 		--------------------------------------------------------------------------------
 		libraries:deselectAll()
-		
+
 		--------------------------------------------------------------------------------
 		-- Trigger the menu item to reveal the clip
 		--------------------------------------------------------------------------------
@@ -4907,7 +4907,7 @@ end
 			selectedClips = libraries:selectedClipsUI()
 			return selectedClips and #selectedClips > 0
 		end)
-		
+
 		--------------------------------------------------------------------------------
 		-- Get Check that there is exactly one Selected Clip
 		--------------------------------------------------------------------------------
@@ -4915,7 +4915,7 @@ end
 			dialog.displayErrorMessage("Expected exactly 1 selected clip in the Libraries Browser.\n\nError occurred in singleMatchFrame().")
 			return nil
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Get Browser Playhead:
 		--------------------------------------------------------------------------------
@@ -4929,7 +4929,7 @@ end
 		-- Get Clip Name from the Viewer
 		--------------------------------------------------------------------------------
 		local clipName = fcp:viewer():getTitle()
-		
+
 		if clipName then
 			--------------------------------------------------------------------------------
 			-- Ensure the Search Bar is visible
@@ -4937,7 +4937,7 @@ end
 			if not libraries:search():isShowing() then
 				libraries:searchToggle():press()
 			end
-		
+
 			--------------------------------------------------------------------------------
 			-- Search for the title
 			--------------------------------------------------------------------------------
@@ -4945,7 +4945,7 @@ end
 		else
 			debugMessage("Unable to find the clip title.")
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Highlight Browser Playhead:
 		--------------------------------------------------------------------------------
@@ -5271,7 +5271,7 @@ end
 			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 			if not effectsShowing then effects:hide() end
 		end)
-		
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -5304,7 +5304,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Save the main Browser layout:
 		--------------------------------------------------------------------------------
@@ -5419,7 +5419,7 @@ end
 			showTouchbar()
 			return "Fail"
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Save the main Browser layout:
 		--------------------------------------------------------------------------------
@@ -6760,7 +6760,7 @@ function mediaImportWatcher()
 			debugMessage("Media Inserted.")
 
 			local mediaImport = fcp:mediaImport()
-			
+
 			if mediaImport:isShowing() then
 				-- Media Import was already open. Bail!
 				debugMessage("Already in Media Import. Continuing...")
@@ -6799,7 +6799,7 @@ function mediaImportWatcher()
 				end,
 				0.01
 			)
-			
+
 		end
 	end)
 	mod.newDeviceMounted:start()
