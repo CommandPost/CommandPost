@@ -296,7 +296,7 @@ function loadScript()
 				if finalCutProRunning then
 					dialog.displayMessage(i18n("newKeyboardShortcuts"))
 					updateKeyboardShortcuts()
-					if not fcp.fcp:restart() then
+					if not fcp:restart() then
 						--------------------------------------------------------------------------------
 						-- Failed to restart Final Cut Pro:
 						--------------------------------------------------------------------------------
@@ -1941,7 +1941,7 @@ end
 		if enableHacksShortcutsInFinalCutPro then
 			if fcp:isRunning() then
 				fcp:launch()
-				fcp:app():commandEditor():show()
+				fcp:commandEditor():show()
 			end
 		else
 			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
@@ -2995,7 +2995,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3099,7 +3099,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3164,7 +3164,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3680,7 +3680,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3772,7 +3772,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3832,7 +3832,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3892,7 +3892,7 @@ end
 		-- Restart Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if restartStatus then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -3953,7 +3953,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local prefs = fcp:app():preferencesWindow()
+		local prefs = fcp:preferencesWindow()
 
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
@@ -3989,7 +3989,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local prefs = fcp:app():preferencesWindow()
+		local prefs = fcp:preferencesWindow()
 
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
@@ -4025,7 +4025,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local prefs = fcp:app():preferencesWindow()
+		local prefs = fcp:preferencesWindow()
 
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
@@ -4062,7 +4062,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local prefs = fcp:app():preferencesWindow()
+		local prefs = fcp:preferencesWindow()
 
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
@@ -4099,7 +4099,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Define FCPX:
 		--------------------------------------------------------------------------------
-		local prefs = fcp:app():preferencesWindow()
+		local prefs = fcp:preferencesWindow()
 
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
@@ -4286,7 +4286,7 @@ end
 		-- Restart Final Cut Pro if running:
 		--------------------------------------------------------------------------------
 		if finalCutProRunning then
-			if not fcp.fcp:restart() then
+			if not fcp:restart() then
 				--------------------------------------------------------------------------------
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
@@ -4591,7 +4591,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Open in Angle Editor:
 		--------------------------------------------------------------------------------
-		local menuBar = fcp:app():menuBar()
+		local menuBar = fcp:menuBar()
 		if menuBar:isEnabled("Clip", "Open in Angle Editor") then
 			menuBar:selectMenu("Clip", "Open in Angle Editor")
 		else
@@ -4859,8 +4859,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if fcp:app():menuBar():isEnabled("File", "Reveal in Browser") then
-			fcp:app():menuBar():selectMenu("File", "Reveal in Browser")
+		if fcp:menuBar():isEnabled("File", "Reveal in Browser") then
+			fcp:menuBar():selectMenu("File", "Reveal in Browser")
 			highlightFCPXBrowserPlayhead()
 		else
 			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.\n\nError occurred in matchFrameThenHighlightFCPXBrowserPlayhead().")
@@ -5029,7 +5029,7 @@ end
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
-		colorBoard = fcp:app():colorBoard()
+		colorBoard = fcp:colorBoard()
 
 		--------------------------------------------------------------------------------
 		-- Show the Color Board if it's hidden:
@@ -5557,7 +5557,7 @@ end
 	-- SELECT CLIP AT LANE:
 	--------------------------------------------------------------------------------
 	function selectClipAtLane(whichLane)
-		local content = fcp:app():timeline():contents()
+		local content = fcp:timeline():contents()
 		local playheadX = content:playhead():getPosition()
 
 		local clips = content:clipsUI(false, function(clip)
@@ -5809,7 +5809,7 @@ end
 	--------------------------------------------------------------------------------
 	function selectAllTimelineClips(forwards)
 
-		local content = fcp:app():timeline():contents()
+		local content = fcp:timeline():contents()
 		local playheadX = content:playhead():getPosition()
 
 		local clips = content:clipsUI(false, function(clip)
@@ -6073,7 +6073,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Trigger 'copy' from Menubar:
 		--------------------------------------------------------------------------------
-		local menuBar = fcp:app():menuBar()
+		local menuBar = fcp:menuBar()
 		if menuBar:isEnabled("Edit", "Copy") then
 			menuBar:selectMenu("Edit", "Copy")
 		else

@@ -38,7 +38,7 @@ end
 local function openCommandEditor()
 	if fcp:isRunning() then
 		fcp:launch()
-		fcp:app():commandEditor():show()
+		fcp:commandEditor():show()
 	end
 end
 
