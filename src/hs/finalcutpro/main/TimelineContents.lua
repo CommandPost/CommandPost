@@ -277,4 +277,31 @@ function TimelineContents:selectClip(clipUI)
 	return self:selectClips({clipUI})
 end
 
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- MULTICAM ANGLE EDITOR
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+-- Selects the clip under the playhead in the specified angle.
+-- NOTE: This will only work in multicam clips
+function TimelineContents:selectClipInAngle(angle)
+	local clipsUI = self:clipsUI()
+	if clipsUI then
+		local angleUI = clipsUI[angle]
+		local playheadPosition = self:playhead():getPosition()
+		local clipUI = axutils.childMatching(angleUI, function(child)
+			local frame = child:frame()
+			return child:attributeValue("AXRole") == "AXLayoutItem"
+			   and frame.x <= playheadPosition and (frame.x+frame.w) >= playheadPosition
+		end)
+		
+		if clipUI then
+			self:selectClip(clipUI)
+		end
+	end
+	return self
+end
+
 return TimelineContents

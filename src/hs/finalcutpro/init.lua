@@ -974,18 +974,19 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	end
 
 	--------------------------------------------------------------------------------
-	-- If FCPX is already run, we determine the language off the menu:
+	-- If FCPX is already running, we determine the language off the menu:
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
 		local menuBar = self:menuBar()
 
 		local fileMenu = menuBar:findMenuUI("File")
-
-		fileValue = fileMenu:attributeValue("AXTitle") or nil
-
-		self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
-		if self._currentLanguage then
-			return self._currentLanguage
+		if fileMenu then
+			fileValue = fileMenu:attributeValue("AXTitle") or nil
+		
+			self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
+			if self._currentLanguage then
+				return self._currentLanguage
+			end
 		end
 	end
 
