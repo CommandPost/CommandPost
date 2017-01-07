@@ -1699,6 +1699,18 @@ end
 			{ title = "-" },
 			{ title = i18n("replaceExistingFiles"), 													fn = toggleBatchExportReplaceExistingFiles, 						checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
 		}
+
+		local settingsVoiceCommand = {
+			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
+			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
+			{ title = "-" },
+			{ title = i18n("openDictationPreferences"), 												fn = function()
+				osascript.applescript([[
+					tell application "System Preferences"
+						activate
+						reveal anchor "Dictation" of pane "com.apple.preference.speech"
+					end tell]]) end },
+		}
 		local settingsMenuTable = {
 			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
 			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
@@ -1707,6 +1719,7 @@ end
 			{ title = "-" },
 			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
+			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
 			{ title = "-" },
 			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
@@ -3167,6 +3180,24 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- TOGGLE VOICE COMMAND ENABLE ANNOUNCEMENTS:
+	--------------------------------------------------------------------------------
+	function toggleVoiceCommandEnableAnnouncements()
+		local voiceCommandEnableAnnouncements = settings.get("fcpxHacks.voiceCommandEnableAnnouncements")
+		settings.set("fcpxHacks.voiceCommandEnableAnnouncements", not voiceCommandEnableAnnouncements)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
+	-- TOGGLE VOICE COMMAND ENABLE VISUAL ALERTS:
+	--------------------------------------------------------------------------------
+	function toggleVoiceCommandEnableVisualAlerts()
+		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
+		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
+		refreshMenuBar()
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE SCROLLING TIMELINE:
 	--------------------------------------------------------------------------------
 	function toggleScrollingTimeline()
@@ -3286,8 +3317,16 @@ end
 		if enableVoiceCommands then
 			voicecommands:stop()
 		else
+			local result = voicecommands:new()
+			if result == false then
+				dialog.displayErrorMessage(i18n("voiceCommandsError"))
+				settings.set("fcpxHacks.enableVoiceCommands", enableVoiceCommands)
+				return
+			end
 			if fcp.app():isFrontmost() then
 				voicecommands:start()
+			else
+				voicecommands:stop()
 			end
 		end
 		refreshMenuBar()

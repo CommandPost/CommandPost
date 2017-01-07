@@ -171,6 +171,8 @@ return {
 
 			backupIntervalFail 					=			"Failed to write Backup Interval to the Final Cut Pro Preferences file.",
 
+			voiceCommandsError 					= 			"Voice Commands could not be activated.\n\nPlease try again.",
+
 			--------------------------------------------------------------------------------
 			-- Yes/No Dialog Boxes:
 			--------------------------------------------------------------------------------
@@ -330,6 +332,7 @@ return {
 			batchExportOptions					=			"Batch Export Options",
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
+			voiceCommandOptions					=			"Voice Command Options",
 			touchBarLocation					=			"Touch Bar Location",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
 			highlightPlayheadShape				=			"Highlight Playhead Shape",
@@ -363,6 +366,13 @@ return {
 			showInspector						=			"Show Inspector",
 			showDropTargets						=			"Show Drop Targets",
 			showButtons							=			"Show Buttons",
+
+			--------------------------------------------------------------------------------
+			-- Voice Command Options:
+			--------------------------------------------------------------------------------
+			enableAnnouncements					=			"Enable Announcements",
+			enableVisualAlerts					=			"Enable Visual Alerts",
+			openDictationPreferences			=			"Open Dictation Preferences...",
 
 			--------------------------------------------------------------------------------
 			-- Touch Bar Location:
