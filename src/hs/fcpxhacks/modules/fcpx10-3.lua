@@ -152,7 +152,8 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["hudShowInspector"]							= true,
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
-												["checkForUpdatesInterval"]						= 600 }
+												["checkForUpdatesInterval"]						= 600,
+												["highlightPlayheadTime"]						= 3}
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
@@ -1085,6 +1086,7 @@ function updateKeyboardShortcuts()
 	local result = enableHacksShortcuts()
 	if result ~= "Done" then
 		dialog.displayErrorMessage(i18n("failedToWriteToFile") .. "\n\n" .. result)
+		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 		return false
 	end
 
@@ -1316,6 +1318,11 @@ end
 		-- Get Highlight Colour Preferences:
 		--------------------------------------------------------------------------------
 		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
+
+		--------------------------------------------------------------------------------
+		-- Get Highlight Playhead Time:
+		--------------------------------------------------------------------------------
+		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
@@ -1715,6 +1722,18 @@ end
 						reveal anchor "Dictation" of pane "com.apple.preference.speech"
 					end tell]]) end },
 		}
+		local settingsHighlightPlayheadTime = {
+			{ title = i18n("one") .. " " .. i18n("secs", {count=1}), 									fn = function() changeHighlightPlayheadTime(1) end, 					checked = highlightPlayheadTime == 1 },
+			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(2) end, 					checked = highlightPlayheadTime == 2 },
+			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(3) end, 					checked = highlightPlayheadTime == 3 },
+			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(4) end, 					checked = highlightPlayheadTime == 4 },
+			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(5) end, 					checked = highlightPlayheadTime == 5 },
+			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(6) end, 					checked = highlightPlayheadTime == 6 },
+			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(7) end, 					checked = highlightPlayheadTime == 7 },
+			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(8) end, 					checked = highlightPlayheadTime == 8 },
+			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(9) end, 					checked = highlightPlayheadTime == 9 },
+			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
+		}
 		local settingsMenuTable = {
 			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
 			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
@@ -1730,6 +1749,7 @@ end
 			{ title = "-" },
 			{ title = i18n("highlightPlayheadColour"), 													menu = settingsColourMenuTable},
 			{ title = i18n("highlightPlayheadShape"), 													menu = settingsShapeMenuTable},
+			{ title = i18n("highlightPlayheadTime"), 													menu = settingsHighlightPlayheadTime},
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
@@ -1794,7 +1814,7 @@ end
 			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
 			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp:getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
 			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
-			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." "..i18n("secs")..")", fn = function() toggleBackgroundRender() end, 						checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
+			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." " .. i18n("secs", {count = tonumber(mod.FFAutoRenderDelay)}) .. ")", 					fn = function() toggleBackgroundRender() end, 						checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
 			{ title = "-" },
 		}
 		local automationOptions = {
@@ -2927,6 +2947,14 @@ end
 --------------------------------------------------------------------------------
 -- CHANGE:
 --------------------------------------------------------------------------------
+
+	--------------------------------------------------------------------------------
+	-- CHANGE HIGHLIGHT PLAYHEAD TIME:
+	--------------------------------------------------------------------------------
+	function changeHighlightPlayheadTime(value)
+		settings.set("fcpxHacks.highlightPlayheadTime", value)
+		refreshMenuBar()
+	end
 
 	--------------------------------------------------------------------------------
 	-- CHANGE BATCH EXPORT DESTINATION PRESET:
@@ -5752,30 +5780,24 @@ end
 			--------------------------------------------------------------------------------
 			if displayHighlightShape == "Rectangle" then
 				mod.browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-				mod.browserHighlight:setStrokeColor(displayHighlightColour)
-				mod.browserHighlight:setFill(false)
-				mod.browserHighlight:setStrokeWidth(5)
-				mod.browserHighlight:show()
 			end
 			if displayHighlightShape == "Circle" then
 				mod.browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
-				mod.browserHighlight:setStrokeColor(displayHighlightColour)
-				mod.browserHighlight:setFill(false)
-				mod.browserHighlight:setStrokeWidth(5)
-				mod.browserHighlight:show()
 			end
 			if displayHighlightShape == "Diamond" then
 				mod.browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-				mod.browserHighlight:setStrokeColor(displayHighlightColour)
-				mod.browserHighlight:setFill(false)
-				mod.browserHighlight:setStrokeWidth(5)
-				mod.browserHighlight:show()
 			end
+			mod.browserHighlight:setStrokeColor(displayHighlightColour)
+							    :setFill(false)
+							    :setStrokeWidth(5)
+							    :bringToFront(true)
+							    :show()
 
 			--------------------------------------------------------------------------------
 			-- Set a timer to delete the circle after 3 seconds:
 			--------------------------------------------------------------------------------
-			mod.browserHighlightTimer = timer.doAfter(3, function() mod.browserHighlight:delete() end)
+			local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
+			mod.browserHighlightTimer = timer.doAfter(highlightPlayheadTime, function() mod.browserHighlight:delete() end)
 
 		end
 

@@ -26,8 +26,16 @@ return {
 			button								=			"Button",
 			options								=			"Options",
 			open								=			"Open",
-			secs								=			"secs",
-			mins								=			"mins",
+			secs								=
+			{
+				one								=			"sec",
+				other							=			"secs",
+			},
+			mins								=
+			{
+				one								=			"min",
+				other							=			"mins",
+			},
 			version								=			"Version",
 			unassigned							=			"Unassigned",
 			enabled								=			"Enabled",
@@ -339,6 +347,7 @@ return {
 			touchBarLocation					=			"Touch Bar Location",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
 			highlightPlayheadShape				=			"Highlight Playhead Shape",
+			highlightPlayheadTime				=			"Highlight Playhead Time",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
 			trachFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
