@@ -2,19 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FCPXHackSelectForward</key>
-	<dict>
-		<key>characterString</key>
-		<string></string>
-		<key>modifiers</key>
-		<string></string>
-	</dict>
 	<key>FCPXHackSelectBackwards</key>
 	<dict>
+		<key>character</key>
+		<string></string>
 		<key>characterString</key>
-		<string></string>
-		<key>modifiers</key>
-		<string></string>
+		<string>NSLeftArrowFunctionKey</string>
+		<key>modifierMask</key>
+		<integer>12320768</integer>
+	</dict>
+	<key>FCPXHackSelectForward</key>
+	<dict>
+		<key>character</key>
+		<string></string>
+		<key>characterString</key>
+		<string>NSRightArrowFunctionKey</string>
+		<key>modifierMask</key>
+		<integer>12320768</integer>
 	</dict>
 	<key>FCPXHackToggleVoiceCommands</key>
 	<dict>

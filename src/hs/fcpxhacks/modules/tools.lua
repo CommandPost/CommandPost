@@ -25,6 +25,20 @@ local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CONSTANTS:
+--------------------------------------------------------------------------------
+
+tools.DEFAULT_DELAY 	= 0
+
+--------------------------------------------------------------------------------
+-- LOCAL VARIABLES:
+--------------------------------------------------------------------------------
+
+local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
+local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
+local clickState 		= eventtap.event.properties.mouseEventClickState
+
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
 -------------------------------------------------------------------------------
@@ -97,12 +111,6 @@ function tools.executeWithAdministratorPrivileges(input)
 		return nil
 	end
 end
-
-tools.DEFAULT_DELAY = 0
-
-local leftMouseDown = eventtap.event.types["leftMouseDown"]
-local leftMouseUp = eventtap.event.types["leftMouseUp"]
-local clickState = eventtap.event.properties.mouseEventClickState
 
 --------------------------------------------------------------------------------
 -- LEFT CLICK:
@@ -234,6 +242,21 @@ function tools.modifierMatch(inputA, inputB)
 
 	return match
 
+end
+
+--------------------------------------------------------------------------------
+-- INCREMENT FILENAME:
+--------------------------------------------------------------------------------
+function tools.incrementFilename(value)
+	if value == nil then return nil end
+	if type(value) ~= "string" then return nil end
+
+	local name, counter = string.match(value, '^(.*)%s(%d+)$')
+	if name == nil or counter == nil then
+		return value .. " 1"
+	end
+
+	return name .. " " .. tostring(tonumber(counter) + 1)
 end
 
 return tools

@@ -8,6 +8,8 @@ local windowfilter					= require("hs.window.filter")
 local ReplaceAlert					= require("hs.finalcutpro.export.ReplaceAlert")
 local GoToPrompt					= require("hs.finalcutpro.export.GoToPrompt")
 
+local TextField							= require("hs.finalcutpro.ui.TextField")
+
 local SaveSheet = {}
 
 function SaveSheet.matches(element)
@@ -73,6 +75,15 @@ end
 function SaveSheet:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()
+end
+
+function SaveSheet:filename()
+	if not self._filename then
+		self._filename = TextField:new(self, function()
+			return axutils.childWithRole(self:UI(), "AXTextField")
+		end)
+	end
+	return self._filename
 end
 
 function SaveSheet:setPath(path)
