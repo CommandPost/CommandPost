@@ -22,9 +22,12 @@ local hackshud = {}
 local application								= require("hs.application")
 local chooser									= require("hs.chooser")
 local drawing									= require("hs.drawing")
-local fs 										= require("hs.fs")
+local eventtap									= require("hs.eventtap")
 local fnutils 									= require("hs.fnutils")
+local fs 										= require("hs.fs")
+local geometry									= require("hs.geometry")
 local host										= require("hs.host")
+local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local timer										= require("hs.timer")
@@ -152,9 +155,24 @@ function hackshud.new()
 				if not fcp:isFrontmost() and hsFrontmost then
 					hackshud.hide()
 				else
+					--[[
 					if not fcp:isFrontmost() and window.frontmostWindow():title() == "Hammerspoon Console" then
-						hackshud.hide()
+
+						--------------------------------------------------------------------------------
+						-- Check to see if user is dragging the HUD:
+						--------------------------------------------------------------------------------
+						local leftMousePressed = eventtap.checkMouseButtons()[1]
+						local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+						local hudFrame = hackshud.hudWebView:hswindow():frame()
+
+						if leftMousePressed and mouseLocation:inside(hudFrame) then
+							--print("Dragging")
+						else
+							hackshud.hide()
+						end
+
 					end
+					--]]
 				end
 			end
 		end
@@ -919,7 +937,7 @@ function generateHTML()
 
 	local backgroundRender = nil
 	if FFAutoStartBGRender then
-		backgroundRender = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. i18n("enabled") .. ' (' .. FFAutoRenderDelay .. 'secs)</span>'
+		backgroundRender = '<span style="color: ' .. hackshud.fcpGreen .. ';">' .. i18n("enabled") .. ' (' .. FFAutoRenderDelay .. " " .. i18n("secs", {count=tonumber(FFAutoRenderDelay)}) .. ')</span>'
 	else
 		backgroundRender = '<span style="color: ' .. hackshud.fcpRed .. ';">' .. i18n("disabled") .. '</span>'
 	end

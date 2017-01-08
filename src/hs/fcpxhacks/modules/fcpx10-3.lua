@@ -6447,7 +6447,12 @@ end
 		-- Don't trigger until after FCPX Hacks has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then
-			mod.isFinalCutProActive = false
+			timer.waitUntil(function() return mod.hacksLoaded end, function()
+				if fcp:isFrontmost() then
+					mod.isFinalCutProActive = false
+					finalCutProActive()
+				end
+			end, 0.1)
 			return
 		end
 
