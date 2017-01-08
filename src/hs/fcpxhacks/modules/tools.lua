@@ -25,6 +25,20 @@ local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CONSTANTS:
+--------------------------------------------------------------------------------
+
+tools.DEFAULT_DELAY 	= 0
+
+--------------------------------------------------------------------------------
+-- LOCAL VARIABLES:
+--------------------------------------------------------------------------------
+
+local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
+local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
+local clickState 		= eventtap.event.properties.mouseEventClickState
+
 -------------------------------------------------------------------------------
 -- RETURNS MACOS VERSION:
 -------------------------------------------------------------------------------
@@ -97,12 +111,6 @@ function tools.executeWithAdministratorPrivileges(input)
 		return nil
 	end
 end
-
-tools.DEFAULT_DELAY = 0
-
-local leftMouseDown = eventtap.event.types["leftMouseDown"]
-local leftMouseUp = eventtap.event.types["leftMouseUp"]
-local clickState = eventtap.event.properties.mouseEventClickState
 
 --------------------------------------------------------------------------------
 -- LEFT CLICK:
@@ -233,6 +241,36 @@ function tools.modifierMatch(inputA, inputB)
 	if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
 
 	return match
+
+end
+
+--------------------------------------------------------------------------------
+-- INCREMENT FILENAME:
+--------------------------------------------------------------------------------
+function tools.incrementFilename(value)
+
+	if value == nil then return nil end
+	if type(value) ~= "string" then return nil end
+
+	local searchString = string.match(value, '%s%d+')
+	if searchString == nil then
+		return value .. " 1"
+	end
+
+	local reversedValue = string.reverse(value)
+	local stringStart, stringEnd = string.find(reversedValue, '%d+%s')
+	local searchString = string.reverse(string.sub(reversedValue, stringStart, stringEnd))
+
+	local endOfValue = string.sub(value, string.len(searchString) * -1)
+	if endOfValue == nil then
+		return value .. " 1"
+	end
+
+	if searchString == endOfValue then
+		return string.sub(value, 1, string.len(value) - string.len(endOfValue)) .. " " .. tostring(tonumber(string.sub(endOfValue, 2)) + 1)
+	else
+		return value .. " 1"
+	end
 
 end
 
