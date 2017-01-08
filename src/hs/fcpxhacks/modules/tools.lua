@@ -248,30 +248,15 @@ end
 -- INCREMENT FILENAME:
 --------------------------------------------------------------------------------
 function tools.incrementFilename(value)
-
 	if value == nil then return nil end
 	if type(value) ~= "string" then return nil end
 
-	local searchString = string.match(value, '%s%d+')
-	if searchString == nil then
+	local name, counter = string.match(value, '^(.*)%s(%d+)$')
+	if name == nil or counter == nil then
 		return value .. " 1"
 	end
 
-	local reversedValue = string.reverse(value)
-	local stringStart, stringEnd = string.find(reversedValue, '%d+%s')
-	local searchString = string.reverse(string.sub(reversedValue, stringStart, stringEnd))
-
-	local endOfValue = string.sub(value, string.len(searchString) * -1)
-	if endOfValue == nil then
-		return value .. " 1"
-	end
-
-	if searchString == endOfValue then
-		return string.sub(value, 1, string.len(value) - string.len(endOfValue)) .. " " .. tostring(tonumber(string.sub(endOfValue, 2)) + 1)
-	else
-		return value .. " 1"
-	end
-
+	return name .. " " .. tostring(tonumber(counter) + 1)
 end
 
 return tools

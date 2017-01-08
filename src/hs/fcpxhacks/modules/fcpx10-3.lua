@@ -6005,8 +6005,7 @@ end
 				--------------------------------------------------------------------------------
 				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
-				::trySavingAgain::
-				if saveSheet:isShowing() then
+				while saveSheet:isShowing() do
 					local replaceAlert = saveSheet:replaceAlert()
 					if replaceExisting and replaceAlert:isShowing() then
 						replaceAlert:pressReplace()
@@ -6023,7 +6022,6 @@ end
 
 						saveSheet:filename():setValue(newFilename)
 						saveSheet:pressSave()
-						goto trySavingAgain
 					end
 				end
 
