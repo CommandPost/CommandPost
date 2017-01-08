@@ -182,7 +182,8 @@ function plist.xmlFileToTable(plistFileName)
 		return nil
 	end
 
-	local file = io.open(plistFileName, "r") 		-- r read mode
+	local absoluteFilename = fs.pathToAbsolute(plistFileName)
+	local file = io.open(absoluteFilename, "r") 		-- r read mode
     if not file then
 		log.e("Unable to open '".. plistFileName .."'")
 		return nil
@@ -220,7 +221,8 @@ function plist.fileToTable(plistFileName)
 		return nil
 	end
 
-	local file = io.open(plistFileName, "r")
+	local absoluteFilename = fs.pathToAbsolute(plistFileName)
+	local file = io.open(absoluteFilename, "r")
 	if not file then
 		log.e("Unable to open '".. plistFileName .."'")
 		return nil
@@ -234,9 +236,9 @@ function plist.fileToTable(plistFileName)
 
 	if marker == "bplist" then
 		-- it's a binary plist
-		return plist.binaryFileToTable(plistFileName)
+		return plist.binaryFileToTable(absoluteFilename)
 	else
-		return plist.xmlFileToTable(plistFileName)
+		return plist.xmlFileToTable(absoluteFilename)
 	end
 end
 
