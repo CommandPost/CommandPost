@@ -1807,7 +1807,7 @@ end
 		}
 		local menuTable = {
 			{ title = i18n("open") .. " Final Cut Pro", 												fn = function() fcp:launch() end },
-			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning },
+			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning and enableHacksShortcutsInFinalCutPro },
 			{ title = "-" },
 		}
 		local shortcutsTable = {
@@ -2006,6 +2006,9 @@ end
 
 	+ = Increase Timeline Clip Height
 	- = Decrease Timeline Clip Height
+
+	Left Arrow = Select All Clips to Left
+	Right Arrow = Select All Clips to Right
 
 	-----------------------------------------
 	CONTROL+OPTION+COMMAND+SHIFT:
