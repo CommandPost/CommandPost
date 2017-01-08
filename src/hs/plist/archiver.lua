@@ -23,10 +23,38 @@ local function getReferenceID(data)
 	return data[mod.CFUID]
 end
 
+local function defrostClass(data, defrostFn)
+	if data["$class"] then
+		local classname = data["$class"]["$classname"]
+		-- check if a defrost function was provided
+		if defrostFn then
+			local result = defrostFn(data, classname)
+			if result then
+				return result
+			end
+		end
+		-- if not handled then manage some of the basic types.
+		if classname == "NSMutableDictionary" or classname == "NSDictionary" then
+			local keys = data["NS.keys"]
+			local values = data["NS.objects"]
+			local dict = {}
+			for i,k in ipairs(keys) do
+				dict[k] = values[i]
+			end
+			return dict
+		elseif classname == "NSMutableArray" or classname == "NSArray" then
+			return data["NS.objects"]
+		elseif classname == "NSMutableSet" then
+			return data["NS.objects"]
+		end
+	end
+	return data
+end
+
 --------------------------------------------------------------------------------
 -- GETS THE SPECIFIED OBJECT, LOOKING UP THE REFERENCE OBJECT IF NECESSARY:
 --------------------------------------------------------------------------------
-local function get(data, objects, cache)
+local function get(data, objects, cache, defrostFn)
 	local result = nil
 	if isReference(data) then
 		-- it's a reference
@@ -41,8 +69,10 @@ local function get(data, objects, cache)
 				result = {}
 				cache[id] = result
 				for k,v in pairs(object) do
-					result[k] = get(v, objects, cache)
+					result[k] = get(v, objects, cache, defrostFn)
 				end
+				result = defrostClass(result, defrostFn)
+				cache[id] = result
 			else
 				result = object
 				cache[id] = result
@@ -51,8 +81,9 @@ local function get(data, objects, cache)
 	elseif type(data) == "table" then
 		result = {}
 		for k,v in pairs(data) do
-			result[k] = get(v, objects, cache)
+			result[k] = get(v, objects, cache, defrostFn)
 		end
+		result = defrostClass(result, defrostFn)
 	else
 		result = data
 	end
@@ -62,19 +93,33 @@ end
 --- hs.plist.archiver.unarchive(archive) -> table
 --- Unarchives a LUA table which was archived into a plist using the NSKeyedArchiver.
 ---
+--- A 'defrost' function can be provided, which will be called whenever a table with a '$class'
+--- structure is present. It will receive the table and the classname and should either return a modified value
+--- if the class was handled, or `nil` if it was unable to handle the class. Eg:
+---
+--- ```
+--- local result = archiver.unarchive(archiveData, function(frozen, classname)
+--- 	if classname == "XXMyClass" then
+--- 		return MyClass:new(frozen.foo, frozen.bar)
+--- 	end
+---		return nil
+--- end)
+--- ```
+---
 --- Parameters:
---- * `archive`	- the table containing the archive plist as a table
---- * `root`	- (optional) the key for the root element to unarchive. Defaults to 'root'
+--- * `archive`		- the table containing the archive plist as a table
+--- * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
+--- * `root`		- (optional) the key for the root element to unarchive. Defaults to 'root'
 --- Returns:
 --- * The unarchived 
-function mod.unarchive(archive, root)
+function mod.unarchive(archive, defrostFn, root)
 	if checkArchiver(archive) then
 		root = root or mod.ROOT_KEY
 		local objects = archive[mod.OBJECTS_KEY]
 		local cache = {}
 		local top = archive[mod.TOP_KEY]
 		if top and top[root] then
-			return get(top[root], objects, cache)
+			return get(top[root], objects, cache, defrostFn)
 		end
 	end
 	return nil
