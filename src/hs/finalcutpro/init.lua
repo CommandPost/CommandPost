@@ -962,6 +962,8 @@ App.fileMenuTitle = {
 ---
 function App:getCurrentLanguage(forceReload, forceLanguage)
 
+	local finalCutProLanguages = App.SUPPORTED_LANGUAGES
+
 	--------------------------------------------------------------------------------
 	-- Force a Language:
 	--------------------------------------------------------------------------------
