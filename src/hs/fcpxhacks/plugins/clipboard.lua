@@ -89,6 +89,10 @@ local CLIPBOARD = protect({
 	UTI 										= "com.apple.flexo.proFFPasteboardUTI"
 })
 
+function clipboard.isTimelineClip(data)
+	return data.displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME
+end
+
 --------------------------------------------------------------------------------
 -- PROCESS OBJECT:
 --------------------------------------------------------------------------------
@@ -157,14 +161,14 @@ function clipboard.processContent(data)
 	if not clipboard.isClassnameSupported(classname) then
 		return nil, 0
 	end
-	
-	local displayName = data.displayName
-	local count = displayName and 1 or 0
-	
-	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
+
+	if clipboard.isTimelineClip(data) then
 		-- Just process the contained items directly
 		return clipboard.processObject(data.containedItems)
 	end
+	
+	local displayName = data.displayName
+	local count = displayName and 1 or 0
 	
 	if clipboard.getClassname(data) == CLIPBOARD.GAP then
 		displayName = nil
@@ -214,7 +218,7 @@ function clipboard.findClipName(fcpxData, default)
 	local data = clipboard.unarchiveFCPXData(fcpxData)
 	
 	if data then
-		local name, count = clipboard.processObject(data.objects)
+		local name, count = clipboard.processObject(data.root.objects)
 
 		if name then
 			if count > 1 then
@@ -227,24 +231,6 @@ function clipboard.findClipName(fcpxData, default)
 		end
 	end
 	return nil	
-end
-
-function clipboard.findClipNameOld(fcpxTable, default)
-
-	local top = fcpxTable['$top']
-	local objects = fcpxTable['$objects']
-
-	local name, count = clipboard.processObject(top.root, objects)
-
-	if name then
-		if count > 1 then
-			return name.." (+"..(count-1)..")"
-		else
-			return name
-		end
-	else
-		return default
-	end
 end
 
 --------------------------------------------------------------------------------
@@ -276,6 +262,10 @@ function clipboard.unarchiveFCPXData(fcpxData)
 	end	
 	log.e("The clipboard does not contain any FCPX clip data.")
 	return nil
+end
+
+function clipboard.writeFCPXData(fcpxData)
+	return pasteboard.writeDataForUTI(CLIPBOARD.UTI, fcpxData)
 end
 
 --------------------------------------------------------------------------------
