@@ -69,6 +69,9 @@ end
 --- Notes:
 ---  * None
 function plist.binaryToTable(binaryData)
+	if not binaryData then
+		return nil
+	end
 
 	-- Define Temporary File:
 	local plistFileName	= os.tmpname()
