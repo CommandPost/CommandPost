@@ -992,21 +992,21 @@ function getShortcutsFromActiveCommandSet()
 						if activeCommandSetTable[k][x]["modifiers"] ~= nil then
 							if string.find(activeCommandSetTable[k][x]["modifiers"], "keypad") then keypadModifier = true end
 							tempModifiers = kc.translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
-						end
-
-						if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
-							tempModifiers = kc.translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+						else
+							if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
+								tempModifiers = kc.translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
+							end
 						end
 
 						if activeCommandSetTable[k][x]["characterString"] ~= nil then
 							tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
-						end
-
-						if activeCommandSetTable[k][x]["character"] ~= nil then
-							if keypadModifier then
-								tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
-							else
-								tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
+						else
+							if activeCommandSetTable[k][x]["character"] ~= nil then
+								if keypadModifier then
+									tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
+								else
+									tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
+								end
 							end
 						end
 
@@ -1036,21 +1036,21 @@ function getShortcutsFromActiveCommandSet()
 
 					if activeCommandSetTable[k]["modifiers"] ~= nil then
 						tempModifiers = kc.translateKeyboardModifiers(activeCommandSetTable[k]["modifiers"])
-					end
-
-					if activeCommandSetTable[k]["modifierMask"] ~= nil then
-						tempModifiers = kc.translateModifierMask(activeCommandSetTable[k]["modifierMask"])
+					else
+						if activeCommandSetTable[k]["modifierMask"] ~= nil then
+							tempModifiers = kc.translateModifierMask(activeCommandSetTable[k]["modifierMask"])
+						end
 					end
 
 					if activeCommandSetTable[k]["characterString"] ~= nil then
 						tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k]["characterString"])
-					end
-
-					if activeCommandSetTable[k]["character"] ~= nil then
-						if keypadModifier then
-							tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
-						else
-							tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k]["character"])
+					else
+						if activeCommandSetTable[k]["character"] ~= nil then
+							if keypadModifier then
+								tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
+							else
+								tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k]["character"])
+							end
 						end
 					end
 
