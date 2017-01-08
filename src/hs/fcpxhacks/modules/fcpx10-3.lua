@@ -5879,6 +5879,11 @@ end
 		end
 
 		--------------------------------------------------------------------------------
+		-- Replace Existing Files Option:
+		--------------------------------------------------------------------------------
+		local replaceExisting = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
+
+		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
@@ -5902,24 +5907,27 @@ end
 			clips = libraries:clipsUI()
 		end
 
-		local failedExports = 0
-
+		local batchExportSucceeded = false
 		if clips and #clips > 0 then
 
 			--------------------------------------------------------------------------------
-			-- Display Dialog to make sure the current path is acceptable:
+			-- Display Dialog:
 			--------------------------------------------------------------------------------
 			local countText = " "
 			if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
-			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+			local replaceFilesMessage = ""
+			if replaceExisting then
+				replaceFilesMessage = i18n("batchExportReplaceYes")
+			else
+				replaceFilesMessage = i18n("batchExportReplaceNo")
+			end
+			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
 			if result == nil then return end
-
-			--os.execute([[osascript -e 'tell app "Final Cut Pro" to display dialog "Hello World"']])
 
 			--------------------------------------------------------------------------------
 			-- Export the clips:
 			--------------------------------------------------------------------------------
-			failedExports = batchExportClips(libraries, clips, exportPath, destinationPreset)
+			batchExportSucceeded = batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
 
 		else
 			--------------------------------------------------------------------------------
@@ -5931,12 +5939,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Batch Export Complete:
 		--------------------------------------------------------------------------------
-		if failedExports >= 0 then
-			local completeMessage = i18n("batchExportComplete")
-			if failedExports > 0 then
-				completeMessage = completeMessage .. "\n\n" .. i18n("batchExportSkipped", {count=failedExports})
-			end
-			dialog.displayMessage(completeMessage, {i18n("done")})
+		if batchExportSucceeded then
+			dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
 		end
 
 	end
@@ -5944,12 +5948,10 @@ end
 		--------------------------------------------------------------------------------
 		-- BATCH EXPORT CLIPS:
 		--------------------------------------------------------------------------------
-		function batchExportClips(libraries, clips, exportPath, destinationPreset)
+		function batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
 
+			local errorFunction = " Error occurred in batchExportClips()."
 			local firstTime = true
-			local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
-
-			local failedExports = 0
 			for i,clip in ipairs(clips) do
 
 				--------------------------------------------------------------------------------
@@ -5961,8 +5963,8 @@ end
 				-- Trigger Export:
 				--------------------------------------------------------------------------------
 				if not selectShare(destinationPreset) then
-					dialog.displayErrorMessage("Could not trigger Share Menu Item.")
-					return -1
+					dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
+					return false
 				end
 
 				--------------------------------------------------------------------------------
@@ -5970,45 +5972,61 @@ end
 				--------------------------------------------------------------------------------
 				local exportDialog = fcp:exportDialog()
 				if not just.doUntil(function() return exportDialog:isShowing() end) then
-					dialog.displayErrorMessage("Failed to open the 'Export' window.")
-					return -2
+					dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
+					return false
 				end
 				exportDialog:pressNext()
 
 				--------------------------------------------------------------------------------
-				-- Click 'Save' on the save sheet:
+				-- If 'Next' has been clicked (as opposed to 'Share'):
 				--------------------------------------------------------------------------------
 				local saveSheet = exportDialog:saveSheet()
-				if not just.doUntil(function() return saveSheet:isShowing() end) then
-					dialog.displayErrorMessage("Failed to open the 'Save' window.")
-					return -3
-				end
+				if exportDialog:isShowing() then
 
-				--------------------------------------------------------------------------------
-				-- Set Custom Export Path (or Default to Desktop):
-				--------------------------------------------------------------------------------
-				if firstTime then
-					saveSheet:setPath(exportPath)
-					firstTime = false
+					--------------------------------------------------------------------------------
+					-- Click 'Save' on the save sheet:
+					--------------------------------------------------------------------------------
+					if not just.doUntil(function() return saveSheet:isShowing() end) then
+						dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
+						return false
+					end
+
+					--------------------------------------------------------------------------------
+					-- Set Custom Export Path (or Default to Desktop):
+					--------------------------------------------------------------------------------
+					if firstTime then
+						saveSheet:setPath(exportPath)
+						firstTime = false
+					end
+					saveSheet:pressSave()
+
 				end
-				saveSheet:pressSave()
 
 				--------------------------------------------------------------------------------
 				-- Make sure Save Window is closed:
 				--------------------------------------------------------------------------------
-				if saveSheet:isShowing() then
+				while saveSheet:isShowing() do
 					local replaceAlert = saveSheet:replaceAlert()
-					if batchExportReplaceExistingFiles and replaceAlert:isShowing() then
+					if replaceExisting and replaceAlert:isShowing() then
 						replaceAlert:pressReplace()
 					else
 						replaceAlert:pressCancel()
-						failedExports = failedExports + 1
+
+						local originalFilename = saveSheet:filename():getValue()
+						if originalFilename == nil then
+							dialog.displayErrorMessage("Failed to get the original Filename." .. errorFunction)
+							return false
+						end
+
+						local newFilename = tools.incrementFilename(originalFilename)
+
+						saveSheet:filename():setValue(newFilename)
+						saveSheet:pressSave()
 					end
-					saveSheet:pressCancel()
-					exportDialog:pressCancel()
 				end
+
 			end
-			return failedExports
+			return true
 		end
 
 		--------------------------------------------------------------------------------
@@ -6025,6 +6043,8 @@ end
 			end)
 
 		end
+
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

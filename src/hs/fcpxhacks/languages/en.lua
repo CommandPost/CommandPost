@@ -157,16 +157,12 @@ return {
 			batchExportDestinationsNotFound		=			"We were unable to find the list of Share Destinations.",
 			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the FCPX Hacks menubar.",
 			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
-			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nYou can change this location via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nYou can change this location via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+			batchExportReplaceYes				=			"Exports with duplicate filenames will be replaced.",
+			batchExportReplaceNo				=			"Exports with duplicate filenames will be incremented.",
 			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
-			batchExportNoShortcut				=			"Please assign the 'Export using Default Share Destination' to a shortcut key.",
 			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
-			batchExportSkipped					=
-			{
-				one								=			"One clip was skipped as a file with the same name already existed.",
-				other							=			"%{count} clips were skipped as files with the same names already existed."
-			},
 
 			activeCommandSetError				= 			"Something went wrong whilst attempting to read the Active Command Set.",
 			activeCommandSetResetError			=			"Failed to set the Active Command Set to the default value.",
