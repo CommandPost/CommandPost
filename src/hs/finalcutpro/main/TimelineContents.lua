@@ -284,12 +284,41 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
+function TimelineContents:anglesUI()
+	return self:clipsUI()
+end
+
+function TimelineContents:angleButtonsUI(angleNumber)
+	local angles = self:anglesUI()
+	if angles then
+		local angle = angles[angleNumber]
+		if angle then
+			return axutils.childrenWithRole(angle, "AXButton")
+		end
+	end
+	return nil
+end
+
+function TimelineContents:monitorVideoInAngle(angleNumber)
+	local buttons = self:angleButtonsUI(angleNumber)
+	if buttons and buttons[1] then
+		buttons[1]:doPress()
+	end
+end
+
+function TimelineContents:toggleAudioInAngle(angleNumber)
+	local buttons = self:angleButtonsUI(angleNumber)
+	if buttons and buttons[2] then
+		buttons[2]:doPress()
+	end
+end
+
 -- Selects the clip under the playhead in the specified angle.
 -- NOTE: This will only work in multicam clips
-function TimelineContents:selectClipInAngle(angle)
-	local clipsUI = self:clipsUI()
+function TimelineContents:selectClipInAngle(angleNumber)
+	local clipsUI = self:anglesUI()
 	if clipsUI then
-		local angleUI = clipsUI[angle]
+		local angleUI = clipsUI[angleNumber]
 		local playheadPosition = self:playhead():getPosition()
 		local clipUI = axutils.childMatching(angleUI, function(child)
 			local frame = child:frame()
@@ -297,8 +326,13 @@ function TimelineContents:selectClipInAngle(angle)
 			   and frame.x <= playheadPosition and (frame.x+frame.w) >= playheadPosition
 		end)
 		
+		self:monitorVideoInAngle(angleNumber)
+		
 		if clipUI then
+			debugMessage("Selecting a clip in angle "..angleNumber..":\n".._inspect(clipUI))
 			self:selectClip(clipUI)
+		else
+			debugMessage("Unable to find the clip under the playhead for angle "..angleNumber..".")
 		end
 	end
 	return self

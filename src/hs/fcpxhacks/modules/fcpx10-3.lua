@@ -4666,7 +4666,7 @@ end
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
 		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser." .. errorFunction)
+			dialog.displayErrorMessage("No clip is available in the current angle under the playhead." .. errorFunction)
 			return
 		end
 
@@ -4751,7 +4751,6 @@ end
 			--------------------------------------------------------------------------------
 			
 			local angles = media.primaryObject.containedItems[1].anchoredItems
-			debugMessage("Looking for angle with id of "..inspect(videoAngle))
 			for i,angle in ipairs(angles) do
 				if angle.angleID == videoAngle then
 					return angle.anchoredLane
