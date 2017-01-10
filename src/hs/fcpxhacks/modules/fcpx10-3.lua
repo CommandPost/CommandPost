@@ -3871,7 +3871,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("FFSuspendBGOpsDuringPlay", mod.FFSuspendBGOpsDuringPlay == true)
+		local result = fcp:setPreference("FFSuspendBGOpsDuringPlay", not mod.FFSuspendBGOpsDuringPlay)
 		if result == nil then
 			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 			return "Failed"
@@ -3931,7 +3931,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("FFEnableGuards", mod.FFEnableGuards == true)
+		local result = fcp:setPreference("FFEnableGuards", not mod.FFEnableGuards)
 		if result == nil then
 			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 			return "Failed"
