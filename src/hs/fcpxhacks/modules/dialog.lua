@@ -57,7 +57,8 @@ local function as(appleScript)
 		end tell
 	]]
 
-	return osascript.applescript(appleScriptStart .. appleScript .. appleScriptEnd)
+	local _, result = osascript.applescript(appleScriptStart .. appleScript .. appleScriptEnd)
+	return result
 
 end
 
@@ -88,8 +89,7 @@ function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, 
 		end repeat
 		return usersInput
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
-	return result
+	return as(appleScript)
 end
 
 --------------------------------------------------------------------------------
@@ -130,8 +130,7 @@ function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnsw
 		end repeat
 		return response
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
-	return result
+	return as(appleScript)
 end
 
 --------------------------------------------------------------------------------
@@ -149,8 +148,7 @@ function dialog.displayChooseFolder(whatMessage)
 			return false
 		end try
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
-	return result
+	return as(appleScript)
 end
 
 --------------------------------------------------------------------------------
@@ -162,7 +160,7 @@ function dialog.displayAlertMessage(whatMessage)
 
 		display dialog whatMessage buttons {okButton} with icon stop
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
+	return as(appleScript)
 end
 
 --------------------------------------------------------------------------------
@@ -188,7 +186,7 @@ function dialog.displayErrorMessage(whatError)
 			return false
 		end if
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
+	local result = as(appleScript)
 
 	--------------------------------------------------------------------------------
 	-- Send bug report:
@@ -218,8 +216,7 @@ function dialog.displayMessage(whatMessage, optionalButtons)
 		set result to button returned of (display dialog whatMessage ]] .. buttons .. [[ with icon iconPath)
 		return result
 	]]
-	local _, result = as(appleScript)
-	return result
+	return as(appleScript)
 
 end
 
@@ -238,8 +235,7 @@ function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
 			return false
 		end if
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
-	return result
+	return as(appleScript)
 
 end
 
@@ -262,8 +258,7 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 		return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
 	]]
 
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
-	return result
+	return as(appleScript)
 
 end
 
@@ -287,7 +282,7 @@ function dialog.displayColorPicker(customColor) -- Accepts RGB Table
 		set defaultColor to ]] .. inspect(defaultColor) .. "\n\n" .. [[
 		return choose color default color defaultColor
 	]]
-	local a,result = osascript.applescript(commonAppleScript .. appleScript)
+	local result = as(appleScript)
 	if type(result) == "table" then
 		local red = result[1] / 257 / 255
 		local green = result[2] / 257 / 255
