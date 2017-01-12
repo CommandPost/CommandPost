@@ -599,63 +599,95 @@ function testingGround()
 
 end
 
+--------------------------------------------------------------------------------
+-- ADD NOTE TO SELECTED CLIP:
+--------------------------------------------------------------------------------
+hs.settings.set("fcpxHacks.recentNotes", nil)
 function addNoteToSelectedClip()
 
-		local libraries = fcp:browser():libraries()
+	local libraries = fcp:browser():libraries()
 
-		if not libraries:isShowing() then
-			writeToConsole("Library Panel could not be found.")
-			return
+	if not libraries:isShowing() then
+		writeToConsole("Library Panel could not be found.")
+		return
+	end
+
+	local clips = libraries:selectedClipsUI()
+
+	if #clips ~= 1 then
+		writeToConsole("Wrong number of clips selected.")
+		return
+	end
+
+	local filmstripView = false
+	if libraries:isFilmstripView() then
+		filmstripView = true
+		libraries:toggleViewMode():press()
+		fcp:menuBar():selectMenu("View", "Playback", "Play")
+	end
+
+	local selectedClip = libraries:selectedClipsUI()[1]
+	local selectedClipParent = selectedClip:attributeValue("AXParent")
+
+	local axutils = require("hs.finalcutpro.axutils")
+	local listHeadingGroup = axutils.childWithRole(selectedClipParent, "AXGroup")
+
+	local notesFieldID = nil
+	for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
+		if listHeadingGroup[i]:attributeValue("AXTitle") == "Notes" then
+			notesFieldID = i
 		end
+	end
 
-		local clips = libraries:selectedClipsUI()
-
-		if #clips ~= 1 then
-			writeToConsole("Wrong number of clips selected.")
-			return
-		end
-
-		if libraries:isFilmstripView() then
-			writeToConsole("Add Note to Selected Clip doesn't work in Filmstrip view currently.")
-			return
-		end
-
-		local selectedClip = libraries:selectedClipsUI()[1]
-		local selectedClipParent = selectedClip:attributeValue("AXParent")
-
-		local axutils = require("hs.finalcutpro.axutils")
-		local listHeadingGroup = axutils.childWithRole(selectedClipParent, "AXGroup")
-
-		local notesFieldID = nil
-		for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
-			if listHeadingGroup[i]:attributeValue("AXTitle") == "Notes" then
-				notesFieldID = i
-			end
-		end
-
-		local existingValue = selectedClip[notesFieldID][1]:attributeValue("AXValue")
+	local selectedNotesField = selectedClip[notesFieldID][1]
+	local existingValue = selectedNotesField:attributeValue("AXValue")
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
 	noteChooser = chooser.new(function(result)
+		--------------------------------------------------------------------------------
+		-- When Chooser Item is Selected or Closed:
+		--------------------------------------------------------------------------------
 		noteChooser:hide()
 		fcp:launch()
-		if result ~= nil then
-			print(result["text"])
-		end
-	end):bgDark(true):query(existingValue):queryChangedCallback(function()
-		local result = noteChooser:query()
 
-		local table = {
+		if result ~= nil then
+			selectedNotesField:setAttributeValue("AXValue", result["text"])
+
+			local recentNotes = settings.get("fcpxHacks.recentNotes") or {}
+			table.insert(recentNotes, 1, result)
+			settings.set("fcpxHacks.recentNotes", recentNotes)
+		end
+
+		timer.doAfter(1, function()
+			if filmstripView then
+				libraries:toggleViewMode():press()
+				fcp:menuBar():selectMenu("View", "Playback", "Play")
+			end
+		end)
+
+	end):bgDark(true):query(existingValue):queryChangedCallback(function()
+		--------------------------------------------------------------------------------
+		-- Chooser Query Changed by User:
+		--------------------------------------------------------------------------------
+		local recentNotes = settings.get("fcpxHacks.recentNotes") or {}
+
+		local currentQuery = noteChooser:query()
+
+		local currentQueryTable = {
 			{
-				["text"] = result,
+				["text"] = currentQuery
 			},
- 		}
-		noteChooser:choices(table)
+		}
+
+		for i=1, #recentNotes do
+			table.insert(currentQueryTable, recentNotes[i])
+		end
+
+		noteChooser:choices(currentQueryTable)
 		return
 	end)
-												  --:choices(effectChooserChoices)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -673,9 +705,6 @@ function addNoteToSelectedClip()
 	--------------------------------------------------------------------------------
 	noteChooser:show()
 
-end
-
-function addNoteToSelectedClipAction()
 end
 
 --------------------------------------------------------------------------------
