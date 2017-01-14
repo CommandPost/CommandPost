@@ -157,15 +157,15 @@ function clipboard.processContent(data)
 	if not clipboard.isClassnameSupported(classname) then
 		return nil, 0
 	end
-	
+
 	local displayName = data.displayName
 	local count = displayName and 1 or 0
-	
+
 	if displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME then
 		-- Just process the contained items directly
 		return clipboard.processObject(data.containedItems)
 	end
-	
+
 	if clipboard.getClassname(data) == CLIPBOARD.GAP then
 		displayName = nil
 		count = 0
@@ -176,13 +176,13 @@ function clipboard.processContent(data)
 		count = count + c
 		displayName = displayName or n
 	end
-	
+
 	if data.anchoredItems then
 		n, c = clipboard.processObject(data.anchoredItems)
 		count = count + c
 		displayName = displayName or n
 	end
-	
+
 	if displayName then
 		return displayName, count
 	else
@@ -212,7 +212,7 @@ end
 --------------------------------------------------------------------------------
 function clipboard.findClipName(fcpxData, default)
 	local data = clipboard.unarchiveFCPXData(fcpxData)
-	
+
 	if data then
 		local name, count = clipboard.processObject(data.objects)
 
@@ -226,7 +226,7 @@ function clipboard.findClipName(fcpxData, default)
 			return default
 		end
 	end
-	return nil	
+	return nil
 end
 
 function clipboard.findClipNameOld(fcpxTable, default)
@@ -248,13 +248,17 @@ function clipboard.findClipNameOld(fcpxTable, default)
 end
 
 --------------------------------------------------------------------------------
--- Reads FCPX Data from the Pasteboard as a binary Plist, if present. 
+-- Reads FCPX Data from the Pasteboard as a binary Plist, if present.
 -- If not, nil is returned.
 --------------------------------------------------------------------------------
 function clipboard.readFCPXData()
  	local clipboardContent = pasteboard.allContentTypes()
- 	if clipboardContent[1][1] == CLIPBOARD.UTI then
-		return pasteboard.readDataForUTI(CLIPBOARD.UTI)
+ 	if clipboardContent ~= nil then
+ 		if clipboardContent[1] ~= nil then
+			if clipboardContent[1][1] == CLIPBOARD.UTI then
+				return pasteboard.readDataForUTI(CLIPBOARD.UTI)
+			end
+		end
 	end
 	return nil
 end
@@ -273,7 +277,7 @@ function clipboard.unarchiveFCPXData(fcpxData)
 				return archiver.unarchive(fcpxTable)
 			end
 		end
-	end	
+	end
 	log.e("The clipboard does not contain any FCPX clip data.")
 	return nil
 end
