@@ -165,13 +165,7 @@ return {
 			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
 
 			activeCommandSetError				= 			"Something went wrong whilst attempting to read the Active Command Set.",
-			activeCommandSetResetError			=			"Failed to set the Active Command Set to the default value.",
-
-			movingMarkersError					=			"Failed to write to the Event Descriptions Preferences file.",
-
 			failedToWriteToPreferences			=			"Failed to write to the Final Cut Pro Preferences file.",
-			failedToReplaceFile					=			"Failed to replace the following file:",
-			failedToWriteToFile					=			"Failed to write to the following file:",
 			failedToReadFCPPreferences			=			"Failed to read Final Cut Pro Preferences",
 			failedToChangeLanguage				=			"Unable to change Final Cut Pro's language.",
 			failedToRestart						=			"Failed to restart Final Cut Pro. You will need to restart manually.",
