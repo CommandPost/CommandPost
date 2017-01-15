@@ -78,36 +78,51 @@ end
 --------------------------------------------------------------------------------
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
 --------------------------------------------------------------------------------
-function tools.executeWithAdministratorPrivileges(input)
+function tools.executeWithAdministratorPrivileges(input) -- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
 	if type(input) == "table" then
 		local appleScript = [[
-			set shellScriptInputs to ]] .. inspect(input) .. "\n\n" .. [[
-			try
-				repeat with theItem in shellScriptInputs
-					do shell script theItem with administrator privileges
-				end repeat
-				return true
-			on error
-				return false
-			end try
+			set frontmostApplication to (path to frontmost application as text)
+			tell application frontmostApplication
+				activate
+				set shellScriptInputs to ]] .. inspect(input) .. "\n\n" .. [[
+				try
+					repeat with theItem in shellScriptInputs
+						do shell script theItem with administrator privileges
+					end repeat
+					return true
+				on error errStr number errorNumber
+					if the errorNumber is equal to -128 then
+						return false
+					else
+						return errStr as text & "(" & errorNumber as text & ")\n\nWhen trying to execute:\n\n" & theItem
+					end if
+				end try
+			end tell
 		]]
-		ok,result = osascript.applescript(appleScript)
+		_,result = osascript.applescript(appleScript)
 		return result
 	elseif type(input) == "string" then
 		local appleScript = [[
-			set shellScriptInput to "]] .. input .. [["
-
-			try
-				tell me to activate
-				do shell script shellScriptInput with administrator privileges
-				return true
-			on error
-				return false
-			end try
+			set frontmostApplication to (path to frontmost application as text)
+			tell application frontmostApplication
+				activate
+				set shellScriptInput to "]] .. input .. [["
+				try
+					do shell script shellScriptInput with administrator privileges
+					return true
+				on error errStr number errorNumber
+					if the errorNumber is equal to -128 then
+						return false
+					else
+						return errStr as text & "(" & errorNumber as text & ")\n\nWhen trying to execute:\n\n" & theItem
+					end if
+				end try
+			end tell
 		]]
-		ok,result = osascript.applescript(appleScript)
+		_,result = osascript.applescript(appleScript)
 		return result
 	else
+		debugMessage("ERROR: Expected a Table or String in tools.executeWithAdministratorPrivileges()")
 		return nil
 	end
 end
