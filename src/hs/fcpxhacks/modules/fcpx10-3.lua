@@ -1092,19 +1092,16 @@ function updateKeyboardShortcuts()
 	-- Update Keyboard Settings:
 	--------------------------------------------------------------------------------
 	local result = enableHacksShortcuts()
-	if result ~= "Done" then
-		dialog.displayErrorMessage(i18n("failedToWriteToFile") .. "\n\n" .. result)
+	if type(result) == "string" then
+		dialog.displayErrorMessage(result)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Revert back to default keyboard layout:
-	--------------------------------------------------------------------------------
-	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp:getCurrentLanguage() .. ".lproj/Default.commandset")
-	if not result then
-		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-		return false
+	elseif result == false then
+		--------------------------------------------------------------------------------
+		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
+		-- just leave the old Hacks Shortcut Plist files in place.
+		--------------------------------------------------------------------------------
+		return
 	end
 
 end
@@ -1113,85 +1110,50 @@ end
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function enableHacksShortcuts()
-	local appleScript = [[
-		set finalCutProPath to "]] .. fcp:getPath() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp:getSupportedLanguages()) .. [[
 
-		--------------------------------------------------------------------------------
-		-- Replace Files:
-		--------------------------------------------------------------------------------
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				return "NSProCommandGroups.plist"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				return "NSProCommands.plist"
-		end try
-		repeat with whichLanguage in finalCutProLanguages
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/Default.commandset"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandNames.strings"
-			end try
-		end repeat
-		return "Done"
-	]]
-	ok,result = osascript.applescript(appleScript)
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings)
 	return result
+
 end
 
 --------------------------------------------------------------------------------
 -- DISABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function disableHacksShortcuts()
-	local appleScript = [[
-		set finalCutProPath to "]] .. fcp:getPath() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp:getSupportedLanguages()) .. [[
 
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				return "NSProCommandGroups.plist"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				return "NSProCommands.plist"
-		end try
-		repeat with whichLanguage in finalCutProLanguages
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/Default.commandset"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandNames.strings"
-			end try
-		end repeat
-		return "Done"
-	]]
-	ok,result = osascript.applescript(appleScript)
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings)
 	return result
+
 end
 
 --------------------------------------------------------------------------------
@@ -3213,9 +3175,8 @@ end
 			executeCommands[#executeCommands + 1] = executeCommand
 		end
 		local result = tools.executeWithAdministratorPrivileges(executeCommands)
-		if not result then
-			dialog.displayErrorMessage("Failed to change Smart Collection Label.")
-			return "Failed"
+		if type(result) == "string" then
+			dialog.displayErrorMessage(result)
 		end
 
 		--------------------------------------------------------------------------------
@@ -3462,16 +3423,8 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		mod.debugMode = not mod.debugMode
-
-		if mod.debugMode then
-			logger.defaultLogLevel = 'warn'
-		else
-			logger.defaultLogLevel = 'debug'
-		end
-
-		settings.set("fcpxHacks.debugMode", mod.debugMode)
-		refreshMenuBar()
+		settings.set("fcpxHacks.debugMode", not mod.debugMode)
+		hs.reload()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3706,42 +3659,33 @@ end
 		local saveSettings = false
 		if enableHacksShortcutsInFinalCutPro then
 			--------------------------------------------------------------------------------
-			-- Revert back to default keyboard layout:
-			--------------------------------------------------------------------------------
-			local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
-			if result == nil then
-				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
 			-- Disable Hacks Shortcut in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			local result = disableHacksShortcuts()
-			if result ~= "Done" then
-				dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 				return false
+			elseif result == false then
+				--------------------------------------------------------------------------------
+				-- Cancelled at Admin Password:
+				--------------------------------------------------------------------------------
+				return
 			end
 		else
-			--------------------------------------------------------------------------------
-			-- Revert back to default keyboard layout:
-			--------------------------------------------------------------------------------
-			local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
-			if result == nil then
-				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-				return "Failed"
-			end
-
 			--------------------------------------------------------------------------------
 			-- Enable Hacks Shortcut in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			local result = enableHacksShortcuts()
-			if result ~= "Done" then
-				dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 				return false
+			elseif result == false then
+				--------------------------------------------------------------------------------
+				-- Cancelled at Admin Password:
+				--------------------------------------------------------------------------------
+				return
 			end
 		end
-
 
 		--------------------------------------------------------------------------------
 		-- Save new value to settings:
@@ -3757,7 +3701,6 @@ end
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
 				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
 			end
 		end
 
@@ -3827,16 +3770,14 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.allowMovingMarkers then
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if executeStatus == false then
-				dialog.displayErrorMessage(i18n("movingMarkersError"))
-				return "Failed"
+			local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 			end
 		else
 			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if executeStatus == false then
-				dialog.displayErrorMessage(i18n("movingMarkersError"))
-				return "Failed"
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 			end
 		end
 
@@ -4340,9 +4281,8 @@ end
 		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
 		local result = disableHacksShortcuts()
-		if result ~= "Done" then
-			dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
-			return
+		if type(result) == "string" then
+			dialog.displayErrorMessage(result)
 		end
 
 		--------------------------------------------------------------------------------
