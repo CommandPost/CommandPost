@@ -32,7 +32,7 @@ local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local MediaImport								= require("hs.finalcutpro.import.MediaImport")
 
-local kc										= require("hs.fcpxhacks.plugins.shortcuts.keycodes")
+local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 
 --- The App module:
 local App = {}
