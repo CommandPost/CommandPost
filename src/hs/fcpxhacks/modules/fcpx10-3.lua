@@ -678,8 +678,8 @@ function defaultShortcutKeys()
 
         FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil,                                     repeatFn = nil },
 
-		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         releasedFn = nil,                                                        repeatFn = nil },
-		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                releasedFn = nil,                                                        repeatFn = nil },
+		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         	releasedFn = nil,                                                       repeatFn = nil },
+		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
