@@ -6258,8 +6258,9 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete FCPX Browser Highlight:
 		--------------------------------------------------------------------------------
-		if mod.browserHighlight ~= nil and next(mod.browserHighlight) ~= nil then
+		if mod.browserHighlight ~= nil then
 			mod.browserHighlight:delete()
+			mod.browserHightlight = nil
 			if mod.browserHighlightTimer then
 				mod.browserHighlightTimer:stop()
 			end
