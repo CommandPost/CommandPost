@@ -199,14 +199,21 @@ return {
 			smartCollectionsLabelTextbox		=			"What would you like to set your Smart Collections Label to:",
 			smartCollectionsLabelError			=			"The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.",
 
-			mobileNotificationsTextbox			=			"Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com.",
-			mobileNotificationsError 			=			"The Prowl API Key you entered is not valid.",
-
 			changeBackupIntervalTextbox			=			"What would you like to set your Final Cut Pro Backup Interval to (in minutes)?",
 			changeBackupIntervalError			=			"The backup interval you entered is not valid. Please enter a value in minutes.",
 
 			selectDestinationPreset				=			"Please select a Destination Preset:",
 			selectDestinationFolder				=			"Please select a Destination Folder:",
+
+			--------------------------------------------------------------------------------
+			-- Mobile Notifications
+			--------------------------------------------------------------------------------
+			iMessageTextBox						=			"Please enter the phone number or email address registered with iMessage to send the message to:",
+			prowlTextbox						=			"Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com.",
+			prowlTextboxError 					=			"The Prowl API Key you entered is not valid.",
+
+			shareSuccessful 					=			"Share Successful",
+			shareFailed							=			"Share Failed",
 
 		--------------------------------------------------------------------------------
 		-- MENUBAR:
@@ -335,6 +342,7 @@ return {
 			hudOptions							=			"HUD Options",
 			voiceCommandOptions					=			"Voice Command Options",
 			touchBarLocation					=			"Touch Bar Location",
+			notificationPlatform				=			"Notification Platform",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
 			highlightPlayheadShape				=			"Highlight Playhead Shape",
 			highlightPlayheadTime				=			"Highlight Playhead Time",
@@ -344,6 +352,12 @@ return {
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",
+
+			--------------------------------------------------------------------------------
+			-- Notification Platform:
+			--------------------------------------------------------------------------------
+			iMessage							=			"iMessage",
+			prowl								=			"Prowl",
 
 			--------------------------------------------------------------------------------
 			-- Batch Export Options:
