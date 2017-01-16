@@ -5979,7 +5979,7 @@ end
 			-- Set a timer to delete the circle after 3 seconds:
 			--------------------------------------------------------------------------------
 			local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-			mod.browserHighlightTimer = timer.doAfter(highlightPlayheadTime, deleteAllHighlights)
+			mod.browserHighlightTimer = timer.doAfter(highlightPlayheadTime, function() deleteAllHighlights() end)
 
 		end
 
@@ -6355,7 +6355,7 @@ end
 	function deleteAllHighlights()
 		if mod.browserHighlight ~= nil then
 			mod.browserHighlight:delete()
-			mod.browserHightlight = nil
+			mod.browserHighlight = nil
 			if mod.browserHighlightTimer then
 				mod.browserHighlightTimer:stop()
 				mod.browserHighlightTimer = nil
