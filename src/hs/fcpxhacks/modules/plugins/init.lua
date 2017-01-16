@@ -169,8 +169,9 @@ function mod.isPluginDisabled(pluginPath)
 	return disabled[pluginPath] == true
 end
 
-function mod.init(packages)
-	for _,package in ipairs(packages) do
+function mod.init(...)
+	for i=1,select('#', ...) do
+		package = select(i, ...)
 		mod.loadPackage(package)
 	end
 end
