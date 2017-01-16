@@ -4569,14 +4569,14 @@ end
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
-		
+
 		local contents = fcp:timeline():contents()
 
 		--------------------------------------------------------------------------------
 		-- Store the originally-selected clips
 		--------------------------------------------------------------------------------
 		local originalSelection = contents:selectedClipsUI()
-		
+
 		--------------------------------------------------------------------------------
 		-- If nothing is selected, select the top clip under the playhead:
 		--------------------------------------------------------------------------------
@@ -4618,7 +4618,7 @@ end
 			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
 			return false
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Ensure the playhead is visible:
 		--------------------------------------------------------------------------------
@@ -4644,7 +4644,7 @@ end
 				return false
 			end
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Select the original clips again.
 		--------------------------------------------------------------------------------
@@ -4672,7 +4672,7 @@ end
 				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
 				return false
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- Convert Binary Data to Table:
 			--------------------------------------------------------------------------------
@@ -4681,19 +4681,19 @@ end
 				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 				return false
 			end
-			
+
 			local timelineClip = fcpxTable.root.objects[1]
 			if not clipboard.isTimelineClip(timelineClip) then
 				debugMessage("ERROR: Not copied from the Timeline." .. errorFunction)
 				return false
 			end
-			
+
 			local selectedClips = timelineClip.containedItems
 			if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
 				debugMessage("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
 				return false
 			end
-			
+
 			local multicamClip = selectedClips[1]
 			local videoAngle = multicamClip.videoAngle
 
@@ -4708,7 +4708,7 @@ end
 					break
 				end
 			end
-			
+
 			if media == nil or not media.primaryObject or not media.primaryObject.isMultiAngle then
 				debugMessage("ERROR: Couldn't find the media for the multicam clip.")
 				return false
@@ -4717,7 +4717,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Find the Angle
 			--------------------------------------------------------------------------------
-			
+
 			local angles = media.primaryObject.containedItems[1].anchoredItems
 			for i,angle in ipairs(angles) do
 				if angle.angleID == videoAngle then
@@ -6259,14 +6259,13 @@ end
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
-		--------------------------------------------------------------------------------
-		-- Delete FCPX Browser Highlight:
-		--------------------------------------------------------------------------------
 		if mod.browserHighlight ~= nil then
-			mod.browserHighlight:delete()
-			mod.browserHightlight = nil
-			if mod.browserHighlightTimer then
-				mod.browserHighlightTimer:stop()
+			if next(mod.browserHighlight) ~= nil then
+				mod.browserHighlight:delete()
+				mod.browserHightlight = nil
+				if mod.browserHighlightTimer then
+					mod.browserHighlightTimer:stop()
+				end
 			end
 		end
 	end
