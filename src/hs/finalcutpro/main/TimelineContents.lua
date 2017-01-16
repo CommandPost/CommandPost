@@ -237,6 +237,34 @@ function TimelineContents:clipsUI(expandGroups, filterFn)
 	return nil
 end
 
+--- hs.finalcutpro.main.TimelineContents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- Function
+--- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the
+--- highest clips at the beginning of the array.
+---
+--- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
+---
+--- If `filterFn` is provided it will be called with a single argument to check if the provided
+--- clip should be included in the final table.
+---
+--- Parameters:
+---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+---  * filterFn		- (optional) if provided, the function will be called to check each clip
+---
+--- Returns:
+---  * The table of axuielements that match the conditions
+---
+function TimelineContents:playheadClipsUI(expandGroups, filterFn)
+	local playheadPosition = self:playhead():getPosition()
+	local clips = self:clipsUI(expandGroups, function(clip)
+		local frame = clip:frame()
+		return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
+		   and (filterFn == nil or filterFn(clip))
+	end)
+	table.sort(clips, function(a, b) return a:position().y < b:position().y end)
+	return clips
+end
+
 function TimelineContents:_filterClips(clips, expandGroups, filterFn)
 	if expandGroups then
 		return self:_expandClips(clips, filterFn)
@@ -276,7 +304,6 @@ end
 function TimelineContents:selectClip(clipUI)
 	return self:selectClips({clipUI})
 end
-
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
@@ -319,6 +346,7 @@ function TimelineContents:selectClipInAngle(angleNumber)
 	local clipsUI = self:anglesUI()
 	if clipsUI then
 		local angleUI = clipsUI[angleNumber]
+		
 		local playheadPosition = self:playhead():getPosition()
 		local clipUI = axutils.childMatching(angleUI, function(child)
 			local frame = child:frame()
@@ -329,7 +357,6 @@ function TimelineContents:selectClipInAngle(angleNumber)
 		self:monitorVideoInAngle(angleNumber)
 		
 		if clipUI then
-			debugMessage("Selecting a clip in angle "..angleNumber..":\n".._inspect(clipUI))
 			self:selectClip(clipUI)
 		else
 			debugMessage("Unable to find the clip under the playhead for angle "..angleNumber..".")

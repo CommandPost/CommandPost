@@ -4627,6 +4627,21 @@ end
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
+		
+		local contents = fcp:timeline():contents()
+
+		--------------------------------------------------------------------------------
+		-- Store the originally-selected clips
+		--------------------------------------------------------------------------------
+		local originalSelection = contents:selectedClipsUI()
+		
+		--------------------------------------------------------------------------------
+		-- If nothing is selected, select the top clip under the playhead:
+		--------------------------------------------------------------------------------
+		if not originalSelection or #originalSelection == 0 then
+			local playheadClips = contents:playheadClipsUI(true)
+			contents:selectClip(playheadClips[1])
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get Multicam Angle:
@@ -4654,20 +4669,22 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
+			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
 			return
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Ensure the playhead is visible:
+		--------------------------------------------------------------------------------
+		contents:playhead():show()
 
-		fcp:timeline():contents():selectClipInAngle(multicamAngle)
+		contents:selectClipInAngle(multicamAngle)
 
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
-		else
-			dialog.displayErrorMessage("No clip is available in the current angle under the playhead." .. errorFunction)
-			return
 		end
 
 		--------------------------------------------------------------------------------
@@ -4681,6 +4698,11 @@ end
 				return
 			end
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Select the original clips again.
+		--------------------------------------------------------------------------------
+		contents:selectClips(originalSelection)
 
 		--------------------------------------------------------------------------------
 		-- Highlight Browser Playhead:
@@ -4694,7 +4716,7 @@ end
 		--------------------------------------------------------------------------------
 		function getMulticamAngleFromSelectedClip()
 
-			local errorFunction =  " Error occurred in getMulticamAngleFromSelectedClip()."
+			local errorFunction = "\n\nError occurred in getMulticamAngleFromSelectedClip()."
 
 			--------------------------------------------------------------------------------
 			-- Ninja Pasteboard Copy:
