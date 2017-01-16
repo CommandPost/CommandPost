@@ -4569,20 +4569,23 @@ end
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
-		
+
 		local contents = fcp:timeline():contents()
 
 		--------------------------------------------------------------------------------
 		-- Store the originally-selected clips
 		--------------------------------------------------------------------------------
 		local originalSelection = contents:selectedClipsUI()
-		
+
 		--------------------------------------------------------------------------------
 		-- If nothing is selected, select the top clip under the playhead:
 		--------------------------------------------------------------------------------
 		if not originalSelection or #originalSelection == 0 then
 			local playheadClips = contents:playheadClipsUI(true)
 			contents:selectClip(playheadClips[1])
+		elseif #originalSelection > 1 then
+			debugMessage("Unable to match frame on multiple clips." .. errorFunction)
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4590,8 +4593,9 @@ end
 		--------------------------------------------------------------------------------
 		local multicamAngle = getMulticamAngleFromSelectedClip()
 		if multicamAngle == false then
-			dialog.displayErrorMessage("Unfortunately we were not able to determine the currently selected Angle.\n\nPlease make sure you actually have a multicam clip selected.")
-			return "Failed"
+			debugMessage("The selected clip is not a multicam clip." .. errorFunction)
+			contents:selectClips(originalSelection)
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4602,7 +4606,7 @@ end
 			menuBar:selectMenu("Clip", "Open Clip")
 		else
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
-			return "Failed"
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4612,9 +4616,9 @@ end
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
 			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
-			return
+			return false
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Ensure the playhead is visible:
 		--------------------------------------------------------------------------------
@@ -4637,10 +4641,10 @@ end
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
 				dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
-				return
+				return false
 			end
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Select the original clips again.
 		--------------------------------------------------------------------------------
@@ -4668,7 +4672,7 @@ end
 				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
 				return false
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- Convert Binary Data to Table:
 			--------------------------------------------------------------------------------
@@ -4677,19 +4681,19 @@ end
 				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 				return false
 			end
-			
+
 			local timelineClip = fcpxTable.root.objects[1]
 			if not clipboard.isTimelineClip(timelineClip) then
 				debugMessage("ERROR: Not copied from the Timeline." .. errorFunction)
 				return false
 			end
-			
+
 			local selectedClips = timelineClip.containedItems
 			if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
 				debugMessage("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
 				return false
 			end
-			
+
 			local multicamClip = selectedClips[1]
 			local videoAngle = multicamClip.videoAngle
 
@@ -4704,7 +4708,7 @@ end
 					break
 				end
 			end
-			
+
 			if media == nil or not media.primaryObject or not media.primaryObject.isMultiAngle then
 				debugMessage("ERROR: Couldn't find the media for the multicam clip.")
 				return false
@@ -4713,7 +4717,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Find the Angle
 			--------------------------------------------------------------------------------
-			
+
 			local angles = media.primaryObject.containedItems[1].anchoredItems
 			for i,angle in ipairs(angles) do
 				if angle.angleID == videoAngle then
@@ -6255,13 +6259,13 @@ end
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
-		--------------------------------------------------------------------------------
-		-- Delete FCPX Browser Highlight:
-		--------------------------------------------------------------------------------
-		if mod.browserHighlight ~= nil and next(mod.browserHighlight) ~= nil then
-			mod.browserHighlight:delete()
-			if mod.browserHighlightTimer then
-				mod.browserHighlightTimer:stop()
+		if mod.browserHighlight ~= nil then
+			if next(mod.browserHighlight) ~= nil then
+				mod.browserHighlight:delete()
+				mod.browserHightlight = nil
+				if mod.browserHighlightTimer then
+					mod.browserHighlightTimer:stop()
+				end
 			end
 		end
 	end
