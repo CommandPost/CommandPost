@@ -8,6 +8,8 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>FCPXCopyWithCustomLabel</string>
+			<string>FCPXCopyWithCustomLabelAndFolder</string>
 			<string>FCPXAddNoteToSelectedClip</string>
 			<string>FCPXHackSelectForward</string>
 			<string>FCPXHackSelectBackwards</string>

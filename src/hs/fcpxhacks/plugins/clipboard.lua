@@ -41,6 +41,8 @@ local log										= require("hs.logger").new("clipboard")
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
 
+clipboard.customName							= nil									-- Clipboard Custom Name
+clipboard.customFolder							= nil									-- Clipboard Custom Folder
 clipboard.timer									= nil									-- Clipboard Watcher Timer
 clipboard.watcherFrequency 						= 0.5									-- Clipboard Watcher Update Frequency
 clipboard.lastChange 							= pasteboard.changeCount()				-- Displays how many times the pasteboard owner has changed (indicates a new copy has been made)
@@ -273,6 +275,20 @@ function clipboard.writeFCPXData(fcpxData)
 end
 
 --------------------------------------------------------------------------------
+-- SET CUSTOM NAME:
+--------------------------------------------------------------------------------
+function clipboard.setName(value)
+	clipboard.customName = value
+end
+
+--------------------------------------------------------------------------------
+-- SET CUSTOM FOLDER:
+--------------------------------------------------------------------------------
+function clipboard.setFolder(value)
+	clipboard.customFolder = value
+end
+
+--------------------------------------------------------------------------------
 -- WATCH THE FINAL CUT PRO CLIPBOARD FOR CHANGES:
 --------------------------------------------------------------------------------
 function clipboard.startWatching()
@@ -309,7 +325,12 @@ function clipboard.startWatching()
 			local currentClipboardLabel 	= nil
 
 			if currentClipboardData then
-				currentClipboardLabel = clipboard.findClipName(currentClipboardData, os.date())
+				if clipboard.customName ~= nil then
+					currentClipboardLabel = clipboard.customName
+					clipboard.customName = nil
+				else
+					currentClipboardLabel = clipboard.findClipName(currentClipboardData, os.date())
+				end
 			end
 
 			--------------------------------------------------------------------------------
@@ -330,7 +351,13 @@ function clipboard.startWatching()
 					local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
 					if sharedClipboardPath ~= nil then
 
-						local sharedClipboardPlistFile = sharedClipboardPath .. clipboard.hostname .. ".fcpxhacks"
+						local folderName = clipboard.hostname
+						if clipboard.customFolder ~= nil then
+							folderName = clipboard.customFolder
+							clipboard.customFolder = nil
+						end
+
+						local sharedClipboardPlistFile = sharedClipboardPath .. folderName .. ".fcpxhacks"
 
 						--------------------------------------------------------------------------------
 						-- Create Plist file if one doesn't already exist:
