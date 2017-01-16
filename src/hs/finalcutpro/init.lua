@@ -8,6 +8,7 @@
 --- Standard Modules:
 local application								= require("hs.application")
 local ax 										= require("hs._asm.axuielement")
+local eventtap									= require("hs.eventtap")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local just										= require("hs.just")
@@ -30,6 +31,8 @@ local Viewer									= require("hs.finalcutpro.main.Viewer")
 local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local MediaImport								= require("hs.finalcutpro.import.MediaImport")
+
+local kc										= require("hs.fcpxhacks.plugins.shortcuts.keycodes")
 
 --- The App module:
 local App = {}

@@ -156,10 +156,12 @@ end
 
 function Browser:showAllVideoEffects()
 	local allRows = self:_allRowsUI()
-	if allRows and #allRows == 2 then
-		--------------------------------------------------------------------------------
+	if allRows and #allRows == 3 then
 		-- Click 'All Video':
-		--------------------------------------------------------------------------------
+		self:sidebar():selectRow(allRows[2])
+		return true
+	elseif allRows and #allRows == 2 then
+		-- Click 'All Video':
 		self:sidebar():selectRow(allRows[1])
 		return true
 	end
@@ -168,10 +170,12 @@ end
 
 function Browser:showAllAudioEffects()
 	local allRows = self:_allRowsUI()
-	if allRows and #allRows == 2 then
-		--------------------------------------------------------------------------------
-		-- Click 'All Video':
-		--------------------------------------------------------------------------------
+	if allRows and #allRows == 3 then
+		-- Click 'All Audio':
+		self:sidebar():selectRow(allRows[3])
+		return true
+	elseif allRows and #allRows == 2 then
+		-- Click 'All Audio':
 		self:sidebar():selectRow(allRows[2])
 		return true
 	end
