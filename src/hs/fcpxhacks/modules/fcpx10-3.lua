@@ -6354,12 +6354,10 @@ end
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
 		if mod.browserHighlight ~= nil then
-			if next(mod.browserHighlight) ~= nil then
-				mod.browserHighlight:delete()
-				mod.browserHightlight = nil
-				if mod.browserHighlightTimer then
-					mod.browserHighlightTimer:stop()
-				end
+			mod.browserHighlight:delete()
+			mod.browserHightlight = nil
+			if mod.browserHighlightTimer then
+				mod.browserHighlightTimer:stop()
 			end
 		end
 	end
