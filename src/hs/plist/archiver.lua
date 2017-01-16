@@ -44,7 +44,7 @@ local function defrostClass(data, defrostFn)
 			return dict
 		elseif classname == "NSMutableArray" or classname == "NSArray" then
 			return data["NS.objects"]
-		elseif classname == "NSMutableSet" then
+		elseif classname == "NSMutableSet" or classname == "NSSet" then
 			return data["NS.objects"]
 		end
 	end
@@ -109,17 +109,16 @@ end
 --- Parameters:
 --- * `archive`		- the table containing the archive plist as a table
 --- * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
---- * `root`		- (optional) the key for the root element to unarchive. Defaults to 'root'
 --- Returns:
 --- * The unarchived 
-function mod.unarchive(archive, defrostFn, root)
+function mod.unarchive(archive, defrostFn)
 	if checkArchiver(archive) then
-		root = root or mod.ROOT_KEY
+		-- root = root or mod.ROOT_KEY
 		local objects = archive[mod.OBJECTS_KEY]
 		local cache = {}
 		local top = archive[mod.TOP_KEY]
-		if top and top[root] then
-			return get(top[root], objects, cache, defrostFn)
+		if top then
+			return get(top, objects, cache, defrostFn)
 		end
 	end
 	return nil

@@ -81,9 +81,20 @@ end
 function Playhead:show()
 	local parent = self:parent()
 	-- show the parent.
-	if parent:show() then
+	if parent:show():isShowing() then
 		-- ensure the playhead is visible
-		-- TODO
+		if parent.viewFrame then
+			local viewFrame = parent:viewFrame()
+			local position = self:getPosition()
+			if position < viewFrame.x or position > (viewFrame.x + viewFrame.w) then
+				-- Need to move the scrollbar
+				local timelineFrame = parent:timelineFrame()
+				local scrollWidth = timelineFrame.w - viewFrame.w
+				local scrollPoint = position - viewFrame.w/2 - timelineFrame.x
+				local scrollTarget = scrollPoint/scrollWidth
+				parent:scrollHorizontalTo(scrollTarget)
+			end
+		end
 	end
 	return self
 end
