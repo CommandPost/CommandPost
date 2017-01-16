@@ -4583,6 +4583,9 @@ end
 		if not originalSelection or #originalSelection == 0 then
 			local playheadClips = contents:playheadClipsUI(true)
 			contents:selectClip(playheadClips[1])
+		elseif #originalSelection > 1 then
+			debugMessage("Unable to match frame on multiple clips." .. errorFunction)
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4590,8 +4593,9 @@ end
 		--------------------------------------------------------------------------------
 		local multicamAngle = getMulticamAngleFromSelectedClip()
 		if multicamAngle == false then
-			dialog.displayErrorMessage("Unfortunately we were not able to determine the currently selected Angle.\n\nPlease make sure you actually have a multicam clip selected.")
-			return "Failed"
+			debugMessage("The selected clip is not a multicam clip." .. errorFunction)
+			contents:selectClips(originalSelection)
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4602,7 +4606,7 @@ end
 			menuBar:selectMenu("Clip", "Open Clip")
 		else
 			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
-			return "Failed"
+			return false
 		end
 
 		--------------------------------------------------------------------------------
@@ -4612,7 +4616,7 @@ end
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
 			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
-			return
+			return false
 		end
 		
 		--------------------------------------------------------------------------------
@@ -4637,7 +4641,7 @@ end
 				menuBar:selectMenu("View", "Timeline History Back")
 			else
 				dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
-				return
+				return false
 			end
 		end
 		
