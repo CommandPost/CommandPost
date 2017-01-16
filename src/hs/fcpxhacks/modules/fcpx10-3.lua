@@ -4632,6 +4632,21 @@ end
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
+		
+		local contents = fcp:timeline():contents()
+
+		--------------------------------------------------------------------------------
+		-- Store the originally-selected clips
+		--------------------------------------------------------------------------------
+		local originalSelection = contents:selectedClipsUI()
+		
+		--------------------------------------------------------------------------------
+		-- If nothing is selected, select the top clip under the playhead:
+		--------------------------------------------------------------------------------
+		if not originalSelection or #originalSelection == 0 then
+			local playheadClips = contents:playheadClipsUI(true)
+			contents:selectClip(playheadClips[1])
+		end
 
 		--------------------------------------------------------------------------------
 		-- Get Multicam Angle:
@@ -4659,20 +4674,22 @@ end
 		if menuBar:isEnabled("Window", "Go To", "Timeline") then
 			menuBar:selectMenu("Window", "Go To", "Timeline")
 		else
-			dialog.displayErrorMessage("Unable to return to timeline.\n\n" .. errorFunction)
+			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
 			return
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Ensure the playhead is visible:
+		--------------------------------------------------------------------------------
+		contents:playhead():show()
 
-		fcp:timeline():contents():selectClipInAngle(multicamAngle)
+		contents:selectClipInAngle(multicamAngle)
 
 		--------------------------------------------------------------------------------
 		-- Reveal In Browser:
 		--------------------------------------------------------------------------------
 		if menuBar:isEnabled("File", "Reveal in Browser") then
 			menuBar:selectMenu("File", "Reveal in Browser")
-		else
-			dialog.displayErrorMessage("Unable to Reveal in Browser." .. errorFunction)
-			return
 		end
 
 		--------------------------------------------------------------------------------
@@ -4686,6 +4703,11 @@ end
 				return
 			end
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Select the original clips again.
+		--------------------------------------------------------------------------------
+		contents:selectClips(originalSelection)
 
 		--------------------------------------------------------------------------------
 		-- Highlight Browser Playhead:
@@ -4699,7 +4721,7 @@ end
 		--------------------------------------------------------------------------------
 		function getMulticamAngleFromSelectedClip()
 
-			local errorFunction =  " Error occurred in getMulticamAngleFromSelectedClip()."
+			local errorFunction = "\n\nError occurred in getMulticamAngleFromSelectedClip()."
 
 			--------------------------------------------------------------------------------
 			-- Ninja Pasteboard Copy:
@@ -4709,147 +4731,61 @@ end
 				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
 				return false
 			end
-
+			
 			--------------------------------------------------------------------------------
 			-- Convert Binary Data to Table:
 			--------------------------------------------------------------------------------
-			local clipboardTable = plist.binaryToTable(clipboardData)
-			if clipboardTable == nil then
-				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Read ffpasteboardobject from Table:
-			--------------------------------------------------------------------------------
-			local fcpxData = clipboardTable["ffpasteboardobject"]
-			if fcpxData == nil then
-				debugMessage("ERROR: Reading 'ffpasteboardobject' from Table failed." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Convert base64 Data to Table:
-			--------------------------------------------------------------------------------
-			local fcpxTable = plist.base64ToTable(fcpxData)
+			local fcpxTable = clipboard.unarchiveFCPXData(clipboardData)
 			if fcpxTable == nil then
 				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 				return false
 			end
+			
+			local timelineClip = fcpxTable.root.objects[1]
+			if not clipboard.isTimelineClip(timelineClip) then
+				debugMessage("ERROR: Not copied from the Timeline." .. errorFunction)
+				return false
+			end
+			
+			local selectedClips = timelineClip.containedItems
+			if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
+				debugMessage("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
+				return false
+			end
+			
+			local multicamClip = selectedClips[1]
+			local videoAngle = multicamClip.videoAngle
 
 			--------------------------------------------------------------------------------
-			-- Check the item isMultiAngle:
+			-- Find the original media:
 			--------------------------------------------------------------------------------
-			local isMultiAngle = false
-			for k, v in pairs(fcpxTable["$objects"]) do
-				if type(fcpxTable["$objects"][k]) == "table" then
-					if fcpxTable["$objects"][k]["isMultiAngle"] then
-						isMultiAngle = true
-					end
+			local mediaId = multicamClip.media.mediaIdentifier
+			local media = nil
+			for i,item in ipairs(fcpxTable.media) do
+				if item.mediaIdentifier == mediaId then
+					media = item
+					break
 				end
 			end
-			if not isMultiAngle then
-				debugMessage("ERROR: The selected item is not a multi-angle clip." .. errorFunction)
+			
+			if media == nil or not media.primaryObject or not media.primaryObject.isMultiAngle then
+				debugMessage("ERROR: Couldn't find the media for the multicam clip.")
 				return false
 			end
 
 			--------------------------------------------------------------------------------
-			-- Get FFAnchoredCollection ID:
+			-- Find the Angle
 			--------------------------------------------------------------------------------
-			local FFAnchoredCollectionID = nil
-			for k, v in pairs(fcpxTable["$objects"]) do
-				if type(fcpxTable["$objects"][k]) == "table" then
-					if fcpxTable["$objects"][k]["$classname"] ~= nil then
-						if fcpxTable["$objects"][k]["$classname"] == "FFAnchoredCollection" then
-							FFAnchoredCollectionID = k - 1
-						end
-					end
+			
+			local angles = media.primaryObject.containedItems[1].anchoredItems
+			for i,angle in ipairs(angles) do
+				if angle.angleID == videoAngle then
+					return angle.anchoredLane
 				end
 			end
-			if FFAnchoredCollectionID == nil then
-				debugMessage("ERROR: Failed to get FFAnchoredCollectionID." .. errorFunction)
-				return false
-			end
 
-			--------------------------------------------------------------------------------
-			-- Find all FFAnchoredCollection's:
-			--------------------------------------------------------------------------------
-			local FFAnchoredCollectionTable = {}
-			for k, v in pairs(fcpxTable["$objects"]) do
-				if type(fcpxTable["$objects"][k]) == "table" then
-					for a, b in pairs(fcpxTable["$objects"][k]) do
-						if fcpxTable["$objects"][k][a] == FFAnchoredCollectionID then
-							FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
-						end
-						if type(fcpxTable["$objects"][k][a]) == "table" then
-							for c, d in pairs(fcpxTable["$objects"][k][a]) do
-								if fcpxTable["$objects"][k][a][c] == FFAnchoredCollectionID then
-									FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
-								end
-								if type(fcpxTable["$objects"][k][a][c]) == "table" then
-									for e, f in pairs(fcpxTable["$objects"][k][a][c]) do
-										if fcpxTable["$objects"][k][a][c][e] == FFAnchoredCollectionID then
-											FFAnchoredCollectionTable[#FFAnchoredCollectionTable + 1] = fcpxTable["$objects"][k]
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			if next(FFAnchoredCollectionTable) == nil then
-				debugMessage("ERROR: Failed to get FFAnchoredCollectionTable." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get the videoAngle:
-			--------------------------------------------------------------------------------
-			local videoAngle = nil
-			for k, v in pairs(fcpxTable["$objects"]) do
-				if type(fcpxTable["$objects"][k]) == "table" then
-					if fcpxTable["$objects"][k]["videoAngle"] then
-						videoAngle = fcpxTable["$objects"][k]["videoAngle"]
-					end
-				end
-			end
-			if videoAngle == nil then
-				debugMessage("ERROR: Could not get videoAngle." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get the videoAngle Reference:
-			--------------------------------------------------------------------------------
-			local videoAngleReference = fcpxTable["$objects"][videoAngle["CF$UID"] + 1]
-			if videoAngleReference == nil then
-				debugMessage("ERROR: Could not get videoAngleReference." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Match the FFAnchoredCollectionTable Video Angle with videoAngle:
-			--------------------------------------------------------------------------------
-			local result = nil
-			for a, b in pairs(FFAnchoredCollectionTable) do
-				local angleID = fcpxTable["$objects"][b["angleID"]["CF$UID"] + 1]
-				if angleID ~= nil then
-					if angleID == videoAngleReference then
-						result = b["anchoredLane"]
-					end
-				end
-			end
-			if result == nil then
-				debugMessage("ERROR: Failed to get anchoredLane." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Return Result:
-			--------------------------------------------------------------------------------
-			return result
-
+			debugMessage("ERROR: Failed to get anchoredLane." .. errorFunction)
+			return false
 		end
 
 	--------------------------------------------------------------------------------
@@ -6325,7 +6261,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Current Clipboard Contents for later:
 		--------------------------------------------------------------------------------
-		local originalClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+		local originalClipboard = clipboard.readFCPXData()
 
 		--------------------------------------------------------------------------------
 		-- Trigger 'copy' from Menubar:
@@ -6344,11 +6280,11 @@ end
 		--------------------------------------------------------------------------------
 		local newClipboard = nil
 		just.doUntil(function()
-			newClipboard = pasteboard.readDataForUTI(finalCutProClipboardUTI)
+			newClipboard = clipboard.readFCPXData()
 			if newClipboard ~= originalClipboard then
 				return true
 			end
-		end, 30, 0.5)
+		end, 10, 0.1)
 		if newClipboard == nil then
 			debugMessage("ERROR: Failed to get new clipboard contents." .. errorFunction)
 			if enableClipboardHistory then clipboard.startWatching() end
@@ -6359,7 +6295,7 @@ end
 		-- Restore Original Clipboard Contents:
 		--------------------------------------------------------------------------------
 		if originalClipboard ~= nil then
-			local result = pasteboard.writeDataForUTI(finalCutProClipboardUTI, originalClipboard)
+			local result = clipboard.writeFCPXData(originalClipboard)
 			if not result then
 				debugMessage("ERROR: Failed to restore original Clipboard item." .. errorFunction)
 				if enableClipboardHistory then clipboard.startWatching() end
