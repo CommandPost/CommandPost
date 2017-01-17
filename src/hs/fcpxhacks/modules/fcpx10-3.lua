@@ -120,12 +120,12 @@ local just										= require("hs.just")
 -- PLUGINS:
 --------------------------------------------------------------------------------
 
-local clipboard									= require("hs.fcpxhacks.plugins.clipboard")
-local hacksconsole								= require("hs.fcpxhacks.plugins.hacksconsole")
-local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
-local voicecommands 							= require("hs.fcpxhacks.plugins.voicecommands")
+local clipboard									= require("hs.fcpxhacks.modules.clipboard")
+local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.modules.hackshud")
+local voicecommands 							= require("hs.fcpxhacks.modules.voicecommands")
 
-local kc										= require("hs.fcpxhacks.plugins.shortcuts.keycodes")
+local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:
