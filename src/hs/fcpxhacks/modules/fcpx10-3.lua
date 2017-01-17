@@ -155,7 +155,7 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
 												["highlightPlayheadTime"]						= 3,
-												["notificationPlatform"]						= "Prowl",
+												["notificationPlatform"]						= {},
 }
 
 --------------------------------------------------------------------------------
@@ -437,8 +437,8 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Notification Watcher:
 		--------------------------------------------------------------------------------
-		local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
-		if enableMobileNotifications then notificationWatcher() end
+		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
+		if next(notificationPlatform) ~= nil then notificationWatcher() end
 
 		--------------------------------------------------------------------------------
 		-- Media Import Watcher:
@@ -1358,12 +1358,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
-
-		--------------------------------------------------------------------------------
-		-- Enable Mobile Notifications:
-		--------------------------------------------------------------------------------
-		enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+		local scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 		--------------------------------------------------------------------------------
 		-- Notification Platform:
@@ -1373,7 +1368,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Enable Media Import Watcher:
 		--------------------------------------------------------------------------------
-		enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Location:
@@ -1747,10 +1742,6 @@ end
 			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(9) end, 					checked = highlightPlayheadTime == 9 },
 			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
 		}
-		local settingsNotificationPlatform = {
-			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 				checked = notificationPlatform == "Prowl" },
-			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 			checked = notificationPlatform == "iMessage" },
-		}
 		local settingsMenuTable = {
 			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
 			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
@@ -1761,8 +1752,6 @@ end
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
-			{ title = "-" },
-			{ title = i18n("notificationPlatform"), 													menu = settingsNotificationPlatform},
 			{ title = "-" },
 			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
 			{ title = "-" },
@@ -1852,15 +1841,18 @@ end
 			{ title = i18n("options"),																	menu = automationOptions },
 			{ title = "-" },
 		}
+		local settingsNotificationPlatform = {
+			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
+			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
+		}
 		local toolsSettings = {
 			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableMobileNotifications"),												fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
+			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
 			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
-
 		}
 		local toolsTable = {
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
@@ -3249,8 +3241,49 @@ end
 	-- TOGGLE NOTIFICATION PLATFORM:
 	--------------------------------------------------------------------------------
 	function toggleNotificationPlatform(value)
-		settings.set("fcpxHacks.notificationPlatform", value)
+
+		local notificationPlatform 		= settings.get("fcpxHacks.notificationPlatform")
+		local prowlAPIKey 				= settings.get("fcpxHacks.prowlAPIKey") or ""
+		local iMessageTarget			= settings.get("fcpxHacks.iMessageTarget") or ""
+
+		local returnToFinalCutPro 		= fcp:isFrontmost()
+
+		if value == "Prowl" then
+			if not notificationPlatform["Prowl"] then
+				::retryProwlAPIKeyEntry::
+				local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
+				if result == false then return end
+				local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
+				if prowlAPIKeyValidResult then
+					if returnToFinalCutPro then fcp:launch() end
+					settings.set("fcpxHacks.prowlAPIKey", result)
+				else
+					dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
+					goto retryProwlAPIKeyEntry
+				end
+			end
+		end
+
+		if value == "iMessage" then
+			if not notificationPlatform["iMessage"] then
+				local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), iMessageTarget)
+				if result == false then return end
+				settings.set("fcpxHacks.iMessageTarget", result)
+			end
+		end
+
+		notificationPlatform[value] = not notificationPlatform[value]
+		settings.set("fcpxHacks.notificationPlatform", notificationPlatform)
+
+		if next(notificationPlatform) == nil then
+			if shareSuccessNotificationWatcher then shareSuccessNotificationWatcher:stop() end
+			if shareFailedNotificationWatcher then shareFailedNotificationWatcher:stop() end
+		else
+			notificationWatcher()
+		end
+
 		refreshMenuBar()
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -3575,49 +3608,6 @@ end
 		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
 		refreshMenuBar()
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MOBILE NOTIFICATIONS:
-	--------------------------------------------------------------------------------
-	function toggleEnableMobileNotifications()
-
-		local notificationPlatform 			= settings.get("fcpxHacks.notificationPlatform")
-		local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
-		local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
-		local iMessageTarget				= settings.get("fcpxHacks.iMessageTarget") or ""
-
-		if not enableMobileNotifications then
-
-			local returnToFinalCutPro = fcp:isFrontmost()
-
-			if notificationPlatform == "Prowl" then
-				::retryProwlAPIKeyEntry::
-				local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
-				if result == false then return end
-				local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
-				if prowlAPIKeyValidResult then
-					if returnToFinalCutPro then fcp:launch() end
-					settings.set("fcpxHacks.prowlAPIKey", result)
-					notificationWatcher()
-					settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-				else
-					dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
-					goto retryProwlAPIKeyEntry
-				end
-			elseif notificationPlatform == "iMessage" then
-				local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), iMessageTarget)
-				if result == false then return end
-				settings.set("fcpxHacks.iMessageTarget", result)
-				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-			end
-
-		else
-			shareSuccessNotificationWatcher:stop()
-			shareFailedNotificationWatcher:stop()
-			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-		end
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -7148,7 +7138,7 @@ end
 
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
-		if notificationPlatform == "Prowl" then
+		if notificationPlatform["Prowl"] then
 			local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
 			if prowlAPIKey ~= nil then
 
@@ -7168,7 +7158,9 @@ end
 					if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
 				end
 			end
-		elseif notificationPlatform == "iMessage" then
+		end
+
+		if notificationPlatform["iMessage"] then
 			local iMessageTarget = settings.get("fcpxHacks.iMessageTarget") or ""
 			local iMessage = nil
 			if iMessageTarget ~= nil then

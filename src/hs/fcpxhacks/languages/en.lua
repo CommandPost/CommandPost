@@ -342,7 +342,6 @@ return {
 			hudOptions							=			"HUD Options",
 			voiceCommandOptions					=			"Voice Command Options",
 			touchBarLocation					=			"Touch Bar Location",
-			notificationPlatform				=			"Notification Platform",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
 			highlightPlayheadShape				=			"Highlight Playhead Shape",
 			highlightPlayheadTime				=			"Highlight Playhead Time",
