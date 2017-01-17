@@ -104,7 +104,7 @@ end
 ---  * the result of the plugin's `init(...)` function call.
 ---
 function mod.load(pluginPath)
-	log.df("Loading plugin '%s'", pluginPath)
+	-- log.df("Loading plugin '%s'", pluginPath)
 	
 	-- First, check the plugin is not disabled:
 	if mod.isDisabled(pluginPath) then
@@ -119,14 +119,14 @@ function mod.load(pluginPath)
 	end
 
 	local plugin = require(pluginPath)
-	if not plugin then
+	if plugin == nil or type(plugin) ~= "table" then
 		log.ef("Unable to load plugin '%s'.", pluginPath)
 		return nil
 	end
 	
 	local dependencies = {}
 	if plugin.dependencies then
-		log.df("Processing dependencies for '%s'.", pluginPath)
+		-- log.df("Processing dependencies for '%s'.", pluginPath)
 		for path,alias in pairs(plugin.dependencies) do
 			if type(path) == "number" then
 				-- no alias
@@ -149,7 +149,7 @@ function mod.load(pluginPath)
 	end
 	
 	-- initialise the plugin instance
-	log.df("Initialising plugin '%s'.", pluginPath)
+	-- log.df("Initialising plugin '%s'.", pluginPath)
 	local instance = nil
 	
 	local status, err = pcall(function()

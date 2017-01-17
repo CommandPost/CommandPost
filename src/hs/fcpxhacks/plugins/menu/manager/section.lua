@@ -84,6 +84,35 @@ function section:addItems(priority, itemsFn)
 	return self
 end
 
+
+function section:addSeparator(priority)
+	return self:addItem(priority, function()
+		return { title = "-" }
+	end)
+end
+
+--- hs.fcpxhacks.plugins.menu.section:addMenu(priority, titleFn) -> section
+--- Adds a new sub-menu with the specified priority. The section that will contain
+--- the items in the menu is returned.
+---
+--- Parameters:
+---  * `priority`	- The priority of the item within the section. Lower numbers appear first.
+---  * `titleFn`	- The function which will return the menu title.
+---
+--- Returns:
+---  * section - The new section that was created.
+---
+function section:addMenu(priority, titleFn)
+	local menuSection = section:new()
+	self:addItem(priority, function()
+		local title = titleFn()
+		local menuTable = menuSection:generateMenuTable()
+		local disabled = menuTable == nil or #menuTable == 0
+		return { title = title, menu = menuTable, disabled = disabled }
+	end)
+	return menuSection
+end
+
 --- hs.fcpxhacks.plugins.menu.section:addSection(priority, itemFn) -> section
 --- Adds a new sub-section with the specified priority. The new sub-section is returned.
 ---

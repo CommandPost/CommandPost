@@ -191,8 +191,6 @@ mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
 mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
 mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
 
-mod.installedLanguages							= {}											-- Table of Installed Language Files
-
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 
 mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
@@ -248,26 +246,6 @@ function loadScript()
 	hotkey.setLogLevel("warning")
 	windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
 	windowfilter.ignoreAlways['System Events'] = true
-
-	--------------------------------------------------------------------------------
-	-- Setup i18n Languages:
-	--------------------------------------------------------------------------------
-	local languagePath = "hs/fcpxhacks/languages/"
-	for file in fs.dir(languagePath) do
-		if file:sub(-4) == ".lua" then
-			local languageFile = io.open(hs.configdir .. "/" .. languagePath .. file, "r")
-			if languageFile ~= nil then
-				local languageFileData = languageFile:read("*all")
-				if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
-					local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
-					local languageID = string.sub(file, 1, -5)
-					mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
-				end
-				languageFile:close()
-			end
-		end
-	end
-	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -1639,33 +1617,6 @@ end
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
 		--------------------------------------------------------------------------------
-		-- FCPX Hacks Languages:
-		--------------------------------------------------------------------------------
-		local settingsLanguage = {}
-
-		local userLocale = nil
-		if settings.get("fcpxHacks.language") == nil then
-			userLocale = tools.userLocale()
-		else
-			userLocale = settings.get("fcpxHacks.language")
-		end
-
-		local basicUserLocale = nil
-		if string.find(userLocale, "_") ~= nil then
-			basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
-		else
-			basicUserLocale = userLocale
-		end
-
-		for i=1, #mod.installedLanguages do
-			settingsLanguage[#settingsLanguage + 1] = { title = mod.installedLanguages[i]["language"], fn = function()
-				settings.set("fcpxHacks.language", mod.installedLanguages[i]["id"])
-				i18n.setLocale(mod.installedLanguages[i]["id"])
-				refreshMenuBar()
-			end, checked = (userLocale == mod.installedLanguages[i]["id"] or basicUserLocale == mod.installedLanguages[i]["id"]), }
-		end
-
-		--------------------------------------------------------------------------------
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
 		local settingsShapeMenuTable = {
@@ -1711,14 +1662,6 @@ end
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
-		local menuLanguage = {
-			{ title = i18n("german"), 																	fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
-			{ title = i18n("english"), 																	fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
-			{ title = i18n("spanish"), 																	fn = function() changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
-			{ title = i18n("french"), 																	fn = function() changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
-			{ title = i18n("japanese"), 																fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
-			{ title = i18n("chineseChina"), 															fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
-		}
 		local settingsBatchExportOptions = {
 			{ title = i18n("setDestinationPreset"), 													fn = changeBatchExportDestinationPreset, 							disabled = not fcpxRunning },
 			{ title = i18n("setDestinationFolder"), 													fn = changeBatchExportDestinationFolder },
@@ -1750,9 +1693,6 @@ end
 			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
 		}
 		local settingsMenuTable = {
-			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
-			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
-			{ title = "-" },
 			{ title = i18n("batchExportOptions"), 														menu = settingsBatchExportOptions},
 			{ title = "-" },
 			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
@@ -2900,51 +2840,6 @@ end
 		if result == false then return end
 
 		settings.set("fcpxHacks.batchExportDestinationFolder", result)
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE FINAL CUT PRO LANGUAGE:
-	--------------------------------------------------------------------------------
-	function changeFinalCutProLanguage(language)
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update Final Cut Pro's settings::
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("AppleLanguages", {language})
-		if not result then
-			dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
-		end
-
-		--------------------------------------------------------------------------------
-		-- Change FCPX Hacks Language:
-		--------------------------------------------------------------------------------
-		fcp:getCurrentLanguage(true, language)
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
 	end
 
 	--------------------------------------------------------------------------------
