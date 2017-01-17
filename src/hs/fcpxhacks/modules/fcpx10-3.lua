@@ -109,6 +109,7 @@ local plist										= require("hs.plist")
 -- MODULES:
 --------------------------------------------------------------------------------
 
+local metadata									= require("hs.fcpxhacks.metadata")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local slaxml									= require("hs.fcpxhacks.modules.slaxml")
@@ -294,10 +295,10 @@ function loadScript()
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.lastVersion") == nil then
-		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
+		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxhacks.scriptVersion) then
+		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(metadata.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = fcp:isRunning()
 				if finalCutProRunning then
@@ -316,7 +317,7 @@ function loadScript()
 				end
 			end
 		end
-		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
+		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
 	end
 
 	--------------------------------------------------------------------------------
@@ -538,7 +539,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Set Tool Tip:
 		--------------------------------------------------------------------------------
-		fcpxMenubar:setTooltip("FCPX Hacks " .. i18n("version") .. " " .. fcpxhacks.scriptVersion)
+		fcpxMenubar:setTooltip("FCPX Hacks " .. i18n("version") .. " " .. metadata.scriptVersion)
 
 		--------------------------------------------------------------------------------
 		-- Work out Menubar Display Mode:
@@ -559,7 +560,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") " .. i18n("hasLoaded"))
+	dialog.displayNotification("FCPX Hacks (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -1766,7 +1767,7 @@ end
 			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 			{ title = "-" },
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
-			{ title = i18n("scriptVersion") .. " " .. fcpxhacks.scriptVersion,							disabled = true },
+			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
 		}
 		local settingsEffectsShortcutsTable = {
 			{ title = i18n("updateEffectsList"),														fn = updateEffectsList, 																										disabled = not fcpxRunning },
@@ -1893,7 +1894,7 @@ end
 		-- Check for Updates:
 		--------------------------------------------------------------------------------
 		if latestScriptVersion ~= nil then
-			if latestScriptVersion > fcpxhacks.scriptVersion then
+			if latestScriptVersion > metadata.scriptVersion then
 				table.insert(menuTable, 1, { title = i18n("updateAvailable") .. " (" .. i18n("version") .. " " .. latestScriptVersion .. ")", fn = getScriptUpdate})
 				table.insert(menuTable, 2, { title = "-" })
 			end
@@ -4359,14 +4360,14 @@ end
 	-- GET SCRIPT UPDATE:
 	--------------------------------------------------------------------------------
 	function getScriptUpdate()
-		os.execute('open "' .. fcpxhacks.updateURL .. '"')
+		os.execute('open "' .. metadata.updateURL .. '"')
 	end
 
 	--------------------------------------------------------------------------------
 	-- GO TO LATENITE FILMS SITE:
 	--------------------------------------------------------------------------------
 	function gotoLateNiteSite()
-		os.execute('open "' .. fcpxhacks.developerURL .. '"')
+		os.execute('open "' .. metadata.developerURL .. '"')
 	end
 
 --------------------------------------------------------------------------------
@@ -6323,7 +6324,7 @@ end
 	-- EMAIL BUG REPORT:
 	--------------------------------------------------------------------------------
 	function emailBugReport()
-		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxhacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
+		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. metadata.scriptVersion .. "] Bug Report"):recipients({metadata.bugReportEmail})
 																	   :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
 	end
 
@@ -6373,7 +6374,7 @@ end
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get(fcpxhacks.checkUpdateURL, nil)
+			updateResponse, updateBody, updateHeader = http.get(metadata.checkUpdateURL, nil)
 			if updateResponse == 200 then
 				if updateBody:sub(1,8) == "LATEST: " then
 					--------------------------------------------------------------------------------
@@ -6385,8 +6386,8 @@ end
 					-- macOS Notification:
 					--------------------------------------------------------------------------------
 					if not mod.shownUpdateNotification then
-						if latestScriptVersion > fcpxhacks.scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						if latestScriptVersion > metadata.scriptVersion then
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(metadata.iconPath))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -7174,7 +7175,7 @@ function sharedXMLFileWatcher(files)
 
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
-						:setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						:setIdImage(image.imageFromPath(metadata.iconPath))
 						:title("New XML Recieved")
 						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
 						:informativeText("FCPX Hacks has recieved a new XML file.")
