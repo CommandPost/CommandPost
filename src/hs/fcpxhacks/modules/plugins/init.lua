@@ -33,7 +33,7 @@ mod.SETTINGS_DISABLED = "fcpxHacks.plugins.disabled"
 --- Eg:
 ---
 --- ```
---- plugins.loadPlugins("hs.fcpxhacks.plugins")
+--- plugins.loadPackage("hs.fcpxhacks.plugins")
 --- ```
 ---
 --- Parameters:
@@ -63,7 +63,7 @@ function mod.loadPackage(package)
 				local attrs, err = fs.attributes(filePath .. "/init.lua")
 				if attrs and attrs.mode == "file" then
 					-- it's a plugin
-					mod.loadPlugin(package .. "." .. file)
+					mod.load(package .. "." .. file)
 				else
 					-- it's a plain folder. Load it as a sub-package.
 					mod.loadPackage(package .. "." .. file)
@@ -71,7 +71,7 @@ function mod.loadPackage(package)
 			else
 				local name = file:match("(.+)%.lua$")
 				if name then
-					mod.loadPlugin(package .. "." .. name)
+					mod.load(package .. "." .. name)
 				end
 			end
 		end
@@ -80,29 +80,29 @@ function mod.loadPackage(package)
 	return true
 end
 
---- hs.fcpxhacks.modules.plugins.loadPackage(package) -> boolean
+--- hs.fcpxhacks.modules.plugins.load(package) -> boolean
 --- Function
---- Loads any plugins present in the specified package. 
---- Any `*.lua` file, or folder containing an `init.lua` file will automatically be
---- loaded as a plugin.
+--- Loads a specific plugin with the specified path.
+--- The plugin will only be loaded once, and the result of its `init(...)` function
+--- will be cached for future calls.
 ---
 --- Eg:
 ---
 --- ```
---- plugins.loadPlugins("hs.fcpxhacks.plugins")
+--- plugins.load("hs.fcpxhacks.plugins.test.helloworld")
 --- ```
 ---
 --- Parameters:
 ---  * package - The LUA package to look in
 ---
 --- Returns:
----  * table
+---  * the result of the plugin's `init(...)` function call.
 ---
-function mod.loadPlugin(pluginPath)
+function mod.load(pluginPath)
 	log.df("Loading plugin '%s'", pluginPath)
 	
 	-- First, check the plugin is not disabled:
-	if mod.isPluginDisabled(pluginPath) then
+	if mod.isDisabled(pluginPath) then
 		log.df("Plugin disabled: '%s'", pluginPath)
 		return nil
 	end
@@ -128,7 +128,7 @@ function mod.loadPlugin(pluginPath)
 				alias = nil
 			end
 			
-			local dependency = mod.loadPlugin(path)
+			local dependency = mod.load(path)
 			if dependency then
 				dependencies[path] = dependency
 				if alias then
@@ -150,21 +150,21 @@ function mod.loadPlugin(pluginPath)
 	return instance
 end
 
-function mod.disablePlugin(pluginPath)
+function mod.disable(pluginPath)
 	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
 	disabled[pluginPath] = true
 	settings.set(mod.SETTINGS_DISABLED, disabled)
 	hs.reload()
 end
 
-function mod.enablePlugin(pluginPath)
+function mod.enable(pluginPath)
 	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
 	disabled[pluginPath] = false
 	settings.set(mod.SETTINGS_DISABLED, disabled)
 	hs.reload()
 end
 
-function mod.isPluginDisabled(pluginPath)
+function mod.isDisabled(pluginPath)
 	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
 	return disabled[pluginPath] == true
 end
