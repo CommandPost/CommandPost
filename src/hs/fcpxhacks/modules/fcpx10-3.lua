@@ -1874,8 +1874,6 @@ end
 		local settingsTable = {
 			{ title = "-" },
 			{ title = i18n("preferences") .. "...", 													menu = settingsMenuTable },
-			{ title = "-" },
-			{ title = i18n("quit") .. " FCPX Hacks", 													fn = quitFCPXHacks},
 		}
 
 		--------------------------------------------------------------------------------
@@ -1915,8 +1913,7 @@ end
 	-- DISPLAY A LIST OF ALL SHORTCUTS:
 	--------------------------------------------------------------------------------
 	function displayShortcutList()
-		local showShortcuts = plugins():load("hs.fcpxhacks.plugins.app.showshortcuts")
-		showShortcuts()
+		plugins():load("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
 	end
 
 --------------------------------------------------------------------------------
@@ -3879,14 +3876,14 @@ end
 	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateMulticamOptimizedMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
+		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE PROXY MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateProxyMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateProxyMedia(optionalValue)
+		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
@@ -3894,21 +3891,21 @@ end
 	-- TODO: Delete this once commands have been migrated.
 	--------------------------------------------------------------------------------
 	function toggleCreateOptimizedMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateOptimizedMedia(optionalValue)
+		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LEAVE IN PLACE ON IMPORT:
 	--------------------------------------------------------------------------------
 	function toggleLeaveInPlace(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleLeaveInPlace(optionalValue)
+		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BACKGROUND RENDER:
 	--------------------------------------------------------------------------------
 	function toggleBackgroundRender(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleBackgroundRender(optionalValue)
+		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------
@@ -4031,7 +4028,7 @@ end
 	-- QUIT FCPX HACKS:
 	--------------------------------------------------------------------------------
 	function quitFCPXHacks()
-		application("Hammerspoon"):kill()
+		plugins():load("hs.fcpxhacks.plugins.hacks.quit")()
 	end
 
 	--------------------------------------------------------------------------------

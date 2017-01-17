@@ -1,6 +1,6 @@
 local settings					= require("hs.settings")
 
---- The top menu section.
+--- The SHORTCUTS menu section.
 
 local PRIORITY = 1000
 
