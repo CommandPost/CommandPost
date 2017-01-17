@@ -1820,15 +1820,6 @@ end
 		}
 		local menuTable = {
 		}
-		local shortcutsTable = {
-			{ title = "-" },
-			{ title = string.upper(i18n("shortcuts")) .. ":", 											disabled = true },
-			{ title = i18n("createOptimizedMedia"), 													fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp:getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
-			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
-			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp:getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
-			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
-			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." " .. i18n("secs", {count = tonumber(mod.FFAutoRenderDelay)}) .. ")", 					fn = function() toggleBackgroundRender() end, 						checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
-		}
 		local automationOptions = {
 			{ title = i18n("enableScrollingTimeline"), 													fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
 			{ title = i18n("enableTimelinePlayheadLock"),												fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
@@ -1890,7 +1881,6 @@ end
 		--------------------------------------------------------------------------------
 		-- Setup Menubar:
 		--------------------------------------------------------------------------------
-		if menubarShortcutsEnabled then 	menuTable = fnutils.concat(menuTable, shortcutsTable) 	end
 		if menubarAutomationEnabled then	menuTable = fnutils.concat(menuTable, automationTable)	end
 		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
 		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
@@ -3889,185 +3879,36 @@ end
 	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateMulticamOptimizedMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		log.d("optionalValue: "..inspect(optionalValue))
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
-			log.d("optionalValue matches preference value. Bailing.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleCreateOptimizedMediaForMulticamClips() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media for Multicam Clips'.\n\nError occurred in toggleCreateMulticamOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE PROXY MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateProxyMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateProxyMedia", false) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateProxyMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in toggleCreateProxyMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateProxyMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE OPTIMIZED MEDIA:
+	-- TODO: Delete this once commands have been migrated.
 	--------------------------------------------------------------------------------
 	function toggleCreateOptimizedMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateOptimizeMedia", false) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateOptimizedMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in toggleCreateOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleCreateOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LEAVE IN PLACE ON IMPORT:
 	--------------------------------------------------------------------------------
 	function toggleLeaveInPlace(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCopyToMediaFolder", true) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCopyToMediaFolder() then
-			dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in toggleLeaveInPlace().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleLeaveInPlace(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BACKGROUND RENDER:
 	--------------------------------------------------------------------------------
 	function toggleBackgroundRender(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFAutoStartBGRender", true) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleAutoStartBGRender() then
-			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in toggleBackgroundRender().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins():load("hs.fcpxhacks.plugins.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------

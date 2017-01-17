@@ -231,7 +231,10 @@ return {
 			createMulticamOptimizedMedia 		= 			"Create Multicam Optimized Media",
 			createProxyMedia					=			"Create Proxy Media",
 			leaveFilesInPlaceOnImport			=			"Leave Files In Place On Import",
-			enableBackgroundRender				=			"Enable Background Render",
+			enableBackgroundRender				=			{
+				one								=			"Enable Background Render (%{count} sec)",
+				other 							= 			"Enable Background Render (%{count} secs)",
+			},
 
 			--------------------------------------------------------------------------------
 			-- Automation:

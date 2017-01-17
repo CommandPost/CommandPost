@@ -23,6 +23,14 @@ function section:new()
 	return o
 end
 
+function section:setDisabledFn(disabledFn)
+	self._disabledFn = disabledFn
+end
+
+function section:isDisabled()
+	return self._disabledFn and self._disabledFn()
+end
+
 --- hs.fcpxhacks.plugins.menu.section:_addGenerator() -> section
 --- A private method for registering a generator. This should not be called directly.
 ---
@@ -105,6 +113,10 @@ end
 ---  * `table`	- The menu table for this section. See `hs.menubar` for details on the format.
 ---
 function section:generateMenuTable()
+	if self:isDisabled() then
+		return nil
+	end
+	
 	local menuTable = {}
 	for _,generator in ipairs(self._generators) do
 		if generator.itemFn then

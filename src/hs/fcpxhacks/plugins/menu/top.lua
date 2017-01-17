@@ -1,9 +1,6 @@
 --- The top menu section.
 
-local log					= require("hs.logger").new("top")
-local inspect				= require("hs.inspect")
-
-local fcp					= require("hs.finalcutpro")
+local PRIORITY = 0
 
 --- The Plugin
 local plugin = {}
@@ -13,7 +10,7 @@ plugin.dependencies = {
 }
 
 function plugin.init(dependencies)
-	return dependencies.manager.addSection(0)
+	return dependencies.manager.addSection(PRIORITY)
 end
 
 return plugin

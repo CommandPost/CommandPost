@@ -157,7 +157,7 @@ function mod.load(pluginPath)
 	end)
 
 	if not status then
-		log.ef("Error while initialising plugin '%s': %s", inspect(err))
+		log.ef("Error while initialising plugin '%s': %s", pluginPath, inspect(err))
 		return nil
 	end
 	
