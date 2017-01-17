@@ -636,7 +636,7 @@ function defaultShortcutKeys()
 
     local defaultShortcutKeys = {
         FCPXHackLaunchFinalCutPro                                   = { characterString = kc.keyCodeTranslator("l"),            modifiers = controlOptionCommand,                   fn = function() fcp:launch() end,                                   releasedFn = nil,                                                       repeatFn = nil,         global = true },
-        FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = function() displayShortcutList() end,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
+        FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = displayShortcutList,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
 
         FCPXHackHighlightBrowserPlayhead                            = { characterString = kc.keyCodeTranslator("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealInBrowserAndHighlight                         = { characterString = kc.keyCodeTranslator("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
@@ -1639,12 +1639,6 @@ end
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
 		--------------------------------------------------------------------------------
-		-- Are Hacks Shortcuts Enabled or Not:
-		--------------------------------------------------------------------------------
-		local displayShortcutText = i18n("displayKeyboardShortcuts")
-		if enableHacksShortcutsInFinalCutPro then displayShortcutText = i18n("openCommandEditor") end
-
-		--------------------------------------------------------------------------------
 		-- FCPX Hacks Languages:
 		--------------------------------------------------------------------------------
 		local settingsLanguage = {}
@@ -1825,8 +1819,6 @@ end
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
 		local menuTable = {
-			{ title = i18n("open") .. " Final Cut Pro", 												fn = function() fcp:launch() end },
-			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning and enableHacksShortcutsInFinalCutPro },
 			{ title = "-" },
 		}
 		local shortcutsTable = {
@@ -1931,68 +1923,8 @@ end
 	-- DISPLAY A LIST OF ALL SHORTCUTS:
 	--------------------------------------------------------------------------------
 	function displayShortcutList()
-
-		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-		if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
-
-		if enableHacksShortcutsInFinalCutPro then
-			if fcp:isRunning() then
-				fcp:launch()
-				fcp:commandEditor():show()
-			end
-		else
-			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
-
-	---------------------------------
-	CONTROL+OPTION+COMMAND:
-	---------------------------------
-	L = Launch Final Cut Pro (System Wide)
-
-	A = Toggle HUD
-	Z = Toggle Touch Bar
-
-	W = Toggle Scrolling Timeline
-
-	H = Highlight Browser Playhead
-	F = Reveal in Browser & Highlight
-	S = Single Match Frame & Highlight
-
-	D = Reveal Multicam in Browser & Highlight
-	G = Reveal Multicam in Angle Editor & Highlight
-
-	E = Batch Export from Browser
-
-	B = Change Backup Interval
-
-	T = Toggle Timecode Overlays
-	Y = Toggle Moving Markers
-	P = Toggle Rendering During Playback
-
-	M = Select Color Board Puck 1
-	, = Select Color Board Puck 2
-	. = Select Color Board Puck 3
-	/ = Select Color Board Puck 4
-
-	1-9 = Restore Keyword Preset
-
-	+ = Increase Timeline Clip Height
-	- = Decrease Timeline Clip Height
-
-	Left Arrow = Select All Clips to Left
-	Right Arrow = Select All Clips to Right
-
-	-----------------------------------------
-	CONTROL+OPTION+COMMAND+SHIFT:
-	-----------------------------------------
-	1-9 = Save Keyword Preset
-
-	-----------------------------------------
-	CONTROL+SHIFT:
-	-----------------------------------------
-	1-5 = Apply Effect]]
-
-			dialog.displayMessage(whatMessage)
-		end
+		local showShortcuts = plugins():load("hs.fcpxhacks.plugins.app.showshortcuts")
+		showShortcuts()
 	end
 
 --------------------------------------------------------------------------------

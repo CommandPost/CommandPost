@@ -3,6 +3,9 @@
 local log					= require("hs.logger").new("top")
 local inspect				= require("hs.inspect")
 
+local fcp					= require("hs.finalcutpro")
+
+--- The Plugin
 local plugin = {}
 
 plugin.dependencies = {
@@ -10,8 +13,7 @@ plugin.dependencies = {
 }
 
 function plugin.init(dependencies)
-	local section = dependencies.manager.addSection(0)
-	return section
+	return dependencies.manager.addSection(0)
 end
 
 return plugin

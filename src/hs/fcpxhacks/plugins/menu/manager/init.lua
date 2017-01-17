@@ -79,9 +79,6 @@ function manager.updateMenubarIcon()
 		end
 	end
 	
-	log.df("menu icon: %s", inspect(icon))
-	log.df("menu title: %s", inspect(title))
-	
 	manager.menubar:setIcon(icon)
 	manager.menubar:setTitle(title)
 end
