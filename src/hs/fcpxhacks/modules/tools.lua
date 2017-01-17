@@ -274,4 +274,18 @@ function tools.incrementFilename(value)
 	return name .. " " .. tostring(tonumber(counter) + 1)
 end
 
+--------------------------------------------------------------------------------
+-- Returns a list of file names for the path in an array.
+--------------------------------------------------------------------------------
+function tools.dirFiles(path)
+	path = fs.pathToAbsolute(path)
+	local contents, data = fs.dir(path)
+	
+	local files = {}
+	for file in function() return contents(data) end do
+		files[#files+1] = file
+	end
+	return files
+end
+
 return tools

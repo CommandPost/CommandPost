@@ -198,6 +198,33 @@ mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
 mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Effects/Titles/Generators Shortcut
 
+
+--------------------------------------------------------------------------------
+-- Retrieves the plugins manager.
+--------------------------------------------------------------------------------
+function plugins()
+	if not mod._plugins then
+		mod._plugins = require("hs.plugins")
+		mod._plugins.init("hs.fcpxhacks.plugins")
+	end
+	return mod._plugins
+end
+
+--------------------------------------------------------------------------------
+-- Retrieves the FCPX Hacks menu manager
+--------------------------------------------------------------------------------
+function menuManager()
+	if not mod._menuManager then
+		mod._menuManager = plugins().load("hs.fcpxhacks.plugins.menu.manager")
+		
+		--- TODO: Remove this once all menu manaement is migrated to plugins.
+		local manualSection = mod._menuManager.addSection(10000)
+		manualSection:addItems(0, function() return generateMenuBar(true) end)
+		mod._menuManager.refreshMenuBar()
+	end
+	return mod._menuManager
+end
+
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
@@ -530,26 +557,12 @@ function loadScript()
 		end
 
 	end
-
+	
+	
 	-------------------------------------------------------------------------------
-	-- Set up Menubar:
-	--------------------------------------------------------------------------------
-	fcpxMenubar = menubar.newWithPriority(1)
-
-		--------------------------------------------------------------------------------
-		-- Set Tool Tip:
-		--------------------------------------------------------------------------------
-		fcpxMenubar:setTooltip("FCPX Hacks " .. i18n("version") .. " " .. metadata.scriptVersion)
-
-		--------------------------------------------------------------------------------
-		-- Work out Menubar Display Mode:
-		--------------------------------------------------------------------------------
-		updateMenubarIcon()
-
-		--------------------------------------------------------------------------------
-		-- Populate the Menubar for the first time:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
+	-- Sets up the menu.
+	-------------------------------------------------------------------------------
+	refreshMenuBar()
 
 	-------------------------------------------------------------------------------
 	-- Set up Chooser:
@@ -1198,9 +1211,6 @@ end
 --------------------------------------------------------------------------------
 
 
-
-
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                     M E N U B A R    F E A T U R E S                       --
@@ -1215,7 +1225,10 @@ end
 	-- REFRESH MENUBAR:
 	--------------------------------------------------------------------------------
 	function refreshMenuBar(refreshPlistValues)
-
+		menuManager():refreshMenuBar()
+	end
+	
+	function generateMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Maximum Length of Menubar Strings:
 		--------------------------------------------------------------------------------
@@ -1899,63 +1912,15 @@ end
 				table.insert(menuTable, 2, { title = "-" })
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Set the Menu:
-		--------------------------------------------------------------------------------
-		fcpxMenubar:setMenu(menuTable)
-
+		
+		return menuTable
 	end
 
 	--------------------------------------------------------------------------------
 	-- UPDATE MENUBAR ICON:
 	--------------------------------------------------------------------------------
 	function updateMenubarIcon()
-
-		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
-		local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
-		local proxyMenuIcon = ""
-
-		local proxyStatusIcon = nil
-		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
-		if FFPlayerQuality == 4 then
-			proxyStatusIcon = "🔴" 		-- Proxy (4)
-		else
-			proxyStatusIcon = "🔵" 		-- Original (5)
-		end
-
-		fcpxMenubar:setIcon(nil)
-
-		if enableProxyMenuIcon ~= nil then
-			if enableProxyMenuIcon == true then
-				if proxyStatusIcon ~= nil then
-					proxyMenuIcon = " " .. proxyStatusIcon
-				else
-					proxyMenuIcon = ""
-				end
-			end
-		end
-
-		if displayMenubarAsIcon == nil then
-			fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
-		else
-			if displayMenubarAsIcon then
-				fcpxMenubar:setIcon(fcpxHacksIconSmall)
-				if proxyStatusIcon ~= nil then
-					if proxyStatusIcon ~= "" then
-						if enableProxyMenuIcon then
-							proxyMenuIcon = proxyMenuIcon .. "  "
-						end
-					end
-				 end
-				fcpxMenubar:setTitle(proxyMenuIcon)
-			else
-				fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
-			end
-		end
-
+		menuManager():updateMenubarIcon()
 	end
 
 --------------------------------------------------------------------------------

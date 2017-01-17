@@ -11,6 +11,7 @@ mod.bugReportEmail      = "chris@latenitefilms.com"
 mod.developerURL        = "https://latenitefilms.com/blog/final-cut-pro-hacks/"
 mod.updateURL           = "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
 mod.checkUpdateURL      = "https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html"
-mod.iconPath            = "~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"
+mod.assetsPath			= "~/.hammerspoon/hs/fcpxhacks/assets/"
+mod.iconPath            = mod.assetsPath .. "fcpxhacks.icns"
 
 return mod
