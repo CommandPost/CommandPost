@@ -18,10 +18,10 @@ plugin.dependencies = {
 function plugin.init(dependencies)
 	local shortcuts = dependencies.manager.addSection(PRIORITY)
 	
-	shortcuts:setDisabledFn(function()
-		return isShortcutsDisabled()
-	end)
+	-- Disable the section if the shortcuts option is disabled
+	shortcuts:setDisabledFn(isShortcutsDisabled)
 	
+	-- Add the separator and title for the section.
 	shortcuts:addItems(0, function()
 		return {
 			{ title = "-" },
