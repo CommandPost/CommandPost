@@ -1819,16 +1819,15 @@ end
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
 		local menuTable = {
-			{ title = "-" },
 		}
 		local shortcutsTable = {
+			{ title = "-" },
 			{ title = string.upper(i18n("shortcuts")) .. ":", 											disabled = true },
 			{ title = i18n("createOptimizedMedia"), 													fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp:getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
 			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
 			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp:getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
 			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
 			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." " .. i18n("secs", {count = tonumber(mod.FFAutoRenderDelay)}) .. ")", 					fn = function() toggleBackgroundRender() end, 						checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
-			{ title = "-" },
 		}
 		local automationOptions = {
 			{ title = i18n("enableScrollingTimeline"), 													fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
@@ -1838,6 +1837,7 @@ end
 			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
 		}
 		local automationTable = {
+			{ title = "-" },
 			{ title = string.upper(i18n("automation")) .. ":", 											disabled = true },
 			{ title = i18n("assignEffectsShortcuts"), 													menu = settingsEffectsShortcutsTable },
 			{ title = i18n("assignTransitionsShortcuts"), 												menu = settingsTransitionsShortcutsTable },
@@ -1857,15 +1857,16 @@ end
 
 		}
 		local toolsTable = {
+			{ title = "-" },
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
 			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
 			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
 			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
 			{ title = i18n("options"),																	menu = toolsSettings },
-			{ title = "-" },
 		}
 		local advancedTable = {
+			{ title = "-" },
 			{ title = i18n("enableHacksShortcuts"), 													fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
 			{ title = i18n("enableTimecodeOverlay"), 													fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
 			{ title = i18n("enableMovingMarkers"), 														fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
@@ -1875,11 +1876,12 @@ end
 			{ title = i18n("changeSmartCollectionLabel"),												fn = changeSmartCollectionsLabel },
 		}
 		local hacksTable = {
+			{ title = "-" },
 			{ title = string.upper(i18n("hacks")) .. ":", 												disabled = true },
 			{ title = i18n("advancedFeatures"),															menu = advancedTable },
-			{ title = "-" },
 		}
 		local settingsTable = {
+			{ title = "-" },
 			{ title = i18n("preferences") .. "...", 													menu = settingsMenuTable },
 			{ title = "-" },
 			{ title = i18n("quit") .. " FCPX Hacks", 													fn = quitFCPXHacks},

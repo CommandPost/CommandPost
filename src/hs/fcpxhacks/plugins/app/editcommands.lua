@@ -1,9 +1,7 @@
 local fcp			= require("hs.finalcutpro")
 local settings		= require("hs.settings")
 
-local module = {}
-
-module.OPEN_COMMAND_EDITOR_PRIORITY = 1000
+local PRIORITY = 1000
 
 local function editCommands()
 	fcp:launch()
@@ -23,6 +21,7 @@ local function createMenuItem()
 	end
 end
 
+--- The Plugin
 local plugin = {}
 
 plugin.dependencies = {
@@ -30,9 +29,8 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	local top = deps.top
-	
-	top:addItem(module.OPEN_COMMAND_EDITOR_PRIORITY, createMenuItem)
+	-- Add the menu item to the top section.
+	deps.top:addItem(PRIORITY, createMenuItem)
 	
 	return editCommands
 end
