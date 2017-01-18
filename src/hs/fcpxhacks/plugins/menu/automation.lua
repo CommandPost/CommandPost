@@ -1,10 +1,10 @@
 local settings					= require("hs.settings")
 
---- The SHORTCUTS menu section.
+--- The AUTOMATION menu section.
 
-local PRIORITY = 1000
+local PRIORITY = 2000
 
-local SETTING = "fcpxHacks.menubarShortcutsEnabled"
+local SETTING = "fcpxHacks.menubarAutomationEnabled"
 
 -- The menu manager
 local manager
@@ -39,12 +39,12 @@ function plugin.init(dependencies)
 	-- Add the separator and title for the section.
 	shortcuts:addSeparator(0)
 		:addItem(1, function()
-			return { title = string.upper(i18n("shortcuts")) .. ":", disabled = true }
+			return { title = string.upper(i18n("automation")) .. ":", disabled = true }
 		end)
 	
 	-- Create the menubar preferences item
 	dependencies.menubar:addItem(PRIORITY, function() 
-		return { title = i18n("showShortcuts"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
+		return { title = i18n("showAutomation"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 	end)
 	
 	return shortcuts

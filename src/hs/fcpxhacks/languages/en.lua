@@ -244,12 +244,15 @@ return {
 			assignTransitionsShortcuts			=			"Assign Transitions Shortcuts",
 			assignTitlesShortcuts				=			"Assign Titles Shortcuts",
 			assignGeneratorsShortcuts			=			"Assign Generators Shortcuts",
+			
+			unassignedTitle						=			"Unassigned",
 
 				--------------------------------------------------------------------------------
 				-- Effects Shortcuts:
 				--------------------------------------------------------------------------------
 				updateEffectsList				=			"Update Effects List",
 				effectShortcut					=			"Effect Shortcut",
+				effectShortcutTitle				=			"Effect Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Transitions Shortcuts:
@@ -343,7 +346,7 @@ return {
 			highlightPlayheadTime				=			"Highlight Playhead Time",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
-			trachFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
+			trashFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",

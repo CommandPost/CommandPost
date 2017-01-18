@@ -1549,21 +1549,6 @@ end
 		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
 
 		--------------------------------------------------------------------------------
-		-- Effects Shortcuts:
-		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated") or false
-		local effectsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
-		local effectsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
-		local effectsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
-		local effectsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
-		local effectsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
-		if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. tools.stringMaxLength(effectsShortcutOne,maxTextLength,"...") .. ")" end
-		if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. tools.stringMaxLength(effectsShortcutTwo,maxTextLength,"...") .. ")" end
-		if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. tools.stringMaxLength(effectsShortcutThree,maxTextLength,"...") .. ")" end
-		if effectsShortcutFour == nil then 		effectsShortcutFour = " (Unassigned)" 		else effectsShortcutFour = " (" .. tools.stringMaxLength(effectsShortcutFour,maxTextLength,"...") .. ")" end
-		if effectsShortcutFive == nil then 		effectsShortcutFive = " (Unassigned)" 		else effectsShortcutFive = " (" .. tools.stringMaxLength(effectsShortcutFive,maxTextLength,"...") .. ")" end
-
-		--------------------------------------------------------------------------------
 		-- Transition Shortcuts:
 		--------------------------------------------------------------------------------
 		local transitionsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated") or false
@@ -1649,8 +1634,6 @@ end
 			{ title = i18n("touchBarTipTwo"), 															disabled = true },
 		}
 		local settingsMenubar = {
-			{ title = i18n("showShortcuts"), 															fn = function() toggleMenubarDisplay("Shortcuts") end, 				checked = menubarShortcutsEnabled},
-			{ title = i18n("showAutomation"), 															fn = function() toggleMenubarDisplay("Automation") end, 			checked = menubarAutomationEnabled},
 			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
 			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
 			{ title = "-" },
@@ -1700,21 +1683,12 @@ end
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
-			{ title = i18n("trachFCPXHacksPreferences"), 												fn = resetSettings },
+			{ title = i18n("trashFCPXHacksPreferences"), 												fn = resetSettings },
 			{ title = "-" },
 			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 			{ title = "-" },
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
 			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
-		}
-		local settingsEffectsShortcutsTable = {
-			{ title = i18n("updateEffectsList"),														fn = updateEffectsList, 																										disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("effectShortcut") .. " " .. i18n("one") .. effectsShortcutOne, 				fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("two") .. effectsShortcutTwo, 				fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("three") .. effectsShortcutThree, 			fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("four") .. effectsShortcutFour, 			fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("five") .. effectsShortcutFive, 			fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
 		}
 		local settingsTransitionsShortcutsTable = {
 			{ title = i18n("updateTransitionsList"), 													fn = updateTransitionsList, 																									disabled = not fcpxRunning },
@@ -1749,8 +1723,10 @@ end
 			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
+		-- The main menu
 		local menuTable = {
 		}
+		
 		local automationOptions = {
 			{ title = i18n("enableScrollingTimeline"), 													fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
 			{ title = i18n("enableTimelinePlayheadLock"),												fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
@@ -1759,9 +1735,6 @@ end
 			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
 		}
 		local automationTable = {
-			{ title = "-" },
-			{ title = string.upper(i18n("automation")) .. ":", 											disabled = true },
-			{ title = i18n("assignEffectsShortcuts"), 													menu = settingsEffectsShortcutsTable },
 			{ title = i18n("assignTransitionsShortcuts"), 												menu = settingsTransitionsShortcutsTable },
 			{ title = i18n("assignTitlesShortcuts"),													menu = settingsTitlesShortcutsTable },
 			{ title = i18n("assignGeneratorsShortcuts"), 												menu = settingsGeneratorsShortcutsTable },
@@ -1844,145 +1817,12 @@ end
 	-- DISPLAY A LIST OF ALL SHORTCUTS:
 	--------------------------------------------------------------------------------
 	function displayShortcutList()
-		plugins():load("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
+		plugins().load("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
 	end
 
 --------------------------------------------------------------------------------
 -- UPDATE EFFECTS/TRANSITIONS/TITLES/GENERATORS LISTS:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- GET LIST OF EFFECTS:
-	--------------------------------------------------------------------------------
-	function updateEffectsList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateEffectsListWarning"))
-
-		--------------------------------------------------------------------------------
-		-- Save the layout of the Transitions panel in case we switch away...
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Effects panel is open:
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsShowing = effects:isShowing()
-		if not effects:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-		effects:showInstalledEffects()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		effects:search():clear()
-
-		local sidebar = effects:sidebar()
-
-		--------------------------------------------------------------------------------
-		-- Ensure the sidebar is visible
-		--------------------------------------------------------------------------------
-		effects:showSidebar()
-
-		--------------------------------------------------------------------------------
-		-- If it's still invisible, we have a problem.
-		--------------------------------------------------------------------------------
-		if not sidebar:isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Video':
-		--------------------------------------------------------------------------------
-		if not effects:showAllVideoEffects() then
-			dialog.displayErrorMessage("Unable to select all video effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Video Effects:
-		--------------------------------------------------------------------------------
-		local allVideoEffects = effects:getCurrentTitles()
-		if not allVideoEffects then
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Audio':
-		--------------------------------------------------------------------------------
-		if not effects:showAllAudioEffects() then
-			dialog.displayErrorMessage("Unable to select all audio effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Audio Effects:
-		--------------------------------------------------------------------------------
-		local allAudioEffects = effects:getCurrentTitles()
-		if not allAudioEffects then
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects and Transitions Panels:
-		--------------------------------------------------------------------------------
-		effects:loadLayout(effectsLayout)
-		transitions:loadLayout(transitionsLayout)
-		if not effectsShowing then effects:hide() end
-
-		--------------------------------------------------------------------------------
-		-- All done!
-		--------------------------------------------------------------------------------
-		if #allVideoEffects == 0 or #allAudioEffects == 0 then
-			dialog.displayMessage(i18n("updateEffectsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			return "Fail"
-		else
-			--------------------------------------------------------------------------------
-			-- Save Results to Settings:
-			--------------------------------------------------------------------------------
-			local currentLanguage = fcp:getCurrentLanguage()
-			settings.set("fcpxHacks." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
-			settings.set("fcpxHacks." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
-			settings.set("fcpxHacks." .. currentLanguage .. ".effectsListUpdated", true)
-
-			--------------------------------------------------------------------------------
-			-- Update Chooser:
-			--------------------------------------------------------------------------------
-			hacksconsole.refresh()
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-			--------------------------------------------------------------------------------
-			-- Let the user know everything's good:
-			--------------------------------------------------------------------------------
-			dialog.displayMessage(i18n("updateEffectsListDone"))
-		end
-
-	end
 
 	--------------------------------------------------------------------------------
 	-- GET LIST OF TRANSITIONS:
@@ -2014,7 +1854,7 @@ end
 		local transitions = fcp:transitions()
 		local transitionsShowing = transitions:isShowing()
 		if not transitions:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateTransitionsList().")
 			return "Fail"
 		end
 
@@ -2116,7 +1956,7 @@ end
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
 		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2210,7 +2050,7 @@ end
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
 		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateGeneratorsList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -2276,144 +2116,6 @@ end
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS/TRANSITIONS/TITLES/GENERATORS SHORTCUTS:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN EFFECTS SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignEffectsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated")
-		local allVideoEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
-		local allAudioEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not effectsListUpdated then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-		if allVideoEffects == nil or allAudioEffects == nil then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-		if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Video Effects List:
-		--------------------------------------------------------------------------------
-		local effectChooserChoices = {}
-		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
-			for i=1, #allVideoEffects do
-				individualEffect = {
-					["text"] = allVideoEffects[i],
-					["subText"] = "Video Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allVideoEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(effectChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Audio Effects List:
-		--------------------------------------------------------------------------------
-		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
-			for i=1, #allAudioEffects do
-				individualEffect = {
-					["text"] = allAudioEffects[i],
-					["subText"] = "Audio Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allAudioEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(effectChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		effectChooser = chooser.new(effectChooserAction):bgDark(true)
-														:choices(effectChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			effectChooser:fgColor(nil)
-						 :subTextColor(nil)
-		else
-			effectChooser:fgColor(drawing.color.x11.snow)
-		 				 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		effectChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function effectChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			effectChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive", 	result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
 
 	--------------------------------------------------------------------------------
 	-- ASSIGN TRANSITIONS SHORTCUT:
@@ -3704,14 +3406,14 @@ end
 	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateMulticamOptimizedMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
+		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE PROXY MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateProxyMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
+		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
@@ -3719,21 +3421,21 @@ end
 	-- TODO: Delete this once commands have been migrated.
 	--------------------------------------------------------------------------------
 	function toggleCreateOptimizedMedia(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
+		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LEAVE IN PLACE ON IMPORT:
 	--------------------------------------------------------------------------------
 	function toggleLeaveInPlace(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
+		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BACKGROUND RENDER:
 	--------------------------------------------------------------------------------
 	function toggleBackgroundRender(optionalValue)
-		return plugins():load("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
+		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------
@@ -3856,7 +3558,7 @@ end
 	-- QUIT FCPX HACKS:
 	--------------------------------------------------------------------------------
 	function quitFCPXHacks()
-		plugins():load("hs.fcpxhacks.plugins.hacks.quit")()
+		plugins().load("hs.fcpxhacks.plugins.hacks.quit")()
 	end
 
 	--------------------------------------------------------------------------------
@@ -4681,111 +4383,7 @@ end
 	-- EFFECTS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function effectsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noEffectShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the Transitions Browser layout:
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Effects Browser:
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsShowing = effects:isShowing()
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		effects:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-		effects:showInstalledEffects()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		effects:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		effects:showAllTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		effects:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = effects:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = effects:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local effect = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		effects:applyItem(effect)
-
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
-			showTouchbar()
-
-			effects:loadLayout(effectsLayout)
-			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-			if not effectsShowing then effects:hide() end
-		end)
-
+		return plugins().load("hs.fcpxhacks.plugins.timeline.effects").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
