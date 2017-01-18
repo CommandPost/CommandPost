@@ -107,13 +107,15 @@ function Viewer:findEventViewerUI(...)
 			local top = window:viewerGroupUI()
 			local ui = nil
 			local viewerCount = 0
-			for i,child in ipairs(top) do
-				-- There can be two viwers enabled
-				if Viewer.matches(child) then
-					viewerCount = viewerCount + 1
-					-- Both the event viewer and standard viewer have the ID, so pick the left-most one
-					if ui == nil or ui:position().x > child:position().x then
-						ui = child
+			if top then
+				for i,child in ipairs(top) do
+					-- There can be two viwers enabled
+					if Viewer.matches(child) then
+						viewerCount = viewerCount + 1
+						-- Both the event viewer and standard viewer have the ID, so pick the left-most one
+						if ui == nil or ui:position().x > child:position().x then
+							ui = child
+						end
 					end
 				end
 			end

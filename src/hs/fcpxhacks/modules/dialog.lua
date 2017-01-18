@@ -95,42 +95,35 @@ end
 --------------------------------------------------------------------------------
 -- DISPLAY TEXT BOX MESSAGE:
 --------------------------------------------------------------------------------
-function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
+function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer, validationFn)
+
+	::retryDisplayTextBoxMessage::
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
 		set whatErrorMessage to "]] .. whatErrorMessage .. [["
 		set defaultAnswer to "]] .. defaultAnswer .. [["
-
-		set allowedLetters to characters of (do shell script "printf \"%c\" {a..z}")
-		set allowedNumbers to characters of (do shell script "printf \"%c\" {0..9}")
-		set allowedAll to allowedLetters & allowedNumbers & space
-
-		repeat
-			try
-				set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon iconPath)
-			on error
-				-- Cancel Pressed:
-				return false
-			end try
-			try
-				set invalidCharacters to false
-				repeat with aCharacter in response
-					if (aCharacter as text) is not in allowedAll then
-						set invalidCharacters to true
-					end if
-				end repeat
-				if length of response is 0 then
-					set invalidCharacters to true
-				end if
-				if invalidCharacters is false then
-					exit repeat
-				end
-			end try
-			display dialog whatErrorMessage buttons {okButton} with icon iconPath
-		end repeat
+		try
+			set response to text returned of (display dialog whatMessage default answer defaultAnswer buttons {okButton, cancelButton} default button 1 with icon iconPath)
+		on error
+			-- Cancel Pressed:
+			return false
+		end try
 		return response
 	]]
-	return as(appleScript)
+	local result = as(appleScript)
+	if result == false then return false end
+
+	if validationFn ~= nil then
+		if type(validationFn) == "function" then
+			if not validationFn(result) then
+				dialog.displayMessage(whatErrorMessage)
+				goto retryDisplayTextBoxMessage
+			end
+		end
+	end
+
+	return result
+
 end
 
 --------------------------------------------------------------------------------

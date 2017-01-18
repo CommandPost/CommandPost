@@ -6,6 +6,8 @@
 --- This code is based heavily on code found at https://github.com/bikkelbroeders/TouchBarDemoApp.  Unlike the code found at the provided link, this module only supports displaying the touch bar window on your computer screen - it does not support display on an attached iDevice.
 ---
 --- This module requires that you are running macOS 10.12.1 build 16B2657 or greater.  Most people who have received the 10.12.1 update have an earlier build, which you can check by selecting "About this Mac" from the Apple menu and then clicking the mouse pointer on the version number displayed in the dialog box.  If you require an update, you can find it at https://support.apple.com/kb/dl1897.
+---
+--- If you wish to use this module in an environment where the end-user's machine may not have the correct macOS release version, you should always check the value of `hs._asm.touchbar.supported` before trying to create the Touch Bar and provide your own fallback or message.  Failure to do so will cause your code to break to the Hammerspoon Console when you attempt to create and use the Touch Bar.
 
 local USERDATA_TAG = "hs._asm.touchbar"
 local module       = require(USERDATA_TAG..".supported")
@@ -13,6 +15,10 @@ if module.supported() then
     for k, v in pairs(require(USERDATA_TAG..".internal")) do module[k] = v end
 end
 
+
+-- if the userdata table was not created (i.e. we're on an unsupported machine), go ahead
+-- and stick the "wrapped" methods into an empty table... it will be garbage collected after
+-- the module is loaded, so no big deal.
 local objectMT     = hs.getObjectMetatable(USERDATA_TAG) or {}
 local mouse        = require("hs.mouse")
 local screen       = require("hs.screen")
@@ -80,10 +86,10 @@ objectMT.centered = function(self, top)
     local origin    = {}
     local tbFrame   = self:getFrame()
     local scFrame   = screen.mainScreen():fullFrame()
-    local scRight   = scFrame.x + scFrame.w
+--     local scRight   = scFrame.x + scFrame.w
     local scBottom  = scFrame.y + scFrame.h
 
-    origin.x = (scRight - tbFrame.w) / 2
+    origin.x = scFrame.x + (scFrame.w - tbFrame.w) / 2
     origin.y = top and scFrame.y or (scBottom - tbFrame.h)
     return self:topLeft(origin)
 end
