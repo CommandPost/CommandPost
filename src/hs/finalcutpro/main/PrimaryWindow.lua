@@ -120,11 +120,26 @@ end
 
 function PrimaryWindow:topGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left >= 3 then
-		for i,child in ipairs(left) do
-			if #child == 1 and #(child[1]) > 1 then
-				return child[1]
+	if left then
+		if #left < 3 then
+			-- Either top or bottom is visible. 
+			-- It's impossible to determine which it at this level, so just return the non-empty one
+			for _,child in ipairs(left) do
+				if #child > 0 then
+					return child[1]
+				end
 			end
+		elseif #left >= 3 then
+			-- Both top and bottom are visible. Grab the highest AXGroup
+			local top = nil
+			for _,child in ipairs(left) do
+				if child:attributeValue("AXRole") == "AXGroup" then
+					if top == nil or top:frame().y > child:frame().y then
+						top = child
+					end
+				end	
+			end
+			if top then return top[1] end
 		end
 	end
 	return nil	
@@ -132,11 +147,26 @@ end
 
 function PrimaryWindow:bottomGroupUI()
 	local left = self:leftGroupUI()
-	if left and #left >= 3 then
-		for i,child in ipairs(left) do
-			if #child == 1 and #(child[1]) == 1 then
-				return child[1]
+	if left then
+		if #left < 3 then
+			-- Either top or bottom is visible. 
+			-- It's impossible to determine which it at this level, so just return the non-empty one
+			for _,child in ipairs(left) do
+				if #child > 0 then
+					return child[1]
+				end
 			end
+		elseif #left >= 3 then
+			-- Both top and bottom are visible. Grab the lowest AXGroup
+			local top = nil
+			for _,child in ipairs(left) do
+				if child:attributeValue("AXRole") == "AXGroup" then
+					if top == nil or top:frame().y < child:frame().y then
+						top = child
+					end
+				end	
+			end
+			if top then return top[1] end
 		end
 	end
 	return nil	
