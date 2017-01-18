@@ -2264,7 +2264,7 @@ end
 		-- Make sure Titles and Generators panel is open:
 		--------------------------------------------------------------------------------
 		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
+			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
 			showTouchbar()
 			return "Fail"
 		end
@@ -3086,7 +3086,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeBackupInterval") .. "\n\n" .. doYouWantToContinue) then
+			if dialog.displayYesNoQuestion(i18n("changeBackupIntervalMessage") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
 				return "Done"
