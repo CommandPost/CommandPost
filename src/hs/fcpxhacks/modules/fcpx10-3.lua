@@ -5062,13 +5062,17 @@ end
 		transitions:applyItem(transition)
 
 		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
-			showTouchbar()
+		timer.waitUntil(
+			function() transitions:itemIsSelected(transition) end,
+			function()
+				showTouchbar()
 
-			transitions:loadLayout(transitionsLayout)
-			if effectsLayout then effects:loadLayout(effectsLayout) end
-			if not transitionsShowing then transitions:hide() end
-		end)
+				transitions:loadLayout(transitionsLayout)
+				if effectsLayout then effects:loadLayout(effectsLayout) end
+				if not transitionsShowing then transitions:hide() end
+			end,
+			0.001
+		)
 	end
 
 	--------------------------------------------------------------------------------
@@ -5172,13 +5176,16 @@ end
 		effects:applyItem(effect)
 
 		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
-			showTouchbar()
-
-			effects:loadLayout(effectsLayout)
-			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-			if not effectsShowing then effects:hide() end
-		end)
+		timer.waitUntil(
+			function() effects:itemIsSelected(effect) end,
+			function()
+				showTouchbar()
+				effects:loadLayout(effectsLayout)
+				if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+				if not effectsShowing then effects:hide() end
+			end,
+			0.001	
+		)
 
 	end
 
