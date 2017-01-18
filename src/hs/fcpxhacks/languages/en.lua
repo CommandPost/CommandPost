@@ -274,6 +274,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateTransitionsList			=			"Update Transitions List",
 				transitionShortcut				=			"Transition Shortcut",
+				transitionShortcutTitle			=			"Transition Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Titles Shortcuts:

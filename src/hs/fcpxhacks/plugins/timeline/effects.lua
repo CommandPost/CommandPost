@@ -32,6 +32,14 @@ function mod.setShortcut(number, value)
 	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)	
 end
 
+function mod.getVideoEffects()
+	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allVideoEffects")
+end
+
+function mod.getAudioEffects()
+	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allAudioEffects")
+end
+
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
 --------------------------------------------------------------------------------
@@ -178,22 +186,16 @@ function mod.assignEffectsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 		= fcp:getCurrentLanguage()
-	local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated")
-	local allVideoEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
-	local allAudioEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
+	local effectsListUpdated 	= mod.isEffectsListUpdated()
+	local allVideoEffects 		= mod.getVideoEffects()
+	local allAudioEffects 		= mod.getAudioEffects()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not effectsListUpdated then
-		dialog.displayMessage(i18n("assignEffectsShortcutError"))
-		return "Failed"
-	end
-	if allVideoEffects == nil or allAudioEffects == nil then
-		dialog.displayMessage(i18n("assignEffectsShortcutError"))
-		return "Failed"
-	end
-	if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
+	if not effectsListUpdated 
+	   or allVideoEffects == nil or allAudioEffects == nil
+	   or next(allVideoEffects) == nil or next(allAudioEffects) == nil then
 		dialog.displayMessage(i18n("assignEffectsShortcutError"))
 		return "Failed"
 	end
