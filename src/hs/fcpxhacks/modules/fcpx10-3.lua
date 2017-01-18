@@ -7135,19 +7135,26 @@ end
 	-- NOTIFICATION WATCHER ACTION:
 	--------------------------------------------------------------------------------
 	function notificationWatcherAction(name, object, userInfo)
+		debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
+		
+		local message = nil
+		if name == "uploadSuccess" then
+			local info = findNotificationInfo(object)
+			message = i18n("shareSuccessful", {info = info})
+		elseif name == "ProTranscoderDidFailNotification" then
+			message = i18n("shareFailed")
+		else -- unexpected result
+			return
+		end
 
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		if notificationPlatform["Prowl"] then
 			local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
 			if prowlAPIKey ~= nil then
-
 				local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 				local prowlEvent = http.encodeForQuery("")
-				local prowlDescription = nil
-
-				if name == "uploadSuccess" then prowlDescription = http.encodeForQuery(i18n("shareSuccessful")) end
-				if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery(i18n("shareFailed")) end
+				local prowlDescription = http.encodeForQuery(message)
 
 				local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
 				httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
@@ -7162,14 +7169,42 @@ end
 
 		if notificationPlatform["iMessage"] then
 			local iMessageTarget = settings.get("fcpxHacks.iMessageTarget") or ""
-			local iMessage = nil
-			if iMessageTarget ~= nil then
-				if name == "uploadSuccess" then iMessage = i18n("shareSuccessful") end
-				if name == "ProTranscoderDidFailNotification" then iMessage = i18n("shareFailed") end
-				messages.iMessage(iMessageTarget, iMessage)
+			if iMessageTarget ~= "" then
+				messages.iMessage(iMessageTarget, message)
 			end
 		end
-
+	end
+	
+	function findNotificationInfo(path)
+		local plistPath = path .. "/ShareStatus.plist"
+		if fs.attributes(plistPath) then
+			local shareStatus = plist.fileToTable(plistPath)
+			if shareStatus then
+				local latestType = nil
+				local latestInfo = nil
+				
+				for type,results in pairs(shareStatus) do
+					local info = results[#results] 
+					if latestInfo == nil or latestInfo.fullDate < info.fullDate then
+						latestInfo = info
+						latestType = type
+					end
+				end
+				
+				if latestInfo then
+					-- put the first resultStr into a top-level value to make it easier for i18n
+					if latestInfo.resultStr then
+						latestInfo.result = latestInfo.resultStr[1]
+					end
+					local message = i18n("shareDetails_"..latestType, latestInfo)
+					if not message then
+						message = i18n("shareUnknown", {type = latestType})
+					end
+					return message
+				end
+			end
+		end
+		return i18n("shareUnknown", {type = "unknown"})
 	end
 
 --------------------------------------------------------------------------------

@@ -212,8 +212,16 @@ return {
 			prowlTextbox						=			"Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com.",
 			prowlTextboxError 					=			"The Prowl API Key you entered is not valid.",
 
-			shareSuccessful 					=			"Share Successful",
+			shareSuccessful 					=			"Share Successful\n%{info}",
 			shareFailed							=			"Share Failed",
+			shareUnknown						=			"Type: %{type}",
+			shareDetails_export					=			"Type: Local Export\nLocation: %{result}",
+			shareDetails_youtube				=			"Type: YouTube\nLogin: %{login}\nTitle: %{title}",
+			shareDetails_Vimeo					=			"Type: Vimeo\nLogin: %{login}\nTitle: %{title}",
+			shareDetails_Facebook				=			"Type: Facebook\nLogin: %{login}\nTitle: %{title}",
+			shareDetails_Youku					=			"Type: Youku\nLogin: %{login}\nTitle: %{title}",
+			shareDetails_Tudou					=			"Type: Tudou\nLogin: %{login}\nTitle: %{title}",
+			
 
 		--------------------------------------------------------------------------------
 		-- MENUBAR:
