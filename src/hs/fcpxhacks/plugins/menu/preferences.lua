@@ -1,4 +1,4 @@
---- The bottom menu section.
+--- The 'Preferences' menu section
 
 local PRIORITY = 8888888
 

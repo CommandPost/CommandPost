@@ -1662,13 +1662,6 @@ end
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
-		local settingsBatchExportOptions = {
-			{ title = i18n("setDestinationPreset"), 													fn = changeBatchExportDestinationPreset, 							disabled = not fcpxRunning },
-			{ title = i18n("setDestinationFolder"), 													fn = changeBatchExportDestinationFolder },
-			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"), 													fn = toggleBatchExportReplaceExistingFiles, 						checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
-		}
-
 		local settingsVoiceCommand = {
 			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
 			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
@@ -1693,8 +1686,6 @@ end
 			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
 		}
 		local settingsMenuTable = {
-			{ title = i18n("batchExportOptions"), 														menu = settingsBatchExportOptions},
-			{ title = "-" },
 			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
@@ -2794,55 +2785,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- CHANGE BATCH EXPORT DESTINATION PRESET:
-	--------------------------------------------------------------------------------
-	function changeBatchExportDestinationPreset()
-		local shareMenuItems = fcp:menuBar():findMenuItemsUI("File", "Share")
-		if not shareMenuItems then
-			dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
-			return
-		end
-
-		local destinations = {}
-
-		for i = 1, #shareMenuItems-2 do
-			local item = shareMenuItems[i]
-			local title = item:attributeValue("AXTitle")
-			if title ~= nil then
-				local value = string.sub(title, 1, -4)
-				if item:attributeValue("AXMenuItemCmdChar") then -- it's the default
-					-- Remove (default) text:
-					local firstBracket = string.find(value, " %(", 1)
-					if firstBracket == nil then
-						firstBracket = string.find(value, "（", 1)
-					end
-					value = string.sub(value, 1, firstBracket - 1)
-				end
-				destinations[#destinations + 1] = value
-			end
-		end
-
-		local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
-		local defaultItems = {}
-		if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
-
-		local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
-		if result and #result > 0 then
-			settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE BATCH EXPORT DESTINATION FOLDER:
-	--------------------------------------------------------------------------------
-	function changeBatchExportDestinationFolder()
-		local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
-		if result == false then return end
-
-		settings.set("fcpxHacks.batchExportDestinationFolder", result)
-	end
-
-	--------------------------------------------------------------------------------
 	-- CHANGE TOUCH BAR LOCATION:
 	--------------------------------------------------------------------------------
 	function changeTouchBarLocation(value)
@@ -3131,15 +3073,6 @@ end
 
 		refreshMenuBar()
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
-	--------------------------------------------------------------------------------
-	function toggleBatchExportReplaceExistingFiles()
-		local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
-		settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
