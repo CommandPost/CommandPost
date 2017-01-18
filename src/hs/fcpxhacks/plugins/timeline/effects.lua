@@ -41,39 +41,7 @@ function mod.getAudioEffects()
 end
 
 --------------------------------------------------------------------------------
--- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
---------------------------------------------------------------------------------
-local function effectChooserAction(result, wasFinalCutProOpen)
-	log.df("effectChooserAction called: fcp open = %s", inspect(wasFinalCutProOpen))
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	mod.effectChooser:hide()
-
-	--------------------------------------------------------------------------------
-	-- Perform Specific Function:
-	--------------------------------------------------------------------------------
-	if result ~= nil then
-		--------------------------------------------------------------------------------
-		-- Save the selection:
-		--------------------------------------------------------------------------------
-		mod.setShortcut(result.whichShortcut, result.text)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Put focus back in Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if wasFinalCutProOpen then fcp:launch() end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	manager.refreshMenuBar()
-
-end
-
---------------------------------------------------------------------------------
--- EFFECTS SHORTCUT PRESSED:
+-- SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the effect to apply in the current FCPX language.
 --------------------------------------------------------------------------------
@@ -105,6 +73,8 @@ function mod.apply(shortcut)
 	local effects = fcp:effects()
 	local effectsShowing = effects:isShowing()
 	local effectsLayout = effects:saveLayout()
+	
+	fcp:launch()
 
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
@@ -172,6 +142,12 @@ function mod.apply(shortcut)
 
 end
 
+-- TODO: A Global function which should be removed once other classes no longer depend on it
+function effectsShortcut(shortcut)
+	log.d("deprecated: effectsShortcut called")
+	return mod.apply(shortcut)
+end
+
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS SHORTCUT:
 --------------------------------------------------------------------------------
@@ -203,7 +179,7 @@ function mod.assignEffectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
-	local effectChooserChoices = {}
+	local choices = {}
 	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 		for i=1, #allVideoEffects do
 			individualEffect = {
@@ -213,9 +189,8 @@ function mod.assignEffectsShortcut(whichShortcut)
 				["function1"] = allVideoEffects[i],
 				["function2"] = "",
 				["function3"] = "",
-				["whichShortcut"] = whichShortcut,
 			}
-			table.insert(effectChooserChoices, 1, individualEffect)
+			table.insert(choices, 1, individualEffect)
 		end
 	end
 
@@ -231,42 +206,62 @@ function mod.assignEffectsShortcut(whichShortcut)
 				["function1"] = allAudioEffects[i],
 				["function2"] = "",
 				["function3"] = "",
-				["whichShortcut"] = whichShortcut,
 			}
-			table.insert(effectChooserChoices, 1, individualEffect)
+			table.insert(choices, 1, individualEffect)
 		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
+	table.sort(choices, function(a, b) return a.text < b.text end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
-	mod.effectChooser = chooser.new(
-		function(result)
-			return effectChooserAction(result, wasFinalCutProOpen) 
-		end)
-		:bgDark(true):choices(effectChooserChoices)
+	local effectChooser = nil
+	effectChooser = chooser.new(function(result)
+		effectChooser:hide()
+		effectChooser = nil
+
+		--------------------------------------------------------------------------------
+		-- Perform Specific Function:
+		--------------------------------------------------------------------------------
+		if result ~= nil then
+			--------------------------------------------------------------------------------
+			-- Save the selection:
+			--------------------------------------------------------------------------------
+			mod.setShortcut(whichShortcut, result.text)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Put focus back in Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if wasFinalCutProOpen then fcp:launch() end
+
+		--------------------------------------------------------------------------------
+		-- Refresh Menubar:
+		--------------------------------------------------------------------------------
+		manager.refreshMenuBar()
+	end)
+	
+	effectChooser:bgDark(true):choices(choices)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
 	if screen.accessibilitySettings()["ReduceTransparency"] then
-		mod.effectChooser:fgColor(nil)
+		effectChooser:fgColor(nil)
 					 :subTextColor(nil)
 	else
-		mod.effectChooser:fgColor(drawing.color.x11.snow)
+		effectChooser:fgColor(drawing.color.x11.snow)
 	 				 :subTextColor(drawing.color.x11.snow)
 	end
 
 	--------------------------------------------------------------------------------
 	-- Show Chooser:
 	--------------------------------------------------------------------------------
-	mod.effectChooser:show()
-
+	effectChooser:show()
 end
 
 --------------------------------------------------------------------------------

@@ -2042,7 +2042,7 @@ end
 				individualEffect = {
 					["text"] = allTitles[i],
 					["subText"] = "Title",
-					["function"] = "transitionsShortcut",
+					["function"] = "titlesShortcut",
 					["function1"] = allTitles[i],
 					["function2"] = "",
 					["function3"] = "",
