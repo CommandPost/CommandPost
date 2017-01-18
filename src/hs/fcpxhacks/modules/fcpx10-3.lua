@@ -83,6 +83,7 @@ local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
 local logger									= require("hs.logger")
 local menubar									= require("hs.menubar")
+local messages									= require("hs.messages")
 local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
@@ -119,12 +120,12 @@ local just										= require("hs.just")
 -- PLUGINS:
 --------------------------------------------------------------------------------
 
-local clipboard									= require("hs.fcpxhacks.plugins.clipboard")
-local hacksconsole								= require("hs.fcpxhacks.plugins.hacksconsole")
-local hackshud									= require("hs.fcpxhacks.plugins.hackshud")
-local voicecommands 							= require("hs.fcpxhacks.plugins.voicecommands")
+local clipboard									= require("hs.fcpxhacks.modules.clipboard")
+local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
+local hackshud									= require("hs.fcpxhacks.modules.hackshud")
+local voicecommands 							= require("hs.fcpxhacks.modules.voicecommands")
 
-local kc										= require("hs.fcpxhacks.plugins.shortcuts.keycodes")
+local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:
@@ -153,7 +154,9 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
-												["highlightPlayheadTime"]						= 3}
+												["highlightPlayheadTime"]						= 3,
+												["notificationPlatform"]						= {},
+}
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
@@ -167,7 +170,6 @@ mod.debugMode									= false											-- Debug Mode is off by default.
 mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
 mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
-mod.releaseMouseColorBoardDown 					= false											-- Color Board Mouse Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
 
@@ -175,7 +177,6 @@ mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
 mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
 mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
-mod.browserHighlight							= nil											-- Scrolling Timeline Timer
 
 mod.scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
 mod.scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
@@ -436,8 +437,8 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Notification Watcher:
 		--------------------------------------------------------------------------------
-		local enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
-		if enableMobileNotifications then notificationWatcher() end
+		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
+		if next(notificationPlatform) ~= nil then notificationWatcher() end
 
 		--------------------------------------------------------------------------------
 		-- Media Import Watcher:
@@ -1357,17 +1358,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Scrolling Timeline:
 		--------------------------------------------------------------------------------
-		scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
+		local scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 		--------------------------------------------------------------------------------
-		-- Enable Mobile Notifications:
+		-- Notification Platform:
 		--------------------------------------------------------------------------------
-		enableMobileNotifications = settings.get("fcpxHacks.enableMobileNotifications") or false
+		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
 		-- Enable Media Import Watcher:
 		--------------------------------------------------------------------------------
-		enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
+		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Location:
@@ -1840,15 +1841,18 @@ end
 			{ title = i18n("options"),																	menu = automationOptions },
 			{ title = "-" },
 		}
+		local settingsNotificationPlatform = {
+			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
+			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
+		}
 		local toolsSettings = {
 			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableMobileNotifications"),												fn = toggleEnableMobileNotifications, 								checked = enableMobileNotifications},
+			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
 			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
-
 		}
 		local toolsTable = {
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
@@ -3234,6 +3238,55 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
+	-- TOGGLE NOTIFICATION PLATFORM:
+	--------------------------------------------------------------------------------
+	function toggleNotificationPlatform(value)
+
+		local notificationPlatform 		= settings.get("fcpxHacks.notificationPlatform")
+		local prowlAPIKey 				= settings.get("fcpxHacks.prowlAPIKey") or ""
+		local iMessageTarget			= settings.get("fcpxHacks.iMessageTarget") or ""
+
+		local returnToFinalCutPro 		= fcp:isFrontmost()
+
+		if value == "Prowl" then
+			if not notificationPlatform["Prowl"] then
+				::retryProwlAPIKeyEntry::
+				local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
+				if result == false then return end
+				local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
+				if prowlAPIKeyValidResult then
+					if returnToFinalCutPro then fcp:launch() end
+					settings.set("fcpxHacks.prowlAPIKey", result)
+				else
+					dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
+					goto retryProwlAPIKeyEntry
+				end
+			end
+		end
+
+		if value == "iMessage" then
+			if not notificationPlatform["iMessage"] then
+				local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), iMessageTarget)
+				if result == false then return end
+				settings.set("fcpxHacks.iMessageTarget", result)
+			end
+		end
+
+		notificationPlatform[value] = not notificationPlatform[value]
+		settings.set("fcpxHacks.notificationPlatform", notificationPlatform)
+
+		if next(notificationPlatform) == nil then
+			if shareSuccessNotificationWatcher then shareSuccessNotificationWatcher:stop() end
+			if shareFailedNotificationWatcher then shareFailedNotificationWatcher:stop() end
+		else
+			notificationWatcher()
+		end
+
+		refreshMenuBar()
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- TOGGLE VOICE COMMAND ENABLE ANNOUNCEMENTS:
 	--------------------------------------------------------------------------------
 	function toggleVoiceCommandEnableAnnouncements()
@@ -3555,41 +3608,6 @@ end
 		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
 		refreshMenuBar()
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MOBILE NOTIFICATIONS:
-	--------------------------------------------------------------------------------
-	function toggleEnableMobileNotifications()
-		local enableMobileNotifications 	= settings.get("fcpxHacks.enableMobileNotifications") or false
-		local prowlAPIKey 					= settings.get("fcpxHacks.prowlAPIKey") or ""
-
-		if not enableMobileNotifications then
-
-			local returnToFinalCutPro = fcp:isFrontmost()
-			::retryProwlAPIKeyEntry::
-
-			local result = dialog.displayTextBoxMessage(i18n("mobileNotificationsTextbox"), i18n("mobileNotificationsError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
-
-			if result == false then
-				return "Cancel"
-			end
-			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
-			if prowlAPIKeyValidResult then
-				if returnToFinalCutPro then fcp:launch() end
-				settings.set("fcpxHacks.prowlAPIKey", result)
-				notificationWatcher()
-				settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-			else
-				dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
-				goto retryProwlAPIKeyEntry
-			end
-		else
-			shareSuccessNotificationWatcher:stop()
-			shareFailedNotificationWatcher:stop()
-			settings.set("fcpxHacks.enableMobileNotifications", not enableMobileNotifications)
-		end
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -7116,27 +7134,77 @@ end
 	-- NOTIFICATION WATCHER ACTION:
 	--------------------------------------------------------------------------------
 	function notificationWatcherAction(name, object, userInfo)
+		-- FOR DEBUGGING/DEVELOPMENT
+		-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
+		
+		local message = nil
+		if name == "uploadSuccess" then
+			local info = findNotificationInfo(object)
+			message = i18n("shareSuccessful", {info = info})
+		elseif name == "ProTranscoderDidFailNotification" then
+			message = i18n("shareFailed")
+		else -- unexpected result
+			return
+		end
 
-		local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
-		if prowlAPIKey ~= nil then
+		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
-			local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
-			local prowlEvent = http.encodeForQuery("")
-			local prowlDescription = nil
+		if notificationPlatform["Prowl"] then
+			local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+			if prowlAPIKey ~= nil then
+				local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
+				local prowlEvent = http.encodeForQuery("")
+				local prowlDescription = http.encodeForQuery(message)
 
-			if name == "uploadSuccess" then prowlDescription = http.encodeForQuery("Share Successful") end
-			if name == "ProTranscoderDidFailNotification" then prowlDescription = http.encodeForQuery("Share Failed") end
+				local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
+				httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
 
-			local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
-			httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
-
-			if not string.match(httpBody, "success") then
-				local xml = slaxdom:dom(tostring(httpBody))
-				local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
-				if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
+				if not string.match(httpBody, "success") then
+					local xml = slaxdom:dom(tostring(httpBody))
+					local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
+					if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
+				end
 			end
 		end
 
+		if notificationPlatform["iMessage"] then
+			local iMessageTarget = settings.get("fcpxHacks.iMessageTarget") or ""
+			if iMessageTarget ~= "" then
+				messages.iMessage(iMessageTarget, message)
+			end
+		end
+	end
+	
+	function findNotificationInfo(path)
+		local plistPath = path .. "/ShareStatus.plist"
+		if fs.attributes(plistPath) then
+			local shareStatus = plist.fileToTable(plistPath)
+			if shareStatus then
+				local latestType = nil
+				local latestInfo = nil
+				
+				for type,results in pairs(shareStatus) do
+					local info = results[#results] 
+					if latestInfo == nil or latestInfo.fullDate < info.fullDate then
+						latestInfo = info
+						latestType = type
+					end
+				end
+				
+				if latestInfo then
+					-- put the first resultStr into a top-level value to make it easier for i18n
+					if latestInfo.resultStr then
+						latestInfo.result = latestInfo.resultStr[1]
+					end
+					local message = i18n("shareDetails_"..latestType, latestInfo)
+					if not message then
+						message = i18n("shareUnknown", {type = latestType})
+					end
+					return message
+				end
+			end
+		end
+		return i18n("shareUnknown", {type = "unknown"})
 	end
 
 --------------------------------------------------------------------------------
