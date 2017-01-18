@@ -7135,7 +7135,8 @@ end
 	-- NOTIFICATION WATCHER ACTION:
 	--------------------------------------------------------------------------------
 	function notificationWatcherAction(name, object, userInfo)
-		debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
+		-- FOR DEBUGGING/DEVELOPMENT
+		-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
 		
 		local message = nil
 		if name == "uploadSuccess" then
