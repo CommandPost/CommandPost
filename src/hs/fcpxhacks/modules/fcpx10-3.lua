@@ -4816,20 +4816,22 @@ end
 	function matchFrameThenHighlightFCPXBrowserPlayhead()
 
 		--------------------------------------------------------------------------------
-		-- Delete Any Highlights:
+		-- Check the option is available in the current context
+		--------------------------------------------------------------------------------
+		if not fcp:menuBar():isEnabled("File", "Reveal in Browser") then
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
 		deleteAllHighlights()
 
 		--------------------------------------------------------------------------------
 		-- Click on 'Reveal in Browser':
 		--------------------------------------------------------------------------------
-		if fcp:menuBar():isEnabled("File", "Reveal in Browser") then
-			fcp:menuBar():selectMenu("File", "Reveal in Browser")
-			highlightFCPXBrowserPlayhead()
-		else
-			dialog.displayErrorMessage("Failed to 'Reveal in Browser'.\n\nError occurred in matchFrameThenHighlightFCPXBrowserPlayhead().")
-			return "Fail"
-		end
+		fcp:menuBar():selectMenu("File", "Reveal in Browser")
+		highlightFCPXBrowserPlayhead()
 
 	end
 
@@ -7136,7 +7138,7 @@ end
 	function notificationWatcherAction(name, object, userInfo)
 		-- FOR DEBUGGING/DEVELOPMENT
 		-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
-		
+
 		local message = nil
 		if name == "uploadSuccess" then
 			local info = findNotificationInfo(object)
@@ -7174,7 +7176,7 @@ end
 			end
 		end
 	end
-	
+
 	function findNotificationInfo(path)
 		local plistPath = path .. "/ShareStatus.plist"
 		if fs.attributes(plistPath) then
@@ -7182,15 +7184,15 @@ end
 			if shareStatus then
 				local latestType = nil
 				local latestInfo = nil
-				
+
 				for type,results in pairs(shareStatus) do
-					local info = results[#results] 
+					local info = results[#results]
 					if latestInfo == nil or latestInfo.fullDate < info.fullDate then
 						latestInfo = info
 						latestType = type
 					end
 				end
-				
+
 				if latestInfo then
 					-- put the first resultStr into a top-level value to make it easier for i18n
 					if latestInfo.resultStr then
