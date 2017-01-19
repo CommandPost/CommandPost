@@ -132,7 +132,7 @@ local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 -- DEFAULT SETTINGS:
 --------------------------------------------------------------------------------
 
-local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
+local defaultSettings = {						
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
@@ -145,7 +145,6 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["chooserShowTitles"] 							= true,
 												["chooserShowGenerators"] 						= true,
 												["chooserShowMenuItems"]						= true,
-												["menubarShortcutsEnabled"] 					= true,
 												["menubarAutomationEnabled"] 					= true,
 												["menubarToolsEnabled"] 						= true,
 												["menubarHacksEnabled"] 						= true,
@@ -484,13 +483,6 @@ function loadScript()
 		hotkeys:enter()
 
 		--------------------------------------------------------------------------------
-		-- Enable Fullscreen Playback Shortcut Keys:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
-			fullscreenKeyboardWatcherDown:start()
-		end
-
-		--------------------------------------------------------------------------------
 		-- Show Hacks HUD:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.enableHacksHUD") then
@@ -514,14 +506,6 @@ function loadScript()
 		-- Disable Final Cut Pro Shortcut Keys:
 		--------------------------------------------------------------------------------
 		hotkeys:exit()
-
-		--------------------------------------------------------------------------------
-		-- Disable Fullscreen Playback Shortcut Keys:
-		--------------------------------------------------------------------------------
-		if fullscreenKeyboardWatcherUp ~= nil then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		end
 	end
 	
 	-------------------------------------------------------------------------------
@@ -1256,11 +1240,6 @@ end
 		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
 
 		--------------------------------------------------------------------------------
-		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
-		--------------------------------------------------------------------------------
-		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
-
-		--------------------------------------------------------------------------------
 		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 		--------------------------------------------------------------------------------
 		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
@@ -1471,14 +1450,8 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarShortcutsEnabled = 	settings.get("fcpxHacks.menubarShortcutsEnabled")
 		local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
@@ -1583,8 +1556,6 @@ end
 		}
 		
 		local automationOptions = {
-			{ title = i18n("enableShortcutsDuringFullscreen"), 											fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
-			{ title = "-" },
 			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
 		}
 		local automationTable = {
@@ -2270,24 +2241,6 @@ end
 		-- Refresh the Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
 		bindKeyboardShortcuts()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
-	--------------------------------------------------------------------------------
-	function toggleEnableShortcutsDuringFullscreenPlayback()
-
-		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
-		if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
-		settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
-
-		if enableShortcutsDuringFullscreenPlayback == true then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		else
-			fullscreenKeyboardWatcherUp:start()
-			fullscreenKeyboardWatcherDown:start()
-		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -4573,26 +4526,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-				fullscreenKeyboardWatcherUp:start()
-				fullscreenKeyboardWatcherDown:start()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Enable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				fcp:timeline():lockPlayhead()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Enable Voice Commands:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -4624,22 +4557,6 @@ end
 		-- Don't trigger until after FCPX Hacks has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-		if lockTimelinePlayhead then
-			fcp:timeline():unlockPlayhead()
-		end
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to hide the Touch Bar:

@@ -2,6 +2,8 @@
 local windowfilter					= require("hs.window.filter")
 local axuielement					= require("hs._asm.axuielement")
 
+local log							= require("hs.logger").new("winwatch")
+
 -- The Class
 local WindowWatcher = {}
 
@@ -46,23 +48,20 @@ function WindowWatcher:watch(events)
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro Window Filter:
 		--------------------------------------------------------------------------------
-		local filter = windowfilter.new{"Final Cut Pro"}
+		local bundleID = self._window:app():getBundleID()
+		local filter = windowfilter.new(function(window)
+			return window:application():bundleID() == bundleID
+		end)
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro Window Created:
 		--------------------------------------------------------------------------------
 		filter:subscribe(
-			windowfilter.windowCreated, 
+			windowfilter.windowVisible, 
 			function(window, applicationName)
 				local windowUI = axuielement.windowElement(window)
 				if self._window:UI() == windowUI and self._window:isShowing() then
-					--------------------------------------------------------------------------------
-					-- Command Editor is Open:
-					--------------------------------------------------------------------------------
 					self._windowID = window:id()
-					debugMessage("Command Editor Opened.")
-					--------------------------------------------------------------------------------
-
 					for i,watcher in ipairs(self._watchers) do
 						if watcher.show then
 							watcher.show(self)
@@ -77,14 +76,10 @@ function WindowWatcher:watch(events)
 		-- Final Cut Pro Window Destroyed:
 		--------------------------------------------------------------------------------
 		filter:subscribe(
-			windowfilter.windowDestroyed,
+			windowfilter.windowNotVisible,
 			function(window, applicationName)
 				if window:id() == self._windowID then
-					--------------------------------------------------------------------------------
-					-- Command Editor Window Closed:
-					--------------------------------------------------------------------------------
 					self._windowID = nil
-					debugMessage("Command Editor Closed.")
 
 					for i,watcher in ipairs(self._watchers) do
 						if watcher.hide then

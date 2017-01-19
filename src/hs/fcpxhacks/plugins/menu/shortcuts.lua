@@ -7,7 +7,7 @@ local PRIORITY = 1000
 local SETTING = "fcpxHacks.menubarShortcutsEnabled"
 
 local function isSectionDisabled()
-	return not (settings.get(SETTING) or false)
+	return not (settings.get(SETTING) or true)
 end
 
 local function toggleSectionDisabled()
