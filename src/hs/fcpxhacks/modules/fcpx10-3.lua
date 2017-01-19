@@ -660,7 +660,7 @@ function defaultShortcutKeys()
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackMoveToPlayhead                                      = { characterString = "",                                   modifiers = {},                                     fn = function() moveToPlayhead() end,                               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() toggleLockPlayhead() end,                           releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() togglePlayheadLock() end,                           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackTransitionsOne                                      = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
@@ -1597,7 +1597,6 @@ end
 		}
 		
 		local automationOptions = {
-			{ title = i18n("enableTimelinePlayheadLock"),												fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
 			{ title = i18n("enableShortcutsDuringFullscreen"), 											fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
 			{ title = "-" },
 			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
@@ -1980,35 +1979,8 @@ end
 	--------------------------------------------------------------------------------
 	-- TOGGLE LOCK PLAYHEAD:
 	--------------------------------------------------------------------------------
-	function toggleLockPlayhead()
-
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		if lockTimelinePlayhead then
-			if fcp:isRunning() then
-				fcp:timeline():unlockPlayhead()
-			end
-			dialog.displayNotification(i18n("playheadLockDeactivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", false)
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Scrolling Timeline is off
-			--------------------------------------------------------------------------------
-			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
-			if scrollingTimeline then
-				toggleScrollingTimeline()
-				message = i18n("scrollingTimelineDeactivated") .. "\n"
-			end
-			if fcp:isRunning() then
-				fcp:timeline():lockPlayhead()
-			end
-			dialog.displayNotification(message..i18n("playheadLockActivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", true)
-		end
-
-		refreshMenuBar()
-
+	function togglePlayheadLock()
+		return plugins("hs.fcpxhacks.plugins.timeline.playhead").togglePlayheadLock()
 	end
 
 	--------------------------------------------------------------------------------
