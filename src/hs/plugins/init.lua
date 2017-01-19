@@ -151,13 +151,22 @@ function mod.load(pluginPath)
 	-- log.df("Initialising plugin '%s'.", pluginPath)
 	local instance = nil
 	
-	local status, err = pcall(function()
-		instance = plugin.init(dependencies)
-	end)
+	if plugin.init then
+		local status, err = pcall(function()
+			instance = plugin.init(dependencies)
+		end)
 
-	if not status then
-		log.ef("Error while initialising plugin '%s': %s", pluginPath, inspect(err))
-		return nil
+		if not status then
+			log.ef("Error while initialising plugin '%s': %s", pluginPath, inspect(err))
+			return nil
+		end
+	else
+		log.wf("No init function for plugin: %s", pluginPath)
+	end
+
+	-- Default the return value to 'true'
+	if instance == nil then
+		instance = true
 	end
 	
 	-- cache it
