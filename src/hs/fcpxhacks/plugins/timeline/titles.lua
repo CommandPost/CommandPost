@@ -137,7 +137,7 @@ function mod.apply(shortcut)
 	generators:applyItem(generator)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.000001, function()
+	timer.doAfter(0.1, function()
 		showTouchbar()
 
 		generators:loadLayout(generatorsLayout)
@@ -189,10 +189,6 @@ function mod.assignTitlesShortcut(whichShortcut)
 			item = {
 				["text"] = allTitles[i],
 				["subText"] = "Title",
-				["function"] = "titlesShortcut",
-				["function1"] = allTitles[i],
-				["function2"] = "",
-				["function3"] = "",
 			}
 			table.insert(choices, 1, item)
 		end
@@ -217,14 +213,14 @@ function mod.assignTitlesShortcut(whichShortcut)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Put focus back in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if wasFinalCutProOpen then fcp:launch() end
-
-		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
 		--------------------------------------------------------------------------------
 		manager.refreshMenuBar()
+		
+		--------------------------------------------------------------------------------
+		-- Put focus back in Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if wasFinalCutProOpen then fcp:launch() end
 	end)
 		
 	theChooser:bgDark(true):choices(choices)

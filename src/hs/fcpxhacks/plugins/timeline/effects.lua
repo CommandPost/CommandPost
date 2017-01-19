@@ -132,7 +132,7 @@ function mod.apply(shortcut)
 	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.000001, function()
+	timer.doAfter(0.1, function()
 		showTouchbar()
 
 		effects:loadLayout(effectsLayout)
@@ -185,10 +185,6 @@ function mod.assignEffectsShortcut(whichShortcut)
 			individualEffect = {
 				["text"] = allVideoEffects[i],
 				["subText"] = "Video Effect",
-				["function"] = "effectsShortcut",
-				["function1"] = allVideoEffects[i],
-				["function2"] = "",
-				["function3"] = "",
 			}
 			table.insert(choices, 1, individualEffect)
 		end
@@ -202,10 +198,6 @@ function mod.assignEffectsShortcut(whichShortcut)
 			individualEffect = {
 				["text"] = allAudioEffects[i],
 				["subText"] = "Audio Effect",
-				["function"] = "effectsShortcut",
-				["function1"] = allAudioEffects[i],
-				["function2"] = "",
-				["function3"] = "",
 			}
 			table.insert(choices, 1, individualEffect)
 		end
@@ -235,14 +227,14 @@ function mod.assignEffectsShortcut(whichShortcut)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Put focus back in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if wasFinalCutProOpen then fcp:launch() end
-
-		--------------------------------------------------------------------------------
 		-- Refresh Menubar:
 		--------------------------------------------------------------------------------
 		manager.refreshMenuBar()
+
+		--------------------------------------------------------------------------------
+		-- Put focus back in Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if wasFinalCutProOpen then fcp:launch() end
 	end)
 	
 	effectChooser:bgDark(true):choices(choices)

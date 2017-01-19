@@ -8,10 +8,12 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
 
-local log				= require("hs.logger").new("transitions")
+local log				= require("hs.logger").new("generators")
 local inspect			= require("hs.inspect")
 
 -- Constants
+local PRIORITY = 4000
+
 local MAX_SHORTCUTS = 5
 
 -- The Module
@@ -22,83 +24,92 @@ local mod = {}
 local manager
 
 function mod.getShortcuts()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts") or {}	
+	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".generatorsShortcuts") or {}	
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)	
+	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)	
 end
 
-function mod.getTransitions()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allTransitions")
+function mod.getGenerators()
+	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allGenerators")
 end
 
 --------------------------------------------------------------------------------
--- TRANSITIONS SHORTCUT PRESSED:
+-- GENERATORS SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the transition to apply in the current FCPX language.
+-- or it may be the name of the generator to apply in the current FCPX language.
 --------------------------------------------------------------------------------
 function mod.apply(shortcut)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
-	
 	if type(shortcut) == "number" then
 		shortcut = mod.getShortcuts()[shortcut]
 	end
 
 	if shortcut == nil then
-		dialog.displayMessage(i18n("noTransitionShortcut"))
+		dialog.displayMessage(i18n("noGeneratorShortcut"))
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Save the Effects Browser layout:
+	-- Save the main Browser layout:
 	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsLayout = effects:saveLayout()
+	local browser = fcp:browser()
+	local browserLayout = browser:saveLayout()
 
 	--------------------------------------------------------------------------------
-	-- Get Transitions Browser:
+	-- Get Generators Browser:
 	--------------------------------------------------------------------------------
-	local transitions = fcp:transitions()
-	local transitionsShowing = transitions:isShowing()
-	local transitionsLayout = transitions:saveLayout()
+	local generators = fcp:generators()
+	local generatorsShowing = generators:isShowing()
+	local generatorsLayout = generators:saveLayout()
+
+	
+	--------------------------------------------------------------------------------
+	-- Make sure FCPX is at the front.
+	--------------------------------------------------------------------------------
+	fcp:launch()
 
 	--------------------------------------------------------------------------------
-	-- Make sure panel is open:
+	-- Make sure the panel is open:
 	--------------------------------------------------------------------------------
-	transitions:show()
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
-	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
+	generators:show()
+	
+	if not generators:isShowing() then
+		dialog.displayErrorMessage("Unable to display the Generators panel.\n\nError occurred in generators.apply(...)")
+		return false
+	end
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	transitions:search():clear()
+	generators:search():clear()
 
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	transitions:showAllTransitions()
+	generators:showAllGenerators()
+
+	--------------------------------------------------------------------------------
+	-- Make sure "Installed Generators" is selected:
+	--------------------------------------------------------------------------------
+	generators:showInstalledGenerators()
 
 	--------------------------------------------------------------------------------
 	-- Perform Search:
 	--------------------------------------------------------------------------------
-	transitions:search():setValue(shortcut)
+	generators:search():setValue(shortcut)
 
 	--------------------------------------------------------------------------------
-	-- Get the list of matching transitions
+	-- Get the list of matching effects
 	--------------------------------------------------------------------------------
-	local matches = transitions:currentItemsUI()
+	local matches = generators:currentItemsUI()
 	if not matches or #matches == 0 then
 		--------------------------------------------------------------------------------
 		-- If Needed, Search Again Without Text Before First Dash:
@@ -106,46 +117,46 @@ function mod.apply(shortcut)
 		local index = string.find(shortcut, "-")
 		if index ~= nil then
 			local trimmedShortcut = string.sub(shortcut, index + 2)
-			transitions:search():setValue(trimmedShortcut)
+			effects:search():setValue(trimmedShortcut)
 
-			matches = transitions:currentItemsUI()
+			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
-				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in transitionsShortcut().")
+				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in generators.apply(...).")
 				return "Fail"
 			end
 		end
 	end
 
-	local transition = matches[1]
+	local generator = matches[1]
 
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
 	hideTouchbar()
 
-	transitions:applyItem(transition)
+	generators:applyItem(generator)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
 		showTouchbar()
 
-		transitions:loadLayout(transitionsLayout)
-		if effectsLayout then effects:loadLayout(effectsLayout) end
-		if not transitionsShowing then transitions:hide() end
+		generators:loadLayout(generatorsLayout)
+		if browserLayout then browser:loadLayout(browserLayout) end
+		if not generatorsShowing then generators:hide() end
 	end)
 
 end
 
 -- TODO: A Global function which should be removed once other classes no longer depend on it
-function transitionsShortcut(shortcut)
-	log.w("deprecated: transitionsShortcut called")
+function generatorsShortcut(shortcut)
+	log.d("deprecated: generatorsShortcut called")
 	return mod.apply(shortcut)
 end
 
 --------------------------------------------------------------------------------
--- ASSIGN TRANSITIONS SHORTCUT:
+-- ASSIGN GENERATORS SHORTCUT:
 --------------------------------------------------------------------------------
-function mod.assignTransitionsShortcut(whichShortcut)
+function mod.assignGeneratorsShortcut(whichShortcut)
 
 	--------------------------------------------------------------------------------
 	-- Was Final Cut Pro Open?
@@ -156,28 +167,28 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local transitionsListUpdated 	= mod.isTransitionsListUpdated()
-	local allTransitions 			= mod.getTransitions()
+	local generatorsListUpdated 	= mod.isGeneratorsListUpdated()
+	local allGenerators 			= mod.getGenerators()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not transitionsListUpdated 
-	   or allTransitions == nil
-	   or next(allTransitions) == nil then
-		dialog.displayMessage(i18n("assignTransitionsShortcutError"))
+	if not generatorsListUpdated 
+	   or allGenerators == nil
+	   or next(allGenerators) == nil then
+		dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
 		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Transitions List:
+	-- Generators List:
 	--------------------------------------------------------------------------------
 	local choices = {}
-	if allTransitions ~= nil and next(allTransitions) ~= nil then
-		for i=1, #allTransitions do
+	if allGenerators ~= nil and next(allGenerators) ~= nil then
+		for i=1, #allGenerators do
 			item = {
-				["text"] = allTransitions[i],
-				["subText"] = "Transition",
+				["text"] = allGenerators[i],
+				["subText"] = "Generator",
 			}
 			table.insert(choices, 1, item)
 		end
@@ -232,9 +243,9 @@ function mod.assignTransitionsShortcut(whichShortcut)
 end
 
 --------------------------------------------------------------------------------
--- GET LIST OF TRANSITIONS:
+-- GET LIST OF GENERATORS:
 --------------------------------------------------------------------------------
-function mod.updateTransitionsList()
+function mod.updateGeneratorsList()
 
 	--------------------------------------------------------------------------------
 	-- Make sure Final Cut Pro is active:
@@ -244,78 +255,60 @@ function mod.updateTransitionsList()
 	--------------------------------------------------------------------------------
 	-- Warning message:
 	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTransitionsListWarning"))
+	dialog.displayMessage(i18n("updateGeneratorsListWarning"))
+
+	local generators = fcp:generators()
+
+	local browserLayout = fcp:browser():saveLayout()
 
 	--------------------------------------------------------------------------------
-	-- Save the layout of the Effects panel, in case we switch away...
+	-- Make sure Generators and Generators panel is open:
 	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsLayout = nil
-	if effects:isShowing() then
-		effectsLayout = effects:saveLayout()
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure Transitions panel is open:
-	--------------------------------------------------------------------------------
-	local transitions = fcp:transitions()
-	local transitionsShowing = transitions:isShowing()
-	if not transitions:show():isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateTransitionsList().")
+	if not generators:show():isShowing() then
+		dialog.displayErrorMessage("Unable to activate the Generators and Generators panel.\n\nError occurred in updateGeneratorsList().")
 		return "Fail"
 	end
-
-	local transitionsLayout = transitions:saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
-	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	transitions:search():clear()
+	generators:search():clear()
 
 	--------------------------------------------------------------------------------
-	-- Make sure the sidebar is visible:
+	-- Click 'Generators':
 	--------------------------------------------------------------------------------
-	local sidebar = transitions:sidebar()
-
-	transitions:showSidebar()
-
-	if not sidebar:isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
-	end
+	generators:showAllGenerators()
 
 	--------------------------------------------------------------------------------
-	-- Click 'All' in the sidebar:
+	-- Make sure "Installed Generators" is selected:
 	--------------------------------------------------------------------------------
-	transitions:showAllTransitions()
+	generators:group():selectItem(1)
 
 	--------------------------------------------------------------------------------
 	-- Get list of All Transitions:
 	--------------------------------------------------------------------------------
-	local allTransitions = transitions:getCurrentTitles()
-	if allTransitions == nil then
-		dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
+	local effectsList = generators:contents():childrenUI()
+	local allGenerators = {}
+	if effectsList ~= nil then
+		for i=1, #effectsList do
+			allGenerators[i] = effectsList[i]:attributeValue("AXTitle")
+		end
+	else
+		dialog.displayErrorMessage("Unable to get list of all generators.\n\nError occurred in updateGeneratorsList().")
 		return "Fail"
 	end
 
 	--------------------------------------------------------------------------------
-	-- Restore Effects and Transitions Panels:
+	-- Restore Effects or Transitions Panel:
 	--------------------------------------------------------------------------------
-	transitions:loadLayout(transitionsLayout)
-	if effectsLayout then effects:loadLayout(effectsLayout) end
-	if not transitionsShowing then transitions:hide() end
+	fcp:browser():loadLayout(browserLayout)
 
 	--------------------------------------------------------------------------------
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set("fcpxHacks." .. currentLanguage .. ".allTransitions", allTransitions)
-	settings.set("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated", true)
+	settings.set("fcpxHacks." .. currentLanguage .. ".allGenerators", allGenerators)
+	settings.set("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -325,21 +318,19 @@ function mod.updateTransitionsList()
 	--------------------------------------------------------------------------------
 	-- Refresh Menubar:
 	--------------------------------------------------------------------------------
-	refreshMenuBar()
+	manager.refreshMenuBar()
 
 	--------------------------------------------------------------------------------
 	-- Let the user know everything's good:
 	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTransitionsListDone"))
+	dialog.displayMessage(i18n("updateGeneratorsListDone"))
 end
 
-function mod.isTransitionsListUpdated()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsListUpdated") or false
+function mod.isGeneratorsListUpdated()
+	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".generatorsListUpdated") or false
 end
 
 -- The Plugin
-local PRIORITY = 2000
-
 local plugin = {}
 
 plugin.dependencies = {
@@ -353,11 +344,11 @@ function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	
 	-- The 'Assign Shortcuts' menu
-	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTransitionsShortcuts") end)
+	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignGeneratorsShortcuts") end)
 	
 	-- The 'Update' menu
 	menu:addItem(1000, function()
-		return { title = i18n("updateTransitionsList"),	fn = mod.updateTransitionsList, disabled = not fcpxRunning }
+		return { title = i18n("updateGeneratorsList"),	fn = mod.updateGeneratorsList, disabled = not fcpxRunning }
 	end)
 	menu:addSeparator(2000)
 	
@@ -365,19 +356,20 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isTransitionsListUpdated()
+		local listUpdated 	= mod.isGeneratorsListUpdated()
 		local shortcuts		= mod.getShortcuts()
 		
 		local items = {}
 		
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("transitionShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTransitionsShortcut(i) end,	disabled = not listUpdated }
+			items[i] = { title = i18n("generatorShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignGeneratorsShortcut(i) end,	disabled = not listUpdated }
 		end
 		
 		return items
 	end)
 	
+	log.d("added all items to generators menu")
 	return mod
 end
 
