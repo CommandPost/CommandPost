@@ -369,7 +369,6 @@ function plugin.init(deps)
 		return items
 	end)
 	
-	log.d("added all items to generators menu")
 	return mod
 end
 
