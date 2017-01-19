@@ -4,6 +4,8 @@ FCPX Hacks is a free and open source [Hammerspoon](http://www.hammerspoon.org) s
 
 You can learn about it's origin story, as well as explore its full feature list on the [LateNite Films Blog](https://latenitefilms.com/blog/final-cut-pro-hacks/).
 
+Check how many people have downloaded FCPX Hacks [here](http://www.somsubhra.com/github-release-stats/?username=fcpxhacks&repository=fcpxhacks).
+
 ## Installing
 
 To install, you can either link the `~/.hammerspoon` directory to the `src` directory, or copy the contents of `src` into said directory.
