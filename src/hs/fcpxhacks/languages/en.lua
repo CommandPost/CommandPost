@@ -178,7 +178,7 @@ return {
 			-- Yes/No Dialog Boxes:
 			--------------------------------------------------------------------------------
 			changeFinalCutProLanguage 			=			"Changing Final Cut Pro's language requires Final Cut Pro to restart.",
-			changeBackupInterval				=			"Changing the Backup Interval requires Final Cut Pro to restart.",
+			changeBackupIntervalMessage			=			"Changing the Backup Interval requires Final Cut Pro to restart.",
 			changeSmartCollectionsLabel			=			"Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
 			hacksShortcutsRestart				=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
@@ -221,7 +221,7 @@ return {
 			shareDetails_Facebook				=			"Type: Facebook\nLogin: %{login}\nTitle: %{title}",
 			shareDetails_Youku					=			"Type: Youku\nLogin: %{login}\nTitle: %{title}",
 			shareDetails_Tudou					=			"Type: Tudou\nLogin: %{login}\nTitle: %{title}",
-			
+
 
 		--------------------------------------------------------------------------------
 		-- MENUBAR:

@@ -16,6 +16,7 @@
 local tools = {}
 
 local eventtap									= require("hs.eventtap")
+local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
 local host										= require("hs.host")
 local inspect									= require("hs.inspect")

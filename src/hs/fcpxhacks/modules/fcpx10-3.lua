@@ -1091,19 +1091,16 @@ function updateKeyboardShortcuts()
 	-- Update Keyboard Settings:
 	--------------------------------------------------------------------------------
 	local result = enableHacksShortcuts()
-	if result ~= "Done" then
-		dialog.displayErrorMessage(i18n("failedToWriteToFile") .. "\n\n" .. result)
+	if type(result) == "string" then
+		dialog.displayErrorMessage(result)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Revert back to default keyboard layout:
-	--------------------------------------------------------------------------------
-	local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/" .. fcp:getCurrentLanguage() .. ".lproj/Default.commandset")
-	if not result then
-		dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-		return false
+	elseif result == false then
+		--------------------------------------------------------------------------------
+		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
+		-- just leave the old Hacks Shortcut Plist files in place.
+		--------------------------------------------------------------------------------
+		return
 	end
 
 end
@@ -1112,85 +1109,50 @@ end
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function enableHacksShortcuts()
-	local appleScript = [[
-		set finalCutProPath to "]] .. fcp:getPath() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp:getSupportedLanguages()) .. [[
 
-		--------------------------------------------------------------------------------
-		-- Replace Files:
-		--------------------------------------------------------------------------------
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				return "NSProCommandGroups.plist"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				return "NSProCommands.plist"
-		end try
-		repeat with whichLanguage in finalCutProLanguages
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/Default.commandset"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandNames.strings"
-			end try
-		end repeat
-		return "Done"
-	]]
-	ok,result = osascript.applescript(appleScript)
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings)
 	return result
+
 end
 
 --------------------------------------------------------------------------------
 -- DISABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function disableHacksShortcuts()
-	local appleScript = [[
-		set finalCutProPath to "]] .. fcp:getPath() .. [["
-		set finalCutProLanguages to ]] .. inspect(fcp:getSupportedLanguages()) .. [[
 
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommandGroups.plist '" & finalCutProPath & "/Contents/Resources/NSProCommandGroups.plist'" with administrator privileges
-			on error
-				return "NSProCommandGroups.plist"
-		end try
-		try
-			do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/NSProCommands.plist '" & finalCutProPath & "/Contents/Resources/NSProCommands.plist'" with administrator privileges
-			on error
-				return "NSProCommands.plist"
-		end try
-		repeat with whichLanguage in finalCutProLanguages
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/Default.commandset '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/Default.commandset'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/Default.commandset"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandDescriptions.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandDescriptions.strings"
-			end try
-			try
-				do shell script "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/" & whichLanguage & ".lproj/NSProCommandNames.strings '" & finalCutProPath & "/Contents/Resources/" & whichLanguage & ".lproj/NSProCommandNames.strings'" with administrator privileges
-				on error
-					return whichLanguage & ".lproj/NSProCommandNames.strings"
-			end try
-		end repeat
-		return "Done"
-	]]
-	ok,result = osascript.applescript(appleScript)
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings)
 	return result
+
 end
 
 --------------------------------------------------------------------------------
@@ -1859,7 +1821,7 @@ end
 		--------------------------------------------------------------------------------
 		local restartStatus = false
 		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeBackupInterval") .. "\n\n" .. doYouWantToContinue) then
+			if dialog.displayYesNoQuestion(i18n("changeBackupIntervalMessage") .. "\n\n" .. i18n("doYouWantToContinue")) then
 				restartStatus = true
 			else
 				return "Done"
@@ -1948,9 +1910,8 @@ end
 			executeCommands[#executeCommands + 1] = executeCommand
 		end
 		local result = tools.executeWithAdministratorPrivileges(executeCommands)
-		if not result then
-			dialog.displayErrorMessage("Failed to change Smart Collection Label.")
-			return "Failed"
+		if type(result) == "string" then
+			dialog.displayErrorMessage(result)
 		end
 
 		--------------------------------------------------------------------------------
@@ -2188,16 +2149,8 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		mod.debugMode = not mod.debugMode
-
-		if mod.debugMode then
-			logger.defaultLogLevel = 'warn'
-		else
-			logger.defaultLogLevel = 'debug'
-		end
-
-		settings.set("fcpxHacks.debugMode", mod.debugMode)
-		refreshMenuBar()
+		settings.set("fcpxHacks.debugMode", not mod.debugMode)
+		hs.reload()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2432,42 +2385,33 @@ end
 		local saveSettings = false
 		if enableHacksShortcutsInFinalCutPro then
 			--------------------------------------------------------------------------------
-			-- Revert back to default keyboard layout:
-			--------------------------------------------------------------------------------
-			local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
-			if result == nil then
-				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-				return "Failed"
-			end
-
-			--------------------------------------------------------------------------------
 			-- Disable Hacks Shortcut in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			local result = disableHacksShortcuts()
-			if result ~= "Done" then
-				dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 				return false
+			elseif result == false then
+				--------------------------------------------------------------------------------
+				-- Cancelled at Admin Password:
+				--------------------------------------------------------------------------------
+				return
 			end
 		else
-			--------------------------------------------------------------------------------
-			-- Revert back to default keyboard layout:
-			--------------------------------------------------------------------------------
-			local result = fcp:setPreference("Active Command Set", fcp:getPath() .. "/Contents/Resources/en.lproj/Default.commandset")
-			if result == nil then
-				dialog.displayErrorMessage(i18n("activeCommandSetResetError"))
-				return "Failed"
-			end
-
 			--------------------------------------------------------------------------------
 			-- Enable Hacks Shortcut in Final Cut Pro:
 			--------------------------------------------------------------------------------
 			local result = enableHacksShortcuts()
-			if result ~= "Done" then
-				dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 				return false
+			elseif result == false then
+				--------------------------------------------------------------------------------
+				-- Cancelled at Admin Password:
+				--------------------------------------------------------------------------------
+				return
 			end
 		end
-
 
 		--------------------------------------------------------------------------------
 		-- Save new value to settings:
@@ -2483,7 +2427,6 @@ end
 				-- Failed to restart Final Cut Pro:
 				--------------------------------------------------------------------------------
 				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
 			end
 		end
 
@@ -2553,16 +2496,14 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if mod.allowMovingMarkers then
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if executeStatus == false then
-				dialog.displayErrorMessage(i18n("movingMarkersError"))
-				return "Failed"
+			local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 			end
 		else
 			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if executeStatus == false then
-				dialog.displayErrorMessage(i18n("movingMarkersError"))
-				return "Failed"
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
 			end
 		end
 
@@ -2917,9 +2858,8 @@ end
 		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
 		local result = disableHacksShortcuts()
-		if result ~= "Done" then
-			dialog.displayErrorMessage(i18n("failedToReplaceFile") .. "\n\n" .. result)
-			return
+		if type(result) == "string" then
+			dialog.displayErrorMessage(result)
 		end
 
 		--------------------------------------------------------------------------------
@@ -5050,88 +4990,117 @@ function fullscreenKeyboardWatcher()
 		fullscreenKeyboardWatcherWorking = true
 
 		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local fcpx = fcp:application()
-		local fcpxElements = ax.applicationElement(fcpx)
-
-		--------------------------------------------------------------------------------
 		-- Only Continue if in Full Screen Playback Mode:
 		--------------------------------------------------------------------------------
-		if fcpxElements[1][1] ~= nil then
-			if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+		if fcp:fullScreenWindow():isShowing() then
 
-				--------------------------------------------------------------------------------
-				-- Debug:
-				--------------------------------------------------------------------------------
-				debugMessage("Key Pressed whilst in Full Screen Mode.")
+			--------------------------------------------------------------------------------
+			-- Get keypress information:
+			--------------------------------------------------------------------------------
+			local whichKey 		= event:getKeyCode()
+			local whichModifier = event:getFlags()
 
-				--------------------------------------------------------------------------------
-				-- Get keypress information:
-				--------------------------------------------------------------------------------
-				local whichKey = event:getKeyCode()			-- EXAMPLE: kc.keyCodeTranslator(whichKey) == "c"
-				local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
-
-				--------------------------------------------------------------------------------
-				-- Check all of these shortcut keys for presses:
-				--------------------------------------------------------------------------------
-				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-
-				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
-						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-									return true
-								end
-							end
-						end
-					end
-				end
+			--------------------------------------------------------------------------------
+			-- Get Active Command Set:
+			--------------------------------------------------------------------------------
+			local activeCommandSet = fcp:getActiveCommandSet()
+			if type(activeCommandSet) ~= "table" then
+				debugMessage("Failed to get Active Command Set. Error occurred in fullscreenKeyboardWatcher().")
+				return
 			end
-			--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
-			-- Fullscreen with playback controls:
+			-- Supported Full Screen Keys:
 			--------------------------------------------------------------------------------
-			if fcpxElements[1][1][1] ~= nil then
-				if fcpxElements[1][1][1][1] ~= nil then
-					if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
+			local fullscreenKeys = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 
-						--------------------------------------------------------------------------------
-						-- Get keypress information:
-						--------------------------------------------------------------------------------
-						local whichKey = event:getKeyCode()			-- EXAMPLE: kc.keyCodeTranslator(whichKey) == "c"
-						local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
+			--------------------------------------------------------------------------------
+			-- Key Detection:
+			--------------------------------------------------------------------------------
+			for _, whichShortcutKey in pairs(fullscreenKeys) do
+				local selectedCommandSet = activeCommandSet[whichShortcutKey]
 
-						--------------------------------------------------------------------------------
-						-- Check all of these shortcut keys for presses:
-						--------------------------------------------------------------------------------
-						local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-						for x, whichShortcutKey in pairs(fullscreenKeys) do
-							if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
-								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-									if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-										if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+				if selectedCommandSet ~= nil then
+					if selectedCommandSet[1] ~= nil then
+						if type(selectedCommandSet[1]) == "table" then
+							--------------------------------------------------------------------------------
+							-- There are multiple shortcut possibilities for this command:
+							--------------------------------------------------------------------------------
+							for x, _ in pairs(selectedCommandSet) do
+								selectedCommandSet = activeCommandSet[whichShortcutKey][x]
+								if selectedCommandSet['characterString'] ~= nil then
+									if selectedCommandSet['characterString'] ~= "" then
+										if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
+
+											--------------------------------------------------------------------------------
+											-- Debug:
+											--------------------------------------------------------------------------------
+											--debugMessage("Fullscreen Keypress Detected (Multiple): " .. tostring(whichShortcutKey))
+
+											--------------------------------------------------------------------------------
+											-- Press 'Escape':
+											--------------------------------------------------------------------------------
 											eventtap.keyStroke({""}, "escape")
-											eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-											eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-											eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-											return true
+
+											--------------------------------------------------------------------------------
+											-- Perform Keystroke:
+											--------------------------------------------------------------------------------
+											eventtap.keyStroke(whichModifier, whichKey)
+
+											--------------------------------------------------------------------------------
+											-- Go back to Full Screen Playback:
+											--------------------------------------------------------------------------------
+											fcp:performShortcut("PlayFullscreen")
+
+											--------------------------------------------------------------------------------
+											-- All done:
+											--------------------------------------------------------------------------------
+											return
+
 										end
 									end
 								end
 							end
 						end
+					else
+						--------------------------------------------------------------------------------
+						-- There is only a single shortcut possibility for this command:
+						--------------------------------------------------------------------------------
+						if selectedCommandSet['characterString'] ~= nil then
+							if selectedCommandSet['characterString'] ~= "" then
+								if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
+
+									--------------------------------------------------------------------------------
+									-- Debug:
+									--------------------------------------------------------------------------------
+									--debugMessage("Fullscreen Keypress Detected (Single): " .. tostring(whichShortcutKey))
+
+									--------------------------------------------------------------------------------
+									-- Press 'Escape':
+									--------------------------------------------------------------------------------
+									eventtap.keyStroke({""}, "escape")
+
+									--------------------------------------------------------------------------------
+									-- Perform Keystroke:
+									--------------------------------------------------------------------------------
+									eventtap.keyStroke(whichModifier, whichKey)
+
+									--------------------------------------------------------------------------------
+									-- Go back to Full Screen Playback:
+									--------------------------------------------------------------------------------
+									fcp:performShortcut("PlayFullscreen")
+
+									--------------------------------------------------------------------------------
+									-- All done:
+									--------------------------------------------------------------------------------
+									return
+
+								end
+							end
+						end
 					end
 				end
 			end
-			--------------------------------------------------------------------------------
-
 		end
 	end)
 end
@@ -5337,6 +5306,9 @@ end
 		end
 	end
 
+	--------------------------------------------------------------------------------
+	-- FIND NOTIFICATION INFO:
+	--------------------------------------------------------------------------------
 	function findNotificationInfo(path)
 		local plistPath = path .. "/ShareStatus.plist"
 		if fs.attributes(plistPath) then
