@@ -1105,7 +1105,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- Watch for events that happen in the application
+--- Watch for events that happen in the application.
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
 ---
@@ -1134,11 +1134,20 @@ function App:watch(events)
 	return id
 end
 
+--- Stop watching for events that happen in the application for the specified ID.
+---
+--- Parameters:
+--- * `id` 	- The ID object which was returned from the `watch(...)` function.
+---
+--- Returns:
+--- * `true` if the ID was watching and has been removed.
 function App:unwatch(id)
 	local watchers = self._watchers
 	if id and id.id and watchers and watchers[id.id] then
 		table.remove(watchers, id.id)
+		return true
 	end
+	return false
 end
 
 function App:_initWatchers()
