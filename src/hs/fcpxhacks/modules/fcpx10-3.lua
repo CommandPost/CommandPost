@@ -381,9 +381,18 @@ function loadScript()
 	--------------------------------------------------------------------------------
 
 		--------------------------------------------------------------------------------
-		-- Create and start the application event watcher:
+		-- Final Cut Pro Application Watcher:
 		--------------------------------------------------------------------------------
-		watcher = application.watcher.new(finalCutProWatcher):start()
+		fcp:watch({
+			active		= finalCutProActive,
+			inactive	= finalCutProNotActive,
+		})
+		
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro Window Watcher:
+		--------------------------------------------------------------------------------
+		finalCutProWindowWatcher()
+		
 
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
@@ -432,16 +441,6 @@ function loadScript()
 		fullscreenKeyboardWatcher()
 
 		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Watcher:
-		--------------------------------------------------------------------------------
-		finalCutProWindowWatcher()
-
-		--------------------------------------------------------------------------------
-		-- Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		scrollingTimelineWatcher()
-
-		--------------------------------------------------------------------------------
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -476,7 +475,6 @@ function loadScript()
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
 	if fcp:isFrontmost() then
-
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
 		--------------------------------------------------------------------------------
@@ -495,13 +493,6 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") then
-			mod.scrollingTimelineWatcherDown:start()
-		end
-
-		--------------------------------------------------------------------------------
 		-- Show Hacks HUD:
 		--------------------------------------------------------------------------------
 		if settings.get("fcpxHacks.enableHacksHUD") then
@@ -516,7 +507,6 @@ function loadScript()
 		end
 
 	else
-
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
 		--------------------------------------------------------------------------------
@@ -534,14 +524,6 @@ function loadScript()
 			fullscreenKeyboardWatcherUp:stop()
 			fullscreenKeyboardWatcherDown:stop()
 		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		if mod.scrollingTimelineWatcherDown ~= nil then
-			mod.scrollingTimelineWatcherDown:stop()
-		end
-
 	end
 	
 	
@@ -2004,66 +1986,7 @@ end
 	-- TOGGLE SCROLLING TIMELINE:
 	--------------------------------------------------------------------------------
 	function toggleScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Toggle Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
-		if scrollingTimelineActivated then
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", false)
-
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:stop()
-			fcp:timeline():unlockPlayhead()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
-
-		else
-			--------------------------------------------------------------------------------
-			-- Ensure that Playhead Lock is Off:
-			--------------------------------------------------------------------------------
-			local message = ""
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				toggleLockPlayhead()
-				message = i18n("playheadLockDeactivated") .. "\n"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", true)
-
-			--------------------------------------------------------------------------------
-			-- Start Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:start()
-
-			--------------------------------------------------------------------------------
-			-- If activated whilst already playing, then turn on Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
+		return plugins("hs.fcpxhacks.plugins.timeline.playhead").toggleScrollingTimeline()
 	end
 
 	--------------------------------------------------------------------------------
@@ -4732,29 +4655,13 @@ function finalCutProWindowWatcher()
 			if displayTouchBar then setTouchBarLocation() end
 		end
 	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Not On Screen:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowNotOnScreen, function()
-		if not fcp:isFrontmost() then
-			finalCutProNotActive()
-		end
-	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window On Screen:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowOnScreen, function()
-		finalCutProActive()
-	end, true)
-
 end
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Active:
 	--------------------------------------------------------------------------------
 	function finalCutProActive()
+		debugMessage("FCPX is the active application")
 
 		--------------------------------------------------------------------------------
 		-- Only do once:
@@ -4809,17 +4716,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-				if mod.scrollingTimelineWatcherDown ~= nil then
-					mod.scrollingTimelineWatcherDown:start()
-				end
-			end
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Enable Lock Timeline Playhead:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -4858,6 +4754,7 @@ end
 	-- Final Cut Pro Not Active:
 	--------------------------------------------------------------------------------
 	function finalCutProNotActive()
+		debugMessage("FCPX is not the active application")
 
 		--------------------------------------------------------------------------------
 		-- Only do once:
@@ -4876,15 +4773,6 @@ end
 		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
 			fullscreenKeyboardWatcherUp:stop()
 			fullscreenKeyboardWatcherDown:stop()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if mod.scrollingTimelineWatcherDown ~= nil then
-				mod.scrollingTimelineWatcherDown:stop()
-			end
 		end
 
 		--------------------------------------------------------------------------------
@@ -5160,80 +5048,6 @@ function mediaImportWatcher()
 	end)
 	mod.newDeviceMounted:start()
 end
-
---------------------------------------------------------------------------------
--- SCROLLING TIMELINE WATCHER:
---------------------------------------------------------------------------------
-function scrollingTimelineWatcher()
-
-	local timeline = fcp:timeline()
-
-	--------------------------------------------------------------------------------
-	-- Key Press Down Watcher:
-	--------------------------------------------------------------------------------
-	mod.scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-
-		--------------------------------------------------------------------------------
-		-- Don't do anything if we're already locked.
-		--------------------------------------------------------------------------------
-		if timeline:isLockedPlayhead() then
-			return false
-		elseif event:getKeyCode() == 49 and next(event:getFlags()) == nil then
-			--------------------------------------------------------------------------------
-			-- Spacebar Pressed:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-		end
-	end)
-end
-
-	--------------------------------------------------------------------------------
-	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function checkScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Make sure the Command Editor and hacks console are closed:
-		--------------------------------------------------------------------------------
-		if fcp:commandEditor():isShowing() or hacksconsole.active then
-			debugMessage("Spacebar pressed while other windows are visible.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Don't activate scrollbar in fullscreen mode:
-		--------------------------------------------------------------------------------
-		if fcp:fullScreenWindow():isShowing() then
-			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-			return "Stop"
-		end
-
-		local timeline = fcp:timeline()
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		if not timeline:isShowing() then
-			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-		local viewFrame = geometry.rect(timeline:contents():viewFrame())
-		if mouseLocation:inside(viewFrame) then
-
-			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-			--------------------------------------------------------------------------------
-			debugMessage("Mouse inside Timeline Area.")
-			timeline:lockPlayhead(true)
-		else
-			debugMessage("Mouse outside of Timeline Area.")
-		end
-	end
 
 --------------------------------------------------------------------------------
 -- NOTIFICATION WATCHER:

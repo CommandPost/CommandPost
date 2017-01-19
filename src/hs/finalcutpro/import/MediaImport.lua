@@ -5,6 +5,8 @@ local axutils						= require("hs.finalcutpro.axutils")
 local just							= require("hs.just")
 local windowfilter					= require("hs.window.filter")
 
+local WindowWatcher					= require("hs.finalcutpro.ui.WindowWatcher")
+
 local MediaImport = {}
 
 function MediaImport.matches(element)
@@ -86,88 +88,34 @@ function MediaImport:getTitle()
 	return ui and ui:title()
 end
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- WATCHERS
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
 --- Watch for events that happen in the command editor
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
 ---
 --- Parameters:
 --- * `events` - A table of functions with to watch. These may be:
---- 	* `show(MediaImport)` - Triggered when the window is shown.
---- 	* `hide(MediaImport)` - Triggered when the window is hidden.
+--- 	* `show(CommandEditor)` - Triggered when the window is shown.
+--- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
 --- * An ID which can be passed to `unwatch` to stop watching.
 function MediaImport:watch(events)
-	local startWatching = false
-	if not self._watchers then
-		self._watchers = {}
-		startWatching = true
+	if not self._watcher then
+		self._watcher = WindowWatcher:new(self)
 	end
-	self._watchers[#(self._watchers)+1] = {show = events.show, hide = events.hide}
-	local id = {id=#(self._watchers)}
-
-	if startWatching then
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Filter:
-		--------------------------------------------------------------------------------
-		local filter = windowfilter.new{"Final Cut Pro"}
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Created:
-		--------------------------------------------------------------------------------
-		filter:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-			if (window:title() == self:getTitle()) and self:isShowing() then
-				--------------------------------------------------------------------------------
-				-- Command Editor is Open:
-				--------------------------------------------------------------------------------
-				self.windowID = window:id()
-				debugMessage("Media Import Opened.")
-				--------------------------------------------------------------------------------
-
-				for i,watcher in ipairs(self._watchers) do
-					if watcher.show then
-						watcher.show(self)
-					end
-				end
-			end
-		end), true)
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Destroyed:
-		--------------------------------------------------------------------------------
-		filter:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-
-			--------------------------------------------------------------------------------
-			-- Command Editor Window Closed:
-			--------------------------------------------------------------------------------
-			if (window:id() == self.windowID) then
-				self.windowID = nil
-				debugMessage("Media Import Closed.")
-
-				for i,watcher in ipairs(self._watchers) do
-					if watcher.hide then
-						watcher.hide(self)
-					end
-				end
-			end
-		end), true)
-		self.windowFilter = filter
-	end
-
-	return id
+	
+	self._watcher:watch(events)
 end
 
---- Removes the watch with the specified ID
----
---- Parameters:
---- * `id` - The ID returned from `watch` that wants to be removed.
----
---- Returns:
---- * N/A
 function MediaImport:unwatch(id)
-	local watchers = self._watchers
-	if id and id.id and watchers and watchers[id.id] then
-		table.remove(watchers, id.id)
+	if self._watcher then
+		self._watcher:unwatch(id)
 	end
 end
 

@@ -46,7 +46,6 @@ mod.SETTINGS_DISABLED = "fcpxHacks.plugins.disabled"
 ---  * boolean - `true` if all plugins loaded successfully
 ---
 function mod.loadPackage(package)
-	-- log.df("Loading package '%s'", package)
 	local path = fs.pathToAbsolute("~/.hammerspoon/" .. package:gsub("%.", "/"))
 	if not path then
 		log.ef("The provided path does not exist: '%s'", package)
@@ -190,6 +189,7 @@ end
 function mod.init(...)
 	for i=1,select('#', ...) do
 		package = select(i, ...)
+		log.df("Loading plugin package '%s'", package)
 		mod.loadPackage(package)
 	end
 	
