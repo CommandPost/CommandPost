@@ -100,18 +100,17 @@ function mod.toggleScrollingTimeline()
 
 end
 
+--------------------------------------------------------------------------------
+-- Ensures the Scrolling Timeline Watcher is in the correct mode.
+--------------------------------------------------------------------------------
 function mod.updateScrollingTimelineWatcher()
-	log.d("Updating Scrolling Timeline watcher...")
 	local watcher = mod.getScrollingTimelineWatcher()
 	if mod.isScrollingTimelineActive() and fcp:isFrontmost() then
-		log.d("Starting Scrolling Timeline watcher")
 		watcher:start()
 	elseif watcher:isEnabled() then
-		log.d("Stopping Scrolling Timeline watcher")
 		watcher:stop()
 	end
 end
-
 
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE WATCHER:

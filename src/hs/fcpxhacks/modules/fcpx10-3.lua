@@ -133,7 +133,6 @@ local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 --------------------------------------------------------------------------------
 
 local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
-												["scrollingTimelineActive"] 					= false,
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
@@ -168,8 +167,6 @@ local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Support
 local log										= logger.new("fcpx10-3")
 
 mod.debugMode									= false											-- Debug Mode is off by default.
-mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
-mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
@@ -178,9 +175,6 @@ mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
 mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
 mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
-
-mod.scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
-mod.scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
 
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
@@ -658,7 +652,7 @@ function defaultShortcutKeys()
         FCPXHackEffectsFour                                         = { characterString = kc.keyCodeTranslator("4"),            modifiers = controlShift,                           fn = function() effectsShortcut(4) end,                             releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackEffectsFive                                         = { characterString = kc.keyCodeTranslator("5"),            modifiers = controlShift,                           fn = function() effectsShortcut(5) end,                             releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil,                                     repeatFn = nil },
+        FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
 
 		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         	releasedFn = nil,                                                       repeatFn = nil },
 		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
@@ -1299,11 +1293,6 @@ end
 		local hammerspoonMenuIcon = hs.menuIcon()
 
 		--------------------------------------------------------------------------------
-		-- Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
-
-		--------------------------------------------------------------------------------
 		-- Notification Platform:
 		--------------------------------------------------------------------------------
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
@@ -1608,7 +1597,6 @@ end
 		}
 		
 		local automationOptions = {
-			{ title = i18n("enableScrollingTimeline"), 													fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
 			{ title = i18n("enableTimelinePlayheadLock"),												fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
 			{ title = i18n("enableShortcutsDuringFullscreen"), 											fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
 			{ title = "-" },
@@ -4661,8 +4649,6 @@ end
 	-- Final Cut Pro Active:
 	--------------------------------------------------------------------------------
 	function finalCutProActive()
-		debugMessage("FCPX is the active application")
-
 		--------------------------------------------------------------------------------
 		-- Only do once:
 		--------------------------------------------------------------------------------
@@ -4754,8 +4740,6 @@ end
 	-- Final Cut Pro Not Active:
 	--------------------------------------------------------------------------------
 	function finalCutProNotActive()
-		debugMessage("FCPX is not the active application")
-
 		--------------------------------------------------------------------------------
 		-- Only do once:
 		--------------------------------------------------------------------------------
