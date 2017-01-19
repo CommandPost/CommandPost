@@ -6837,88 +6837,117 @@ function fullscreenKeyboardWatcher()
 		fullscreenKeyboardWatcherWorking = true
 
 		--------------------------------------------------------------------------------
-		-- Define Final Cut Pro:
-		--------------------------------------------------------------------------------
-		local fcpx = fcp:application()
-		local fcpxElements = ax.applicationElement(fcpx)
-
-		--------------------------------------------------------------------------------
 		-- Only Continue if in Full Screen Playback Mode:
 		--------------------------------------------------------------------------------
-		if fcpxElements[1][1] ~= nil then
-			if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
+		if fcp:fullScreenWindow():isShowing() then
 
-				--------------------------------------------------------------------------------
-				-- Debug:
-				--------------------------------------------------------------------------------
-				debugMessage("Key Pressed whilst in Full Screen Mode.")
+			--------------------------------------------------------------------------------
+			-- Get keypress information:
+			--------------------------------------------------------------------------------
+			local whichKey 		= event:getKeyCode()
+			local whichModifier = event:getFlags()
 
-				--------------------------------------------------------------------------------
-				-- Get keypress information:
-				--------------------------------------------------------------------------------
-				local whichKey = event:getKeyCode()			-- EXAMPLE: kc.keyCodeTranslator(whichKey) == "c"
-				local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
-
-				--------------------------------------------------------------------------------
-				-- Check all of these shortcut keys for presses:
-				--------------------------------------------------------------------------------
-				local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-
-				for x, whichShortcutKey in pairs(fullscreenKeys) do
-					if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
-						if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-							if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-								if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
-									eventtap.keyStroke({""}, "escape")
-									eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-									eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-									eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-									return true
-								end
-							end
-						end
-					end
-				end
+			--------------------------------------------------------------------------------
+			-- Get Active Command Set:
+			--------------------------------------------------------------------------------
+			local activeCommandSet = fcp:getActiveCommandSet()
+			if type(activeCommandSet) ~= "table" then
+				debugMessage("Failed to get Active Command Set. Error occurred in fullscreenKeyboardWatcher().")
+				return
 			end
-			--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
-			-- Fullscreen with playback controls:
+			-- Supported Full Screen Keys:
 			--------------------------------------------------------------------------------
-			if fcpxElements[1][1][1] ~= nil then
-				if fcpxElements[1][1][1][1] ~= nil then
-					if fcpxElements[1][1][1][1]:attributeValue("AXIdentifier") == "_NS:51" then
+			local fullscreenKeys = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
 
-						--------------------------------------------------------------------------------
-						-- Get keypress information:
-						--------------------------------------------------------------------------------
-						local whichKey = event:getKeyCode()			-- EXAMPLE: kc.keyCodeTranslator(whichKey) == "c"
-						local whichModifier = event:getFlags()		-- EXAMPLE: whichFlags['cmd']
+			--------------------------------------------------------------------------------
+			-- Key Detection:
+			--------------------------------------------------------------------------------
+			for _, whichShortcutKey in pairs(fullscreenKeys) do
+				local selectedCommandSet = activeCommandSet[whichShortcutKey]
 
-						--------------------------------------------------------------------------------
-						-- Check all of these shortcut keys for presses:
-						--------------------------------------------------------------------------------
-						local fullscreenKeys = {"SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-						for x, whichShortcutKey in pairs(fullscreenKeys) do
-							if mod.finalCutProShortcutKey[whichShortcutKey] ~= nil then
-								if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= nil then
-									if mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] ~= "" then
-										if whichKey == mod.finalCutProShortcutKey[whichShortcutKey]['characterString'] and tools.modifierMatch(whichModifier, mod.finalCutProShortcutKey[whichShortcutKey]['modifiers']) then
+				if selectedCommandSet ~= nil then
+					if selectedCommandSet[1] ~= nil then
+						if type(selectedCommandSet[1]) == "table" then
+							--------------------------------------------------------------------------------
+							-- There are multiple shortcut possibilities for this command:
+							--------------------------------------------------------------------------------
+							for x, _ in pairs(selectedCommandSet) do
+								selectedCommandSet = activeCommandSet[whichShortcutKey][x]
+								if selectedCommandSet['characterString'] ~= nil then
+									if selectedCommandSet['characterString'] ~= "" then
+										if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
+
+											--------------------------------------------------------------------------------
+											-- Debug:
+											--------------------------------------------------------------------------------
+											--debugMessage("Fullscreen Keypress Detected (Multiple): " .. tostring(whichShortcutKey))
+
+											--------------------------------------------------------------------------------
+											-- Press 'Escape':
+											--------------------------------------------------------------------------------
 											eventtap.keyStroke({""}, "escape")
-											eventtap.keyStroke(mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["ToggleEventLibraryBrowser"]['characterString']])
-											eventtap.keyStroke(mod.finalCutProShortcutKey[whichShortcutKey]['modifiers'], keycodes.map[mod.finalCutProShortcutKey[whichShortcutKey]['characterString']])
-											eventtap.keyStroke(mod.finalCutProShortcutKey["PlayFullscreen"]['modifiers'], keycodes.map[mod.finalCutProShortcutKey["PlayFullscreen"]['characterString']])
-											return true
+
+											--------------------------------------------------------------------------------
+											-- Perform Keystroke:
+											--------------------------------------------------------------------------------
+											eventtap.keyStroke(whichModifier, whichKey)
+
+											--------------------------------------------------------------------------------
+											-- Go back to Full Screen Playback:
+											--------------------------------------------------------------------------------
+											fcp:performShortcut("PlayFullscreen")
+
+											--------------------------------------------------------------------------------
+											-- All done:
+											--------------------------------------------------------------------------------
+											return
+
 										end
 									end
 								end
 							end
 						end
+					else
+						--------------------------------------------------------------------------------
+						-- There is only a single shortcut possibility for this command:
+						--------------------------------------------------------------------------------
+						if selectedCommandSet['characterString'] ~= nil then
+							if selectedCommandSet['characterString'] ~= "" then
+								if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
+
+									--------------------------------------------------------------------------------
+									-- Debug:
+									--------------------------------------------------------------------------------
+									--debugMessage("Fullscreen Keypress Detected (Single): " .. tostring(whichShortcutKey))
+
+									--------------------------------------------------------------------------------
+									-- Press 'Escape':
+									--------------------------------------------------------------------------------
+									eventtap.keyStroke({""}, "escape")
+
+									--------------------------------------------------------------------------------
+									-- Perform Keystroke:
+									--------------------------------------------------------------------------------
+									eventtap.keyStroke(whichModifier, whichKey)
+
+									--------------------------------------------------------------------------------
+									-- Go back to Full Screen Playback:
+									--------------------------------------------------------------------------------
+									fcp:performShortcut("PlayFullscreen")
+
+									--------------------------------------------------------------------------------
+									-- All done:
+									--------------------------------------------------------------------------------
+									return
+
+								end
+							end
+						end
 					end
 				end
 			end
-			--------------------------------------------------------------------------------
-
 		end
 	end)
 end
@@ -7124,6 +7153,9 @@ end
 		end
 	end
 
+	--------------------------------------------------------------------------------
+	-- FIND NOTIFICATION INFO:
+	--------------------------------------------------------------------------------
 	function findNotificationInfo(path)
 		local plistPath = path .. "/ShareStatus.plist"
 		if fs.attributes(plistPath) then
