@@ -78,12 +78,14 @@ end
 function Browser:show()
 	self:app():timeline():show()
 	self:toggleButton():check()
+	just.doUntil(function() return self:isShowing() end)
 	return self
 end
 
 function Browser:hide()
 	if self:app():timeline():isShowing() then
 		self:toggleButton():uncheck()
+		just.doWhile(function() return self:isShowing() end)
 	end
 	return self
 end
