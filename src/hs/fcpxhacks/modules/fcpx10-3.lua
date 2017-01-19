@@ -200,13 +200,20 @@ mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Eff
 
 --------------------------------------------------------------------------------
 -- Retrieves the plugins manager.
+-- If `pluginPath` is provided, the named plugin will be returned. If not, the plugins
+-- module is returned.
 --------------------------------------------------------------------------------
-function plugins()
+function plugins(pluginPath)
 	if not mod._plugins then
 		mod._plugins = require("hs.plugins")
 		mod._plugins.init("hs.fcpxhacks.plugins")
 	end
-	return mod._plugins
+	
+	if pluginPath then
+		return mod._plugins(pluginPath)
+	else
+		return mod._plugins
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -214,7 +221,7 @@ end
 --------------------------------------------------------------------------------
 function menuManager()
 	if not mod._menuManager then
-		mod._menuManager = plugins().load("hs.fcpxhacks.plugins.menu.manager")
+		mod._menuManager = plugins("hs.fcpxhacks.plugins.menu.manager")
 		
 		--- TODO: Remove this once all menu manaement is migrated to plugins.
 		local manualSection = mod._menuManager.addSection(10000)
@@ -1550,21 +1557,6 @@ end
 		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
 
 		--------------------------------------------------------------------------------
-		-- Titles Shortcuts:
-		--------------------------------------------------------------------------------
-		local titlesListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated") or false
-		local titlesShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
-		local titlesShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
-		local titlesShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
-		local titlesShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
-		local titlesShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
-		if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. tools.stringMaxLength(titlesShortcutOne,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. tools.stringMaxLength(titlesShortcutTwo,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. tools.stringMaxLength(titlesShortcutThree,maxTextLength,"...") .. ")"	end
-		if titlesShortcutFour == nil then 		titlesShortcutFour = " (Unassigned)" 		else titlesShortcutFour 	= " (" .. tools.stringMaxLength(titlesShortcutFour,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutFive == nil then 		titlesShortcutFive = " (Unassigned)" 		else titlesShortcutFive 	= " (" .. tools.stringMaxLength(titlesShortcutFive,maxTextLength,"...") .. ")" 	end
-
-		--------------------------------------------------------------------------------
 		-- Generators Shortcuts:
 		--------------------------------------------------------------------------------
 		local generatorsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated") or false
@@ -1676,15 +1668,6 @@ end
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
 			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
 		}
-		local settingsTitlesShortcutsTable = {
-			{ title = i18n("updateTitlesList"), 														fn = updateTitlesList, 																											disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("titleShortcut") .. " " .. i18n("one") .. titlesShortcutOne, 				fn = function() assignTitlesShortcut(1) end,																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("two") .. titlesShortcutTwo, 				fn = function() assignTitlesShortcut(2) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("three") .. titlesShortcutThree, 			fn = function() assignTitlesShortcut(3) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("four") .. titlesShortcutFour, 				fn = function() assignTitlesShortcut(4) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("five") .. titlesShortcutFive, 				fn = function() assignTitlesShortcut(5) end, 																					disabled = not titlesListUpdated },
-		}
 		local settingsGeneratorsShortcutsTable = {
 			{ title = i18n("updateGeneratorsList"), 													fn = updateGeneratorsList, 																										disabled = not fcpxRunning },
 			{ title = "-" },
@@ -1712,7 +1695,6 @@ end
 			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
 		}
 		local automationTable = {
-			{ title = i18n("assignTitlesShortcuts"),													menu = settingsTitlesShortcutsTable },
 			{ title = i18n("assignGeneratorsShortcuts"), 												menu = settingsGeneratorsShortcutsTable },
 			{ title = i18n("options"),																	menu = automationOptions },
 			{ title = "-" },
@@ -1796,7 +1778,7 @@ end
 	-- DISPLAY A LIST OF ALL SHORTCUTS:
 	--------------------------------------------------------------------------------
 	function displayShortcutList()
-		plugins().load("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
+		plugins("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
 	end
 
 --------------------------------------------------------------------------------
@@ -1807,101 +1789,14 @@ end
 	-- GET LIST OF TRANSITIONS:
 	--------------------------------------------------------------------------------
 	function updateTransitionsList()
-		plugins().load("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList()
+		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList()
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET LIST OF TITLES:
 	--------------------------------------------------------------------------------
 	function updateTitlesList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTitlesListWarning"))
-
-		local app = fcp
-		local generators = app:generators()
-
-		local browserLayout = app:browser():saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles and Generators panel is open:
-		--------------------------------------------------------------------------------
-		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'Titles':
-		--------------------------------------------------------------------------------
-		generators:showAllTitles()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:group():selectItem(1)
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Transitions:
-		--------------------------------------------------------------------------------
-		local effectsList = generators:contents():childrenUI()
-		local allTitles = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allTitles[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
-			dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
-		--------------------------------------------------------------------------------
-		app:browser():loadLayout(browserLayout)
-
-		showTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Save Results to Settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set("fcpxHacks." .. currentLanguage .. ".allTitles", allTitles)
-		settings.set("fcpxHacks." .. currentLanguage .. ".titlesListUpdated", true)
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Let the user know everything's good:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTitlesListDone"))
-
+		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1999,125 +1894,6 @@ end
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS/TRANSITIONS/TITLES/GENERATORS SHORTCUTS:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN TITLES SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignTitlesShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local titlesListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated")
-		local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not titlesListUpdated then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-		if allTitles == nil then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-		if next(allTitles) == nil then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Titles List:
-		--------------------------------------------------------------------------------
-		local titlesChooserChoices = {}
-		if allTitles ~= nil and next(allTitles) ~= nil then
-			for i=1, #allTitles do
-				individualEffect = {
-					["text"] = allTitles[i],
-					["subText"] = "Title",
-					["function"] = "titlesShortcut",
-					["function1"] = allTitles[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(titlesChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
-														:choices(titlesChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			titlesChooser:fgColor(nil)
-						 :subTextColor(nil)
-		else
-			titlesChooser:fgColor(drawing.color.x11.snow)
-						 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		titlesChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN TITLES SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function titlesChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			titlesChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive", 		result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
 
 	--------------------------------------------------------------------------------
 	-- ASSIGN GENERATORS SHORTCUT:
@@ -3184,14 +2960,14 @@ end
 	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateMulticamOptimizedMedia(optionalValue)
-		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE PROXY MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateProxyMedia(optionalValue)
-		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
@@ -3199,21 +2975,21 @@ end
 	-- TODO: Delete this once commands have been migrated.
 	--------------------------------------------------------------------------------
 	function toggleCreateOptimizedMedia(optionalValue)
-		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LEAVE IN PLACE ON IMPORT:
 	--------------------------------------------------------------------------------
 	function toggleLeaveInPlace(optionalValue)
-		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BACKGROUND RENDER:
 	--------------------------------------------------------------------------------
 	function toggleBackgroundRender(optionalValue)
-		return plugins().load("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------
@@ -3336,7 +3112,7 @@ end
 	-- QUIT FCPX HACKS:
 	--------------------------------------------------------------------------------
 	function quitFCPXHacks()
-		plugins().load("hs.fcpxhacks.plugins.hacks.quit")()
+		plugins("hs.fcpxhacks.plugins.hacks.quit")()
 	end
 
 	--------------------------------------------------------------------------------
@@ -4056,125 +3832,21 @@ end
 	-- TRANSITIONS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function transitionsShortcut(whichShortcut)
-		return plugins().load("hs.fcpxhacks.plugins.timeline.transitions").apply(whichShortcut)
+		return plugins("hs.fcpxhacks.plugins.timeline.transitions").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
 	-- EFFECTS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function effectsShortcut(whichShortcut)
-		return plugins().load("hs.fcpxhacks.plugins.timeline.effects").apply(whichShortcut)
+		return plugins("hs.fcpxhacks.plugins.timeline.effects").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TITLES SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function titlesShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noTitleShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the main Browser layout:
-		--------------------------------------------------------------------------------
-		local browser = fcp:browser()
-		local browserLayout = browser:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Titles Browser:
-		--------------------------------------------------------------------------------
-		local generators = fcp:generators()
-		local generatorsShowing = generators:isShowing()
-		local generatorsLayout = generators:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		generators:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		generators:showAllTitles()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:showInstalledTitles()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		generators:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = generators:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = generators:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local generator = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		generators:applyItem(generator)
-
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
-			showTouchbar()
-
-			generators:loadLayout(generatorsLayout)
-			if browserLayout then browser:loadLayout(browserLayout) end
-			if not generatorsShowing then generators:hide() end
-		end)
-
+		return plugins("hs.fcpxhacks.plugins.timeline.titles").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------

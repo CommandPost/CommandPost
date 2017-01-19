@@ -196,4 +196,6 @@ function mod.init(...)
 	return mod
 end
 
+setmetatable(mod, {__call = function(_, ...) return mod.load(...) end})
+
 return mod

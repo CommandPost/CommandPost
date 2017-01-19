@@ -281,12 +281,14 @@ return {
 				--------------------------------------------------------------------------------
 				updateTitlesList				=			"Update Titles List",
 				titleShortcut					=			"Title Shortcut",
+				titleShortcutTitle				=			"Title Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Generators Shortcuts:
 				--------------------------------------------------------------------------------
 				updateGeneratorsList			=			"Update Generators List",
 				generatorShortcut				=			"Generator Shortcut",
+				generatorShortcutTitle			=			"Generator Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Automation Options:
