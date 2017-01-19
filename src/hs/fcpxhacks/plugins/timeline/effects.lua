@@ -18,9 +18,6 @@ local MAX_SHORTCUTS = 5
 
 local mod = {}
 
--- The Menu Manager
-local manager
-
 function mod.getShortcuts()
 	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".effectsShortcuts") or {}	
 end
@@ -227,11 +224,6 @@ function mod.assignEffectsShortcut(whichShortcut)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		manager.refreshMenuBar()
-
-		--------------------------------------------------------------------------------
 		-- Put focus back in Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if wasFinalCutProOpen then fcp:launch() end
@@ -377,11 +369,6 @@ function mod.updateEffectsList()
 		hacksconsole.refresh()
 
 		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		manager.refreshMenuBar()
-
-		--------------------------------------------------------------------------------
 		-- Let the user know everything's good:
 		--------------------------------------------------------------------------------
 		dialog.displayMessage(i18n("updateEffectsListDone"))
@@ -399,13 +386,10 @@ local PRIORITY = 1000
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.manager"]		= "manager",
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
 }
 
 function plugin.init(deps)
-	manager = deps.manager
-	
 	local fcpxRunning = fcp:isRunning()
 	
 	-- The 'Assign Shortcuts' menu

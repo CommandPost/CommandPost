@@ -67,7 +67,6 @@ end
 function mod.toggleReplaceExistingFiles()
 	local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
 	settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
-	mod.manager.refreshMenuBar()
 end
 
 -- The Plugin

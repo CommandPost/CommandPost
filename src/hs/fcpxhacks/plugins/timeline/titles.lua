@@ -20,9 +20,6 @@ local MAX_SHORTCUTS = 5
 
 local mod = {}
 
--- The Menu Manager
-local manager
-
 function mod.getShortcuts()
 	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".titlesShortcuts") or {}	
 end
@@ -211,11 +208,6 @@ function mod.assignTitlesShortcut(whichShortcut)
 			--------------------------------------------------------------------------------
 			mod.setShortcut(whichShortcut, result.text)
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		manager.refreshMenuBar()
 		
 		--------------------------------------------------------------------------------
 		-- Put focus back in Final Cut Pro:
@@ -317,11 +309,6 @@ function mod.updateTitlesList()
 	hacksconsole.refresh()
 
 	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	manager.refreshMenuBar()
-
-	--------------------------------------------------------------------------------
 	-- Let the user know everything's good:
 	--------------------------------------------------------------------------------
 	dialog.displayMessage(i18n("updateTitlesListDone"))
@@ -335,13 +322,10 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.manager"]		= "manager",
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
 }
 
 function plugin.init(deps)
-	manager = deps.manager
-	
 	local fcpxRunning = fcp:isRunning()
 	
 	-- The 'Assign Shortcuts' menu

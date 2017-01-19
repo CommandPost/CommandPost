@@ -180,11 +180,11 @@ mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro S
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
 mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
 mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
-mod.allowMovingMarkers							= nil											-- Used in refreshMenuBar
-mod.FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
-mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
-mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
-mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
+mod.allowMovingMarkers							= nil											-- Used in generateMenuBar
+mod.FFPeriodicBackupInterval 					= nil											-- Used in generateMenuBar
+mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in generateMenuBar
+mod.FFEnableGuards								= nil											-- Used in generateMenuBar
+mod.FFAutoRenderDelay							= nil											-- Used in generateMenuBar
 
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 
@@ -220,7 +220,6 @@ function menuManager()
 		--- TODO: Remove this once all menu manaement is migrated to plugins.
 		local manualSection = mod._menuManager.addSection(10000)
 		manualSection:addItems(0, function() return generateMenuBar(true) end)
-		mod._menuManager.refreshMenuBar()
 	end
 	return mod._menuManager
 end
@@ -235,12 +234,17 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	mod.debugMode = settings.get("fcpxHacks.debugMode") or false
 	debugMessage("Debug Mode Activated.")
-
+	
+	--------------------------------------------------------------------------------
+	-- Activate Menu Manager
+	--------------------------------------------------------------------------------
+	menuManager()
+	
 	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
 	--------------------------------------------------------------------------------
 	hs.accessibilityState(true)
-
+	
 	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
@@ -520,12 +524,6 @@ function loadScript()
 		end
 	end
 	
-	
-	-------------------------------------------------------------------------------
-	-- Sets up the menu.
-	-------------------------------------------------------------------------------
-	refreshMenuBar()
-
 	-------------------------------------------------------------------------------
 	-- Set up Chooser:
 	-------------------------------------------------------------------------------
@@ -1144,13 +1142,6 @@ end
 --------------------------------------------------------------------------------
 -- MENUBAR:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- REFRESH MENUBAR:
-	--------------------------------------------------------------------------------
-	function refreshMenuBar(refreshPlistValues)
-		menuManager():refreshMenuBar()
-	end
 	
 	function generateMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
@@ -1727,7 +1718,6 @@ end
 	--------------------------------------------------------------------------------
 	function changeHighlightPlayheadTime(value)
 		settings.set("fcpxHacks.highlightPlayheadTime", value)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1740,8 +1730,6 @@ end
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
-
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1749,7 +1737,6 @@ end
 	--------------------------------------------------------------------------------
 	function changeHighlightShape(value)
 		settings.set("fcpxHacks.displayHighlightShape", value)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1763,7 +1750,6 @@ end
 			settings.set("fcpxHacks.displayHighlightCustomColour", result)
 		end
 		settings.set("fcpxHacks.displayHighlightColour", value)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1813,11 +1799,6 @@ end
 			dialog.displayErrorMessage(i18n("backupIntervalFail"))
 			return "Failed"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -1947,8 +1928,6 @@ end
 			notificationWatcher()
 		end
 
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -1957,7 +1936,6 @@ end
 	function toggleVoiceCommandEnableAnnouncements()
 		local voiceCommandEnableAnnouncements = settings.get("fcpxHacks.voiceCommandEnableAnnouncements")
 		settings.set("fcpxHacks.voiceCommandEnableAnnouncements", not voiceCommandEnableAnnouncements)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1966,7 +1944,6 @@ end
 	function toggleVoiceCommandEnableVisualAlerts()
 		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
 		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2006,8 +1983,6 @@ end
 				voicecommands:stop()
 			end
 		end
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2024,8 +1999,6 @@ end
 				hackshud.show()
 			end
 		end
-
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2042,7 +2015,6 @@ end
 	function toggleCheckForUpdates()
 		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
 		settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2051,7 +2023,6 @@ end
 	function toggleMenubarDisplay(value)
 		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
 		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2061,7 +2032,6 @@ end
 		local result = settings.get("fcpxHacks." .. value)
 		settings.set("fcpxHacks." .. value, not result)
 		hackshud.reload()
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2075,7 +2045,6 @@ end
 			mod.newDeviceMounted:stop()
 		end
 		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2089,7 +2058,6 @@ end
 			clipboard.stopWatching()
 		end
 		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2128,8 +2096,6 @@ end
 		end
 
 		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2168,8 +2134,6 @@ end
 		end
 
 		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2178,7 +2142,6 @@ end
 	function toggleHammerspoonDockIcon()
 		local originalValue = hs.dockIcon()
 		hs.dockIcon(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2187,7 +2150,6 @@ end
 	function toggleHammerspoonMenuIcon()
 		local originalValue = hs.menuIcon()
 		hs.menuIcon(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2196,7 +2158,6 @@ end
 	function toggleLaunchHammerspoonOnStartup()
 		local originalValue = hs.autoLaunch()
 		hs.autoLaunch(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2205,7 +2166,6 @@ end
 	function toggleCheckforHammerspoonUpdates()
 		local originalValue = hs.automaticallyCheckForUpdates()
 		hs.automaticallyCheckForUpdates(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2221,8 +2181,6 @@ end
 		end
 
 		updateMenubarIcon()
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2317,12 +2275,6 @@ end
 		-- Refresh the Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
 		bindKeyboardShortcuts()
-
-		--------------------------------------------------------------------------------
-		-- Refresh the Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2341,9 +2293,6 @@ end
 			fullscreenKeyboardWatcherUp:start()
 			fullscreenKeyboardWatcherDown:start()
 		end
-
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2402,12 +2351,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2462,12 +2405,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2522,12 +2459,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2549,8 +2480,6 @@ end
 		end
 
 		updateMenubarIcon()
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -2666,7 +2595,6 @@ end
 	--------------------------------------------------------------------------------
 	function clearClipboardHistory()
 		clipboard.clearHistory()
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -2678,7 +2606,6 @@ end
 			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
-			 refreshMenuBar()
 		end
 	end
 
@@ -2697,8 +2624,6 @@ end
 				end
 			end
 		end
-		refreshMenuBar()
-
 	end
 
 --------------------------------------------------------------------------------
@@ -3831,12 +3756,6 @@ end
 		-- Update Settings:
 		--------------------------------------------------------------------------------
 		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -4399,11 +4318,6 @@ end
 							mod.shownUpdateNotification = true
 						end
 					end
-
-					--------------------------------------------------------------------------------
-					-- Refresh Menubar:
-					--------------------------------------------------------------------------------
-					refreshMenuBar()
 				end
 			end
 		end
@@ -4693,13 +4607,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Update Menubar:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			refreshMenuBar()
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Update Current Language:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -4769,11 +4676,6 @@ end
 				hackshud:hide()
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Menubar Items:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function() refreshMenuBar() end)
 	end
 
 --------------------------------------------------------------------------------
@@ -4796,11 +4698,6 @@ function finalCutProSettingsWatcher(files)
 	    		timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			end
 		end
-
-    	--------------------------------------------------------------------------------
-    	-- Refresh Menubar:
-    	--------------------------------------------------------------------------------
-    	timer.doAfter(0.0000000000001, function() refreshMenuBar(true) end)
 
     	--------------------------------------------------------------------------------
     	-- Update Menubar Icon:
@@ -5123,7 +5020,6 @@ function sharedClipboardFileWatcher(files)
     end
     if doReload then
 		debugMessage("Refreshing Shared Clipboard.")
-		refreshMenuBar(true)
     end
 end
 
@@ -5157,8 +5053,6 @@ function sharedXMLFileWatcher(files)
 			end
         end
     end
-
-	refreshMenuBar()
 end
 
 --------------------------------------------------------------------------------

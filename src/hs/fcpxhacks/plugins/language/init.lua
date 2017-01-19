@@ -97,7 +97,6 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.manager"]		= "manager",
 	["hs.fcpxhacks.plugins.menu.preferences"]	= "prefs",
 }
 
@@ -139,7 +138,6 @@ function plugin.init(deps)
 			settingsLanguage[i] = { title = language["language"], fn = function()
 				settings.set("fcpxHacks.language", language["id"])
 				i18n.setLocale(language["id"])
-				deps.manager.refreshMenuBar()
 			end, checked = (userLocale == language["id"] or basicUserLocale == language["id"]), }
 		end
 		

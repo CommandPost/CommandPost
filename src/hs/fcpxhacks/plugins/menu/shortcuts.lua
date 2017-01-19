@@ -6,9 +6,6 @@ local PRIORITY = 1000
 
 local SETTING = "fcpxHacks.menubarShortcutsEnabled"
 
--- The menu manager
-local manager
-
 local function isSectionDisabled()
 	return not (settings.get(SETTING) or false)
 end
@@ -16,7 +13,6 @@ end
 local function toggleSectionDisabled()
 	local menubarEnabled = settings.get(SETTING)
 	settings.set(SETTING, not menubarEnabled)
-	manager.refreshMenuBar()
 end
 
 --- The Plugin
@@ -28,10 +24,8 @@ plugin.dependencies = {
 }
 
 function plugin.init(dependencies)
-	manager = dependencies.manager
-	
 	-- Create the 'SHORTCUTS' section
-	local shortcuts = manager.addSection(PRIORITY)
+	local shortcuts = dependencies.manager.addSection(PRIORITY)
 	
 	-- Disable the section if the shortcuts option is disabled
 	shortcuts:setDisabledFn(isSectionDisabled)

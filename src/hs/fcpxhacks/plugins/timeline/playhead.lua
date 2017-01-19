@@ -21,8 +21,6 @@ local PRIORITY = 1000
 
 local mod = {}
 
-local manager
-
 function mod.isScrollingTimelineActive()
 	return settings.get("fcpxHacks.scrollingTimelineActive") or false
 end
@@ -92,12 +90,6 @@ function mod.toggleScrollingTimeline()
 		dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
 
 	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menu Bar:
-	--------------------------------------------------------------------------------
-	manager.refreshMenuBar()
-
 end
 
 --------------------------------------------------------------------------------
@@ -233,21 +225,16 @@ function mod.togglePlayheadLock()
 		dialog.displayNotification(message .. i18n("playheadLockActivated"))
 		mod.setPlayheadLocked(true)
 	end
-
-	manager.refreshMenuBar()
 end
 
 -- The Plugin
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.manager"]				= "manager",
 	["hs.fcpxhacks.plugins.menu.automation.options"] 	= "options",
 }
 
 function plugin.init(deps)
-	manager = deps.manager
-	
 	local section = deps.options:addSection(PRIORITY)
 	
 	section:addItems(1000, function()

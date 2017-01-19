@@ -190,7 +190,13 @@ function mod.init(...)
 	for i=1,select('#', ...) do
 		package = select(i, ...)
 		log.df("Loading plugin package '%s'", package)
-		mod.loadPackage(package)
+		local status, err = pcall(function()
+			mod.loadPackage(package)
+		end)
+		
+		if not status then
+			log.ef("Error while loading package '%s':\n%s", package, hs.inspect(err))
+		end
 	end
 	
 	return mod

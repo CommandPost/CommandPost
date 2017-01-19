@@ -141,7 +141,6 @@ function hackshud.new()
 		if window:id() == hackshud.windowID then
 			if not hackshud.ignoreWindowChange then
 				settings.set("fcpxHacks.enableHacksHUD", false)
-				refreshMenuBar()
 			end
 		end
 	end, true)
@@ -318,11 +317,6 @@ function hackshud.chooserAction(result)
 	if hackshud.wasFinalCutProOpen then
 		fcp:launch()
 	end
-
-	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar()
 
 	--------------------------------------------------------------------------------
 	-- Reload HUD:

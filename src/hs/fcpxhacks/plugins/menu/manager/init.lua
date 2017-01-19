@@ -40,12 +40,9 @@ function manager.init()
 	-- Work out Menubar Display Mode:
 	--------------------------------------------------------------------------------
 	manager.updateMenubarIcon()
-
-	--------------------------------------------------------------------------------
-	-- Populate the Menubar for the first time:
-	--------------------------------------------------------------------------------
-	manager.refreshMenuBar()
 	
+	manager.menubar:setMenu(manager.generateMenuTable)
+
 	return manager
 end
 
@@ -96,9 +93,8 @@ function manager.addSection(priority)
 	return manager.rootSection:addSection(priority)
 end
 
-function manager.refreshMenuBar()
-	local menuTable = manager.rootSection:generateMenuTable()
-	manager.menubar:setMenu(menuTable)
+function manager.generateMenuTable()
+	return manager.rootSection:generateMenuTable()
 end
 
 --- The Plugin
