@@ -5058,21 +5058,17 @@ end
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-
 		transitions:applyItem(transition)
 
+		--------------------------------------------------------------------------------
 		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.waitUntil(
-			function() transitions:itemIsSelected(transition) end,
-			function()
-				showTouchbar()
-
-				transitions:loadLayout(transitionsLayout)
-				if effectsLayout then effects:loadLayout(effectsLayout) end
-				if not transitionsShowing then transitions:hide() end
-			end,
-			0.001
-		)
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+			showTouchbar()
+			transitions:loadLayout(transitionsLayout)
+			if effectsLayout then effects:loadLayout(effectsLayout) end
+			if not transitionsShowing then transitions:hide() end
+		end)
 	end
 
 	--------------------------------------------------------------------------------
@@ -5172,20 +5168,17 @@ end
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-
 		effects:applyItem(effect)
 
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.waitUntil(
-			function() effects:itemIsSelected(effect) end,
-			function()
-				showTouchbar()
-				effects:loadLayout(effectsLayout)
-				if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-				if not effectsShowing then effects:hide() end
-			end,
-			0.001	
-		)
+		--------------------------------------------------------------------------------
+		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
+			showTouchbar()
+			effects:loadLayout(effectsLayout)
+			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+			if not effectsShowing then effects:hide() end
+		end)
 
 	end
 
@@ -5286,13 +5279,13 @@ end
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-
 		generators:applyItem(generator)
 
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
+		--------------------------------------------------------------------------------
+		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
 			showTouchbar()
-
 			generators:loadLayout(generatorsLayout)
 			if browserLayout then browser:loadLayout(browserLayout) end
 			if not generatorsShowing then generators:hide() end
@@ -5402,13 +5395,13 @@ end
 		-- Apply the selected Transition:
 		--------------------------------------------------------------------------------
 		hideTouchbar()
-
 		generators:applyItem(generator)
 
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		timer.doAfter(0.000001, function()
+		--------------------------------------------------------------------------------
+		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
+		--------------------------------------------------------------------------------
+		timer.doAfter(0.1, function()
 			showTouchbar()
-
 			generators:loadLayout(generatorsLayout)
 			if browserLayout then browser:loadLayout(browserLayout) end
 			if not generatorsShowing then generators:hide() end
