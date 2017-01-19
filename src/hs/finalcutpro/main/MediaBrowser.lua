@@ -59,7 +59,8 @@ end
 function MediaBrowser:show()
 	local menuBar = self:app():menuBar()
 	-- Go there direct
-	menuBar:checkMenu("Window", "Go To", MediaBrowser.TITLE)
+	menuBar:selectMenu("Window", "Go To", MediaBrowser.TITLE)
+	just.doUntil(function() return self:isShowing() end)
 	return self
 end
 

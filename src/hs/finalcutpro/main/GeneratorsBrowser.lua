@@ -55,7 +55,8 @@ end
 function GeneratorsBrowser:show()
 	local menuBar = self:app():menuBar()
 	-- Go there direct
-	menuBar:checkMenu("Window", "Go To", GeneratorsBrowser.TITLE)
+	menuBar:selectMenu("Window", "Go To", GeneratorsBrowser.TITLE)
+	just.doUntil(function() return self:isShowing() end)
 	return self
 end
 
