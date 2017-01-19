@@ -432,7 +432,8 @@ function loadScript()
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-		if enableClipboardHistory then clipboard.startWatching() end
+		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+		if enableClipboardHistory or enableSharedClipboard then clipboard.startWatching() end
 
 		--------------------------------------------------------------------------------
 		-- Notification Watcher:
@@ -1411,7 +1412,7 @@ end
 		--------------------------------------------------------------------------------
 		local settingsSharedClipboardTable = {}
 
-		if enableSharedClipboard and enableClipboardHistory then
+		if enableSharedClipboard then
 
 			--------------------------------------------------------------------------------
 			-- Get list of files:
@@ -1808,13 +1809,16 @@ end
 			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
 		}
 		local toolsSettings = {
-			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
-			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
-			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard,							disabled = not enableClipboardHistory},
+			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
+			{ title = "-" },
+			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
+			{ title = "-" },
+			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
+			{ title = "-" },
+			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
 			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
@@ -3473,11 +3477,18 @@ end
 	-- TOGGLE CLIPBOARD HISTORY:
 	--------------------------------------------------------------------------------
 	function toggleEnableClipboardHistory()
+
+		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+
 		if not enableClipboardHistory then
-			clipboard.startWatching()
+			if not enableSharedClipboard then
+				clipboard.startWatching()
+			end
 		else
-			clipboard.stopWatching()
+			if not enableSharedClipboard then
+				clipboard.stopWatching()
+			end
 		end
 		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
 		refreshMenuBar()
@@ -3489,6 +3500,7 @@ end
 	function toggleEnableSharedClipboard()
 
 		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
+		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 
 		if not enableSharedClipboard then
 
@@ -3503,6 +3515,10 @@ end
 				--------------------------------------------------------------------------------
 				sharedClipboardWatcher = pathwatcher.new(result, sharedClipboardFileWatcher):start()
 
+				if not enableClipboardHistory then
+					clipboard.startWatching()
+				end
+
 			else
 				debugMessage("Enabled Shared Clipboard Choose Path Cancelled.")
 				settings.set("fcpxHacks.sharedClipboardPath", nil)
@@ -3515,6 +3531,10 @@ end
 			-- Stop Watching for Shared Clipboard Changes:
 			--------------------------------------------------------------------------------
 			sharedClipboardWatcher:stop()
+
+			if not enableClipboardHistory then
+				clipboard.stopWatching()
+			end
 
 		end
 
