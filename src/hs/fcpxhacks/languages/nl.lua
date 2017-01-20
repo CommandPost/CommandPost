@@ -155,15 +155,15 @@ return {
 				other							=			"items"
 			},
 
-			batchExportDestinationsNotFound		=			"We were unable to find the list of Share Destinations.",
-			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the FCPX Hacks menubar.",
-			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
+			batchExportDestinationsNotFound		=	"We kunnen de lijst met gedeelde lokaties niet vinden.",
+			batchExportNoDestination		=	"Blijkbaar heeft u geen standaard lokatie ingesteld.\n\nU kunt een standaardlokatie instellen door naar ‘Preferences’ te gaan, klik op de 'Destinations' tab, klik dan met de rechtermuisknop ingedrukt op de te kiezen lokatie en klik op ‘Make Default’.\n\nU kunt een Batch Export Lokatie preset instellen via de FCP Hacks menubar.",
+			batchExportEnableBrowser		=	"Zorg er a.u.b. voor dat de browser is ingeschakeld vóór het  exporteren.",
 			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
 			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-			batchExportReplaceYes				=			"Exports with duplicate filenames will be replaced.",
+			batchExportReplaceYes				=			"Exports met dezelfde filenamen with duplicate filenames will be replaced.",
 			batchExportReplaceNo				=			"Exports with duplicate filenames will be incremented.",
-			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
-			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
+			batchExportNoClipsSelected			="Zorg er a.u.b. voor dat tenminste 1 clip voor export is geselecteerd.",
+			batchExportComplete				="Batch Export is nu compleet. De geselecteerde clips zijn toegevoegd aan uw render wachtrij.",
 
 			activeCommandSetError               =           "Er ging iets mis tijdens het uitlezen van de Huidige Command Set.",
 			failedToWriteToPreferences          =           "Het lukte niet om data weg te schrijven naar de Final Cut Pro Preferences file.",
