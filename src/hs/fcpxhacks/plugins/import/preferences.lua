@@ -145,48 +145,6 @@ function mod.toggleLeaveInPlace(optionalValue)
 
 end
 
-
---------------------------------------------------------------------------------
--- TOGGLE BACKGROUND RENDER:
---------------------------------------------------------------------------------
-function mod.toggleBackgroundRender(optionalValue)
-
-	--------------------------------------------------------------------------------
-	-- Make sure it's active:
-	--------------------------------------------------------------------------------
-	fcp:launch()
-
-	--------------------------------------------------------------------------------
-	-- If we're setting rather than toggling...
-	--------------------------------------------------------------------------------
-	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFAutoStartBGRender", true) then
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Define FCPX:
-	--------------------------------------------------------------------------------
-	local prefs = fcp:preferencesWindow()
-
-	--------------------------------------------------------------------------------
-	-- Toggle the checkbox:
-	--------------------------------------------------------------------------------
-	if not prefs:playbackPanel():toggleAutoStartBGRender() then
-		dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in toggleBackgroundRender().")
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Close the Preferences window:
-	--------------------------------------------------------------------------------
-	prefs:hide()
-
-end
-
-function mod.getAutoRenderDelay()
-	return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
-end
-
 --- The module
 
 local PRIORITY = 1000
@@ -207,7 +165,6 @@ function plugin.init(deps)
 			{ title = i18n("createMulticamOptimizedMedia"),										fn = mod.toggleCreateMulticamOptimizedMedia, 		checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
 			{ title = i18n("createProxyMedia"), 												fn = mod.toggleCreateProxyMedia, 					checked = fcp:getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
 			{ title = i18n("leaveFilesInPlaceOnImport"), 										fn = mod.toggleLeaveInPlace, 						checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
-			{ title = i18n("enableBackgroundRender", {count = mod.getAutoRenderDelay()}),		fn = mod.toggleBackgroundRender, 					checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
 		}
 	end)
 	
