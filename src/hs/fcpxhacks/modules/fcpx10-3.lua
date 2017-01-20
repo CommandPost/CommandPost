@@ -136,7 +136,6 @@ local defaultSettings = {
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
-												["chooserShowAutomation"] 						= true,
 												["chooserShowShortcuts"] 						= true,
 												["chooserShowHacks"] 							= true,
 												["chooserShowVideoEffects"] 					= true,
@@ -218,6 +217,12 @@ function menuManager()
 		--- TODO: Remove this once all menu manaement is migrated to plugins.
 		local manualSection = mod._menuManager.addSection(10000)
 		manualSection:addItems(0, function() return generateMenuBar(true) end)
+		
+		local preferences = plugins("hs.fcpxhacks.plugins.menu.preferences")
+		preferences:addItems(10000, function() return generatePreferencesMenuBar() end)
+		
+		local menubarPrefs = plugins("hs.fcpxhacks.plugins.menu.preferences.menubar")
+		menubarPrefs:addItems(10000, function() return generateMenubarPrefsMenuBar() end)
 	end
 	return mod._menuManager
 end
@@ -1200,50 +1205,9 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Menubar Display Mode from Settings:
-		--------------------------------------------------------------------------------
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
-
-		--------------------------------------------------------------------------------
-		-- Get Sizing Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightShape = nil
-		displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
-		local displayHighlightShapeRectangle = false
-		local displayHighlightShapeCircle = false
-		local displayHighlightShapeDiamond = false
-		if displayHighlightShape == nil then 			displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Rectangle" then 	displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Circle" then 		displayHighlightShapeCircle = true			end
-		if displayHighlightShape == "Diamond" then 		displayHighlightShapeDiamond = true			end
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Colour Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Playhead Time:
-		--------------------------------------------------------------------------------
-		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-
-		--------------------------------------------------------------------------------
 		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 		--------------------------------------------------------------------------------
 		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
-
-		--------------------------------------------------------------------------------
-		-- Get Enable Proxy Menu Item:
-		--------------------------------------------------------------------------------
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
-
-		--------------------------------------------------------------------------------
-		-- Hammerspoon Settings:
-		--------------------------------------------------------------------------------
-		local startHammerspoonOnLaunch = hs.autoLaunch()
-		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
-		local hammerspoonDockIcon = hs.dockIcon()
-		local hammerspoonMenuIcon = hs.menuIcon()
 
 		--------------------------------------------------------------------------------
 		-- Notification Platform:
@@ -1251,23 +1215,9 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Touch Bar Location:
-		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-		local displayTouchBarLocationMouse = false
-		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
-		local displayTouchBarLocationTimelineTopCentre = false
-		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
-
-		--------------------------------------------------------------------------------
 		-- Display Touch Bar:
 		--------------------------------------------------------------------------------
 		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-
-		--------------------------------------------------------------------------------
-		-- Enable Check for Updates:
-		--------------------------------------------------------------------------------
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable XML Sharing:
@@ -1288,10 +1238,6 @@ end
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
-
-		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
 
 		local hudButtonOne 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
 		local hudButtonTwo 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
@@ -1438,95 +1384,6 @@ end
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
-		--------------------------------------------------------------------------------
-		-- Setup Menu:
-		--------------------------------------------------------------------------------
-		local settingsShapeMenuTable = {
-			{ title = i18n("rectangle"), 																fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
-			{ title = i18n("circle"), 																	fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
-			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
-		}
-		local settingsColourMenuTable = {
-			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColour == "Red" },
-			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColour == "Blue" },
-			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColour == "Green"	},
-			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColour == "Yellow" },
-			{ title = "-" },
-			{ title = i18n("custom"), 																	fn = function() changeHighlightColour("Custom") end, 				checked = displayHighlightColour == "Custom" },
-		}
-		local settingsHammerspoonSettings = {
-			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
-			{ title = "-" },
-			{ title = i18n("showDockIcon"),																fn = toggleHammerspoonDockIcon, 									checked = hammerspoonDockIcon		},
-			{ title = i18n("showMenuIcon"), 															fn = toggleHammerspoonMenuIcon, 									checked = hammerspoonMenuIcon		},
-			{ title = "-" },
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
-		}
-		local settingsTouchBarLocation = {
-			{ title = i18n("mouseLocation"), 															fn = function() changeTouchBarLocation("Mouse") end,				checked = displayTouchBarLocationMouse, disabled = not touchBarSupported },
-			{ title = i18n("topCentreOfTimeline"), 														fn = function() changeTouchBarLocation("TimelineTopCentre") end,	checked = displayTouchBarLocationTimelineTopCentre, disabled = not touchBarSupported },
-			{ title = "-" },
-			{ title = i18n("touchBarTipOne"), 															disabled = true },
-			{ title = i18n("touchBarTipTwo"), 															disabled = true },
-		}
-		local settingsMenubar = {
-			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
-			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
-			{ title = "-" },
-			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
-			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
-		}
-		local settingsHUD = {
-			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
-			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
-			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
-		}
-		local settingsVoiceCommand = {
-			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
-			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
-			{ title = "-" },
-			{ title = i18n("openDictationPreferences"), 												fn = function()
-				osascript.applescript([[
-					tell application "System Preferences"
-						activate
-						reveal anchor "Dictation" of pane "com.apple.preference.speech"
-					end tell]]) end },
-		}
-		local settingsHighlightPlayheadTime = {
-			{ title = i18n("one") .. " " .. i18n("secs", {count=1}), 									fn = function() changeHighlightPlayheadTime(1) end, 					checked = highlightPlayheadTime == 1 },
-			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(2) end, 					checked = highlightPlayheadTime == 2 },
-			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(3) end, 					checked = highlightPlayheadTime == 3 },
-			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(4) end, 					checked = highlightPlayheadTime == 4 },
-			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(5) end, 					checked = highlightPlayheadTime == 5 },
-			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(6) end, 					checked = highlightPlayheadTime == 6 },
-			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(7) end, 					checked = highlightPlayheadTime == 7 },
-			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(8) end, 					checked = highlightPlayheadTime == 8 },
-			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(9) end, 					checked = highlightPlayheadTime == 9 },
-			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
-		}
-		local settingsMenuTable = {
-			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
-			{ title = i18n("hudOptions"), 																menu = settingsHUD},
-			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
-			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
-			{ title = "-" },
-			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
-			{ title = "-" },
-			{ title = i18n("highlightPlayheadColour"), 													menu = settingsColourMenuTable},
-			{ title = i18n("highlightPlayheadShape"), 													menu = settingsShapeMenuTable},
-			{ title = i18n("highlightPlayheadTime"), 													menu = settingsHighlightPlayheadTime},
-			{ title = "-" },
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
-			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
-			{ title = "-" },
-			{ title = i18n("trashFCPXHacksPreferences"), 												fn = resetSettings },
-			{ title = "-" },
-			{ title = i18n("provideFeedback"),															fn = emailBugReport },
-			{ title = "-" },
-			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
-			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
-		}
 		local settingsHUDButtons = {
 			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
 			{ title = i18n("button") .. " " .. i18n("two") .. hudButtonTwo, 							fn = function() hackshud.assignButton(2) end },
@@ -1577,18 +1434,12 @@ end
 			{ title = string.upper(i18n("hacks")) .. ":", 												disabled = true },
 			{ title = i18n("advancedFeatures"),															menu = advancedTable },
 		}
-		local settingsTable = {
-			{ title = "-" },
-			{ title = i18n("preferences") .. "...", 													menu = settingsMenuTable },
-		}
 
 		--------------------------------------------------------------------------------
 		-- Setup Menubar:
 		--------------------------------------------------------------------------------
 		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
 		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
-
-		menuTable = fnutils.concat(menuTable, settingsTable)
 
 		--------------------------------------------------------------------------------
 		-- Check for Updates:
@@ -1601,6 +1452,171 @@ end
 		end
 		
 		return menuTable
+	end
+	
+	function generatePreferencesMenuBar()
+		--------------------------------------------------------------------------------
+		-- Get Sizing Preferences:
+		--------------------------------------------------------------------------------
+		local displayHighlightShape = nil
+		displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
+		local displayHighlightShapeRectangle = false
+		local displayHighlightShapeCircle = false
+		local displayHighlightShapeDiamond = false
+		if displayHighlightShape == nil then 			displayHighlightShapeRectangle = true		end
+		if displayHighlightShape == "Rectangle" then 	displayHighlightShapeRectangle = true		end
+		if displayHighlightShape == "Circle" then 		displayHighlightShapeCircle = true			end
+		if displayHighlightShape == "Diamond" then 		displayHighlightShapeDiamond = true			end
+
+		--------------------------------------------------------------------------------
+		-- Get Highlight Colour Preferences:
+		--------------------------------------------------------------------------------
+		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
+		
+		--------------------------------------------------------------------------------
+		-- Hammerspoon Settings:
+		--------------------------------------------------------------------------------
+		local startHammerspoonOnLaunch = hs.autoLaunch()
+		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
+		local hammerspoonDockIcon = hs.dockIcon()
+		local hammerspoonMenuIcon = hs.menuIcon()
+		
+		--------------------------------------------------------------------------------
+		-- Touch Bar Location:
+		--------------------------------------------------------------------------------
+		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+		local displayTouchBarLocationMouse = false
+		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
+		local displayTouchBarLocationTimelineTopCentre = false
+		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
+		
+		--------------------------------------------------------------------------------
+		-- HUD Preferences:
+		--------------------------------------------------------------------------------
+		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
+		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
+		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+
+		--------------------------------------------------------------------------------
+		-- Get Highlight Playhead Time:
+		--------------------------------------------------------------------------------
+		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
+		
+		--------------------------------------------------------------------------------
+		-- Enable Check for Updates:
+		--------------------------------------------------------------------------------
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
+
+		--------------------------------------------------------------------------------
+		-- Setup Menu:
+		--------------------------------------------------------------------------------
+		local settingsShapeMenuTable = {
+			{ title = i18n("rectangle"), 																fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
+			{ title = i18n("circle"), 																	fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
+			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
+		}
+		local settingsColourMenuTable = {
+			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColour == "Red" },
+			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColour == "Blue" },
+			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColour == "Green"	},
+			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColour == "Yellow" },
+			{ title = "-" },
+			{ title = i18n("custom"), 																	fn = function() changeHighlightColour("Custom") end, 				checked = displayHighlightColour == "Custom" },
+		}
+		local settingsHammerspoonSettings = {
+			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
+			{ title = "-" },
+			{ title = i18n("showDockIcon"),																fn = toggleHammerspoonDockIcon, 									checked = hammerspoonDockIcon		},
+			{ title = i18n("showMenuIcon"), 															fn = toggleHammerspoonMenuIcon, 									checked = hammerspoonMenuIcon		},
+			{ title = "-" },
+			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
+			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
+		}
+		local settingsTouchBarLocation = {
+			{ title = i18n("mouseLocation"), 															fn = function() changeTouchBarLocation("Mouse") end,				checked = displayTouchBarLocationMouse, disabled = not touchBarSupported },
+			{ title = i18n("topCentreOfTimeline"), 														fn = function() changeTouchBarLocation("TimelineTopCentre") end,	checked = displayTouchBarLocationTimelineTopCentre, disabled = not touchBarSupported },
+			{ title = "-" },
+			{ title = i18n("touchBarTipOne"), 															disabled = true },
+			{ title = i18n("touchBarTipTwo"), 															disabled = true },
+		}
+		local settingsHUD = {
+			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
+			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
+			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
+		}
+		local settingsVoiceCommand = {
+			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
+			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
+			{ title = "-" },
+			{ title = i18n("openDictationPreferences"), 												fn = function()
+				osascript.applescript([[
+					tell application "System Preferences"
+						activate
+						reveal anchor "Dictation" of pane "com.apple.preference.speech"
+					end tell]]) end },
+		}
+		local settingsHighlightPlayheadTime = {
+			{ title = i18n("one") .. " " .. i18n("secs", {count=1}), 									fn = function() changeHighlightPlayheadTime(1) end, 					checked = highlightPlayheadTime == 1 },
+			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(2) end, 					checked = highlightPlayheadTime == 2 },
+			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(3) end, 					checked = highlightPlayheadTime == 3 },
+			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(4) end, 					checked = highlightPlayheadTime == 4 },
+			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(5) end, 					checked = highlightPlayheadTime == 5 },
+			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(6) end, 					checked = highlightPlayheadTime == 6 },
+			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(7) end, 					checked = highlightPlayheadTime == 7 },
+			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(8) end, 					checked = highlightPlayheadTime == 8 },
+			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(9) end, 					checked = highlightPlayheadTime == 9 },
+			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
+		}
+		local settingsMenuTable = {
+			{ title = i18n("hudOptions"), 																menu = settingsHUD},
+			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
+			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
+			{ title = "-" },
+			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
+			{ title = "-" },
+			{ title = i18n("highlightPlayheadColour"), 													menu = settingsColourMenuTable},
+			{ title = i18n("highlightPlayheadShape"), 													menu = settingsShapeMenuTable},
+			{ title = i18n("highlightPlayheadTime"), 													menu = settingsHighlightPlayheadTime},
+			{ title = "-" },
+			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
+			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
+			{ title = "-" },
+			{ title = i18n("trashFCPXHacksPreferences"), 												fn = resetSettings },
+			{ title = "-" },
+			{ title = i18n("provideFeedback"),															fn = emailBugReport },
+			{ title = "-" },
+			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
+			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
+		}
+		
+		return settingsMenuTable
+	end
+	
+	function generateMenubarPrefsMenuBar()
+		--------------------------------------------------------------------------------
+		-- Get Menubar Settings:
+		--------------------------------------------------------------------------------
+		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
+		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
+
+		--------------------------------------------------------------------------------
+		-- Get Enable Proxy Menu Item:
+		--------------------------------------------------------------------------------
+		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
+
+		--------------------------------------------------------------------------------
+		-- Get Menubar Display Mode from Settings:
+		--------------------------------------------------------------------------------
+		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
+
+		local settingsMenubar = {
+			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
+			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
+			{ title = "-" },
+			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
+			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
+		}
+		return settingsMenubar
 	end
 
 	--------------------------------------------------------------------------------

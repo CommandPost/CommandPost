@@ -7,7 +7,12 @@ local PRIORITY = 2000
 local SETTING = "fcpxHacks.menubarAutomationEnabled"
 
 local function isSectionDisabled()
-	return not (settings.get(SETTING) or false)
+	local setting = settings.get(SETTING)
+	if setting ~= nil then
+		return not setting
+	else
+		return false
+	end
 end
 
 local function toggleSectionDisabled()
