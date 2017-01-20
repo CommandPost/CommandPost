@@ -168,10 +168,10 @@ function clipboard.processContent(data)
 		-- Just process the contained items directly
 		return clipboard.processObject(data.containedItems)
 	end
-	
+
 	local displayName = data.displayName
 	local count = displayName and 1 or 0
-	
+
 	if clipboard.getClassname(data) == CLIPBOARD.GAP then
 		displayName = nil
 		count = 0
@@ -470,17 +470,20 @@ local newPlist = [[
 				--------------------------------------------------------------------------------
 				-- Clipboard History:
 				--------------------------------------------------------------------------------
-				local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
+				local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+				if enableClipboardHistory then
+					local currentClipboardItem = {currentClipboardData, currentClipboardLabel}
 
-				while (#(clipboard.history) >= clipboard.historyMaximumSize) do
-					table.remove(clipboard.history,1)
+					while (#(clipboard.history) >= clipboard.historyMaximumSize) do
+						table.remove(clipboard.history,1)
+					end
+					table.insert(clipboard.history, currentClipboardItem)
+
+					--------------------------------------------------------------------------------
+					-- Update Settings:
+					--------------------------------------------------------------------------------
+					settings.set("fcpxHacks.clipboardHistory", clipboard.history)
 				end
-				table.insert(clipboard.history, currentClipboardItem)
-
-				--------------------------------------------------------------------------------
-				-- Update Settings:
-				--------------------------------------------------------------------------------
-				settings.set("fcpxHacks.clipboardHistory", clipboard.history)
 			end
 	 	end
 		clipboard.lastChange = clipboard.currentChange

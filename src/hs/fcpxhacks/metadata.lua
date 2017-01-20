@@ -6,7 +6,7 @@ local mod = {}
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-mod.scriptVersion       = "0.78"
+mod.scriptVersion       = "0.79"
 mod.bugReportEmail      = "chris@latenitefilms.com"
 mod.developerURL        = "https://latenitefilms.com/blog/final-cut-pro-hacks/"
 mod.updateURL           = "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
