@@ -4,6 +4,7 @@ local fcp 			= require("hs.finalcutpro")
 local dialog		= require("hs.fcpxhacks.modules.dialog")
 local tools			= require("hs.fcpxhacks.modules.tools")
 local settings		= require("hs.settings")
+local just			= require("hs.just")
 
 -- Constants
 

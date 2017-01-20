@@ -50,7 +50,6 @@ function mod.toggleCreateMulticamOptimizedMedia(optionalValue)
 	--------------------------------------------------------------------------------
 	log.d("optionalValue: "..inspect(optionalValue))
 	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
-		log.d("optionalValue matches preference value. Bailing.")
 		return
 	end
 
