@@ -145,7 +145,6 @@ local defaultSettings = {
 												["chooserShowTitles"] 							= true,
 												["chooserShowGenerators"] 						= true,
 												["chooserShowMenuItems"]						= true,
-												["menubarAutomationEnabled"] 					= true,
 												["menubarToolsEnabled"] 						= true,
 												["menubarHacksEnabled"] 						= true,
 												["enableCheckForUpdates"]						= true,
@@ -390,7 +389,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		finalCutProWindowWatcher()
 		
-
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
 		--------------------------------------------------------------------------------
@@ -433,11 +431,6 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		fullscreenKeyboardWatcher()
-
-		--------------------------------------------------------------------------------
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -448,12 +441,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 		if next(notificationPlatform) ~= nil then notificationWatcher() end
-
-		--------------------------------------------------------------------------------
-		-- Media Import Watcher:
-		--------------------------------------------------------------------------------
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-		if enableMediaImportWatcher then mediaImportWatcher() end
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -1263,11 +1250,6 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Enable Media Import Watcher:
-		--------------------------------------------------------------------------------
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-
-		--------------------------------------------------------------------------------
 		-- Touch Bar Location:
 		--------------------------------------------------------------------------------
 		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
@@ -1452,7 +1434,6 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
@@ -1555,13 +1536,6 @@ end
 		local menuTable = {
 		}
 		
-		local automationOptions = {
-			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
-		}
-		local automationTable = {
-			{ title = i18n("options"),																	menu = automationOptions },
-			{ title = "-" },
-		}
 		local settingsNotificationPlatform = {
 			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
 			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
@@ -1607,7 +1581,6 @@ end
 		--------------------------------------------------------------------------------
 		-- Setup Menubar:
 		--------------------------------------------------------------------------------
-		if menubarAutomationEnabled then	menuTable = fnutils.concat(menuTable, automationTable)	end
 		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
 		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
 
@@ -1998,19 +1971,6 @@ end
 		local result = settings.get("fcpxHacks." .. value)
 		settings.set("fcpxHacks." .. value, not result)
 		hackshud.reload()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MEDIA IMPORT WATCHER:
-	--------------------------------------------------------------------------------
-	function toggleMediaImportWatcher()
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-		if not enableMediaImportWatcher then
-			mediaImportWatcher()
-		else
-			mod.newDeviceMounted:stop()
-		end
-		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
 	end
 
 	--------------------------------------------------------------------------------
@@ -4624,194 +4584,6 @@ function finalCutProSettingsWatcher(files)
 		end
 
     end
-end
-
---------------------------------------------------------------------------------
--- ENABLE SHORTCUTS DURING FCPX FULLSCREEN PLAYBACK:
---------------------------------------------------------------------------------
-function fullscreenKeyboardWatcher()
-	fullscreenKeyboardWatcherWorking = false
-	fullscreenKeyboardWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
-		fullscreenKeyboardWatcherWorking = false
-	end)
-	fullscreenKeyboardWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-
-		--------------------------------------------------------------------------------
-		-- Don't repeat if key is held down:
-		--------------------------------------------------------------------------------
-		if fullscreenKeyboardWatcherWorking then return false end
-		fullscreenKeyboardWatcherWorking = true
-
-		--------------------------------------------------------------------------------
-		-- Only Continue if in Full Screen Playback Mode:
-		--------------------------------------------------------------------------------
-		if fcp:fullScreenWindow():isShowing() then
-
-			--------------------------------------------------------------------------------
-			-- Get keypress information:
-			--------------------------------------------------------------------------------
-			local whichKey 		= event:getKeyCode()
-			local whichModifier = event:getFlags()
-
-			--------------------------------------------------------------------------------
-			-- Get Active Command Set:
-			--------------------------------------------------------------------------------
-			local activeCommandSet = fcp:getActiveCommandSet()
-			if type(activeCommandSet) ~= "table" then
-				debugMessage("Failed to get Active Command Set. Error occurred in fullscreenKeyboardWatcher().")
-				return
-			end
-
-			--------------------------------------------------------------------------------
-			-- Supported Full Screen Keys:
-			--------------------------------------------------------------------------------
-			local fullscreenKeys = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-
-			--------------------------------------------------------------------------------
-			-- Key Detection:
-			--------------------------------------------------------------------------------
-			for _, whichShortcutKey in pairs(fullscreenKeys) do
-				local selectedCommandSet = activeCommandSet[whichShortcutKey]
-
-				if selectedCommandSet ~= nil then
-					if selectedCommandSet[1] ~= nil then
-						if type(selectedCommandSet[1]) == "table" then
-							--------------------------------------------------------------------------------
-							-- There are multiple shortcut possibilities for this command:
-							--------------------------------------------------------------------------------
-							for x, _ in pairs(selectedCommandSet) do
-								selectedCommandSet = activeCommandSet[whichShortcutKey][x]
-								if selectedCommandSet['characterString'] ~= nil then
-									if selectedCommandSet['characterString'] ~= "" then
-										if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
-
-											--------------------------------------------------------------------------------
-											-- Debug:
-											--------------------------------------------------------------------------------
-											--debugMessage("Fullscreen Keypress Detected (Multiple): " .. tostring(whichShortcutKey))
-
-											--------------------------------------------------------------------------------
-											-- Press 'Escape':
-											--------------------------------------------------------------------------------
-											eventtap.keyStroke({""}, "escape")
-
-											--------------------------------------------------------------------------------
-											-- Perform Keystroke:
-											--------------------------------------------------------------------------------
-											eventtap.keyStroke(whichModifier, whichKey)
-
-											--------------------------------------------------------------------------------
-											-- Go back to Full Screen Playback:
-											--------------------------------------------------------------------------------
-											fcp:performShortcut("PlayFullscreen")
-
-											--------------------------------------------------------------------------------
-											-- All done:
-											--------------------------------------------------------------------------------
-											return
-
-										end
-									end
-								end
-							end
-						end
-					else
-						--------------------------------------------------------------------------------
-						-- There is only a single shortcut possibility for this command:
-						--------------------------------------------------------------------------------
-						if selectedCommandSet['characterString'] ~= nil then
-							if selectedCommandSet['characterString'] ~= "" then
-								if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
-
-									--------------------------------------------------------------------------------
-									-- Debug:
-									--------------------------------------------------------------------------------
-									--debugMessage("Fullscreen Keypress Detected (Single): " .. tostring(whichShortcutKey))
-
-									--------------------------------------------------------------------------------
-									-- Press 'Escape':
-									--------------------------------------------------------------------------------
-									eventtap.keyStroke({""}, "escape")
-
-									--------------------------------------------------------------------------------
-									-- Perform Keystroke:
-									--------------------------------------------------------------------------------
-									eventtap.keyStroke(whichModifier, whichKey)
-
-									--------------------------------------------------------------------------------
-									-- Go back to Full Screen Playback:
-									--------------------------------------------------------------------------------
-									fcp:performShortcut("PlayFullscreen")
-
-									--------------------------------------------------------------------------------
-									-- All done:
-									--------------------------------------------------------------------------------
-									return
-
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end)
-end
-
---------------------------------------------------------------------------------
--- MEDIA IMPORT WINDOW WATCHER:
---------------------------------------------------------------------------------
-function mediaImportWatcher()
-	debugMessage("Watching for new media...")
-	mod.newDeviceMounted = fs.volume.new(function(event, table)
-		if event == fs.volume.didMount then
-
-			debugMessage("Media Inserted.")
-
-			local mediaImport = fcp:mediaImport()
-
-			if mediaImport:isShowing() then
-				-- Media Import was already open. Bail!
-				debugMessage("Already in Media Import. Continuing...")
-				return
-			end
-
-			local mediaImportCount = 0
-			local stopMediaImportTimer = false
-			local currentApplication = application.frontmostApplication()
-			debugMessage("Currently using '"..currentApplication:name().."'")
-
-			local fcpxHidden = not fcp:isShowing()
-
-			mediaImportTimer = timer.doUntil(
-				function()
-					return stopMediaImportTimer
-				end,
-				function()
-					if not fcp:isRunning() then
-						debugMessage("FCPX is not running. Stop watching.")
-						stopMediaImportTimer = true
-					else
-						if mediaImport:isShowing() then
-							mediaImport:hide()
-							if fcpxHidden then fcp:hide() end
-							currentApplication:activate()
-							debugMessage("Hid FCPX and returned to '"..currentApplication:name().."'.")
-							stopMediaImportTimer = true
-						end
-						mediaImportCount = mediaImportCount + 1
-						if mediaImportCount == 500 then
-							debugMessage("Gave up watching for the Media Import window after 5 seconds.")
-							stopMediaImportTimer = true
-						end
-					end
-				end,
-				0.01
-			)
-
-		end
-	end)
-	mod.newDeviceMounted:start()
 end
 
 --------------------------------------------------------------------------------
