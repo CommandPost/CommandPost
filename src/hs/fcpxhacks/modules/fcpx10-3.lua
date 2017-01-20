@@ -572,8 +572,7 @@ function defaultShortcutKeys()
 	local controlOptionCommandShift = {"ctrl", "option", "command", "shift"}
 
     local defaultShortcutKeys = {
-        FCPXHackLaunchFinalCutPro                                   = { characterString = kc.keyCodeTranslator("l"),            modifiers = controlOptionCommand,                   fn = function() fcp:launch() end,                                   releasedFn = nil,                                                       repeatFn = nil,         global = true },
-        FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = displayShortcutList,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
+		FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = displayShortcutList,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
 
         FCPXHackHighlightBrowserPlayhead                            = { characterString = kc.keyCodeTranslator("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealInBrowserAndHighlight                         = { characterString = kc.keyCodeTranslator("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
@@ -878,8 +877,11 @@ function bindKeyboardShortcuts()
 	-- Reset Global Hotkeys:
 	--------------------------------------------------------------------------------
 	local currentHotkeys = hotkey.getHotkeys()
-	for i=1, #currentHotkeys do
-		result = currentHotkeys[i]:delete()
+	for _,hk in ipairs(currentHotkeys) do
+		-- only delete hotkeys which are not created by `hs.commands`
+		if not hk.command then
+			result = hk:delete()
+		end
 	end
 
 	--------------------------------------------------------------------------------
