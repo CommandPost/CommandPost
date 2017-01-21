@@ -48,7 +48,6 @@ function mod.toggleCreateMulticamOptimizedMedia(optionalValue)
 	--------------------------------------------------------------------------------
 	-- If we're setting rather than toggling...
 	--------------------------------------------------------------------------------
-	log.d("optionalValue: "..inspect(optionalValue))
 	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
 		return
 	end
@@ -153,13 +152,13 @@ local PRIORITY = 1000
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts"	
+	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts"
 }
 
 function plugin.init(deps)
 	deps.shortcuts:addItems(PRIORITY, function()
 		local fcpxRunning = fcp:isRunning()
-		
+
 		return {
 			{ title = i18n("createOptimizedMedia"), 											fn = mod.toggleCreateOptimizedMedia, 				checked = fcp:getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
 			{ title = i18n("createMulticamOptimizedMedia"),										fn = mod.toggleCreateMulticamOptimizedMedia, 		checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
@@ -167,7 +166,7 @@ function plugin.init(deps)
 			{ title = i18n("leaveFilesInPlaceOnImport"), 										fn = mod.toggleLeaveInPlace, 						checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
 		}
 	end)
-	
+
 	return mod
 end
 

@@ -15,6 +15,105 @@ local PRIORITY = 2000
 local mod = {}
 
 --------------------------------------------------------------------------------
+-- Trigger Export:
+--------------------------------------------------------------------------------
+local function selectShare(destinationPreset)
+	return fcp:menuBar():selectMenu("File", "Share", function(menuItem)
+		if destinationPreset == nil then
+			return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
+		else
+			local title = menuItem:attributeValue("AXTitle")
+			return title and string.find(title, destinationPreset) ~= nil
+		end
+	end)
+
+end
+
+--------------------------------------------------------------------------------
+-- BATCH EXPORT CLIPS:
+--------------------------------------------------------------------------------
+local function batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
+
+	local errorFunction = " Error occurred in batchExportClips()."
+	local firstTime = true
+	for i,clip in ipairs(clips) do
+
+		--------------------------------------------------------------------------------
+		-- Select Item:
+		--------------------------------------------------------------------------------
+		libraries:selectClip(clip)
+
+		--------------------------------------------------------------------------------
+		-- Trigger Export:
+		--------------------------------------------------------------------------------
+		if not selectShare(destinationPreset) then
+			dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Wait for Export Dialog to open:
+		--------------------------------------------------------------------------------
+		local exportDialog = fcp:exportDialog()
+		if not just.doUntil(function() return exportDialog:isShowing() end) then
+			dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
+			return false
+		end
+		exportDialog:pressNext()
+
+		--------------------------------------------------------------------------------
+		-- If 'Next' has been clicked (as opposed to 'Share'):
+		--------------------------------------------------------------------------------
+		local saveSheet = exportDialog:saveSheet()
+		if exportDialog:isShowing() then
+
+			--------------------------------------------------------------------------------
+			-- Click 'Save' on the save sheet:
+			--------------------------------------------------------------------------------
+			if not just.doUntil(function() return saveSheet:isShowing() end) then
+				dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
+				return false
+			end
+
+			--------------------------------------------------------------------------------
+			-- Set Custom Export Path (or Default to Desktop):
+			--------------------------------------------------------------------------------
+			if firstTime then
+				saveSheet:setPath(exportPath)
+				firstTime = false
+			end
+			saveSheet:pressSave()
+
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Save Window is closed:
+		--------------------------------------------------------------------------------
+		while saveSheet:isShowing() do
+			local replaceAlert = saveSheet:replaceAlert()
+			if replaceExisting and replaceAlert:isShowing() then
+				replaceAlert:pressReplace()
+			else
+				replaceAlert:pressCancel()
+
+				local originalFilename = saveSheet:filename():getValue()
+				if originalFilename == nil then
+					dialog.displayErrorMessage("Failed to get the original Filename." .. errorFunction)
+					return false
+				end
+
+				local newFilename = tools.incrementFilename(originalFilename)
+
+				saveSheet:filename():setValue(newFilename)
+				saveSheet:pressSave()
+			end
+		end
+
+	end
+	return true
+end
+
+--------------------------------------------------------------------------------
 -- CHANGE BATCH EXPORT DESTINATION PRESET:
 --------------------------------------------------------------------------------
 function mod.changeExportDestinationPreset()
@@ -176,105 +275,6 @@ function mod.batchExport()
 end
 
 --------------------------------------------------------------------------------
--- BATCH EXPORT CLIPS:
---------------------------------------------------------------------------------
-local function batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
-
-	local errorFunction = " Error occurred in batchExportClips()."
-	local firstTime = true
-	for i,clip in ipairs(clips) do
-
-		--------------------------------------------------------------------------------
-		-- Select Item:
-		--------------------------------------------------------------------------------
-		libraries:selectClip(clip)
-
-		--------------------------------------------------------------------------------
-		-- Trigger Export:
-		--------------------------------------------------------------------------------
-		if not selectShare(destinationPreset) then
-			dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Wait for Export Dialog to open:
-		--------------------------------------------------------------------------------
-		local exportDialog = fcp:exportDialog()
-		if not just.doUntil(function() return exportDialog:isShowing() end) then
-			dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-			return false
-		end
-		exportDialog:pressNext()
-
-		--------------------------------------------------------------------------------
-		-- If 'Next' has been clicked (as opposed to 'Share'):
-		--------------------------------------------------------------------------------
-		local saveSheet = exportDialog:saveSheet()
-		if exportDialog:isShowing() then
-
-			--------------------------------------------------------------------------------
-			-- Click 'Save' on the save sheet:
-			--------------------------------------------------------------------------------
-			if not just.doUntil(function() return saveSheet:isShowing() end) then
-				dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Set Custom Export Path (or Default to Desktop):
-			--------------------------------------------------------------------------------
-			if firstTime then
-				saveSheet:setPath(exportPath)
-				firstTime = false
-			end
-			saveSheet:pressSave()
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Save Window is closed:
-		--------------------------------------------------------------------------------
-		while saveSheet:isShowing() do
-			local replaceAlert = saveSheet:replaceAlert()
-			if replaceExisting and replaceAlert:isShowing() then
-				replaceAlert:pressReplace()
-			else
-				replaceAlert:pressCancel()
-
-				local originalFilename = saveSheet:filename():getValue()
-				if originalFilename == nil then
-					dialog.displayErrorMessage("Failed to get the original Filename." .. errorFunction)
-					return false
-				end
-
-				local newFilename = tools.incrementFilename(originalFilename)
-
-				saveSheet:filename():setValue(newFilename)
-				saveSheet:pressSave()
-			end
-		end
-
-	end
-	return true
-end
-
---------------------------------------------------------------------------------
--- Trigger Export:
---------------------------------------------------------------------------------
-local function selectShare(destinationPreset)
-	return fcp:menuBar():selectMenu("File", "Share", function(menuItem)
-		if destinationPreset == nil then
-			return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-		else
-			local title = menuItem:attributeValue("AXTitle")
-			return title and string.find(title, destinationPreset) ~= nil
-		end
-	end)
-
-end
-
---------------------------------------------------------------------------------
 -- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
 --------------------------------------------------------------------------------
 function mod.toggleReplaceExistingFiles()
@@ -292,15 +292,15 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
-	
+
 	-- Add a secton to the 'Preferences' menu
 	local section = deps.prefs:addSection(PRIORITY)
 	mod.manager = deps.manager
-	
+
 	section:addSeparator(0)
-	
+
 	local menu = section:addMenu(1000, function() return i18n("batchExportOptions") end)
-	
+
 	menu:addItems(1, function()
 		return {
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
@@ -309,9 +309,9 @@ function plugin.init(deps)
 			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
 		}
 	end)
-	
+
 	section:addSeparator(9000)
-	
+
 	-- Return the module
 	return mod
 end

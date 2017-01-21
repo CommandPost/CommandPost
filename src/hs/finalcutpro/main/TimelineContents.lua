@@ -11,7 +11,7 @@ local Playhead							= require("hs.finalcutpro.main.Playhead")
 local TimelineContents = {}
 
 function TimelineContents.matches(element)
-	return element 
+	return element
 	    and element:attributeValue("AXIdentifier") == "_NS:16"
 		and element:attributeValue("AXRole") == "AXLayoutArea"
 		and element:attributeValueCount("AXAuditIssues") < 1
@@ -108,15 +108,18 @@ end
 
 function TimelineContents:viewFrame()
 	local ui = self:scrollAreaUI()
+
+	if not ui then return nil end
+
 	local hScroll = self:horizontalScrollBarUI()
 	local vScroll = self:verticalScrollBarUI()
-	
+
 	local frame = ui:frame()
-	
+
 	if hScroll then
 		frame.h = frame.h - hScroll:frame().h
 	end
-	
+
 	if vScroll then
 		frame.w = frame.w - vScroll:frame().w
 	end
@@ -186,7 +189,7 @@ end
 
 --- hs.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
---- Returns a table containing the list of selected clips. 
+--- Returns a table containing the list of selected clips.
 ---
 --- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
 ---
@@ -279,7 +282,7 @@ function TimelineContents:_expandClips(clips, filterFn)
 	return fnutils.mapCat(clips, function(child)
 		local role = child:attributeValue("AXRole")
 		if role == "AXLayoutItem" then
-			if filterFn == nil or filterFn(child) then 
+			if filterFn == nil or filterFn(child) then
 				return {child}
 			end
 		elseif role == "AXGroup" then
@@ -346,16 +349,16 @@ function TimelineContents:selectClipInAngle(angleNumber)
 	local clipsUI = self:anglesUI()
 	if clipsUI then
 		local angleUI = clipsUI[angleNumber]
-		
+
 		local playheadPosition = self:playhead():getPosition()
 		local clipUI = axutils.childMatching(angleUI, function(child)
 			local frame = child:frame()
 			return child:attributeValue("AXRole") == "AXLayoutItem"
 			   and frame.x <= playheadPosition and (frame.x+frame.w) >= playheadPosition
 		end)
-		
+
 		self:monitorVideoInAngle(angleNumber)
-		
+
 		if clipUI then
 			self:selectClip(clipUI)
 		else
