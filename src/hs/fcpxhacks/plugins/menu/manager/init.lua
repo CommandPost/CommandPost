@@ -40,7 +40,7 @@ function manager.init()
 	-- Work out Menubar Display Mode:
 	--------------------------------------------------------------------------------
 	manager.updateMenubarIcon()
-	
+
 	manager.menubar:setMenu(manager.generateMenuTable)
 
 	return manager
@@ -57,25 +57,25 @@ manager.ORIGINAL_ICON		= "🔵"
 function manager.updateMenubarIcon()
 	local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
 	local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
-	
+
 	local title = "FCPX Hacks"
 	local icon = nil
-	
+
 	if displayMenubarAsIcon then
 		local iconImage = image.imageFromPath(metadata.assetsPath .. "fcpxhacks.png")
 		icon = iconImage:setSize({w=18,h=18})
 		title = ""
 	end
-	
+
 	if enableProxyMenuIcon then
 		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
 		if FFPlayerQuality == manager.PROXY_QUALITY then
-			title = title .. manager.PROXY_ICON
+			title = title .. " " .. manager.PROXY_ICON
 		else
-			title = title .. manager.ORIGINAL_ICON
+			title = title .. " " .. manager.ORIGINAL_ICON
 		end
 	end
-	
+
 	manager.menubar:setIcon(icon)
 	manager.menubar:setTitle(title)
 end

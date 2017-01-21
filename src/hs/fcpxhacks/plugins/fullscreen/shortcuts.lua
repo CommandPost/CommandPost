@@ -6,6 +6,9 @@ local timer								= require("hs.timer")
 
 local log								= require("hs.logger").new("fsshrtct")
 
+local kc								= require("hs.fcpxhacks.modules.shortcuts.keycodes")
+local tools								= require("hs.fcpxhacks.modules.tools")
+
 -- Constants
 
 local PRIORITY = 10000
@@ -77,7 +80,7 @@ local function performCommand(cmd, whichModifier, whichKey)
 	if chars and chars ~= "" and whichKey == kc.keyCodeTranslator(chars)
 		and tools.modifierMatch(whichModifier, cmd['modifiers']) then
 			log.df("performing command: %s", hs.inspect(cmd))
-			
+
 		-- perform the keystroke
 		ninjaKeyStroke(whichModifier, whichKey)
 		return true
@@ -89,19 +92,23 @@ local function checkCommand(whichModifier, whichKey)
 	--------------------------------------------------------------------------------
 	-- Don't repeat if key is held down:
 	--------------------------------------------------------------------------------
-	if mod.watcherWorking then return false end
+	if mod.watcherWorking then
+		debugMessage("plugins.fullscreen.shortcuts.checkCommand() already in progress.")
+		return false
+	end
 	mod.watcherWorking = true
 
 	--------------------------------------------------------------------------------
 	-- Only Continue if in Full Screen Playback Mode:
 	--------------------------------------------------------------------------------
 	if fcp:fullScreenWindow():isShowing() then
+
 		--------------------------------------------------------------------------------
 		-- Get Active Command Set:
 		--------------------------------------------------------------------------------
 		local activeCommandSet = fcp:getActiveCommandSet()
 		if type(activeCommandSet) ~= "table" then
-			debugMessage("Failed to get Active Command Set. Error occurred in fullscreenKeyboardWatcher().")
+			debugMessage("Failed to get Active Command Set. Error occurred in plugins.fullscreen.shortcuts.checkCommand().")
 			return
 		end
 
@@ -112,29 +119,28 @@ local function checkCommand(whichModifier, whichKey)
 			local selectedCommandSet = activeCommandSet[whichShortcutKey]
 
 			if selectedCommandSet then
-				if selectedCommandSet[1] then
-					if type(selectedCommandSet[1]) == "table" then
-						--------------------------------------------------------------------------------
-						-- There are multiple shortcut possibilities for this command:
-						--------------------------------------------------------------------------------
-						for _,cmd in ipairs(selectedCommandSet) do
-							if performCommand(cmd, whichModifier, whichKey) then
-								-- All done
-								return
-							end
+				if selectedCommandSet[1] and type(selectedCommandSet[1]) == "table" then
+					--------------------------------------------------------------------------------
+					-- There are multiple shortcut possibilities for this command:
+					--------------------------------------------------------------------------------
+					for _,cmd in ipairs(selectedCommandSet) do
+						if performCommand(cmd, whichModifier, whichKey) then
+							-- All done
+							return
 						end
 					end
 				else
 					--------------------------------------------------------------------------------
 					-- There is only a single shortcut possibility for this command:
 					--------------------------------------------------------------------------------
-					if performCommand(selectedCommandSet) then
+					if performCommand(selectedCommandSet, whichModifier, whichKey) then
 						-- All done
 						return
 					end
 				end
 			end
 		end
+
 	end
 end
 
@@ -144,7 +150,7 @@ end
 
 local function init()
 	cancelCommand()
-	
+
 	mod.keyUpWatcher = eventtap.new({ eventtap.event.types.keyUp }, function(event)
 		timer.doAfter(0.0000001, function() cancelCommand() end)
 	end)
@@ -164,18 +170,18 @@ plugin.dependencies = {
 function plugin.init(deps)
 	-- Initialise the module
 	init()
-	
+
 	-- Watch for the full screen window
 	fcp:fullScreenWindow():watch({
 		show	= mod.update,
 		hide	= mod.update,
 	})
-	
+
 	-- Add the menu item
 	deps.options:addItem(PRIORITY, function()
 		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = mod.toggleEnabled,		checked = mod.isEnabled() }
 	end)
-	
+
 	return mod
 end
 

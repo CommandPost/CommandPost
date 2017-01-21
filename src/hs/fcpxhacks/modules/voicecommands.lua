@@ -21,6 +21,7 @@ local module = {}
 
 local eventtap								= require("hs.eventtap")
 local speech   								= require("hs.speech")
+local settings								= require("hs.settings")
 local listener								= speech.listener
 
 local fcp									= require("hs.finalcutpro")

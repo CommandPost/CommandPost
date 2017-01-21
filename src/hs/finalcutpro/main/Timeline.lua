@@ -229,11 +229,11 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	local lastPosition = nil
 	local stopCounter = 0
 	local originalOffset = 0
-	
+
 	local incPlayheadStopped = function()
 		stopCounter = math.min(Timeline.stopThreshold, stopCounter + 1)
 	end
-	
+
 	local playheadHasStopped = function()
 		return stopCounter == Timeline.stopThreshold
 	end
@@ -260,14 +260,14 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 
 		local viewFrame = content:viewFrame()
 		local playheadPosition = playhead:getPosition()
-		
+
 		if viewFrame == nil or playheadPosition == nil then
 			-- The timeline and/or playhead does not exist.
 			if status ~= Timeline.INVISIBLE then
 				status = Timeline.INVISIBLE
 				debugMessage("Timeline not visible.")
 			end
-			
+
 			stopCounter = Timeline.stopThreshold
 			if deactivateWhenStopped then
 				debugMessage("Deactivating lock.")
@@ -279,7 +279,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 			if originalOffset >= viewFrame.w then originalOffset = math.floor(viewFrame.w/2) end
 			-- Calculate the target offset
 			local targetPosition = viewFrame.x + originalOffset
-			
+
 			if playheadPosition == lastPosition then
 				-- it hasn't moved since the last check
 				incPlayheadStopped()
@@ -321,7 +321,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 		if playheadHasStopped() then
 			next = Timeline.lockInactive
 		end
-		
+
 		-- Update last postion to the current position.
 		lastPosition = playheadPosition
 

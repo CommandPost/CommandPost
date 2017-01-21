@@ -91,7 +91,7 @@ function mod.update()
 	local locked	= mod.isPlayheadLocked()
 
 	local watcher = mod.getScrollingTimelineWatcher()
-	
+
 	if fcp:isFrontmost() and (scrolling or locked) then
 		fcp:timeline():lockPlayhead(scrolling)
 		if scrolling and not watcher:isEnabled() then
@@ -114,12 +114,12 @@ local SPACEBAR_KEYCODE = 49
 function mod.getScrollingTimelineWatcher()
 	if not mod._scrollingTimelineWatcher then
 		mod._scrollingTimelineWatcher = eventtap.new(
-			{ eventtap.event.types.keyDown }, 
+			{ eventtap.event.types.keyDown },
 			function(event)
 				--------------------------------------------------------------------------------
 				-- Don't do anything if we're already locked.
 				--------------------------------------------------------------------------------
-				if event:getKeyCode() == SPACEBAR_KEYCODE 
+				if event:getKeyCode() == SPACEBAR_KEYCODE
 				   and next(event:getFlags()) == nil
 				   and not fcp:timeline():isLockedPlayhead() then
 					--------------------------------------------------------------------------------
@@ -169,19 +169,25 @@ function mod.checkScrollingTimeline()
 	-- Check mouse is in timeline area:
 	--------------------------------------------------------------------------------
 	local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-	local viewFrame = geometry.rect(timeline:contents():viewFrame())
-	if mouseLocation:inside(viewFrame) then
+	local viewFrame = timeline:contents():viewFrame()
+	if viewFrame then
+		if mouseLocation:inside(geometry.rect(viewFrame)) then
 
-		--------------------------------------------------------------------------------
-		-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-		--------------------------------------------------------------------------------
-		debugMessage("Mouse inside Timeline Area.")
-		timeline:lockPlayhead(true)
-		return true
+			--------------------------------------------------------------------------------
+			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
+			--------------------------------------------------------------------------------
+			debugMessage("Mouse inside Timeline Area.")
+			timeline:lockPlayhead(true)
+			return true
+		else
+			debugMessage("Mouse outside of Timeline Area.")
+			return false
+		end
 	else
-		debugMessage("Mouse outside of Timeline Area.")
+		debugMessage("No viewFrame detected in plugins.timeline.playhead.checkScrollingTimeline().")
 		return false
 	end
+
 end
 
 --------------------------------------------------------------------------------
@@ -214,7 +220,7 @@ function mod.togglePlayheadLock()
 		-- Ensure that Scrolling Timeline is off
 		--------------------------------------------------------------------------------
 		if mod.isScrollingTimelineActive() then
-			mod.setScrollingTimeActive(false)
+			mod.setScrollingTimelineActive(false)
 			message = i18n("scrollingTimelineDeactivated") .. "\n"
 		end
 		mod.setPlayheadLocked(true)
@@ -231,21 +237,21 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	local section = deps.options:addSection(PRIORITY)
-	
+
 	section:addItems(1000, function()
 		return {
 			{ title = i18n("enableScrollingTimeline"),		fn = mod.toggleScrollingTimeline, 	checked = mod.isScrollingTimelineActive() },
 			{ title = i18n("enableTimelinePlayheadLock"),	fn = mod.togglePlayheadLock,		checked = mod.isPlayheadLocked()},
 		}
 	end)
-	
+
 	fcp:watch(
 		{
 			active 		= mod.update,
 			inactive	= mod.update,
 		}
 	)
-	
+
 	return mod
 end
 

@@ -132,7 +132,7 @@ local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 -- DEFAULT SETTINGS:
 --------------------------------------------------------------------------------
 
-local defaultSettings = {						
+local defaultSettings = {
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
@@ -153,6 +153,7 @@ local defaultSettings = {
 												["checkForUpdatesInterval"]						= 600,
 												["highlightPlayheadTime"]						= 3,
 												["notificationPlatform"]						= {},
+												["displayHighlightColour"]						= "Red",
 }
 
 --------------------------------------------------------------------------------
@@ -199,7 +200,7 @@ function plugins(pluginPath)
 		mod._plugins = require("hs.plugins")
 		mod._plugins.init("hs.fcpxhacks.plugins")
 	end
-	
+
 	if pluginPath then
 		return mod._plugins(pluginPath)
 	else
@@ -213,14 +214,14 @@ end
 function menuManager()
 	if not mod._menuManager then
 		mod._menuManager = plugins("hs.fcpxhacks.plugins.menu.manager")
-		
+
 		--- TODO: Remove this once all menu manaement is migrated to plugins.
 		local manualSection = mod._menuManager.addSection(10000)
 		manualSection:addItems(0, function() return generateMenuBar(true) end)
-		
+
 		local preferences = plugins("hs.fcpxhacks.plugins.menu.preferences")
 		preferences:addItems(10000, function() return generatePreferencesMenuBar() end)
-		
+
 		local menubarPrefs = plugins("hs.fcpxhacks.plugins.menu.preferences.menubar")
 		menubarPrefs:addItems(10000, function() return generateMenubarPrefsMenuBar() end)
 	end
@@ -237,17 +238,17 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	mod.debugMode = settings.get("fcpxHacks.debugMode") or false
 	debugMessage("Debug Mode Activated.")
-	
+
 	--------------------------------------------------------------------------------
 	-- Activate Menu Manager
 	--------------------------------------------------------------------------------
 	menuManager()
-	
+
 	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
 	--------------------------------------------------------------------------------
 	hs.accessibilityState(true)
-	
+
 	--------------------------------------------------------------------------------
 	-- Limit Error Messages for a clean console:
 	--------------------------------------------------------------------------------
@@ -388,12 +389,12 @@ function loadScript()
 			active		= finalCutProActive,
 			inactive	= finalCutProNotActive,
 		})
-		
+
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro Window Watcher:
 		--------------------------------------------------------------------------------
 		finalCutProWindowWatcher()
-		
+
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
 		--------------------------------------------------------------------------------
@@ -500,7 +501,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		hotkeys:exit()
 	end
-	
+
 	-------------------------------------------------------------------------------
 	-- Set up Chooser:
 	-------------------------------------------------------------------------------
@@ -1119,7 +1120,7 @@ end
 --------------------------------------------------------------------------------
 -- MENUBAR:
 --------------------------------------------------------------------------------
-	
+
 	function generateMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Maximum Length of Menubar Strings:
@@ -1393,7 +1394,7 @@ end
 		-- The main menu
 		local menuTable = {
 		}
-		
+
 		local settingsNotificationPlatform = {
 			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
 			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
@@ -1450,10 +1451,10 @@ end
 				table.insert(menuTable, 2, { title = "-" })
 			end
 		end
-		
+
 		return menuTable
 	end
-	
+
 	function generatePreferencesMenuBar()
 		--------------------------------------------------------------------------------
 		-- Get Sizing Preferences:
@@ -1472,7 +1473,7 @@ end
 		-- Get Highlight Colour Preferences:
 		--------------------------------------------------------------------------------
 		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
-		
+
 		--------------------------------------------------------------------------------
 		-- Hammerspoon Settings:
 		--------------------------------------------------------------------------------
@@ -1480,7 +1481,7 @@ end
 		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
 		local hammerspoonDockIcon = hs.dockIcon()
 		local hammerspoonMenuIcon = hs.menuIcon()
-		
+
 		--------------------------------------------------------------------------------
 		-- Touch Bar Location:
 		--------------------------------------------------------------------------------
@@ -1489,7 +1490,7 @@ end
 		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
 		local displayTouchBarLocationTimelineTopCentre = false
 		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
-		
+
 		--------------------------------------------------------------------------------
 		-- HUD Preferences:
 		--------------------------------------------------------------------------------
@@ -1501,7 +1502,7 @@ end
 		-- Get Highlight Playhead Time:
 		--------------------------------------------------------------------------------
 		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-		
+
 		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
@@ -1588,10 +1589,10 @@ end
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
 			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
 		}
-		
+
 		return settingsMenuTable
 	end
-	
+
 	function generateMenubarPrefsMenuBar()
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
