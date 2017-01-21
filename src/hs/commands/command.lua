@@ -98,7 +98,7 @@ end
 ---  * command - The current command
 ---
 function command:clearHotkeys()
-	for i,hk in self.hotkeys do
+	for i,hk in ipairs(self.hotkeys) do
 		hk:delete()
 		self.hotkeys[i] = nil
 	end
