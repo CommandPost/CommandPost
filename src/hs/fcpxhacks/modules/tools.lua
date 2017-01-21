@@ -289,4 +289,18 @@ function tools.dirFiles(path)
 	return files
 end
 
+function tools.numberToWord(number)
+	if number == 1 then return "One" end
+	if number == 2 then return "Two" end
+	if number == 3 then return "Three" end
+	if number == 4 then return "Four" end
+	if number == 5 then return "Five" end
+	if number == 6 then return "Six" end
+	if number == 7 then return "Seven" end
+	if number == 8 then return "Eight" end
+	if number == 9 then return "Nine" end
+	if number == 10 then return "Ten" end
+	return nil
+end
+
 return tools
