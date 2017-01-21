@@ -246,7 +246,10 @@ return {
 			createMulticamOptimizedMedia 		= 			"Create Multicam Optimized Media",
 			createProxyMedia					=			"Create Proxy Media",
 			leaveFilesInPlaceOnImport			=			"Leave Files In Place On Import",
-			enableBackgroundRender				=			"Enable Background Render",
+			enableBackgroundRender				=			{
+				one								=			"Enable Background Render (%{count} sec)",
+				other 							= 			"Enable Background Render (%{count} secs)",
+			},
 
 			--------------------------------------------------------------------------------
 			-- Automation:
@@ -256,30 +259,36 @@ return {
 			assignTransitionsShortcuts			=			"Assign Transitions Shortcuts",
 			assignTitlesShortcuts				=			"Assign Titles Shortcuts",
 			assignGeneratorsShortcuts			=			"Assign Generators Shortcuts",
+			
+			unassignedTitle						=			"Unassigned",
 
 				--------------------------------------------------------------------------------
 				-- Effects Shortcuts:
 				--------------------------------------------------------------------------------
 				updateEffectsList				=			"Update Effects List",
 				effectShortcut					=			"Effect Shortcut",
+				effectShortcutTitle				=			"Effect Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Transitions Shortcuts:
 				--------------------------------------------------------------------------------
 				updateTransitionsList			=			"Update Transitions List",
 				transitionShortcut				=			"Transition Shortcut",
+				transitionShortcutTitle			=			"Transition Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Titles Shortcuts:
 				--------------------------------------------------------------------------------
 				updateTitlesList				=			"Update Titles List",
 				titleShortcut					=			"Title Shortcut",
+				titleShortcutTitle				=			"Title Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Generators Shortcuts:
 				--------------------------------------------------------------------------------
 				updateGeneratorsList			=			"Update Generators List",
 				generatorShortcut				=			"Generator Shortcut",
+				generatorShortcutTitle			=			"Generator Shortcut %{number} (%{title})",
 
 				--------------------------------------------------------------------------------
 				-- Automation Options:
@@ -355,7 +364,7 @@ return {
 			highlightPlayheadTime				=			"Highlight Playhead Time",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
-			trachFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
+			trashFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",
@@ -483,6 +492,62 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
+	
+	--------------------------------------------------------------------------------
+	-- SHORTCUTS HELP:
+	--------------------------------------------------------------------------------
+	
+	defaultShortcutsDescription			=			
+
+[[The default FCPX Hacks Shortcut Keys are:
+
+---------------------------------
+CONTROL+OPTION+COMMAND:
+---------------------------------
+L = Launch Final Cut Pro (System Wide)
+
+A = Toggle HUD
+Z = Toggle Touch Bar
+
+W = Toggle Scrolling Timeline
+
+H = Highlight Browser Playhead
+F = Reveal in Browser & Highlight
+S = Single Match Frame & Highlight
+
+D = Reveal Multicam in Browser & Highlight
+G = Reveal Multicam in Angle Editor & Highlight
+
+E = Batch Export from Browser
+
+B = Change Backup Interval
+
+T = Toggle Timecode Overlays
+Y = Toggle Moving Markers
+P = Toggle Rendering During Playback
+
+M = Select Color Board Puck 1
+, = Select Color Board Puck 2
+. = Select Color Board Puck 3
+/ = Select Color Board Puck 4
+
+1-9 = Restore Keyword Preset
+
++ = Increase Timeline Clip Height
+- = Decrease Timeline Clip Height
+
+Left Arrow = Select All Clips to Left
+Right Arrow = Select All Clips to Right
+
+-----------------------------------------
+CONTROL+OPTION+COMMAND+SHIFT:
+-----------------------------------------
+1-9 = Save Keyword Preset
+
+-----------------------------------------
+CONTROL+SHIFT:
+-----------------------------------------
+1-5 = Apply Effect]],
 
 	}
 }

@@ -14,8 +14,9 @@ local inspect									= require("hs.inspect")
 local just										= require("hs.just")
 local osascript 								= require("hs.osascript")
 local plist										= require("hs.plist")
+local windowfilter								= require("hs.window.filter")
 
-local log										= require("hs.logger").new("finalcutpro")
+local log										= require("hs.logger").new("fcp")
 
 --- Local Modules:
 local axutils									= require("hs.finalcutpro.axutils")
@@ -1096,6 +1097,114 @@ end
 ---
 function App:getFlexoLanguages()
 	return App.FLEXO_LANGUAGES
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                               W A T C H E R S                              --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- Watch for events that happen in the application.
+--- The optional functions will be called when the window
+--- is shown or hidden, respectively.
+---
+--- Parameters:
+--- * `events` - A table of functions with to watch. These may be:
+--- 	* `active()`	- Triggered when the application is the active application.
+--- 	* `inactive()`	- Triggered when the application is no longer the active application.
+---
+--- Returns:
+--- * An ID which can be passed to `unwatch` to stop watching.
+function App:watch(events)
+	self:_initWatchers()
+	
+	if not self._watchers then
+		self._watchers = {}
+	end
+	
+	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive}
+	local id = { id=#self._watchers }
+	
+	-- If already active, we trigger an 'active' notification.
+	if self:isFrontmost() and events.active then
+		events.active()
+	end
+	
+	return id
+end
+
+--- Stop watching for events that happen in the application for the specified ID.
+---
+--- Parameters:
+--- * `id` 	- The ID object which was returned from the `watch(...)` function.
+---
+--- Returns:
+--- * `true` if the ID was watching and has been removed.
+function App:unwatch(id)
+	local watchers = self._watchers
+	if id and id.id and watchers and watchers[id.id] then
+		table.remove(watchers, id.id)
+		return true
+	end
+	return false
+end
+
+function App:_initWatchers()
+	local watcher = application.watcher
+	
+	self._active = false
+	self._appWatcher = watcher.new(
+		function(appName, eventType, appObject)
+			local event = nil
+			
+			if (appName == "Final Cut Pro") then
+				if self._active == false and (eventType == watcher.activated) and self:isFrontmost() then
+					self._active = true
+					event = "active"
+				elseif self._active == true and (eventType == watcher.deactivated or eventType == watcher.terminated) then
+					self._active = false
+					event = "inactive"
+				end
+			end
+			
+			if event then
+				self:_notifyWatchers(event)
+			end
+		end
+	):start()
+	
+	self._windowWatcher = windowfilter.new{"Final Cut Pro"}
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Not On Screen:
+	--------------------------------------------------------------------------------
+	self._windowWatcher:subscribe(windowfilter.windowNotOnScreen, function()
+		if self._active == true and not self:isFrontmost() then
+			self._active = false
+			self:_notifyWatchers("inactive")
+		end
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window On Screen:
+	--------------------------------------------------------------------------------
+	self._windowWatcher:subscribe(windowfilter.windowOnScreen, function()
+		if self._active == false and self:isFrontmost() then
+			self._active = true
+			self:_notifyWatchers("active")
+		end
+	end, true)
+end
+
+function App:_notifyWatchers(event)
+	if self._watchers then
+		for i,watcher in ipairs(self._watchers) do
+			if type(watcher[event]) == "function" then
+				watcher[event]()
+			end
+		end
+	end
 end
 
 --------------------------------------------------------------------------------

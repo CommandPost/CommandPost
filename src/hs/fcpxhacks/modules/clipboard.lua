@@ -484,11 +484,6 @@ local newPlist = [[
 					--------------------------------------------------------------------------------
 					settings.set("fcpxHacks.clipboardHistory", clipboard.history)
 				end
-
-				--------------------------------------------------------------------------------
-				-- Refresh Menubar:
-				--------------------------------------------------------------------------------
-				refreshMenuBar()
 			end
 	 	end
 		clipboard.lastChange = clipboard.currentChange

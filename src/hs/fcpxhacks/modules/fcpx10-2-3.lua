@@ -94,7 +94,7 @@ ax 											= require("hs._asm.axuielement")
 -- GLOBAL VARIABLES:
 --------------------------------------------------------------------------------
 
-scriptVersion								= fcpxhacks.scriptVersion						-- Script Version
+scriptVersion								= require("hs.fcpxhacks.metadata").scriptVersion -- Script Version
 
 debugMode 									= false											-- Debug Mode
 clock 										= os.clock										-- Used for sleep()

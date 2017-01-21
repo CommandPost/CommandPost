@@ -12,7 +12,10 @@
 local settings						= require("hs.settings")
 local fs							= require("hs.fs")
 
+local tools							= require("hs.fcpxhacks.modules.tools")
+
 local log							= require("hs.logger").new("plugins")
+local inspect						= require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -24,7 +27,7 @@ mod.CACHE = {}
 
 mod.SETTINGS_DISABLED = "fcpxHacks.plugins.disabled"
 
---- hs.fcpxhacks.modules.plugins.loadPackage(package) -> boolean
+--- hs.plugins.loadPackage(package) -> boolean
 --- Function
 --- Loads any plugins present in the specified package. 
 --- Any `*.lua` file, or folder containing an `init.lua` file will automatically be
@@ -55,8 +58,8 @@ function mod.loadPackage(package)
 		return false
 	end
 	
-	local contents, data = fs.dir(path)
-	for file in function() return contents(data) end do
+	local files = tools.dirFiles(path)
+	for i,file in ipairs(files) do
 		if file ~= "." and file ~= ".." then
 			local filePath = path .. "/" .. file
 			if fs.attributes(filePath).mode == "directory" then
@@ -80,7 +83,8 @@ function mod.loadPackage(package)
 	return true
 end
 
---- hs.fcpxhacks.modules.plugins.load(package) -> boolean
+
+--- hs.plugins.load(package) -> boolean
 --- Function
 --- Loads a specific plugin with the specified path.
 --- The plugin will only be loaded once, and the result of its `init(...)` function
@@ -99,7 +103,7 @@ end
 ---  * the result of the plugin's `init(...)` function call.
 ---
 function mod.load(pluginPath)
-	log.df("Loading plugin '%s'", pluginPath)
+	-- log.df("Loading plugin '%s'", pluginPath)
 	
 	-- First, check the plugin is not disabled:
 	if mod.isDisabled(pluginPath) then
@@ -112,15 +116,16 @@ function mod.load(pluginPath)
 		-- we've already loaded it
 		return cache.instance
 	end
-	
+
 	local plugin = require(pluginPath)
-	if not plugin then
+	if plugin == nil or type(plugin) ~= "table" then
 		log.ef("Unable to load plugin '%s'.", pluginPath)
 		return nil
 	end
 	
 	local dependencies = {}
 	if plugin.dependencies then
+		-- log.df("Processing dependencies for '%s'.", pluginPath)
 		for path,alias in pairs(plugin.dependencies) do
 			if type(path) == "number" then
 				-- no alias
@@ -136,17 +141,38 @@ function mod.load(pluginPath)
 				end
 			else
 				-- unable to load the dependency. Fail!
-				log.ef("Unable to load dependency for plugin '%s': %s", pluginPath, d)
+				log.ef("Unable to load dependency for plugin '%s': %s", pluginPath, path)
 				return nil
 			end
 		end
 	end
 	
 	-- initialise the plugin instance
-	local instance = plugin.init(dependencies)
+	-- log.df("Initialising plugin '%s'.", pluginPath)
+	local instance = nil
+	
+	if plugin.init then
+		local status, err = pcall(function()
+			instance = plugin.init(dependencies)
+		end)
+
+		if not status then
+			log.ef("Error while initialising plugin '%s': %s", pluginPath, inspect(err))
+			return nil
+		end
+	else
+		log.wf("No init function for plugin: %s", pluginPath)
+	end
+
+	-- Default the return value to 'true'
+	if instance == nil then
+		instance = true
+	end
+	
 	-- cache it
 	mod.CACHE[pluginPath] = {plugin = plugin, instance = instance}
 	-- return the instance
+	log.df("Loaded plugin '%s'", pluginPath)
 	return instance
 end
 
@@ -172,8 +198,19 @@ end
 function mod.init(...)
 	for i=1,select('#', ...) do
 		package = select(i, ...)
-		mod.loadPackage(package)
+		log.df("Loading plugin package '%s'", package)
+		local status, err = pcall(function()
+			mod.loadPackage(package)
+		end)
+		
+		if not status then
+			log.ef("Error while loading package '%s':\n%s", package, hs.inspect(err))
+		end
 	end
+	
+	return mod
 end
+
+setmetatable(mod, {__call = function(_, ...) return mod.load(...) end})
 
 return mod

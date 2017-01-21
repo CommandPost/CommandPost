@@ -5,6 +5,7 @@ local axutils						= require("hs.finalcutpro.axutils")
 local just							= require("hs.just")
 
 local Button						= require("hs.finalcutpro.ui.Button")
+local WindowWatcher					= require("hs.finalcutpro.ui.WindowWatcher")
 
 local Inspector						= require("hs.finalcutpro.main.Inspector")
 local ColorBoard					= require("hs.finalcutpro.main.ColorBoard")
@@ -223,5 +224,38 @@ end
 function PrimaryWindow:browserGroupUI()
 	return self:topGroupUI()
 end
+
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+--- WATCHERS
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+--- Watch for events that happen in the command editor
+--- The optional functions will be called when the window
+--- is shown or hidden, respectively.
+---
+--- Parameters:
+--- * `events` - A table of functions with to watch. These may be:
+--- 	* `show(CommandEditor)` - Triggered when the window is shown.
+--- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---
+--- Returns:
+--- * An ID which can be passed to `unwatch` to stop watching.
+function PrimaryWindow:watch(events)
+	if not self._watcher then
+		self._watcher = WindowWatcher:new(self)
+	end
+	
+	self._watcher:watch(events)
+end
+
+function PrimaryWindow:unwatch(id)
+	if self._watcher then
+		self._watcher:unwatch(id)
+	end
+end
+
 
 return PrimaryWindow

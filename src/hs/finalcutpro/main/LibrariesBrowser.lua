@@ -45,7 +45,7 @@ function Libraries:UI()
 end
 
 function Libraries:isShowing()
-	return self:parent():showLibraries():isChecked()
+	return self:parent():isShowing() and self:parent():showLibraries():isChecked()
 end
 
 function Libraries:show()

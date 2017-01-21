@@ -99,24 +99,6 @@
 
 local mod = {}
 
--------------------------------------------------------------------------------
--- CONSTANTS:
--------------------------------------------------------------------------------
-
-mod.scriptVersion       = "0.79"
-mod.bugReportEmail      = "chris@latenitefilms.com"
-mod.developerURL        = "https://latenitefilms.com/blog/final-cut-pro-hacks/"
-mod.updateURL           = "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
-mod.checkUpdateURL      = "https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html"
-mod.iconPath            = "~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.icns"
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                    T H E    M A I N    S C R I P T                         --
@@ -141,6 +123,8 @@ local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
 
 local ax                        = require("hs._asm.axuielement")
+
+local metadata					= require("hs.fcpxhacks.metadata")
 
 local tools                     = require("hs.fcpxhacks.modules.tools")
 local semver                    = require("hs.fcpxhacks.modules.semver.semver")
@@ -208,7 +192,7 @@ function mod.init()
     -- Display Welcome Message In The Console:
     --------------------------------------------------------------------------------
     writeToConsole("-----------------------------", true)
-    writeToConsole("| FCPX Hacks v" .. mod.scriptVersion .. "          |", true)
+    writeToConsole("| FCPX Hacks v" .. metadata.scriptVersion .. "          |", true)
     writeToConsole("| Created by LateNite Films |", true)
     writeToConsole("-----------------------------", true)
 

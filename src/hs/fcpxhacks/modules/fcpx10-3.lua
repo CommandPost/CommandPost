@@ -110,6 +110,7 @@ local plist										= require("hs.plist")
 -- MODULES:
 --------------------------------------------------------------------------------
 
+local metadata									= require("hs.fcpxhacks.metadata")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
 local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local slaxml									= require("hs.fcpxhacks.modules.slaxml")
@@ -131,12 +132,10 @@ local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 -- DEFAULT SETTINGS:
 --------------------------------------------------------------------------------
 
-local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= false,
-												["scrollingTimelineActive"] 					= false,
+local defaultSettings = {
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
-												["chooserShowAutomation"] 						= true,
 												["chooserShowShortcuts"] 						= true,
 												["chooserShowHacks"] 							= true,
 												["chooserShowVideoEffects"] 					= true,
@@ -145,8 +144,6 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["chooserShowTitles"] 							= true,
 												["chooserShowGenerators"] 						= true,
 												["chooserShowMenuItems"]						= true,
-												["menubarShortcutsEnabled"] 					= true,
-												["menubarAutomationEnabled"] 					= true,
 												["menubarToolsEnabled"] 						= true,
 												["menubarHacksEnabled"] 						= true,
 												["enableCheckForUpdates"]						= true,
@@ -156,6 +153,7 @@ local defaultSettings = {						["enableShortcutsDuringFullscreenPlayback"] 	= fa
 												["checkForUpdatesInterval"]						= 600,
 												["highlightPlayheadTime"]						= 3,
 												["notificationPlatform"]						= {},
+												["displayHighlightColour"]						= "Red",
 }
 
 --------------------------------------------------------------------------------
@@ -167,8 +165,6 @@ local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Support
 local log										= logger.new("fcpx10-3")
 
 mod.debugMode									= false											-- Debug Mode is off by default.
-mod.scrollingTimelineSpacebarPressed			= false											-- Was spacebar pressed?
-mod.scrollingTimelineWatcherWorking 			= false											-- Is Scrolling Timeline Spacebar Held Down?
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
@@ -178,25 +174,59 @@ mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
 mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
 
-mod.scrollingTimelineTimer						= nil											-- Scrolling Timeline Timer
-mod.scrollingTimelineScrollbarTimer				= nil											-- Scrolling Timeline Scrollbar Timer
-
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
 mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
 mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
-mod.allowMovingMarkers							= nil											-- Used in refreshMenuBar
-mod.FFPeriodicBackupInterval 					= nil											-- Used in refreshMenuBar
-mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in refreshMenuBar
-mod.FFEnableGuards								= nil											-- Used in refreshMenuBar
-mod.FFAutoRenderDelay							= nil											-- Used in refreshMenuBar
-
-mod.installedLanguages							= {}											-- Table of Installed Language Files
+mod.allowMovingMarkers							= nil											-- Used in generateMenuBar
+mod.FFPeriodicBackupInterval 					= nil											-- Used in generateMenuBar
+mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in generateMenuBar
+mod.FFEnableGuards								= nil											-- Used in generateMenuBar
+mod.FFAutoRenderDelay							= nil											-- Used in generateMenuBar
 
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
 
 mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
 mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Effects/Titles/Generators Shortcut
+
+
+--------------------------------------------------------------------------------
+-- Retrieves the plugins manager.
+-- If `pluginPath` is provided, the named plugin will be returned. If not, the plugins
+-- module is returned.
+--------------------------------------------------------------------------------
+function plugins(pluginPath)
+	if not mod._plugins then
+		mod._plugins = require("hs.plugins")
+		mod._plugins.init("hs.fcpxhacks.plugins")
+	end
+
+	if pluginPath then
+		return mod._plugins(pluginPath)
+	else
+		return mod._plugins
+	end
+end
+
+--------------------------------------------------------------------------------
+-- Retrieves the FCPX Hacks menu manager
+--------------------------------------------------------------------------------
+function menuManager()
+	if not mod._menuManager then
+		mod._menuManager = plugins("hs.fcpxhacks.plugins.menu.manager")
+
+		--- TODO: Remove this once all menu manaement is migrated to plugins.
+		local manualSection = mod._menuManager.addSection(10000)
+		manualSection:addItems(0, function() return generateMenuBar(true) end)
+
+		local preferences = plugins("hs.fcpxhacks.plugins.menu.preferences")
+		preferences:addItems(10000, function() return generatePreferencesMenuBar() end)
+
+		local menubarPrefs = plugins("hs.fcpxhacks.plugins.menu.preferences.menubar")
+		menubarPrefs:addItems(10000, function() return generateMenubarPrefsMenuBar() end)
+	end
+	return mod._menuManager
+end
 
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
@@ -210,6 +240,11 @@ function loadScript()
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
+	-- Activate Menu Manager
+	--------------------------------------------------------------------------------
+	menuManager()
+
+	--------------------------------------------------------------------------------
 	-- Need Accessibility Activated:
 	--------------------------------------------------------------------------------
 	hs.accessibilityState(true)
@@ -221,26 +256,6 @@ function loadScript()
 	hotkey.setLogLevel("warning")
 	windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
 	windowfilter.ignoreAlways['System Events'] = true
-
-	--------------------------------------------------------------------------------
-	-- Setup i18n Languages:
-	--------------------------------------------------------------------------------
-	local languagePath = "hs/fcpxhacks/languages/"
-	for file in fs.dir(languagePath) do
-		if file:sub(-4) == ".lua" then
-			local languageFile = io.open(hs.configdir .. "/" .. languagePath .. file, "r")
-			if languageFile ~= nil then
-				local languageFileData = languageFile:read("*all")
-				if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
-					local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
-					local languageID = string.sub(file, 1, -5)
-					mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
-				end
-				languageFile:close()
-			end
-		end
-	end
-	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
@@ -295,10 +310,10 @@ function loadScript()
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.lastVersion") == nil then
-		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
+		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
 		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(fcpxhacks.scriptVersion) then
+		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(metadata.scriptVersion) then
 			if settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") then
 				local finalCutProRunning = fcp:isRunning()
 				if finalCutProRunning then
@@ -317,7 +332,7 @@ function loadScript()
 				end
 			end
 		end
-		settings.set("fcpxHacks.lastVersion", fcpxhacks.scriptVersion)
+		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
 	end
 
 	--------------------------------------------------------------------------------
@@ -368,9 +383,17 @@ function loadScript()
 	--------------------------------------------------------------------------------
 
 		--------------------------------------------------------------------------------
-		-- Create and start the application event watcher:
+		-- Final Cut Pro Application Watcher:
 		--------------------------------------------------------------------------------
-		watcher = application.watcher.new(finalCutProWatcher):start()
+		fcp:watch({
+			active		= finalCutProActive,
+			inactive	= finalCutProNotActive,
+		})
+
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro Window Watcher:
+		--------------------------------------------------------------------------------
+		finalCutProWindowWatcher()
 
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
@@ -414,21 +437,6 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		fullscreenKeyboardWatcher()
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Watcher:
-		--------------------------------------------------------------------------------
-		finalCutProWindowWatcher()
-
-		--------------------------------------------------------------------------------
-		-- Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		scrollingTimelineWatcher()
-
-		--------------------------------------------------------------------------------
 		-- Clipboard Watcher:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -440,12 +448,6 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 		if next(notificationPlatform) ~= nil then notificationWatcher() end
-
-		--------------------------------------------------------------------------------
-		-- Media Import Watcher:
-		--------------------------------------------------------------------------------
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-		if enableMediaImportWatcher then mediaImportWatcher() end
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -464,7 +466,6 @@ function loadScript()
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
 	if fcp:isFrontmost() then
-
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
 		--------------------------------------------------------------------------------
@@ -474,20 +475,6 @@ function loadScript()
 		-- Enable Final Cut Pro Shortcut Keys:
 		--------------------------------------------------------------------------------
 		hotkeys:enter()
-
-		--------------------------------------------------------------------------------
-		-- Enable Fullscreen Playback Shortcut Keys:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") then
-			fullscreenKeyboardWatcherDown:start()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") then
-			mod.scrollingTimelineWatcherDown:start()
-		end
 
 		--------------------------------------------------------------------------------
 		-- Show Hacks HUD:
@@ -504,7 +491,6 @@ function loadScript()
 		end
 
 	else
-
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
 		--------------------------------------------------------------------------------
@@ -514,43 +500,7 @@ function loadScript()
 		-- Disable Final Cut Pro Shortcut Keys:
 		--------------------------------------------------------------------------------
 		hotkeys:exit()
-
-		--------------------------------------------------------------------------------
-		-- Disable Fullscreen Playback Shortcut Keys:
-		--------------------------------------------------------------------------------
-		if fullscreenKeyboardWatcherUp ~= nil then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		if mod.scrollingTimelineWatcherDown ~= nil then
-			mod.scrollingTimelineWatcherDown:stop()
-		end
-
 	end
-
-	-------------------------------------------------------------------------------
-	-- Set up Menubar:
-	--------------------------------------------------------------------------------
-	fcpxMenubar = menubar.newWithPriority(1)
-
-		--------------------------------------------------------------------------------
-		-- Set Tool Tip:
-		--------------------------------------------------------------------------------
-		fcpxMenubar:setTooltip("FCPX Hacks " .. i18n("version") .. " " .. fcpxhacks.scriptVersion)
-
-		--------------------------------------------------------------------------------
-		-- Work out Menubar Display Mode:
-		--------------------------------------------------------------------------------
-		updateMenubarIcon()
-
-		--------------------------------------------------------------------------------
-		-- Populate the Menubar for the first time:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
 
 	-------------------------------------------------------------------------------
 	-- Set up Chooser:
@@ -561,7 +511,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	dialog.displayNotification("FCPX Hacks (v" .. fcpxhacks.scriptVersion .. ") " .. i18n("hasLoaded"))
+	dialog.displayNotification("FCPX Hacks (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -624,7 +574,7 @@ function defaultShortcutKeys()
 
     local defaultShortcutKeys = {
         FCPXHackLaunchFinalCutPro                                   = { characterString = kc.keyCodeTranslator("l"),            modifiers = controlOptionCommand,                   fn = function() fcp:launch() end,                                   releasedFn = nil,                                                       repeatFn = nil,         global = true },
-        FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = function() displayShortcutList() end,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
+        FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = displayShortcutList,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
 
         FCPXHackHighlightBrowserPlayhead                            = { characterString = kc.keyCodeTranslator("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealInBrowserAndHighlight                         = { characterString = kc.keyCodeTranslator("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
@@ -678,7 +628,7 @@ function defaultShortcutKeys()
         FCPXHackEffectsFour                                         = { characterString = kc.keyCodeTranslator("4"),            modifiers = controlShift,                           fn = function() effectsShortcut(4) end,                             releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackEffectsFive                                         = { characterString = kc.keyCodeTranslator("5"),            modifiers = controlShift,                           fn = function() effectsShortcut(5) end,                             releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show(); mod.scrollingTimelineWatcherWorking = false end, releasedFn = nil,                                     repeatFn = nil },
+        FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
 
 		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         	releasedFn = nil,                                                       repeatFn = nil },
 		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
@@ -686,7 +636,7 @@ function defaultShortcutKeys()
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackMoveToPlayhead                                      = { characterString = "",                                   modifiers = {},                                     fn = function() moveToPlayhead() end,                               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() toggleLockPlayhead() end,                           releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() togglePlayheadLock() end,                           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackTransitionsOne                                      = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
@@ -1161,9 +1111,6 @@ end
 --------------------------------------------------------------------------------
 
 
-
-
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                     M E N U B A R    F E A T U R E S                       --
@@ -1174,11 +1121,7 @@ end
 -- MENUBAR:
 --------------------------------------------------------------------------------
 
-	--------------------------------------------------------------------------------
-	-- REFRESH MENUBAR:
-	--------------------------------------------------------------------------------
-	function refreshMenuBar(refreshPlistValues)
-
+	function generateMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Maximum Length of Menubar Strings:
 		--------------------------------------------------------------------------------
@@ -1199,11 +1142,6 @@ end
 		-- We only refresh plist values if necessary as this takes time:
 		--------------------------------------------------------------------------------
 		if refreshPlistValues == true then
-
-			--------------------------------------------------------------------------------
-			-- Used for debugging:
-			--------------------------------------------------------------------------------
-			debugMessage("Menubar refreshed with latest plist values.")
 
 			--------------------------------------------------------------------------------
 			-- Read Final Cut Pro Preferences:
@@ -1268,60 +1206,9 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Get Menubar Display Mode from Settings:
-		--------------------------------------------------------------------------------
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
-
-		--------------------------------------------------------------------------------
-		-- Get Sizing Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightShape = nil
-		displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
-		local displayHighlightShapeRectangle = false
-		local displayHighlightShapeCircle = false
-		local displayHighlightShapeDiamond = false
-		if displayHighlightShape == nil then 			displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Rectangle" then 	displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Circle" then 		displayHighlightShapeCircle = true			end
-		if displayHighlightShape == "Diamond" then 		displayHighlightShapeDiamond = true			end
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Colour Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Playhead Time:
-		--------------------------------------------------------------------------------
-		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-
-		--------------------------------------------------------------------------------
-		-- Get Enable Shortcuts During Fullscreen Playback from Settings:
-		--------------------------------------------------------------------------------
-		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
-
-		--------------------------------------------------------------------------------
 		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 		--------------------------------------------------------------------------------
 		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
-
-		--------------------------------------------------------------------------------
-		-- Get Enable Proxy Menu Item:
-		--------------------------------------------------------------------------------
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
-
-		--------------------------------------------------------------------------------
-		-- Hammerspoon Settings:
-		--------------------------------------------------------------------------------
-		local startHammerspoonOnLaunch = hs.autoLaunch()
-		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
-		local hammerspoonDockIcon = hs.dockIcon()
-		local hammerspoonMenuIcon = hs.menuIcon()
-
-		--------------------------------------------------------------------------------
-		-- Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActive = settings.get("fcpxHacks.scrollingTimelineActive") or false
 
 		--------------------------------------------------------------------------------
 		-- Notification Platform:
@@ -1329,28 +1216,9 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Enable Media Import Watcher:
-		--------------------------------------------------------------------------------
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-
-		--------------------------------------------------------------------------------
-		-- Touch Bar Location:
-		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-		local displayTouchBarLocationMouse = false
-		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
-		local displayTouchBarLocationTimelineTopCentre = false
-		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
-
-		--------------------------------------------------------------------------------
 		-- Display Touch Bar:
 		--------------------------------------------------------------------------------
 		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-
-		--------------------------------------------------------------------------------
-		-- Enable Check for Updates:
-		--------------------------------------------------------------------------------
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable XML Sharing:
@@ -1371,10 +1239,6 @@ end
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
-
-		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
 
 		local hudButtonOne 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
 		local hudButtonTwo 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
@@ -1516,110 +1380,133 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		--------------------------------------------------------------------------------
-		-- Effects Shortcuts:
-		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated") or false
-		local effectsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
-		local effectsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
-		local effectsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
-		local effectsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
-		local effectsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
-		if effectsShortcutOne == nil then 		effectsShortcutOne = " (Unassigned)" 		else effectsShortcutOne = " (" .. tools.stringMaxLength(effectsShortcutOne,maxTextLength,"...") .. ")" end
-		if effectsShortcutTwo == nil then 		effectsShortcutTwo = " (Unassigned)" 		else effectsShortcutTwo = " (" .. tools.stringMaxLength(effectsShortcutTwo,maxTextLength,"...") .. ")" end
-		if effectsShortcutThree == nil then 	effectsShortcutThree = " (Unassigned)" 		else effectsShortcutThree = " (" .. tools.stringMaxLength(effectsShortcutThree,maxTextLength,"...") .. ")" end
-		if effectsShortcutFour == nil then 		effectsShortcutFour = " (Unassigned)" 		else effectsShortcutFour = " (" .. tools.stringMaxLength(effectsShortcutFour,maxTextLength,"...") .. ")" end
-		if effectsShortcutFive == nil then 		effectsShortcutFive = " (Unassigned)" 		else effectsShortcutFive = " (" .. tools.stringMaxLength(effectsShortcutFive,maxTextLength,"...") .. ")" end
-
-		--------------------------------------------------------------------------------
-		-- Transition Shortcuts:
-		--------------------------------------------------------------------------------
-		local transitionsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated") or false
-		local transitionsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne")
-		local transitionsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo")
-		local transitionsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree")
-		local transitionsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour")
-		local transitionsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive")
-		if transitionsShortcutOne == nil then 		transitionsShortcutOne = " (Unassigned)" 		else transitionsShortcutOne 	= " (" .. tools.stringMaxLength(transitionsShortcutOne,maxTextLength,"...") .. ")" 	end
-		if transitionsShortcutTwo == nil then 		transitionsShortcutTwo = " (Unassigned)" 		else transitionsShortcutTwo 	= " (" .. tools.stringMaxLength(transitionsShortcutTwo,maxTextLength,"...") .. ")" 	end
-		if transitionsShortcutThree == nil then 	transitionsShortcutThree = " (Unassigned)" 		else transitionsShortcutThree 	= " (" .. tools.stringMaxLength(transitionsShortcutThree,maxTextLength,"...") .. ")"	end
-		if transitionsShortcutFour == nil then 		transitionsShortcutFour = " (Unassigned)" 		else transitionsShortcutFour 	= " (" .. tools.stringMaxLength(transitionsShortcutFour,maxTextLength,"...") .. ")" 	end
-		if transitionsShortcutFive == nil then 		transitionsShortcutFive = " (Unassigned)" 		else transitionsShortcutFive 	= " (" .. tools.stringMaxLength(transitionsShortcutFive,maxTextLength,"...") .. ")" 	end
-
-		--------------------------------------------------------------------------------
-		-- Titles Shortcuts:
-		--------------------------------------------------------------------------------
-		local titlesListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated") or false
-		local titlesShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
-		local titlesShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
-		local titlesShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
-		local titlesShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
-		local titlesShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
-		if titlesShortcutOne == nil then 		titlesShortcutOne = " (Unassigned)" 		else titlesShortcutOne 	= " (" .. tools.stringMaxLength(titlesShortcutOne,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutTwo == nil then 		titlesShortcutTwo = " (Unassigned)" 		else titlesShortcutTwo 	= " (" .. tools.stringMaxLength(titlesShortcutTwo,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutThree == nil then 		titlesShortcutThree = " (Unassigned)" 		else titlesShortcutThree 	= " (" .. tools.stringMaxLength(titlesShortcutThree,maxTextLength,"...") .. ")"	end
-		if titlesShortcutFour == nil then 		titlesShortcutFour = " (Unassigned)" 		else titlesShortcutFour 	= " (" .. tools.stringMaxLength(titlesShortcutFour,maxTextLength,"...") .. ")" 	end
-		if titlesShortcutFive == nil then 		titlesShortcutFive = " (Unassigned)" 		else titlesShortcutFive 	= " (" .. tools.stringMaxLength(titlesShortcutFive,maxTextLength,"...") .. ")" 	end
-
-		--------------------------------------------------------------------------------
-		-- Generators Shortcuts:
-		--------------------------------------------------------------------------------
-		local generatorsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated") or false
-		local generatorsShortcutOne 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne")
-		local generatorsShortcutTwo 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo")
-		local generatorsShortcutThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree")
-		local generatorsShortcutFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour")
-		local generatorsShortcutFive 	= settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive")
-		if generatorsShortcutOne == nil then 		generatorsShortcutOne = " (Unassigned)" 		else generatorsShortcutOne 	= " (" .. tools.stringMaxLength(generatorsShortcutOne,maxTextLength,"...") .. ")" 	end
-		if generatorsShortcutTwo == nil then 		generatorsShortcutTwo = " (Unassigned)" 		else generatorsShortcutTwo 	= " (" .. tools.stringMaxLength(generatorsShortcutTwo,maxTextLength,"...") .. ")" 	end
-		if generatorsShortcutThree == nil then 		generatorsShortcutThree = " (Unassigned)" 		else generatorsShortcutThree 	= " (" .. tools.stringMaxLength(generatorsShortcutThree,maxTextLength,"...") .. ")"	end
-		if generatorsShortcutFour == nil then 		generatorsShortcutFour = " (Unassigned)" 		else generatorsShortcutFour 	= " (" .. tools.stringMaxLength(generatorsShortcutFour,maxTextLength,"...") .. ")" 	end
-		if generatorsShortcutFive == nil then 		generatorsShortcutFive = " (Unassigned)" 		else generatorsShortcutFive 	= " (" .. tools.stringMaxLength(generatorsShortcutFive,maxTextLength,"...") .. ")" 	end
-
-		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarShortcutsEnabled = 	settings.get("fcpxHacks.menubarShortcutsEnabled")
-		local menubarAutomationEnabled = 	settings.get("fcpxHacks.menubarAutomationEnabled")
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
 		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
-		--------------------------------------------------------------------------------
-		-- Are Hacks Shortcuts Enabled or Not:
-		--------------------------------------------------------------------------------
-		local displayShortcutText = i18n("displayKeyboardShortcuts")
-		if enableHacksShortcutsInFinalCutPro then displayShortcutText = i18n("openCommandEditor") end
+		local settingsHUDButtons = {
+			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
+			{ title = i18n("button") .. " " .. i18n("two") .. hudButtonTwo, 							fn = function() hackshud.assignButton(2) end },
+			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
+			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
+		}
+		-- The main menu
+		local menuTable = {
+		}
+
+		local settingsNotificationPlatform = {
+			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
+			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
+		}
+		local toolsSettings = {
+			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
+			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
+			{ title = "-" },
+			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
+			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
+			{ title = "-" },
+			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
+			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
+			{ title = "-" },
+			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
+		}
+		local toolsTable = {
+			{ title = "-" },
+			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
+			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
+			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
+			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
+			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
+			{ title = i18n("options"),																	menu = toolsSettings },
+		}
+		local advancedTable = {
+			{ title = "-" },
+			{ title = i18n("enableHacksShortcuts"), 													fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
+			{ title = i18n("enableTimecodeOverlay"), 													fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
+			{ title = i18n("enableMovingMarkers"), 														fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
+			{ title = i18n("enableRenderingDuringPlayback"),											fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
+			{ title = "-" },
+			{ title = i18n("changeBackupInterval") .. " (" .. tostring(mod.FFPeriodicBackupInterval) .. " " .. i18n("mins") .. ")", fn = changeBackupInterval },
+			{ title = i18n("changeSmartCollectionLabel"),												fn = changeSmartCollectionsLabel },
+		}
+		local hacksTable = {
+			{ title = "-" },
+			{ title = string.upper(i18n("hacks")) .. ":", 												disabled = true },
+			{ title = i18n("advancedFeatures"),															menu = advancedTable },
+		}
 
 		--------------------------------------------------------------------------------
-		-- FCPX Hacks Languages:
+		-- Setup Menubar:
 		--------------------------------------------------------------------------------
-		local settingsLanguage = {}
+		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
+		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
 
-		local userLocale = nil
-		if settings.get("fcpxHacks.language") == nil then
-			userLocale = tools.userLocale()
-		else
-			userLocale = settings.get("fcpxHacks.language")
+		--------------------------------------------------------------------------------
+		-- Check for Updates:
+		--------------------------------------------------------------------------------
+		if latestScriptVersion ~= nil then
+			if latestScriptVersion > metadata.scriptVersion then
+				table.insert(menuTable, 1, { title = i18n("updateAvailable") .. " (" .. i18n("version") .. " " .. latestScriptVersion .. ")", fn = getScriptUpdate})
+				table.insert(menuTable, 2, { title = "-" })
+			end
 		end
 
-		local basicUserLocale = nil
-		if string.find(userLocale, "_") ~= nil then
-			basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
-		else
-			basicUserLocale = userLocale
-		end
+		return menuTable
+	end
 
-		for i=1, #mod.installedLanguages do
-			settingsLanguage[#settingsLanguage + 1] = { title = mod.installedLanguages[i]["language"], fn = function()
-				settings.set("fcpxHacks.language", mod.installedLanguages[i]["id"])
-				i18n.setLocale(mod.installedLanguages[i]["id"])
-				refreshMenuBar()
-			end, checked = (userLocale == mod.installedLanguages[i]["id"] or basicUserLocale == mod.installedLanguages[i]["id"]), }
-		end
+	function generatePreferencesMenuBar()
+		--------------------------------------------------------------------------------
+		-- Get Sizing Preferences:
+		--------------------------------------------------------------------------------
+		local displayHighlightShape = nil
+		displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
+		local displayHighlightShapeRectangle = false
+		local displayHighlightShapeCircle = false
+		local displayHighlightShapeDiamond = false
+		if displayHighlightShape == nil then 			displayHighlightShapeRectangle = true		end
+		if displayHighlightShape == "Rectangle" then 	displayHighlightShapeRectangle = true		end
+		if displayHighlightShape == "Circle" then 		displayHighlightShapeCircle = true			end
+		if displayHighlightShape == "Diamond" then 		displayHighlightShapeDiamond = true			end
+
+		--------------------------------------------------------------------------------
+		-- Get Highlight Colour Preferences:
+		--------------------------------------------------------------------------------
+		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
+
+		--------------------------------------------------------------------------------
+		-- Hammerspoon Settings:
+		--------------------------------------------------------------------------------
+		local startHammerspoonOnLaunch = hs.autoLaunch()
+		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
+		local hammerspoonDockIcon = hs.dockIcon()
+		local hammerspoonMenuIcon = hs.menuIcon()
+
+		--------------------------------------------------------------------------------
+		-- Touch Bar Location:
+		--------------------------------------------------------------------------------
+		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
+		local displayTouchBarLocationMouse = false
+		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
+		local displayTouchBarLocationTimelineTopCentre = false
+		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
+
+		--------------------------------------------------------------------------------
+		-- HUD Preferences:
+		--------------------------------------------------------------------------------
+		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
+		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
+		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+
+		--------------------------------------------------------------------------------
+		-- Get Highlight Playhead Time:
+		--------------------------------------------------------------------------------
+		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
+
+		--------------------------------------------------------------------------------
+		-- Enable Check for Updates:
+		--------------------------------------------------------------------------------
+		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
 
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
@@ -1653,35 +1540,11 @@ end
 			{ title = i18n("touchBarTipOne"), 															disabled = true },
 			{ title = i18n("touchBarTipTwo"), 															disabled = true },
 		}
-		local settingsMenubar = {
-			{ title = i18n("showShortcuts"), 															fn = function() toggleMenubarDisplay("Shortcuts") end, 				checked = menubarShortcutsEnabled},
-			{ title = i18n("showAutomation"), 															fn = function() toggleMenubarDisplay("Automation") end, 			checked = menubarAutomationEnabled},
-			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
-			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
-			{ title = "-" },
-			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
-			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
-		}
 		local settingsHUD = {
 			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
-		local menuLanguage = {
-			{ title = i18n("german"), 																	fn = function() changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
-			{ title = i18n("english"), 																	fn = function() changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
-			{ title = i18n("spanish"), 																	fn = function() changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
-			{ title = i18n("french"), 																	fn = function() changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
-			{ title = i18n("japanese"), 																fn = function() changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
-			{ title = i18n("chineseChina"), 															fn = function() changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
-		}
-		local settingsBatchExportOptions = {
-			{ title = i18n("setDestinationPreset"), 													fn = changeBatchExportDestinationPreset, 							disabled = not fcpxRunning },
-			{ title = i18n("setDestinationFolder"), 													fn = changeBatchExportDestinationFolder },
-			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"), 													fn = toggleBatchExportReplaceExistingFiles, 						checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
-		}
-
 		local settingsVoiceCommand = {
 			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
 			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
@@ -1706,12 +1569,6 @@ end
 			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
 		}
 		local settingsMenuTable = {
-			{ title = i18n("finalCutProLanguage"), 														menu = menuLanguage },
-			{ title = "FCPX Hacks " .. i18n("language"), 												menu = settingsLanguage},
-			{ title = "-" },
-			{ title = i18n("batchExportOptions"), 														menu = settingsBatchExportOptions},
-			{ title = "-" },
-			{ title = i18n("menubarOptions"), 															menu = settingsMenubar},
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
@@ -1725,206 +1582,49 @@ end
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
-			{ title = i18n("trachFCPXHacksPreferences"), 												fn = resetSettings },
+			{ title = i18n("trashFCPXHacksPreferences"), 												fn = resetSettings },
 			{ title = "-" },
 			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 			{ title = "-" },
 			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
-			{ title = i18n("scriptVersion") .. " " .. fcpxhacks.scriptVersion,							disabled = true },
-		}
-		local settingsEffectsShortcutsTable = {
-			{ title = i18n("updateEffectsList"),														fn = updateEffectsList, 																										disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("effectShortcut") .. " " .. i18n("one") .. effectsShortcutOne, 				fn = function() assignEffectsShortcut(1) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("two") .. effectsShortcutTwo, 				fn = function() assignEffectsShortcut(2) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("three") .. effectsShortcutThree, 			fn = function() assignEffectsShortcut(3) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("four") .. effectsShortcutFour, 			fn = function() assignEffectsShortcut(4) end, 																					disabled = not effectsListUpdated },
-			{ title = i18n("effectShortcut") .. " " .. i18n("five") .. effectsShortcutFive, 			fn = function() assignEffectsShortcut(5) end, 																					disabled = not effectsListUpdated },
-		}
-		local settingsTransitionsShortcutsTable = {
-			{ title = i18n("updateTransitionsList"), 													fn = updateTransitionsList, 																									disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("transitionShortcut") .. " " .. i18n("one") .. transitionsShortcutOne, 		fn = function() assignTransitionsShortcut(1) end,																				disabled = not transitionsListUpdated },
-			{ title = i18n("transitionShortcut") .. " " .. i18n("two") .. transitionsShortcutTwo, 		fn = function() assignTransitionsShortcut(2) end, 																				disabled = not transitionsListUpdated },
-			{ title = i18n("transitionShortcut") .. " " .. i18n("three") .. transitionsShortcutThree, 	fn = function() assignTransitionsShortcut(3) end, 																				disabled = not transitionsListUpdated },
-			{ title = i18n("transitionShortcut") .. " " .. i18n("four") ..transitionsShortcutFour, 		fn = function() assignTransitionsShortcut(4) end, 																				disabled = not transitionsListUpdated },
-			{ title = i18n("transitionShortcut") .. " " .. i18n("five") .. transitionsShortcutFive, 	fn = function() assignTransitionsShortcut(5) end, 																				disabled = not transitionsListUpdated },
-		}
-		local settingsTitlesShortcutsTable = {
-			{ title = i18n("updateTitlesList"), 														fn = updateTitlesList, 																											disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("titleShortcut") .. " " .. i18n("one") .. titlesShortcutOne, 				fn = function() assignTitlesShortcut(1) end,																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("two") .. titlesShortcutTwo, 				fn = function() assignTitlesShortcut(2) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("three") .. titlesShortcutThree, 			fn = function() assignTitlesShortcut(3) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("four") .. titlesShortcutFour, 				fn = function() assignTitlesShortcut(4) end, 																					disabled = not titlesListUpdated },
-			{ title = i18n("titleShortcut") .. " " .. i18n("five") .. titlesShortcutFive, 				fn = function() assignTitlesShortcut(5) end, 																					disabled = not titlesListUpdated },
-		}
-		local settingsGeneratorsShortcutsTable = {
-			{ title = i18n("updateGeneratorsList"), 													fn = updateGeneratorsList, 																										disabled = not fcpxRunning },
-			{ title = "-" },
-			{ title = i18n("generatorShortcut") .. " " .. i18n("one") .. generatorsShortcutOne, 		fn = function() assignGeneratorsShortcut(1) end,																				disabled = not generatorsListUpdated },
-			{ title = i18n("generatorShortcut") .. " " .. i18n("two") .. generatorsShortcutTwo, 		fn = function() assignGeneratorsShortcut(2) end, 																				disabled = not generatorsListUpdated },
-			{ title = i18n("generatorShortcut") .. " " .. i18n("three") .. generatorsShortcutThree, 	fn = function() assignGeneratorsShortcut(3) end, 																				disabled = not generatorsListUpdated },
-			{ title = i18n("generatorShortcut") .. " " .. i18n("four") .. generatorsShortcutFour, 		fn = function() assignGeneratorsShortcut(4) end, 																				disabled = not generatorsListUpdated },
-			{ title = i18n("generatorShortcut") .. " " .. i18n("five") .. generatorsShortcutFive, 		fn = function() assignGeneratorsShortcut(5) end, 																				disabled = not generatorsListUpdated },
-		}
-		local settingsHUDButtons = {
-			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
-			{ title = i18n("button") .. " " .. i18n("two") .. hudButtonTwo, 							fn = function() hackshud.assignButton(2) end },
-			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
-			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
-		}
-		local menuTable = {
-			{ title = i18n("open") .. " Final Cut Pro", 												fn = function() fcp:launch() end },
-			{ title = displayShortcutText, 																fn = displayShortcutList, disabled = not fcpxRunning and enableHacksShortcutsInFinalCutPro },
-			{ title = "-" },
-		}
-		local shortcutsTable = {
-			{ title = string.upper(i18n("shortcuts")) .. ":", 											disabled = true },
-			{ title = i18n("createOptimizedMedia"), 													fn = function() toggleCreateOptimizedMedia() end, 					checked = fcp:getPreference("FFImportCreateOptimizeMedia", false),				disabled = not fcpxRunning },
-			{ title = i18n("createMulticamOptimizedMedia"),												fn = function() toggleCreateMulticamOptimizedMedia() end, 			checked = fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true), 	disabled = not fcpxRunning },
-			{ title = i18n("createProxyMedia"), 														fn = function() toggleCreateProxyMedia() end, 						checked = fcp:getPreference("FFImportCreateProxyMedia", false),					disabled = not fcpxRunning },
-			{ title = i18n("leaveFilesInPlaceOnImport"), 												fn = function() toggleLeaveInPlace() end, 							checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
-			{ title = i18n("enableBackgroundRender").." ("..mod.FFAutoRenderDelay.." " .. i18n("secs", {count = tonumber(mod.FFAutoRenderDelay)}) .. ")", 					fn = function() toggleBackgroundRender() end, 						checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
-			{ title = "-" },
-		}
-		local automationOptions = {
-			{ title = i18n("enableScrollingTimeline"), 													fn = toggleScrollingTimeline, 										checked = scrollingTimelineActive },
-			{ title = i18n("enableTimelinePlayheadLock"),												fn = toggleLockPlayhead, 											checked = lockTimelinePlayhead},
-			{ title = i18n("enableShortcutsDuringFullscreen"), 											fn = toggleEnableShortcutsDuringFullscreenPlayback, 				checked = enableShortcutsDuringFullscreenPlayback },
-			{ title = "-" },
-			{ title = i18n("closeMediaImport"), 														fn = toggleMediaImportWatcher, 										checked = enableMediaImportWatcher },
-		}
-		local automationTable = {
-			{ title = string.upper(i18n("automation")) .. ":", 											disabled = true },
-			{ title = i18n("assignEffectsShortcuts"), 													menu = settingsEffectsShortcutsTable },
-			{ title = i18n("assignTransitionsShortcuts"), 												menu = settingsTransitionsShortcutsTable },
-			{ title = i18n("assignTitlesShortcuts"),													menu = settingsTitlesShortcutsTable },
-			{ title = i18n("assignGeneratorsShortcuts"), 												menu = settingsGeneratorsShortcutsTable },
-			{ title = i18n("options"),																	menu = automationOptions },
-			{ title = "-" },
-		}
-		local settingsNotificationPlatform = {
-			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
-			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
-		}
-		local toolsSettings = {
-			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
-			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
-			{ title = "-" },
-			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
-			{ title = "-" },
-			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
-			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
-			{ title = "-" },
-			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
-		}
-		local toolsTable = {
-			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
-			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
-			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
-			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
-			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
-			{ title = i18n("options"),																	menu = toolsSettings },
-			{ title = "-" },
-		}
-		local advancedTable = {
-			{ title = i18n("enableHacksShortcuts"), 													fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
-			{ title = i18n("enableTimecodeOverlay"), 													fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
-			{ title = i18n("enableMovingMarkers"), 														fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
-			{ title = i18n("enableRenderingDuringPlayback"),											fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
-			{ title = "-" },
-			{ title = i18n("changeBackupInterval") .. " (" .. tostring(mod.FFPeriodicBackupInterval) .. " " .. i18n("mins") .. ")", fn = changeBackupInterval },
-			{ title = i18n("changeSmartCollectionLabel"),												fn = changeSmartCollectionsLabel },
-		}
-		local hacksTable = {
-			{ title = string.upper(i18n("hacks")) .. ":", 												disabled = true },
-			{ title = i18n("advancedFeatures"),															menu = advancedTable },
-			{ title = "-" },
-		}
-		local settingsTable = {
-			{ title = i18n("preferences") .. "...", 													menu = settingsMenuTable },
-			{ title = "-" },
-			{ title = i18n("quit") .. " FCPX Hacks", 													fn = quitFCPXHacks},
+			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
 		}
 
-		--------------------------------------------------------------------------------
-		-- Setup Menubar:
-		--------------------------------------------------------------------------------
-		if menubarShortcutsEnabled then 	menuTable = fnutils.concat(menuTable, shortcutsTable) 	end
-		if menubarAutomationEnabled then	menuTable = fnutils.concat(menuTable, automationTable)	end
-		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
-		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
+		return settingsMenuTable
+	end
 
-		menuTable = fnutils.concat(menuTable, settingsTable)
-
+	function generateMenubarPrefsMenuBar()
 		--------------------------------------------------------------------------------
-		-- Check for Updates:
+		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		if latestScriptVersion ~= nil then
-			if latestScriptVersion > fcpxhacks.scriptVersion then
-				table.insert(menuTable, 1, { title = i18n("updateAvailable") .. " (" .. i18n("version") .. " " .. latestScriptVersion .. ")", fn = getScriptUpdate})
-				table.insert(menuTable, 2, { title = "-" })
-			end
-		end
+		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
+		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
 
 		--------------------------------------------------------------------------------
-		-- Set the Menu:
+		-- Get Enable Proxy Menu Item:
 		--------------------------------------------------------------------------------
-		fcpxMenubar:setMenu(menuTable)
+		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
 
+		--------------------------------------------------------------------------------
+		-- Get Menubar Display Mode from Settings:
+		--------------------------------------------------------------------------------
+		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
+
+		local settingsMenubar = {
+			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
+			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
+			{ title = "-" },
+			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
+			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
+		}
+		return settingsMenubar
 	end
 
 	--------------------------------------------------------------------------------
 	-- UPDATE MENUBAR ICON:
 	--------------------------------------------------------------------------------
 	function updateMenubarIcon()
-
-		local fcpxHacksIcon = image.imageFromPath("~/.hammerspoon/hs/fcpxhacks/assets/fcpxhacks.png")
-		local fcpxHacksIconSmall = fcpxHacksIcon:setSize({w=18,h=18})
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
-		local proxyMenuIcon = ""
-
-		local proxyStatusIcon = nil
-		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
-		if FFPlayerQuality == 4 then
-			proxyStatusIcon = "🔴" 		-- Proxy (4)
-		else
-			proxyStatusIcon = "🔵" 		-- Original (5)
-		end
-
-		fcpxMenubar:setIcon(nil)
-
-		if enableProxyMenuIcon ~= nil then
-			if enableProxyMenuIcon == true then
-				if proxyStatusIcon ~= nil then
-					proxyMenuIcon = " " .. proxyStatusIcon
-				else
-					proxyMenuIcon = ""
-				end
-			end
-		end
-
-		if displayMenubarAsIcon == nil then
-			fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
-		else
-			if displayMenubarAsIcon then
-				fcpxMenubar:setIcon(fcpxHacksIconSmall)
-				if proxyStatusIcon ~= nil then
-					if proxyStatusIcon ~= "" then
-						if enableProxyMenuIcon then
-							proxyMenuIcon = proxyMenuIcon .. "  "
-						end
-					end
-				 end
-				fcpxMenubar:setTitle(proxyMenuIcon)
-			else
-				fcpxMenubar:setTitle("FCPX Hacks" .. proxyMenuIcon)
-			end
-		end
-
+		menuManager():updateMenubarIcon()
 	end
 
 --------------------------------------------------------------------------------
@@ -1935,994 +1635,39 @@ end
 	-- DISPLAY A LIST OF ALL SHORTCUTS:
 	--------------------------------------------------------------------------------
 	function displayShortcutList()
-
-		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
-		if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
-
-		if enableHacksShortcutsInFinalCutPro then
-			if fcp:isRunning() then
-				fcp:launch()
-				fcp:commandEditor():show()
-			end
-		else
-			local whatMessage = [[The default FCPX Hacks Shortcut Keys are:
-
-	---------------------------------
-	CONTROL+OPTION+COMMAND:
-	---------------------------------
-	L = Launch Final Cut Pro (System Wide)
-
-	A = Toggle HUD
-	Z = Toggle Touch Bar
-
-	W = Toggle Scrolling Timeline
-
-	H = Highlight Browser Playhead
-	F = Reveal in Browser & Highlight
-	S = Single Match Frame & Highlight
-
-	D = Reveal Multicam in Browser & Highlight
-	G = Reveal Multicam in Angle Editor & Highlight
-
-	E = Batch Export from Browser
-
-	B = Change Backup Interval
-
-	T = Toggle Timecode Overlays
-	Y = Toggle Moving Markers
-	P = Toggle Rendering During Playback
-
-	M = Select Color Board Puck 1
-	, = Select Color Board Puck 2
-	. = Select Color Board Puck 3
-	/ = Select Color Board Puck 4
-
-	1-9 = Restore Keyword Preset
-
-	+ = Increase Timeline Clip Height
-	- = Decrease Timeline Clip Height
-
-	Left Arrow = Select All Clips to Left
-	Right Arrow = Select All Clips to Right
-
-	-----------------------------------------
-	CONTROL+OPTION+COMMAND+SHIFT:
-	-----------------------------------------
-	1-9 = Save Keyword Preset
-
-	-----------------------------------------
-	CONTROL+SHIFT:
-	-----------------------------------------
-	1-5 = Apply Effect]]
-
-			dialog.displayMessage(whatMessage)
-		end
+		plugins("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
 	end
 
 --------------------------------------------------------------------------------
 -- UPDATE EFFECTS/TRANSITIONS/TITLES/GENERATORS LISTS:
 --------------------------------------------------------------------------------
-
 	--------------------------------------------------------------------------------
 	-- GET LIST OF EFFECTS:
 	--------------------------------------------------------------------------------
 	function updateEffectsList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateEffectsListWarning"))
-
-		--------------------------------------------------------------------------------
-		-- Save the layout of the Transitions panel in case we switch away...
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Effects panel is open:
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsShowing = effects:isShowing()
-		if not effects:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-		effects:showInstalledEffects()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		effects:search():clear()
-
-		local sidebar = effects:sidebar()
-
-		--------------------------------------------------------------------------------
-		-- Ensure the sidebar is visible
-		--------------------------------------------------------------------------------
-		effects:showSidebar()
-
-		--------------------------------------------------------------------------------
-		-- If it's still invisible, we have a problem.
-		--------------------------------------------------------------------------------
-		if not sidebar:isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Video':
-		--------------------------------------------------------------------------------
-		if not effects:showAllVideoEffects() then
-			dialog.displayErrorMessage("Unable to select all video effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Video Effects:
-		--------------------------------------------------------------------------------
-		local allVideoEffects = effects:getCurrentTitles()
-		if not allVideoEffects then
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All Audio':
-		--------------------------------------------------------------------------------
-		if not effects:showAllAudioEffects() then
-			dialog.displayErrorMessage("Unable to select all audio effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Audio Effects:
-		--------------------------------------------------------------------------------
-		local allAudioEffects = effects:getCurrentTitles()
-		if not allAudioEffects then
-			dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects and Transitions Panels:
-		--------------------------------------------------------------------------------
-		effects:loadLayout(effectsLayout)
-		transitions:loadLayout(transitionsLayout)
-		if not effectsShowing then effects:hide() end
-
-		--------------------------------------------------------------------------------
-		-- All done!
-		--------------------------------------------------------------------------------
-		if #allVideoEffects == 0 or #allAudioEffects == 0 then
-			dialog.displayMessage(i18n("updateEffectsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-			return "Fail"
-		else
-			--------------------------------------------------------------------------------
-			-- Save Results to Settings:
-			--------------------------------------------------------------------------------
-			local currentLanguage = fcp:getCurrentLanguage()
-			settings.set("fcpxHacks." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
-			settings.set("fcpxHacks." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
-			settings.set("fcpxHacks." .. currentLanguage .. ".effectsListUpdated", true)
-
-			--------------------------------------------------------------------------------
-			-- Update Chooser:
-			--------------------------------------------------------------------------------
-			hacksconsole.refresh()
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-			--------------------------------------------------------------------------------
-			-- Let the user know everything's good:
-			--------------------------------------------------------------------------------
-			dialog.displayMessage(i18n("updateEffectsListDone"))
-		end
-
+		plugins("hs.fcpxhacks.plugins.timeline.effects").updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET LIST OF TRANSITIONS:
 	--------------------------------------------------------------------------------
 	function updateTransitionsList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTransitionsListWarning"))
-
-		--------------------------------------------------------------------------------
-		-- Save the layout of the Effects panel, in case we switch away...
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsLayout = nil
-		if effects:isShowing() then
-			effectsLayout = effects:saveLayout()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure Transitions panel is open:
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsShowing = transitions:isShowing()
-		if not transitions:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateEffectsList().")
-			return "Fail"
-		end
-
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Transitions" is selected:
-		--------------------------------------------------------------------------------
-		transitions:showInstalledTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		transitions:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Make sure the sidebar is visible:
-		--------------------------------------------------------------------------------
-		local sidebar = transitions:sidebar()
-
-		transitions:showSidebar()
-
-		if not sidebar:isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Click 'All' in the sidebar:
-		--------------------------------------------------------------------------------
-		transitions:showAllTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Transitions:
-		--------------------------------------------------------------------------------
-		local allTransitions = transitions:getCurrentTitles()
-		if allTransitions == nil then
-			dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects and Transitions Panels:
-		--------------------------------------------------------------------------------
-		transitions:loadLayout(transitionsLayout)
-		if effectsLayout then effects:loadLayout(effectsLayout) end
-		if not transitionsShowing then transitions:hide() end
-
-		--------------------------------------------------------------------------------
-		-- Save Results to Settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set("fcpxHacks." .. currentLanguage .. ".allTransitions", allTransitions)
-		settings.set("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated", true)
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Let the user know everything's good:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTransitionsListDone"))
-
+		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList()
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET LIST OF TITLES:
 	--------------------------------------------------------------------------------
 	function updateTitlesList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTitlesListWarning"))
-
-		local app = fcp
-		local generators = app:generators()
-
-		local browserLayout = app:browser():saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles and Generators panel is open:
-		--------------------------------------------------------------------------------
-		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'Titles':
-		--------------------------------------------------------------------------------
-		generators:showAllTitles()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:group():selectItem(1)
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Transitions:
-		--------------------------------------------------------------------------------
-		local effectsList = generators:contents():childrenUI()
-		local allTitles = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allTitles[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
-			dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
-		--------------------------------------------------------------------------------
-		app:browser():loadLayout(browserLayout)
-
-		showTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Save Results to Settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set("fcpxHacks." .. currentLanguage .. ".allTitles", allTitles)
-		settings.set("fcpxHacks." .. currentLanguage .. ".titlesListUpdated", true)
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Let the user know everything's good:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateTitlesListDone"))
-
+		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET LIST OF GENERATORS:
 	--------------------------------------------------------------------------------
 	function updateGeneratorsList()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Final Cut Pro is active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateGeneratorsListWarning"))
-
-		local app = fcp
-		local generators = app:generators()
-
-		local browserLayout = app:browser():saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Titles and Generators panel is open:
-		--------------------------------------------------------------------------------
-		if not generators:show():isShowing() then
-			dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateEffectsList().")
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'Generators':
-		--------------------------------------------------------------------------------
-		generators:showAllGenerators()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:group():selectItem(1)
-
-		--------------------------------------------------------------------------------
-		-- Get list of All Transitions:
-		--------------------------------------------------------------------------------
-		local effectsList = generators:contents():childrenUI()
-		local allGenerators = {}
-		if effectsList ~= nil then
-			for i=1, #effectsList do
-				allGenerators[i] = effectsList[i]:attributeValue("AXTitle")
-			end
-		else
-			dialog.displayErrorMessage("Unable to get list of all Generators.\n\nError occurred in updateGeneratorsList().")
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Effects or Transitions Panel:
-		--------------------------------------------------------------------------------
-		app:browser():loadLayout(browserLayout)
-
-		--------------------------------------------------------------------------------
-		-- Save Results to Settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set("fcpxHacks." .. currentLanguage .. ".allGenerators", allGenerators)
-		settings.set("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated", true)
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-		--------------------------------------------------------------------------------
-		-- Let the user know everything's good:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateGeneratorsListDone"))
-
+		plugins("hs.fcpxhacks.plugins.timeline.generators").updateGeneratorsList()
 	end
-
---------------------------------------------------------------------------------
--- ASSIGN EFFECTS/TRANSITIONS/TITLES/GENERATORS SHORTCUTS:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN EFFECTS SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignEffectsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local effectsListUpdated 	= settings.get("fcpxHacks." .. currentLanguage .. ".effectsListUpdated")
-		local allVideoEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
-		local allAudioEffects 		= settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not effectsListUpdated then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-		if allVideoEffects == nil or allAudioEffects == nil then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-		if next(allVideoEffects) == nil or next(allAudioEffects) == nil then
-			dialog.displayMessage(i18n("assignEffectsShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Video Effects List:
-		--------------------------------------------------------------------------------
-		local effectChooserChoices = {}
-		if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
-			for i=1, #allVideoEffects do
-				individualEffect = {
-					["text"] = allVideoEffects[i],
-					["subText"] = "Video Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allVideoEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(effectChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Audio Effects List:
-		--------------------------------------------------------------------------------
-		if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
-			for i=1, #allAudioEffects do
-				individualEffect = {
-					["text"] = allAudioEffects[i],
-					["subText"] = "Audio Effect",
-					["function"] = "effectsShortcut",
-					["function1"] = allAudioEffects[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(effectChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(effectChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		effectChooser = chooser.new(effectChooserAction):bgDark(true)
-														:choices(effectChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			effectChooser:fgColor(nil)
-						 :subTextColor(nil)
-		else
-			effectChooser:fgColor(drawing.color.x11.snow)
-		 				 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		effectChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function effectChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			effectChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive", 	result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN TRANSITIONS SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignTransitionsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local transitionsListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated")
-		local allTransitions = settings.get("fcpxHacks." .. currentLanguage .. ".allTransitions")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not transitionsListUpdated then
-			dialog.displayMessage(i18n("assignTransitionsShortcutError"))
-			return "Failed"
-		end
-		if allTransitions == nil then
-			dialog.displayMessage(i18n("assignTransitionsShortcutError"))
-			return "Failed"
-		end
-		if next(allTransitions) == nil then
-			dialog.displayMessage(i18n("assignTransitionsShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Video Effects List:
-		--------------------------------------------------------------------------------
-		local transitionChooserChoices = {}
-		if allTransitions ~= nil and next(allTransitions) ~= nil then
-			for i=1, #allTransitions do
-				individualEffect = {
-					["text"] = allTransitions[i],
-					["subText"] = "Transition",
-					["function"] = "transitionsShortcut",
-					["function1"] = allTransitions[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(transitionChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(transitionChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		transitionChooser = chooser.new(transitionsChooserAction):bgDark(true)
-																 :choices(transitionChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			transitionChooser:fgColor(nil)
-							 :subTextColor(nil)
-		else
-			transitionChooser:fgColor(drawing.color.x11.snow)
-							 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		transitionChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN EFFECTS SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function transitionsChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			transitionChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne", 	result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo", 	result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour", 	result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive", 	result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN TITLES SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignTitlesShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local titlesListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".titlesListUpdated")
-		local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not titlesListUpdated then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-		if allTitles == nil then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-		if next(allTitles) == nil then
-			dialog.displayMessage(i18n("assignTitlesShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Titles List:
-		--------------------------------------------------------------------------------
-		local titlesChooserChoices = {}
-		if allTitles ~= nil and next(allTitles) ~= nil then
-			for i=1, #allTitles do
-				individualEffect = {
-					["text"] = allTitles[i],
-					["subText"] = "Title",
-					["function"] = "transitionsShortcut",
-					["function1"] = allTitles[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(titlesChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(titlesChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		titlesChooser = chooser.new(titlesChooserAction):bgDark(true)
-														:choices(titlesChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			titlesChooser:fgColor(nil)
-						 :subTextColor(nil)
-		else
-			titlesChooser:fgColor(drawing.color.x11.snow)
-						 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		titlesChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN TITLES SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function titlesChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			titlesChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive", 		result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
-
-	--------------------------------------------------------------------------------
-	-- ASSIGN GENERATORS SHORTCUT:
-	--------------------------------------------------------------------------------
-	function assignGeneratorsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Was Final Cut Pro Open?
-		--------------------------------------------------------------------------------
-		mod.wasFinalCutProOpen = fcp:isFrontmost()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local generatorsListUpdated = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsListUpdated")
-		local allGenerators = settings.get("fcpxHacks." .. currentLanguage .. ".allGenerators")
-
-		--------------------------------------------------------------------------------
-		-- Error Checking:
-		--------------------------------------------------------------------------------
-		if not generatorsListUpdated then
-			dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
-			return "Failed"
-		end
-		if allGenerators == nil then
-			dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
-			return "Failed"
-		end
-		if next(allGenerators) == nil then
-			dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Generators List:
-		--------------------------------------------------------------------------------
-		local generatorsChooserChoices = {}
-		if allGenerators ~= nil and next(allGenerators) ~= nil then
-			for i=1, #allGenerators do
-				individualEffect = {
-					["text"] = allGenerators[i],
-					["subText"] = "Generator",
-					["function"] = "transitionsShortcut",
-					["function1"] = allGenerators[i],
-					["function2"] = "",
-					["function3"] = "",
-					["whichShortcut"] = whichShortcut,
-				}
-				table.insert(generatorsChooserChoices, 1, individualEffect)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort everything:
-		--------------------------------------------------------------------------------
-		table.sort(generatorsChooserChoices, function(a, b) return a.text < b.text end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Chooser:
-		--------------------------------------------------------------------------------
-		generatorsChooser = chooser.new(generatorsChooserAction):bgDark(true)
-																:choices(generatorsChooserChoices)
-
-		--------------------------------------------------------------------------------
-		-- Allow for Reduce Transparency:
-		--------------------------------------------------------------------------------
-		if screen.accessibilitySettings()["ReduceTransparency"] then
-			generatorsChooser:fgColor(nil)
-							 :subTextColor(nil)
-		else
-			generatorsChooser:fgColor(drawing.color.x11.snow)
-							 :subTextColor(drawing.color.x11.snow)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Show Chooser:
-		--------------------------------------------------------------------------------
-		generatorsChooser:show()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- ASSIGN GENERATORS SHORTCUT CHOOSER ACTION:
-		--------------------------------------------------------------------------------
-		function generatorsChooserAction(result)
-
-			--------------------------------------------------------------------------------
-			-- Hide Chooser:
-			--------------------------------------------------------------------------------
-			generatorsChooser:hide()
-
-			--------------------------------------------------------------------------------
-			-- Perform Specific Function:
-			--------------------------------------------------------------------------------
-			if result ~= nil then
-				--------------------------------------------------------------------------------
-				-- Save the selection:
-				--------------------------------------------------------------------------------
-				whichShortcut = result["whichShortcut"]
-				local currentLanguage = fcp:getCurrentLanguage()
-				if whichShortcut == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne", 		result["text"]) end
-				if whichShortcut == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo", 		result["text"]) end
-				if whichShortcut == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree", 	result["text"]) end
-				if whichShortcut == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour", 		result["text"]) end
-				if whichShortcut == 5 then settings.set("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive", 		result["text"]) end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Put focus back in Final Cut Pro:
-			--------------------------------------------------------------------------------
-			if mod.wasFinalCutProOpen then fcp:launch() end
-
-			--------------------------------------------------------------------------------
-			-- Refresh Menubar:
-			--------------------------------------------------------------------------------
-			refreshMenuBar()
-
-		end
 
 --------------------------------------------------------------------------------
 -- CHANGE:
@@ -2933,101 +1678,6 @@ end
 	--------------------------------------------------------------------------------
 	function changeHighlightPlayheadTime(value)
 		settings.set("fcpxHacks.highlightPlayheadTime", value)
-		refreshMenuBar()
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE BATCH EXPORT DESTINATION PRESET:
-	--------------------------------------------------------------------------------
-	function changeBatchExportDestinationPreset()
-		local shareMenuItems = fcp:menuBar():findMenuItemsUI("File", "Share")
-		if not shareMenuItems then
-			dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
-			return
-		end
-
-		local destinations = {}
-
-		for i = 1, #shareMenuItems-2 do
-			local item = shareMenuItems[i]
-			local title = item:attributeValue("AXTitle")
-			if title ~= nil then
-				local value = string.sub(title, 1, -4)
-				if item:attributeValue("AXMenuItemCmdChar") then -- it's the default
-					-- Remove (default) text:
-					local firstBracket = string.find(value, " %(", 1)
-					if firstBracket == nil then
-						firstBracket = string.find(value, "（", 1)
-					end
-					value = string.sub(value, 1, firstBracket - 1)
-				end
-				destinations[#destinations + 1] = value
-			end
-		end
-
-		local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
-		local defaultItems = {}
-		if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
-
-		local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
-		if result and #result > 0 then
-			settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE BATCH EXPORT DESTINATION FOLDER:
-	--------------------------------------------------------------------------------
-	function changeBatchExportDestinationFolder()
-		local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
-		if result == false then return end
-
-		settings.set("fcpxHacks.batchExportDestinationFolder", result)
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE FINAL CUT PRO LANGUAGE:
-	--------------------------------------------------------------------------------
-	function changeFinalCutProLanguage(language)
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update Final Cut Pro's settings::
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("AppleLanguages", {language})
-		if not result then
-			dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
-		end
-
-		--------------------------------------------------------------------------------
-		-- Change FCPX Hacks Language:
-		--------------------------------------------------------------------------------
-		fcp:getCurrentLanguage(true, language)
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3040,8 +1690,6 @@ end
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
-
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3049,7 +1697,6 @@ end
 	--------------------------------------------------------------------------------
 	function changeHighlightShape(value)
 		settings.set("fcpxHacks.displayHighlightShape", value)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3063,7 +1710,6 @@ end
 			settings.set("fcpxHacks.displayHighlightCustomColour", result)
 		end
 		settings.set("fcpxHacks.displayHighlightColour", value)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3113,11 +1759,6 @@ end
 			dialog.displayErrorMessage(i18n("backupIntervalFail"))
 			return "Failed"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro:
@@ -3247,8 +1888,6 @@ end
 			notificationWatcher()
 		end
 
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3257,7 +1896,6 @@ end
 	function toggleVoiceCommandEnableAnnouncements()
 		local voiceCommandEnableAnnouncements = settings.get("fcpxHacks.voiceCommandEnableAnnouncements")
 		settings.set("fcpxHacks.voiceCommandEnableAnnouncements", not voiceCommandEnableAnnouncements)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3266,116 +1904,20 @@ end
 	function toggleVoiceCommandEnableVisualAlerts()
 		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
 		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE SCROLLING TIMELINE:
 	--------------------------------------------------------------------------------
 	function toggleScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Toggle Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		local scrollingTimelineActivated = settings.get("fcpxHacks.scrollingTimelineActive") or false
-		if scrollingTimelineActivated then
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", false)
-
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:stop()
-			fcp:timeline():unlockPlayhead()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
-
-		else
-			--------------------------------------------------------------------------------
-			-- Ensure that Playhead Lock is Off:
-			--------------------------------------------------------------------------------
-			local message = ""
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				toggleLockPlayhead()
-				message = i18n("playheadLockDeactivated") .. "\n"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Update Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.scrollingTimelineActive", true)
-
-			--------------------------------------------------------------------------------
-			-- Start Watchers:
-			--------------------------------------------------------------------------------
-			mod.scrollingTimelineWatcherDown:start()
-
-			--------------------------------------------------------------------------------
-			-- If activated whilst already playing, then turn on Scrolling Timeline:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-
-			--------------------------------------------------------------------------------
-			-- Display Notification:
-			--------------------------------------------------------------------------------
-			dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
+		return plugins("hs.fcpxhacks.plugins.timeline.playhead").toggleScrollingTimeline()
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LOCK PLAYHEAD:
 	--------------------------------------------------------------------------------
-	function toggleLockPlayhead()
-
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-
-		if lockTimelinePlayhead then
-			if fcp:isRunning() then
-				fcp:timeline():unlockPlayhead()
-			end
-			dialog.displayNotification(i18n("playheadLockDeactivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", false)
-		else
-			local message = ""
-			--------------------------------------------------------------------------------
-			-- Ensure that Scrolling Timeline is off
-			--------------------------------------------------------------------------------
-			local scrollingTimeline = settings.get("fcpxHacks.scrollingTimelineActive") or false
-			if scrollingTimeline then
-				toggleScrollingTimeline()
-				message = i18n("scrollingTimelineDeactivated") .. "\n"
-			end
-			if fcp:isRunning() then
-				fcp:timeline():lockPlayhead()
-			end
-			dialog.displayNotification(message..i18n("playheadLockActivated"))
-			settings.set("fcpxHacks.lockTimelinePlayhead", true)
-		end
-
-		refreshMenuBar()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
-	--------------------------------------------------------------------------------
-	function toggleBatchExportReplaceExistingFiles()
-		local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
-		settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
-		refreshMenuBar()
+	function togglePlayheadLock()
+		return plugins("hs.fcpxhacks.plugins.timeline.playhead").togglePlayheadLock()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3401,8 +1943,6 @@ end
 				voicecommands:stop()
 			end
 		end
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3419,8 +1959,6 @@ end
 				hackshud.show()
 			end
 		end
-
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3437,7 +1975,6 @@ end
 	function toggleCheckForUpdates()
 		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
 		settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3446,7 +1983,6 @@ end
 	function toggleMenubarDisplay(value)
 		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
 		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3456,21 +1992,6 @@ end
 		local result = settings.get("fcpxHacks." .. value)
 		settings.set("fcpxHacks." .. value, not result)
 		hackshud.reload()
-		refreshMenuBar()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MEDIA IMPORT WATCHER:
-	--------------------------------------------------------------------------------
-	function toggleMediaImportWatcher()
-		local enableMediaImportWatcher = settings.get("fcpxHacks.enableMediaImportWatcher") or false
-		if not enableMediaImportWatcher then
-			mediaImportWatcher()
-		else
-			mod.newDeviceMounted:stop()
-		end
-		settings.set("fcpxHacks.enableMediaImportWatcher", not enableMediaImportWatcher)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3491,7 +2012,6 @@ end
 			end
 		end
 		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3539,8 +2059,6 @@ end
 		end
 
 		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3579,8 +2097,6 @@ end
 		end
 
 		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3589,7 +2105,6 @@ end
 	function toggleHammerspoonDockIcon()
 		local originalValue = hs.dockIcon()
 		hs.dockIcon(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3598,7 +2113,6 @@ end
 	function toggleHammerspoonMenuIcon()
 		local originalValue = hs.menuIcon()
 		hs.menuIcon(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3607,7 +2121,6 @@ end
 	function toggleLaunchHammerspoonOnStartup()
 		local originalValue = hs.autoLaunch()
 		hs.autoLaunch(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3616,7 +2129,6 @@ end
 	function toggleCheckforHammerspoonUpdates()
 		local originalValue = hs.automaticallyCheckForUpdates()
 		hs.automaticallyCheckForUpdates(not originalValue)
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3632,8 +2144,6 @@ end
 		end
 
 		updateMenubarIcon()
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3728,33 +2238,6 @@ end
 		-- Refresh the Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
 		bindKeyboardShortcuts()
-
-		--------------------------------------------------------------------------------
-		-- Refresh the Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
-	--------------------------------------------------------------------------------
-	function toggleEnableShortcutsDuringFullscreenPlayback()
-
-		local enableShortcutsDuringFullscreenPlayback = settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback")
-		if enableShortcutsDuringFullscreenPlayback == nil then enableShortcutsDuringFullscreenPlayback = false end
-		settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", not enableShortcutsDuringFullscreenPlayback)
-
-		if enableShortcutsDuringFullscreenPlayback == true then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		else
-			fullscreenKeyboardWatcherUp:start()
-			fullscreenKeyboardWatcherDown:start()
-		end
-
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3813,12 +2296,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3873,12 +2350,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3933,12 +2404,6 @@ end
 				return "Failed"
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menu Bar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar(true)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -3960,193 +2425,42 @@ end
 		end
 
 		updateMenubarIcon()
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateMulticamOptimizedMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		log.d("optionalValue: "..inspect(optionalValue))
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
-			log.d("optionalValue matches preference value. Bailing.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleCreateOptimizedMediaForMulticamClips() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media for Multicam Clips'.\n\nError occurred in toggleCreateMulticamOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE PROXY MEDIA:
 	--------------------------------------------------------------------------------
 	function toggleCreateProxyMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateProxyMedia", false) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateProxyMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in toggleCreateProxyMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE CREATE OPTIMIZED MEDIA:
+	-- TODO: Delete this once commands have been migrated.
 	--------------------------------------------------------------------------------
 	function toggleCreateOptimizedMedia(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateOptimizeMedia", false) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateOptimizedMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in toggleCreateOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LEAVE IN PLACE ON IMPORT:
 	--------------------------------------------------------------------------------
 	function toggleLeaveInPlace(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCopyToMediaFolder", true) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCopyToMediaFolder() then
-			dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in toggleLeaveInPlace().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE BACKGROUND RENDER:
 	--------------------------------------------------------------------------------
 	function toggleBackgroundRender(optionalValue)
-
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFAutoStartBGRender", true) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleAutoStartBGRender() then
-			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in toggleBackgroundRender().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------
@@ -4226,7 +2540,6 @@ end
 	--------------------------------------------------------------------------------
 	function clearClipboardHistory()
 		clipboard.clearHistory()
-		refreshMenuBar()
 	end
 
 	--------------------------------------------------------------------------------
@@ -4238,7 +2551,6 @@ end
 			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
-			 refreshMenuBar()
 		end
 	end
 
@@ -4257,8 +2569,6 @@ end
 				end
 			end
 		end
-		refreshMenuBar()
-
 	end
 
 --------------------------------------------------------------------------------
@@ -4269,7 +2579,7 @@ end
 	-- QUIT FCPX HACKS:
 	--------------------------------------------------------------------------------
 	function quitFCPXHacks()
-		application("Hammerspoon"):kill()
+		plugins("hs.fcpxhacks.plugins.hacks.quit")()
 	end
 
 	--------------------------------------------------------------------------------
@@ -4337,14 +2647,14 @@ end
 	-- GET SCRIPT UPDATE:
 	--------------------------------------------------------------------------------
 	function getScriptUpdate()
-		os.execute('open "' .. fcpxhacks.updateURL .. '"')
+		os.execute('open "' .. metadata.updateURL .. '"')
 	end
 
 	--------------------------------------------------------------------------------
 	-- GO TO LATENITE FILMS SITE:
 	--------------------------------------------------------------------------------
 	function gotoLateNiteSite()
-		os.execute('open "' .. fcpxhacks.developerURL .. '"')
+		os.execute('open "' .. metadata.developerURL .. '"')
 	end
 
 --------------------------------------------------------------------------------
@@ -4988,445 +3298,28 @@ end
 	-- TRANSITIONS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function transitionsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".transitionsShortcutFive")
-		elseif tostring(whichShortcut) ~= "" then
-			currentShortcut = tostring(whichShortcut)
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noTransitionShortcut"))
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the Effects Browser layout:
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Transitions Browser:
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsShowing = transitions:isShowing()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure Transitions panel is open:
-		--------------------------------------------------------------------------------
-		transitions:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Transitions" is selected:
-		--------------------------------------------------------------------------------
-		transitions:showInstalledTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		transitions:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		transitions:showAllTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		transitions:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching transitions
-		--------------------------------------------------------------------------------
-		local matches = transitions:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				transitions:search():setValue(trimmedShortcut)
-
-				matches = transitions:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in transitionsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local transition = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-		transitions:applyItem(transition)
-
-		--------------------------------------------------------------------------------
-		-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-			showTouchbar()
-			transitions:loadLayout(transitionsLayout)
-			if effectsLayout then effects:loadLayout(effectsLayout) end
-			if not transitionsShowing then transitions:hide() end
-		end)
+		return plugins("hs.fcpxhacks.plugins.timeline.transitions").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
 	-- EFFECTS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function effectsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".effectsShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noEffectShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the Transitions Browser layout:
-		--------------------------------------------------------------------------------
-		local transitions = fcp:transitions()
-		local transitionsLayout = transitions:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Effects Browser:
-		--------------------------------------------------------------------------------
-		local effects = fcp:effects()
-		local effectsShowing = effects:isShowing()
-		local effectsLayout = effects:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		effects:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Effects" is selected:
-		--------------------------------------------------------------------------------
-		effects:showInstalledEffects()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		effects:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		effects:showAllTransitions()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		effects:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = effects:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = effects:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local effect = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-		effects:applyItem(effect)
-
-		--------------------------------------------------------------------------------
-		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-			showTouchbar()
-			effects:loadLayout(effectsLayout)
-			if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-			if not effectsShowing then effects:hide() end
-		end)
-
+		return plugins("hs.fcpxhacks.plugins.timeline.effects").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TITLES SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function titlesShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".titlesShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noTitleShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the main Browser layout:
-		--------------------------------------------------------------------------------
-		local browser = fcp:browser()
-		local browserLayout = browser:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Titles Browser:
-		--------------------------------------------------------------------------------
-		local generators = fcp:generators()
-		local generatorsShowing = generators:isShowing()
-		local generatorsLayout = generators:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		generators:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		generators:showAllTitles()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:showInstalledTitles()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		generators:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = generators:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = generators:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local generator = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-		generators:applyItem(generator)
-
-		--------------------------------------------------------------------------------
-		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-			showTouchbar()
-			generators:loadLayout(generatorsLayout)
-			if browserLayout then browser:loadLayout(browserLayout) end
-			if not generatorsShowing then generators:hide() end
-		end)
-
+		return plugins("hs.fcpxhacks.plugins.timeline.titles").apply(whichShortcut)
 	end
 
 	--------------------------------------------------------------------------------
 	-- GENERATORS SHORTCUT PRESSED:
 	--------------------------------------------------------------------------------
 	function generatorsShortcut(whichShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-
-		--------------------------------------------------------------------------------
-		-- Get settings:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		local currentShortcut = nil
-		if whichShortcut == 1 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutOne")
-		elseif whichShortcut == 2 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutTwo")
-		elseif whichShortcut == 3 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutThree")
-		elseif whichShortcut == 4 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFour")
-		elseif whichShortcut == 5 then
-			currentShortcut = settings.get("fcpxHacks." .. currentLanguage .. ".generatorsShortcutFive")
-		else
-			if tostring(whichShortcut) ~= "" then
-				currentShortcut = tostring(whichShortcut)
-			end
-		end
-
-		if currentShortcut == nil then
-			dialog.displayMessage(i18n("noGeneratorShortcut"))
-			showTouchbar()
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save the main Browser layout:
-		--------------------------------------------------------------------------------
-		local browser = fcp:browser()
-		local browserLayout = browser:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Get Titles Browser:
-		--------------------------------------------------------------------------------
-		local generators = fcp:generators()
-		local generatorsShowing = generators:isShowing()
-		local generatorsLayout = generators:saveLayout()
-
-		--------------------------------------------------------------------------------
-		-- Make sure panel is open:
-		--------------------------------------------------------------------------------
-		generators:show()
-
-		--------------------------------------------------------------------------------
-		-- Make sure there's nothing in the search box:
-		--------------------------------------------------------------------------------
-		generators:search():clear()
-
-		--------------------------------------------------------------------------------
-		-- Click 'All':
-		--------------------------------------------------------------------------------
-		generators:showAllGenerators()
-
-		--------------------------------------------------------------------------------
-		-- Make sure "Installed Titles" is selected:
-		--------------------------------------------------------------------------------
-		generators:showInstalledGenerators()
-
-		--------------------------------------------------------------------------------
-		-- Perform Search:
-		--------------------------------------------------------------------------------
-		generators:search():setValue(currentShortcut)
-
-		--------------------------------------------------------------------------------
-		-- Get the list of matching effects
-		--------------------------------------------------------------------------------
-		local matches = generators:currentItemsUI()
-		if not matches or #matches == 0 then
-			--------------------------------------------------------------------------------
-			-- If Needed, Search Again Without Text Before First Dash:
-			--------------------------------------------------------------------------------
-			local index = string.find(currentShortcut, "-")
-			if index ~= nil then
-				local trimmedShortcut = string.sub(currentShortcut, index + 2)
-				effects:search():setValue(trimmedShortcut)
-
-				matches = generators:currentItemsUI()
-				if not matches or #matches == 0 then
-					dialog.displayErrorMessage("Unable to find a transition called '"..currentShortcut.."'.\n\nError occurred in effectsShortcut().")
-					return "Fail"
-				end
-			end
-		end
-
-		local generator = matches[1]
-
-		--------------------------------------------------------------------------------
-		-- Apply the selected Transition:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
-		generators:applyItem(generator)
-
-		--------------------------------------------------------------------------------
-		-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.1, function()
-			showTouchbar()
-			generators:loadLayout(generatorsLayout)
-			if browserLayout then browser:loadLayout(browserLayout) end
-			if not generatorsShowing then generators:hide() end
-		end)
-
+		return plugins("hs.fcpxhacks.plugins.timeline.generators").apply(whichShortcut)
 	end
 
 --------------------------------------------------------------------------------
@@ -5808,12 +3701,6 @@ end
 		-- Update Settings:
 		--------------------------------------------------------------------------------
 		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
-
-		--------------------------------------------------------------------------------
-		-- Refresh Menubar:
-		--------------------------------------------------------------------------------
-		refreshMenuBar()
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -5991,220 +3878,12 @@ end
 
 	end
 
---------------------------------------------------------------------------------
--- BATCH EXPORT:
---------------------------------------------------------------------------------
-
 	--------------------------------------------------------------------------------
-	-- BATCH EXPORT FROM BROWSER:
+	-- BATCH EXPORT:
 	--------------------------------------------------------------------------------
 	function batchExport()
-
-		--------------------------------------------------------------------------------
-		-- Set Custom Export Path (or Default to Desktop):
-		--------------------------------------------------------------------------------
-		local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
-		local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
-		local exportPath = "~/Desktop"
-		if batchExportDestinationFolder ~= nil then
-			 if tools.doesDirectoryExist(batchExportDestinationFolder) then
-				exportPath = batchExportDestinationFolder
-			 end
-		else
-			if tools.doesDirectoryExist(NSNavLastRootDirectory) then
-				exportPath = NSNavLastRootDirectory
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Destination Preset:
-		--------------------------------------------------------------------------------
-		local destinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
-		if destinationPreset == nil then
-
-			destinationPreset = fcp:menuBar():findMenuUI("File", "Share", function(menuItem)
-				return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-			end):attributeValue("AXTitle")
-
-			if destinationPreset == nil then
-				displayErrorMessage(i18n("batchExportNoDestination"))
-				return false
-			else
-				-- Remove (default) text:
-				local firstBracket = string.find(destinationPreset, " %(", 1)
-				if firstBracket == nil then
-					firstBracket = string.find(destinationPreset, "（", 1)
-				end
-				destinationPreset = string.sub(destinationPreset, 1, firstBracket - 1)
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Replace Existing Files Option:
-		--------------------------------------------------------------------------------
-		local replaceExisting = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
-
-		--------------------------------------------------------------------------------
-		-- Delete All Highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		local libraries = fcp:browser():libraries()
-
-		if not libraries:isShowing() then
-			dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check if we have any currently-selected clips:
-		--------------------------------------------------------------------------------
-		local clips = libraries:selectedClipsUI()
-
-		if libraries:sidebar():isFocused() then
-			--------------------------------------------------------------------------------
-			-- Use All Clips:
-			--------------------------------------------------------------------------------
-			clips = libraries:clipsUI()
-		end
-
-		local batchExportSucceeded = false
-		if clips and #clips > 0 then
-
-			--------------------------------------------------------------------------------
-			-- Display Dialog:
-			--------------------------------------------------------------------------------
-			local countText = " "
-			if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
-			local replaceFilesMessage = ""
-			if replaceExisting then
-				replaceFilesMessage = i18n("batchExportReplaceYes")
-			else
-				replaceFilesMessage = i18n("batchExportReplaceNo")
-			end
-			local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
-			if result == nil then return end
-
-			--------------------------------------------------------------------------------
-			-- Export the clips:
-			--------------------------------------------------------------------------------
-			batchExportSucceeded = batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
-
-		else
-			--------------------------------------------------------------------------------
-			-- No Clips are Available:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
-		end
-
-		--------------------------------------------------------------------------------
-		-- Batch Export Complete:
-		--------------------------------------------------------------------------------
-		if batchExportSucceeded then
-			dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
-		end
-
+		return plugins("hs.fcpxhacks.plugins.export.batch").batchExport()
 	end
-
-		--------------------------------------------------------------------------------
-		-- BATCH EXPORT CLIPS:
-		--------------------------------------------------------------------------------
-		function batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
-
-			local errorFunction = " Error occurred in batchExportClips()."
-			local firstTime = true
-			for i,clip in ipairs(clips) do
-
-				--------------------------------------------------------------------------------
-				-- Select Item:
-				--------------------------------------------------------------------------------
-				libraries:selectClip(clip)
-
-				--------------------------------------------------------------------------------
-				-- Trigger Export:
-				--------------------------------------------------------------------------------
-				if not selectShare(destinationPreset) then
-					dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
-					return false
-				end
-
-				--------------------------------------------------------------------------------
-				-- Wait for Export Dialog to open:
-				--------------------------------------------------------------------------------
-				local exportDialog = fcp:exportDialog()
-				if not just.doUntil(function() return exportDialog:isShowing() end) then
-					dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-					return false
-				end
-				exportDialog:pressNext()
-
-				--------------------------------------------------------------------------------
-				-- If 'Next' has been clicked (as opposed to 'Share'):
-				--------------------------------------------------------------------------------
-				local saveSheet = exportDialog:saveSheet()
-				if exportDialog:isShowing() then
-
-					--------------------------------------------------------------------------------
-					-- Click 'Save' on the save sheet:
-					--------------------------------------------------------------------------------
-					if not just.doUntil(function() return saveSheet:isShowing() end) then
-						dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
-						return false
-					end
-
-					--------------------------------------------------------------------------------
-					-- Set Custom Export Path (or Default to Desktop):
-					--------------------------------------------------------------------------------
-					if firstTime then
-						saveSheet:setPath(exportPath)
-						firstTime = false
-					end
-					saveSheet:pressSave()
-
-				end
-
-				--------------------------------------------------------------------------------
-				-- Make sure Save Window is closed:
-				--------------------------------------------------------------------------------
-				while saveSheet:isShowing() do
-					local replaceAlert = saveSheet:replaceAlert()
-					if replaceExisting and replaceAlert:isShowing() then
-						replaceAlert:pressReplace()
-					else
-						replaceAlert:pressCancel()
-
-						local originalFilename = saveSheet:filename():getValue()
-						if originalFilename == nil then
-							dialog.displayErrorMessage("Failed to get the original Filename." .. errorFunction)
-							return false
-						end
-
-						local newFilename = tools.incrementFilename(originalFilename)
-
-						saveSheet:filename():setValue(newFilename)
-						saveSheet:pressSave()
-					end
-				end
-
-			end
-			return true
-		end
-
-		--------------------------------------------------------------------------------
-		-- Trigger Export:
-		--------------------------------------------------------------------------------
-		function selectShare(destinationPreset)
-			return fcp:menuBar():selectMenu("File", "Share", function(menuItem)
-				if destinationPreset == nil then
-					return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-				else
-					local title = menuItem:attributeValue("AXTitle")
-					return title and string.find(title, destinationPreset) ~= nil
-				end
-			end)
-
-		end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -6303,7 +3982,7 @@ end
 	-- EMAIL BUG REPORT:
 	--------------------------------------------------------------------------------
 	function emailBugReport()
-		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. fcpxhacks.scriptVersion .. "] Bug Report"):recipients({fcpxhacks.bugReportEmail})
+		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. metadata.scriptVersion .. "] Bug Report"):recipients({metadata.bugReportEmail})
 																	   :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
 	end
 
@@ -6352,7 +4031,7 @@ end
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get(fcpxhacks.checkUpdateURL, nil)
+			updateResponse, updateBody, updateHeader = http.get(metadata.checkUpdateURL, nil)
 			if updateResponse == 200 then
 				if updateBody:sub(1,8) == "LATEST: " then
 					--------------------------------------------------------------------------------
@@ -6364,8 +4043,8 @@ end
 					-- macOS Notification:
 					--------------------------------------------------------------------------------
 					if not mod.shownUpdateNotification then
-						if latestScriptVersion > fcpxhacks.scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						if latestScriptVersion > metadata.scriptVersion then
+							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(metadata.iconPath))
 																:title("FCPX Hacks Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
@@ -6376,11 +4055,6 @@ end
 							mod.shownUpdateNotification = true
 						end
 					end
-
-					--------------------------------------------------------------------------------
-					-- Refresh Menubar:
-					--------------------------------------------------------------------------------
-					refreshMenuBar()
 				end
 			end
 		end
@@ -6592,30 +4266,12 @@ function finalCutProWindowWatcher()
 			if displayTouchBar then setTouchBarLocation() end
 		end
 	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Not On Screen:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowNotOnScreen, function()
-		if not fcp:isFrontmost() then
-			finalCutProNotActive()
-		end
-	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window On Screen:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter:subscribe(windowfilter.windowOnScreen, function()
-		finalCutProActive()
-	end, true)
-
 end
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Active:
 	--------------------------------------------------------------------------------
 	function finalCutProActive()
-
 		--------------------------------------------------------------------------------
 		-- Only do once:
 		--------------------------------------------------------------------------------
@@ -6659,50 +4315,12 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-				fullscreenKeyboardWatcherUp:start()
-				fullscreenKeyboardWatcherDown:start()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Enable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-				if mod.scrollingTimelineWatcherDown ~= nil then
-					mod.scrollingTimelineWatcherDown:start()
-				end
-			end
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Enable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-			if lockTimelinePlayhead then
-				fcp:timeline():lockPlayhead()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Enable Voice Commands:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
 			if settings.get("fcpxHacks.enableVoiceCommands") then
 				voicecommands.start()
 			end
-		end)
-
-		--------------------------------------------------------------------------------
-		-- Update Menubar:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			refreshMenuBar()
 		end)
 
 		--------------------------------------------------------------------------------
@@ -6718,7 +4336,6 @@ end
 	-- Final Cut Pro Not Active:
 	--------------------------------------------------------------------------------
 	function finalCutProNotActive()
-
 		--------------------------------------------------------------------------------
 		-- Only do once:
 		--------------------------------------------------------------------------------
@@ -6729,31 +4346,6 @@ end
 		-- Don't trigger until after FCPX Hacks has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Full Screen Keyboard Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") == true then
-			fullscreenKeyboardWatcherUp:stop()
-			fullscreenKeyboardWatcherDown:stop()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Scrolling Timeline Watcher:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.scrollingTimelineActive") == true then
-			if mod.scrollingTimelineWatcherDown ~= nil then
-				mod.scrollingTimelineWatcherDown:stop()
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Lock Timeline Playhead:
-		--------------------------------------------------------------------------------
-		local lockTimelinePlayhead = settings.get("fcpxHacks.lockTimelinePlayhead") or false
-		if lockTimelinePlayhead then
-			fcp:timeline():unlockPlayhead()
-		end
 
 		--------------------------------------------------------------------------------
 		-- Check if we need to hide the Touch Bar:
@@ -6785,11 +4377,6 @@ end
 				hackshud:hide()
 			end
 		end
-
-		--------------------------------------------------------------------------------
-		-- Disable Menubar Items:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function() refreshMenuBar() end)
 	end
 
 --------------------------------------------------------------------------------
@@ -6814,11 +4401,6 @@ function finalCutProSettingsWatcher(files)
 		end
 
     	--------------------------------------------------------------------------------
-    	-- Refresh Menubar:
-    	--------------------------------------------------------------------------------
-    	timer.doAfter(0.0000000000001, function() refreshMenuBar(true) end)
-
-    	--------------------------------------------------------------------------------
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
     	timer.doAfter(0.0000000000001, function() updateMenubarIcon() end)
@@ -6832,268 +4414,6 @@ function finalCutProSettingsWatcher(files)
 
     end
 end
-
---------------------------------------------------------------------------------
--- ENABLE SHORTCUTS DURING FCPX FULLSCREEN PLAYBACK:
---------------------------------------------------------------------------------
-function fullscreenKeyboardWatcher()
-	fullscreenKeyboardWatcherWorking = false
-	fullscreenKeyboardWatcherUp = eventtap.new({ eventtap.event.types.keyUp }, function(event)
-		fullscreenKeyboardWatcherWorking = false
-	end)
-	fullscreenKeyboardWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-
-		--------------------------------------------------------------------------------
-		-- Don't repeat if key is held down:
-		--------------------------------------------------------------------------------
-		if fullscreenKeyboardWatcherWorking then return false end
-		fullscreenKeyboardWatcherWorking = true
-
-		--------------------------------------------------------------------------------
-		-- Only Continue if in Full Screen Playback Mode:
-		--------------------------------------------------------------------------------
-		if fcp:fullScreenWindow():isShowing() then
-
-			--------------------------------------------------------------------------------
-			-- Get keypress information:
-			--------------------------------------------------------------------------------
-			local whichKey 		= event:getKeyCode()
-			local whichModifier = event:getFlags()
-
-			--------------------------------------------------------------------------------
-			-- Get Active Command Set:
-			--------------------------------------------------------------------------------
-			local activeCommandSet = fcp:getActiveCommandSet()
-			if type(activeCommandSet) ~= "table" then
-				debugMessage("Failed to get Active Command Set. Error occurred in fullscreenKeyboardWatcher().")
-				return
-			end
-
-			--------------------------------------------------------------------------------
-			-- Supported Full Screen Keys:
-			--------------------------------------------------------------------------------
-			local fullscreenKeys = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" }
-
-			--------------------------------------------------------------------------------
-			-- Key Detection:
-			--------------------------------------------------------------------------------
-			for _, whichShortcutKey in pairs(fullscreenKeys) do
-				local selectedCommandSet = activeCommandSet[whichShortcutKey]
-
-				if selectedCommandSet ~= nil then
-					if selectedCommandSet[1] ~= nil then
-						if type(selectedCommandSet[1]) == "table" then
-							--------------------------------------------------------------------------------
-							-- There are multiple shortcut possibilities for this command:
-							--------------------------------------------------------------------------------
-							for x, _ in pairs(selectedCommandSet) do
-								selectedCommandSet = activeCommandSet[whichShortcutKey][x]
-								if selectedCommandSet['characterString'] ~= nil then
-									if selectedCommandSet['characterString'] ~= "" then
-										if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
-
-											--------------------------------------------------------------------------------
-											-- Debug:
-											--------------------------------------------------------------------------------
-											--debugMessage("Fullscreen Keypress Detected (Multiple): " .. tostring(whichShortcutKey))
-
-											--------------------------------------------------------------------------------
-											-- Press 'Escape':
-											--------------------------------------------------------------------------------
-											eventtap.keyStroke({""}, "escape")
-
-											--------------------------------------------------------------------------------
-											-- Perform Keystroke:
-											--------------------------------------------------------------------------------
-											eventtap.keyStroke(whichModifier, whichKey)
-
-											--------------------------------------------------------------------------------
-											-- Go back to Full Screen Playback:
-											--------------------------------------------------------------------------------
-											fcp:performShortcut("PlayFullscreen")
-
-											--------------------------------------------------------------------------------
-											-- All done:
-											--------------------------------------------------------------------------------
-											return
-
-										end
-									end
-								end
-							end
-						end
-					else
-						--------------------------------------------------------------------------------
-						-- There is only a single shortcut possibility for this command:
-						--------------------------------------------------------------------------------
-						if selectedCommandSet['characterString'] ~= nil then
-							if selectedCommandSet['characterString'] ~= "" then
-								if whichKey == kc.keyCodeTranslator(selectedCommandSet['characterString']) and tools.modifierMatch(whichModifier, selectedCommandSet['modifiers']) then
-
-									--------------------------------------------------------------------------------
-									-- Debug:
-									--------------------------------------------------------------------------------
-									--debugMessage("Fullscreen Keypress Detected (Single): " .. tostring(whichShortcutKey))
-
-									--------------------------------------------------------------------------------
-									-- Press 'Escape':
-									--------------------------------------------------------------------------------
-									eventtap.keyStroke({""}, "escape")
-
-									--------------------------------------------------------------------------------
-									-- Perform Keystroke:
-									--------------------------------------------------------------------------------
-									eventtap.keyStroke(whichModifier, whichKey)
-
-									--------------------------------------------------------------------------------
-									-- Go back to Full Screen Playback:
-									--------------------------------------------------------------------------------
-									fcp:performShortcut("PlayFullscreen")
-
-									--------------------------------------------------------------------------------
-									-- All done:
-									--------------------------------------------------------------------------------
-									return
-
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end)
-end
-
---------------------------------------------------------------------------------
--- MEDIA IMPORT WINDOW WATCHER:
---------------------------------------------------------------------------------
-function mediaImportWatcher()
-	debugMessage("Watching for new media...")
-	mod.newDeviceMounted = fs.volume.new(function(event, table)
-		if event == fs.volume.didMount then
-
-			debugMessage("Media Inserted.")
-
-			local mediaImport = fcp:mediaImport()
-
-			if mediaImport:isShowing() then
-				-- Media Import was already open. Bail!
-				debugMessage("Already in Media Import. Continuing...")
-				return
-			end
-
-			local mediaImportCount = 0
-			local stopMediaImportTimer = false
-			local currentApplication = application.frontmostApplication()
-			debugMessage("Currently using '"..currentApplication:name().."'")
-
-			local fcpxHidden = not fcp:isShowing()
-
-			mediaImportTimer = timer.doUntil(
-				function()
-					return stopMediaImportTimer
-				end,
-				function()
-					if not fcp:isRunning() then
-						debugMessage("FCPX is not running. Stop watching.")
-						stopMediaImportTimer = true
-					else
-						if mediaImport:isShowing() then
-							mediaImport:hide()
-							if fcpxHidden then fcp:hide() end
-							currentApplication:activate()
-							debugMessage("Hid FCPX and returned to '"..currentApplication:name().."'.")
-							stopMediaImportTimer = true
-						end
-						mediaImportCount = mediaImportCount + 1
-						if mediaImportCount == 500 then
-							debugMessage("Gave up watching for the Media Import window after 5 seconds.")
-							stopMediaImportTimer = true
-						end
-					end
-				end,
-				0.01
-			)
-
-		end
-	end)
-	mod.newDeviceMounted:start()
-end
-
---------------------------------------------------------------------------------
--- SCROLLING TIMELINE WATCHER:
---------------------------------------------------------------------------------
-function scrollingTimelineWatcher()
-
-	local timeline = fcp:timeline()
-
-	--------------------------------------------------------------------------------
-	-- Key Press Down Watcher:
-	--------------------------------------------------------------------------------
-	mod.scrollingTimelineWatcherDown = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-
-		--------------------------------------------------------------------------------
-		-- Don't do anything if we're already locked.
-		--------------------------------------------------------------------------------
-		if timeline:isLockedPlayhead() then
-			return false
-		elseif event:getKeyCode() == 49 and next(event:getFlags()) == nil then
-			--------------------------------------------------------------------------------
-			-- Spacebar Pressed:
-			--------------------------------------------------------------------------------
-			checkScrollingTimeline()
-		end
-	end)
-end
-
-	--------------------------------------------------------------------------------
-	-- CHECK TO SEE IF WE SHOULD ACTUALLY TURN ON THE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function checkScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Make sure the Command Editor and hacks console are closed:
-		--------------------------------------------------------------------------------
-		if fcp:commandEditor():isShowing() or hacksconsole.active then
-			debugMessage("Spacebar pressed while other windows are visible.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Don't activate scrollbar in fullscreen mode:
-		--------------------------------------------------------------------------------
-		if fcp:fullScreenWindow():isShowing() then
-			debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-			return "Stop"
-		end
-
-		local timeline = fcp:timeline()
-
-		--------------------------------------------------------------------------------
-		-- Get Timeline Scroll Area:
-		--------------------------------------------------------------------------------
-		if not timeline:isShowing() then
-			writeToConsole("ERROR: Could not find Timeline Scroll Area.")
-			return "Stop"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check mouse is in timeline area:
-		--------------------------------------------------------------------------------
-		local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-		local viewFrame = geometry.rect(timeline:contents():viewFrame())
-		if mouseLocation:inside(viewFrame) then
-
-			--------------------------------------------------------------------------------
-			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-			--------------------------------------------------------------------------------
-			debugMessage("Mouse inside Timeline Area.")
-			timeline:lockPlayhead(true)
-		else
-			debugMessage("Mouse outside of Timeline Area.")
-		end
-	end
 
 --------------------------------------------------------------------------------
 -- NOTIFICATION WATCHER:
@@ -7213,7 +4533,6 @@ function sharedClipboardFileWatcher(files)
     end
     if doReload then
 		debugMessage("Refreshing Shared Clipboard.")
-		refreshMenuBar(true)
     end
 end
 
@@ -7235,7 +4554,7 @@ function sharedXMLFileWatcher(files)
 
 					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
 					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
-						:setIdImage(image.imageFromPath(fcpxhacks.iconPath))
+						:setIdImage(image.imageFromPath(metadata.iconPath))
 						:title("New XML Recieved")
 						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
 						:informativeText("FCPX Hacks has recieved a new XML file.")
@@ -7247,8 +4566,6 @@ function sharedXMLFileWatcher(files)
 			end
         end
     end
-
-	refreshMenuBar()
 end
 
 --------------------------------------------------------------------------------

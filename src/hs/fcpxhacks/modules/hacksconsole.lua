@@ -23,6 +23,7 @@ local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local timer										= require("hs.timer")
+local plugins									= require("hs.plugins")
 
 local ax 										= require("hs._asm.axuielement")
 local fcp										= require("hs.finalcutpro")
@@ -183,12 +184,10 @@ function hacksconsole.choices()
 		--------------------------------------------------------------------------------
 		local chooserAutomation = {
 			{
-				["text"] = "Toggle Scrolling Timeline",
-				["subText"] = "Automation",
-				["function"] = "toggleScrollingTimeline",
-				["function1"] = nil,
-				["function2"] = nil,
-				["function3"] = nil,
+				["text"] 		= "Toggle Scrolling Timeline",
+				["subText"] 	= "Automation",
+				["plugin"]		= "hs.fcpxhacks.plugins.timeline.playhead",
+				["function"] 	= "toggleScrollingTimeline",
 			},
 			{
 				["text"] = "Highlight Browser Playhead",
@@ -734,7 +733,12 @@ function hacksconsole.completionAction(result)
 		--------------------------------------------------------------------------------
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000001, function() _G[result["function"]](result["function1"], result["function2"], result["function3"], result["function4"]) end )
+		local source = _G
+		if result["plugin"] then
+			source = plugins(result["plugin"])
+		end
+		
+		timer.doAfter(0.0000000001, function() source[result["function"]](result["function1"], result["function2"], result["function3"], result["function4"]) end )
 
 	--------------------------------------------------------------------------------
 	-- Remove Mode:

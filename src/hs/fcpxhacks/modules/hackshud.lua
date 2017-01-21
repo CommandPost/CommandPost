@@ -35,6 +35,7 @@ local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
+local plugins									= require("hs.plugins")
 
 local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
@@ -140,7 +141,6 @@ function hackshud.new()
 		if window:id() == hackshud.windowID then
 			if not hackshud.ignoreWindowChange then
 				settings.set("fcpxHacks.enableHacksHUD", false)
-				refreshMenuBar()
 			end
 		end
 	end, true)
@@ -319,11 +319,6 @@ function hackshud.chooserAction(result)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Refresh Menubar:
-	--------------------------------------------------------------------------------
-	refreshMenuBar()
-
-	--------------------------------------------------------------------------------
 	-- Reload HUD:
 	--------------------------------------------------------------------------------
 	local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
@@ -346,12 +341,10 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	local chooserAutomation = {
 		{
-			["text"] = "Toggle Scrolling Timeline",
-			["subText"] = "Automation",
-			["function"] = "toggleScrollingTimeline",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
+			["text"] 		= "Toggle Scrolling Timeline",
+			["subText"] 	= "Automation",
+			["plugin"]		= "hs.fcpxhacks.plugins.timeline.playhead",
+			["function"] 	= "toggleScrollingTimeline",
 		},
 		{
 			["text"] = "Highlight Browser Playhead",
@@ -1132,7 +1125,12 @@ function hackshud.hudCallback(eventName, params)
 	if tonumber(f3) ~= nil then f3 = tonumber(f3) end
 	if tonumber(f4) ~= nil then f4 = tonumber(f4) end
 
-	timer.doAfter(0.0000000001, function() _G[params["function"]](f1, f2, f3, f4) end )
+	local source = _G
+	if params["plugin"] then
+		source = plugins(params["plugin"])
+	end
+
+	timer.doAfter(0.0000000001, function() source[params["function"]](f1, f2, f3, f4) end )
 
 	fcp:launch()
 
