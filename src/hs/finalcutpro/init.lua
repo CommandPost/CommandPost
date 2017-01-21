@@ -845,37 +845,64 @@ end
 ---  * None
 ---
 --- Returns:
----  * The 'Active Command Set' value, or nil if an error occurred
+---  * The 'Active Command Set' value, or the 'Default' command set if none is set.
 ---
 function App:getActiveCommandSetPath()
 	local result = self:getPreference("Active Command Set") or nil
 	if result == nil then
 		-- In the unlikely scenario that this is the first time FCPX has been run:
-		return self:getPath() .. "/Contents/Resources/" .. self:getCurrentLanguage() .. ".lproj/Default.commandset"
+		result = self:getDefaultCommandSetPath()
 	end
 	return result
 end
 
---- hs.finalcutpro:getActiveCommandSet([optionalPath]) -> table or nil
+--- hs.finalcutpro:getDefaultCommandSetPath([langauge]) -> string
 --- Function
---- Returns the 'Active Command Set' as a Table
+--- Gets the path to the 'Default' Command Set.
 ---
 --- Parameters:
----  * optionalPath - The optional path of the Command Set
+---  * `language`	- (optional) The language code to use. Defaults to the current FCPX language.
 ---
 --- Returns:
----  * A table of the Active Command Set's contents, or nil if an error occurred
+---  * The 'Default' Command Set path, or `nil` if an error occurred
 ---
-function App:getActiveCommandSet(optionalPath, forceReload)
+function App:getDefaultCommandSetPath(language)
+	language = language or self:getCurrentLanguage()
+	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
+end
+
+--- hs.finalcutpro:getCommandSet(path) -> string
+--- Function
+--- Loads the Command Set at the specified path into a table.
+---
+--- Parameters:
+---  * `path`	- The path to the command set.
+---
+--- Returns:
+---  * The Command Set as a table, or `nil` if there was a problem.
+---
+function App:getCommandSet(path)
+	if fs.attributes(path) ~= nil then
+		return plist.fileToTable(path)
+	end
+end
+
+--- hs.finalcutpro:getActiveCommandSet([forceReload]) -> table or nil
+--- Function
+--- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
+--- `true` for `forceReload` if you want to reload it.
+---
+--- Parameters:
+---  * forceReload	- (optional) If `true`, require the Command Set to be reloaded.
+---
+--- Returns:
+---  * A table of the Active Command Set's contents, or `nil` if an error occurred
+---
+function App:getActiveCommandSet(forceReload)
 
 	if forceReload or not self._activeCommandSet then
-		local path = optionalPath or self:getActiveCommandSetPath()
-
-		if path ~= nil then
-			if fs.attributes(path) ~= nil then
-				self._activeCommandSet = plist.fileToTable(path)
-			end
-		end
+		local path = self:getActiveCommandSetPath()
+		self._activeCommandSet = self:getCommandSet(path)
 	end
 
 	return self._activeCommandSet

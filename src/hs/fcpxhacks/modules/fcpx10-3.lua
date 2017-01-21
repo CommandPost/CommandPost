@@ -852,7 +852,7 @@ function bindKeyboardShortcuts()
 		--------------------------------------------------------------------------------
 		-- Update Active Command Set:
 		--------------------------------------------------------------------------------
-		fcp:getActiveCommandSet(nil, true)
+		fcp:getActiveCommandSet(true)
 
 		--------------------------------------------------------------------------------
 		-- Use Default Shortcuts Keys:
@@ -926,7 +926,7 @@ end
 --------------------------------------------------------------------------------
 function getShortcutsFromActiveCommandSet()
 
-	local activeCommandSetTable = fcp:getActiveCommandSet(nil, true)
+	local activeCommandSetTable = fcp:getActiveCommandSet(true)
 
 	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
