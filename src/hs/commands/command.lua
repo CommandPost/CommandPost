@@ -45,34 +45,65 @@ function command:subtitled(subtitle)
 	return self
 end
 
---- hs.commands.command:activatedBy(keyCode) -> command/modifier
+--- hs.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
 --- Specifies that the command is activated by pressing a key combination.
---- * If the `keyCode` is provided, no modifiers need to be pressed to activate.
+--- This method can be called multiple times, and multiple key combinations will be registered for the command.
+--- To remove existing key combinations, call the `command:clearHotkeys()` method.
+---
+--- * If the `keyCode` is provided, no modifiers need to be pressed to activate and the `command` is returned.
+--- * If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
 --- * If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
 --- 
 --- E.g:
 ---
 --- ```
 --- local global    	= commands.collection("global")
---- local pressA 		= global:add("commandA"):pressing("a")
---- local pressCmdA		= global:add("commandCmdA"):pressing():command("a")
---- local pressOptCmdA	= global:add("commandOptCmdA"):pressing():option():command("a")
+--- local pressA 		= global:add("commandA"):activatedBy("a")
+--- local pressShiftA	= global:add("commandShiftA"):activatedBy({"shift"}, "a")
+--- local pressCmdA		= global:add("commandCmdA"):activatedBy():command("a")
+--- local pressOptCmdA	= global:add("commandOptCmdA"):activatedBy():option():command("a")
 --- global:enable()
 --- ```
 ---
 --- Parameters:
+---  * `modifiers`	- (optional) The table containing names of required modifiers.
 ---  * `keyCode`	- (optional) The key code that will activate the command, with no modifiers.
 ---
 --- Returns:
 ---  * `command` if a `keyCode` was provided, or `modifier` if not.
 ---
-function command:activatedBy(keyCode)
+function command:activatedBy(modifiers, keyCode)
+	if keyCode and not modifiers then
+		modifiers = {}
+	elseif modifiers and not keyCode then
+		keyCode = modifiers
+		modifiers = {}
+	end
+	
 	if keyCode then
-		self:_addHotkey({}, keyCode)
+		self:_addHotkey(modifiers, keyCode)
 		return self
 	else
 		return modifier:new(self)
 	end
+end
+
+--- hs.commands.command:clearHotkeys() -> command
+--- Sets the function that will be called when the command key combo is pressed.
+---
+--- Parameters:
+---  * N/A
+---
+--- Returns:
+---  * command - The current command
+---
+function command:clearHotkeys()
+	for i,hk in self.hotkeys do
+		hk:delete()
+		self.hotkeys[i] = nil
+	end
+	self.hotkeys = {}
+	return self
 end
 
 -- internal method

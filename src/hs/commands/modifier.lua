@@ -5,6 +5,12 @@ local modifier = {}
 --- hs.commands.modifier:new() -> modifier
 --- Creates a new menu modifier, which can have items and sub-menus added to it.
 ---
+--- Modifiers are additive, and intended to work alongside `command` instances.
+--- You can create a complex keystroke combo by chaining the modifier names together.
+--- For example:
+---
+--- `command:new("Foo"):activatedBy():cmd():alt("x")`
+---
 --- Returns:
 ---  * modifier - The modifier that was created.
 ---
@@ -32,7 +38,6 @@ function modifier:add(modifier, keyCode)
 	self._modifiers[#self._modifiers + 1] = modifier
 	if keyCode then
 		-- we're done here
-		log.df("adding hotkey: %s + %s,  ", hs.inspect(self._modifiers), hs.inspect(keyCode))
 		return self._command:_addHotkey(self._modifiers, keyCode)
 	else
 		return self
