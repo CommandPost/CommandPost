@@ -145,12 +145,6 @@ function mod.apply(shortcut)
 
 end
 
--- TODO: A Global function which should be removed once other classes no longer depend on it
-function generatorsShortcut(shortcut)
-	log.d("deprecated: generatorsShortcut called")
-	return mod.apply(shortcut)
-end
-
 --------------------------------------------------------------------------------
 -- ASSIGN GENERATORS SHORTCUT:
 --------------------------------------------------------------------------------
