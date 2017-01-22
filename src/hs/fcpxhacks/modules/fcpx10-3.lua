@@ -574,7 +574,6 @@ function defaultShortcutKeys()
 
         FCPXHackHUD                                                 = { characterString = kc.keyCodeTranslator("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleTouchBar                                      = { characterString = kc.keyCodeTranslator("z"),            modifiers = controlOptionCommand,                   fn = function() toggleTouchBar() end,                               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackScrollingTimeline                                   = { characterString = kc.keyCodeTranslator("w"),            modifiers = controlOptionCommand,                   fn = function() toggleScrollingTimeline() end,                      releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackChangeTimelineClipHeightUp                          = { characterString = kc.keyCodeTranslator("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
         FCPXHackChangeTimelineClipHeightDown                        = { characterString = kc.keyCodeTranslator("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
@@ -1811,13 +1810,6 @@ end
 	function toggleVoiceCommandEnableVisualAlerts()
 		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
 		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE SCROLLING TIMELINE:
-	--------------------------------------------------------------------------------
-	function toggleScrollingTimeline()
-		return plugins("hs.fcpxhacks.plugins.timeline.playhead").toggleScrollingTimeline()
 	end
 
 	--------------------------------------------------------------------------------

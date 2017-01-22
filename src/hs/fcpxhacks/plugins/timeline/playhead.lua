@@ -233,18 +233,26 @@ local plugin = {}
 
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation.options"] 	= "options",
+	["hs.fcpxhacks.plugins.commands.fcpx"]				= "fcpxCmds",
 }
 
 function plugin.init(deps)
 	local section = deps.options:addSection(PRIORITY)
 
+	-- menu items
 	section:addItems(1000, function()
 		return {
 			{ title = i18n("enableScrollingTimeline"),		fn = mod.toggleScrollingTimeline, 	checked = mod.isScrollingTimelineActive() },
 			{ title = i18n("enableTimelinePlayheadLock"),	fn = mod.togglePlayheadLock,		checked = mod.isPlayheadLocked()},
 		}
 	end)
+	
+	-- commands
+	deps.fcpxCmds:add("FCPXHackScrollingTimeline")
+		:activatedBy():ctrl():option():cmd("w")
+		:whenActivated(function() mod.toggleScrollingTimeline() end)
 
+	-- watch for changes
 	fcp:watch(
 		{
 			active 		= mod.update,
