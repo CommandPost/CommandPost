@@ -603,12 +603,6 @@ function defaultShortcutKeys()
         FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() togglePlayheadLock() end,                           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackTransitionsOne                                      = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTransitionsTwo                                      = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(2) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTransitionsThree                                    = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(3) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTransitionsFour                                     = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(4) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTransitionsFive                                     = { characterString = "",                                   modifiers = {},                                     fn = function() transitionsShortcut(5) end,                         releasedFn = nil,                                                       repeatFn = nil },
-
         FCPXHackTitlesOne                                           = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(1) end,                              releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackTitlesTwo                                           = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(2) end,                              releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackTitlesThree                                         = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(3) end,                              releasedFn = nil,                                                       repeatFn = nil },
@@ -2409,13 +2403,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- QUIT FCPX HACKS:
-	--------------------------------------------------------------------------------
-	function quitFCPXHacks()
-		plugins("hs.fcpxhacks.plugins.hacks.quit")()
-	end
-
-	--------------------------------------------------------------------------------
 	-- OPEN HAMMERSPOON CONSOLE:
 	--------------------------------------------------------------------------------
 	function openHammerspoonConsole()
@@ -3126,13 +3113,6 @@ end
 --------------------------------------------------------------------------------
 -- EFFECTS/TRANSITIONS/TITLES/GENERATOR RELATED:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TRANSITIONS SHORTCUT PRESSED:
-	--------------------------------------------------------------------------------
-	function transitionsShortcut(whichShortcut)
-		return plugins("hs.fcpxhacks.plugins.timeline.transitions").apply(whichShortcut)
-	end
 
 	--------------------------------------------------------------------------------
 	-- EFFECTS SHORTCUT PRESSED:

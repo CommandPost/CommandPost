@@ -760,7 +760,8 @@ function hackshud.choices()
 			local individualEffect = {
 				["text"] = allTransitions[i],
 				["subText"] = "Transition",
-				["function"] = "transitionsShortcut",
+				["plugins"] = "hs.fcpxhacks.plugins.timeline.transitions",
+				["function"] = "apply",
 				["function1"] = allTransitions[i],
 				["function2"] = "",
 				["function3"] = "",
