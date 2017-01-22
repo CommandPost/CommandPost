@@ -1577,37 +1577,6 @@ end
 	end
 
 --------------------------------------------------------------------------------
--- UPDATE EFFECTS/TRANSITIONS/TITLES/GENERATORS LISTS:
---------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
-	-- GET LIST OF EFFECTS:
-	--------------------------------------------------------------------------------
-	function updateEffectsList()
-		plugins("hs.fcpxhacks.plugins.timeline.effects").updateEffectsList()
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET LIST OF TRANSITIONS:
-	--------------------------------------------------------------------------------
-	function updateTransitionsList()
-		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList()
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET LIST OF TITLES:
-	--------------------------------------------------------------------------------
-	function updateTitlesList()
-		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET LIST OF GENERATORS:
-	--------------------------------------------------------------------------------
-	function updateGeneratorsList()
-		plugins("hs.fcpxhacks.plugins.timeline.generators").updateGeneratorsList()
-	end
-
---------------------------------------------------------------------------------
 -- CHANGE:
 --------------------------------------------------------------------------------
 
