@@ -145,12 +145,6 @@ function mod.apply(shortcut)
 
 end
 
--- TODO: A Global function which should be removed once other classes no longer depend on it
-function titlesShortcut(shortcut)
-	log.d("deprecated: titlesShortcut called")
-	return mod.apply(shortcut)
-end
-
 --------------------------------------------------------------------------------
 -- ASSIGN TITLES SHORTCUT:
 --------------------------------------------------------------------------------
