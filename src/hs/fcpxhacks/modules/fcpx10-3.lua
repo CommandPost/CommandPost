@@ -599,7 +599,6 @@ function defaultShortcutKeys()
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackMoveToPlayhead                                      = { characterString = "",                                   modifiers = {},                                     fn = function() moveToPlayhead() end,                               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() togglePlayheadLock() end,                           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackColorPuckOne                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "global") end,                    releasedFn = nil,                                           repeatFn = nil },
@@ -1811,14 +1810,6 @@ end
 		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
 		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
 	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE LOCK PLAYHEAD:
-	--------------------------------------------------------------------------------
-	function togglePlayheadLock()
-		return plugins("hs.fcpxhacks.plugins.timeline.playhead").togglePlayheadLock()
-	end
-
 	--------------------------------------------------------------------------------
 	-- TOGGLE ENABLE HACKS HUD:
 	--------------------------------------------------------------------------------
