@@ -140,12 +140,6 @@ function mod.apply(shortcut)
 
 end
 
--- TODO: A Global function which should be removed once other classes no longer depend on it
-function effectsShortcut(shortcut)
-	log.d("deprecated: effectsShortcut called")
-	return mod.apply(shortcut)
-end
-
 --------------------------------------------------------------------------------
 -- ASSIGN EFFECTS SHORTCUT:
 --------------------------------------------------------------------------------

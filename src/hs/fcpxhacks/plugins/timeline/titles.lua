@@ -7,6 +7,7 @@ local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
+local tools				= require("hs.fcpxhacks.modules.tools")
 
 local log				= require("hs.logger").new("titles")
 local inspect			= require("hs.inspect")
@@ -323,6 +324,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
+	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -353,6 +355,12 @@ function plugin.init(deps)
 		
 		return items
 	end)
+	
+	-- Commands
+	local fcpxCmds = deps.fcpxCmds
+	for i = 1, MAX_SHORTCUTS do
+		fcpxCmds:add("FCPXHackTitles"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
+	end
 	
 	return mod
 end

@@ -603,12 +603,6 @@ function defaultShortcutKeys()
         FCPXHackLockPlayhead                                        = { characterString = "",                                   modifiers = {},                                     fn = function() togglePlayheadLock() end,                           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackTitlesOne                                           = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(1) end,                              releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTitlesTwo                                           = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(2) end,                              releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTitlesThree                                         = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(3) end,                              releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTitlesFour                                          = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(4) end,                              releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackTitlesFive                                          = { characterString = "",                                   modifiers = {},                                     fn = function() titlesShortcut(5) end,                              releasedFn = nil,                                                       repeatFn = nil },
-
         FCPXHackGeneratorsOne                                       = { characterString = "",                                   modifiers = {},                                     fn = function() generatorsShortcut(1) end,                          releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackGeneratorsTwo                                       = { characterString = "",                                   modifiers = {},                                     fn = function() generatorsShortcut(2) end,                          releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackGeneratorsThree                                     = { characterString = "",                                   modifiers = {},                                     fn = function() generatorsShortcut(3) end,                          releasedFn = nil,                                                       repeatFn = nil },
@@ -3113,20 +3107,6 @@ end
 --------------------------------------------------------------------------------
 -- EFFECTS/TRANSITIONS/TITLES/GENERATOR RELATED:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- EFFECTS SHORTCUT PRESSED:
-	--------------------------------------------------------------------------------
-	function effectsShortcut(whichShortcut)
-		return plugins("hs.fcpxhacks.plugins.timeline.effects").apply(whichShortcut)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TITLES SHORTCUT PRESSED:
-	--------------------------------------------------------------------------------
-	function titlesShortcut(whichShortcut)
-		return plugins("hs.fcpxhacks.plugins.timeline.titles").apply(whichShortcut)
-	end
 
 	--------------------------------------------------------------------------------
 	-- GENERATORS SHORTCUT PRESSED:

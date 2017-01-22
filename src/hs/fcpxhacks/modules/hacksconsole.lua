@@ -567,7 +567,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allVideoEffects[i],
 						["subText"] = "Video Effect",
-						["function"] = "effectsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["function"] = "apply",
 						["function1"] = allVideoEffects[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -588,7 +589,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allAudioEffects[i],
 						["subText"] = "Audio Effect",
-						["function"] = "effectsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["function"] = "apply",
 						["function1"] = allAudioEffects[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -631,7 +633,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allTitles[i],
 						["subText"] = "Title",
-						["function"] = "titlesShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.titles",
+						["function"] = "apply",
 						["function1"] = allTitles[i],
 						["function2"] = "",
 						["function3"] = "",
