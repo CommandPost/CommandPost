@@ -298,6 +298,7 @@ function mod.update()
 end
 
 function mod.init()
+	log.df("Initialising shortcuts...")
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
@@ -330,12 +331,14 @@ function plugin.init(deps)
 	mod.globalCmds 	= deps.globalCmds
 	mod.fcpxCmds	= deps.fcpxCmds
 	
-	mod.init()
-	
 	-- Add the menu item to the top section.
 	deps.top:addItem(PRIORITY, createMenuItem)
 	
 	return mod
+end
+
+function plugin.postInit(deps)
+	mod.init()
 end
 
 return plugin
