@@ -655,7 +655,8 @@ function hacksconsole.choices()
 					local individualEffect = {
 						["text"] = allGenerators[i],
 						["subText"] = "Generator",
-						["function"] = "generatorsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.generators",
+						["function"] = "apply",
 						["function1"] = allGenerators[i],
 						["function2"] = "",
 						["function3"] = "",

@@ -2,6 +2,7 @@
 local fcp				= require("hs.finalcutpro")
 local settings			= require("hs.settings")
 local dialog			= require("hs.fcpxhacks.modules.dialog")
+local tools				= require("hs.fcpxhacks.modules.tools")
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -322,6 +323,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
+	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -352,6 +354,12 @@ function plugin.init(deps)
 		
 		return items
 	end)
+	
+	-- Commands
+
+	for i = 1, MAX_SHORTCUTS do
+		deps.fcpxCmds:add("FCPXHackGenerators"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
+	end
 	
 	return mod
 end
