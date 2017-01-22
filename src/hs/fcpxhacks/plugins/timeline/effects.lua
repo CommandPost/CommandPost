@@ -426,7 +426,7 @@ function plugin.init(deps)
 		fcpxCmds:add("FCPXHackEffects"..tools.numberToWord(i))
 			:titled(i18n("applyEffectsShortcut", {count = i}))
 			:activatedBy():ctrl():shift(tostring(i))
-			:whenPressedDo(function() mod.apply(i) end)
+			:whenPressed(function() mod.apply(i) end)
 	end
 	
 	return mod

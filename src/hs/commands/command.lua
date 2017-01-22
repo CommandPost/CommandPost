@@ -123,10 +123,10 @@ function command:_addHotkey(modifiers, key)
 	return self
 end
 
---- hs.commands.command:whenActivatedDo(function) -> command
+--- hs.commands.command:whenActivated(function) -> command
 --- Sets the function that will be called when the command is activated.
 ---
---- NOTE: This is a shortcut for calling `whenPressedDo(...)`
+--- NOTE: This is a shortcut for calling `whenPressed(...)`
 ---
 --- Parameters:
 ---  * `activatedFn`	- the function to call when activated.
@@ -134,11 +134,11 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenActivatedDo(activatedFn)
-	return self:whenPressedDo(activatedFn)
+function command:whenActivated(activatedFn)
+	return self:whenPressed(activatedFn)
 end
 
---- hs.commands.command:whenPressedDo(function) -> command
+--- hs.commands.command:whenPressed(function) -> command
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
@@ -147,12 +147,12 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenPressedDo(pressedFn)
+function command:whenPressed(pressedFn)
 	self.pressedFn = pressedFn
 	return self
 end
 
---- hs.commands.command:whenReleasedDo(function) -> command
+--- hs.commands.command:whenReleased(function) -> command
 --- Sets the function that will be called when the command key combo is released.
 ---
 --- Parameters:
@@ -161,12 +161,12 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenReleasedDo(releasedFn)
+function command:whenReleased(releasedFn)
 	self.releasedFn = releasedFn
 	return self
 end
 
---- hs.commands.command:whenRepeatedDo(function) -> command
+--- hs.commands.command:whenRepeated(function) -> command
 --- Sets the function that will be called when the command key combo is repeated.
 ---
 --- Parameters:
@@ -175,7 +175,7 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenRepeatedDo(repeatedFn)
+function command:whenRepeated(repeatedFn)
 	self.repeatedFn = repeatedFn
 	return self
 end

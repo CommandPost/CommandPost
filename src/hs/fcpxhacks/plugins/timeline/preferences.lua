@@ -64,8 +64,8 @@ function plugin.init(deps)
 		}
 	end)
 	
-	deps.fcpxCmds:add("FCPXHackBackgroundRenderOn"):whenActivatedDo(function() toggleBackgroundRender(true) end)
-	deps.fcpxCmds:add("FCPXHackBackgroundRenderOff"):whenActivatedDo(function() toggleBackgroundRender(false) end)
+	deps.fcpxCmds:add("FCPXHackBackgroundRenderOn"):whenActivated(function() toggleBackgroundRender(true) end)
+	deps.fcpxCmds:add("FCPXHackBackgroundRenderOff"):whenActivated(function() toggleBackgroundRender(false) end)
 	
 	return mod
 end
