@@ -123,6 +123,21 @@ function command:_addHotkey(modifiers, key)
 	return self
 end
 
+--- hs.commands.command:whenActivatedDo(function) -> command
+--- Sets the function that will be called when the command is activated.
+---
+--- NOTE: This is a shortcut for calling `whenPressedDo(...)`
+---
+--- Parameters:
+---  * `activatedFn`	- the function to call when activated.
+---
+--- Returns:
+---  * command - The current command
+---
+function command:whenActivatedDo(activatedFn)
+	return self:whenPressedDo(activatedFn)
+end
+
 --- hs.commands.command:whenPressedDo(function) -> command
 --- Sets the function that will be called when the command key combo is pressed.
 ---

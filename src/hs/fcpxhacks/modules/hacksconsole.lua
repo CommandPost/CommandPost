@@ -346,6 +346,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -354,6 +355,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -362,6 +364,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -370,6 +373,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -378,6 +382,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -386,6 +391,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -394,6 +400,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = true,
 				["function2"] = nil,
@@ -402,6 +409,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = false,
 				["function2"] = nil,
@@ -410,6 +418,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = true,
 				["function2"] = nil,
@@ -418,6 +427,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = false,
 				["function2"] = nil,

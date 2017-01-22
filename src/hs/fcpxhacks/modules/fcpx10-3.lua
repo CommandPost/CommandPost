@@ -676,17 +676,6 @@ function defaultShortcutKeys()
         FCPXHackExposurePuckThreeDown                               = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end,       releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
         FCPXHackExposurePuckFourDown                                = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end,     releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
 
-        FCPXHackCreateOptimizedMediaOn                              = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateOptimizedMedia(true) end,               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackCreateOptimizedMediaOff                             = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateOptimizedMedia(false) end,              releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackCreateMulticamOptimizedMediaOn                      = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateMulticamOptimizedMedia(true) end,       releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackCreateMulticamOptimizedMediaOff                     = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateMulticamOptimizedMedia(false) end,      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackCreateProxyMediaOn                                  = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateProxyMedia(true) end,                   releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackCreateProxyMediaOff                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleCreateProxyMedia(false) end,                  releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackLeaveInPlaceOn                                      = { characterString = "",                                   modifiers = {},                                     fn = function() toggleLeaveInPlace(true) end,                       releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackLeaveInPlaceOff                                     = { characterString = "",                                   modifiers = {},                                     fn = function() toggleLeaveInPlace(false) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackBackgroundRenderOn                                  = { characterString = "",                                   modifiers = {},                                     fn = function() toggleBackgroundRender(true) end,                   releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackBackgroundRenderOff                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleBackgroundRender(false) end,                  releasedFn = nil,                                                       repeatFn = nil },
-
         FCPXHackChangeSmartCollectionsLabel                         = { characterString = "",                                   modifiers = {},                                     fn = function() changeSmartCollectionsLabel() end,                  releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackSelectClipAtLaneOne                                 = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(1) end,                            releasedFn = nil,                                                       repeatFn = nil },
@@ -2305,42 +2294,6 @@ end
 		end
 
 		updateMenubarIcon()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
-	--------------------------------------------------------------------------------
-	function toggleCreateMulticamOptimizedMedia(optionalValue)
-		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateMulticamOptimizedMedia(optionalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE PROXY MEDIA:
-	--------------------------------------------------------------------------------
-	function toggleCreateProxyMedia(optionalValue)
-		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateProxyMedia(optionalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE OPTIMIZED MEDIA:
-	-- TODO: Delete this once commands have been migrated.
-	--------------------------------------------------------------------------------
-	function toggleCreateOptimizedMedia(optionalValue)
-		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleCreateOptimizedMedia(optionalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE LEAVE IN PLACE ON IMPORT:
-	--------------------------------------------------------------------------------
-	function toggleLeaveInPlace(optionalValue)
-		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleLeaveInPlace(optionalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE BACKGROUND RENDER:
-	--------------------------------------------------------------------------------
-	function toggleBackgroundRender(optionalValue)
-		return plugins("hs.fcpxhacks.plugins.fcpx.prefs").toggleBackgroundRender(optionalValue)
 	end
 
 --------------------------------------------------------------------------------
