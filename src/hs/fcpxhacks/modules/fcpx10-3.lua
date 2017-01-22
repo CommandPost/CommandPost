@@ -544,14 +544,11 @@ function defaultShortcutKeys()
 	local controlOptionCommandShift = {"ctrl", "option", "command", "shift"}
 
     local defaultShortcutKeys = {
-		FCPXHackShowListOfShortcutKeys                              = { characterString = kc.keyCodeTranslator("f1"),           modifiers = controlOptionCommand,                   fn = displayShortcutList,                          releasedFn = nil,                                                       repeatFn = nil,         global = true },
-
         FCPXHackHighlightBrowserPlayhead                            = { characterString = kc.keyCodeTranslator("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealInBrowserAndHighlight                         = { characterString = kc.keyCodeTranslator("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackSingleMatchFrameAndHighlight                        = { characterString = kc.keyCodeTranslator("s"),            modifiers = controlOptionCommand,                   fn = function() singleMatchFrame() end,                             releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealMulticamClipInBrowserAndHighlight             = { characterString = kc.keyCodeTranslator("d"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(true) end,                       releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealMulticamClipInAngleEditorAndHighlight         = { characterString = kc.keyCodeTranslator("g"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(false) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackBatchExportFromBrowser                              = { characterString = kc.keyCodeTranslator("e"),            modifiers = controlOptionCommand,                   fn = function() batchExport() end,                                  releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackChangeBackupInterval                                = { characterString = kc.keyCodeTranslator("b"),            modifiers = controlOptionCommand,                   fn = function() changeBackupInterval() end,                         releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleTimecodeOverlays                              = { characterString = kc.keyCodeTranslator("t"),            modifiers = controlOptionCommand,                   fn = function() toggleTimecodeOverlay() end,                        releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleMovingMarkers                                 = { characterString = kc.keyCodeTranslator("y"),            modifiers = controlOptionCommand,                   fn = function() toggleMovingMarkers() end,                          releasedFn = nil,                                                       repeatFn = nil },
@@ -1561,17 +1558,6 @@ end
 	--------------------------------------------------------------------------------
 	function updateMenubarIcon()
 		menuManager():updateMenubarIcon()
-	end
-
---------------------------------------------------------------------------------
--- HELP:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- DISPLAY A LIST OF ALL SHORTCUTS:
-	--------------------------------------------------------------------------------
-	function displayShortcutList()
-		plugins("hs.fcpxhacks.plugins.fcpx.showshortcuts")()
 	end
 
 --------------------------------------------------------------------------------
@@ -3604,13 +3590,6 @@ end
 
 		return true
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- BATCH EXPORT:
-	--------------------------------------------------------------------------------
-	function batchExport()
-		return plugins("hs.fcpxhacks.plugins.export.batch").batchExport()
 	end
 
 --------------------------------------------------------------------------------

@@ -334,6 +334,11 @@ function plugin.init(deps)
 	-- Add the menu item to the top section.
 	deps.top:addItem(PRIORITY, createMenuItem)
 	
+	-- Add Commands
+	deps.globalCmds:add("FCPXHackShowListOfShortcutKeys")
+		:activatedBy():ctrl():option():cmd("f1")
+		:whenActivated(mod.displayShortcutList)
+	
 	return mod
 end
 
