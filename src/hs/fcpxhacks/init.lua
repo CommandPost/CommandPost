@@ -205,14 +205,14 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		-- NOTE: Only check for a few files otherwise it slows down startup too much.
 		local requiredFiles = {
-			"hs/finalcutpro/init.lua",
-			"hs/fcpxhacks/init.lua",
-			"hs/fcpxhacks/assets/fcpxhacks.icns",
-			"hs/fcpxhacks/languages/en.lua",
+			"finalcutpro/init.lua",
+			"fcpxhacks/init.lua",
+			"fcpxhacks/assets/fcpxhacks.icns",
+			"fcpxhacks/languages/en.lua",
 			}
 		local checkFailed = false
 		for i=1, #requiredFiles do
-			if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
+			if fs.attributes(metadata.scriptPath .. "/hs/" .. requiredFiles[i]) == nil then checkFailed = true end
 		end
 		if checkFailed then
 			dialog.displayAlertMessage(i18n("missingFiles"))
