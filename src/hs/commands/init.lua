@@ -39,6 +39,19 @@ function commands:getAll()
 	return self.commands
 end
 
+function commands:clear()
+	self:deleteShortcuts()
+	self.commands = {}
+	return self	
+end
+
+function commands:deleteShortcuts()
+	for _,command in pairs(self.commands) do
+		command:deleteShortcuts()
+	end
+	return self
+end
+
 function commands:enable()
 	self.enabled = true
 	for _,command in pairs(self.commands) do

@@ -33,7 +33,8 @@ local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local MediaImport								= require("hs.finalcutpro.import.MediaImport")
 
-local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
+local kc										= require("hs.finalcutpro.keycodes")
+local shortcut									= require("hs.commands.shortcut")
 
 --- The App module:
 local App = {}
@@ -903,9 +904,77 @@ function App:getActiveCommandSet(forceReload)
 	if forceReload or not self._activeCommandSet then
 		local path = self:getActiveCommandSetPath()
 		self._activeCommandSet = self:getCommandSet(path)
+		-- reset the command cache since we've loaded a new set.
+		if self._activeCommands then
+			self._activeCommands = nil
+		end
 	end
 
 	return self._activeCommandSet
+end
+
+--- hs.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
+--- Function
+--- Finds a shortcut from the Active Command Set with the specified ID and returns a table
+--- of `hs.commands.shortcut`s for the specified command, or `nil` if it doesn't exist.
+---
+--- Parameters:
+---  * id - The unique ID for the command.
+---
+--- Returns:
+---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
+---
+function App:getCommandShortcuts(id)
+	local activeCommands = self._activeCommands
+	if not activeCommands then
+		activeCommands = {}
+		self._activeCommands = activeCommands
+	end
+	
+	local shortcuts = activeCommands[id]
+	if not shortcuts then
+		local commandSet = self:getActiveCommandSet()
+		
+		local fcpxCmds = commandSet[id]
+		
+		if fcpxCmds == nil then
+			return nil
+		end
+		
+		if #fcpxCmds == 0 then
+			fcpxCmds = { fcpxCmds }
+		end
+		
+		shortcuts = {}
+		
+		for _,fcpxCmd in ipairs(fcpxCmds) do
+			local modifiers = nil
+			local keyCode = nil
+			local keypadModifier = false
+
+			if fcpxCmd["modifiers"] ~= nil then
+				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
+				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
+			elseif fcpxCmd["modifierMask"] ~= nil then
+				modifiers = kc.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+			end
+
+			if fcpxCmd["characterString"] ~= nil then
+				keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+			elseif fcpxHacks["character"] ~= nil then
+				if keypadModifier then
+					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
+				else
+					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
+				end
+			end
+	
+			shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+		end
+		
+		activeCommands[id] = shortcuts
+	end
+	return shortcuts
 end
 
 --- hs.finalcutpro.performShortcut() -> Boolean
@@ -919,49 +988,16 @@ end
 ---  * true if successful otherwise false
 ---
 function App:performShortcut(whichShortcut)
-
+	self:launch()
 	local activeCommandSet = self:getActiveCommandSet()
-
-	if activeCommandSet[whichShortcut] == nil then return false end
-
-	-- There may be one or multiple keyboard combos for a given command
-	local currentShortcut = activeCommandSet[whichShortcut]
-	if #currentShortcut > 0 then
-		currentShortcut = currentShortcut[1]
+	
+	local shortcuts = self:getCommandShortcuts(whichShortcut)
+	
+	if shortcuts and #shortcuts > 0 then
+		shortcuts[1]:trigger()
 	end
-
-	if currentShortcut == nil then
-		debugMessage("Unable to find keyboard shortcut named '"..whichShortcut.."'")
-		return false
-	end
-
-	local modifiers = nil
-	local charString = nil
-
-	if currentShortcut["modifiers"] ~= nil then
-		modifiers = kc.translateKeyboardModifiers(currentShortcut["modifiers"])
-	end
-
-	if currentShortcut["modifierMask"] ~= nil then
-		modifiers = kc.translateModifierMask(currentShortcut["modifierMask"])
-	end
-
-	if currentShortcut["characterString"] ~= nil then
-		charString = kc.translateKeyboardCharacters(currentShortcut["characterString"])
-	end
-
-	if currentShortcut["character"] ~= nil then
-		if keypadModifier then
-			charString = kc.translateKeyboardKeypadCharacters(currentShortcut["character"])
-		else
-			charString = kc.translateKeyboardCharacters(currentShortcut["character"])
-		end
-	end
-
-	eventtap.keyStroke(modifiers, charString)
 
 	return true
-
 end
 
 ----------------------------------------------------------------------------------------

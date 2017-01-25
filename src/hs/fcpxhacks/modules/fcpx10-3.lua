@@ -126,7 +126,7 @@ local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local voicecommands 							= require("hs.fcpxhacks.modules.voicecommands")
 
-local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
+local shortcut									= require("hs.commands.shortcut")
 
 --------------------------------------------------------------------------------
 -- DEFAULT SETTINGS:
@@ -544,51 +544,51 @@ function defaultShortcutKeys()
 	local controlOptionCommandShift = {"ctrl", "option", "command", "shift"}
 
     local defaultShortcutKeys = {
-        FCPXHackHighlightBrowserPlayhead                            = { characterString = kc.keyCodeTranslator("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRevealInBrowserAndHighlight                         = { characterString = kc.keyCodeTranslator("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSingleMatchFrameAndHighlight                        = { characterString = kc.keyCodeTranslator("s"),            modifiers = controlOptionCommand,                   fn = function() singleMatchFrame() end,                             releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRevealMulticamClipInBrowserAndHighlight             = { characterString = kc.keyCodeTranslator("d"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(true) end,                       releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRevealMulticamClipInAngleEditorAndHighlight         = { characterString = kc.keyCodeTranslator("g"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(false) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackChangeBackupInterval                                = { characterString = kc.keyCodeTranslator("b"),            modifiers = controlOptionCommand,                   fn = function() changeBackupInterval() end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleTimecodeOverlays                              = { characterString = kc.keyCodeTranslator("t"),            modifiers = controlOptionCommand,                   fn = function() toggleTimecodeOverlay() end,                        releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleMovingMarkers                                 = { characterString = kc.keyCodeTranslator("y"),            modifiers = controlOptionCommand,                   fn = function() toggleMovingMarkers() end,                          releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackAllowTasksDuringPlayback                            = { characterString = kc.keyCodeTranslator("p"),            modifiers = controlOptionCommand,                   fn = function() togglePerformTasksDuringPlayback() end,             releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackHighlightBrowserPlayhead                            = { characterString = shortcut.textToKeyCode("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRevealInBrowserAndHighlight                         = { characterString = shortcut.textToKeyCode("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSingleMatchFrameAndHighlight                        = { characterString = shortcut.textToKeyCode("s"),            modifiers = controlOptionCommand,                   fn = function() singleMatchFrame() end,                             releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRevealMulticamClipInBrowserAndHighlight             = { characterString = shortcut.textToKeyCode("d"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(true) end,                       releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRevealMulticamClipInAngleEditorAndHighlight         = { characterString = shortcut.textToKeyCode("g"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(false) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackChangeBackupInterval                                = { characterString = shortcut.textToKeyCode("b"),            modifiers = controlOptionCommand,                   fn = function() changeBackupInterval() end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackToggleTimecodeOverlays                              = { characterString = shortcut.textToKeyCode("t"),            modifiers = controlOptionCommand,                   fn = function() toggleTimecodeOverlay() end,                        releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackToggleMovingMarkers                                 = { characterString = shortcut.textToKeyCode("y"),            modifiers = controlOptionCommand,                   fn = function() toggleMovingMarkers() end,                          releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackAllowTasksDuringPlayback                            = { characterString = shortcut.textToKeyCode("p"),            modifiers = controlOptionCommand,                   fn = function() togglePerformTasksDuringPlayback() end,             releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackSelectColorBoardPuckOne                             = { characterString = kc.keyCodeTranslator("m"),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "global") end,            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectColorBoardPuckTwo                             = { characterString = kc.keyCodeTranslator(","),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "shadows") end,           releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectColorBoardPuckThree                           = { characterString = kc.keyCodeTranslator("."),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "midtones") end,          releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectColorBoardPuckFour                            = { characterString = kc.keyCodeTranslator("/"),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "highlights") end,        releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectColorBoardPuckOne                             = { characterString = shortcut.textToKeyCode("m"),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "global") end,            releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectColorBoardPuckTwo                             = { characterString = shortcut.textToKeyCode(","),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "shadows") end,           releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectColorBoardPuckThree                           = { characterString = shortcut.textToKeyCode("."),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "midtones") end,          releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectColorBoardPuckFour                            = { characterString = shortcut.textToKeyCode("/"),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "highlights") end,        releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackRestoreKeywordPresetOne                             = { characterString = kc.keyCodeTranslator("1"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(1) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetTwo                             = { characterString = kc.keyCodeTranslator("2"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(2) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetThree                           = { characterString = kc.keyCodeTranslator("3"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(3) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetFour                            = { characterString = kc.keyCodeTranslator("4"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(4) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetFive                            = { characterString = kc.keyCodeTranslator("5"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(5) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetSix                             = { characterString = kc.keyCodeTranslator("6"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(6) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetSeven                           = { characterString = kc.keyCodeTranslator("7"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(7) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetEight                           = { characterString = kc.keyCodeTranslator("8"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(8) end,                      releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRestoreKeywordPresetNine                            = { characterString = kc.keyCodeTranslator("9"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(9) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetOne                             = { characterString = shortcut.textToKeyCode("1"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(1) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetTwo                             = { characterString = shortcut.textToKeyCode("2"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(2) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetThree                           = { characterString = shortcut.textToKeyCode("3"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(3) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetFour                            = { characterString = shortcut.textToKeyCode("4"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(4) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetFive                            = { characterString = shortcut.textToKeyCode("5"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(5) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetSix                             = { characterString = shortcut.textToKeyCode("6"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(6) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetSeven                           = { characterString = shortcut.textToKeyCode("7"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(7) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetEight                           = { characterString = shortcut.textToKeyCode("8"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(8) end,                      releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackRestoreKeywordPresetNine                            = { characterString = shortcut.textToKeyCode("9"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(9) end,                      releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackHUD                                                 = { characterString = kc.keyCodeTranslator("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleTouchBar                                      = { characterString = kc.keyCodeTranslator("z"),            modifiers = controlOptionCommand,                   fn = function() toggleTouchBar() end,                               releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackHUD                                                 = { characterString = shortcut.textToKeyCode("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackToggleTouchBar                                      = { characterString = shortcut.textToKeyCode("z"),            modifiers = controlOptionCommand,                   fn = function() toggleTouchBar() end,                               releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackChangeTimelineClipHeightUp                          = { characterString = kc.keyCodeTranslator("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
-        FCPXHackChangeTimelineClipHeightDown                        = { characterString = kc.keyCodeTranslator("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
+        FCPXHackChangeTimelineClipHeightUp                          = { characterString = shortcut.textToKeyCode("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
+        FCPXHackChangeTimelineClipHeightDown                        = { characterString = shortcut.textToKeyCode("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
 
-        FCPXHackSelectForward                                       = { characterString = kc.keyCodeTranslator("right"),        modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(true) end,                   releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectBackwards                                     = { characterString = kc.keyCodeTranslator("left"),         modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(false) end,                  releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectForward                                       = { characterString = shortcut.textToKeyCode("right"),        modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(true) end,                   releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSelectBackwards                                     = { characterString = shortcut.textToKeyCode("left"),         modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(false) end,                  releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackSaveKeywordPresetOne                                = { characterString = kc.keyCodeTranslator("1"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetTwo                                = { characterString = kc.keyCodeTranslator("2"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(2) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetThree                              = { characterString = kc.keyCodeTranslator("3"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(3) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetFour                               = { characterString = kc.keyCodeTranslator("4"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(4) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetFive                               = { characterString = kc.keyCodeTranslator("5"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(5) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetSix                                = { characterString = kc.keyCodeTranslator("6"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(6) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetSeven                              = { characterString = kc.keyCodeTranslator("7"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(7) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetEight                              = { characterString = kc.keyCodeTranslator("8"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(8) end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSaveKeywordPresetNine                               = { characterString = kc.keyCodeTranslator("9"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(9) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetOne                                = { characterString = shortcut.textToKeyCode("1"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetTwo                                = { characterString = shortcut.textToKeyCode("2"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(2) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetThree                              = { characterString = shortcut.textToKeyCode("3"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(3) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetFour                               = { characterString = shortcut.textToKeyCode("4"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(4) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetFive                               = { characterString = shortcut.textToKeyCode("5"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(5) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetSix                                = { characterString = shortcut.textToKeyCode("6"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(6) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetSeven                              = { characterString = shortcut.textToKeyCode("7"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(7) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetEight                              = { characterString = shortcut.textToKeyCode("8"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(8) end,                         releasedFn = nil,                                                       repeatFn = nil },
+        FCPXHackSaveKeywordPresetNine                               = { characterString = shortcut.textToKeyCode("9"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(9) end,                         releasedFn = nil,                                                       repeatFn = nil },
 
-        FCPXHackConsole                                             = { characterString = kc.keyCodeTranslator("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
+        FCPXHackConsole                                             = { characterString = shortcut.textToKeyCode("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
 
 		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         	releasedFn = nil,                                                       repeatFn = nil },
 		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
@@ -810,8 +810,8 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	local currentHotkeys = hotkey.getHotkeys()
 	for _,hk in ipairs(currentHotkeys) do
-		-- only delete hotkeys which are not created by `hs.commands`
-		if not hk.command then
+		-- only delete hotkeys which are not created by `hs.commands.shortcut`
+		if not hk.shortcut then
 			result = hk:delete()
 		end
 	end
@@ -868,95 +868,22 @@ function getShortcutsFromActiveCommandSet()
 
 	if activeCommandSetTable ~= nil then
 		for k, v in pairs(mod.finalCutProShortcutKeyPlaceholders) do
+			local shortcuts = fcp:getCommandShortcuts(k)
+			if shortcuts and #shortcuts > 0 then
+				for x, shortcut in ipairs(shortcuts) do
 
-			if activeCommandSetTable[k] ~= nil then
-
-				--------------------------------------------------------------------------------
-				-- Multiple keyboard shortcuts for single function:
-				--------------------------------------------------------------------------------
-				if type(activeCommandSetTable[k][1]) == "table" then
-					for x=1, #activeCommandSetTable[k] do
-
-						local tempModifiers = nil
-						local tempCharacterString = nil
-						local keypadModifier = false
-
-						if activeCommandSetTable[k][x]["modifiers"] ~= nil then
-							if string.find(activeCommandSetTable[k][x]["modifiers"], "keypad") then keypadModifier = true end
-							tempModifiers = kc.translateKeyboardModifiers(activeCommandSetTable[k][x]["modifiers"])
-						else
-							if activeCommandSetTable[k][x]["modifierMask"] ~= nil then
-								tempModifiers = kc.translateModifierMask(activeCommandSetTable[k][x]["modifierMask"])
-							end
-						end
-
-						if activeCommandSetTable[k][x]["characterString"] ~= nil then
-							tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k][x]["characterString"])
-						else
-							if activeCommandSetTable[k][x]["character"] ~= nil then
-								if keypadModifier then
-									tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k][x]["character"])
-								else
-									tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k][x]["character"])
-								end
-							end
-						end
-
-						local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-
-						local xValue = ""
-						if x ~= 1 then xValue = tostring(x) end
-
-						mod.finalCutProShortcutKey[k .. xValue] = {
-							characterString 	= 		tempCharacterString,
-							modifiers 			= 		tempModifiers,
-							fn 					= 		mod.finalCutProShortcutKeyPlaceholders[k]['fn'],
-							releasedFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'],
-							repeatFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'],
-							global 				= 		tempGlobalShortcut,
-						}
-
-					end
-				--------------------------------------------------------------------------------
-				-- Single keyboard shortcut for a single function:
-				--------------------------------------------------------------------------------
-				else
-
-					local tempModifiers = nil
-					local tempCharacterString = nil
-					local keypadModifier = false
-
-					if activeCommandSetTable[k]["modifiers"] ~= nil then
-						tempModifiers = kc.translateKeyboardModifiers(activeCommandSetTable[k]["modifiers"])
-					else
-						if activeCommandSetTable[k]["modifierMask"] ~= nil then
-							tempModifiers = kc.translateModifierMask(activeCommandSetTable[k]["modifierMask"])
-						end
-					end
-
-					if activeCommandSetTable[k]["characterString"] ~= nil then
-						tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k]["characterString"])
-					else
-						if activeCommandSetTable[k]["character"] ~= nil then
-							if keypadModifier then
-								tempCharacterString = kc.translateKeyboardKeypadCharacters(activeCommandSetTable[k]["character"])
-							else
-								tempCharacterString = kc.translateKeyboardCharacters(activeCommandSetTable[k]["character"])
-							end
-						end
-					end
-
-					local tempGlobalShortcut = mod.finalCutProShortcutKeyPlaceholders[k]['global'] or false
-
-					mod.finalCutProShortcutKey[k] = {
-						characterString 	= 		tempCharacterString,
-						modifiers 			= 		tempModifiers,
+					local global = v.global or false
+					local xValue = ""
+					if x ~= 1 then xValue = tostring(x) end
+			
+					mod.finalCutProShortcutKey[k .. xValue] = {
+						characterString 	= 		shortcut:getKeyCode(),
+						modifiers 			= 		shortcut:getModifiers(),
 						fn 					= 		mod.finalCutProShortcutKeyPlaceholders[k]['fn'],
 						releasedFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['releasedFn'],
 						repeatFn 			= 		mod.finalCutProShortcutKeyPlaceholders[k]['repeatFn'],
-						global 				= 		tempGlobalShortcut,
+						global 				= 		global,
 					}
-
 				end
 			end
 		end

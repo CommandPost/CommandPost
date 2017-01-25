@@ -6,7 +6,7 @@ local timer								= require("hs.timer")
 
 local log								= require("hs.logger").new("fsshrtct")
 
-local kc								= require("hs.fcpxhacks.modules.shortcuts.keycodes")
+local shortcut							= require("hs.commands.shortcut")
 local tools								= require("hs.fcpxhacks.modules.tools")
 
 -- Constants
@@ -77,7 +77,7 @@ end
 
 local function performCommand(cmd, whichModifier, whichKey)
 	local chars = cmd['characterString']
-	if chars and chars ~= "" and whichKey == kc.keyCodeTranslator(chars)
+	if chars and chars ~= "" and whichKey == shortcut.textToKeyCode(chars)
 		and tools.modifierMatch(whichModifier, cmd['modifiers']) then
 			log.df("performing command: %s", hs.inspect(cmd))
 
@@ -158,7 +158,6 @@ local function init()
 		timer.doAfter(0.0000001, function() checkCommand(event:getFlags(), event:getKeyCode()) end)
 	end)
 end
-
 
 -- The Plugin
 local plugin = {}

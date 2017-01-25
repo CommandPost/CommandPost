@@ -3,7 +3,6 @@
 local fcp			= require("hs.finalcutpro")
 local settings		= require("hs.settings")
 local dialog		= require("hs.fcpxhacks.modules.dialog")
-local kc			= require("hs.fcpxhacks.modules.shortcuts.keycodes")
 local metadata		= require("hs.fcpxhacks.metadata")
 local tools			= require("hs.fcpxhacks.modules.tools")
 
@@ -159,64 +158,14 @@ local function disableHacksShortcuts()
 	return true
 end
 
-local function applyShortcut(cmd, fcpxCmd)
-	local modifiers = nil
-	local keyCode = nil
-	local keypadModifier = false
-
-	if fcpxCmd["modifiers"] ~= nil then
-		if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
-		modifiers = kc.translateKeyboardModifiers(fcpxCmd["modifiers"])
-	elseif fcpxCmd["modifierMask"] ~= nil then
-		modifiers = kc.translateModifierMask(fcpxCmd["modifierMask"])
-	end
-
-	if fcpxCmd["characterString"] ~= nil then
-		keyCode = kc.translateKeyboardCharacters(fcpxCmd["characterString"])
-	elseif fcpxHacks["character"] ~= nil then
-		if keypadModifier then
-			keyCode = kc.translateKeyboardKeypadCharacters(fcpxCmd["character"])
-		else
-			keyCode = kc.translateKeyboardCharacters(fcpxCmd["character"])
-		end
-	end
-	
-	cmd:activatedBy(modifiers, keyCode)
-end
-
-local function applyCommandShortcut(cmd, commandSet)
-	local id = cmd.id
-	log.df("Processing '%s'...", id)
-	-- First, remove existing hotkeys for the command
-	cmd:clearHotkeys()
-	
-	-- Then see if we have a custom shortcut
-	local csCmd = commandSet[id]
-	if csCmd ~= nil then
-		log.df("Applying FCPX shortcuts for '%s'", id)
-		
-		-- Then apply the new one(s)
-		if type(csCmd[1]) == "table" then
-			--------------------------------------------------------------------------------
-			-- Multiple keyboard shortcuts for single function:
-			--------------------------------------------------------------------------------
-			for _,fcpxCmd in ipairs(csCmd) do
-				applyShortcut(cmd, fcpxCmd)
-			end
-		else
-			--------------------------------------------------------------------------------
-			-- Single keyboard shortcut for a single function:
-			--------------------------------------------------------------------------------
-			applyShortcut(cmd, csCmd)
-		end
-	end
-end
-
 local function applyShortcuts(commands, commandSet)
+	commands:deleteShortcuts()
 	if commandSet ~= nil then
-		log.df("Looping through all commands...")
 		for id, cmd in pairs(commands:getAll()) do
-			applyCommandShortcut(cmd, commandSet)
+			local shortcuts = fcp:getCommandShortcuts(id)
+			if shortcuts ~= nil then
+				cmd:setShortcuts(shortcuts)
+			end
 		end
 		return true
 	else
