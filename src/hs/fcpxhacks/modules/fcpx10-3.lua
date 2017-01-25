@@ -151,9 +151,7 @@ local defaultSettings = {
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
-												["highlightPlayheadTime"]						= 3,
 												["notificationPlatform"]						= {},
-												["displayHighlightColour"]						= "Red",
 }
 
 --------------------------------------------------------------------------------
@@ -547,11 +545,8 @@ function defaultShortcutKeys()
 	local controlOptionCommandShift = {"ctrl", "option", "command", "shift"}
 
     local defaultShortcutKeys = {
-        FCPXHackHighlightBrowserPlayhead                            = { characterString = shortcut.textToKeyCode("h"),            modifiers = controlOptionCommand,                   fn = function() highlightFCPXBrowserPlayhead() end,                 releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackRevealInBrowserAndHighlight                         = { characterString = shortcut.textToKeyCode("f"),            modifiers = controlOptionCommand,                   fn = function() matchFrameThenHighlightFCPXBrowserPlayhead() end,   releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackSingleMatchFrameAndHighlight                        = { characterString = shortcut.textToKeyCode("s"),            modifiers = controlOptionCommand,                   fn = function() singleMatchFrame() end,                             releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRevealMulticamClipInBrowserAndHighlight             = { characterString = shortcut.textToKeyCode("d"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(true) end,                       releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackRevealMulticamClipInAngleEditorAndHighlight         = { characterString = shortcut.textToKeyCode("g"),            modifiers = controlOptionCommand,                   fn = function() multicamMatchFrame(false) end,                      releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackChangeBackupInterval                                = { characterString = shortcut.textToKeyCode("b"),            modifiers = controlOptionCommand,                   fn = function() changeBackupInterval() end,                         releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleTimecodeOverlays                              = { characterString = shortcut.textToKeyCode("t"),            modifiers = controlOptionCommand,                   fn = function() toggleTimecodeOverlay() end,                        releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackToggleMovingMarkers                                 = { characterString = shortcut.textToKeyCode("y"),            modifiers = controlOptionCommand,                   fn = function() toggleMovingMarkers() end,                          releasedFn = nil,                                                       repeatFn = nil },
@@ -1319,23 +1314,6 @@ end
 	end
 
 	function generatePreferencesMenuBar()
-		--------------------------------------------------------------------------------
-		-- Get Sizing Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightShape = nil
-		displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
-		local displayHighlightShapeRectangle = false
-		local displayHighlightShapeCircle = false
-		local displayHighlightShapeDiamond = false
-		if displayHighlightShape == nil then 			displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Rectangle" then 	displayHighlightShapeRectangle = true		end
-		if displayHighlightShape == "Circle" then 		displayHighlightShapeCircle = true			end
-		if displayHighlightShape == "Diamond" then 		displayHighlightShapeDiamond = true			end
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Colour Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or nil
 
 		--------------------------------------------------------------------------------
 		-- Hammerspoon Settings:
@@ -1362,11 +1340,6 @@ end
 		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
 
 		--------------------------------------------------------------------------------
-		-- Get Highlight Playhead Time:
-		--------------------------------------------------------------------------------
-		local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-
-		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
 		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
@@ -1374,19 +1347,6 @@ end
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
-		local settingsShapeMenuTable = {
-			{ title = i18n("rectangle"), 																fn = function() changeHighlightShape("Rectangle") end,				checked = displayHighlightShapeRectangle	},
-			{ title = i18n("circle"), 																	fn = function() changeHighlightShape("Circle") end, 				checked = displayHighlightShapeCircle		},
-			{ title = i18n("diamond"),																	fn = function() changeHighlightShape("Diamond") end, 				checked = displayHighlightShapeDiamond		},
-		}
-		local settingsColourMenuTable = {
-			{ title = i18n("red"), 																		fn = function() changeHighlightColour("Red") end, 					checked = displayHighlightColour == "Red" },
-			{ title = i18n("blue"), 																	fn = function() changeHighlightColour("Blue") end, 					checked = displayHighlightColour == "Blue" },
-			{ title = i18n("green"), 																	fn = function() changeHighlightColour("Green") end, 				checked = displayHighlightColour == "Green"	},
-			{ title = i18n("yellow"), 																	fn = function() changeHighlightColour("Yellow") end, 				checked = displayHighlightColour == "Yellow" },
-			{ title = "-" },
-			{ title = i18n("custom"), 																	fn = function() changeHighlightColour("Custom") end, 				checked = displayHighlightColour == "Custom" },
-		}
 		local settingsHammerspoonSettings = {
 			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
 			{ title = "-" },
@@ -1419,28 +1379,12 @@ end
 						reveal anchor "Dictation" of pane "com.apple.preference.speech"
 					end tell]]) end },
 		}
-		local settingsHighlightPlayheadTime = {
-			{ title = i18n("one") .. " " .. i18n("secs", {count=1}), 									fn = function() changeHighlightPlayheadTime(1) end, 					checked = highlightPlayheadTime == 1 },
-			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(2) end, 					checked = highlightPlayheadTime == 2 },
-			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(3) end, 					checked = highlightPlayheadTime == 3 },
-			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(4) end, 					checked = highlightPlayheadTime == 4 },
-			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(5) end, 					checked = highlightPlayheadTime == 5 },
-			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(6) end, 					checked = highlightPlayheadTime == 6 },
-			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(7) end, 					checked = highlightPlayheadTime == 7 },
-			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(8) end, 					checked = highlightPlayheadTime == 8 },
-			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(9) end, 					checked = highlightPlayheadTime == 9 },
-			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 									fn = function() changeHighlightPlayheadTime(10) end, 					checked = highlightPlayheadTime == 10 },
-		}
 		local settingsMenuTable = {
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
 			{ title = "-" },
 			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
-			{ title = "-" },
-			{ title = i18n("highlightPlayheadColour"), 													menu = settingsColourMenuTable},
-			{ title = i18n("highlightPlayheadShape"), 													menu = settingsShapeMenuTable},
-			{ title = i18n("highlightPlayheadTime"), 													menu = settingsHighlightPlayheadTime},
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
@@ -1495,13 +1439,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- CHANGE HIGHLIGHT PLAYHEAD TIME:
-	--------------------------------------------------------------------------------
-	function changeHighlightPlayheadTime(value)
-		settings.set("fcpxHacks.highlightPlayheadTime", value)
-	end
-
-	--------------------------------------------------------------------------------
 	-- CHANGE TOUCH BAR LOCATION:
 	--------------------------------------------------------------------------------
 	function changeTouchBarLocation(value)
@@ -1511,26 +1448,6 @@ end
 			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
 			if displayTouchBar then setTouchBarLocation() end
 		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE HIGHLIGHT SHAPE:
-	--------------------------------------------------------------------------------
-	function changeHighlightShape(value)
-		settings.set("fcpxHacks.displayHighlightShape", value)
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE HIGHLIGHT COLOUR:
-	--------------------------------------------------------------------------------
-	function changeHighlightColour(value)
-		if value=="Custom" then
-			local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour") or nil
-			local result = dialog.displayColorPicker(displayHighlightCustomColour)
-			if result == nil then return nil end
-			settings.set("fcpxHacks.displayHighlightCustomColour", result)
-		end
-		settings.set("fcpxHacks.displayHighlightColour", value)
 	end
 
 	--------------------------------------------------------------------------------
@@ -2580,183 +2497,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- PERFORM MULTICAM MATCH FRAME:
-	--------------------------------------------------------------------------------
-	function multicamMatchFrame(goBackToTimeline) -- True or False
-
-		local errorFunction = "\n\nError occurred in multicamMatchFrame()."
-
-		--------------------------------------------------------------------------------
-		-- Just in case:
-		--------------------------------------------------------------------------------
-		if goBackToTimeline == nil then goBackToTimeline = true end
-		if type(goBackToTimeline) ~= "boolean" then goBackToTimeline = true end
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		local contents = fcp:timeline():contents()
-
-		--------------------------------------------------------------------------------
-		-- Store the originally-selected clips
-		--------------------------------------------------------------------------------
-		local originalSelection = contents:selectedClipsUI()
-
-		--------------------------------------------------------------------------------
-		-- If nothing is selected, select the top clip under the playhead:
-		--------------------------------------------------------------------------------
-		if not originalSelection or #originalSelection == 0 then
-			local playheadClips = contents:playheadClipsUI(true)
-			contents:selectClip(playheadClips[1])
-		elseif #originalSelection > 1 then
-			debugMessage("Unable to match frame on multiple clips." .. errorFunction)
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Multicam Angle:
-		--------------------------------------------------------------------------------
-		local multicamAngle = getMulticamAngleFromSelectedClip()
-		if multicamAngle == false then
-			debugMessage("The selected clip is not a multicam clip." .. errorFunction)
-			contents:selectClips(originalSelection)
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Open in Angle Editor:
-		--------------------------------------------------------------------------------
-		local menuBar = fcp:menuBar()
-		if menuBar:isEnabled("Clip", "Open Clip") then
-			menuBar:selectMenu("Clip", "Open Clip")
-		else
-			dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Put focus back on the timeline:
-		--------------------------------------------------------------------------------
-		if menuBar:isEnabled("Window", "Go To", "Timeline") then
-			menuBar:selectMenu("Window", "Go To", "Timeline")
-		else
-			dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Ensure the playhead is visible:
-		--------------------------------------------------------------------------------
-		contents:playhead():show()
-
-		contents:selectClipInAngle(multicamAngle)
-
-		--------------------------------------------------------------------------------
-		-- Reveal In Browser:
-		--------------------------------------------------------------------------------
-		if menuBar:isEnabled("File", "Reveal in Browser") then
-			menuBar:selectMenu("File", "Reveal in Browser")
-		end
-
-		--------------------------------------------------------------------------------
-		-- Go back to original timeline if appropriate:
-		--------------------------------------------------------------------------------
-		if goBackToTimeline then
-			if menuBar:isEnabled("View", "Timeline History Back") then
-				menuBar:selectMenu("View", "Timeline History Back")
-			else
-				dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
-				return false
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Select the original clips again.
-		--------------------------------------------------------------------------------
-		contents:selectClips(originalSelection)
-
-		--------------------------------------------------------------------------------
-		-- Highlight Browser Playhead:
-		--------------------------------------------------------------------------------
-		highlightFCPXBrowserPlayhead()
-
-	end
-
-		--------------------------------------------------------------------------------
-		-- GET MULTICAM ANGLE FROM SELECTED CLIP:
-		--------------------------------------------------------------------------------
-		function getMulticamAngleFromSelectedClip()
-
-			local errorFunction = "\n\nError occurred in getMulticamAngleFromSelectedClip()."
-
-			--------------------------------------------------------------------------------
-			-- Ninja Pasteboard Copy:
-			--------------------------------------------------------------------------------
-			local result, clipboardData = ninjaPasteboardCopy()
-			if not result then
-				debugMessage("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Convert Binary Data to Table:
-			--------------------------------------------------------------------------------
-			local fcpxTable = clipboard.unarchiveFCPXData(clipboardData)
-			if fcpxTable == nil then
-				debugMessage("ERROR: Converting Binary Data to Table failed." .. errorFunction)
-				return false
-			end
-
-			local timelineClip = fcpxTable.root.objects[1]
-			if not clipboard.isTimelineClip(timelineClip) then
-				debugMessage("ERROR: Not copied from the Timeline." .. errorFunction)
-				return false
-			end
-
-			local selectedClips = timelineClip.containedItems
-			if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
-				debugMessage("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
-				return false
-			end
-
-			local multicamClip = selectedClips[1]
-			local videoAngle = multicamClip.videoAngle
-
-			--------------------------------------------------------------------------------
-			-- Find the original media:
-			--------------------------------------------------------------------------------
-			local mediaId = multicamClip.media.mediaIdentifier
-			local media = nil
-			for i,item in ipairs(fcpxTable.media) do
-				if item.mediaIdentifier == mediaId then
-					media = item
-					break
-				end
-			end
-
-			if media == nil or not media.primaryObject or not media.primaryObject.isMultiAngle then
-				debugMessage("ERROR: Couldn't find the media for the multicam clip.")
-				return false
-			end
-
-			--------------------------------------------------------------------------------
-			-- Find the Angle
-			--------------------------------------------------------------------------------
-
-			local angles = media.primaryObject.containedItems[1].anchoredItems
-			for i,angle in ipairs(angles) do
-				if angle.angleID == videoAngle then
-					return angle.anchoredLane
-				end
-			end
-
-			debugMessage("ERROR: Failed to get anchoredLane." .. errorFunction)
-			return false
-		end
-
-	--------------------------------------------------------------------------------
 	-- MATCH FRAME THEN HIGHLIGHT FCPX BROWSER PLAYHEAD:
 	--------------------------------------------------------------------------------
 	function matchFrameThenHighlightFCPXBrowserPlayhead()
@@ -3412,87 +3152,8 @@ end
 	-- HIGHLIGHT FINAL CUT PRO BROWSER PLAYHEAD:
 	--------------------------------------------------------------------------------
 	function highlightFCPXBrowserPlayhead()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get Browser Persistent Playhead:
-		--------------------------------------------------------------------------------
-		local playhead = fcp:libraries():playhead()
-		if playhead:isShowing() then
-
-			--------------------------------------------------------------------------------
-			-- Playhead Position:
-			--------------------------------------------------------------------------------
-			local frame = playhead:getFrame()
-
-			--------------------------------------------------------------------------------
-			-- Highlight Mouse:
-			--------------------------------------------------------------------------------
-			mouseHighlight(frame.x, frame.y, frame.w, frame.h)
-
-		end
-
+		plugins("hs.fcpxhacks.plugins.browser.playhead").highlight()
 	end
-
-		--------------------------------------------------------------------------------
-		-- HIGHLIGHT MOUSE IN FCPX:
-		--------------------------------------------------------------------------------
-		function mouseHighlight(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH)
-
-			--------------------------------------------------------------------------------
-			-- Delete Previous Highlights:
-			--------------------------------------------------------------------------------
-			deleteAllHighlights()
-
-			--------------------------------------------------------------------------------
-			-- Get Sizing Preferences:
-			--------------------------------------------------------------------------------
-			local displayHighlightShape = nil
-			displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
-			if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
-
-			--------------------------------------------------------------------------------
-			-- Get Highlight Colour Preferences:
-			--------------------------------------------------------------------------------
-			local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or "Red"
-			if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
-			if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
-			if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
-			if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
-			if displayHighlightColour == "Custom" then
-				local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour")
-				displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
-			end
-
-			--------------------------------------------------------------------------------
-			-- Highlight the FCPX Browser Playhead:
-			--------------------------------------------------------------------------------
-			if displayHighlightShape == "Rectangle" then
-				mod.browserHighlight = drawing.rectangle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-			end
-			if displayHighlightShape == "Circle" then
-				mod.browserHighlight = drawing.circle(geometry.rect((mouseHighlightX-(mouseHighlightH/2)+10), mouseHighlightY, mouseHighlightH-12, mouseHighlightH-12))
-			end
-			if displayHighlightShape == "Diamond" then
-				mod.browserHighlight = drawing.circle(geometry.rect(mouseHighlightX, mouseHighlightY, mouseHighlightW, mouseHighlightH - 12))
-			end
-			mod.browserHighlight:setStrokeColor(displayHighlightColour)
-							    :setFill(false)
-							    :setStrokeWidth(5)
-							    :bringToFront(true)
-							    :show()
-
-			--------------------------------------------------------------------------------
-			-- Set a timer to delete the circle after 3 seconds:
-			--------------------------------------------------------------------------------
-			local highlightPlayheadTime = settings.get("fcpxHacks.highlightPlayheadTime")
-			mod.browserHighlightTimer = timer.doAfter(highlightPlayheadTime, function() deleteAllHighlights() end)
-
-		end
 
 	--------------------------------------------------------------------------------
 	-- SELECT ALL TIMELINE CLIPS IN SPECIFIC DIRECTION:
@@ -3540,82 +3201,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- NINJA PASTEBOARD COPY:
-	--------------------------------------------------------------------------------
-	function ninjaPasteboardCopy()
-
-		local errorFunction = " Error occurred in ninjaPasteboardCopy()."
-
-		--------------------------------------------------------------------------------
-		-- Variables:
-		--------------------------------------------------------------------------------
-		local ninjaPasteboardCopyError = false
-		local finalCutProClipboardUTI = fcp:getPasteboardUTI()
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-		--------------------------------------------------------------------------------
-		-- Stop Watching Clipboard:
-		--------------------------------------------------------------------------------
-		if enableClipboardHistory then clipboard.stopWatching() end
-
-		--------------------------------------------------------------------------------
-		-- Save Current Clipboard Contents for later:
-		--------------------------------------------------------------------------------
-		local originalClipboard = clipboard.readFCPXData()
-
-		--------------------------------------------------------------------------------
-		-- Trigger 'copy' from Menubar:
-		--------------------------------------------------------------------------------
-		local menuBar = fcp:menuBar()
-		if menuBar:isEnabled("Edit", "Copy") then
-			menuBar:selectMenu("Edit", "Copy")
-		else
-			debugMessage("ERROR: Failed to select Copy from Menubar." .. errorFunction)
-			if enableClipboardHistory then clipboard.startWatching() end
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Wait until something new is actually on the Pasteboard:
-		--------------------------------------------------------------------------------
-		local newClipboard = nil
-		just.doUntil(function()
-			newClipboard = clipboard.readFCPXData()
-			if newClipboard ~= originalClipboard then
-				return true
-			end
-		end, 10, 0.1)
-		if newClipboard == nil then
-			debugMessage("ERROR: Failed to get new clipboard contents." .. errorFunction)
-			if enableClipboardHistory then clipboard.startWatching() end
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restore Original Clipboard Contents:
-		--------------------------------------------------------------------------------
-		if originalClipboard ~= nil then
-			local result = clipboard.writeFCPXData(originalClipboard)
-			if not result then
-				debugMessage("ERROR: Failed to restore original Clipboard item." .. errorFunction)
-				if enableClipboardHistory then clipboard.startWatching() end
-				return false
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Start Watching Clipboard:
-		--------------------------------------------------------------------------------
-		if enableClipboardHistory then clipboard.startWatching() end
-
-		--------------------------------------------------------------------------------
-		-- Return New Clipboard:
-		--------------------------------------------------------------------------------
-		return true, newClipboard
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- EMAIL BUG REPORT:
 	--------------------------------------------------------------------------------
 	function emailBugReport()
@@ -3649,14 +3234,7 @@ end
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
-		if mod.browserHighlight ~= nil then
-			mod.browserHighlight:delete()
-			mod.browserHighlight = nil
-			if mod.browserHighlightTimer then
-				mod.browserHighlightTimer:stop()
-				mod.browserHighlightTimer = nil
-			end
-		end
+		plugins("hs.fcpxhacks.plugins.browser.playhead").deleteAllHighlights()
 	end
 
 	--------------------------------------------------------------------------------

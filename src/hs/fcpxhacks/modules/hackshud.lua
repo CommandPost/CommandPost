@@ -349,7 +349,8 @@ function hackshud.choices()
 		{
 			["text"] = "Highlight Browser Playhead",
 			["subText"] = "Automation",
-			["function"] = "highlightFCPXBrowserPlayhead",
+			["plugin"] = "hs.fcpxhacks.plugins.browser.playhead",
+			["function"] = "highlight",
 			["function1"] = nil,
 			["function2"] = nil,
 			["function3"] = nil,
@@ -453,6 +454,7 @@ function hackshud.choices()
 		{
 			["text"] = "Reveal Multicam in Browser & Highlight",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
 			["function"] = "multicamMatchFrame",
 			["function1"] = true,
 			["function2"] = nil,
@@ -461,6 +463,7 @@ function hackshud.choices()
 		{
 			["text"] = "Reveal Multicam in Angle Editor & Highlight",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
 			["function"] = "multicamMatchFrame",
 			["function1"] = false,
 			["function2"] = nil,
