@@ -368,7 +368,7 @@ return {
 			highlightPlayheadTime				=			"Highlight Playhead Time",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
-			trashFCPXHacksPreferences			=			"Trash FCPX Hacks Preferences",
+			trashPreferences					=			"Trash %s Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",
@@ -496,12 +496,12 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
-	
+
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:
 	--------------------------------------------------------------------------------
-	
-	defaultShortcutsDescription			=			
+
+	defaultShortcutsDescription			=
 
 [[The default FCPX Hacks Shortcut Keys are:
 

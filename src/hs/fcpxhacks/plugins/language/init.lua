@@ -8,12 +8,13 @@ local tools			= require("hs.fcpxhacks.modules.tools")
 
 local log			= require("hs.logger").new("lang")
 local inspect		= require("hs.inspect")
+local metadata		= require("hs.fcpxhacks.metadata")
 
 -- Constants
 
 local PRIORITY = 1000
 
-local LANGUAGE_PATH = "hs/fcpxhacks/languages/"
+local LANGUAGE_PATH = metadata.scriptPath .. "/hs/fcpxhacks/languages/"
 
 -- The Module
 
@@ -28,7 +29,7 @@ mod.installedLanguages = {}
 function mod.loadFCPXHacksLanguages()
 	for file in fs.dir(LANGUAGE_PATH) do
 		if file:sub(-4) == ".lua" then
-			local languageFile = io.open(hs.configdir .. "/" .. LANGUAGE_PATH .. file, "r")
+			local languageFile = io.open(LANGUAGE_PATH .. file, "r")
 			if languageFile ~= nil then
 				local languageFileData = languageFile:read("*all")
 				if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
@@ -102,14 +103,14 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	local section = deps.prefs:addSection(PRIORITY)
-	
+
 	section:addSeparator(0)
-	
+
 	-- The FCPX Languages Menu
 	local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
 	fcpxLangs:addItems(1, function()
 		local currentLanguage = fcp:getCurrentLanguage()
-		
+
 		return {
 			{ title = i18n("german"),			fn = function() mod.changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
 			{ title = i18n("english"), 			fn = function() mod.changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
@@ -119,10 +120,10 @@ function plugin.init(deps)
 			{ title = i18n("chineseChina"),		fn = function() mod.changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
 		}
 	end)
-	
+
 	-- The FCPX Hacks Languages Menu
-	
-	local fcpxHacksLangs = section:addMenu(200, function() return "FCPX Hacks " .. i18n("language") end)
+
+	local fcpxHacksLangs = section:addMenu(200, function() return metadata.scriptName .. " " .. i18n("language") end)
 	fcpxHacksLangs:addItems(1, function()
 		local settingsLanguage = {}
 		local userLocale = settings.get("fcpxHacks.language") or tools.userLocale()
@@ -133,19 +134,19 @@ function plugin.init(deps)
 		else
 			basicUserLocale = userLocale
 		end
-		
+
 		for i,language in ipairs(mod.getFCPXHacksLanguages()) do
 			settingsLanguage[i] = { title = language["language"], fn = function()
 				settings.set("fcpxHacks.language", language["id"])
 				i18n.setLocale(language["id"])
 			end, checked = (userLocale == language["id"] or basicUserLocale == language["id"]), }
 		end
-		
+
 		return settingsLanguage
 	end)
-	
+
 	section:addSeparator(9000)
-	
+
 	return mod
 end
 

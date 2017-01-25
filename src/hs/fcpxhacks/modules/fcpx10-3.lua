@@ -191,9 +191,9 @@ mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Eff
 
 
 --------------------------------------------------------------------------------
--- Retrieves the plugins manager.
--- If `pluginPath` is provided, the named plugin will be returned. If not, the plugins
--- module is returned.
+-- RETRIEVES THE PLUGINS MANAGER:
+-- If `pluginPath` is provided, the named plugin will be returned. If not,
+-- the plugins module is returned.
 --------------------------------------------------------------------------------
 function plugins(pluginPath)
 	if not mod._plugins then
@@ -209,7 +209,7 @@ function plugins(pluginPath)
 end
 
 --------------------------------------------------------------------------------
--- Retrieves the FCPX Hacks menu manager
+-- RETRIEVES THE MENU MANAGER:
 --------------------------------------------------------------------------------
 function menuManager()
 	if not mod._menuManager then
@@ -254,19 +254,19 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	console.titleVisibility("hidden")
 	hotkey.setLogLevel("warning")
-	windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
-	windowfilter.ignoreAlways['System Events'] = true
+	--windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
+	--windowfilter.ignoreAlways['System Events'] = true
 
 	--------------------------------------------------------------------------------
 	-- First time running 10.3? If so, let's trash the settings incase there's
-	-- compatibility issues with an older version of FCPX Hacks:
+	-- compatibility issues with an older version of the script:
 	--------------------------------------------------------------------------------
 	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
 
 		writeToConsole("First time running Final Cut Pro 10.3. Trashing settings.")
 
 		--------------------------------------------------------------------------------
-		-- Trash all FCPX Hacks Settings:
+		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
 		for i, v in ipairs(settings.getKeys()) do
 			if (v:sub(1,10)) == "fcpxHacks." then
@@ -369,7 +369,10 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Watch For Hammerspoon Script Updates:
 		--------------------------------------------------------------------------------
-		hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
+		local bundleID = hs.processInfo["bundleID"]
+		if bundleID == "org.hammerspoon.Hammerspoon" then
+			hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
+		end
 
 		--------------------------------------------------------------------------------
 		-- Watch for Final Cut Pro plist Changes:
@@ -482,7 +485,7 @@ function loadScript()
 	-- All loaded!
 	--------------------------------------------------------------------------------
 	writeToConsole("Successfully loaded.")
-	dialog.displayNotification("FCPX Hacks (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
+	dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
@@ -1442,7 +1445,7 @@ end
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
-			{ title = i18n("trashFCPXHacksPreferences"), 												fn = resetSettings },
+			{ title = i18n("trashPreferences", {metadata.scriptName}), 									fn = resetSettings },
 			{ title = "-" },
 			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 			{ title = "-" },
@@ -2289,7 +2292,7 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Trash all FCPX Hacks Settings:
+		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
 		for i, v in ipairs(settings.getKeys()) do
 			if (v:sub(1,10)) == "fcpxHacks." then
@@ -3115,7 +3118,7 @@ end
 		-- If the 'Notes' column is missing then error:
 		--------------------------------------------------------------------------------
 		if notesFieldID == nil then
-			errorMessage("FCPX Hacks could not find the Notes Column." .. errorFunction)
+			errorMessage(metadata.scriptName .. " could not find the Notes Column." .. errorFunction)
 			return
 		end
 
@@ -3616,7 +3619,7 @@ end
 	-- EMAIL BUG REPORT:
 	--------------------------------------------------------------------------------
 	function emailBugReport()
-		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[FCPX Hacks " .. metadata.scriptVersion .. "] Bug Report"):recipients({metadata.bugReportEmail})
+		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[" .. metadata.scriptName .. " " .. metadata.scriptVersion .. "] Bug Report"):recipients({metadata.bugReportEmail})
 																	   :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
 	end
 
@@ -3657,7 +3660,7 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- CHECK FOR FCPX HACKS UPDATES:
+	-- CHECK FOR SCRIPT UPDATES:
 	--------------------------------------------------------------------------------
 	function checkForUpdates()
 
@@ -3679,7 +3682,7 @@ end
 					if not mod.shownUpdateNotification then
 						if latestScriptVersion > metadata.scriptVersion then
 							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(metadata.iconPath))
-																:title("FCPX Hacks Update Available")
+																:title(metadata.scriptName .. " Update Available")
 																:subTitle("Version " .. latestScriptVersion)
 																:informativeText("Do you wish to install?")
 																:hasActionButton(true)
@@ -3913,7 +3916,7 @@ end
 		mod.isFinalCutProActive = true
 
 		--------------------------------------------------------------------------------
-		-- Don't trigger until after FCPX Hacks has loaded:
+		-- Don't trigger until after the script has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then
 			timer.waitUntil(function() return mod.hacksLoaded end, function()
@@ -3977,7 +3980,7 @@ end
 		mod.isFinalCutProActive = false
 
 		--------------------------------------------------------------------------------
-		-- Don't trigger until after FCPX Hacks has loaded:
+		-- Don't trigger until after the script has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then return end
 
@@ -4191,7 +4194,7 @@ function sharedXMLFileWatcher(files)
 						:setIdImage(image.imageFromPath(metadata.iconPath))
 						:title("New XML Recieved")
 						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
-						:informativeText("FCPX Hacks has recieved a new XML file.")
+						:informativeText(metadata.scriptName .. " has recieved a new XML file.")
 						:hasActionButton(true)
 						:actionButtonTitle("Import XML")
 						:send()
