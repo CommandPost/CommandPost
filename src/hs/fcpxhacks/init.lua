@@ -151,7 +151,7 @@ end
 -- SETUP I18N LANGUAGES:
 --------------------------------------------------------------------------------
 i18n = require("hs.fcpxhacks.modules.i18n")
-local languagePath = "hs/fcpxhacks/languages/"
+local languagePath = metadata.scriptPath .. "/hs/fcpxhacks/languages/"
 for file in fs.dir(languagePath) do
 	if file:sub(-4) == ".lua" then
 		i18n.loadFile(languagePath .. file)
@@ -191,52 +191,58 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Display Welcome Message In The Console:
     --------------------------------------------------------------------------------
-    writeToConsole("-----------------------------", true)
-    writeToConsole("| FCPX Hacks v" .. metadata.scriptVersion .. "          |", true)
-    writeToConsole("| Created by LateNite Films |", true)
-    writeToConsole("-----------------------------", true)
+    writeToConsole("-----------------------------------------------", true)
+    writeToConsole("| " .. metadata.scriptName .. " v" .. metadata.scriptVersion .. "                           |", true)
+    writeToConsole("| Developed by Chris Hocking & David Peterson |", true)
+    writeToConsole("-----------------------------------------------", true)
 
-    --------------------------------------------------------------------------------
-    -- Check All The Required Files Exist:
-    --------------------------------------------------------------------------------
-    -- NOTE: Only check for a few files otherwise it slows down startup too much.
-    local requiredFiles = {
-        "hs/finalcutpro/init.lua",
-        "hs/fcpxhacks/init.lua",
-        "hs/fcpxhacks/assets/fcpxhacks.icns",
-        "hs/fcpxhacks/languages/en.lua",
-        }
-    local checkFailed = false
-    for i=1, #requiredFiles do
-        if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
-    end
-    if checkFailed then
-        dialog.displayAlertMessage(i18n("missingFiles"))
-        application.applicationsForBundleID(hsBundleID)[1]:kill()
-    end
+	--------------------------------------------------------------------------------
+	-- If running script via Hammerspoon:
+	--------------------------------------------------------------------------------
+	if bundleID == "org.hammerspoon.Hammerspoon" then
+		--------------------------------------------------------------------------------
+		-- Check All The Required Files Exist:
+		--------------------------------------------------------------------------------
+		-- NOTE: Only check for a few files otherwise it slows down startup too much.
+		local requiredFiles = {
+			"hs/finalcutpro/init.lua",
+			"hs/fcpxhacks/init.lua",
+			"hs/fcpxhacks/assets/fcpxhacks.icns",
+			"hs/fcpxhacks/languages/en.lua",
+			}
+		local checkFailed = false
+		for i=1, #requiredFiles do
+			if fs.attributes(requiredFiles[i]) == nil then checkFailed = true end
+		end
+		if checkFailed then
+			dialog.displayAlertMessage(i18n("missingFiles"))
+			application.applicationsForBundleID(hsBundleID)[1]:kill()
+		end
 
-    --------------------------------------------------------------------------------
-    -- Check Hammerspoon Version:
-    --------------------------------------------------------------------------------
-    local requiredHammerspoonVersion        = semver("0.9.52")
-    local hammerspoonVersion                = semver(hs.processInfo["version"])
-    if hammerspoonVersion < requiredHammerspoonVersion then
-        if hs.canCheckForUpdates() then
-            hs.checkForUpdates()
-            return self
-        else
-            dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
-            application.applicationsForBundleID(hsBundleID)[1]:kill()
-        end
-    end
+		--------------------------------------------------------------------------------
+		-- Check Hammerspoon Version:
+		--------------------------------------------------------------------------------
+		local requiredHammerspoonVersion        = semver("0.9.52")
+		local hammerspoonVersion                = semver(hs.processInfo["version"])
+		if hammerspoonVersion < requiredHammerspoonVersion then
+			if hs.canCheckForUpdates() then
+				hs.checkForUpdates()
+				return self
+			else
+				dialog.displayAlertMessage(i18n("wrongHammerspoonVersionError", {version=tostring(requiredHammerspoonVersion)}))
+				application.applicationsForBundleID(hsBundleID)[1]:kill()
+			end
+		end
+	end
 
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
-    local fcpVersion    = fcp:getVersion()
-    local fcpPath		= fcp:getPath()
-    local osVersion     = tools.macOSVersion()
-    local fcpLanguage   = fcp:getCurrentLanguage()
+    local fcpVersion    		= fcp:getVersion()
+    local fcpPath				= fcp:getPath()
+    local osVersion    			= tools.macOSVersion()
+    local fcpLanguage   		= fcp:getCurrentLanguage()
+    local hammerspoonVersion	= hs.processInfo["version"]
 
     --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:
@@ -245,11 +251,42 @@ function mod.init()
     if osVersion ~= nil then                    writeToConsole("macOS Version:                  " .. tostring(osVersion),                   true) end
     if fcpVersion ~= nil then                   writeToConsole("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
     if fcpLanguage ~= nil then                  writeToConsole("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-        										writeToConsole("FCPX Hacks Locale:              " .. tostring(i18n.getLocale()),          	true)
+        										writeToConsole(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
     if keycodes.currentLayout() ~= nil then     writeToConsole("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
 	if fcpPath ~= nil then						writeToConsole("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
                                                 writeToConsole("", true)
 
+	--------------------------------------------------------------------------------
+	-- Accessibility Check:
+	--------------------------------------------------------------------------------
+	if not hs.accessibilityState() then
+		local result = dialog.displayMessage(metadata.scriptName .. " requires Accessibility Permissions to do its magic. By clicking Continue you will be asked to enable these permissions.\n\nThe " .. metadata.scriptName .. " menubar will appear once these permissions are granted.", {"Continue", "Quit"})
+		if result == "Quit" then
+			application.applicationsForBundleID(hsBundleID)[1]:kill()
+		else
+			hs.accessibilityState(true)
+			timer.doEvery(3, function()
+				if hs.accessibilityState() then
+					loadScriptVersion()
+				end
+			end)
+		end
+	else
+		loadScriptVersion()
+	end
+
+    return self
+
+end
+
+--------------------------------------------------------------------------------
+-- LOAD FCPX HACKS VERSION:
+--------------------------------------------------------------------------------
+function loadScriptVersion()
+	--------------------------------------------------------------------------------
+	-- Load the correct version of FCPX Hacks:
+	--------------------------------------------------------------------------------
+	local fcpVersion = fcp:getVersion()
     local validFinalCutProVersion = false
     if fcpVersion == "10.2.3" then
         validFinalCutProVersion = true
@@ -263,9 +300,6 @@ function mod.init()
         dialog.displayAlertMessage(i18n("noValidFinalCutPro"))
         application.applicationsForBundleID(hsBundleID)[1]:kill()
     end
-
-    return self
-
 end
 
 --------------------------------------------------------------------------------
