@@ -129,7 +129,7 @@ end
 -- HIDE TOUCH BAR:
 --------------------------------------------------------------------------------
 function mod.hide()
-	if self.isSupported() then mod.touchBarWindow:hide() end
+	if mod.isSupported() then mod.touchBarWindow:hide() end
 end
 
 --------------------------------------------------------------------------------
