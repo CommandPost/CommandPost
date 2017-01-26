@@ -968,8 +968,10 @@ function App:getCommandShortcuts(id)
 					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
 				end
 			end
-	
-			shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			
+			if keyCode ~= nil and keyCode ~= "" then
+				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			end
 		end
 		
 		activeCommands[id] = shortcuts
