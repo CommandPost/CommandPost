@@ -30,6 +30,7 @@ local dialog								= require("hs.fcpxhacks.modules.dialog")
 
 local timelinePlayhead						= require("hs.plugins").load("hs.fcpxhacks.plugins.timeline.playhead")
 local browserPlayhead						= require("hs.plugins").load("hs.fcpxhacks.plugins.browser.playhead")
+local timelineMatchframe					= require("hs.plugins").load("hs.fcpxhacks.plugins.timeline.matchframe")
 
 --------------------------------------------------------------------------------
 -- LISTENER COMMANDS:
@@ -50,7 +51,7 @@ local listenerCommands = {
 						 	[i18n("keyboardShortcuts")] 				= function() openCommandEditor() end,
 						 	[i18n("scrollingTimeline")] 				= function() timelinePlayhead.toggleScrollingTimeline() end,
 						 	[i18n("highlight")]							= function() browserPlahyead.highlight() end,
-						 	[i18n("reveal")]							= function() matchFrameThenHighlightFCPXBrowserPlayhead() end,
+						 	[i18n("reveal")]							= function() timelineMatchframe.matchFrame() end,
 						 	[i18n("lane") .. " " .. i18n("one")]		= function() selectClipAtLane(1) end,
 						 	[i18n("lane") .. " " .. i18n("two")]		= function() selectClipAtLane(2) end,
 						 	[i18n("lane") .. " " .. i18n("three")]		= function() selectClipAtLane(3) end,

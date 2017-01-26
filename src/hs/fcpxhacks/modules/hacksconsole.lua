@@ -201,7 +201,8 @@ function hacksconsole.choices()
 			{
 				["text"] = "Reveal in Browser & Highlight",
 				["subText"] = "Automation",
-				["function"] = "matchFrameThenHighlightFCPXBrowserPlayhead",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["function"] = "matchFrame",
 				["function1"] = nil,
 				["function2"] = nil,
 				["function3"] = nil,
@@ -289,8 +290,9 @@ function hacksconsole.choices()
 			{
 				["text"] = "Single Match Frame & Highlight",
 				["subText"] = "Automation",
-				["function"] = "singleMatchFrame",
-				["function1"] = nil,
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["function"] = "matchFrame",
+				["function1"] = true,
 				["function2"] = nil,
 				["function3"] = nil,
 			},

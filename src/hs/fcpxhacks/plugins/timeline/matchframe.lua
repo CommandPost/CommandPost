@@ -101,7 +101,7 @@ function mod.multicamMatchFrame(goBackToTimeline) -- True or False
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	deleteAllHighlights()
+	mod.deleteAllHighlights()
 
 	local contents = fcp:timeline():contents()
 
@@ -262,6 +262,93 @@ function mod.getMulticamAngleFromSelectedClip()
 	return false
 end
 
+--------------------------------------------------------------------------------
+-- FCPX SINGLE MATCH FRAME:
+-- Parameters:
+--  * `focus`	- If set to `true`, the library will search for the matched clip title
+--------------------------------------------------------------------------------
+function mod.matchFrame(focus)
+
+	--------------------------------------------------------------------------------
+	-- Check the option is available in the current context
+	--------------------------------------------------------------------------------
+	if not fcp:menuBar():isEnabled("File", "Reveal in Browser") then
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Delete any pre-existing highlights:
+	--------------------------------------------------------------------------------
+	mod.deleteAllHighlights()
+
+	local libraries = fcp:libraries()
+
+	--------------------------------------------------------------------------------
+	-- Clear the selection first
+	--------------------------------------------------------------------------------
+	libraries:deselectAll()
+
+	--------------------------------------------------------------------------------
+	-- Trigger the menu item to reveal the clip
+	--------------------------------------------------------------------------------
+	fcp:menuBar():selectMenu("File", "Reveal in Browser")
+
+	if focus then
+		--------------------------------------------------------------------------------
+		-- Give FCPX time to find the clip
+		--------------------------------------------------------------------------------
+		local selectedClips = nil
+		just.doUntil(function()
+			selectedClips = libraries:selectedClipsUI()
+			return selectedClips and #selectedClips > 0
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Check that there is exactly one Selected Clip
+		--------------------------------------------------------------------------------
+		if not selectedClips or #selectedClips ~= 1 then
+			dialog.displayErrorMessage("Expected exactly 1 selected clip in the Libraries Browser.\n\nError occurred in matchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Browser Playhead:
+		--------------------------------------------------------------------------------
+		local playhead = libraries:playhead()
+		if not playhead:isShowing() then
+			dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occurred in matchFrame().")
+			return nil
+		end
+
+		--------------------------------------------------------------------------------
+		-- Get Clip Name from the Viewer
+		--------------------------------------------------------------------------------
+		local clipName = fcp:viewer():getTitle()
+
+		if clipName then
+			--------------------------------------------------------------------------------
+			-- Ensure the Search Bar is visible
+			--------------------------------------------------------------------------------
+			if not libraries:search():isShowing() then
+				libraries:searchToggle():press()
+			end
+
+			--------------------------------------------------------------------------------
+			-- Search for the title
+			--------------------------------------------------------------------------------
+			libraries:search():setValue(clipName)
+		else
+			debugMessage("Unable to find the clip title.")
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Highlight Browser Playhead:
+	--------------------------------------------------------------------------------
+	mod.browserPlayhead.highlight()
+end
+
+
 -- The Plugin
 local plugin = {}
 
@@ -272,6 +359,9 @@ plugin.dependencies = {
 
 
 function plugin.init(deps)
+		
+	mod.browserPlayhead = deps.browserPlayhead
+	
 	-- Commands
 	local cmds = deps.fcpxCmds
 	cmds:add("FCPXHackRevealMulticamClipInBrowserAndHighlight")
@@ -281,8 +371,14 @@ function plugin.init(deps)
 	cmds:add("FCPXHackRevealMulticamClipInAngleEditorAndHighlight")
 		:activatedBy():ctrl():option():cmd("g")
 		:whenActivated(function() mod.multicamMatchFrame(false) end)
+	
+	cmds:add("FCPXHackRevealInBrowserAndHighlight")
+		:activatedBy():ctrl():option():cmd("f")
+		:whenActivated(function() mod.matchFrame(false) end)
 		
-	mod.browserPlayhead = deps.browserPlayhead
+	cmds:add("FCPXHackSingleMatchFrameAndHighlight")
+		:activatedBy():ctrl():option():cmd("s")
+		:whenActivated(function() mod.matchFrame(true) end)
 		
 	return mod	
 end
