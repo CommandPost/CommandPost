@@ -130,13 +130,13 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
-	hideTouchbar()
+	mod.touchbar.hide()
 
 	generators:applyItem(generator)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
-		showTouchbar()
+		mod.touchbar.show()
 
 		generators:loadLayout(generatorsLayout)
 		if browserLayout then browser:loadLayout(browserLayout) end
@@ -253,7 +253,6 @@ function mod.updateTitlesList()
 	--------------------------------------------------------------------------------
 	if not generators:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-		showTouchbar()
 		return "Fail"
 	end
 
@@ -319,10 +318,12 @@ local plugin = {}
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
 	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
+	["hs.fcpxhacks.plugins.os.touchbar"]		= "touchbar",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
+	mod.touchbar = deps.touchbar
 	
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTitlesShortcuts") end)

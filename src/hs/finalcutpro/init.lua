@@ -1258,6 +1258,13 @@ function App:_initWatchers()
 			self:_notifyWatchers("active")
 		end
 	end, true)
+	
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window On Screen:
+	--------------------------------------------------------------------------------
+	self._windowWatcher:subscribe(windowfilter.windowMoved, function()
+		self:_notifyWatchers("move")
+	end, true)
 end
 
 function App:_notifyWatchers(event)
