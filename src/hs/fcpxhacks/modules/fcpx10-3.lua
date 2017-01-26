@@ -169,9 +169,6 @@ mod.shownUpdateNotification		 				= false											-- Shown Update Notification
 
 mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
-mod.browserHighlight 							= nil											-- Used for Highlight Browser Playhead
-mod.browserHighlightTimer 						= nil											-- Used for Highlight Browser Playhead
-
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
 mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
