@@ -149,7 +149,7 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 		end
 	else
 		--TODO: Why it this happening?
-		log.e("keyCode was empty.")
+		log.wf("Unable to find key code for '%s'.", self:getKeyCode())
 	end
 	return self
 end
