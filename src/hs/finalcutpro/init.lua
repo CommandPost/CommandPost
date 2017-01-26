@@ -969,9 +969,7 @@ function App:getCommandShortcuts(id)
 				end
 			end
 			
-			if keyCode == nil or keyCode == "" then
-				log.wf("Unable to determine the key code for '%s': %s", id, hs.inspect(fcpxCmd))
-			else
+			if keyCode ~= nil and keyCode ~= "" then
 				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
 			end
 		end
