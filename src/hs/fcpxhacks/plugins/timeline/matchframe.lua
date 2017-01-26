@@ -101,7 +101,7 @@ function mod.multicamMatchFrame(goBackToTimeline) -- True or False
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteAllHighlights()
+	mod.deleteHighlight()
 
 	local contents = fcp:timeline():contents()
 
@@ -279,7 +279,7 @@ function mod.matchFrame(focus)
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteAllHighlights()
+	mod.deleteHighlight()
 
 	local libraries = fcp:libraries()
 

@@ -80,7 +80,7 @@ function mod.highlight()
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteAllHighlights()
+	mod.deleteHighlight()
 
 	--------------------------------------------------------------------------------
 	-- Get Browser Persistent Playhead:
@@ -99,7 +99,7 @@ function mod.highlightFrame(frame)
 	--------------------------------------------------------------------------------
 	-- Delete Previous Highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteAllHighlights()
+	mod.deleteHighlight()
 
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
@@ -142,14 +142,14 @@ function mod.highlightFrame(frame)
 	--------------------------------------------------------------------------------
 	-- Set a timer to delete the circle after the configured time:
 	--------------------------------------------------------------------------------
-	mod.browserHighlightTimer = timer.doAfter(mod.getHighlightTime(), mod.deleteAllHighlights)
+	mod.browserHighlightTimer = timer.doAfter(mod.getHighlightTime(), mod.deleteHighlight)
 
 end
 
 --------------------------------------------------------------------------------
 -- DELETE ALL HIGHLIGHTS:
 --------------------------------------------------------------------------------
-function mod.deleteAllHighlights()
+function mod.deleteHighlight()
 	if mod.browserHighlight ~= nil then
 		mod.browserHighlight:delete()
 		mod.browserHighlight = nil
