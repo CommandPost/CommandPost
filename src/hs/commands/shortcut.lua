@@ -72,7 +72,7 @@ end
 ---
 --- Parameters:
 ---  * `receiverFn`		- (optional) a function which will get passed the shortcut when the build is complete.
---- 
+---
 --- Returns:
 ---  * `shortcut.builder` which can be used to create the shortcut.
 function shortcut:build(receiverFn)
@@ -93,7 +93,7 @@ end
 
 --- hs.commands.shortcut:enable() - > shortcut
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
---- 
+---
 --- Parameters:
 ---  * N/A
 ---
@@ -109,7 +109,7 @@ end
 
 --- hs.commands.shortcut:enable() - > shortcut
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
---- 
+---
 --- Parameters:
 ---  * N/A
 ---
@@ -126,7 +126,7 @@ end
 --- hs.commands.shortcut:bind(pressedFn, releasedFn, repeatedFn) -> shortcut
 --- This function binds the shortcut to a hotkey, with the specified callback functions for
 --- `pressedFn`, `releasedFn` and `repeatedFn`.
---- 
+---
 --- If the shortcut is enabled, the hotkey will also be enabled at this point.
 ---
 --- Parameters:
@@ -141,10 +141,15 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 	self:unbind()
 	-- Bind a new one with the specified calleback functions.
 	local keyCode = shortcut.textToKeyCode(self:getKeyCode())
-	self._hotkey = hotkey.new(self:getModifiers(), keyCode, pressedFn, releasedFn, repeatedFn)
-	self._hotkey.shortcut = self
-	if self:isEnabled() then
-		self._hotkey:enable()
+	if keyCode ~= nil and keyCode ~= "" then
+		self._hotkey = hotkey.new(self:getModifiers(), keyCode, pressedFn, releasedFn, repeatedFn)
+		self._hotkey.shortcut = self
+		if self:isEnabled() then
+			self._hotkey:enable()
+		end
+	else
+		--TODO: Why it this happening?
+		log.wf("Unable to find key code for '%s'.", self:getKeyCode())
 	end
 	return self
 end
@@ -212,7 +217,7 @@ function builder:add(modifier, keyCode)
 		if self._receiver then
 			return self._receiver(shortcut)
 		else
-			return 
+			return
 		end
 		return self._command:addShortcut(self)
 	else
