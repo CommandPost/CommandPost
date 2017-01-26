@@ -968,8 +968,12 @@ function App:getCommandShortcuts(id)
 					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
 				end
 			end
-	
-			shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			
+			if keyCode == nil or keyCode == "" then
+				log.wf("Unable to determine the key code for '%s': %s", id, hs.inspect(fcpxCmd))
+			else
+				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			end
 		end
 		
 		activeCommands[id] = shortcuts
