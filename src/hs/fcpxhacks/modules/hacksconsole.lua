@@ -346,6 +346,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -354,6 +355,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -362,6 +364,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -370,6 +373,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -378,6 +382,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -386,6 +391,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -394,6 +400,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = true,
 				["function2"] = nil,
@@ -402,6 +409,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = false,
 				["function2"] = nil,
@@ -410,6 +418,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Activate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = true,
 				["function2"] = nil,
@@ -418,6 +427,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Deactivate)",
 				["subText"] = "Shortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = false,
 				["function2"] = nil,
@@ -557,7 +567,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allVideoEffects[i],
 						["subText"] = "Video Effect",
-						["function"] = "effectsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["function"] = "apply",
 						["function1"] = allVideoEffects[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -578,7 +589,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allAudioEffects[i],
 						["subText"] = "Audio Effect",
-						["function"] = "effectsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["function"] = "apply",
 						["function1"] = allAudioEffects[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -599,7 +611,8 @@ function hacksconsole.choices()
 					local individualEffect = {
 						["text"] = allTransitions[i],
 						["subText"] = "Transition",
-						["function"] = "transitionsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.transitions",
+						["function"] = "apply",
 						["function1"] = allTransitions[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -620,7 +633,8 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allTitles[i],
 						["subText"] = "Title",
-						["function"] = "titlesShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.titles",
+						["function"] = "apply",
 						["function1"] = allTitles[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -641,7 +655,8 @@ function hacksconsole.choices()
 					local individualEffect = {
 						["text"] = allGenerators[i],
 						["subText"] = "Generator",
-						["function"] = "generatorsShortcut",
+						["plugin"] = "hs.fcpxhacks.plugins.timeline.generators",
+						["function"] = "apply",
 						["function1"] = allGenerators[i],
 						["function2"] = "",
 						["function3"] = "",
@@ -915,10 +930,10 @@ function hacksconsole.rightClickAction()
 			{ title = i18n("rememberLastQuery"), 	checked = chooserRememberLast,						fn= function() settings.set("fcpxHacks.chooserRememberLast", not chooserRememberLast) end },
 			{ title = "-" },
 			{ title = i18n("update"), menu = {
-				{ title = i18n("effectsShortcuts"),			fn= function() hacksconsole.hide(); 		updateEffectsList();			end },
-				{ title = i18n("transitionsShortcuts"),		fn= function() hacksconsole.hide(); 		updateTransitionsList(); 		end },
-				{ title = i18n("titlesShortcuts"),			fn= function() hacksconsole.hide(); 		updateTitlesList() 				end },
-				{ title = i18n("generatorsShortcuts"),		fn= function() hacksconsole.hide(); 		updateGeneratorsList() 			end },
+				{ title = i18n("effectsShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.effects").updateEffectsList();				end },
+				{ title = i18n("transitionsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList(); 		end },
+				{ title = i18n("titlesShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()	 				end },
+				{ title = i18n("generatorsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.generators")updateGeneratorsList() 			end },
 				{ title = i18n("menuItems"),				fn= function() settings.set("fcpxHacks.chooserMenuItems", nil); 			hacksconsole.refresh() end },
 			}},
 		}},

@@ -17,11 +17,13 @@ mod.checkUpdateURL      = "https://latenitefilms.com/downloads/fcpx-hammerspoon-
 if bundleID == "org.hammerspoon.Hammerspoon" then
 	mod.scriptPath			= configdir
 	mod.assetsPath			= configdir .. "/hs/fcpxhacks/assets/"
-	mod.iconPath            = mod.assetsPath .. "fcpxhacks.icns"
+	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
+	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 else
 	mod.scriptPath			= resourcePath .. "/extensions/"
 	mod.assetsPath			= resourcePath .. "/hs/fcpxhacks/assets/"
-	mod.iconPath            = mod.assetsPath .. "fcpxhacks.icns"
+	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
+	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 end
 -------------------------------------------------------------------------------
 

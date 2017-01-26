@@ -28,6 +28,8 @@ local fcp									= require("hs.finalcutpro")
 
 local dialog								= require("hs.fcpxhacks.modules.dialog")
 
+local playhead								= require("hs.plugins").load("hs.fcpxhacks.plugins.timeline.playhead")
+
 --------------------------------------------------------------------------------
 -- LISTENER COMMANDS:
 --------------------------------------------------------------------------------
@@ -45,7 +47,7 @@ end
 
 local listenerCommands = {
 						 	[i18n("keyboardShortcuts")] 				= function() openCommandEditor() end,
-						 	[i18n("scrollingTimeline")] 				= function() toggleScrollingTimeline() end,
+						 	[i18n("scrollingTimeline")] 				= function() playhead.toggleScrollingTimeline() end,
 						 	[i18n("highlight")]							= function() highlightFCPXBrowserPlayhead() end,
 						 	[i18n("reveal")]							= function() matchFrameThenHighlightFCPXBrowserPlayhead() end,
 						 	[i18n("lane") .. " " .. i18n("one")]		= function() selectClipAtLane(1) end,

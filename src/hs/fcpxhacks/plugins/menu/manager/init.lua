@@ -62,7 +62,7 @@ function manager.updateMenubarIcon()
 	local icon = nil
 
 	if displayMenubarAsIcon then
-		local iconImage = image.imageFromPath(metadata.assetsPath .. "fcpxhacks.png")
+		local iconImage = image.imageFromPath(metadata.menubarIconPath)
 		icon = iconImage:setSize({w=18,h=18})
 		title = ""
 	end

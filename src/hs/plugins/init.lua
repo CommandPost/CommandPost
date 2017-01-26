@@ -124,31 +124,9 @@ function mod.load(pluginPath)
 		log.ef("Unable to load plugin '%s'.", pluginPath)
 		return nil
 	end
-
-	local dependencies = {}
-	if plugin.dependencies then
-		-- log.df("Processing dependencies for '%s'.", pluginPath)
-		for path,alias in pairs(plugin.dependencies) do
-			if type(path) == "number" then
-				-- no alias
-				path = alias
-				alias = nil
-			end
-
-			local dependency = mod.load(path)
-			if dependency then
-				dependencies[path] = dependency
-				if alias then
-					dependencies[alias] = dependency
-				end
-			else
-				-- unable to load the dependency. Fail!
-				log.ef("Unable to load dependency for plugin '%s': %s", pluginPath, path)
-				return nil
-			end
-		end
-	end
-
+	
+	local dependencies = mod.loadDependencies(plugin)
+	
 	-- initialise the plugin instance
 	-- log.df("Initialising plugin '%s'.", pluginPath)
 	local instance = nil
@@ -178,6 +156,33 @@ function mod.load(pluginPath)
 	return instance
 end
 
+function mod.loadDependencies(plugin)
+	local dependencies = {}
+	if plugin.dependencies then
+		-- log.df("Processing dependencies for '%s'.", pluginPath)
+		for path,alias in pairs(plugin.dependencies) do
+			if type(path) == "number" then
+				-- no alias
+				path = alias
+				alias = nil
+			end
+		
+			local dependency = mod.load(path)
+			if dependency then
+				dependencies[path] = dependency
+				if alias then
+					dependencies[alias] = dependency
+				end
+			else
+				-- unable to load the dependency. Fail!
+				log.ef("Unable to load dependency for plugin '%s': %s", pluginPath, path)
+				return nil
+			end
+		end
+	end
+	return dependencies
+end
+
 function mod.disable(pluginPath)
 	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
 	disabled[pluginPath] = true
@@ -198,6 +203,7 @@ function mod.isDisabled(pluginPath)
 end
 
 function mod.init(...)
+	-- load the plugins
 	for i=1,select('#', ...) do
 		package = select(i, ...)
 		log.df("Loading plugin package '%s'", package)
@@ -209,7 +215,16 @@ function mod.init(...)
 			log.ef("Error while loading package '%s':\n%s", package, hs.inspect(err))
 		end
 	end
-
+	
+	-- notify them of a `postInit`
+	for _,cached in pairs(mod.CACHE) do
+		local plugin = cached.plugin
+		if plugin.postInit then
+			local dependencies = mod.loadDependencies(plugin)
+			plugin.postInit(dependencies)
+		end
+	end
+	
 	return mod
 end
 

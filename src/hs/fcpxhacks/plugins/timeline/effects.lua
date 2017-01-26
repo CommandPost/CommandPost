@@ -7,6 +7,7 @@ local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
+local tools				= require("hs.fcpxhacks.modules.tools")
 
 local log				= require("hs.logger").new("effects")
 local inspect			= require("hs.inspect")
@@ -137,12 +138,6 @@ function mod.apply(shortcut)
 		if not effectsShowing then effects:hide() end
 	end)
 
-end
-
--- TODO: A Global function which should be removed once other classes no longer depend on it
-function effectsShortcut(shortcut)
-	log.d("deprecated: effectsShortcut called")
-	return mod.apply(shortcut)
 end
 
 --------------------------------------------------------------------------------
@@ -387,6 +382,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
+	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -417,6 +413,15 @@ function plugin.init(deps)
 		
 		return items
 	end)
+	
+	-- Commands with default shortcuts
+	local fcpxCmds = deps.fcpxCmds
+	for i = 1, MAX_SHORTCUTS do
+		fcpxCmds:add("FCPXHackEffects"..tools.numberToWord(i))
+			:titled(i18n("applyEffectsShortcut", {count = i}))
+			:activatedBy():ctrl():shift(tostring(i))
+			:whenPressed(function() mod.apply(i) end)
+	end
 	
 	return mod
 end

@@ -268,6 +268,7 @@ return {
 				updateEffectsList				=			"Update Effects List",
 				effectShortcut					=			"Effect Shortcut",
 				effectShortcutTitle				=			"Effect Shortcut %{number} (%{title})",
+				applyEffectsShortcut			=			"Apply Effects Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Transitions Shortcuts:
@@ -275,6 +276,7 @@ return {
 				updateTransitionsList			=			"Update Transitions List",
 				transitionShortcut				=			"Transition Shortcut",
 				transitionShortcutTitle			=			"Transition Shortcut %{number} (%{title})",
+				applyTransitionsShortcut		=			"Apply Transitions Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Titles Shortcuts:
@@ -282,6 +284,7 @@ return {
 				updateTitlesList				=			"Update Titles List",
 				titleShortcut					=			"Title Shortcut",
 				titleShortcutTitle				=			"Title Shortcut %{number} (%{title})",
+				applyTitlesShortcut				=			"Apply Titles Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Generators Shortcuts:
@@ -289,6 +292,7 @@ return {
 				updateGeneratorsList			=			"Update Generators List",
 				generatorShortcut				=			"Generator Shortcut",
 				generatorShortcutTitle			=			"Generator Shortcut %{number} (%{title})",
+				applyGeneratorsShortcut			=			"Apply Generators Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Automation Options:

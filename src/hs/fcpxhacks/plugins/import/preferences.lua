@@ -152,10 +152,12 @@ local PRIORITY = 1000
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts"
+	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts",
+	["hs.fcpxhacks.plugins.commands.fcpx"]	= "fcpxCmds",
 }
 
 function plugin.init(deps)
+	-- Menus
 	deps.shortcuts:addItems(PRIORITY, function()
 		local fcpxRunning = fcp:isRunning()
 
@@ -166,6 +168,29 @@ function plugin.init(deps)
 			{ title = i18n("leaveFilesInPlaceOnImport"), 										fn = mod.toggleLeaveInPlace, 						checked = not fcp:getPreference("FFImportCopyToMediaFolder", true),				disabled = not fcpxRunning },
 		}
 	end)
+	
+	-- Commands
+	local fcpxCmds = deps.fcpxCmds
+	fcpxCmds:add("FCPXHackCreateOptimizedMediaOn")
+		:whenActivated(function() mod.toggleCreateOptimizedMedia(true) end)
+	fcpxCmds:add("FCPXHackCreateOptimizedMediaOff")
+		:whenActivated(function() mod.toggleCreateOptimizedMedia(false) end)
+	
+	fcpxCmds:add("FCPXHackCreateMulticamOptimizedMediaOn")
+		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(true) end)
+	fcpxCmds:add("FCPXHackCreateMulticamOptimizedMediaOff")
+		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(false) end)
+		
+	fcpxCmds:add("FCPXHackCreateProxyMediaOn")
+		:whenActivated(function() mod.toggleCreateProxyMedia(true) end)
+	fcpxCmds:add("FCPXHackCreateProxyMediaOff")
+		:whenActivated(function() mod.toggleCreateProxyMedia(false) end)
+
+		
+	fcpxCmds:add("FCPXHackLeaveInPlaceOn")
+		:whenActivated(function() mod.toggleLeaveInPlace(true) end)
+	fcpxCmds:add("FCPXHackLeaveInPlaceOff")
+		:whenActivated(function() mod.toggleLeaveInPlace(false) end)
 
 	return mod
 end

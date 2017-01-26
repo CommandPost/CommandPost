@@ -51,7 +51,8 @@ local PRIORITY = 2000
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts"	
+	["hs.fcpxhacks.plugins.menu.shortcuts"] = "shortcuts",
+	["hs.fcpxhacks.plugins.commands.fcpx"]	= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -62,6 +63,9 @@ function plugin.init(deps)
 			{ title = i18n("enableBackgroundRender", {count = mod.getAutoRenderDelay()}),		fn = mod.toggleBackgroundRender, 					checked = fcp:getPreference("FFAutoStartBGRender", true),						disabled = not fcpxRunning },
 		}
 	end)
+	
+	deps.fcpxCmds:add("FCPXHackBackgroundRenderOn"):whenActivated(function() toggleBackgroundRender(true) end)
+	deps.fcpxCmds:add("FCPXHackBackgroundRenderOff"):whenActivated(function() toggleBackgroundRender(false) end)
 	
 	return mod
 end

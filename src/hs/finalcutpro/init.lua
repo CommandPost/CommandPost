@@ -33,7 +33,8 @@ local CommandEditor								= require("hs.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("hs.finalcutpro.export.ExportDialog")
 local MediaImport								= require("hs.finalcutpro.import.MediaImport")
 
-local kc										= require("hs.fcpxhacks.modules.shortcuts.keycodes")
+local kc										= require("hs.finalcutpro.keycodes")
+local shortcut									= require("hs.commands.shortcut")
 
 --- The App module:
 local App = {}
@@ -845,40 +846,137 @@ end
 ---  * None
 ---
 --- Returns:
----  * The 'Active Command Set' value, or nil if an error occurred
+---  * The 'Active Command Set' value, or the 'Default' command set if none is set.
 ---
 function App:getActiveCommandSetPath()
 	local result = self:getPreference("Active Command Set") or nil
 	if result == nil then
 		-- In the unlikely scenario that this is the first time FCPX has been run:
-		return self:getPath() .. "/Contents/Resources/" .. self:getCurrentLanguage() .. ".lproj/Default.commandset"
+		result = self:getDefaultCommandSetPath()
 	end
 	return result
 end
 
---- hs.finalcutpro:getActiveCommandSet([optionalPath]) -> table or nil
+--- hs.finalcutpro:getDefaultCommandSetPath([langauge]) -> string
 --- Function
---- Returns the 'Active Command Set' as a Table
+--- Gets the path to the 'Default' Command Set.
 ---
 --- Parameters:
----  * optionalPath - The optional path of the Command Set
+---  * `language`	- (optional) The language code to use. Defaults to the current FCPX language.
 ---
 --- Returns:
----  * A table of the Active Command Set's contents, or nil if an error occurred
+---  * The 'Default' Command Set path, or `nil` if an error occurred
 ---
-function App:getActiveCommandSet(optionalPath, forceReload)
+function App:getDefaultCommandSetPath(language)
+	language = language or self:getCurrentLanguage()
+	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
+end
+
+--- hs.finalcutpro:getCommandSet(path) -> string
+--- Function
+--- Loads the Command Set at the specified path into a table.
+---
+--- Parameters:
+---  * `path`	- The path to the command set.
+---
+--- Returns:
+---  * The Command Set as a table, or `nil` if there was a problem.
+---
+function App:getCommandSet(path)
+	if fs.attributes(path) ~= nil then
+		return plist.fileToTable(path)
+	end
+end
+
+--- hs.finalcutpro:getActiveCommandSet([forceReload]) -> table or nil
+--- Function
+--- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
+--- `true` for `forceReload` if you want to reload it.
+---
+--- Parameters:
+---  * forceReload	- (optional) If `true`, require the Command Set to be reloaded.
+---
+--- Returns:
+---  * A table of the Active Command Set's contents, or `nil` if an error occurred
+---
+function App:getActiveCommandSet(forceReload)
 
 	if forceReload or not self._activeCommandSet then
-		local path = optionalPath or self:getActiveCommandSetPath()
-
-		if path ~= nil then
-			if fs.attributes(path) ~= nil then
-				self._activeCommandSet = plist.fileToTable(path)
-			end
+		local path = self:getActiveCommandSetPath()
+		self._activeCommandSet = self:getCommandSet(path)
+		-- reset the command cache since we've loaded a new set.
+		if self._activeCommands then
+			self._activeCommands = nil
 		end
 	end
 
 	return self._activeCommandSet
+end
+
+--- hs.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
+--- Function
+--- Finds a shortcut from the Active Command Set with the specified ID and returns a table
+--- of `hs.commands.shortcut`s for the specified command, or `nil` if it doesn't exist.
+---
+--- Parameters:
+---  * id - The unique ID for the command.
+---
+--- Returns:
+---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
+---
+function App:getCommandShortcuts(id)
+	local activeCommands = self._activeCommands
+	if not activeCommands then
+		activeCommands = {}
+		self._activeCommands = activeCommands
+	end
+	
+	local shortcuts = activeCommands[id]
+	if not shortcuts then
+		local commandSet = self:getActiveCommandSet()
+		
+		local fcpxCmds = commandSet[id]
+		
+		if fcpxCmds == nil then
+			return nil
+		end
+		
+		if #fcpxCmds == 0 then
+			fcpxCmds = { fcpxCmds }
+		end
+		
+		shortcuts = {}
+		
+		for _,fcpxCmd in ipairs(fcpxCmds) do
+			local modifiers = nil
+			local keyCode = nil
+			local keypadModifier = false
+
+			if fcpxCmd["modifiers"] ~= nil then
+				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
+				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
+			elseif fcpxCmd["modifierMask"] ~= nil then
+				modifiers = kc.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+			end
+
+			if fcpxCmd["characterString"] ~= nil then
+				keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+			elseif fcpxHacks["character"] ~= nil then
+				if keypadModifier then
+					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
+				else
+					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
+				end
+			end
+			
+			if keyCode ~= nil and keyCode ~= "" then
+				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			end
+		end
+		
+		activeCommands[id] = shortcuts
+	end
+	return shortcuts
 end
 
 --- hs.finalcutpro.performShortcut() -> Boolean
@@ -892,49 +990,16 @@ end
 ---  * true if successful otherwise false
 ---
 function App:performShortcut(whichShortcut)
-
+	self:launch()
 	local activeCommandSet = self:getActiveCommandSet()
-
-	if activeCommandSet[whichShortcut] == nil then return false end
-
-	-- There may be one or multiple keyboard combos for a given command
-	local currentShortcut = activeCommandSet[whichShortcut]
-	if #currentShortcut > 0 then
-		currentShortcut = currentShortcut[1]
+	
+	local shortcuts = self:getCommandShortcuts(whichShortcut)
+	
+	if shortcuts and #shortcuts > 0 then
+		shortcuts[1]:trigger()
 	end
-
-	if currentShortcut == nil then
-		debugMessage("Unable to find keyboard shortcut named '"..whichShortcut.."'")
-		return false
-	end
-
-	local modifiers = nil
-	local charString = nil
-
-	if currentShortcut["modifiers"] ~= nil then
-		modifiers = kc.translateKeyboardModifiers(currentShortcut["modifiers"])
-	end
-
-	if currentShortcut["modifierMask"] ~= nil then
-		modifiers = kc.translateModifierMask(currentShortcut["modifierMask"])
-	end
-
-	if currentShortcut["characterString"] ~= nil then
-		charString = kc.translateKeyboardCharacters(currentShortcut["characterString"])
-	end
-
-	if currentShortcut["character"] ~= nil then
-		if keypadModifier then
-			charString = kc.translateKeyboardKeypadCharacters(currentShortcut["character"])
-		else
-			charString = kc.translateKeyboardCharacters(currentShortcut["character"])
-		end
-	end
-
-	eventtap.keyStroke(modifiers, charString)
 
 	return true
-
 end
 
 ----------------------------------------------------------------------------------------

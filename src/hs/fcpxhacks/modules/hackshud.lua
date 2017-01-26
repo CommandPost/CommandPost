@@ -503,6 +503,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Optimized Media (Activate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateOptimizedMedia",
 			["function1"] = true,
 			["function2"] = nil,
@@ -511,6 +512,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Optimized Media (Deactivate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateOptimizedMedia",
 			["function1"] = false,
 			["function2"] = nil,
@@ -519,6 +521,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Multicam Optimized Media (Activate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateMulticamOptimizedMedia",
 			["function1"] = true,
 			["function2"] = nil,
@@ -527,6 +530,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Multicam Optimized Media (Deactivate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateMulticamOptimizedMedia",
 			["function1"] = false,
 			["function2"] = nil,
@@ -535,6 +539,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Proxy Media (Activate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateProxyMedia",
 			["function1"] = true,
 			["function2"] = nil,
@@ -543,6 +548,7 @@ function hackshud.choices()
 		{
 			["text"] = "Create Proxy Media (Deactivate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleCreateProxyMedia",
 			["function1"] = false,
 			["function2"] = nil,
@@ -551,6 +557,7 @@ function hackshud.choices()
 		{
 			["text"] = "Leave Files In Place On Import (Activate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleLeaveInPlace",
 			["function1"] = true,
 			["function2"] = nil,
@@ -559,6 +566,7 @@ function hackshud.choices()
 		{
 			["text"] = "Leave Files In Place On Import (Deactivate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
 			["function"] = "toggleLeaveInPlace",
 			["function1"] = false,
 			["function2"] = nil,
@@ -567,6 +575,7 @@ function hackshud.choices()
 		{
 			["text"] = "Background Render (Activate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 			["function"] = "toggleBackgroundRender",
 			["function1"] = true,
 			["function2"] = nil,
@@ -575,6 +584,7 @@ function hackshud.choices()
 		{
 			["text"] = "Background Render (Deactivate)",
 			["subText"] = "Shortcut",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
 			["function"] = "toggleBackgroundRender",
 			["function1"] = false,
 			["function2"] = nil,
@@ -712,7 +722,8 @@ function hackshud.choices()
 			individualEffect = {
 				["text"] = allVideoEffects[i],
 				["subText"] = "Video Effect",
-				["function"] = "effectsShortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+				["function"] = "apply",
 				["function1"] = allVideoEffects[i],
 				["function2"] = "",
 				["function3"] = "",
@@ -731,7 +742,8 @@ function hackshud.choices()
 			individualEffect = {
 				["text"] = allAudioEffects[i],
 				["subText"] = "Audio Effect",
-				["function"] = "effectsShortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+				["function"] = "apply",
 				["function1"] = allAudioEffects[i],
 				["function2"] = "",
 				["function3"] = "",
@@ -750,7 +762,8 @@ function hackshud.choices()
 			local individualEffect = {
 				["text"] = allTransitions[i],
 				["subText"] = "Transition",
-				["function"] = "transitionsShortcut",
+				["plugins"] = "hs.fcpxhacks.plugins.timeline.transitions",
+				["function"] = "apply",
 				["function1"] = allTransitions[i],
 				["function2"] = "",
 				["function3"] = "",
@@ -769,7 +782,8 @@ function hackshud.choices()
 			individualEffect = {
 				["text"] = allTitles[i],
 				["subText"] = "Title",
-				["function"] = "titlesShortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.titles",
+				["function"] = "apply",
 				["function1"] = allTitles[i],
 				["function2"] = "",
 				["function3"] = "",
@@ -788,7 +802,8 @@ function hackshud.choices()
 			local individualEffect = {
 				["text"] = allGenerators[i],
 				["subText"] = "Generator",
-				["function"] = "generatorsShortcut",
+				["plugin"] = "hs.fcpxhacks.plugins.timeline.generators",
+				["function"] = "apply",
 				["function1"] = allGenerators[i],
 				["function2"] = "",
 				["function3"] = "",

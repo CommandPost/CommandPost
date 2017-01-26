@@ -288,6 +288,7 @@ local plugin = {}
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.manager"]		= "manager",
 	["hs.fcpxhacks.plugins.menu.preferences"]	= "prefs",
+	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -309,6 +310,11 @@ function plugin.init(deps)
 			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
 		}
 	end)
+	
+	-- Commands
+	deps.fcpxCmds:add("FCPXHackBatchExportFromBrowser")
+		:activatedBy():ctrl():option():cmd("e")
+		:whenActivated(mod.batchExport)
 
 	section:addSeparator(9000)
 
