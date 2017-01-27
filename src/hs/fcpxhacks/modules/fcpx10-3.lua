@@ -819,7 +819,7 @@ function getShortcutsFromActiveCommandSet()
 					local global = v.global or false
 					local xValue = ""
 					if x ~= 1 then xValue = tostring(x) end
-			
+
 					mod.finalCutProShortcutKey[k .. xValue] = {
 						characterString 	= 		shortcut:getKeyCode(),
 						modifiers 			= 		shortcut:getModifiers(),
@@ -3000,7 +3000,7 @@ end
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
-		plugins("hs.fcpxhacks.plugins.browser.playhead").deleteAllHighlights()
+		plugins("hs.fcpxhacks.plugins.browser.playhead").deleteHighlight()
 	end
 
 	--------------------------------------------------------------------------------

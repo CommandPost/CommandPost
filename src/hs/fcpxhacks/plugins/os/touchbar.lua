@@ -4,6 +4,7 @@ local settings									= require("hs.settings")
 local eventtap									= require("hs.eventtap")
 local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
+local log										= require("hs.logger").new("touchbar")
 
 -- Constants
 
@@ -32,7 +33,7 @@ function mod.getLocation()
 end
 
 function mod.setLocation(value)
-	settings.get("fcpxHacks.displayTouchBarLocation", value)
+	settings.set("fcpxHacks.displayTouchBarLocation", value)
 	mod.update()
 end
 
@@ -40,6 +41,10 @@ end
 -- SET TOUCH BAR LOCATION:
 --------------------------------------------------------------------------------
 function mod.updateLocation()
+
+	-- TODO: Remove after debugging:
+	log.d("touchbar.updateLocation() triggered.")
+
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
@@ -96,7 +101,7 @@ function mod.toggleEnabled()
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
-	mod.setEnabled(mod.isEnabled())
+	mod.setEnabled(not mod.isEnabled())
 
 	--------------------------------------------------------------------------------
 	-- Toggle Touch Bar:
@@ -119,7 +124,7 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if we need to show the Touch Bar:
 	--------------------------------------------------------------------------------
-	if fcp:isRunning() and mod.isSupported() and mod.isEnabled() then
+	if fcp:isFrontmost() and mod.isSupported() and mod.isEnabled() then
 		mod.updateLocation()
 		mod.touchBarWindow:show()
 	end
@@ -187,7 +192,7 @@ function mod.init()
 			end
 			return false
 		end):start()
-		
+
 		mod.update()
 	end
 end
@@ -202,7 +207,7 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	mod.init()
-	
+
 	-- Disable/Enable the touchbar when the Command Editor/etc is open
 	fcp:commandEditor():watch({
 		show		= function() mod.hide() end,
@@ -215,9 +220,13 @@ function plugin.init(deps)
 	fcp:watch({
 		active		= function() mod.show() end,
 		inactive	= function() mod.hide() end,
-		move		= function() mod.update() end,
+		move		= function()
+			-- TODO: This doesn't seem to ever get triggered?
+			log.d("Final Cut Pro Watcher Detected Move in Touchbar Plugin.")
+			mod.update()
+		end,
 	})
-	
+
 	-- Menu items
 	-- if mod.isSupported() then
 		local section = deps.prefs:addSection(PRIORITY)
@@ -238,12 +247,12 @@ function plugin.init(deps)
 			end)
 		section:addSeparator(3000)
 	-- end
-	
+
 	-- Commands
 	deps.fcpxCmds:add("FCPXHackToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
-		:whenActivated(function() toggleTouchBar() end)
-	
+		:whenActivated(function() mod.toggleEnabled() end)
+
 	return mod
 end
 
