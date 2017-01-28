@@ -1188,7 +1188,7 @@ function App:watch(events)
 		self._watchers = {}
 	end
 
-	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive}
+	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move}
 	local id = { id=#self._watchers }
 
 	-- If already active, we trigger an 'active' notification.
@@ -1265,8 +1265,6 @@ function App:_initWatchers()
 	-- Final Cut Pro Window On Screen:
 	--------------------------------------------------------------------------------
 	self._windowWatcher:subscribe(windowfilter.windowMoved, function()
-		-- TODO: Remove after debugging:
-		log.d("Final Cut Pro Window Moved (windowWatcher)")
 		self:_notifyWatchers("move")
 	end, true)
 end
@@ -1274,8 +1272,6 @@ end
 function App:_notifyWatchers(event)
 	if self._watchers then
 		for i,watcher in ipairs(self._watchers) do
-			-- TODO: Remove after debugging:
-			log.d("Notify Watcher.\n  > Event: " .. tostring(event) .. "\n  > Watcher Event: " .. tostring(watcher[event]))
 			if type(watcher[event]) == "function" then
 				watcher[event]()
 			end

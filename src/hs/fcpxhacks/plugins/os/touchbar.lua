@@ -42,9 +42,6 @@ end
 --------------------------------------------------------------------------------
 function mod.updateLocation()
 
-	-- TODO: Remove after debugging:
-	log.d("touchbar.updateLocation() triggered.")
-
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
@@ -220,11 +217,7 @@ function plugin.init(deps)
 	fcp:watch({
 		active		= function() mod.show() end,
 		inactive	= function() mod.hide() end,
-		move		= function()
-			-- TODO: This doesn't seem to ever get triggered?
-			log.d("Final Cut Pro Watcher Detected Move in Touchbar Plugin.")
-			mod.update()
-		end,
+		move		= function() mod.update() end,
 	})
 
 	-- Menu items
