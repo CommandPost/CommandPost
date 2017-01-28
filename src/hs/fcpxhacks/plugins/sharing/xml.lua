@@ -8,6 +8,8 @@ local metadata									= require("hs.fcpxhacks.metadata")
 local fs										= require("hs.fs")
 local fcp										= require("hs.finalcutpro")
 
+local logger 									= require("hs.logger").new("sharingxml")
+
 -- Constants
 
 local PRIORITY = 1000
@@ -35,7 +37,7 @@ end
 -- SHARED XML FILE WATCHER:
 --------------------------------------------------------------------------------
 local function sharedXMLFileWatcher(files)
-	debugMessage("Refreshing Shared XML Folder.")
+	log.d("Refreshing Shared XML Folder.")
 
 	for _,file in ipairs(files) do
         if file:sub(-7) == ".fcpxml" then
@@ -138,7 +140,6 @@ function mod.clearSharedFiles()
 		end
 	end
 end
-
 
 function mod.listFilesMenu()
 	--------------------------------------------------------------------------------
