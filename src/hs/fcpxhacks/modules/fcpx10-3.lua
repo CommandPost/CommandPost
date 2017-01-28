@@ -74,17 +74,11 @@ local drawing 									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
 local fnutils 									= require("hs.fnutils")
 local fs										= require("hs.fs")
-local geometry									= require("hs.geometry")
-local host										= require("hs.host")
 local hotkey									= require("hs.hotkey")
 local http										= require("hs.http")
 local image										= require("hs.image")
-local inspect									= require("hs.inspect")
-local keycodes									= require("hs.keycodes")
 local logger									= require("hs.logger")
-local menubar									= require("hs.menubar")
 local messages									= require("hs.messages")
-local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
 local pasteboard								= require("hs.pasteboard")
@@ -93,7 +87,6 @@ local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local timer										= require("hs.timer")
-local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
 
 --------------------------------------------------------------------------------
@@ -337,23 +330,6 @@ function loadScript()
 				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
 				settings.set("fcpxHacks.sharedClipboardPath", nil)
 				settings.set("fcpxHacks.enableSharedClipboard", false)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Watch for Shared XML Changes:
-		--------------------------------------------------------------------------------
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
-		if enableXMLSharing then
-			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-			if xmlSharingPath ~= nil then
-				if tools.doesDirectoryExist(xmlSharingPath) then
-					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-				else
-					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-					settings.set("fcpxHacks.xmlSharingPath", nil)
-					settings.set("fcpxHacks.enableXMLSharing", false)
-				end
 			end
 		end
 
@@ -1020,11 +996,6 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Enable XML Sharing:
-		--------------------------------------------------------------------------------
-		local enableXMLSharing 		= settings.get("fcpxHacks.enableXMLSharing") or false
-
-		--------------------------------------------------------------------------------
 		-- Enable Clipboard History:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -1125,60 +1096,6 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Shared XML Menu:
-		--------------------------------------------------------------------------------
-		local settingsSharedXMLTable = {}
-		if enableXMLSharing then
-
-			--------------------------------------------------------------------------------
-			-- Get list of files:
-			--------------------------------------------------------------------------------
-			local sharedXMLFiles = {}
-
-			local emptySharedXMLFiles = true
-			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-
-			for folder in fs.dir(xmlSharingPath) do
-
-				if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
-
-					submenu = {}
-					for file in fs.dir(xmlSharingPath .. "/" .. folder) do
-						if file:sub(-7) == ".fcpxml" then
-							emptySharedXMLFiles = false
-							local xmlPath = xmlSharingPath .. folder .. "/" .. file
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning})
-						end
-					end
-
-					if next(submenu) ~= nil then
-						table.insert(settingsSharedXMLTable, {title = folder, menu = submenu})
-					end
-
-				end
-
-			end
-
-			if emptySharedXMLFiles then
-				--------------------------------------------------------------------------------
-				-- Nothing in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(settingsSharedXMLTable, { title = "Empty", disabled = true })
-			else
-				--------------------------------------------------------------------------------
-				-- Something in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(settingsSharedXMLTable, { title = "-" })
-				table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = clearSharedXMLFiles })
-			end
-		else
-			--------------------------------------------------------------------------------
-			-- Shared Clipboard Disabled:
-			--------------------------------------------------------------------------------
-			table.insert(settingsSharedXMLTable, { title = "Disabled in Settings", disabled = true })
-		end
-
-		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
@@ -1203,16 +1120,12 @@ end
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
 			{ title = "-" },
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
 			{ title = "-" },
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
 			{ title = "-" },
 			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
-			{ title = "-" },
-			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
-			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
 			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
 			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
@@ -1695,44 +1608,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE XML SHARING:
-	--------------------------------------------------------------------------------
-	function toggleEnableXMLSharing()
-
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
-
-		if not enableXMLSharing then
-
-			xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
-
-			if xmlSharingPath ~= false then
-				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
-			else
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				return "Cancelled"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Watch for Shared XML Folder Changes:
-			--------------------------------------------------------------------------------
-			sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-
-		else
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			sharedXMLWatcher:stop()
-
-			--------------------------------------------------------------------------------
-			-- Clear Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.xmlSharingPath", nil)
-		end
-
-		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE HAMMERSPOON DOCK ICON:
 	--------------------------------------------------------------------------------
 	function toggleHammerspoonDockIcon()
@@ -2061,23 +1936,6 @@ end
 			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CLEAR SHARED XML FILES:
-	--------------------------------------------------------------------------------
-	function clearSharedXMLFiles()
-
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		for folder in fs.dir(xmlSharingPath) do
-			if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
-				for file in fs.dir(xmlSharingPath .. "/" .. folder) do
-					if file:sub(-7) == ".fcpxml" then
-						os.remove(xmlSharingPath .. folder .. "/" .. file)
-					end
-				end
-			end
 		end
 	end
 
@@ -3413,38 +3271,6 @@ function sharedClipboardFileWatcher(files)
     end
     if doReload then
 		debugMessage("Refreshing Shared Clipboard.")
-    end
-end
-
---------------------------------------------------------------------------------
--- SHARED XML FILE WATCHER:
---------------------------------------------------------------------------------
-function sharedXMLFileWatcher(files)
-	debugMessage("Refreshing Shared XML Folder.")
-
-	for _,file in pairs(files) do
-        if file:sub(-7) == ".fcpxml" then
-			local testFile = io.open(file, "r")
-			if testFile ~= nil then
-				testFile:close()
-
-				local editorName = string.reverse(string.sub(string.reverse(file), string.find(string.reverse(file), "/", 1) + 1, string.find(string.reverse(file), "/", string.find(string.reverse(file), "/", 1) + 1) - 1))
-
-				if host.localizedName() ~= editorName then
-
-					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
-						:setIdImage(image.imageFromPath(metadata.iconPath))
-						:title("New XML Recieved")
-						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
-						:informativeText(metadata.scriptName .. " has recieved a new XML file.")
-						:hasActionButton(true)
-						:actionButtonTitle("Import XML")
-						:send()
-
-				end
-			end
-        end
     end
 end
 
