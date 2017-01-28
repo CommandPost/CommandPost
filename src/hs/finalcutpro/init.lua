@@ -930,23 +930,23 @@ function App:getCommandShortcuts(id)
 		activeCommands = {}
 		self._activeCommands = activeCommands
 	end
-	
+
 	local shortcuts = activeCommands[id]
 	if not shortcuts then
 		local commandSet = self:getActiveCommandSet()
-		
+
 		local fcpxCmds = commandSet[id]
-		
+
 		if fcpxCmds == nil then
 			return nil
 		end
-		
+
 		if #fcpxCmds == 0 then
 			fcpxCmds = { fcpxCmds }
 		end
-		
+
 		shortcuts = {}
-		
+
 		for _,fcpxCmd in ipairs(fcpxCmds) do
 			local modifiers = nil
 			local keyCode = nil
@@ -968,10 +968,12 @@ function App:getCommandShortcuts(id)
 					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
 				end
 			end
-	
-			shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+
+			if keyCode ~= nil and keyCode ~= "" then
+				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+			end
 		end
-		
+
 		activeCommands[id] = shortcuts
 	end
 	return shortcuts
@@ -990,9 +992,9 @@ end
 function App:performShortcut(whichShortcut)
 	self:launch()
 	local activeCommandSet = self:getActiveCommandSet()
-	
+
 	local shortcuts = self:getCommandShortcuts(whichShortcut)
-	
+
 	if shortcuts and #shortcuts > 0 then
 		shortcuts[1]:trigger()
 	end
@@ -1181,19 +1183,19 @@ end
 --- * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
 	self:_initWatchers()
-	
+
 	if not self._watchers then
 		self._watchers = {}
 	end
-	
-	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive}
+
+	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move}
 	local id = { id=#self._watchers }
-	
+
 	-- If already active, we trigger an 'active' notification.
 	if self:isFrontmost() and events.active then
 		events.active()
 	end
-	
+
 	return id
 end
 
@@ -1215,12 +1217,12 @@ end
 
 function App:_initWatchers()
 	local watcher = application.watcher
-	
+
 	self._active = false
 	self._appWatcher = watcher.new(
 		function(appName, eventType, appObject)
 			local event = nil
-			
+
 			if (appName == "Final Cut Pro") then
 				if self._active == false and (eventType == watcher.activated) and self:isFrontmost() then
 					self._active = true
@@ -1230,13 +1232,13 @@ function App:_initWatchers()
 					event = "inactive"
 				end
 			end
-			
+
 			if event then
 				self:_notifyWatchers(event)
 			end
 		end
 	):start()
-	
+
 	self._windowWatcher = windowfilter.new{"Final Cut Pro"}
 
 	--------------------------------------------------------------------------------
@@ -1257,6 +1259,13 @@ function App:_initWatchers()
 			self._active = true
 			self:_notifyWatchers("active")
 		end
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window On Screen:
+	--------------------------------------------------------------------------------
+	self._windowWatcher:subscribe(windowfilter.windowMoved, function()
+		self:_notifyWatchers("move")
 	end, true)
 end
 

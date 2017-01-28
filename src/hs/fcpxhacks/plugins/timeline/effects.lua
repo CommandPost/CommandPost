@@ -125,13 +125,13 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
-	hideTouchbar()
+	mod.touchbar.hide()
 
 	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
-		showTouchbar()
+		mod.touchbar.show()
 
 		effects:loadLayout(effectsLayout)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
@@ -271,7 +271,6 @@ function mod.updateEffectsList()
 	local effectsShowing = effects:isShowing()
 	if not effects:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
-		showTouchbar()
 		return "Fail"
 	end
 
@@ -383,10 +382,12 @@ local plugin = {}
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.menu.automation"]	= "automation",
 	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
+	["hs.fcpxhacks.plugins.os.touchbar"]		= "touchbar",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
+	mod.touchbar = deps.touchbar
 	
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignEffectsShortcuts") end)

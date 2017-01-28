@@ -74,17 +74,11 @@ local drawing 									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
 local fnutils 									= require("hs.fnutils")
 local fs										= require("hs.fs")
-local geometry									= require("hs.geometry")
-local host										= require("hs.host")
 local hotkey									= require("hs.hotkey")
 local http										= require("hs.http")
 local image										= require("hs.image")
-local inspect									= require("hs.inspect")
-local keycodes									= require("hs.keycodes")
 local logger									= require("hs.logger")
-local menubar									= require("hs.menubar")
 local messages									= require("hs.messages")
-local mouse										= require("hs.mouse")
 local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
 local pasteboard								= require("hs.pasteboard")
@@ -93,7 +87,6 @@ local screen									= require("hs.screen")
 local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local timer										= require("hs.timer")
-local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
 
 --------------------------------------------------------------------------------
@@ -101,7 +94,6 @@ local windowfilter								= require("hs.window.filter")
 --------------------------------------------------------------------------------
 
 local ax 										= require("hs._asm.axuielement")
-local touchbar 									= require("hs._asm.touchbar")
 
 local fcp										= require("hs.finalcutpro")
 local plist										= require("hs.plist")
@@ -159,15 +151,11 @@ local defaultSettings = {
 --------------------------------------------------------------------------------
 
 local execute									= hs.execute									-- Execute!
-local touchBarSupported					 		= touchbar.supported()							-- Touch Bar Supported?
 local log										= logger.new("fcpx10-3")
 
 mod.debugMode									= false											-- Debug Mode is off by default.
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
-mod.mouseInsideTouchbar							= false											-- Mouse Inside Touch Bar?
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
-
-mod.touchBarWindow 								= nil			 								-- Touch Bar Window
 
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
@@ -302,49 +290,6 @@ function loadScript()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Setup Touch Bar:
-	--------------------------------------------------------------------------------
-	if touchBarSupported then
-
-		--------------------------------------------------------------------------------
-		-- New Touch Bar:
-		--------------------------------------------------------------------------------
-		mod.touchBarWindow = touchbar.new()
-
-		--------------------------------------------------------------------------------
-		-- Touch Bar Watcher:
-		--------------------------------------------------------------------------------
-		mod.touchBarWindow:setCallback(touchbarWatcher)
-
-		--------------------------------------------------------------------------------
-		-- Get last Touch Bar Location from Settings:
-		--------------------------------------------------------------------------------
-		local lastTouchBarLocation = settings.get("fcpxHacks.lastTouchBarLocation")
-		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
-
-		--------------------------------------------------------------------------------
-		-- Draggable Touch Bar:
-		--------------------------------------------------------------------------------
-		local events = eventtap.event.types
-		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mod.mouseInsideTouchbar then
-				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-					mod.touchBarWindow:backgroundColor{ red = 1 }
-								  	:movable(true)
-								  	:acceptsMouseEvents(false)
-				elseif ev:getType() ~= events.leftMouseDown then
-					mod.touchBarWindow:backgroundColor{ white = 0 }
-								  :movable(false)
-								  :acceptsMouseEvents(true)
-					settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
-				end
-			end
-			return false
-		end):start()
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- Setup Watches:
 	--------------------------------------------------------------------------------
 
@@ -385,23 +330,6 @@ function loadScript()
 				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
 				settings.set("fcpxHacks.sharedClipboardPath", nil)
 				settings.set("fcpxHacks.enableSharedClipboard", false)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Watch for Shared XML Changes:
-		--------------------------------------------------------------------------------
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
-		if enableXMLSharing then
-			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-			if xmlSharingPath ~= nil then
-				if tools.doesDirectoryExist(xmlSharingPath) then
-					sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-				else
-					writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-					settings.set("fcpxHacks.xmlSharingPath", nil)
-					settings.set("fcpxHacks.enableXMLSharing", false)
-				end
 			end
 		end
 
@@ -563,7 +491,6 @@ function defaultShortcutKeys()
         FCPXHackRestoreKeywordPresetNine                            = { characterString = shortcut.textToKeyCode("9"),            modifiers = controlOptionCommand,                   fn = function() restoreKeywordSearches(9) end,                      releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackHUD                                                 = { characterString = shortcut.textToKeyCode("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleTouchBar                                      = { characterString = shortcut.textToKeyCode("z"),            modifiers = controlOptionCommand,                   fn = function() toggleTouchBar() end,                               releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackChangeTimelineClipHeightUp                          = { characterString = shortcut.textToKeyCode("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
         FCPXHackChangeTimelineClipHeightDown                        = { characterString = shortcut.textToKeyCode("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
@@ -868,7 +795,7 @@ function getShortcutsFromActiveCommandSet()
 					local global = v.global or false
 					local xValue = ""
 					if x ~= 1 then xValue = tostring(x) end
-			
+
 					mod.finalCutProShortcutKey[k .. xValue] = {
 						characterString 	= 		shortcut:getKeyCode(),
 						modifiers 			= 		shortcut:getModifiers(),
@@ -1069,16 +996,6 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Display Touch Bar:
-		--------------------------------------------------------------------------------
-		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-
-		--------------------------------------------------------------------------------
-		-- Enable XML Sharing:
-		--------------------------------------------------------------------------------
-		local enableXMLSharing 		= settings.get("fcpxHacks.enableXMLSharing") or false
-
-		--------------------------------------------------------------------------------
 		-- Enable Clipboard History:
 		--------------------------------------------------------------------------------
 		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
@@ -1179,60 +1096,6 @@ end
 		end
 
 		--------------------------------------------------------------------------------
-		-- Shared XML Menu:
-		--------------------------------------------------------------------------------
-		local settingsSharedXMLTable = {}
-		if enableXMLSharing then
-
-			--------------------------------------------------------------------------------
-			-- Get list of files:
-			--------------------------------------------------------------------------------
-			local sharedXMLFiles = {}
-
-			local emptySharedXMLFiles = true
-			local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-
-			for folder in fs.dir(xmlSharingPath) do
-
-				if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
-
-					submenu = {}
-					for file in fs.dir(xmlSharingPath .. "/" .. folder) do
-						if file:sub(-7) == ".fcpxml" then
-							emptySharedXMLFiles = false
-							local xmlPath = xmlSharingPath .. folder .. "/" .. file
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning})
-						end
-					end
-
-					if next(submenu) ~= nil then
-						table.insert(settingsSharedXMLTable, {title = folder, menu = submenu})
-					end
-
-				end
-
-			end
-
-			if emptySharedXMLFiles then
-				--------------------------------------------------------------------------------
-				-- Nothing in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(settingsSharedXMLTable, { title = "Empty", disabled = true })
-			else
-				--------------------------------------------------------------------------------
-				-- Something in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(settingsSharedXMLTable, { title = "-" })
-				table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = clearSharedXMLFiles })
-			end
-		else
-			--------------------------------------------------------------------------------
-			-- Shared Clipboard Disabled:
-			--------------------------------------------------------------------------------
-			table.insert(settingsSharedXMLTable, { title = "Disabled in Settings", disabled = true })
-		end
-
-		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
 		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
@@ -1257,17 +1120,12 @@ end
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
 			{ title = "-" },
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = i18n("enableXMLSharing"),															fn = toggleEnableXMLSharing, 										checked = enableXMLSharing},
 			{ title = "-" },
-			{ title = i18n("enableTouchBar"), 															fn = toggleTouchBar, 												checked = displayTouchBar, 									disabled = not touchBarSupported},
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
 			{ title = "-" },
 			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
-			{ title = "-" },
-			{ title = string.upper(i18n("tools")) .. ":", 												disabled = true },
-			{ title = i18n("importSharedXMLFile"),														menu = settingsSharedXMLTable },
 			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
 			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
@@ -1319,15 +1177,6 @@ end
 		local hammerspoonMenuIcon = hs.menuIcon()
 
 		--------------------------------------------------------------------------------
-		-- Touch Bar Location:
-		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-		local displayTouchBarLocationMouse = false
-		if displayTouchBarLocation == "Mouse" then displayTouchBarLocationMouse = true end
-		local displayTouchBarLocationTimelineTopCentre = false
-		if displayTouchBarLocation == "TimelineTopCentre" then displayTouchBarLocationTimelineTopCentre = true end
-
-		--------------------------------------------------------------------------------
 		-- HUD Preferences:
 		--------------------------------------------------------------------------------
 		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
@@ -1351,13 +1200,6 @@ end
 			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
 		}
-		local settingsTouchBarLocation = {
-			{ title = i18n("mouseLocation"), 															fn = function() changeTouchBarLocation("Mouse") end,				checked = displayTouchBarLocationMouse, disabled = not touchBarSupported },
-			{ title = i18n("topCentreOfTimeline"), 														fn = function() changeTouchBarLocation("TimelineTopCentre") end,	checked = displayTouchBarLocationTimelineTopCentre, disabled = not touchBarSupported },
-			{ title = "-" },
-			{ title = i18n("touchBarTipOne"), 															disabled = true },
-			{ title = i18n("touchBarTipTwo"), 															disabled = true },
-		}
 		local settingsHUD = {
 			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
@@ -1378,8 +1220,6 @@ end
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
-			{ title = "-" },
-			{ title = i18n("touchBarLocation"), 														menu = settingsTouchBarLocation},
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
@@ -1432,18 +1272,6 @@ end
 --------------------------------------------------------------------------------
 -- CHANGE:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- CHANGE TOUCH BAR LOCATION:
-	--------------------------------------------------------------------------------
-	function changeTouchBarLocation(value)
-		settings.set("fcpxHacks.displayTouchBarLocation", value)
-
-		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then setTouchBarLocation() end
-		end
-	end
 
 	--------------------------------------------------------------------------------
 	-- FCPX CHANGE BACKUP INTERVAL:
@@ -1780,44 +1608,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE XML SHARING:
-	--------------------------------------------------------------------------------
-	function toggleEnableXMLSharing()
-
-		local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
-
-		if not enableXMLSharing then
-
-			xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
-
-			if xmlSharingPath ~= false then
-				settings.set("fcpxHacks.xmlSharingPath", xmlSharingPath)
-			else
-				settings.set("fcpxHacks.xmlSharingPath", nil)
-				return "Cancelled"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Watch for Shared XML Folder Changes:
-			--------------------------------------------------------------------------------
-			sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-
-		else
-			--------------------------------------------------------------------------------
-			-- Stop Watchers:
-			--------------------------------------------------------------------------------
-			sharedXMLWatcher:stop()
-
-			--------------------------------------------------------------------------------
-			-- Clear Settings:
-			--------------------------------------------------------------------------------
-			settings.set("fcpxHacks.xmlSharingPath", nil)
-		end
-
-		settings.set("fcpxHacks.enableXMLSharing", not enableXMLSharing)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE HAMMERSPOON DOCK ICON:
 	--------------------------------------------------------------------------------
 	function toggleHammerspoonDockIcon()
@@ -2146,23 +1936,6 @@ end
 			 if file:sub(-10) == ".fcpxhacks" then
 				os.remove(sharedClipboardPath .. file)
 			 end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- CLEAR SHARED XML FILES:
-	--------------------------------------------------------------------------------
-	function clearSharedXMLFiles()
-
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-		for folder in fs.dir(xmlSharingPath) do
-			if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
-				for file in fs.dir(xmlSharingPath .. "/" .. folder) do
-					if file:sub(-7) == ".fcpxml" then
-						os.remove(xmlSharingPath .. folder .. "/" .. file)
-					end
-				end
-			end
 		end
 	end
 
@@ -2939,38 +2712,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function toggleTouchBar()
-
-		--------------------------------------------------------------------------------
-		-- Check for compatibility:
-		--------------------------------------------------------------------------------
-		if not touchBarSupported then
-			dialog.displayMessage(i18n("touchBarError"))
-			return "Fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Settings:
-		--------------------------------------------------------------------------------
-		local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-
-		--------------------------------------------------------------------------------
-		-- Toggle Touch Bar:
-		--------------------------------------------------------------------------------
-		setTouchBarLocation()
-		if fcp:isRunning() then
-			mod.touchBarWindow:toggle()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update Settings:
-		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.displayTouchBar", not displayTouchBar)
-	end
-
-	--------------------------------------------------------------------------------
 	-- CUT AND SWITCH MULTI-CAM:
 	--------------------------------------------------------------------------------
 	function cutAndSwitchMulticam(whichMode, whichAngle)
@@ -3117,7 +2858,7 @@ end
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
-		plugins("hs.fcpxhacks.plugins.browser.playhead").deleteAllHighlights()
+		plugins("hs.fcpxhacks.plugins.browser.playhead").deleteHighlight()
 	end
 
 	--------------------------------------------------------------------------------
@@ -3156,70 +2897,6 @@ end
 				end
 			end
 		end
-
-	end
-
---------------------------------------------------------------------------------
--- TOUCH BAR:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- SHOW TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function showTouchbar()
-		--------------------------------------------------------------------------------
-		-- Check if we need to show the Touch Bar:
-		--------------------------------------------------------------------------------
-		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then mod.touchBarWindow:show() end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- HIDE TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function hideTouchbar()
-		--------------------------------------------------------------------------------
-		-- Hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		if touchBarSupported then mod.touchBarWindow:hide() end
-	end
-
-	--------------------------------------------------------------------------------
-	-- SET TOUCH BAR LOCATION:
-	--------------------------------------------------------------------------------
-	function setTouchBarLocation()
-
-		--------------------------------------------------------------------------------
-		-- Get Settings:
-		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = settings.get("fcpxHacks.displayTouchBarLocation") or "Mouse"
-
-		--------------------------------------------------------------------------------
-		-- Show Touch Bar at Top Centre of Timeline:
-		--------------------------------------------------------------------------------
-		local timeline = fcp:timeline()
-		if displayTouchBarLocation == "TimelineTopCentre" and timeline:isShowing() then
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
-			--------------------------------------------------------------------------------
-			local viewFrame = timeline:contents():viewFrame()
-
-			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
-			mod.touchBarWindow:topLeft(topLeft)
-		else
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Mouse Pointer Location:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:atMousePosition()
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Save last Touch Bar Location to Settings:
-		--------------------------------------------------------------------------------
-		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
 
 	end
 
@@ -3318,12 +2995,6 @@ function finalCutProWindowWatcher()
 				debugMessage("Disabling Hotkeys")
 				hotkeys:exit()
 			end
-			--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Hide the Touch Bar:
-			--------------------------------------------------------------------------------
-			hideTouchbar()
 
 			--------------------------------------------------------------------------------
 			-- Hide the HUD:
@@ -3331,12 +3002,6 @@ function finalCutProWindowWatcher()
 			hackshud.hide()
 		end,
 		hide = function(commandEditor)
-			--------------------------------------------------------------------------------
-			-- Check if we need to show the Touch Bar:
-			--------------------------------------------------------------------------------
-			showTouchbar()
-			--------------------------------------------------------------------------------
-
 			--------------------------------------------------------------------------------
 			-- Refresh Keyboard Shortcuts:
 			--------------------------------------------------------------------------------
@@ -3351,19 +3016,6 @@ function finalCutProWindowWatcher()
 			end
 		end
 	})
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Moved:
-	--------------------------------------------------------------------------------
-	finalCutProWindowFilter = windowfilter.new{"Final Cut Pro"}
-
-	finalCutProWindowFilter:subscribe(windowfilter.windowMoved, function()
-		debugMessage("Final Cut Pro Window Resized")
-		if touchBarSupported then
-			local displayTouchBar = settings.get("fcpxHacks.displayTouchBar") or false
-			if displayTouchBar then setTouchBarLocation() end
-		end
-	end, true)
 end
 
 	--------------------------------------------------------------------------------
@@ -3406,13 +3058,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Check if we need to show the Touch Bar:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			showTouchbar()
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Enable Voice Commands:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -3444,11 +3089,6 @@ end
 		-- Don't trigger until after the script has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Check if we need to hide the Touch Bar:
-		--------------------------------------------------------------------------------
-		hideTouchbar()
 
 		--------------------------------------------------------------------------------
 		-- Disable Voice Commands:
@@ -3632,59 +3272,6 @@ function sharedClipboardFileWatcher(files)
     if doReload then
 		debugMessage("Refreshing Shared Clipboard.")
     end
-end
-
---------------------------------------------------------------------------------
--- SHARED XML FILE WATCHER:
---------------------------------------------------------------------------------
-function sharedXMLFileWatcher(files)
-	debugMessage("Refreshing Shared XML Folder.")
-
-	for _,file in pairs(files) do
-        if file:sub(-7) == ".fcpxml" then
-			local testFile = io.open(file, "r")
-			if testFile ~= nil then
-				testFile:close()
-
-				local editorName = string.reverse(string.sub(string.reverse(file), string.find(string.reverse(file), "/", 1) + 1, string.find(string.reverse(file), "/", string.find(string.reverse(file), "/", 1) + 1) - 1))
-
-				if host.localizedName() ~= editorName then
-
-					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
-					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
-						:setIdImage(image.imageFromPath(metadata.iconPath))
-						:title("New XML Recieved")
-						:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
-						:informativeText(metadata.scriptName .. " has recieved a new XML file.")
-						:hasActionButton(true)
-						:actionButtonTitle("Import XML")
-						:send()
-
-				end
-			end
-        end
-    end
-end
-
---------------------------------------------------------------------------------
--- TOUCH BAR WATCHER:
---------------------------------------------------------------------------------
-function touchbarWatcher(obj, message)
-
-	if message == "didEnter" then
-        mod.mouseInsideTouchbar = true
-    elseif message == "didExit" then
-        mod.mouseInsideTouchbar = false
-
-        --------------------------------------------------------------------------------
-	    -- Just in case we got here before the eventtap returned the Touch Bar to normal:
-	    --------------------------------------------------------------------------------
-        mod.touchBarWindow:movable(false)
-        mod.touchBarWindow:acceptsMouseEvents(true)
-		settings.set("fcpxHacks.lastTouchBarLocation", mod.touchBarWindow:topLeft())
-
-    end
-
 end
 
 --------------------------------------------------------------------------------
