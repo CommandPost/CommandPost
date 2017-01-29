@@ -46,6 +46,7 @@ end
 function mod.addHistoryItem(data, label)
 	local history = mod.getHistory()
 	local item = {data, label}
+	-- drop old history items
 	while (#(history) >= mod._historyMaximumSize) do
 		table.remove(history,1)
 	end
@@ -116,18 +117,22 @@ function plugin.init(deps)
 	-- Add menu items
 	deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("pasteFromClipboardHistory") end)
 		:addItems(1000, function()
-			local fcpxRunning = fcp:isRunning()
 			local historyItems = {}
-			local history = mod.getHistory()
-			if #history > 0 then
-				for i=#history, 1, -1 do
-					local item = history[i]
-					table.insert(historyItems, {title = item[2], fn = function() mod.pasteHistoryItem(i) end, disabled = not fcpxRunning})
+			if mod.isEnabled() then
+				local fcpxRunning = fcp:isRunning()
+				local history = mod.getHistory()
+				if #history > 0 then
+					for i=#history, 1, -1 do
+						local item = history[i]
+						table.insert(historyItems, {title = item[2], fn = function() mod.pasteHistoryItem(i) end, disabled = not fcpxRunning})
+					end
+					table.insert(historyItems, { title = "-" })
+					table.insert(historyItems, { title = i18n("clearClipboardHistory"), fn = mod.clearHistory })
+				else
+					table.insert(historyItems, { title = i18n("emptyClipboardHistory"), disabled = true })
 				end
-				table.insert(historyItems, { title = "-" })
-				table.insert(historyItems, { title = i18n("clearClipboardHistory"), fn = mod.clearHistory })
 			else
-				table.insert(historyItems, { title = i18n("emptyClipboardHistory"), disabled = true })
+				table.insert(historyItems, { title = i18n("disabled"), disabled = true })
 			end
 			return historyItems
 		end)

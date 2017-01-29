@@ -186,6 +186,10 @@ function plist.xmlFileToTable(plistFileName)
 	end
 
 	local absoluteFilename = fs.pathToAbsolute(plistFileName)
+	if not absoluteFilename then
+		log.ef("The provided path was not found: %s", plistFileName)
+		return nil
+	end
 	local file = io.open(absoluteFilename, "r") 		-- r read mode
     if not file then
 		log.e("Unable to open '".. plistFileName .."'")

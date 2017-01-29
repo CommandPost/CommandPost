@@ -4,6 +4,8 @@ local plist 									= require("hs.plist")
 local archiver									= require("hs.plist.archiver")
 local protect 									= require("hs.fcpxhacks.modules.protect")
 local timer										= require("hs.timer")
+local fcp										= require("hs.finalcutpro")
+local dialog 									= require("hs.fcpxhacks.modules.dialog")
 
 local log										= require("hs.logger").new("clpmgr")
 
@@ -185,9 +187,10 @@ end
 -- COPY WITH CUSTOM LABEL:
 --------------------------------------------------------------------------------
 function mod.copyWithCustomClipName()
+	log.d("Copying Clip with custom Clip Name")
 	local menuBar = fcp:menuBar()
 	if menuBar:isEnabled("Edit", "Copy") then
-		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideClipNameInvalid"), "")
+		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextClipName(result)
 		menuBar:selectMenu("Edit", "Copy")

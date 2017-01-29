@@ -113,7 +113,6 @@ local just										= require("hs.just")
 -- PLUGINS:
 --------------------------------------------------------------------------------
 
-local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.modules.hackshud")
 local voicecommands 							= require("hs.fcpxhacks.modules.voicecommands")
@@ -320,20 +319,6 @@ function loadScript()
 		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
 
 		--------------------------------------------------------------------------------
-		-- Watch for Shared Clipboard Changes:
-		--------------------------------------------------------------------------------
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		if sharedClipboardPath ~= nil then
-			if tools.doesDirectoryExist(sharedClipboardPath) then
-				sharedClipboardWatcher = pathwatcher.new(sharedClipboardPath, sharedClipboardFileWatcher):start()
-			else
-				writeToConsole("The Shared Clipboard Directory could not be found, so disabling.")
-				settings.set("fcpxHacks.sharedClipboardPath", nil)
-				settings.set("fcpxHacks.enableSharedClipboard", false)
-			end
-		end
-
-		--------------------------------------------------------------------------------
 		-- Notification Watcher:
 		--------------------------------------------------------------------------------
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
@@ -502,8 +487,6 @@ function defaultShortcutKeys()
         FCPXHackSaveKeywordPresetNine                               = { characterString = shortcut.textToKeyCode("9"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(9) end,                         releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackConsole                                             = { characterString = shortcut.textToKeyCode("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
-
-		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
@@ -988,11 +971,6 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Enable Shared Clipboard:
-		--------------------------------------------------------------------------------
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
-
-		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
@@ -1006,60 +984,6 @@ end
 		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonThree ~= " (Unassigned)" then 	hudButtonThree = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonThree["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonFour ~= " (Unassigned)" then 	hudButtonFour = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonFour["text"]),maxTextLength,"...") 	.. ")" end
-
-		--------------------------------------------------------------------------------
-		-- Shared Clipboard Menu:
-		--------------------------------------------------------------------------------
-		local settingsSharedClipboardTable = {}
-
-		if enableSharedClipboard then
-
-			--------------------------------------------------------------------------------
-			-- Get list of files:
-			--------------------------------------------------------------------------------
-			local emptySharedClipboard = true
-			local sharedClipboardFiles = {}
-			local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-			for file in fs.dir(sharedClipboardPath) do
-				 if file:sub(-10) == ".fcpxhacks" then
-
-					local pathToClipboardFile = sharedClipboardPath .. file
-					local plistData = plist.xmlFileToTable(pathToClipboardFile)
-					if plistData ~= nil then
-						if plistData["SharedClipboardLabel1"] ~= nil then
-
-							local editorName = string.sub(file, 1, -11)
-							local submenu = {}
-							for i=1, 5 do
-								emptySharedClipboard = false
-								local currentItem = plistData["SharedClipboardLabel"..tostring(i)]
-								if currentItem ~= "" then table.insert(submenu, {title = currentItem, fn = function() pasteFromSharedClipboard(pathToClipboardFile, tostring(i)) end, disabled = not fcpxRunning}) end
-							end
-
-							table.insert(settingsSharedClipboardTable, {title = editorName, menu = submenu})
-						end
-					end
-
-
-				 end
-			end
-
-			if emptySharedClipboard then
-				--------------------------------------------------------------------------------
-				-- Nothing in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(settingsSharedClipboardTable, { title = "Empty", disabled = true })
-			else
-				table.insert(settingsSharedClipboardTable, { title = "-" })
-				table.insert(settingsSharedClipboardTable, { title = "Clear Shared Clipboard History", fn = clearSharedClipboardHistory })
-			end
-
-		else
-			--------------------------------------------------------------------------------
-			-- Shared Clipboard Disabled:
-			--------------------------------------------------------------------------------
-			table.insert(settingsSharedClipboardTable, { title = "Disabled in Settings", disabled = true })
-		end
 
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
@@ -1082,8 +1006,6 @@ end
 			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
 		}
 		local toolsSettings = {
-			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
-			{ title = "-" },
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 			{ title = "-" },
 			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
@@ -1091,7 +1013,6 @@ end
 			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
-			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
 			{ title = i18n("options"),																	menu = toolsSettings },
 		}
@@ -1505,46 +1426,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE SHARED CLIPBOARD:
-	--------------------------------------------------------------------------------
-	function toggleEnableSharedClipboard()
-
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
-
-		if not enableSharedClipboard then
-
-			result = dialog.displayChooseFolder("Which folder would you like to use for the Shared Clipboard?")
-
-			if result ~= false then
-				debugMessage("Enabled Shared Clipboard Path: " .. tostring(result))
-				settings.set("fcpxHacks.sharedClipboardPath", result)
-
-				--------------------------------------------------------------------------------
-				-- Watch for Shared Clipboard Changes:
-				--------------------------------------------------------------------------------
-				sharedClipboardWatcher = pathwatcher.new(result, sharedClipboardFileWatcher):start()
-
-				clipboard.startWatching()
-			else
-				debugMessage("Enabled Shared Clipboard Choose Path Cancelled.")
-				settings.set("fcpxHacks.sharedClipboardPath", nil)
-				return "failed"
-			end
-
-		else
-
-			--------------------------------------------------------------------------------
-			-- Stop Watching for Shared Clipboard Changes:
-			--------------------------------------------------------------------------------
-			sharedClipboardWatcher:stop()
-
-			clipboard.stopWatching()
-		end
-
-		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE HAMMERSPOON DOCK ICON:
 	--------------------------------------------------------------------------------
 	function toggleHammerspoonDockIcon()
@@ -1783,67 +1664,6 @@ end
 		end
 
 		updateMenubarIcon()
-	end
-
---------------------------------------------------------------------------------
--- PASTE:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- PASTE FROM SHARED CLIPBOARD:
-	--------------------------------------------------------------------------------
-	function pasteFromSharedClipboard(pathToClipboardFile, whichClipboard)
-
-		if tools.doesFileExist(pathToClipboardFile) then
-			local plistData = plist.xmlFileToTable(pathToClipboardFile)
-			if plistData ~= nil then
-
-				--------------------------------------------------------------------------------
-				-- Decode Shared Clipboard Data from Plist:
-				--------------------------------------------------------------------------------
-				local currentClipboardData = base64.decode(plistData["SharedClipboardData" .. whichClipboard])
-
-				--------------------------------------------------------------------------------
-				-- Write data back to Clipboard:
-				--------------------------------------------------------------------------------
-				clipboard.stopWatching()
-				pasteboard.writeDataForUTI(fcp:getPasteboardUTI(), currentClipboardData)
-				clipboard.startWatching()
-
-				--------------------------------------------------------------------------------
-				-- Paste in FCPX:
-				--------------------------------------------------------------------------------
-				fcp:launch()
-				if not fcp:performShortcut("Paste") then
-					dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteFromSharedClipboard().")
-					return "Failed"
-				end
-
-			else
-				dialog.errorMessage(i18n("sharedClipboardNotRead"))
-				return "Fail"
-			end
-		else
-			dialog.displayMessage(i18n("sharedClipboardFileNotFound"))
-			return "Fail"
-		end
-
-	end
-
---------------------------------------------------------------------------------
--- CLEAR:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- CLEAR SHARED CLIPBOARD HISTORY:
-	--------------------------------------------------------------------------------
-	function clearSharedClipboardHistory()
-		local sharedClipboardPath = settings.get("fcpxHacks.sharedClipboardPath")
-		for file in fs.dir(sharedClipboardPath) do
-			 if file:sub(-10) == ".fcpxhacks" then
-				os.remove(sharedClipboardPath .. file)
-			 end
-		end
 	end
 
 --------------------------------------------------------------------------------
@@ -2268,26 +2088,6 @@ end
 				mod.colorPicker = nil
 			end
 		end
-
---------------------------------------------------------------------------------
--- CLIPBOARD RELATED:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- COPY WITH CUSTOM LABEL & FOLDER:
-	--------------------------------------------------------------------------------
-	function copyWithCustomLabelAndFolder()
-		local menuBar = fcp:menuBar()
-		if menuBar:isEnabled("Edit", "Copy") then
-			local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideClipNameInvalid"), "")
-			if result == false then return end
-			clipboard.setName(result)
-			local result = dialog.displayTextBoxMessage("Please enter a folder for the clipboard item:", "The value you entered is not valid.\n\nPlease try again.", "")
-			if result == false then return end
-			clipboard.setFolder(result)
-			menuBar:selectMenu("Edit", "Copy")
-		end
-	end
 
 --------------------------------------------------------------------------------
 -- OTHER SHORTCUTS:
@@ -3146,21 +2946,6 @@ end
 		end
 		return i18n("shareUnknown", {type = "unknown"})
 	end
-
---------------------------------------------------------------------------------
--- SHARED CLIPBOARD WATCHER:
---------------------------------------------------------------------------------
-function sharedClipboardFileWatcher(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-10) == ".fcpxhacks" then
-            doReload = true
-        end
-    end
-    if doReload then
-		debugMessage("Refreshing Shared Clipboard.")
-    end
-end
 
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:

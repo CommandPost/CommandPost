@@ -315,7 +315,11 @@ return {
 			clearClipboardHistory				=			"Clear Clipboard History",
 			emptyClipboardHistory				= 			"Empty",
 			overrideClipNamePrompt				=			"Please enter a label for the clipboard item:",
-			overrideClipNameInvalid				=			"The value you entered is not valid.\n\nPlease try again.",
+			overrideFolderNamePrompt			=			"Please enter a folder for the clipboard item:", 
+			overrideValueInvalid				=			"The value you entered is not valid.\n\nPlease try again.",
+			
+			clearSharedClipboard				=			"Clear Shared Clipboard",
+			emptySharedClipboard				=			"Empty",
 
 				--------------------------------------------------------------------------------
 				-- Languages:
