@@ -311,6 +311,11 @@ return {
 			pasteFromSharedClipboard			=			"Paste from Shared Clipboard",
 			finalCutProLanguage					=			"Final Cut Pro Language",
 			assignHUDButtons					=			"Assign HUD Buttons",
+			
+			clearClipboardHistory				=			"Clear Clipboard History",
+			emptyClipboardHistory				= 			"Empty",
+			overrideClipNamePrompt				=			"Please enter a label for the clipboard item:",
+			overrideClipNameInvalid				=			"The value you entered is not valid.\n\nPlease try again.",
 
 				--------------------------------------------------------------------------------
 				-- Languages:

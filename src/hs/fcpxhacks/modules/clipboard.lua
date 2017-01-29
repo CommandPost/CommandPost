@@ -197,17 +197,6 @@ function clipboard.processContent(data)
 end
 
 --------------------------------------------------------------------------------
--- PROCESS TIME RANGE AND OBJECT:
---------------------------------------------------------------------------------
--- Process 'FigTimeRangeAndObject' objects, typically content copied from the Browser
--- Returns: string (primary clip name), integer (number of clips)
---------------------------------------------------------------------------------
-function clipboard.processTimeRangeAndObject(data)
-	log.d("processTimeRangeAndObject")
-	return clipboard.processObject(data.object)
-end
-
---------------------------------------------------------------------------------
 -- FIND CLIP NAME:
 --------------------------------------------------------------------------------
 -- Searches the Pasteboard binary plist data for the first clip name, and returns it.

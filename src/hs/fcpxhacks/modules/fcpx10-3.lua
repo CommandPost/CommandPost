@@ -334,13 +334,6 @@ function loadScript()
 		end
 
 		--------------------------------------------------------------------------------
-		-- Clipboard Watcher:
-		--------------------------------------------------------------------------------
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
-		if enableClipboardHistory or enableSharedClipboard then clipboard.startWatching() end
-
-		--------------------------------------------------------------------------------
 		-- Notification Watcher:
 		--------------------------------------------------------------------------------
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
@@ -510,7 +503,6 @@ function defaultShortcutKeys()
 
         FCPXHackConsole                                             = { characterString = shortcut.textToKeyCode("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
 
-		FCPXCopyWithCustomLabel			 							= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabel() end,                         	releasedFn = nil,                                                       repeatFn = nil },
 		FCPXCopyWithCustomLabelAndFolder		 					= { characterString = "",                                   modifiers = {},                                     fn = function() copyWithCustomLabelAndFolder() end,                	releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
@@ -996,11 +988,6 @@ end
 		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
 
 		--------------------------------------------------------------------------------
-		-- Enable Clipboard History:
-		--------------------------------------------------------------------------------
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-		--------------------------------------------------------------------------------
 		-- Enable Shared Clipboard:
 		--------------------------------------------------------------------------------
 		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
@@ -1019,27 +1006,6 @@ end
 		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonThree ~= " (Unassigned)" then 	hudButtonThree = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonThree["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonFour ~= " (Unassigned)" then 	hudButtonFour = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonFour["text"]),maxTextLength,"...") 	.. ")" end
-
-		--------------------------------------------------------------------------------
-		-- Clipboard History Menu:
-		--------------------------------------------------------------------------------
-		local settingsClipboardHistoryTable = {}
-		if enableClipboardHistory then
-			local clipboardHistory = clipboard.getHistory()
-			if clipboardHistory ~= nil then
-				if #clipboardHistory ~= 0 then
-					for i=#clipboardHistory, 1, -1 do
-						table.insert(settingsClipboardHistoryTable, {title = clipboardHistory[i][2], fn = function() finalCutProPasteFromClipboardHistory(clipboardHistory[i][1]) end, disabled = not fcpxRunning})
-					end
-					table.insert(settingsClipboardHistoryTable, { title = "-" })
-					table.insert(settingsClipboardHistoryTable, { title = "Clear Clipboard History", fn = clearClipboardHistory })
-				else
-					table.insert(settingsClipboardHistoryTable, { title = "Empty", disabled = true })
-				end
-			end
-		else
-			table.insert(settingsClipboardHistoryTable, { title = "Disabled in Settings", disabled = true })
-		end
 
 		--------------------------------------------------------------------------------
 		-- Shared Clipboard Menu:
@@ -1116,7 +1082,6 @@ end
 			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
 		}
 		local toolsSettings = {
-			{ title = i18n("enableClipboardHistory"),													fn = toggleEnableClipboardHistory, 									checked = enableClipboardHistory},
 			{ title = i18n("enableSharedClipboard"), 													fn = toggleEnableSharedClipboard, 									checked = enableSharedClipboard},
 			{ title = "-" },
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
@@ -1126,7 +1091,6 @@ end
 			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
-			{ title = i18n("pasteFromClipboardHistory"),												menu = settingsClipboardHistoryTable },
 			{ title = i18n("pasteFromSharedClipboard"), 												menu = settingsSharedClipboardTable },
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
 			{ title = i18n("options"),																	menu = toolsSettings },
@@ -1541,32 +1505,11 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE CLIPBOARD HISTORY:
-	--------------------------------------------------------------------------------
-	function toggleEnableClipboardHistory()
-
-		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-		if not enableClipboardHistory then
-			if not enableSharedClipboard then
-				clipboard.startWatching()
-			end
-		else
-			if not enableSharedClipboard then
-				clipboard.stopWatching()
-			end
-		end
-		settings.set("fcpxHacks.enableClipboardHistory", not enableClipboardHistory)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE SHARED CLIPBOARD:
 	--------------------------------------------------------------------------------
 	function toggleEnableSharedClipboard()
 
 		local enableSharedClipboard = settings.get("fcpxHacks.enableSharedClipboard") or false
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
 
 		if not enableSharedClipboard then
 
@@ -1581,10 +1524,7 @@ end
 				--------------------------------------------------------------------------------
 				sharedClipboardWatcher = pathwatcher.new(result, sharedClipboardFileWatcher):start()
 
-				if not enableClipboardHistory then
-					clipboard.startWatching()
-				end
-
+				clipboard.startWatching()
 			else
 				debugMessage("Enabled Shared Clipboard Choose Path Cancelled.")
 				settings.set("fcpxHacks.sharedClipboardPath", nil)
@@ -1598,10 +1538,7 @@ end
 			--------------------------------------------------------------------------------
 			sharedClipboardWatcher:stop()
 
-			if not enableClipboardHistory then
-				clipboard.stopWatching()
-			end
-
+			clipboard.stopWatching()
 		end
 
 		settings.set("fcpxHacks.enableSharedClipboard", not enableSharedClipboard)
@@ -1853,29 +1790,6 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- PASTE FROM CLIPBOARD HISTORY:
-	--------------------------------------------------------------------------------
-	function finalCutProPasteFromClipboardHistory(data)
-
-		--------------------------------------------------------------------------------
-		-- Write data back to Clipboard:
-		--------------------------------------------------------------------------------
-		clipboard.stopWatching()
-		pasteboard.writeDataForUTI(fcp:getPasteboardUTI(), data)
-		clipboard.startWatching()
-
-		--------------------------------------------------------------------------------
-		-- Paste in FCPX:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-		if not fcp:performShortcut("Paste") then
-			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in finalCutProPasteFromClipboardHistory().")
-			return "Failed"
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- PASTE FROM SHARED CLIPBOARD:
 	--------------------------------------------------------------------------------
 	function pasteFromSharedClipboard(pathToClipboardFile, whichClipboard)
@@ -1919,13 +1833,6 @@ end
 --------------------------------------------------------------------------------
 -- CLEAR:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- CLEAR CLIPBOARD HISTORY:
-	--------------------------------------------------------------------------------
-	function clearClipboardHistory()
-		clipboard.clearHistory()
-	end
 
 	--------------------------------------------------------------------------------
 	-- CLEAR SHARED CLIPBOARD HISTORY:
@@ -2367,25 +2274,12 @@ end
 --------------------------------------------------------------------------------
 
 	--------------------------------------------------------------------------------
-	-- COPY WITH CUSTOM LABEL:
-	--------------------------------------------------------------------------------
-	function copyWithCustomLabel()
-		local menuBar = fcp:menuBar()
-		if menuBar:isEnabled("Edit", "Copy") then
-			local result = dialog.displayTextBoxMessage("Please enter a label for the clipboard item:", "The value you entered is not valid.\n\nPlease try again.", "")
-			if result == false then return end
-			clipboard.setName(result)
-			menuBar:selectMenu("Edit", "Copy")
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- COPY WITH CUSTOM LABEL & FOLDER:
 	--------------------------------------------------------------------------------
 	function copyWithCustomLabelAndFolder()
 		local menuBar = fcp:menuBar()
 		if menuBar:isEnabled("Edit", "Copy") then
-			local result = dialog.displayTextBoxMessage("Please enter a label for the clipboard item:", "The value you entered is not valid.\n\nPlease try again.", "")
+			local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideClipNameInvalid"), "")
 			if result == false then return end
 			clipboard.setName(result)
 			local result = dialog.displayTextBoxMessage("Please enter a folder for the clipboard item:", "The value you entered is not valid.\n\nPlease try again.", "")
@@ -2748,12 +2642,9 @@ end
 	-- MOVE TO PLAYHEAD:
 	--------------------------------------------------------------------------------
 	function moveToPlayhead()
-
-		local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
-
-		if enableClipboardHistory then
-			clipboard.stopWatching()
-		end
+		local clipboardManager = plugins("hs.fcpxhacks.plugins.clipboard.manager")
+		
+		clipboardManager.stopWatching()
 
 		if not fcp:performShortcut("Cut") then
 			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
@@ -2766,10 +2657,7 @@ end
 		end
 
 		::moveToPlayheadEnd::
-		if enableClipboardHistory then
-			timer.doAfter(2, function() clipboard.startWatching() end)
-		end
-
+		timer.doAfter(2, function() clipboardManager.startWatching() end)
 	end
 
 	--------------------------------------------------------------------------------
