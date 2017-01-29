@@ -1,13 +1,17 @@
 -- Imports
-local settings									= require("hs.settings")
-local tools										= require("hs.fcpxhacks.modules.tools")
-local pathwatcher								= require("hs.pathwatcher")
-local notify									= require("hs.notify")
-local image										= require("hs.image")
-local metadata									= require("hs.fcpxhacks.metadata")
+
 local fs										= require("hs.fs")
+local host										= require("hs.host")
+local image										= require("hs.image")
+local notify									= require("hs.notify")
+local pathwatcher								= require("hs.pathwatcher")
+local settings									= require("hs.settings")
+
 local fcp										= require("hs.finalcutpro")
+local metadata									= require("hs.fcpxhacks.metadata")
+
 local dialog									= require("hs.fcpxhacks.modules.dialog")
+local tools										= require("hs.fcpxhacks.modules.tools")
 
 local log 										= require("hs.logger").new("sharingxml")
 
@@ -88,13 +92,13 @@ function mod.update()
 				return
 			end
 		end
-		
+
 		-- Ensure the directory actually exists.
 		if not tools.doesDirectoryExist(sharingPath) then
 			mod.setEnabled(false)
 			return
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Watch for Shared XML Folder Changes:
 		--------------------------------------------------------------------------------
@@ -152,11 +156,11 @@ function mod.listFilesMenu()
 
 		local emptySharedXMLFiles = true
 		local xmlSharingPath = mod.getSharingPath()
-		
+
 		if not xmlSharingPath then
 			return nil
 		end
-		
+
 		local fcpxRunning = fcp:isRunning()
 
 		for folder in fs.dir(xmlSharingPath) do
@@ -196,7 +200,7 @@ function mod.listFilesMenu()
 		--------------------------------------------------------------------------------
 		table.insert(menu, { title = i18n("disabled"), disabled = true })
 	end
-	return menu	
+	return menu
 end
 
 -- The Plugin
@@ -211,12 +215,12 @@ function plugin.init(deps)
 	-- Tools Menus
 	deps.tools:addMenu(PRIORITY, function() return i18n("importSharedXMLFile") end)
 		:addItems(1, mod.listFilesMenu)
-		
+
 	-- Tools Options
 	deps.options:addItem(5000, function()
 		return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
 	end)
-	
+
 	return mod
 end
 
