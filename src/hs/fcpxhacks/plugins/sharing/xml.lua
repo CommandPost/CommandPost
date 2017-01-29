@@ -7,12 +7,13 @@ local image										= require("hs.image")
 local metadata									= require("hs.fcpxhacks.metadata")
 local fs										= require("hs.fs")
 local fcp										= require("hs.finalcutpro")
+local dialog									= require("hs.fcpxhacks.modules.dialog")
 
-local logger 									= require("hs.logger").new("sharingxml")
+local log 										= require("hs.logger").new("sharingxml")
 
 -- Constants
 
-local PRIORITY = 1000
+local PRIORITY = 4000
 
 -- The module
 local mod = {}
@@ -23,6 +24,11 @@ end
 
 function mod.setEnabled(value)
 	settings.set("fcpxHacks.enableXMLSharing", value)
+	mod.update()
+end
+
+function mod.toggleEnabled()
+	mod.setEnabled(not mod.isEnabled())
 end
 
 function mod.getSharingPath()
@@ -49,7 +55,7 @@ local function sharedXMLFileWatcher(files)
 
 				if host.localizedName() ~= editorName then
 
-					local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+					local xmlSharingPath = mod.getSharingPath()
 					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
 						:setIdImage(image.imageFromPath(metadata.iconPath))
 						:title("New XML Received")
@@ -66,64 +72,55 @@ local function sharedXMLFileWatcher(files)
 end
 
 
---------------------------------------------------------------------------------
--- TOGGLE XML SHARING:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
+function mod.update()
+	local enabled = mod.isEnabled()
 
-	local enableXMLSharing = mod.isEnabled()
+	if enabled then
+		log.d("Enabling XML Sharing")
+		local sharingPath = mod.getSharingPath()
+		if sharingPath == nil then
+			sharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
-	if not enableXMLSharing then
-
-		local xmlSharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
-
-		if xmlSharingPath ~= false then
-			mod.setSharingPath(xmlSharingPath)
-		else
-			mod.setSharingPath(nil)
-			return "Cancelled"
+			if sharingPath ~= false then
+				mod.setSharingPath(sharingPath)
+			else
+				mod.setEnabled(false)
+				return
+			end
 		end
-
+		
+		-- Ensure the directory actually exists.
+		if not tools.doesDirectoryExist(sharingPath) then
+			mod.setEnabled(false)
+			return
+		end
+		
 		--------------------------------------------------------------------------------
 		-- Watch for Shared XML Folder Changes:
 		--------------------------------------------------------------------------------
-		mod.sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-
+		if not mod._watcher then
+			mod._watcher = pathwatcher.new(sharingPath, sharedXMLFileWatcher):start()
+		end
 	else
+		log.d("Disabling XML Sharing")
 		--------------------------------------------------------------------------------
 		-- Stop Watchers:
 		--------------------------------------------------------------------------------
-		mod.sharedXMLWatcher:stop()
+		if mod._watcher then
+			mod._watcher:stop()
+			mod._watcher = nil
+		end
 
 		--------------------------------------------------------------------------------
 		-- Clear Settings:
 		--------------------------------------------------------------------------------
 		mod.setSharingPath(nil)
 	end
-
-	mod.setEnabled(not enableXMLSharing)
 end
-
 
 function mod.init()
-	--------------------------------------------------------------------------------
-	-- Watch for Shared XML Changes:
-	--------------------------------------------------------------------------------
-	local enableXMLSharing = mod.isEnabled()
-	if enableXMLSharing then
-		local xmlSharingPath = mod.getSharingPath()
-		if xmlSharingPath ~= nil then
-			if tools.doesDirectoryExist(xmlSharingPath) then
-				sharedXMLWatcher = pathwatcher.new(xmlSharingPath, sharedXMLFileWatcher):start()
-			else
-				writeToConsole("The Shared XML Folder(s) could not be found, so disabling.")
-				mod.setSharingPath(nil)
-				mod.setEnabled(false)
-			end
-		end
-	end
+	mod.update()
 end
-
 
 --------------------------------------------------------------------------------
 -- CLEAR SHARED XML FILES:
@@ -145,7 +142,7 @@ function mod.listFilesMenu()
 	--------------------------------------------------------------------------------
 	-- Shared XML Menu:
 	--------------------------------------------------------------------------------
-	local settingsSharedXMLTable = {}
+	local menu = {}
 	if mod.isEnabled() then
 
 		--------------------------------------------------------------------------------
@@ -155,6 +152,10 @@ function mod.listFilesMenu()
 
 		local emptySharedXMLFiles = true
 		local xmlSharingPath = mod.getSharingPath()
+		
+		if not xmlSharingPath then
+			return nil
+		end
 		
 		local fcpxRunning = fcp:isRunning()
 
@@ -172,32 +173,30 @@ function mod.listFilesMenu()
 				end
 
 				if next(submenu) ~= nil then
-					table.insert(settingsSharedXMLTable, {title = folder, menu = submenu})
+					table.insert(menu, {title = folder, menu = submenu})
 				end
-
 			end
-
 		end
 
 		if emptySharedXMLFiles then
 			--------------------------------------------------------------------------------
 			-- Nothing in the Shared Clipboard:
 			--------------------------------------------------------------------------------
-			table.insert(settingsSharedXMLTable, { title = "Empty", disabled = true })
+			table.insert(menu, { title = "Empty", disabled = true })
 		else
 			--------------------------------------------------------------------------------
 			-- Something in the Shared Clipboard:
 			--------------------------------------------------------------------------------
-			table.insert(settingsSharedXMLTable, { title = "-" })
-			table.insert(settingsSharedXMLTable, { title = "Clear Shared XML Files", fn = mod.clearSharedFiles })
+			table.insert(menu, { title = "-" })
+			table.insert(menu, { title = "Clear Shared XML Files", fn = mod.clearSharedFiles })
 		end
 	else
 		--------------------------------------------------------------------------------
 		-- Shared Clipboard Disabled:
 		--------------------------------------------------------------------------------
-		table.insert(settingsSharedXMLTable, { title = "Disabled in Settings", disabled = true })
+		table.insert(menu, { title = i18n("disabled"), disabled = true })
 	end
-	return settingsSharedXMLTable	
+	return menu	
 end
 
 -- The Plugin
@@ -215,7 +214,7 @@ function plugin.init(deps)
 		
 	-- Tools Options
 	deps.options:addItem(5000, function()
-		return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnable,	checked = mod.isEnabled()}
+		return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
 	end)
 	
 	return mod
