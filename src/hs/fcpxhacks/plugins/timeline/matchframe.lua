@@ -3,6 +3,7 @@ local fcp							= require("hs.finalcutpro")
 local settings						= require("hs.settings")
 local clipboard						= require("hs.fcpxhacks.modules.clipboard")
 local log							= require("hs.logger").new("matchframe")
+local just							= require("hs.just")
 
 -- Local Functions
 
@@ -101,7 +102,7 @@ function mod.multicamMatchFrame(goBackToTimeline) -- True or False
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteHighlight()
+	mod.browserPlayhead.deleteHighlight()
 
 	local contents = fcp:timeline():contents()
 
@@ -279,7 +280,7 @@ function mod.matchFrame(focus)
 	--------------------------------------------------------------------------------
 	-- Delete any pre-existing highlights:
 	--------------------------------------------------------------------------------
-	mod.deleteHighlight()
+	mod.browserPlayhead.deleteHighlight()
 
 	local libraries = fcp:libraries()
 
