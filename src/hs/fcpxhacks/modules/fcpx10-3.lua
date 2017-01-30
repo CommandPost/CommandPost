@@ -116,7 +116,6 @@ local just										= require("hs.just")
 local clipboard									= require("hs.fcpxhacks.modules.clipboard")
 local hacksconsole								= require("hs.fcpxhacks.modules.hacksconsole")
 local hackshud									= require("hs.fcpxhacks.modules.hackshud")
-local voicecommands 							= require("hs.fcpxhacks.modules.voicecommands")
 
 local shortcut									= require("hs.commands.shortcut")
 
@@ -126,7 +125,6 @@ local shortcut									= require("hs.commands.shortcut")
 
 local defaultSettings = {
 												["enableHacksShortcutsInFinalCutPro"] 			= false,
-												["enableVoiceCommands"]							= false,
 												["chooserRememberLast"]							= true,
 												["chooserShowShortcuts"] 						= true,
 												["chooserShowHacks"] 							= true,
@@ -380,13 +378,6 @@ function loadScript()
 			hackshud.show()
 		end
 
-		--------------------------------------------------------------------------------
-		-- Enable Voice Commands:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableVoiceCommands") then
-			voicecommands.start()
-		end
-
 	else
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
@@ -516,7 +507,6 @@ function defaultShortcutKeys()
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackMoveToPlayhead                                      = { characterString = "",                                   modifiers = {},                                     fn = function() moveToPlayhead() end,                               releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleVoiceCommands                                 = { characterString = "",                                   modifiers = {},                                     fn = function() toggleEnableVoiceCommands() end,                    releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackColorPuckOne                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "global") end,                    releasedFn = nil,                                           repeatFn = nil },
         FCPXHackColorPuckTwo                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "shadows") end,                   releasedFn = nil,                                           repeatFn = nil },
@@ -574,17 +564,6 @@ function defaultShortcutKeys()
         FCPXHackExposurePuckFourDown                                = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end,     releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
 
         FCPXHackChangeSmartCollectionsLabel                         = { characterString = "",                                   modifiers = {},                                     fn = function() changeSmartCollectionsLabel() end,                  releasedFn = nil,                                                       repeatFn = nil },
-
-        FCPXHackSelectClipAtLaneOne                                 = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(1) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneTwo                                 = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(2) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneThree                               = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(3) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneFour                                = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(4) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneFive                                = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(5) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneSix                                 = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(6) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneSeven                               = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(7) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneEight                               = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(8) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneNine                                = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(9) end,                            releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackSelectClipAtLaneTen                                 = { characterString = "",                                   modifiers = {},                                     fn = function() selectClipAtLane(10) end,                           releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackPuckOneMouse                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("*", "global") end,             releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
         FCPXHackPuckTwoMouse                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("*", "shadows") end,            releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
@@ -1121,8 +1100,6 @@ end
 			{ title = "-" },
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 			{ title = "-" },
-			{ title = i18n("enableVoiceCommands"),														fn = toggleEnableVoiceCommands, 									checked = settings.get("fcpxHacks.enableVoiceCommands") },
-			{ title = "-" },
 			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
@@ -1205,20 +1182,8 @@ end
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
-		local settingsVoiceCommand = {
-			{ title = i18n("enableAnnouncements"), 														fn = toggleVoiceCommandEnableAnnouncements, 						checked = settings.get("fcpxHacks.voiceCommandEnableAnnouncements") },
-			{ title = i18n("enableVisualAlerts"), 														fn = toggleVoiceCommandEnableVisualAlerts, 							checked = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") },
-			{ title = "-" },
-			{ title = i18n("openDictationPreferences"), 												fn = function()
-				osascript.applescript([[
-					tell application "System Preferences"
-						activate
-						reveal anchor "Dictation" of pane "com.apple.preference.speech"
-					end tell]]) end },
-		}
 		local settingsMenuTable = {
 			{ title = i18n("hudOptions"), 																menu = settingsHUD},
-			{ title = i18n("voiceCommandOptions"), 														menu = settingsVoiceCommand},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
@@ -1449,46 +1414,6 @@ end
 			notificationWatcher()
 		end
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE VOICE COMMAND ENABLE ANNOUNCEMENTS:
-	--------------------------------------------------------------------------------
-	function toggleVoiceCommandEnableAnnouncements()
-		local voiceCommandEnableAnnouncements = settings.get("fcpxHacks.voiceCommandEnableAnnouncements")
-		settings.set("fcpxHacks.voiceCommandEnableAnnouncements", not voiceCommandEnableAnnouncements)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE VOICE COMMAND ENABLE VISUAL ALERTS:
-	--------------------------------------------------------------------------------
-	function toggleVoiceCommandEnableVisualAlerts()
-		local voiceCommandEnableVisualAlerts = settings.get("fcpxHacks.voiceCommandEnableVisualAlerts")
-		settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", not voiceCommandEnableVisualAlerts)
-	end
-	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE HACKS HUD:
-	--------------------------------------------------------------------------------
-	function toggleEnableVoiceCommands()
-
-		local enableVoiceCommands = settings.get("fcpxHacks.enableVoiceCommands")
-		settings.set("fcpxHacks.enableVoiceCommands", not enableVoiceCommands)
-
-		if enableVoiceCommands then
-			voicecommands:stop()
-		else
-			local result = voicecommands:new()
-			if result == false then
-				dialog.displayErrorMessage(i18n("voiceCommandsError"))
-				settings.set("fcpxHacks.enableVoiceCommands", enableVoiceCommands)
-				return
-			end
-			if fcp:isFrontmost() then
-				voicecommands:start()
-			else
-				voicecommands:stop()
-			end
-		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -2652,37 +2577,6 @@ end
 		end
 
 	--------------------------------------------------------------------------------
-	-- SELECT CLIP AT LANE:
-	--------------------------------------------------------------------------------
-	function selectClipAtLane(whichLane)
-		local content = fcp:timeline():contents()
-		local playheadX = content:playhead():getPosition()
-
-		local clips = content:clipsUI(false, function(clip)
-			local frame = clip:frame()
-			return playheadX >= frame.x and playheadX < (frame.x + frame.w)
-		end)
-
-		if clips == nil then
-			debugMessage("No clips detected in selectClipAtLane().")
-			return false
-		end
-
-		if whichLane > #clips then
-			return false
-		end
-
-		--------------------------------------------------------------------------------
-		-- Sort the table:
-		--------------------------------------------------------------------------------
-		table.sort(clips, function(a, b) return a:position().y > b:position().y end)
-
-		content:selectClip(clips[whichLane])
-
-		return true
-	end
-
-	--------------------------------------------------------------------------------
 	-- MENU ITEM SHORTCUT:
 	--------------------------------------------------------------------------------
 	function menuItemShortcut(i, x, y, z)
@@ -3058,15 +2952,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Enable Voice Commands:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.enableVoiceCommands") then
-				voicecommands.start()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Update Current Language:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -3089,13 +2974,6 @@ end
 		-- Don't trigger until after the script has loaded:
 		--------------------------------------------------------------------------------
 		if not mod.hacksLoaded then return end
-
-		--------------------------------------------------------------------------------
-		-- Disable Voice Commands:
-		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableVoiceCommands") then
-			voicecommands.stop()
-		end
 
 		--------------------------------------------------------------------------------
 		-- Disable hotkeys:
