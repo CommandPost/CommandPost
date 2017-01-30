@@ -367,6 +367,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 1",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 1,
 			["function2"] = nil,
@@ -375,6 +376,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 2",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 2,
 			["function2"] = nil,
@@ -383,6 +385,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 3",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 3,
 			["function2"] = nil,
@@ -391,6 +394,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 4",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 4,
 			["function2"] = nil,
@@ -399,6 +403,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 5",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 5,
 			["function2"] = nil,
@@ -407,6 +412,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 6",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 6,
 			["function2"] = nil,
@@ -415,6 +421,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 7",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 7,
 			["function2"] = nil,
@@ -423,6 +430,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 8",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 8,
 			["function2"] = nil,
@@ -431,6 +439,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 9",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 9,
 			["function2"] = nil,
@@ -439,6 +448,7 @@ function hackshud.choices()
 		{
 			["text"] = "Select Clip At Lane 10",
 			["subText"] = "Automation",
+			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
 			["function"] = "selectClipAtLane",
 			["function1"] = 10,
 			["function2"] = nil,

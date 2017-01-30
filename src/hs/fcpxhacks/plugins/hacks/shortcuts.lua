@@ -287,6 +287,10 @@ function plugin.init(deps)
 	deps.globalCmds:add("FCPXHackShowListOfShortcutKeys")
 		:activatedBy():ctrl():option():cmd("f1")
 		:whenActivated(mod.displayShortcutList)
+		
+	deps.fcpxCmds:add("FCPXHackOpenCommandEditor")
+		:titled(i18n("openCommandEditor"))
+		:whenActivated(mod.editCommands)
 	
 	return mod
 end

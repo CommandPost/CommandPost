@@ -445,16 +445,6 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
-	-- VOICE COMMANDS:
-	--------------------------------------------------------------------------------
-	keyboardShortcuts					=			"Keyboard Shortcuts",
-	scrollingTimeline					=			"Scrolling Timeline",
-	highlight							=			"Highlight",
-	reveal								=			"Reveal",
-	play								=			"Play",
-	lane								=			"Lane",
-
-	--------------------------------------------------------------------------------
 	-- HACKS HUD:
 	--------------------------------------------------------------------------------
 	hacksHUD							=			"Hacks HUD",
@@ -497,6 +487,50 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
+	
+	--------------------------------------------------------------------------------
+	-- Command Titles:
+	--------------------------------------------------------------------------------
+	-- Global:
+	FCPXHackLaunchFinalCutPro_title								=	"Open Final Cut Pro",
+	
+	-- FCPX:
+	FCPXHackScrollingTimeline_title								=	"Toggle Scrolling Timeline",
+	FCPXHackLockPlayhead_title									=	"Toggle Playhead Lock",
+	
+	FCPXHackEffectsOne_title									=	"Apply Effects Shortcut 1",
+	FCPXHackEffectsTwo_title									=	"Apply Effects Shortcut 2",
+	FCPXHackEffectsThree_title									=	"Apply Effects Shortcut 3",
+	FCPXHackEffectsFour_title									=	"Apply Effects Shortcut 4",
+	FCPXHackEffectsFive_title									=	"Apply Effects Shortcut 5",
+	
+	FCPXHackTransitionsOne_title								=	"Apply Transitions Shortcut 1",
+	FCPXHackTransitionsTwo_title								=	"Apply Transitions Shortcut 2",
+	FCPXHackTransitionsThree_title								=	"Apply Transitions Shortcut 3",
+	FCPXHackTransitionsFour_title								=	"Apply Transitions Shortcut 4",
+	FCPXHackTransitionsFive_title								=	"Apply Transitions Shortcut 5",
+	
+	FCPXHackGeneratorsOne_title									=	"Apply Generators Shortcut 1",
+	FCPXHackGeneratorsTwo_title									=	"Apply Generators Shortcut 2",
+	FCPXHackGeneratorsThree_title								=	"Apply Generators Shortcut 3",
+	FCPXHackGeneratorsFour_title								=	"Apply Generators Shortcut 4",
+	FCPXHackGeneratorsFive_title								=	"Apply Generators Shortcut 5",
+	
+	FCPXHackTitlesOne_title										=	"Apply Titles Shortcut 1",
+	FCPXHackTitlesTwo_title										=	"Apply Titles Shortcut 2",
+	FCPXHackTitlesThree_title									=	"Apply Titles Shortcut 3",
+	FCPXHackTitlesFour_title									=	"Apply Titles Shortcut 4",
+	FCPXHackTitlesFive_title									=	"Apply Titles Shortcut 5",
+	
+	FCPXHackHighlightBrowserPlayhead_title						=	"Highlight Playhead",
+	FCPXHackRevealMulticamClipInBrowserAndHighlight_title		=	"Reveal Multicam Clip in Browser",
+	FCPXHackRevealMulticamClipInAngleEditorAndHighlight_title	=	"Reveal Multicam Clip in Angle Editor",
+	FCPXHackRevealInBrowserAndHighlight_title					= 	"Reveal in Browser and Highlight",
+	
+	FCPXHackSelectClipAtLane_customTitle						=	"Select Clip at Lane %{count}",
+	
+	FCPXHackPlay_title											=	"Play",
+	FCPXHackPause_title											=	"Pause",
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:
