@@ -123,12 +123,12 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.os.notifications"] 					= "notifications",
+	["hs.fcpxhacks.plugins.notifications.manager"] 				= "manager",
 	["hs.fcpxhacks.plugins.menu.tools.options.notifications"]	= "menu",
 }
 
 function plugin.init(deps)
-	mod.init(deps.notifications)
+	mod.init(deps.manager)
 	
 	-- Menu Item
 	deps.menu:addItem(PRIORITY, function()

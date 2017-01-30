@@ -51,20 +51,17 @@ end
 
 function mod.update(changed)
 	if mod.isEnabled() then
-		log.d("Updating: enabled")
 		if changed or mod.getTarget() == nil then
 			requestTarget()
 		end
 		
 		if mod.getTarget() ~= nil and mod.watchId == nil then
-			log.df("Watching")
 			mod.watchId = mod.notifications.watch({
 				success	= mod.sendNotification,
 				failure = mod.sendNotification,
 			})
 		end
 	else
-		log.d("Updating: disabled")
 		if mod.watchId ~= nil then
 			mod.notifications.unwatch(mod.watchId)
 			mod.watchId = nil
@@ -81,12 +78,12 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.os.notifications"]	= "notifications",
+	["hs.fcpxhacks.plugins.notifications.manager"]				= "manager",
 	["hs.fcpxhacks.plugins.menu.tools.options.notifications"]	= "menu",
 }
 
 function plugin.init(deps)
-	mod.init(deps.notifications)
+	mod.init(deps.manager)
 	
 	-- Menu Item
 	deps.menu:addItem(PRIORITY, function()
