@@ -82,7 +82,15 @@ end
 
 function mod.update()
 	if mod.isEnabled() then
-		if not mod._watcherId then
+		if mod.getRootPath() == nil then
+			-- Assign a new root path
+			local result = dialog.displayChooseFolder(i18n("sharedClipboardRootFolder"))
+			if result then
+				mod.setRootPath(result)
+			end
+		end
+		
+		if mod.getRootPath() ~= nil and not mod._watcherId then
 			mod._watcherId = mod._manager.watch({
 				update	= watchUpdate,
 			})
@@ -92,6 +100,7 @@ function mod.update()
 			mod._manager.unwatch(mod._watcherId)
 			mod._watcherId = nil
 		end
+		mod.setRootPath(nil)
 	end
 end
 
@@ -144,6 +153,11 @@ end
 
 local function migrateLegacyHistory(folderName)
 	local filePath = mod.getHistoryPath(folderName, LEGACY_EXTENSION)
+	if not fs.attributes(filePath) then
+		-- The legacy file doesn't exist.
+		return {}
+	end
+	
 	local plistData = plist.xmlFileToTable(filePath)
 	
 	local history = {}

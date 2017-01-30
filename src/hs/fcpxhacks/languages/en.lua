@@ -131,6 +131,7 @@ return {
 
 			prowlError							=			"The Prowl API Key failed to validate due to the following error:",
 
+			sharedClipboardRootFolder			=			"Shared Clipboard Root Folder",
 			sharedClipboardFileNotFound			=			"The Shared Clipboard file could not be found.",
 			sharedClipboardNotRead				=			"The Shared Clipboard file could not be read.",
 
