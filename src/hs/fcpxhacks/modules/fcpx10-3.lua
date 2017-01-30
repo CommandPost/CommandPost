@@ -137,7 +137,6 @@ local defaultSettings = {
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
-												["notificationPlatform"]						= {},
 }
 
 --------------------------------------------------------------------------------
@@ -312,12 +311,6 @@ function loadScript()
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
 		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
-
-		--------------------------------------------------------------------------------
-		-- Notification Watcher:
-		--------------------------------------------------------------------------------
-		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-		if next(notificationPlatform) ~= nil then notificationWatcher() end
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -942,11 +935,6 @@ end
 		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 		--------------------------------------------------------------------------------
-		-- Notification Platform:
-		--------------------------------------------------------------------------------
-		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-
-		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
@@ -977,14 +965,8 @@ end
 		local menuTable = {
 		}
 
-		local settingsNotificationPlatform = {
-			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
-			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
-		}
 		local toolsSettings = {
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = "-" },
-			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },

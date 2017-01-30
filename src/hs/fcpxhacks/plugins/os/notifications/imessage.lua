@@ -1,6 +1,12 @@
 -- Imports
 local settings									= require("hs.settings")
 local messages									= require("hs.messages")
+local dialog									= require("hs.fcpxhacks.modules.dialog")
+
+local log										= require("hs.logger").new("imessage")
+
+-- Constants
+local PRIORITY = 2000
 
 -- The Module
 local mod = {}
@@ -33,20 +39,43 @@ function mod.sendNotification(message)
 	end
 end
 
+local function requestTarget()
+	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget() or "")
+	if result == false then
+		mod.setEnabled(false)
+		return
+	else
+		mod.setTarget(result)
+	end
+end
+
 function mod.update()
 	if mod.isEnabled() then
+		log.d("Updating: enabled")
 		if mod.getTarget() == nil then
-			local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
-			if result == false then
-				mod.setEnabled(false)
-				return
-			else
-				mod.setTarget(result)
-			end
+			requestTarget()
+		end
+		
+		if mod.getTarget() ~= nil and mod.watchId == nil then
+			log.df("Watching")
+			mod.watchId = mod.notifications.watch({
+				success	= mod.sendNotification,
+				failure = mod.sendNotification,
+			})
 		end
 	else
+		log.d("Updating: disabled")
+		if mod.watchId ~= nil then
+			mod.notifications.unwatch(mod.watchId)
+			mod.watchId = nil
+		end
 		mod.setTarget(nil)
 	end
+end
+
+function mod.init(notifications)
+	mod.notifications = notifications
+	mod.update()
 end
 
 -- The Plugin
@@ -54,10 +83,18 @@ local plugin = {}
 
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.os.notifications"]	= "notifications",
+	["hs.fcpxhacks.plugins.menu.tools.options.notifications"]	= "menu",
 }
 
 function plugin.init(deps)
-	mod.update()
+	mod.init(deps.notifications)
+	
+	-- Menu Item
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("iMessage"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+	end)
+	
+	
 	return mod
 end
 

@@ -5,6 +5,9 @@ local http										= require("hs.http")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local fcp										= require("hs.finalcutpro")
 
+-- Constants
+local PRIORITY = 1000
+
 --------------------------------------------------------------------------------
 -- PROWL API KEY VALID:
 --------------------------------------------------------------------------------
@@ -77,10 +80,26 @@ function mod.update()
 		if mod.getAPIKey() == nil then
 			requestProwlAPIKey()
 		end
+		
+		if mod.watcherId == nil then
+			mod.watcherId = mod.notifications.watch({
+				success	= mod.sendNotification,
+				failure	= mod.sendNotification,
+			})
+		end
 	else
+		if mod.watcherId ~= nil then
+			mod.notifications.unwatch(mod.watcherId)
+			mod.watcherId = nil
+		end
 		-- clear the API Key.
 		mod.setAPIKey(nil)
 	end	
+end
+
+function mod.init(notifications)
+	mod.notifications = notifications
+	mod.update()
 end
 
 function mod.sendNotification(message)
@@ -105,10 +124,18 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["hs.fcpxhacks.plugins.os.notifications"] = "notifications",
+	["hs.fcpxhacks.plugins.os.notifications"] 					= "notifications",
+	["hs.fcpxhacks.plugins.menu.tools.options.notifications"]	= "menu",
 }
 
 function plugin.init(deps)
+	mod.init(deps.notifications)
+	
+	-- Menu Item
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("prowl"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+	end)
+	
 	return mod
 end
 

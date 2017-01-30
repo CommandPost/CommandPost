@@ -8,62 +8,19 @@ local fs										= require("hs.fs")
 local plist										= require("hs.plist")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
+local watcher									= require("hs.watcher")
 
 local log										= require("hs.logger").new("notifications")
 
 -- The Module
 local mod = {}
 
---------------------------------------------------------------------------------
--- NOTIFICATION WATCHER ACTION:
---------------------------------------------------------------------------------
-function notificationWatcherAction(name, object, userInfo)
-	-- FOR DEBUGGING/DEVELOPMENT
-	-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
-
-	local message = nil
-	if name == "uploadSuccess" then
-		local info = findNotificationInfo(object)
-		message = i18n("shareSuccessful", {info = info})
-	elseif name == "ProTranscoderDidFailNotification" then
-		message = i18n("shareFailed")
-	else -- unexpected result
-		return
-	end
-
-	local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-
-	if notificationPlatform["Prowl"] then
-		local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
-		if prowlAPIKey ~= nil then
-			local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
-			local prowlEvent = http.encodeForQuery("")
-			local prowlDescription = http.encodeForQuery(message)
-
-			local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
-			httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
-
-			if not string.match(httpBody, "success") then
-				local xml = slaxdom:dom(tostring(httpBody))
-				local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
-				if errorMessage ~= nil then log.e("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
-			end
-		end
-	end
-
-	if notificationPlatform["iMessage"] then
-		local iMessageTarget = settings.get("fcpxHacks.iMessageTarget") or ""
-		if iMessageTarget ~= "" then
-			messages.iMessage(iMessageTarget, message)
-		end
-	end
-end
-
+mod.eventTypes = {"success", "failure"}
 
 --------------------------------------------------------------------------------
 -- FIND NOTIFICATION INFO:
 --------------------------------------------------------------------------------
-function findNotificationInfo(path)
+local function findNotificationInfo(path)
 	local plistPath = path .. "/ShareStatus.plist"
 	if fs.attributes(plistPath) then
 		local shareStatus = plist.fileToTable(plistPath)
@@ -95,81 +52,66 @@ function findNotificationInfo(path)
 	return i18n("shareUnknown", {type = "unknown"})
 end
 
-
 --------------------------------------------------------------------------------
--- TOGGLE NOTIFICATION PLATFORM:
+-- NOTIFICATION WATCHER ACTION:
 --------------------------------------------------------------------------------
-function toggleNotificationPlatform(value)
+local function notificationWatcherAction(name, object, userInfo)
+	-- FOR DEBUGGING/DEVELOPMENT
+	-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
 
-	local notificationPlatform 		= settings.get("fcpxHacks.notificationPlatform")
-	local prowlAPIKey 				= settings.get("fcpxHacks.prowlAPIKey") or ""
-	local iMessageTarget			= settings.get("fcpxHacks.iMessageTarget") or ""
-
-	local returnToFinalCutPro 		= fcp:isFrontmost()
-
-	if value == "Prowl" then
-		if not notificationPlatform["Prowl"] then
-			::retryProwlAPIKeyEntry::
-			local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
-			if result == false then return end
-			local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
-			if prowlAPIKeyValidResult then
-				if returnToFinalCutPro then fcp:launch() end
-				settings.set("fcpxHacks.prowlAPIKey", result)
-			else
-				dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
-				goto retryProwlAPIKeyEntry
-			end
-		end
+	local message = nil
+	if name == "uploadSuccess" then
+		local info = findNotificationInfo(object)
+		message = i18n("shareSuccessful", {info = info})
+		mod.watchers:notify("success", message)
+	elseif name == "ProTranscoderDidFailNotification" then
+		message = i18n("shareFailed")
+		mod.watchers:notify("failure", message)
+	else -- unexpected result
+		return
 	end
-
-	if value == "iMessage" then
-		if not notificationPlatform["iMessage"] then
-			local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), iMessageTarget)
-			if result == false then return end
-			settings.set("fcpxHacks.iMessageTarget", result)
-		end
-	end
-
-	notificationPlatform[value] = not notificationPlatform[value]
-	settings.set("fcpxHacks.notificationPlatform", notificationPlatform)
-
-	if next(notificationPlatform) == nil then
-		if mod.shareSuccessNotificationWatcher then mod.shareSuccessNotificationWatcher:stop() end
-		if mod.shareFailedNotificationWatcher then mod.shareFailedNotificationWatcher:stop() end
-	else
-		notificationWatcher()
-	end
-
 end
 
 --------------------------------------------------------------------------------
 -- NOTIFICATION WATCHER:
 --------------------------------------------------------------------------------
-function notificationWatcher()
+local function ensureWatching()
+	if mod.successWatcher == nil then
+		--------------------------------------------------------------------------------
+		-- SHARE SUCCESSFUL NOTIFICATION WATCHER:
+		--------------------------------------------------------------------------------
+		-- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
+		mod.successWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
+		mod.successWatcher:start()
 
-	--------------------------------------------------------------------------------
-	-- USED FOR DEVELOPMENT:
-	--------------------------------------------------------------------------------
-	--foo = distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, inspect(userInfo))) end)
-	--foo:start()
-
-	--------------------------------------------------------------------------------
-	-- SHARE SUCCESSFUL NOTIFICATION WATCHER:
-	--------------------------------------------------------------------------------
-	-- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
-	mod.shareSuccessNotificationWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
-	mod.shareSuccessNotificationWatcher:start()
-
-	--------------------------------------------------------------------------------
-	-- SHARE UNSUCCESSFUL NOTIFICATION WATCHER:
-	--------------------------------------------------------------------------------
-	mod.shareFailedNotificationWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
-	mod.shareFailedNotificationWatcher:start()
-
+		--------------------------------------------------------------------------------
+		-- SHARE UNSUCCESSFUL NOTIFICATION WATCHER:
+		--------------------------------------------------------------------------------
+		mod.failureWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
+		mod.failureWatcher:start()
+	end
 end
 
-function mod.update()
+local function checkWatching()
+	if mod.watchers:getCount() == 0 and mod.successWatcher ~= nil then
+		mod.successWatcher:stop()
+		mod.successWatcher = nil
+		mod.failureWatcher:stop()
+		mod.failureWatcher = nil
+	end
+end
+
+mod.watchers = watcher:new(table.unpack(mod.eventTypes))
+
+function mod.watch(events)
+	local id = mod.watchers:watch(events)
+	ensureWatching()
+	return id
+end
+
+function mod.unwatch(id)
+	mod.watchers:unwatch(id)
+	checkWatching()
 end
 
 -- The Plugin

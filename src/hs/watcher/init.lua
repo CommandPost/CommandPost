@@ -1,25 +1,31 @@
+local uuid							= require("hs.host").uuid
+
+local log							= require("hs.logger").new("watcher")
+
 local mod = {}
 
---- hs.watcher:new(App) -> watcher
+--- hs.watcher:new(...) -> watcher
 --- Function
 --- Constructs a new watcher instance.
 ---
 --- Parameters:
----  * `...` - The list of event names supported by the watcher.
+---  * `...` - The list of event name strings supported by the watcher.
 ---
 --- Returns:
 ---  * a new watcher instance
 ---
 function mod:new(...)
 	o = {
-		_events = pack(...),
+		_events 		= table.pack(...),
+		_watchers 		= {},
+		_watchersCount 	= 0,
 	}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-local function mod:_prepareWatcher(events)
+function mod:_prepareWatcher(events)
 	local watcher = {}
 	for _,name in ipairs(self._events) do
 		local fn = events[name]
@@ -31,20 +37,26 @@ local function mod:_prepareWatcher(events)
 end
 
 function mod:watch(events)
-	if not self._watchers then
-		self._watchers = {}
-	end
-	self._watchers[#self._watchers + 1] = self:_prepareWatcher(events)
-	return {id=#self._watchers}
+	local id = uuid()
+	self._watchers[id] = self:_prepareWatcher(events)
+	self._watchersCount = self._watchersCount + 1
+	return {id=id}
 end
 
 function mod:unwatch(id)
-	
+	if self._watchers and id then
+		if self._watchers[id.id] ~= nil then
+			self._watchers[id.id] = nil
+			self._watchersCount = self._watchersCount - 1
+			return true
+		end
+	end
+	return false
 end
 
-function commands:notify(type, ...)
+function mod:notify(type, ...)
 	if self._watchers then
-		for _,watcher in ipairs(self._watchers) do
+		for _,watcher in pairs(self._watchers) do
 			if watcher[type] then
 				watcher[type](...)
 			end
@@ -52,5 +64,8 @@ function commands:notify(type, ...)
 	end
 end
 
+function mod:getCount()
+	return self._watchersCount
+end
 
 return mod
