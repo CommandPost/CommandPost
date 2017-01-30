@@ -4,6 +4,7 @@ local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
 local http										= require("hs.http")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local fcp										= require("hs.finalcutpro")
+local dialog									= require("hs.fcpxhacks.modules.dialog")
 
 -- Constants
 local PRIORITY = 1000
@@ -38,7 +39,7 @@ end
 
 function mod.setEnabled(value)
 	settings.set("fcpxHacks.prowlNotificationsEnabled", value)
-	mod.update()
+	mod.update(true)
 end
 
 function mod.toggleEnabled()
@@ -57,15 +58,15 @@ local function requestProwlAPIKey()
 	local returnToFinalCutPro = fcp:isFrontmost()
 	
 	-- Request the API Key from the user
-	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
+	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.getAPIKey())
 	if result == false then
 		mod.setEnabled(false)
 		return
 	end
 	
 	-- Check the key is valid
-	local result, err = prowlAPIKeyValid(result)
-	if result then
+	local valid, err = prowlAPIKeyValid(result)
+	if valid then
 		mod.setAPIKey(result)
 		if returnToFinalCutPro then fcp:launch() end
 	else
@@ -75,9 +76,9 @@ local function requestProwlAPIKey()
 	end
 end
 
-function mod.update()
+function mod.update(changed)
 	if mod.isEnabled() then
-		if mod.getAPIKey() == nil then
+		if changed or mod.getAPIKey() == nil then
 			requestProwlAPIKey()
 		end
 		
@@ -92,8 +93,6 @@ function mod.update()
 			mod.notifications.unwatch(mod.watcherId)
 			mod.watcherId = nil
 		end
-		-- clear the API Key.
-		mod.setAPIKey(nil)
 	end	
 end
 

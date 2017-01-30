@@ -17,7 +17,7 @@ end
 
 function mod.setEnabled(value)
 	settings.set("fcpxHacks.iMessageNotificationsEnabled", value)
-	mod.update()
+	mod.update(true)
 end
 
 function mod.toggleEnabled()
@@ -40,7 +40,7 @@ function mod.sendNotification(message)
 end
 
 local function requestTarget()
-	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget() or "")
+	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
 	if result == false then
 		mod.setEnabled(false)
 		return
@@ -49,10 +49,10 @@ local function requestTarget()
 	end
 end
 
-function mod.update()
+function mod.update(changed)
 	if mod.isEnabled() then
 		log.d("Updating: enabled")
-		if mod.getTarget() == nil then
+		if changed or mod.getTarget() == nil then
 			requestTarget()
 		end
 		
@@ -69,7 +69,6 @@ function mod.update()
 			mod.notifications.unwatch(mod.watchId)
 			mod.watchId = nil
 		end
-		mod.setTarget(nil)
 	end
 end
 

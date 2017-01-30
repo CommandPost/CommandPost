@@ -97,7 +97,7 @@ end
 -- DISPLAY TEXT BOX MESSAGE:
 --------------------------------------------------------------------------------
 function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer, validationFn)
-
+	defaultAnswer = defaultAnswer and tostring(defaultAnswer) or ""
 	::retryDisplayTextBoxMessage::
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
