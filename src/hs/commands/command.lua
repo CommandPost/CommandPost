@@ -40,9 +40,25 @@ function command:titled(title)
 	return self
 end
 
+function command:getTitle()
+	if self.title then
+		return self.title
+	else
+		return i18n(self.id .. "_title")
+	end
+end
+
 function command:subtitled(subtitle)
 	self.subtitle = subtitle
 	return self
+end
+
+function command:getSubtitle()
+	if self.subtitle then
+		return self.subtitle
+	else
+		return i18n(self.id .. "_subtitle")
+	end
 end
 
 --- hs.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
@@ -220,7 +236,7 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command:pressed()
-	if self.pressedFn then return self.pressedFn() end
+	if self:isEnabled() and self.pressedFn then return self.pressedFn() end
 	return nil
 end
 
@@ -234,7 +250,7 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command:released()
-	if self.releasedFn then return self.releasedFn() end
+	if self:isEnabled() and self.releasedFn then return self.releasedFn() end
 	return nil
 end
 
@@ -248,6 +264,8 @@ end
 ---  * the last result.
 ---
 function command:repeated(repeats)
+	if not self:isEnabled() then return nil end
+		
 	if repeats == nil then
 		repeats = 1
 	end
@@ -270,6 +288,8 @@ end
 ---  * the last 'truthy' result (non-nil/false).
 ---
 function command:activated(repeats)
+	if not self:isEnabled() then return nil end
+	
 	local result = nil
 	result = self:pressed()
 	result = self:repeated(repeats) or result
