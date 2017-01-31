@@ -1,11 +1,11 @@
 -- Imports
 local fcp							= require("hs.finalcutpro")
 local settings						= require("hs.settings")
-local clipboard						= require("hs.fcpxhacks.modules.clipboard")
 local log							= require("hs.logger").new("matchframe")
 local just							= require("hs.just")
 
--- Local Functions
+-- The Module
+local mod = {}
 
 --------------------------------------------------------------------------------
 -- NINJA PASTEBOARD COPY:
@@ -19,12 +19,13 @@ local function ninjaPasteboardCopy()
 	--------------------------------------------------------------------------------
 	local ninjaPasteboardCopyError = false
 	local finalCutProClipboardUTI = fcp:getPasteboardUTI()
-	local enableClipboardHistory = settings.get("fcpxHacks.enableClipboardHistory") or false
+	
+	local clipboard = mod.clipboardManager
 
 	--------------------------------------------------------------------------------
 	-- Stop Watching Clipboard:
 	--------------------------------------------------------------------------------
-	if enableClipboardHistory then clipboard.stopWatching() end
+	clipboard.stopWatching()
 
 	--------------------------------------------------------------------------------
 	-- Save Current Clipboard Contents for later:
@@ -39,7 +40,7 @@ local function ninjaPasteboardCopy()
 		menuBar:selectMenu("Edit", "Copy")
 	else
 		log.d("ERROR: Failed to select Copy from Menubar." .. errorFunction)
-		if enableClipboardHistory then clipboard.startWatching() end
+		clipboard.startWatching()
 		return false
 	end
 
@@ -55,7 +56,7 @@ local function ninjaPasteboardCopy()
 	end, 10, 0.1)
 	if newClipboard == nil then
 		log.d("ERROR: Failed to get new clipboard contents." .. errorFunction)
-		if enableClipboardHistory then clipboard.startWatching() end
+		clipboard.startWatching()
 		return false
 	end
 
@@ -66,7 +67,7 @@ local function ninjaPasteboardCopy()
 		local result = clipboard.writeFCPXData(originalClipboard)
 		if not result then
 			log.d("ERROR: Failed to restore original Clipboard item." .. errorFunction)
-			if enableClipboardHistory then clipboard.startWatching() end
+			clipboard.startWatching()
 			return false
 		end
 	end
@@ -74,7 +75,7 @@ local function ninjaPasteboardCopy()
 	--------------------------------------------------------------------------------
 	-- Start Watching Clipboard:
 	--------------------------------------------------------------------------------
-	if enableClipboardHistory then clipboard.startWatching() end
+	clipboard.startWatching()
 
 	--------------------------------------------------------------------------------
 	-- Return New Clipboard:
@@ -82,9 +83,6 @@ local function ninjaPasteboardCopy()
 	return true, newClipboard
 
 end
-
--- The Module
-local mod = {}
 
 --------------------------------------------------------------------------------
 -- PERFORM MULTICAM MATCH FRAME:
@@ -203,28 +201,30 @@ function mod.getMulticamAngleFromSelectedClip()
 	--------------------------------------------------------------------------------
 	local result, clipboardData = ninjaPasteboardCopy()
 	if not result then
-		log.e("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
+		log.w("ERROR: Ninja Pasteboard Copy Failed." .. errorFunction)
 		return false
 	end
+	
+	local clipboard = mod.clipboardManager
 
 	--------------------------------------------------------------------------------
 	-- Convert Binary Data to Table:
 	--------------------------------------------------------------------------------
 	local fcpxTable = clipboard.unarchiveFCPXData(clipboardData)
 	if fcpxTable == nil then
-		log.e("ERROR: Converting Binary Data to Table failed." .. errorFunction)
+		log.w("ERROR: Converting Binary Data to Table failed." .. errorFunction)
 		return false
 	end
 
 	local timelineClip = fcpxTable.root.objects[1]
 	if not clipboard.isTimelineClip(timelineClip) then
-		log.e("ERROR: Not copied from the Timeline." .. errorFunction)
+		log.w("ERROR: Not copied from the Timeline." .. errorFunction)
 		return false
 	end
 
 	local selectedClips = timelineClip.containedItems
 	if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
-		log.e("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
+		log.w("ERROR: Expected a single Multicam clip to be copied." .. errorFunction)
 		return false
 	end
 
@@ -356,12 +356,14 @@ local plugin = {}
 plugin.dependencies = {
 	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 	["hs.fcpxhacks.plugins.browser.playhead"]	= "browserPlayhead",
+	["hs.fcpxhacks.plugins.clipboard.manager"]	= "clipboardManager",
 }
 
 
 function plugin.init(deps)
 		
 	mod.browserPlayhead = deps.browserPlayhead
+	mod.clipboardManager = deps.clipboardManager
 	
 	-- Commands
 	local cmds = deps.fcpxCmds

@@ -13,6 +13,8 @@ local log			= require("hs.logger").new("plist")
 local plistParse 	= require("hs.plist.plistParse")
 local fs			= require("hs.fs")
 
+plist.log = log
+
 --- hs.plist.base64ToTable(base64Data) -> table or nil
 --- Function
 --- Converts base64 Data into a LUA Table.
@@ -41,7 +43,7 @@ function plist.base64ToTable(base64Data)
 	executeCommand = 'openssl base64 -in "' .. tostring(base64FileName) .. '" -out "' .. tostring(plistFileName) .. '" -d'
 	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
 	if not executeStatus then
-		log.e("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
+		log.d("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
 	else
 		-- Convert the Binary plist file to a LUA table:
 		plistTable = plist.binaryFileToTable(plistFileName)
@@ -112,7 +114,7 @@ function plist.binaryFileToTable(plistFileName)
 	local plistTable 				= nil
 
 	if not plistFileName then
-		log.e("No plist filename was provided.")
+		log.d("No plist filename was provided.")
 		return nil
 	else
 		plistFileName = fs.pathToAbsolute(plistFileName)
@@ -123,7 +125,7 @@ function plist.binaryFileToTable(plistFileName)
 	]])
 
 	if not executeStatus then
-		log.e("Failed to convert binary plist to XML: "..tostring(executeOutput))
+		log.d("Failed to convert binary plist to XML: "..tostring(executeOutput))
 	else
 		-- Convert the XML to a LUA table:
 		plistTable = plistParse(executeOutput)
@@ -134,7 +136,7 @@ function plist.binaryFileToTable(plistFileName)
 
 end
 
---- hs.plist.binaryFileToXML(plistFileName) -> string or nil
+--- hs.plist.binaryFileToXML(plistFileName) -> string | nil
 --- Function
 --- Converts the data from a Binary plist File into XML as a string.
 ---
@@ -157,7 +159,7 @@ function plist.binaryFileToXML(plistFileName)
 	]])
 
 	if not executeStatus then
-		log.e("Failed to convert binary plist to XML: "..tostring(executeOutput))
+		log.d("Failed to convert binary plist to XML: "..tostring(executeOutput))
 	else
 		plistTable = executeOutput
 	end
@@ -181,14 +183,18 @@ end
 ---  * None
 function plist.xmlFileToTable(plistFileName)
 	if not plistFileName then
-		log.e("No plistFileName was provided")
+		log.d("No plistFileName was provided")
 		return nil
 	end
 
 	local absoluteFilename = fs.pathToAbsolute(plistFileName)
+	if not absoluteFilename then
+		log.df("The provided path was not found: %s", plistFileName)
+		return nil
+	end
 	local file = io.open(absoluteFilename, "r") 		-- r read mode
     if not file then
-		log.e("Unable to open '".. plistFileName .."'")
+		log.d("Unable to open '".. plistFileName .."'")
 		return nil
 	end
     local content = file:read "*a" 					-- *a or *all reads the whole file
@@ -220,14 +226,14 @@ end
 ---  * None
 function plist.fileToTable(plistFileName)
 	if not plistFileName then
-		log.e("No plistFileName was provided")
+		log.d("No plistFileName was provided")
 		return nil
 	end
 
 	local absoluteFilename = fs.pathToAbsolute(plistFileName)
 	local file = io.open(absoluteFilename, "r")
 	if not file then
-		log.e("Unable to open '".. plistFileName .."'")
+		log.d("Unable to open '".. plistFileName .."'")
 		return nil
 	end
 
