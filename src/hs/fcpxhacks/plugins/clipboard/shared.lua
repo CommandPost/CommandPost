@@ -106,20 +106,24 @@ end
 
 -- Returns the list of folder names as an array of strings.
 function mod.getFolderNames()
-	local path = fs.pathToAbsolute(mod.getRootPath())
-	local contents, data = fs.dir(path)
-	
 	local folders = {}
-	for file in function() return contents(data) end do
-		local name = file:match("(.+)%"..HISTORY_EXTENSION.."$")
-		if not name then
-			name = file:match("(.+)%"..LEGACY_EXTENSION.."$")
+	
+	local rootPath = mod.getRootPath()
+	if rootPath then
+		local path = fs.pathToAbsolute(rootPath)
+		local contents, data = fs.dir(path)
+	
+		for file in function() return contents(data) end do
+			local name = file:match("(.+)%"..HISTORY_EXTENSION.."$")
+			if not name then
+				name = file:match("(.+)%"..LEGACY_EXTENSION.."$")
+			end
+			if name then
+				folders[#folders+1] = name
+			end
 		end
-		if name then
-			folders[#folders+1] = name
-		end
+		table.sort(folders, function(a, b) return a < b end)
 	end
-	table.sort(folders, function(a, b) return a < b end)
 	return folders
 end
 
