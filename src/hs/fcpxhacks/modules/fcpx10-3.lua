@@ -69,7 +69,6 @@ local application								= require("hs.application")
 local base64									= require("hs.base64")
 local chooser									= require("hs.chooser")
 local console									= require("hs.console")
-local distributednotifications					= require("hs.distributednotifications")
 local drawing 									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
 local fnutils 									= require("hs.fnutils")
@@ -78,10 +77,8 @@ local hotkey									= require("hs.hotkey")
 local http										= require("hs.http")
 local image										= require("hs.image")
 local logger									= require("hs.logger")
-local messages									= require("hs.messages")
 local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
-local pasteboard								= require("hs.pasteboard")
 local pathwatcher								= require("hs.pathwatcher")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
@@ -104,8 +101,6 @@ local plist										= require("hs.plist")
 
 local metadata									= require("hs.fcpxhacks.metadata")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
-local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
-local slaxml									= require("hs.fcpxhacks.modules.slaxml")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local just										= require("hs.just")
 
@@ -140,7 +135,6 @@ local defaultSettings = {
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
-												["notificationPlatform"]						= {},
 }
 
 --------------------------------------------------------------------------------
@@ -315,12 +309,6 @@ function loadScript()
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
 		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
-
-		--------------------------------------------------------------------------------
-		-- Notification Watcher:
-		--------------------------------------------------------------------------------
-		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-		if next(notificationPlatform) ~= nil then notificationWatcher() end
 
 	--------------------------------------------------------------------------------
 	-- Bind Keyboard Shortcuts:
@@ -945,11 +933,6 @@ end
 		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
 
 		--------------------------------------------------------------------------------
-		-- Notification Platform:
-		--------------------------------------------------------------------------------
-		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-
-		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
@@ -980,14 +963,8 @@ end
 		local menuTable = {
 		}
 
-		local settingsNotificationPlatform = {
-			{ title = i18n("prowl"), 																	fn = function() toggleNotificationPlatform("Prowl") end, 			checked = notificationPlatform["Prowl"] == true },
-			{ title = i18n("iMessage"), 																fn = function() toggleNotificationPlatform("iMessage") end, 		checked = notificationPlatform["iMessage"] == true },
-		}
 		local toolsSettings = {
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = "-" },
-			{ title = i18n("enableMobileNotifications"),												menu = settingsNotificationPlatform },
 		}
 		local toolsTable = {
 			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
@@ -1253,53 +1230,6 @@ end
 --------------------------------------------------------------------------------
 -- TOGGLE:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE NOTIFICATION PLATFORM:
-	--------------------------------------------------------------------------------
-	function toggleNotificationPlatform(value)
-
-		local notificationPlatform 		= settings.get("fcpxHacks.notificationPlatform")
-		local prowlAPIKey 				= settings.get("fcpxHacks.prowlAPIKey") or ""
-		local iMessageTarget			= settings.get("fcpxHacks.iMessageTarget") or ""
-
-		local returnToFinalCutPro 		= fcp:isFrontmost()
-
-		if value == "Prowl" then
-			if not notificationPlatform["Prowl"] then
-				::retryProwlAPIKeyEntry::
-				local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), prowlAPIKey)
-				if result == false then return end
-				local prowlAPIKeyValidResult, prowlAPIKeyValidError = prowlAPIKeyValid(result)
-				if prowlAPIKeyValidResult then
-					if returnToFinalCutPro then fcp:launch() end
-					settings.set("fcpxHacks.prowlAPIKey", result)
-				else
-					dialog.displayMessage(i18n("prowlError") .. " " .. prowlAPIKeyValidError .. ".\n\n" .. i18n("pleaseTryAgain"))
-					goto retryProwlAPIKeyEntry
-				end
-			end
-		end
-
-		if value == "iMessage" then
-			if not notificationPlatform["iMessage"] then
-				local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), iMessageTarget)
-				if result == false then return end
-				settings.set("fcpxHacks.iMessageTarget", result)
-			end
-		end
-
-		notificationPlatform[value] = not notificationPlatform[value]
-		settings.set("fcpxHacks.notificationPlatform", notificationPlatform)
-
-		if next(notificationPlatform) == nil then
-			if shareSuccessNotificationWatcher then shareSuccessNotificationWatcher:stop() end
-			if shareFailedNotificationWatcher then shareFailedNotificationWatcher:stop() end
-		else
-			notificationWatcher()
-		end
-
-	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE ENABLE HACKS HUD:
@@ -2415,28 +2345,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- PROWL API KEY VALID:
-	--------------------------------------------------------------------------------
-	function prowlAPIKeyValid(input)
-
-		local result = false
-		local errorMessage = nil
-
-		prowlAction = "https://api.prowlapp.com/publicapi/verify?apikey=" .. input
-		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
-
-		if string.match(httpBody, "success") then
-			result = true
-		else
-			local xml = slaxdom:dom(tostring(httpBody))
-			errorMessage = xml['root']['el'][1]['kids'][1]['value']
-		end
-
-		return result, errorMessage
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- DELETE ALL HIGHLIGHTS:
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
@@ -2718,112 +2626,6 @@ function finalCutProSettingsWatcher(files)
 
     end
 end
-
---------------------------------------------------------------------------------
--- NOTIFICATION WATCHER:
---------------------------------------------------------------------------------
-function notificationWatcher()
-
-	--------------------------------------------------------------------------------
-	-- USED FOR DEVELOPMENT:
-	--------------------------------------------------------------------------------
-	--foo = distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, inspect(userInfo))) end)
-	--foo:start()
-
-	--------------------------------------------------------------------------------
-	-- SHARE SUCCESSFUL NOTIFICATION WATCHER:
-	--------------------------------------------------------------------------------
-	-- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
-	shareSuccessNotificationWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
-	shareSuccessNotificationWatcher:start()
-
-	--------------------------------------------------------------------------------
-	-- SHARE UNSUCCESSFUL NOTIFICATION WATCHER:
-	--------------------------------------------------------------------------------
-	shareFailedNotificationWatcher = distributednotifications.new(notificationWatcherAction, "ProTranscoderDidFailNotification")
-	shareFailedNotificationWatcher:start()
-
-end
-
-	--------------------------------------------------------------------------------
-	-- NOTIFICATION WATCHER ACTION:
-	--------------------------------------------------------------------------------
-	function notificationWatcherAction(name, object, userInfo)
-		-- FOR DEBUGGING/DEVELOPMENT
-		-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
-
-		local message = nil
-		if name == "uploadSuccess" then
-			local info = findNotificationInfo(object)
-			message = i18n("shareSuccessful", {info = info})
-		elseif name == "ProTranscoderDidFailNotification" then
-			message = i18n("shareFailed")
-		else -- unexpected result
-			return
-		end
-
-		local notificationPlatform = settings.get("fcpxHacks.notificationPlatform")
-
-		if notificationPlatform["Prowl"] then
-			local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
-			if prowlAPIKey ~= nil then
-				local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
-				local prowlEvent = http.encodeForQuery("")
-				local prowlDescription = http.encodeForQuery(message)
-
-				local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
-				httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
-
-				if not string.match(httpBody, "success") then
-					local xml = slaxdom:dom(tostring(httpBody))
-					local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or nil
-					if errorMessage ~= nil then writeToConsole("PROWL ERROR: " .. tools.trim(tostring(errorMessage))) end
-				end
-			end
-		end
-
-		if notificationPlatform["iMessage"] then
-			local iMessageTarget = settings.get("fcpxHacks.iMessageTarget") or ""
-			if iMessageTarget ~= "" then
-				messages.iMessage(iMessageTarget, message)
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- FIND NOTIFICATION INFO:
-	--------------------------------------------------------------------------------
-	function findNotificationInfo(path)
-		local plistPath = path .. "/ShareStatus.plist"
-		if fs.attributes(plistPath) then
-			local shareStatus = plist.fileToTable(plistPath)
-			if shareStatus then
-				local latestType = nil
-				local latestInfo = nil
-
-				for type,results in pairs(shareStatus) do
-					local info = results[#results]
-					if latestInfo == nil or latestInfo.fullDate < info.fullDate then
-						latestInfo = info
-						latestType = type
-					end
-				end
-
-				if latestInfo then
-					-- put the first resultStr into a top-level value to make it easier for i18n
-					if latestInfo.resultStr then
-						latestInfo.result = latestInfo.resultStr[1]
-					end
-					local message = i18n("shareDetails_"..latestType, latestInfo)
-					if not message then
-						message = i18n("shareUnknown", {type = latestType})
-					end
-					return message
-				end
-			end
-		end
-		return i18n("shareUnknown", {type = "unknown"})
-	end
 
 --------------------------------------------------------------------------------
 -- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:
