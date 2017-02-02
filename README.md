@@ -1,10 +1,10 @@
-# FCPX Hacks
+# CommandPost
 
-FCPX Hacks is a free and open source [Hammerspoon](http://www.hammerspoon.org) script that adds a mountain-load of new features to Final Cut Pro.
+CommandPost (previously FCPX Hacks) is a free and open source [Hammerspoon](http://www.hammerspoon.org) script that adds a mountain-load of new features to Final Cut Pro.
 
 You can learn about it's origin story, as well as explore its full feature list on the [LateNite Films Blog](https://latenitefilms.com/blog/final-cut-pro-hacks/).
 
-Check how many people have downloaded FCPX Hacks [here](http://www.somsubhra.com/github-release-stats/?username=fcpxhacks&repository=fcpxhacks).
+Check how many people have downloaded CommandPost [here](http://www.somsubhra.com/github-release-stats/?username=fcpxhacks&repository=fcpxhacks).
 
 ## Installing
 
