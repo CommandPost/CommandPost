@@ -8,13 +8,9 @@ You can learn about it's origin story, as well as explore its full feature list 
 
 Check how many people have downloaded CommandPost [here](http://www.somsubhra.com/github-release-stats/?username=fcpxhacks&repository=fcpxhacks).
 
----
-
 ## User Installation:
 
 Download the latest release [here](https://github.com/CommandPost/CommandPost/releases/latest).
-
----
 
 ## Developer Installation:
 
