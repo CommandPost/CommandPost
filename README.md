@@ -1,6 +1,6 @@
 # CommandPost
 
-CommandPost (previously [FCPX Hacks](https://latenitefilms.com/blog/final-cut-pro-hacks/)) is a collection of free and open source [Hammerspoon](http://www.hammerspoon.org) scripts that adds a mountain-load of new features to Final Cut Pro.
+CommandPost (previously [FCPX Hacks](https://latenitefilms.com/blog/final-cut-pro-hacks/)) is a collection of free and open source [Hammerspoon](http://www.hammerspoon.org) scripts that add a mountain-load of new professional features to Final Cut Pro.
 
 FCPX Hacks was originally created by Chris Hocking. CommandPost is now developed by Chris Hocking & David Peterson.
 
