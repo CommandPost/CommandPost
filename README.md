@@ -6,7 +6,7 @@ FCPX Hacks was originally created by Chris Hocking. CommandPost is now developed
 
 You can learn about it's origin story, as well as explore its full feature list on the [LateNite Films Blog](https://latenitefilms.com/blog/final-cut-pro-hacks/).
 
-Check how many people have downloaded CommandPost [here](http://www.somsubhra.com/github-release-stats/?username=fcpxhacks&repository=fcpxhacks).
+Check how many people have downloaded CommandPost [here](http://www.somsubhra.com/github-release-stats/?username=CommandPost&repository=CommandPost).
 
 ## User Installation:
 
