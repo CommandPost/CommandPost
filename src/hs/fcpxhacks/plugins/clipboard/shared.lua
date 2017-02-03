@@ -8,6 +8,7 @@ local dialog									= require("hs.fcpxhacks.modules.dialog")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
 local plist										= require("hs.plist")
+local metadata									= require("hs.fcpxhacks.metadata")
 
 local log										= require("hs.logger").new("clpshare")
 
@@ -26,11 +27,11 @@ mod.maxHistory				= 5
 mod.log						= log
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableSharedClipboard") or false
+	return settings.get(metadata.settingsPrefix .. ".enableSharedClipboard") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.enableSharedClipboard", value)
+	settings.set(metadata.settingsPrefix .. ".enableSharedClipboard", value)
 	mod.update()
 end
 
@@ -39,16 +40,16 @@ function mod.toggleEnabled()
 end
 
 function mod.getRootPath()
-	return settings.get("fcpxHacks.sharedClipboardPath")
+	return settings.get(metadata.settingsPrefix .. ".sharedClipboardPath")
 end
 
 function mod.setRootPath(path)
-	settings.set("fcpxHacks.sharedClipboardPath", path)
+	settings.set(metadata.settingsPrefix .. ".sharedClipboardPath", path)
 end
 
 local function watchUpdate(data, name)
 	log.df("Clipboard updated. Adding '%s' to shared history.", name)
-	
+
 	local sharedClipboardPath = mod.getRootPath()
 	if sharedClipboardPath ~= nil then
 
@@ -59,7 +60,7 @@ local function watchUpdate(data, name)
 		else
 			folderName = mod.getLocalFolderName()
 		end
-		
+
 		-- First, read the existing history
 		local history = mod.getHistory(folderName) or {}
 
@@ -67,14 +68,14 @@ local function watchUpdate(data, name)
 		while (#history >= mod.maxHistory) do
 			table.remove(history, 1)
 		end
-		
+
 		-- Add the new item
 		local item = {
 			name = name,
 			data = base64.encode(data),
 		}
 		table.insert(history, item)
-		
+
 		-- Save the updated history
 		mod.setHistory(folderName, history)
 	end
@@ -89,7 +90,7 @@ function mod.update()
 				mod.setRootPath(result)
 			end
 		end
-		
+
 		if mod.getRootPath() ~= nil and not mod._watcherId then
 			mod._watcherId = mod._manager.watch({
 				update	= watchUpdate,
@@ -107,12 +108,12 @@ end
 -- Returns the list of folder names as an array of strings.
 function mod.getFolderNames()
 	local folders = {}
-	
+
 	local rootPath = mod.getRootPath()
 	if rootPath then
 		local path = fs.pathToAbsolute(rootPath)
 		local contents, data = fs.dir(path)
-	
+
 		for file in function() return contents(data) end do
 			local name = file:match("(.+)%"..HISTORY_EXTENSION.."$")
 			if not name then
@@ -135,7 +136,7 @@ end
 -- OVERRIDE FOLDER NAME:
 --------------------------------------------------------------------------------
 -- Overrides the folder name for the next clip which is copied from FCPX to the
--- specified value. Once the override has been used, the standard folder name via 
+-- specified value. Once the override has been used, the standard folder name via
 -- `mod.getLocalFolderName()` will be used for subsequent copy operations.
 --------------------------------------------------------------------------------
 function mod.overrideNextFolderName(overrideFolder)
@@ -161,30 +162,30 @@ local function migrateLegacyHistory(folderName)
 		-- The legacy file doesn't exist.
 		return {}
 	end
-	
+
 	local plistData = plist.xmlFileToTable(filePath)
-	
+
 	local history = {}
-	
+
 	if plistData then
 		-- convert it to the new history format
 		for i = 1,5 do
 			local item = {
-				name = plistData["SharedClipboardLabel"..i], 
+				name = plistData["SharedClipboardLabel"..i],
 				data = plistData["SharedClipboardData"..i],
 			}
 			if item.name ~= "" and item.data ~= "" then
 				history[#history + 1] = item
 			end
 		end
-		
+
 		-- save it to the new format
 		if mod.setHistory(folderName, history) then
 			-- and erase the old file
 			os.remove(filePath)
 		end
 	end
-	
+
 	return history
 end
 
@@ -238,11 +239,11 @@ function mod.copyWithCustomClipNameAndFolder()
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod._manager.overrideNextClipName(result)
-		
+
 		local result = dialog.displayTextBoxMessage(i18n("overrideFolderNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextFolderName(result)
-		
+
 		menuBar:selectMenu("Edit", "Copy")
 	end
 end
@@ -288,15 +289,15 @@ plugin.dependencies = {
 	["hs.fcpxhacks.plugins.clipboard.manager"]	= "manager",
 	["hs.fcpxhacks.plugins.commands.fcpx"]		= "fcpxCmds",
 	["hs.fcpxhacks.plugins.menu.tools"]			= "tools",
-	["hs.fcpxhacks.plugins.menu.tools.options"]	= "options",	
+	["hs.fcpxhacks.plugins.menu.tools.options"]	= "options",
 }
 
 function plugin.init(deps)
 	mod.init(deps.manager)
-	
+
 	-- Add menu items
 	local menu = deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("pasteFromSharedClipboard") end)
-	
+
 	menu:addItems(1000, function()
 		local folderItems = {}
 		if mod.isEnabled() then
@@ -326,15 +327,15 @@ function plugin.init(deps)
 		end
 		return folderItems
 	end)
-	
+
 	deps.options:addItem(OPTIONS_PRIORITY, function()
 		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
 	end)
-	
+
 	-- Commands
 	deps.fcpxCmds:add("FCPXCopyWithCustomLabelAndFolder")
 		:whenActivated(mod.copyWithCustomClipNameAndFolder)
-	
+
 	return mod
 end
 

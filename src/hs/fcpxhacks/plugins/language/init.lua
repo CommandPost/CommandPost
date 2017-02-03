@@ -126,7 +126,7 @@ function plugin.init(deps)
 	local fcpxHacksLangs = section:addMenu(200, function() return metadata.scriptName .. " " .. i18n("language") end)
 	fcpxHacksLangs:addItems(1, function()
 		local settingsLanguage = {}
-		local userLocale = settings.get("fcpxHacks.language") or tools.userLocale()
+		local userLocale = settings.get(metadata.settingsPrefix .. ".language") or tools.userLocale()
 
 		local basicUserLocale = nil
 		if string.find(userLocale, "_") ~= nil then
@@ -137,7 +137,7 @@ function plugin.init(deps)
 
 		for i,language in ipairs(mod.getFCPXHacksLanguages()) do
 			settingsLanguage[i] = { title = language["language"], fn = function()
-				settings.set("fcpxHacks.language", language["id"])
+				settings.set(metadata.settingsPrefix .. ".language", language["id"])
 				i18n.setLocale(language["id"])
 			end, checked = (userLocale == language["id"] or basicUserLocale == language["id"]), }
 		end

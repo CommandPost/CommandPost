@@ -4,6 +4,7 @@ local settings									= require("hs.settings")
 local eventtap									= require("hs.eventtap")
 local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
+local metadata									= require("hs.fcpxhacks.metadata")
 local log										= require("hs.logger").new("touchbar")
 
 -- Constants
@@ -21,19 +22,19 @@ function mod.isSupported()
 end
 
 function mod.getLastLocation()
-	settings.get("fcpxHacks.lastTouchBarLocation")
+	settings.get(metadata.settingsPrefix .. ".lastTouchBarLocation")
 end
 
 function mod.setLastLocation(value)
-	settings.set("fcpxHacks.lastTouchBarLocation", value)
+	settings.set(metadata.settingsPrefix .. ".lastTouchBarLocation", value)
 end
 
 function mod.getLocation()
-	return settings.get("fcpxHacks.displayTouchBarLocation") or LOCATION_MOUSE
+	return settings.get(metadata.settingsPrefix .. ".displayTouchBarLocation") or LOCATION_MOUSE
 end
 
 function mod.setLocation(value)
-	settings.set("fcpxHacks.displayTouchBarLocation", value)
+	settings.set(metadata.settingsPrefix .. ".displayTouchBarLocation", value)
 	mod.update()
 end
 
@@ -74,11 +75,11 @@ function mod.updateLocation()
 end
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.displayTouchBar") or false
+	return settings.get(metadata.settingsPrefix .. ".displayTouchBar") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.displayTouchBar", value)
+	settings.set(metadata.settingsPrefix .. ".displayTouchBar", value)
 	mod.update()
 end
 

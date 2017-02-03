@@ -55,8 +55,8 @@ manager.ORIGINAL_QUALITY	= 5
 manager.ORIGINAL_ICON		= "🔵"
 
 function manager.updateMenubarIcon()
-	local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
-	local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
+	local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon") or false
+	local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon") or false
 
 	local title = metadata.scriptName
 	local icon = nil

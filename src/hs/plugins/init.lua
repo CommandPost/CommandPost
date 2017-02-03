@@ -27,7 +27,7 @@ local mod = {}
 
 mod.CACHE = {}
 
-mod.SETTINGS_DISABLED = "fcpxHacks.plugins.disabled"
+mod.SETTINGS_DISABLED = metadata.settingsPrefix .. ".plugins.disabled"
 
 --- hs.plugins.loadPackage(package) -> boolean
 --- Function
@@ -124,9 +124,9 @@ function mod.load(pluginPath)
 		log.ef("Unable to load plugin '%s'.", pluginPath)
 		return nil
 	end
-	
+
 	local dependencies = mod.loadDependencies(plugin)
-	
+
 	-- initialise the plugin instance
 	-- log.df("Initialising plugin '%s'.", pluginPath)
 	local instance = nil
@@ -166,7 +166,7 @@ function mod.loadDependencies(plugin)
 				path = alias
 				alias = nil
 			end
-		
+
 			local dependency = mod.load(path)
 			if dependency then
 				dependencies[path] = dependency
@@ -215,7 +215,7 @@ function mod.init(...)
 			log.ef("Error while loading package '%s':\n%s", package, hs.inspect(err))
 		end
 	end
-	
+
 	-- notify them of a `postInit`
 	for _,cached in pairs(mod.CACHE) do
 		local plugin = cached.plugin
@@ -224,7 +224,7 @@ function mod.init(...)
 			plugin.postInit(dependencies)
 		end
 	end
-	
+
 	return mod
 end
 

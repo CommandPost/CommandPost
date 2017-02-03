@@ -62,7 +62,7 @@ local function updateFCPXCommands(editable)
 		--------------------------------------------------------------------------------
 		result = enableHacksShortcuts()
 	end
-	
+
 	if not result then
 		return result
 	end
@@ -76,10 +76,10 @@ local function updateFCPXCommands(editable)
 		--------------------------------------------------------------------------------
 		dialog.displayErrorMessage(i18n("failedToRestart"))
 	end
-	
+
 	-- Reload Hammerspoon to reset shortcuts to defaults if necessary.
 	hs.reload()
-	
+
 	return true
 end
 
@@ -104,7 +104,7 @@ local function enableHacksShortcuts()
 	end
 
 	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-	
+
 	if type(result) == "string" then
 		dialog.displayErrorMessage(result)
 		mod.setEditable(false, true)
@@ -141,7 +141,7 @@ local function disableHacksShortcuts()
 	end
 
 	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-	
+
 	if type(result) == "string" then
 		dialog.displayErrorMessage(result)
 		mod.setEditable(true, true)
@@ -153,7 +153,7 @@ local function disableHacksShortcuts()
 		--------------------------------------------------------------------------------
 		return false
 	end
-	
+
 	-- success!
 	return true
 end
@@ -175,12 +175,12 @@ end
 
 local function applyCommandSetShortcuts()
 	local commandSet = fcp:getActiveCommandSet(true)
-	
+
 	log.df("Applying FCPX Shortcuts to global commands...")
 	applyShortcuts(mod.globalCmds, commandSet)
 	log.df("Applying FCPX Shortcuts to FCPX commands...")
 	applyShortcuts(mod.fcpxCmds, commandSet)
-	
+
 	mod.globalCmds:watch({
 		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
 	})
@@ -194,7 +194,7 @@ local function createMenuItem()
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
 	local hacksInFcpx = mod.isEditable()
-	
+
 	if hacksInFcpx then
 		return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
 	else
@@ -205,16 +205,16 @@ end
 -- The Module
 
 function mod.isEditable()
-	return settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
+	return settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro") or false
 end
 
 function mod.setEditable(enabled, skipFCPXupdate)
 	local editable = mod.isEditable()
 	if editable ~= enabled then
-		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", enabled)
+		settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", enabled)
 		if not skipFCPXUpdate then
 			if not updateFCPXCommands(enabled) then
-				settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", not enabled)
+				settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", not enabled)
 			end
 		end
 	end
@@ -251,19 +251,19 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
-	if settings.get("fcpxHacks.lastVersion") == nil then
-		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
+	if settings.get(metadata.settingsPrefix .. ".lastVersion") == nil then
+		settings.set(metadata.settingsPrefix .. ".lastVersion", metadata.scriptVersion)
 		mod.setEditable(false)
 	else
-		if tonumber(settings.get("fcpxHacks.lastVersion")) < tonumber(metadata.scriptVersion) then
+		if tonumber(settings.get(metadata.settingsPrefix .. ".lastVersion")) < tonumber(metadata.scriptVersion) then
 			if mod.isEditable() then
 				dialog.displayMessage(i18n("newKeyboardShortcuts"))
 				updateFCPXCommands(true)
 			end
 		end
-		settings.set("fcpxHacks.lastVersion", metadata.scriptVersion)
+		settings.set(metadata.settingsPrefix .. ".lastVersion", metadata.scriptVersion)
 	end
-	
+
 	mod.update()
 end
 
@@ -279,19 +279,19 @@ plugin.dependencies = {
 function plugin.init(deps)
 	mod.globalCmds 	= deps.globalCmds
 	mod.fcpxCmds	= deps.fcpxCmds
-	
+
 	-- Add the menu item to the top section.
 	deps.top:addItem(PRIORITY, createMenuItem)
-	
+
 	-- Add Commands
 	deps.globalCmds:add("FCPXHackShowListOfShortcutKeys")
 		:activatedBy():ctrl():option():cmd("f1")
 		:whenActivated(mod.displayShortcutList)
-		
+
 	deps.fcpxCmds:add("FCPXHackOpenCommandEditor")
 		:titled(i18n("openCommandEditor"))
 		:whenActivated(mod.editCommands)
-	
+
 	return mod
 end
 
