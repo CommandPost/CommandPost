@@ -10,6 +10,7 @@ local mouse						= require("hs.mouse")
 local dialog					= require("hs.fcpxhacks.modules.dialog")
 local fcp						= require("hs.finalcutpro")
 local hacksconsole				= require("hs.fcpxhacks.modules.hacksconsole")
+local metadata					= require("hs.fcpxhacks.metadata")
 
 local log						= require("hs.logger").new("playhead")
 
@@ -22,11 +23,11 @@ local PRIORITY = 1000
 local mod = {}
 
 function mod.isScrollingTimelineActive()
-	return settings.get("fcpxHacks.scrollingTimelineActive") or false
+	return settings.get(metadata.settingsPrefix .. ".scrollingTimelineActive") or false
 end
 
 function mod.setScrollingTimelineActive(active)
-	settings.set("fcpxHacks.scrollingTimelineActive", active)
+	settings.set(metadata.settingsPrefix .. ".scrollingTimelineActive", active)
 	mod.update()
 end
 
@@ -197,11 +198,11 @@ end
 --------------------------------------------------------------------------------
 
 function mod.isPlayheadLocked()
-	return settings.get("fcpxHacks.lockTimelinePlayhead") or false
+	return settings.get(metadata.settingsPrefix .. ".lockTimelinePlayhead") or false
 end
 
 function mod.setPlayheadLocked(locked)
-	settings.set("fcpxHacks.lockTimelinePlayhead", locked)
+	settings.set(metadata.settingsPrefix .. ".lockTimelinePlayhead", locked)
 	mod.update()
 end
 
@@ -246,7 +247,7 @@ function plugin.init(deps)
 			{ title = i18n("enableTimelinePlayheadLock"),	fn = mod.togglePlayheadLock,		checked = mod.isPlayheadLocked()},
 		}
 	end)
-	
+
 	-- commands
 	deps.fcpxCmds:add("FCPXHackScrollingTimeline")
 		:activatedBy():ctrl():option():cmd("w")

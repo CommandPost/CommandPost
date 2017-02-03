@@ -5,6 +5,7 @@ local http										= require("hs.http")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local fcp										= require("hs.finalcutpro")
 local dialog									= require("hs.fcpxhacks.modules.dialog")
+local metadata									= require("hs.fcpxhacks.metadata")
 
 -- Constants
 local PRIORITY = 1000
@@ -34,11 +35,11 @@ end
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.prowlNotificationsEnabled") or false
+	return settings.get(metadata.settingsPrefix .. ".prowlNotificationsEnabled") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.prowlNotificationsEnabled", value)
+	settings.set(metadata.settingsPrefix .. ".prowlNotificationsEnabled", value)
 	mod.update(true)
 end
 
@@ -47,11 +48,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getAPIKey()
-	return settings.get("fcpxHacks.prowlAPIKey") or nil
+	return settings.get(metadata.settingsPrefix .. ".prowlAPIKey") or nil
 end
 
 function mod.setAPIKey(value)
-	settings.set("fcpxHacks.prowlAPIKey", value)
+	settings.set(metadata.settingsPrefix .. ".prowlAPIKey", value)
 end
 
 local function requestProwlAPIKey()
@@ -102,7 +103,7 @@ function mod.init(notifications)
 end
 
 function mod.sendNotification(message)
-	local prowlAPIKey = settings.get("fcpxHacks.prowlAPIKey") or nil
+	local prowlAPIKey = settings.get(metadata.settingsPrefix .. ".prowlAPIKey") or nil
 	if prowlAPIKey ~= nil then
 		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 		local prowlEvent = http.encodeForQuery("")

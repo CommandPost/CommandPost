@@ -1,5 +1,4 @@
 -- Imports
-local settings									= require("hs.settings")
 local http										= require("hs.http")
 local distributednotifications					= require("hs.distributednotifications")
 local slaxdom 									= require("slaxml.slaxdom")

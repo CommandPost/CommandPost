@@ -8,6 +8,7 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
 local tools				= require("hs.fcpxhacks.modules.tools")
+local metadata			= require("hs.fcpxhacks.metadata")
 
 local log				= require("hs.logger").new("transitions")
 local inspect			= require("hs.inspect")
@@ -20,18 +21,18 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts") or {}	
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts") or {}
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)	
+	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
 end
 
 function mod.getTransitions()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allTransitions")
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allTransitions")
 end
 
 --------------------------------------------------------------------------------
@@ -45,7 +46,7 @@ function mod.apply(shortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	
+
 	if type(shortcut) == "number" then
 		shortcut = mod.getShortcuts()[shortcut]
 	end
@@ -154,7 +155,7 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not transitionsListUpdated 
+	if not transitionsListUpdated
 	   or allTransitions == nil
 	   or next(allTransitions) == nil then
 		dialog.displayMessage(i18n("assignTransitionsShortcutError"))
@@ -198,7 +199,7 @@ function mod.assignTransitionsShortcut(whichShortcut)
 		--------------------------------------------------------------------------------
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
-		
+
 	theChooser:bgDark(true):choices(choices)
 
 	--------------------------------------------------------------------------------
@@ -301,8 +302,8 @@ function mod.updateTransitionsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set("fcpxHacks." .. currentLanguage .. ".allTransitions", allTransitions)
-	settings.set("fcpxHacks." .. currentLanguage .. ".transitionsListUpdated", true)
+	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTransitions", allTransitions)
+	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".transitionsListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -316,7 +317,7 @@ function mod.updateTransitionsList()
 end
 
 function mod.isTransitionsListUpdated()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".transitionsListUpdated") or false
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsListUpdated") or false
 end
 
 -- The Plugin
@@ -333,39 +334,39 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTransitionsShortcuts") end)
-	
+
 	-- The 'Update' menu
 	menu:addItem(1000, function()
 		return { title = i18n("updateTransitionsList"),	fn = mod.updateTransitionsList, disabled = not fcpxRunning }
 	end)
 	menu:addSeparator(2000)
-	
+
 	menu:addItems(3000, function()
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
 		local listUpdated 	= mod.isTransitionsListUpdated()
 		local shortcuts		= mod.getShortcuts()
-		
+
 		local items = {}
-		
+
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
 			items[i] = { title = i18n("transitionShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTransitionsShortcut(i) end,	disabled = not listUpdated }
 		end
-		
+
 		return items
 	end)
-	
+
 	-- Commands
 	local fcpxCmds = deps.fcpxCmds
 	for i = 1, MAX_SHORTCUTS do
 		fcpxCmds:add("FCPXHackTransitions"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
 	end
-	
+
 	return mod
 end
 

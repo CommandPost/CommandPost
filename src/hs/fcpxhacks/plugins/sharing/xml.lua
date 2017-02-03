@@ -23,11 +23,11 @@ local PRIORITY = 4000
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableXMLSharing") or false
+	return settings.get(metadata.settingsPrefix .. ".enableXMLSharing") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.enableXMLSharing", value)
+	settings.set(metadata.settingsPrefix .. ".enableXMLSharing", value)
 	mod.update()
 end
 
@@ -36,11 +36,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getSharingPath()
-	return settings.get("fcpxHacks.xmlSharingPath")
+	return settings.get(metadata.settingsPrefix .. ".xmlSharingPath")
 end
 
 function mod.setSharingPath(value)
-	settings.set("fcpxHacks.xmlSharingPath", value)
+	settings.set(metadata.settingsPrefix .. ".xmlSharingPath", value)
 end
 
 --------------------------------------------------------------------------------

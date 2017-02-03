@@ -1,10 +1,11 @@
 local settings					= require("hs.settings")
+local metadata					= require("hs.fcpxhacks.metadata")
 
 --- The SHORTCUTS menu section.
 
 local PRIORITY = 1000
 
-local SETTING = "fcpxHacks.menubarShortcutsEnabled"
+local SETTING = metadata.settingsPrefix .. ".menubarShortcutsEnabled"
 
 local function isSectionDisabled()
 	local setting = settings.get(SETTING)
@@ -31,21 +32,21 @@ plugin.dependencies = {
 function plugin.init(dependencies)
 	-- Create the 'SHORTCUTS' section
 	local shortcuts = dependencies.manager.addSection(PRIORITY)
-	
+
 	-- Disable the section if the shortcuts option is disabled
 	shortcuts:setDisabledFn(isSectionDisabled)
-	
+
 	-- Add the separator and title for the section.
 	shortcuts:addSeparator(0)
 		:addItem(1, function()
 			return { title = string.upper(i18n("shortcuts")) .. ":", disabled = true }
 		end)
-	
+
 	-- Create the menubar preferences item
-	dependencies.menubar:addItem(PRIORITY, function() 
+	dependencies.menubar:addItem(PRIORITY, function()
 		return { title = i18n("showShortcuts"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 	end)
-	
+
 	return shortcuts
 end
 

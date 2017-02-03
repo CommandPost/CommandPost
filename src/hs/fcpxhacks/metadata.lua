@@ -8,6 +8,7 @@ local resourcePath		= hs.processInfo["resourcePath"]
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 mod.scriptName			= "CommandPost"
+mod.settingsPrefix		= "cp"
 mod.scriptVersion       = "0.79"
 mod.bugReportEmail      = "chris@latenitefilms.com"
 mod.developerURL        = "https://latenitefilms.com/blog/final-cut-pro-hacks/"

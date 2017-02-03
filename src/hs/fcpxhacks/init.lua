@@ -127,12 +127,12 @@ local ax                        = require("hs._asm.axuielement")
 local metadata					= require("hs.fcpxhacks.metadata")
 
 local tools                     = require("hs.fcpxhacks.modules.tools")
-local semver                    = require("hs.fcpxhacks.modules.semver.semver")
+local semver                    = require("semver.semver")
 
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
 --------------------------------------------------------------------------------
-if settings.get("fcpxHacks.debugMode") then
+if settings.get(metadata.settingsPrefix .. ".debugMode") then
 
     --------------------------------------------------------------------------------
     -- Logger Level (defaults to 'warn' if not specified)
@@ -158,10 +158,10 @@ for file in fs.dir(languagePath) do
 	end
 end
 local userLocale = nil
-if settings.get("fcpxHacks.language") == nil then
+if settings.get(metadata.settingsPrefix .. ".language") == nil then
 	userLocale = tools.userLocale()
 else
-	userLocale = settings.get("fcpxHacks.language")
+	userLocale = settings.get(metadata.settingsPrefix .. ".language")
 end
 i18n.setLocale(userLocale)
 
@@ -381,7 +381,7 @@ function debugMessage(value, value2)
     else
         if value ~= nil then
             if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-            if settings.get("fcpxHacks.debugMode") then
+            if settings.get(metadata.settingsPrefix .. ".debugMode") then
                 local consoleStyledText = styledtext.new(" > " .. value, {
                     color = drawing.color.definedCollections.hammerspoon["red"],
                     font = { name = "Menlo", size = 12 },

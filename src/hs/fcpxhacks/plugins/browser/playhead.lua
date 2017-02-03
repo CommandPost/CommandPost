@@ -5,6 +5,7 @@ local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
 local dialog						= require("hs.fcpxhacks.modules.dialog")
+local metadata						= require("hs.fcpxhacks.metadata")
 
 -- Constants
 local PRIORITY = 10000
@@ -22,19 +23,19 @@ local mod = {}
 -- Get Highlight Colour Preferences:
 --------------------------------------------------------------------------------
 function mod.getHighlightColor()
-	return settings.get("fcpxHacks.displayHighlightColour") or DEFAULT_COLOR
+	return settings.get(metadata.settingsPrefix .. ".displayHighlightColour") or DEFAULT_COLOR
 end
 
 function mod.setHighlightColor(value)
-	settings.set("fcpxHacks.displayHighlightColour", value)
+	settings.set(metadata.settingsPrefix .. ".displayHighlightColour", value)
 end
 
 function mod.getHighlightCustomColor()
-	return settings.get("fcpxHacks.displayHighlightCustomColour")
+	return settings.get(metadata.settingsPrefix .. ".displayHighlightCustomColour")
 end
 
 function mod.setHighlightCustomColor(value)
-	settings.set("fcpxHacks.displayHighlightCustomColour", value)
+	settings.set(metadata.settingsPrefix .. ".displayHighlightCustomColour", value)
 end
 
 --------------------------------------------------------------------------------
@@ -51,25 +52,25 @@ function mod.changeHighlightColor(value)
 end
 
 function mod.getHighlightShape()
-	return settings.get("fcpxHacks.displayHighlightShape") or SHAPE_RECTANGLE
+	return settings.get(metadata.settingsPrefix .. ".displayHighlightShape") or SHAPE_RECTANGLE
 end
 
 --------------------------------------------------------------------------------
 -- CHANGE HIGHLIGHT SHAPE:
 --------------------------------------------------------------------------------
 function mod.setHighlightShape(value)
-	settings.set("fcpxHacks.displayHighlightShape", value)
+	settings.set(metadata.settingsPrefix .. ".displayHighlightShape", value)
 end
 
 --------------------------------------------------------------------------------
 -- Get Highlight Playhead Time in seconds:
 --------------------------------------------------------------------------------
 function mod.getHighlightTime()
-	return settings.get("fcpxHacks.highlightPlayheadTime") or DEFAULT_TIME
+	return settings.get(metadata.settingsPrefix .. ".highlightPlayheadTime") or DEFAULT_TIME
 end
 
 function mod.setHighlightTime(value)
-	settings.set("fcpxHacks.highlightPlayheadTime", value)
+	settings.set(metadata.settingsPrefix .. ".highlightPlayheadTime", value)
 end
 
 --------------------------------------------------------------------------------
@@ -105,19 +106,19 @@ function mod.highlightFrame(frame)
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = settings.get("fcpxHacks.displayHighlightShape")
+	displayHighlightShape = settings.get(metadata.settingsPrefix .. ".displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
-	local displayHighlightColour = settings.get("fcpxHacks.displayHighlightColour") or "Red"
+	local displayHighlightColour = settings.get(metadata.settingsPrefix .. ".displayHighlightColour") or "Red"
 	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
 	if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
 	if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
 	if displayHighlightColour == "Custom" then
-		local displayHighlightCustomColour = settings.get("fcpxHacks.displayHighlightCustomColour")
+		local displayHighlightCustomColour = settings.get(metadata.settingsPrefix .. ".displayHighlightCustomColour")
 		displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
 	end
 
@@ -171,10 +172,10 @@ plugin.dependencies = {
 function plugin.init(deps)
 	-- Menus
 	local section = deps.prefs:addSection(PRIORITY)
-	
+
 	section:addSeparator(1000)
 		:addSeparator(9000)
-		
+
 	local highlightColor = section:addMenu(2000, function() return i18n("highlightPlayheadColour") end)
 	:addItems(1000, function()
 		local displayHighlightColour = mod.getHighlightColor()
@@ -187,7 +188,7 @@ function plugin.init(deps)
 			{ title = i18n("custom"), 	fn = function() mod.changeHighlightColor("Custom") end, 	checked = displayHighlightColour == "Custom" },
 		}
 	end)
-	
+
 	local highlightShape = section:addMenu(3000, function() return i18n("highlightPlayheadShape") end)
 	:addItems(1000, function()
 		local shape = mod.getHighlightShape()
@@ -197,7 +198,7 @@ function plugin.init(deps)
 			{ title = i18n("diamond"),		fn = function() mod.setHighlightShape(SHAPE_DIAMOND) end, 	checked = shape == SHAPE_DIAMOND	},
 		}
 	end)
-	
+
 	local highlightTime = section:addMenu(4000, function() return i18n("highlightPlayheadTime") end)
 	:addItems(1000, function()
 		local highlightPlayheadTime = mod.getHighlightTime()
@@ -214,12 +215,12 @@ function plugin.init(deps)
 			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(10) end,	checked = highlightPlayheadTime == 10 },
 		}
 	end)
-	
+
 	-- Commands
 	deps.fcpxCmds:add("FCPXHackHighlightBrowserPlayhead")
 		:activatedBy():cmd():option():ctrl("h")
 		:whenActivated(mod.highlight)
-	
+
 	return mod
 end
 

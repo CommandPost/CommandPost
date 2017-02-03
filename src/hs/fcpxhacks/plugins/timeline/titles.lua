@@ -6,6 +6,7 @@ local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
+local metadata			= require("hs.fcpxhacks.metadata")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
 local tools				= require("hs.fcpxhacks.modules.tools")
 
@@ -22,18 +23,18 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".titlesShortcuts") or {}	
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesShortcuts") or {}
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)	
+	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
 end
 
 function mod.getTitles()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allTitles")
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allTitles")
 end
 
 --------------------------------------------------------------------------------
@@ -68,7 +69,7 @@ function mod.apply(shortcut)
 	local generatorsShowing = generators:isShowing()
 	local generatorsLayout = generators:saveLayout()
 
-	
+
 	--------------------------------------------------------------------------------
 	-- Make sure FCPX is at the front.
 	--------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ function mod.apply(shortcut)
 	-- Make sure the panel is open:
 	--------------------------------------------------------------------------------
 	generators:show()
-	
+
 	if not generators:isShowing() then
 		dialog.displayErrorMessage("Unable to display the Titles panel.\n\nError occurred in titles.apply(...)")
 		return false
@@ -165,7 +166,7 @@ function mod.assignTitlesShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not titlesListUpdated 
+	if not titlesListUpdated
 	   or allTitles == nil
 	   or next(allTitles) == nil then
 		dialog.displayMessage(i18n("assignTitlesShortcutError"))
@@ -203,13 +204,13 @@ function mod.assignTitlesShortcut(whichShortcut)
 			--------------------------------------------------------------------------------
 			mod.setShortcut(whichShortcut, result.text)
 		end
-		
+
 		--------------------------------------------------------------------------------
 		-- Put focus back in Final Cut Pro:
 		--------------------------------------------------------------------------------
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
-		
+
 	theChooser:bgDark(true):choices(choices)
 
 	--------------------------------------------------------------------------------
@@ -294,8 +295,8 @@ function mod.updateTitlesList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set("fcpxHacks." .. currentLanguage .. ".allTitles", allTitles)
-	settings.set("fcpxHacks." .. currentLanguage .. ".titlesListUpdated", true)
+	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTitles", allTitles)
+	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".titlesListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -309,7 +310,7 @@ function mod.updateTitlesList()
 end
 
 function mod.isTitlesListUpdated()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".titlesListUpdated") or false
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesListUpdated") or false
 end
 
 -- The Plugin
@@ -324,39 +325,39 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTitlesShortcuts") end)
-	
+
 	-- The 'Update' menu
 	menu:addItem(1000, function()
 		return { title = i18n("updateTitlesList"),	fn = mod.updateTitlesList, disabled = not fcpxRunning }
 	end)
 	menu:addSeparator(2000)
-	
+
 	menu:addItems(3000, function()
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
 		local listUpdated 	= mod.isTitlesListUpdated()
 		local shortcuts		= mod.getShortcuts()
-		
+
 		local items = {}
-		
+
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
 			items[i] = { title = i18n("titleShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTitlesShortcut(i) end,	disabled = not listUpdated }
 		end
-		
+
 		return items
 	end)
-	
+
 	-- Commands
 	local fcpxCmds = deps.fcpxCmds
 	for i = 1, MAX_SHORTCUTS do
 		fcpxCmds:add("FCPXHackTitles"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
 	end
-	
+
 	return mod
 end
 

@@ -4,6 +4,7 @@ local settings								= require("hs.settings")
 local dialog 								= require("hs.fcpxhacks.modules.dialog")
 local osascript								= require("hs.osascript")
 local speech   								= require("hs.speech")
+local metadata								= require("hs.fcpxhacks.metadata")
 
 local log									= require("hs.logger").new("voice")
 
@@ -17,11 +18,11 @@ mod.commandTitles = {}
 mod.commandsByTitle = {}
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableVoiceCommands") or false
+	return settings.get(metadata.settingsPrefix .. ".enableVoiceCommands") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.enableVoiceCommands", value)
+	settings.set(metadata.settingsPrefix .. ".enableVoiceCommands", value)
 	mod.update()
 end
 
@@ -30,11 +31,11 @@ function mod.toggleEnabled()
 end
 
 function mod.isAnnouncementsEnabled()
-	return settings.get("fcpxHacks.voiceCommandEnableAnnouncements") or false
+	return settings.get(metadata.settingsPrefix .. ".voiceCommandEnableAnnouncements") or false
 end
 
 function mod.setAnnouncementsEnabled(value)
-	settings.set("fcpxHacks.voiceCommandEnableAnnouncements", value)
+	settings.set(metadata.settingsPrefix .. ".voiceCommandEnableAnnouncements", value)
 end
 
 function mod.toggleAnnouncementsEnabled()
@@ -42,11 +43,11 @@ function mod.toggleAnnouncementsEnabled()
 end
 
 function mod.isVisualAlertsEnabled()
-	return settings.get("fcpxHacks.voiceCommandEnableVisualAlerts") or false
+	return settings.get(metadata.settingsPrefix .. ".voiceCommandEnableVisualAlerts") or false
 end
 
 function mod.setVisualAlertsEnabled(value)
-	settings.set("fcpxHacks.voiceCommandEnableVisualAlerts", value)
+	settings.set(metadata.settingsPrefix .. ".voiceCommandEnableVisualAlerts", value)
 end
 
 function mod.toggleVisualAlertsEnabled()
@@ -93,7 +94,7 @@ function mod.activateCommand(title)
 		if visualAlerts then
 			dialog.displayNotification(i18n("unsupportedVoiceCommand"))
 		end
-		
+
 	end
 end
 
@@ -198,7 +199,7 @@ function mod.registerCommands(commands)
 			end
 		end
 	end
-	
+
 	table.sort(mod.commandTitles, function(a, b) return a < b end)
 end
 
@@ -226,7 +227,7 @@ function plugin.init(deps)
 		active		= mod.update,
 		inactive	= mod.pause,
 	})
-	
+
 	-- Menu Items
 	deps.options:addSection(PRIORITY)
 		:addSeparator(1000)
@@ -234,7 +235,7 @@ function plugin.init(deps)
 			return { title = i18n("enableVoiceCommands"), fn = mod.toggleEnabled, checked = mod.isEnabled() }
 		end)
 		:addSeparator(3000)
-	
+
 	deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommandOptions") end)
 		:addItems(1000, function()
 			return {
@@ -244,11 +245,11 @@ function plugin.init(deps)
 				{ title = i18n("openDictationPreferences"), fn = mod.openDictationSystemPreferences },
 			}
 		end)
-	
+
 	-- Commands
 	deps.fcpxCmds:add("FCPXHackToggleVoiceCommands")
 		:whenActivated(mod.toggleEnabled)
-	
+
 	return mod
 end
 

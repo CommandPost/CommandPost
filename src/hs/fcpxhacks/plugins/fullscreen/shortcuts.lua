@@ -3,6 +3,7 @@ local settings							= require("hs.settings")
 local eventtap							= require("hs.eventtap")
 local fcp								= require("hs.finalcutpro")
 local timer								= require("hs.timer")
+local metadata							= require("hs.fcpxhacks.metadata")
 
 local log								= require("hs.logger").new("fsshrtct")
 
@@ -23,11 +24,11 @@ local FULLSCREEN_KEYS = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSel
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableShortcutsDuringFullscreenPlayback") or false
+	return settings.get(metadata.settingsPrefix .. ".enableShortcutsDuringFullscreenPlayback") or false
 end
 
 function mod.setEnabled(enabled)
-	settings.set("fcpxHacks.enableShortcutsDuringFullscreenPlayback", enabled)
+	settings.set(metadata.settingsPrefix .. ".enableShortcutsDuringFullscreenPlayback", enabled)
 	mod.update()
 end
 

@@ -8,6 +8,7 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local hacksconsole		= require("hs.fcpxhacks.modules.hacksconsole")
 local tools				= require("hs.fcpxhacks.modules.tools")
+local metadata			= require("hs.fcpxhacks.metadata")
 
 local log				= require("hs.logger").new("effects")
 local inspect			= require("hs.inspect")
@@ -20,22 +21,22 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".effectsShortcuts") or {}	
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsShortcuts") or {}
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set("fcpxHacks." .. fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)	
+	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
 end
 
 function mod.getVideoEffects()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allVideoEffects")
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allVideoEffects")
 end
 
 function mod.getAudioEffects()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".allAudioEffects")
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allAudioEffects")
 end
 
 --------------------------------------------------------------------------------
@@ -49,7 +50,7 @@ function mod.apply(shortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	
+
 	if type(shortcut) == "number" then
 		shortcut = mod.getShortcuts()[shortcut]
 	end
@@ -71,7 +72,7 @@ function mod.apply(shortcut)
 	local effects = fcp:effects()
 	local effectsShowing = effects:isShowing()
 	local effectsLayout = effects:saveLayout()
-	
+
 	fcp:launch()
 
 	--------------------------------------------------------------------------------
@@ -161,7 +162,7 @@ function mod.assignEffectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not effectsListUpdated 
+	if not effectsListUpdated
 	   or allVideoEffects == nil or allAudioEffects == nil
 	   or next(allVideoEffects) == nil or next(allAudioEffects) == nil then
 		dialog.displayMessage(i18n("assignEffectsShortcutError"))
@@ -223,7 +224,7 @@ function mod.assignEffectsShortcut(whichShortcut)
 		--------------------------------------------------------------------------------
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
-	
+
 	effectChooser:bgDark(true):choices(choices)
 
 	--------------------------------------------------------------------------------
@@ -353,9 +354,9 @@ function mod.updateEffectsList()
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set("fcpxHacks." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
-		settings.set("fcpxHacks." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
-		settings.set("fcpxHacks." .. currentLanguage .. ".effectsListUpdated", true)
+		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
+		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
+		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".effectsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -371,7 +372,7 @@ function mod.updateEffectsList()
 end
 
 function mod.isEffectsListUpdated()
-	return settings.get("fcpxHacks." .. fcp:getCurrentLanguage() .. ".effectsListUpdated") or false
+	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsListUpdated") or false
 end
 
 -- The Plugin
@@ -388,33 +389,33 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignEffectsShortcuts") end)
-	
+
 	-- The 'Update' menu
 	menu:addItem(1000, function()
 		return { title = i18n("updateEffectsList"),	fn = mod.updateEffectsList, disabled = not fcpxRunning }
 	end)
 	menu:addSeparator(2000)
-	
+
 	menu:addItems(3000, function()
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
 		local effectsListUpdated 	= mod.isEffectsListUpdated()
 		local effectsShortcuts		= mod.getShortcuts()
-		
+
 		local items = {}
-		
+
 		for i = 1,MAX_SHORTCUTS do
 			local shortcutName = effectsShortcuts[i] or i18n("unassignedTitle")
 			items[i] = { title = i18n("effectShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignEffectsShortcut(i) end,	disabled = not effectsListUpdated }
 		end
-		
+
 		return items
 	end)
-	
+
 	-- Commands with default shortcuts
 	local fcpxCmds = deps.fcpxCmds
 	for i = 1, MAX_SHORTCUTS do
@@ -422,7 +423,7 @@ function plugin.init(deps)
 			:activatedBy():ctrl():shift(tostring(i))
 			:whenPressed(function() mod.apply(i) end)
 	end
-	
+
 	return mod
 end
 
