@@ -1,6 +1,6 @@
 -- Imports
 local settings									= require("hs.settings")
-local slaxdom 									= require("hs.fcpxhacks.modules.slaxml.slaxdom")
+local slaxdom 									= require("slaxml.slaxdom")
 local http										= require("hs.http")
 local tools										= require("hs.fcpxhacks.modules.tools")
 local fcp										= require("hs.finalcutpro")
@@ -56,14 +56,14 @@ end
 
 local function requestProwlAPIKey()
 	local returnToFinalCutPro = fcp:isFrontmost()
-	
+
 	-- Request the API Key from the user
 	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.getAPIKey())
 	if result == false then
 		mod.setEnabled(false)
 		return
 	end
-	
+
 	-- Check the key is valid
 	local valid, err = prowlAPIKeyValid(result)
 	if valid then
@@ -81,7 +81,7 @@ function mod.update(changed)
 		if changed or mod.getAPIKey() == nil then
 			requestProwlAPIKey()
 		end
-		
+
 		if mod.watcherId == nil then
 			mod.watcherId = mod.notifications.watch({
 				success	= mod.sendNotification,
@@ -93,7 +93,7 @@ function mod.update(changed)
 			mod.notifications.unwatch(mod.watcherId)
 			mod.watcherId = nil
 		end
-	end	
+	end
 end
 
 function mod.init(notifications)
@@ -129,12 +129,12 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	mod.init(deps.manager)
-	
+
 	-- Menu Item
 	deps.menu:addItem(PRIORITY, function()
 		return { title = i18n("prowl"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
 	end)
-	
+
 	return mod
 end
 
