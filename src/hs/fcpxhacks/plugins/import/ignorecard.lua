@@ -5,6 +5,7 @@ local fs						= require("hs.fs")
 local fcp						= require("hs.finalcutpro")
 local application				= require("hs.application")
 local timer						= require("hs.timer")
+local metadata					= require("hs.fcpxhacks.metadata")
 
 -- Constants
 
@@ -19,14 +20,14 @@ local mod = {}
 -- RETURNS THE CURRENT ENABLED STATUS
 --------------------------------------------------------------------------------
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableMediaImportWatcher") or false
+	return settings.get(metadata.settingsPrefix .. ".enableMediaImportWatcher") or false
 end
 
 --------------------------------------------------------------------------------
 -- SETS THE ENABLED STATUS AND UPDATES THE WATCHER APPROPRIATELY
 --------------------------------------------------------------------------------
 function mod.setEnabled(enabled)
-	settings.set("fcpxHacks.enableMediaImportWatcher", enabled)
+	settings.set(metadata.settingsPrefix .. ".enableMediaImportWatcher", enabled)
 	mod.update()
 end
 
@@ -115,18 +116,18 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	
+
 	-- Add the menu item
 	local section = deps.options:addSection(PRIORITY)
 	section:addSeparator(100)
-	section:addItem(200, function() 
+	section:addItem(200, function()
 		return { title = i18n("closeMediaImport"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
 	end)
 	section:addSeparator(900)
-	
+
 	-- Update the watcher status based on the settings
 	mod.update()
-	
+
 	return mod
 end
 

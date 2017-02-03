@@ -210,7 +210,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	mod.debugMode = settings.get("fcpxHacks.debugMode") or false
+	mod.debugMode = settings.get(metadata.settingsPrefix .. ".debugMode") or false
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
@@ -235,7 +235,7 @@ function loadScript()
 	-- First time running 10.3? If so, let's trash the settings incase there's
 	-- compatibility issues with an older version of the script:
 	--------------------------------------------------------------------------------
-	if settings.get("fcpxHacks.firstTimeRunning103") == nil then
+	if settings.get(metadata.settingsPrefix .. ".firstTimeRunning103") == nil then
 
 		writeToConsole("First time running Final Cut Pro 10.3. Trashing settings.")
 
@@ -243,31 +243,31 @@ function loadScript()
 		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
 		for i, v in ipairs(settings.getKeys()) do
-			if (v:sub(1,10)) == "fcpxHacks." then
+			if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
 				settings.set(v, nil)
 			end
 		end
 
-		settings.set("fcpxHacks.firstTimeRunning103", false)
+		settings.set(metadata.settingsPrefix .. ".firstTimeRunning103", false)
 
 	end
 
 	--------------------------------------------------------------------------------
 	-- Check for Final Cut Pro Updates:
 	--------------------------------------------------------------------------------
-	local lastFinalCutProVersion = settings.get("fcpxHacks.lastFinalCutProVersion")
+	local lastFinalCutProVersion = settings.get(metadata.settingsPrefix .. ".lastFinalCutProVersion")
 	if lastFinalCutProVersion == nil then
-		settings.set("fcpxHacks.lastFinalCutProVersion", fcp:getVersion())
+		settings.set(metadata.settingsPrefix .. ".lastFinalCutProVersion", fcp:getVersion())
 	else
 		if lastFinalCutProVersion ~= fcp:getVersion() then
 			for i, v in ipairs(settings.getKeys()) do
-				if (v:sub(1,10)) == "fcpxHacks." then
+				if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
 					if v:sub(-16) == "chooserMenuItems" then
 						settings.set(v, nil)
 					end
 				end
 			end
-			settings.set("fcpxHacks.lastFinalCutProVersion", fcp:getVersion())
+			settings.set(metadata.settingsPrefix .. ".lastFinalCutProVersion", fcp:getVersion())
 		end
 	end
 
@@ -275,8 +275,8 @@ function loadScript()
 	-- Apply Default Settings:
 	--------------------------------------------------------------------------------
 	for k, v in pairs(defaultSettings) do
-		if settings.get("fcpxHacks." .. k) == nil then
-			settings.set("fcpxHacks." .. k, v)
+		if settings.get(metadata.settingsPrefix .. "." .. k) == nil then
+			settings.set(metadata.settingsPrefix .. "." .. k, v)
 		end
 	end
 
@@ -319,7 +319,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Load Hacks HUD:
 	--------------------------------------------------------------------------------
-	if settings.get("fcpxHacks.enableHacksHUD") then
+	if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 		hackshud.new()
 	end
 
@@ -340,7 +340,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Show Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableHacksHUD") then
+		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 			hackshud.show()
 		end
 
@@ -370,7 +370,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
 	--------------------------------------------------------------------------------
-	local checkForUpdatesInterval = settings.get("fcpxHacks.checkForUpdatesInterval")
+	local checkForUpdatesInterval = settings.get(metadata.settingsPrefix .. ".checkForUpdatesInterval")
 	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
 
@@ -610,7 +610,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -767,7 +767,7 @@ function updateKeyboardShortcuts()
 	local result = enableHacksShortcuts()
 	if type(result) == "string" then
 		dialog.displayErrorMessage(result)
-		settings.set("fcpxHacks.enableHacksShortcutsInFinalCutPro", false)
+		settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", false)
 		return false
 	elseif result == false then
 		--------------------------------------------------------------------------------
@@ -930,17 +930,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 		--------------------------------------------------------------------------------
-		local enableHacksShortcutsInFinalCutPro = settings.get("fcpxHacks.enableHacksShortcutsInFinalCutPro") or false
+		local enableHacksShortcutsInFinalCutPro = settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro") or false
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
-		local enableHacksHUD 		= settings.get("fcpxHacks.enableHacksHUD") or false
+		local enableHacksHUD 		= settings.get(metadata.settingsPrefix .. ".enableHacksHUD") or false
 
-		local hudButtonOne 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
-		local hudButtonTwo 			= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
-		local hudButtonThree 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
-		local hudButtonFour 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
+		local hudButtonOne 			= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
+		local hudButtonTwo 			= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
+		local hudButtonThree 		= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
+		local hudButtonFour 		= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
 
 		if hudButtonOne ~= " (Unassigned)" then		hudButtonOne = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonOne["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
@@ -950,8 +950,8 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
-		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
+		local menubarToolsEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarToolsEnabled")
+		local menubarHacksEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarHacksEnabled")
 
 		local settingsHUDButtons = {
 			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
@@ -1018,14 +1018,14 @@ end
 		--------------------------------------------------------------------------------
 		-- HUD Preferences:
 		--------------------------------------------------------------------------------
-		local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-		local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-		local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+		local hudShowInspector 		= settings.get(metadata.settingsPrefix .. ".hudShowInspector")
+		local hudShowDropTargets 	= settings.get(metadata.settingsPrefix .. ".hudShowDropTargets")
+		local hudShowButtons 		= settings.get(metadata.settingsPrefix .. ".hudShowButtons")
 
 		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates") or false
+		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates") or false
 
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
@@ -1066,18 +1066,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		settings.get("fcpxHacks.menubarToolsEnabled")
-		local menubarHacksEnabled = 		settings.get("fcpxHacks.menubarHacksEnabled")
+		local menubarToolsEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarToolsEnabled")
+		local menubarHacksEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarHacksEnabled")
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Proxy Menu Item:
 		--------------------------------------------------------------------------------
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon") or false
+		local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon") or false
 
 		--------------------------------------------------------------------------------
 		-- Get Menubar Display Mode from Settings:
 		--------------------------------------------------------------------------------
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon") or false
+		local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon") or false
 
 		local settingsMenubar = {
 			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
@@ -1235,8 +1235,8 @@ end
 	-- TOGGLE ENABLE HACKS HUD:
 	--------------------------------------------------------------------------------
 	function toggleEnableHacksHUD()
-		local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
-		settings.set("fcpxHacks.enableHacksHUD", not enableHacksHUD)
+		local enableHacksHUD = settings.get(metadata.settingsPrefix .. ".enableHacksHUD")
+		settings.set(metadata.settingsPrefix .. ".enableHacksHUD", not enableHacksHUD)
 
 		if enableHacksHUD then
 			hackshud.hide()
@@ -1251,7 +1251,7 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		settings.set("fcpxHacks.debugMode", not mod.debugMode)
+		settings.set(metadata.settingsPrefix .. ".debugMode", not mod.debugMode)
 		hs.reload()
 	end
 
@@ -1259,24 +1259,24 @@ end
 	-- TOGGLE CHECK FOR UPDATES:
 	--------------------------------------------------------------------------------
 	function toggleCheckForUpdates()
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
-		settings.set("fcpxHacks.enableCheckForUpdates", not enableCheckForUpdates)
+		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates")
+		settings.set(metadata.settingsPrefix .. ".enableCheckForUpdates", not enableCheckForUpdates)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE MENUBAR DISPLAY:
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplay(value)
-		local menubarEnabled = settings.get("fcpxHacks.menubar" .. value .. "Enabled")
-		settings.set("fcpxHacks.menubar" .. value .. "Enabled", not menubarEnabled)
+		local menubarEnabled = settings.get(metadata.settingsPrefix .. ".menubar" .. value .. "Enabled")
+		settings.set(metadata.settingsPrefix .. ".menubar" .. value .. "Enabled", not menubarEnabled)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE HUD OPTION:
 	--------------------------------------------------------------------------------
 	function toggleHUDOption(value)
-		local result = settings.get("fcpxHacks." .. value)
-		settings.set("fcpxHacks." .. value, not result)
+		local result = settings.get(metadata.settingsPrefix .. "." .. value)
+		settings.set(metadata.settingsPrefix .. "." .. value, not result)
 		hackshud.reload()
 	end
 
@@ -1316,12 +1316,12 @@ end
 	-- TOGGLE ENABLE PROXY MENU ICON:
 	--------------------------------------------------------------------------------
 	function toggleEnableProxyMenuIcon()
-		local enableProxyMenuIcon = settings.get("fcpxHacks.enableProxyMenuIcon")
+		local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon")
 		if enableProxyMenuIcon == nil then
-			settings.set("fcpxHacks.enableProxyMenuIcon", true)
+			settings.set(metadata.settingsPrefix .. ".enableProxyMenuIcon", true)
 			enableProxyMenuIcon = true
 		else
-			settings.set("fcpxHacks.enableProxyMenuIcon", not enableProxyMenuIcon)
+			settings.set(metadata.settingsPrefix .. ".enableProxyMenuIcon", not enableProxyMenuIcon)
 		end
 
 		updateMenubarIcon()
@@ -1505,16 +1505,16 @@ end
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplayMode()
 
-		local displayMenubarAsIcon = settings.get("fcpxHacks.displayMenubarAsIcon")
+		local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon")
 
 
 		if displayMenubarAsIcon == nil then
-			 settings.set("fcpxHacks.displayMenubarAsIcon", true)
+			 settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", true)
 		else
 			if displayMenubarAsIcon then
-				settings.set("fcpxHacks.displayMenubarAsIcon", false)
+				settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", false)
 			else
-				settings.set("fcpxHacks.displayMenubarAsIcon", true)
+				settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", true)
 			end
 		end
 
@@ -1562,7 +1562,7 @@ end
 		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
 		for i, v in ipairs(settings.getKeys()) do
-			if (v:sub(1,10)) == "fcpxHacks." then
+			if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
 				settings.set(v, nil)
 			end
 		end
@@ -1703,7 +1703,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Values to Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		local savedKeywords = settings.get(metadata.settingsPrefix .. ".savedKeywords")
 		if savedKeywords == nil then savedKeywords = {} end
 		for i=1, 9 do
 			if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
@@ -1711,7 +1711,7 @@ end
 			end
 			savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
 		end
-		settings.set("fcpxHacks.savedKeywords", savedKeywords)
+		settings.set(metadata.settingsPrefix .. ".savedKeywords", savedKeywords)
 
 		--------------------------------------------------------------------------------
 		-- Saved:
@@ -1733,7 +1733,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Values from Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get("fcpxHacks.savedKeywords")
+		local savedKeywords = settings.get(metadata.settingsPrefix .. ".savedKeywords")
 		local restoredKeywordValues = {}
 
 		if savedKeywords == nil then
@@ -2090,14 +2090,14 @@ end
 
 				local selectedRow = noteChooser:selectedRow()
 
-				local recentNotes = settings.get("fcpxHacks.recentNotes") or {}
+				local recentNotes = settings.get(metadata.settingsPrefix .. ".recentNotes") or {}
 				if selectedRow == 1 then
 					table.insert(recentNotes, 1, result)
-					settings.set("fcpxHacks.recentNotes", recentNotes)
+					settings.set(metadata.settingsPrefix .. ".recentNotes", recentNotes)
 				else
 					table.remove(recentNotes, selectedRow)
 					table.insert(recentNotes, 1, result)
-					settings.set("fcpxHacks.recentNotes", recentNotes)
+					settings.set(metadata.settingsPrefix .. ".recentNotes", recentNotes)
 				end
 			end
 
@@ -2111,7 +2111,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Chooser Query Changed by User:
 			--------------------------------------------------------------------------------
-			local recentNotes = settings.get("fcpxHacks.recentNotes") or {}
+			local recentNotes = settings.get(metadata.settingsPrefix .. ".recentNotes") or {}
 
 			local currentQuery = noteChooser:query()
 
@@ -2267,7 +2267,7 @@ end
 	--------------------------------------------------------------------------------
 	function moveToPlayhead()
 		local clipboardManager = plugins("hs.fcpxhacks.plugins.clipboard.manager")
-		
+
 		clipboardManager.stopWatching()
 
 		if not fcp:performShortcut("Cut") then
@@ -2356,7 +2356,7 @@ end
 	--------------------------------------------------------------------------------
 	function checkForUpdates()
 
-		local enableCheckForUpdates = settings.get("fcpxHacks.enableCheckForUpdates")
+		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates")
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
@@ -2444,7 +2444,7 @@ function finalCutProWindowWatcher()
 									-------------------------------------------------------------------------------
 									-- Hide HUD:
 									--------------------------------------------------------------------------------
-									if settings.get("fcpxHacks.enableHacksHUD") then
+									if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 											hackshud:hide()
 											wasInFullscreenMode = true
 									end
@@ -2467,7 +2467,7 @@ function finalCutProWindowWatcher()
 				-- Show HUD:
 				--------------------------------------------------------------------------------
 				if wasInFullscreenMode then
-					if settings.get("fcpxHacks.enableHacksHUD") then
+					if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 							hackshud:show()
 					end
 				end
@@ -2501,7 +2501,7 @@ function finalCutProWindowWatcher()
 			--------------------------------------------------------------------------------
 			-- Show the HUD:
 			--------------------------------------------------------------------------------
-			if settings.get("fcpxHacks.enableHacksHUD") then
+			if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 				hackshud.show()
 			end
 		end
@@ -2542,7 +2542,7 @@ end
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
-			if settings.get("fcpxHacks.enableHacksHUD") then
+			if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 				hackshud:show()
 			end
 		end)
@@ -2584,7 +2584,7 @@ end
 		-------------------------------------------------------------------------------
 		-- If not focussed on Hammerspoon then hide HUD:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableHacksHUD") then
+		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 			if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
 				hackshud:hide()
 			end
@@ -2620,7 +2620,7 @@ function finalCutProSettingsWatcher(files)
  		--------------------------------------------------------------------------------
 		-- Reload Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get("fcpxHacks.enableHacksHUD") then
+		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
 			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
 		end
 

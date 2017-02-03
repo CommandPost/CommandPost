@@ -21,7 +21,6 @@ local fs										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript									= require("hs.osascript")
 local screen									= require("hs.screen")
-local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local inspect									= require("hs.inspect")
 

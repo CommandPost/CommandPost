@@ -1,6 +1,7 @@
 -- Imports
 local settings								= require("hs.settings")
 local fcp									= require("hs.finalcutpro")
+local metadata								= require("hs.fcpxhacks.metadata")
 
 local log 									= require("hs.logger").new("clphstry")
 
@@ -15,11 +16,11 @@ mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
 mod.log										= log
 
 function mod.isEnabled()
-	return settings.get("fcpxHacks.enableClipboardHistory") or false
+	return settings.get(metadata.settingsPrefix .. ".enableClipboardHistory") or false
 end
 
 function mod.setEnabled(value)
-	settings.set("fcpxHacks.enableClipboardHistory", value == true)
+	settings.set(metadata.settingsPrefix .. ".enableClipboardHistory", value == true)
 	mod.update()
 end
 
@@ -29,14 +30,14 @@ end
 
 function mod.getHistory()
 	if not mod._history then
-		mod._history = settings.get("fcpxHacks.clipboardHistory") or {}
+		mod._history = settings.get(metadata.settingsPrefix .. ".clipboardHistory") or {}
 	end
 	return mod._history
 end
 
 function mod.setHistory(history)
 	mod._history = history
-	settings.set("fcpxHacks.clipboardHistory", history)
+	settings.set(metadata.settingsPrefix .. ".clipboardHistory", history)
 end
 
 function mod.clearHistory()
@@ -113,7 +114,7 @@ plugin.dependencies = {
 function plugin.init(deps)
 	-- Initialise the module
 	mod.init(deps.manager)
-	
+
 	-- Add menu items
 	deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("pasteFromClipboardHistory") end)
 		:addItems(1000, function()
@@ -136,11 +137,11 @@ function plugin.init(deps)
 			end
 			return historyItems
 		end)
-	
+
 	deps.options:addItem(OPTIONS_PRIORITY, function()
 		return { title = i18n("enableClipboardHistory"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
 	end)
-	
+
 	return mod
 end
 

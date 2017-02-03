@@ -5,6 +5,7 @@ local dialog		= require("hs.fcpxhacks.modules.dialog")
 local tools			= require("hs.fcpxhacks.modules.tools")
 local settings		= require("hs.settings")
 local just			= require("hs.just")
+local metadata		= require("hs.fcpxhacks.metadata")
 
 -- Constants
 
@@ -142,13 +143,13 @@ function mod.changeExportDestinationPreset()
 		end
 	end
 
-	local batchExportDestinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+	local batchExportDestinationPreset = settings.get(metadata.settingsPrefix .. ".batchExportDestinationPreset")
 	local defaultItems = {}
 	if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
 
 	local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
 	if result and #result > 0 then
-		settings.set("fcpxHacks.batchExportDestinationPreset", result[1])
+		settings.set(metadata.settingsPrefix .. ".batchExportDestinationPreset", result[1])
 	end
 end
 
@@ -159,7 +160,7 @@ function mod.changeExportDestinationFolder()
 	local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
 	if result == false then return end
 
-	settings.set("fcpxHacks.batchExportDestinationFolder", result)
+	settings.set(metadata.settingsPrefix .. ".batchExportDestinationFolder", result)
 end
 
 --------------------------------------------------------------------------------
@@ -170,7 +171,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Set Custom Export Path (or Default to Desktop):
 	--------------------------------------------------------------------------------
-	local batchExportDestinationFolder = settings.get("fcpxHacks.batchExportDestinationFolder")
+	local batchExportDestinationFolder = settings.get(metadata.settingsPrefix .. ".batchExportDestinationFolder")
 	local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
 	local exportPath = "~/Desktop"
 	if batchExportDestinationFolder ~= nil then
@@ -186,7 +187,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Destination Preset:
 	--------------------------------------------------------------------------------
-	local destinationPreset = settings.get("fcpxHacks.batchExportDestinationPreset")
+	local destinationPreset = settings.get(metadata.settingsPrefix .. ".batchExportDestinationPreset")
 	if destinationPreset == nil then
 
 		destinationPreset = fcp:menuBar():findMenuUI("File", "Share", function(menuItem)
@@ -210,7 +211,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Replace Existing Files Option:
 	--------------------------------------------------------------------------------
-	local replaceExisting = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
+	local replaceExisting = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles")
 
 	--------------------------------------------------------------------------------
 	-- Delete All Highlights:
@@ -278,8 +279,8 @@ end
 -- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
 --------------------------------------------------------------------------------
 function mod.toggleReplaceExistingFiles()
-	local batchExportReplaceExistingFiles = settings.get("fcpxHacks.batchExportReplaceExistingFiles")
-	settings.set("fcpxHacks.batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
+	local batchExportReplaceExistingFiles = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles")
+	settings.set(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
 end
 
 -- The Plugin
@@ -307,10 +308,10 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = settings.get("fcpxHacks.batchExportReplaceExistingFiles") },
+			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles") },
 		}
 	end)
-	
+
 	-- Commands
 	deps.fcpxCmds:add("FCPXHackBatchExportFromBrowser")
 		:activatedBy():ctrl():option():cmd("e")
