@@ -4,8 +4,6 @@ local inspect							= require("hs.inspect")
 local just								= require("hs.just")
 local axutils							= require("hs.finalcutpro.axutils")
 
-local _bench							= require("hs.bench")
-
 local Inspector = {}
 
 function Inspector.matches(element)
@@ -34,7 +32,7 @@ end
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 function Inspector:UI()
-	return axutils.cache(self, "_ui", 
+	return axutils.cache(self, "_ui",
 	function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
