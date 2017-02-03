@@ -127,7 +127,7 @@ local ax                        = require("hs._asm.axuielement")
 local metadata					= require("hs.fcpxhacks.metadata")
 
 local tools                     = require("hs.fcpxhacks.modules.tools")
-local semver                    = require("hs.fcpxhacks.modules.semver.semver")
+local semver                    = require("semver.semver")
 
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
