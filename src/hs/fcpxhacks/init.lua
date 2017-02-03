@@ -150,7 +150,7 @@ end
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
 --------------------------------------------------------------------------------
-i18n = require("hs.fcpxhacks.modules.i18n")
+i18n = require("i18n")
 local languagePath = metadata.scriptPath .. "/hs/fcpxhacks/languages/"
 for file in fs.dir(languagePath) do
 	if file:sub(-4) == ".lua" then
