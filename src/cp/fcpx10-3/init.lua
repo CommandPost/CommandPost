@@ -952,6 +952,7 @@ end
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
 		local settingsMenuTable = {
+			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
 			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
 			{ title = "-" },

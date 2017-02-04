@@ -289,7 +289,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.manager"]		= "manager",
-	["cp.plugins.menu.preferences"]	= "prefs",
+	["cp.plugins.menu.tools"]	= "prefs",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
@@ -300,9 +300,9 @@ function plugin.init(deps)
 	local section = deps.prefs:addSection(PRIORITY)
 	mod.manager = deps.manager
 
-	section:addSeparator(0)
+	--section:addSeparator(0)
 
-	local menu = section:addMenu(1000, function() return i18n("batchExportOptions") end)
+	local menu = section:addMenu(1000, function() return i18n("batchExport") end)
 
 	menu:addItems(1, function()
 		return {
@@ -318,7 +318,7 @@ function plugin.init(deps)
 		:activatedBy():ctrl():option():cmd("e")
 		:whenActivated(mod.batchExport)
 
-	section:addSeparator(9000)
+	--section:addSeparator(9000)
 
 	-- Return the module
 	return mod

@@ -11,7 +11,7 @@ local log										= require("hs.logger").new("touchbar")
 
 -- Constants
 
-local PRIORITY			= 7000
+local PRIORITY			= 1000
 
 local LOCATION_MOUSE	= "Mouse"
 local LOCATION_TIMELINE	= "TimelineTopCentre"

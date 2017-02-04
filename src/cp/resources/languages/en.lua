@@ -324,6 +324,7 @@ return {
 			voiceCommands						=			"Voice Commands",
 			finalCutProLanguage					=			"Final Cut Pro Language",
 			assignHUDButtons					=			"Assign HUD Buttons",
+			batchExport							=			"Batch Export",
 
 			clearClipboardHistory				=			"Clear Clipboard History",
 			emptyClipboardHistory				= 			"Empty",
@@ -379,7 +380,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Preferences:
 			--------------------------------------------------------------------------------
-			batchExportOptions					=			"Batch Export Options",
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
 			touchBar							=			"Touch Bar",
