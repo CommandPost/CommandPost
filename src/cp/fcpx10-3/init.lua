@@ -670,30 +670,10 @@ function getShortcutsFromActiveCommandSet()
 end
 
 --------------------------------------------------------------------------------
--- UPDATE KEYBOARD SHORTCUTS:
 --------------------------------------------------------------------------------
-function updateKeyboardShortcuts()
 
-	--------------------------------------------------------------------------------
-	-- Update Keyboard Settings:
-	--------------------------------------------------------------------------------
-	local result = enableHacksShortcuts()
-	if type(result) == "string" then
-		dialog.displayErrorMessage(result)
-		settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", false)
-		return false
-	elseif result == false then
-		--------------------------------------------------------------------------------
-		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
-		-- just leave the old Hacks Shortcut Plist files in place.
-		--------------------------------------------------------------------------------
-		return
-	end
 
-end
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 
 
 --------------------------------------------------------------------------------
@@ -1407,13 +1387,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
-		-- TODO: This should use the plugin instead:
-		--[[
-		local result = disableHacksShortcuts()
-		if type(result) == "string" then
-			dialog.displayErrorMessage(result)
-		end
-		--]]
+		plugins("cp.plugins.hacks.shortcuts").disableHacksShortcuts()
 
 		--------------------------------------------------------------------------------
 		-- Trash all Script Settings:

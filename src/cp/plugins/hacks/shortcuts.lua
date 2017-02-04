@@ -230,6 +230,15 @@ function mod.setEditable(enabled, skipFCPXupdate)
 	end
 end
 
+-- Used by Trash Preferences menubar command:
+function mod.disableHacksShortcuts()
+	disableHacksShortcuts()
+end
+
+function mod.enableHacksShortcuts()
+	enableHacksShortcuts()
+end
+
 function mod.toggleEditable()
 	mod.setEditable(not mod.isEditable())
 end
