@@ -951,27 +951,15 @@ end
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
-		local settingsHammerspoonSettings = {
-			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
-			{ title = "-" },
-			{ title = i18n("showDockIcon"),																fn = toggleHammerspoonDockIcon, 									checked = hammerspoonDockIcon		},
-			{ title = i18n("showMenuIcon"), 															fn = toggleHammerspoonMenuIcon, 									checked = hammerspoonMenuIcon		},
-			{ title = "-" },
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
-		}
 		local settingsMenuTable = {
-			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
+			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
+			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
 			{ title = "-" },
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},
+			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
+			{ title = i18n("trashPreferences"), 														fn = resetSettings },
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
-			{ title = i18n("trashPreferences", {metadata.scriptName}), 									fn = resetSettings },
-			{ title = "-" },
 			{ title = i18n("provideFeedback"),															fn = emailBugReport },
-			{ title = "-" },
-			{ title = i18n("createdBy") .. " LateNite Films", 											fn = gotoLateNiteSite },
-			{ title = i18n("scriptVersion") .. " " .. metadata.scriptVersion,							disabled = true },
 		}
 
 		return settingsMenuTable

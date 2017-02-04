@@ -167,7 +167,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.commands.fcpx"] 		= "fcpxCmds",
-	["cp.plugins.menu.preferences"]	= "prefs",
+	["cp.plugins.menu.timeline.highlightplayhead"]	= "prefs",
 }
 
 function plugin.init(deps)
