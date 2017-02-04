@@ -1,26 +1,26 @@
 #!/bin/sh
 
-### This script will erase the existing ~/.hammerspoon directory and 
+### This script will erase the existing ~/CommandPost directory and 
 ### copy in the contents of the src/ directory, thus updating it with the latest code.
 
-HS_PATH="$HOME/.hammerspoon"
+CP_PATH="$HOME/CommandPost"
 
-if [ ! -d $HS_PATH ]; then
-	echo "Please install Hammerspoon: http://www.hammerspoon.org/"
+if [ ! -d $CP_PATH ]; then
+	echo "Please install CommandPost: http://commandpost.io"
 	exit 1
 fi
 
-if [ -L $HS_PATH ] ; then
-	echo "Unlinking existing Hammerspoon directory."
-	unlink "$HS_PATH"
+if [ -L $CP_PATH ] ; then
+	echo "Unlinking existing CommandPost directory."
+	unlink "$CP_PATH"
 fi
 
-if [ -d $HS_PATH ]; then
-	echo "Deleting existing Hammerspoon directory."
-	rm -Rf "$HS_PATH"
+if [ -d $CP_PATH ]; then
+	echo "Deleting existing CommandPost directory."
+	rm -Rf "$CP_PATH"
 fi
 
-echo "Copying FCPX Hacks source to Hammerspoon directory."
-cp -R src/ "$HS_PATH"
+echo "Copying GitHub source to CommandPost directory."
+cp -R src/ "$CP_PATH"
 
-echo "FCPX Hacks has been installed successfully."
+echo "CommandPost has been installed successfully."
