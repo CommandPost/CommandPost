@@ -6,11 +6,11 @@ local PRIORITY = 8888888
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.tools"] = "tools"
+	["cp.plugins.menu.timeline"] = "automation"
 }
 
 function plugin.init(dependencies)
-	return dependencies.tools:addMenu(PRIORITY, function() return i18n("options") end)
+	return dependencies.automation:addMenu(PRIORITY, function() return i18n("assignShortcuts") end)
 end
 
 return plugin

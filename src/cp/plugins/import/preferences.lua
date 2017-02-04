@@ -152,7 +152,7 @@ local PRIORITY = 1000
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.shortcuts"] = "shortcuts",
+	["cp.plugins.menu.mediaimport"] = "shortcuts",
 	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
 }
 

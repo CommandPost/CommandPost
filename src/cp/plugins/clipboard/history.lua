@@ -108,8 +108,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.clipboard.manager"]	= "manager",
-	["cp.plugins.menu.tools"]			= "tools",
-	["cp.plugins.menu.tools.options"]	= "options",
+	["cp.plugins.menu.clipboard"]		= "tools",
 }
 
 function plugin.init(deps)
@@ -117,8 +116,12 @@ function plugin.init(deps)
 	mod.init(deps.manager)
 
 	-- Add menu items
-	deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("pasteFromClipboardHistory") end)
-		:addItems(1000, function()
+	deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("localClipboardHistory") end)
+		:addItem(OPTIONS_PRIORITY, function()
+			return { title = i18n("enableClipboardHistory"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
+		end)
+		:addSeparator(2000)
+		:addItems(3000, function()
 			local historyItems = {}
 			if mod.isEnabled() then
 				local fcpxRunning = fcp:isRunning()
@@ -133,15 +136,9 @@ function plugin.init(deps)
 				else
 					table.insert(historyItems, { title = i18n("emptyClipboardHistory"), disabled = true })
 				end
-			else
-				table.insert(historyItems, { title = i18n("disabled"), disabled = true })
 			end
 			return historyItems
 		end)
-
-	deps.options:addItem(OPTIONS_PRIORITY, function()
-		return { title = i18n("enableClipboardHistory"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
-	end)
 
 	return mod
 end

@@ -81,7 +81,7 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.notifications.manager"]				= "manager",
-	["cp.plugins.menu.tools.options.notifications"]	= "menu",
+	["cp.plugins.menu.tools.notifications"]	= "menu",
 }
 
 function plugin.init(deps)

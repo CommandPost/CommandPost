@@ -216,10 +216,10 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.tools.options"]	= "options",
-	["cp.plugins.menu.preferences"]	= "prefs",
+	--["cp.plugins.menu.tools.options"]	= "options",
+	["cp.plugins.menu.tools"]		= "prefs",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.commands.global"]	= "globalCmds",
+	["cp.plugins.commands.global"]		= "globalCmds",
 }
 
 function plugin.init(deps)
@@ -230,18 +230,15 @@ function plugin.init(deps)
 	})
 
 	-- Menu Items
-	deps.options:addSection(PRIORITY)
-		:addSeparator(1000)
-		:addItem(2000, function()
+	deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommands") end)
+		:addItem(500, function()
 			return { title = i18n("enableVoiceCommands"), fn = mod.toggleEnabled, checked = mod.isEnabled() }
 		end)
-		:addSeparator(3000)
-
-	deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommandOptions") end)
+		:addSeparator(600)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("enableAnnouncements"),	fn = mod.toggleAnnouncementsEnabled, checked = mod.isAnnouncementsEnabled() },
-				{ title = i18n("enableVisualAlerts"), 	fn = mod.toggleVisualAlertsEnabled, checked = mod.isVisualAlertsEnabled() },
+				{ title = i18n("enableAnnouncements"),	fn = mod.toggleAnnouncementsEnabled, checked = mod.isAnnouncementsEnabled(), disabled = not mod.isEnabled() },
+				{ title = i18n("enableVisualAlerts"), 	fn = mod.toggleVisualAlertsEnabled, checked = mod.isVisualAlertsEnabled(), disabled = not mod.isEnabled() },
 				{ title = "-" },
 				{ title = i18n("openDictationPreferences"), fn = mod.openDictationSystemPreferences },
 			}

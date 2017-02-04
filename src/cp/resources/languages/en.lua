@@ -40,6 +40,7 @@ return {
 			unassigned							=			"Unassigned",
 			enabled								=			"Enabled",
 			disabled							=			"Disabled",
+			show								=			"Show",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -119,15 +120,12 @@ return {
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
-			wrongHammerspoonVersionError		=			"FCPX Hacks requires Hammerspoon %{version} or later.\n\nPlease download the latest version of Hammerspoon and try again.",
-
-			noValidFinalCutPro 					= 			"FCPX Hacks couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.2.3, 10.3 or later is installed in the root of the Applications folder and hasn't been renamed to something other than 'Final Cut Pro'.\n\nHammerspoon will now quit.",
-			missingFiles						=			"FCPX Hacks is missing some of its required files.\n\nPlease try re-downloading the latest version from the website, and make sure you follow the installation instructions.\n\nHammerspoon will now quit.",
+			noValidFinalCutPro 					= 			"CommandPost couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\nCommandPost will now quit.",
 
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
-			newKeyboardShortcuts				=			"This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
-			newKeyboardShortcutsRestart			=			"This latest version of FCPX Hacks may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.",
+			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
+			newKeyboardShortcutsRestart			=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.",
 
 			prowlError							=			"The Prowl API Key failed to validate due to the following error:",
 
@@ -142,10 +140,10 @@ return {
 			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
 			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
 
-			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the FCPX Hacks menu bar.",
-			noEffectShortcut					=			"There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the FCPX Hacks menu bar.",
-			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the FCPX Hacks menu bar.",
-			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the FCPX Hacks menu bar.",
+			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the CommandPost menu bar.",
+			noEffectShortcut					=			"There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the CommandPost menu bar.",
+			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
+			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
 
 			touchBarError						=			"Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
@@ -156,10 +154,10 @@ return {
 			},
 
 			batchExportDestinationsNotFound		=			"We were unable to find the list of Share Destinations.",
-			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the FCPX Hacks menubar.",
+			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
 			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
-			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the FCPX Hacks Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
 			batchExportReplaceYes				=			"Exports with duplicate filenames will be replaced.",
 			batchExportReplaceNo				=			"Exports with duplicate filenames will be incremented.",
 			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
@@ -190,7 +188,7 @@ return {
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
 
 
-			trashFCPXHacksPreferences			=			"Are you sure you want to trash the FCPX Hacks Preferences?",
+			trashFCPXHacksPreferences			=			"Are you sure you want to trash the CommandPost Preferences?",
 			adminPasswordRequiredAndRestart		=			"This will require your Administrator password and require Final Cut Pro to restart.",
 			adminPasswordRequired				=			"This will require your Administrator password.",
 
@@ -242,7 +240,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Shortcuts:
 			--------------------------------------------------------------------------------
-			shortcuts							=			"Shortcuts",
+			mediaImport							=			"Media Import",
 			createOptimizedMedia				=			"Create Optimized Media",
 			createMulticamOptimizedMedia 		= 			"Create Multicam Optimized Media",
 			createProxyMedia					=			"Create Proxy Media",
@@ -253,13 +251,14 @@ return {
 			},
 
 			--------------------------------------------------------------------------------
-			-- Automation:
+			-- Timeline:
 			--------------------------------------------------------------------------------
-			automation							=			"Automation",
-			assignEffectsShortcuts				=			"Assign Effects Shortcuts",
-			assignTransitionsShortcuts			=			"Assign Transitions Shortcuts",
-			assignTitlesShortcuts				=			"Assign Titles Shortcuts",
-			assignGeneratorsShortcuts			=			"Assign Generators Shortcuts",
+			timeline							=			"Timeline",
+			assignShortcuts						=			"Assign Shortcuts",
+			assignEffectsShortcuts				=			"Effects Shortcuts",
+			assignTransitionsShortcuts			=			"Transitions Shortcuts",
+			assignTitlesShortcuts				=			"Titles Shortcuts",
+			assignGeneratorsShortcuts			=			"Generators Shortcuts",
 
 			unassignedTitle						=			"Unassigned",
 
@@ -301,24 +300,31 @@ return {
 				enableScrollingTimeline			=			"Enable Scrolling Timeline",
 				enableTimelinePlayheadLock		=			"Enable Timeline Playhead Lock",
 				enableShortcutsDuringFullscreen =			"Enable Shortcuts During Fullscreen Playback",
-				closeMediaImport				=			"Close Media Import When Card Inserted",
+				ignoreInsertedCameraCards		=			"Ignore Inserted Camera Cards",
+
+			--------------------------------------------------------------------------------
+			-- Clipboard:
+			--------------------------------------------------------------------------------
+			clipboard							=			"Clipboard",
+			localClipboardHistory				=			"Local Clipboard History",
+			sharedClipboardHistory				=			"Shared Clipboard History",
 
 			--------------------------------------------------------------------------------
 			-- Tools:
 			--------------------------------------------------------------------------------
 			tools								=			"Tools",
-			importSharedXMLFile					=			"Import Shared XML File",
-			pasteFromClipboardHistory			=			"Paste from Clipboard History",
-			pasteFromSharedClipboard			=			"Paste from Shared Clipboard",
+			mobileNotifications					=			"Mobile Notifications",
+			sharedXMLFiles						=			"Shared XML Files",
+			voiceCommands						=			"Voice Commands",
 			finalCutProLanguage					=			"Final Cut Pro Language",
 			assignHUDButtons					=			"Assign HUD Buttons",
-			
+
 			clearClipboardHistory				=			"Clear Clipboard History",
 			emptyClipboardHistory				= 			"Empty",
 			overrideClipNamePrompt				=			"Please enter a label for the clipboard item:",
-			overrideFolderNamePrompt			=			"Please enter a folder for the clipboard item:", 
+			overrideFolderNamePrompt			=			"Please enter a folder for the clipboard item:",
 			overrideValueInvalid				=			"The value you entered is not valid.\n\nPlease try again.",
-			
+
 			clearSharedClipboard				=			"Clear Shared Clipboard",
 			emptySharedClipboard				=			"Empty",
 
@@ -337,7 +343,6 @@ return {
 				--------------------------------------------------------------------------------
 				enableTouchBar					=			"Enable Touch Bar",
 				enableHacksHUD					=			"Enable Hacks HUD",
-				enableMobileNotifications		=			"Enable Mobile Notifications",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
 				enableXMLSharing				=			"Enable XML Sharing",
@@ -371,7 +376,6 @@ return {
 			batchExportOptions					=			"Batch Export Options",
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
-			voiceCommandOptions					=			"Voice Command Options",
 			touchBar							=			"Touch Bar",
 			touchBarLocation					=			"Location",
 			highlightPlayheadColour				=			"Highlight Playhead Colour",
@@ -457,6 +461,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- HACKS HUD:
 	--------------------------------------------------------------------------------
+	hud									=			"HUD",
 	hacksHUD							=			"Hacks HUD",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
@@ -464,10 +469,10 @@ return {
 	proxy								=			"Proxy",
 	hudDropZoneText						=			"Drag from Browser to Here",
 	hudDropZoneError					=			"Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?",
-	hudButtonError						=			"There is currently no action assigned to this button.\n\nYou can allocate a function to this button via the FCPX Hacks menubar.",
+	hudButtonError						=			"There is currently no action assigned to this button.\n\nYou can allocate a function to this button via the CommandPost menubar.",
 	hudXMLNameDialog					=			"How would you like to label this XML file?",
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
-	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the FCPX Hacks menu and try again.",
+	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
 
 	--------------------------------------------------------------------------------
 	-- CONSOLE:
@@ -497,48 +502,48 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
-	
+
 	--------------------------------------------------------------------------------
 	-- Command Titles:
 	--------------------------------------------------------------------------------
 	-- Global:
 	FCPXHackLaunchFinalCutPro_title								=	"Open Final Cut Pro",
-	
+
 	-- FCPX:
 	FCPXHackScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 	FCPXHackLockPlayhead_title									=	"Toggle Playhead Lock",
-	
+
 	FCPXHackEffectsOne_title									=	"Apply Effects Shortcut 1",
 	FCPXHackEffectsTwo_title									=	"Apply Effects Shortcut 2",
 	FCPXHackEffectsThree_title									=	"Apply Effects Shortcut 3",
 	FCPXHackEffectsFour_title									=	"Apply Effects Shortcut 4",
 	FCPXHackEffectsFive_title									=	"Apply Effects Shortcut 5",
-	
+
 	FCPXHackTransitionsOne_title								=	"Apply Transitions Shortcut 1",
 	FCPXHackTransitionsTwo_title								=	"Apply Transitions Shortcut 2",
 	FCPXHackTransitionsThree_title								=	"Apply Transitions Shortcut 3",
 	FCPXHackTransitionsFour_title								=	"Apply Transitions Shortcut 4",
 	FCPXHackTransitionsFive_title								=	"Apply Transitions Shortcut 5",
-	
+
 	FCPXHackGeneratorsOne_title									=	"Apply Generators Shortcut 1",
 	FCPXHackGeneratorsTwo_title									=	"Apply Generators Shortcut 2",
 	FCPXHackGeneratorsThree_title								=	"Apply Generators Shortcut 3",
 	FCPXHackGeneratorsFour_title								=	"Apply Generators Shortcut 4",
 	FCPXHackGeneratorsFive_title								=	"Apply Generators Shortcut 5",
-	
+
 	FCPXHackTitlesOne_title										=	"Apply Titles Shortcut 1",
 	FCPXHackTitlesTwo_title										=	"Apply Titles Shortcut 2",
 	FCPXHackTitlesThree_title									=	"Apply Titles Shortcut 3",
 	FCPXHackTitlesFour_title									=	"Apply Titles Shortcut 4",
 	FCPXHackTitlesFive_title									=	"Apply Titles Shortcut 5",
-	
+
 	FCPXHackHighlightBrowserPlayhead_title						=	"Highlight Playhead",
 	FCPXHackRevealMulticamClipInBrowserAndHighlight_title		=	"Reveal Multicam Clip in Browser",
 	FCPXHackRevealMulticamClipInAngleEditorAndHighlight_title	=	"Reveal Multicam Clip in Angle Editor",
 	FCPXHackRevealInBrowserAndHighlight_title					= 	"Reveal in Browser and Highlight",
-	
+
 	FCPXHackSelectClipAtLane_customTitle						=	"Select Clip at Lane %{count}",
-	
+
 	FCPXHackPlay_title											=	"Play",
 	FCPXHackPause_title											=	"Pause",
 
@@ -548,7 +553,7 @@ return {
 
 	defaultShortcutsDescription			=
 
-[[The default FCPX Hacks Shortcut Keys are:
+[[The default CommandPost Shortcut Keys are:
 
 ---------------------------------
 CONTROL+OPTION+COMMAND:

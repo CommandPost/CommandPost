@@ -383,7 +383,7 @@ local PRIORITY = 1000
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.automation"]	= "automation",
+	["cp.plugins.menu.timeline.assignshortcuts"]	= "automation",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
 	["cp.plugins.os.touchbar"]		= "touchbar",
 }

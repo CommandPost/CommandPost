@@ -166,40 +166,6 @@ function loadScript()
 	menuManager()
 
 	--------------------------------------------------------------------------------
-	-- Need Accessibility Activated:
-	--------------------------------------------------------------------------------
-	hs.accessibilityState(true)
-
-	--------------------------------------------------------------------------------
-	-- Limit Error Messages for a clean console:
-	--------------------------------------------------------------------------------
-	console.titleVisibility("hidden")
-	hotkey.setLogLevel("warning")
-	--windowfilter.setLogLevel(0) -- The wfilter errors are too annoying.
-	--windowfilter.ignoreAlways['System Events'] = true
-
-	--------------------------------------------------------------------------------
-	-- First time running 10.3? If so, let's trash the settings incase there's
-	-- compatibility issues with an older version of the script:
-	--------------------------------------------------------------------------------
-	if settings.get(metadata.settingsPrefix .. ".firstTimeRunning103") == nil then
-
-		writeToConsole("First time running Final Cut Pro 10.3. Trashing settings.")
-
-		--------------------------------------------------------------------------------
-		-- Trash all Script Settings:
-		--------------------------------------------------------------------------------
-		for i, v in ipairs(settings.getKeys()) do
-			if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
-				settings.set(v, nil)
-			end
-		end
-
-		settings.set(metadata.settingsPrefix .. ".firstTimeRunning103", false)
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- Check for Final Cut Pro Updates:
 	--------------------------------------------------------------------------------
 	local lastFinalCutProVersion = settings.get(metadata.settingsPrefix .. ".lastFinalCutProVersion")
@@ -733,7 +699,7 @@ function enableHacksShortcuts()
 
 	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/new/"
+	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
 
 	local executeStrings = {
 		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
@@ -758,7 +724,7 @@ function disableHacksShortcuts()
 
 	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f ~/.hammerspoon/hs/fcpxhacks/plist/10-3/old/"
+	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/plist/10.3/old/"
 
 	local executeStrings = {
 		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
@@ -895,6 +861,13 @@ end
 		if hudButtonFour ~= " (Unassigned)" then 	hudButtonFour = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonFour["text"]),maxTextLength,"...") 	.. ")" end
 
 		--------------------------------------------------------------------------------
+		-- HUD Preferences:
+		--------------------------------------------------------------------------------
+		local hudShowInspector 		= settings.get(metadata.settingsPrefix .. ".hudShowInspector")
+		local hudShowDropTargets 	= settings.get(metadata.settingsPrefix .. ".hudShowDropTargets")
+		local hudShowButtons 		= settings.get(metadata.settingsPrefix .. ".hudShowButtons")
+
+		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
 		local menubarToolsEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarToolsEnabled")
@@ -910,12 +883,20 @@ end
 		local menuTable = {
 		}
 
-		local toolsSettings = {
+		local settingsHUD = {
+			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
+			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
+			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
+		}
+
+		local hudMenu = {
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
+			{ title = "-" },
+			{ title = i18n("hudOptions"), 																menu = settingsHUD},
+			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
 		}
 		local toolsTable = {
-			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
-			{ title = i18n("options"),																	menu = toolsSettings },
+			{ title = i18n("hud"),																		menu = hudMenu },
 		}
 		local advancedTable = {
 			{ title = "-" },
@@ -963,13 +944,6 @@ end
 		local hammerspoonMenuIcon = hs.menuIcon()
 
 		--------------------------------------------------------------------------------
-		-- HUD Preferences:
-		--------------------------------------------------------------------------------
-		local hudShowInspector 		= settings.get(metadata.settingsPrefix .. ".hudShowInspector")
-		local hudShowDropTargets 	= settings.get(metadata.settingsPrefix .. ".hudShowDropTargets")
-		local hudShowButtons 		= settings.get(metadata.settingsPrefix .. ".hudShowButtons")
-
-		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
 		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates") or false
@@ -986,13 +960,7 @@ end
 			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
 		}
-		local settingsHUD = {
-			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
-			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
-			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
-		}
 		local settingsMenuTable = {
-			{ title = i18n("hudOptions"), 																menu = settingsHUD},
 			{ title = "Hammerspoon " .. i18n("options"),												menu = settingsHammerspoonSettings},
 			{ title = "-" },
 			{ title = i18n("checkForUpdates"), 															fn = toggleCheckForUpdates, 										checked = enableCheckForUpdates},

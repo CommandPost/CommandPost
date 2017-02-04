@@ -164,7 +164,7 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.automation.options"] = "options",
+	["cp.plugins.menu.timeline"] = "options",
 }
 
 function plugin.init(deps)

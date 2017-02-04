@@ -113,16 +113,15 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.automation.options"] = "options",
+	["cp.plugins.menu.mediaimport"] = "options",
 }
 
 function plugin.init(deps)
 
 	-- Add the menu item
 	local section = deps.options:addSection(PRIORITY)
-	section:addSeparator(100)
 	section:addItem(200, function()
-		return { title = i18n("closeMediaImport"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+		return { title = i18n("ignoreInsertedCameraCards"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
 	end)
 	section:addSeparator(900)
 
