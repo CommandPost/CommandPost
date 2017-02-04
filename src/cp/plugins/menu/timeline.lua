@@ -1,12 +1,11 @@
 local settings					= require("hs.settings")
-
 local metadata					= require("cp.metadata")
 
---- The SHORTCUTS menu section.
+--- The AUTOMATION menu section.
 
-local PRIORITY = 1000
+local PRIORITY = 2000
 
-local SETTING = metadata.settingsPrefix .. ".menubarShortcutsEnabled"
+local SETTING = metadata.settingsPrefix .. ".menubarTimelineEnabled"
 
 local function isSectionDisabled()
 	local setting = settings.get(SETTING)
@@ -40,12 +39,12 @@ function plugin.init(dependencies)
 	-- Add the separator and title for the section.
 	shortcuts:addSeparator(0)
 		:addItem(1, function()
-			return { title = string.upper(i18n("shortcuts")) .. ":", disabled = true }
+			return { title = string.upper(i18n("timeline")) .. ":", disabled = true }
 		end)
 
 	-- Create the menubar preferences item
 	dependencies.menubar:addItem(PRIORITY, function()
-		return { title = i18n("showShortcuts"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
+		return { title = i18n("show") .. " " .. i18n("timeline"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 	end)
 
 	return shortcuts

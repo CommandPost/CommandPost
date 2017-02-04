@@ -198,7 +198,7 @@ function mod.listFilesMenu()
 		--------------------------------------------------------------------------------
 		-- Shared Clipboard Disabled:
 		--------------------------------------------------------------------------------
-		table.insert(menu, { title = i18n("disabled"), disabled = true })
+		--table.insert(menu, { title = i18n("disabled"), disabled = true })
 	end
 	return menu
 end
@@ -208,18 +208,17 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.tools"]			= "tools",
-	["cp.plugins.menu.tools.options"]	= "options",
 }
 
 function plugin.init(deps)
 	-- Tools Menus
-	deps.tools:addMenu(PRIORITY, function() return i18n("importSharedXMLFile") end)
-		:addItems(1, mod.listFilesMenu)
+	deps.tools:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
 
-	-- Tools Options
-	deps.options:addItem(5000, function()
-		return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
-	end)
+		:addItem(1, function()
+			return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
+		end)
+		:addSeparator(2)
+		:addItems(3, mod.listFilesMenu)
 
 	return mod
 end

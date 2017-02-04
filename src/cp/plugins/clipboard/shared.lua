@@ -289,17 +289,22 @@ local plugin = {}
 plugin.dependencies = {
 	["cp.plugins.clipboard.manager"]	= "manager",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.menu.tools"]			= "tools",
-	["cp.plugins.menu.tools.options"]	= "options",
+	["cp.plugins.menu.clipboard"]			= "tools",
 }
 
 function plugin.init(deps)
 	mod.init(deps.manager)
 
 	-- Add menu items
-	local menu = deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("pasteFromSharedClipboard") end)
+	local menu = deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
 
-	menu:addItems(1000, function()
+	:addItem(1000, function()
+		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
+	end)
+
+	:addSeparator(2000)
+
+	:addItems(3000, function()
 		local folderItems = {}
 		if mod.isEnabled() then
 		local fcpxRunning = fcp:isRunning()
@@ -323,14 +328,8 @@ function plugin.init(deps)
 			else
 				table.insert(folderItems, { title = i18n("emptySharedClipboard"), disabled = true })
 			end
-		else
-			table.insert(folderItems, { title = i18n("disabled"), disabled = true })
 		end
 		return folderItems
-	end)
-
-	deps.options:addItem(OPTIONS_PRIORITY, function()
-		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
 	end)
 
 	-- Commands

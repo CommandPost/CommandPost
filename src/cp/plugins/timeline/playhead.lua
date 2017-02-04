@@ -233,7 +233,7 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.automation.options"] 	= "options",
+	["cp.plugins.menu.timeline"] 	= "options",
 	["cp.plugins.commands.fcpx"]				= "fcpxCmds",
 }
 

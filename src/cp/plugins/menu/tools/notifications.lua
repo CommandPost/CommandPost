@@ -6,11 +6,11 @@ local PRIORITY = 10000
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.tools.options"] = "options"
+	["cp.plugins.menu.tools"] = "options"
 }
 
 function plugin.init(dependencies)
-	return dependencies.options:addMenu(PRIORITY, function() return i18n("enableMobileNotifications") end)
+	return dependencies.options:addMenu(PRIORITY, function() return i18n("mobileNotifications") end)
 end
 
 return plugin

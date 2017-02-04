@@ -201,7 +201,7 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.preferences"]	= "prefs",
+	["cp.plugins.menu.tools"]	= "prefs",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
 }
 
@@ -224,9 +224,9 @@ function plugin.init(deps)
 	})
 
 	-- Menu items
-	-- if mod.isSupported() then
+	--if mod.isSupported() then
 		local section = deps.prefs:addSection(PRIORITY)
-		section:addSeparator(1000)
+		--section:addSeparator(1000)
 		section:addMenu(2000, function() return i18n("touchBar") end)
 			:addItems(1000, function()
 				local location = mod.getLocation()
@@ -241,7 +241,7 @@ function plugin.init(deps)
 					{ title = i18n("touchBarTipTwo"), 		disabled = true },
 				}
 			end)
-		section:addSeparator(3000)
+		--section:addSeparator(3000)
 	-- end
 
 	-- Commands

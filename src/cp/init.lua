@@ -13,7 +13,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- LOAD EXTENSIONS:
+-- HAMMERSPOON EXTENSIONS:
 --------------------------------------------------------------------------------
 
 local application               = require("hs.application")
@@ -29,12 +29,19 @@ local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- 3RD PARTY EXTENSIONS:
+--------------------------------------------------------------------------------
+
 local ax                        = require("hs._asm.axuielement")
+local semver                    = require("semver.semver")
+
+--------------------------------------------------------------------------------
+-- INTERNAL EXTENSIONS:
+--------------------------------------------------------------------------------
 
 local metadata					= require("cp.metadata")
 local tools                     = require("cp.tools")
-
-local semver                    = require("semver.semver")
 
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
@@ -73,7 +80,7 @@ end
 i18n.setLocale(userLocale)
 
 --------------------------------------------------------------------------------
--- LOAD MORE EXTENSIONS:
+-- INTERNAL EXTENSIONS (THAT REQUIRE I18N):
 --------------------------------------------------------------------------------
 
 local dialog                    = require("cp.dialog")
@@ -88,6 +95,12 @@ local hsBundleID                = hs.processInfo["bundleID"]
 --------------------------------------------------------------------------------
 -- LOAD SCRIPT:
 --------------------------------------------------------------------------------
+local function writeToConsoleDebug(value)
+    console.printStyledtext(styledtext.new(value, {
+		color = drawing.color.definedCollections.hammerspoon["black"],
+		font = { name = "Menlo", size = 12 },
+	}))
+end
 function mod.init()
 
     --------------------------------------------------------------------------------
@@ -98,10 +111,15 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Display Welcome Message In The Console:
     --------------------------------------------------------------------------------
-    writeToConsole("-----------------------------------------------", true)
-    writeToConsole("| " .. metadata.scriptName .. " v" .. metadata.scriptVersion .. "                           |", true)
-    writeToConsole("| Developed by Chris Hocking & David Peterson |", true)
-    writeToConsole("-----------------------------------------------", true)
+    console.printStyledtext(styledtext.new(metadata.scriptName .. " v" .. metadata.scriptVersion, {
+		color = drawing.color.definedCollections.hammerspoon["black"],
+		font = { name = "Helvetica", size = 18 },
+	}))
+    console.printStyledtext(styledtext.new("Developed by Chris Hocking & David Peterson", {
+		color = drawing.color.definedCollections.hammerspoon["black"],
+		font = { name = "Helvetica", size = 14 },
+	}))
+	console.printStyledtext("")
 
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
@@ -115,14 +133,13 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:
     --------------------------------------------------------------------------------
-                                                writeToConsole("Hammerspoon Version:            " .. tostring(hammerspoonVersion),          true)
-    if osVersion ~= nil then                    writeToConsole("macOS Version:                  " .. tostring(osVersion),                   true) end
-    if fcpVersion ~= nil then                   writeToConsole("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
-    if fcpLanguage ~= nil then                  writeToConsole("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-        										writeToConsole(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
-    if keycodes.currentLayout() ~= nil then     writeToConsole("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
-	if fcpPath ~= nil then						writeToConsole("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
-                                                writeToConsole("", true)
+    if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
+        										writeToConsoleDebug(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
+    if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
+	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
+    if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
+    if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
+                                                writeToConsoleDebug("", true)
 
 	--------------------------------------------------------------------------------
 	-- Accessibility Check:

@@ -14,12 +14,12 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local windowfilter								= require("hs.window.filter")
 
-local plist										= require("cp.plist")
-local just										= require("cp.just")
-
 local log										= require("hs.logger").new("finalcutpro")
 
 --- Local Modules:
+local plist										= require("cp.plist")
+local just										= require("cp.just")
+
 local axutils									= require("cp.finalcutpro.axutils")
 
 local MenuBar									= require("cp.finalcutpro.MenuBar")
@@ -1179,6 +1179,7 @@ end
 --- * `events` - A table of functions with to watch. These may be:
 --- 	* `active()`	- Triggered when the application is the active application.
 --- 	* `inactive()`	- Triggered when the application is no longer the active application.
+---     * `move()` 	 	- Triggered when the application window is moved.
 ---
 --- Returns:
 --- * An ID which can be passed to `unwatch` to stop watching.
