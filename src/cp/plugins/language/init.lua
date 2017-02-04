@@ -107,9 +107,8 @@ function plugin.init(deps)
 
 	local section = deps.top:addSection(PRIORITY)
 
-	--section:addSeparator(0)
+	-- The FCPX Languages Menu:
 
-	-- The FCPX Languages Menu
 	local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
 	fcpxLangs:addItems(1, function()
 		local currentLanguage = fcp:getCurrentLanguage()
@@ -124,7 +123,7 @@ function plugin.init(deps)
 		}
 	end)
 
-	-- The FCPX Hacks Languages Menu
+	-- The CommandPost Languages Menu:
 
 	local section = deps.prefs:addSection(PRIORITY)
 
