@@ -693,56 +693,6 @@ function updateKeyboardShortcuts()
 end
 
 --------------------------------------------------------------------------------
--- ENABLE HACKS SHORTCUTS:
---------------------------------------------------------------------------------
-function enableHacksShortcuts()
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
-
-	local executeStrings = {
-		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
-	}
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
-
-	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-	return result
-
-end
-
---------------------------------------------------------------------------------
--- DISABLE HACKS SHORTCUTS:
---------------------------------------------------------------------------------
-function disableHacksShortcuts()
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/plist/10.3/old/"
-
-	local executeStrings = {
-		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
-	}
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
-
-	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-	return result
-
-end
-
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 
@@ -1457,10 +1407,13 @@ end
 		--------------------------------------------------------------------------------
 		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
+		-- TODO: This should use the plugin instead:
+		--[[
 		local result = disableHacksShortcuts()
 		if type(result) == "string" then
 			dialog.displayErrorMessage(result)
 		end
+		--]]
 
 		--------------------------------------------------------------------------------
 		-- Trash all Script Settings:

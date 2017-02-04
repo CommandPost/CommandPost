@@ -80,24 +80,43 @@ end
 --------------------------------------------------------------------------------
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
 --------------------------------------------------------------------------------
-function tools.executeWithAdministratorPrivileges(input) -- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
+-- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
+function tools.executeWithAdministratorPrivileges(input, stopOnError)
+	local hsBundleID = hs.processInfo["bundleID"]
+	if type(stopOnError) ~= "boolean" then stopOnError = true end
 	if type(input) == "table" then
 		local appleScript = [[
+			set stopOnError to ]] .. tostring(stopOnError) .. "\n\n" .. [[
+			set errorMessage to ""
 			set frontmostApplication to (path to frontmost application as text)
-			tell application frontmostApplication
+			tell application id "]] .. hsBundleID .. [["
 				activate
 				set shellScriptInputs to ]] .. inspect(input) .. "\n\n" .. [[
 				try
 					repeat with theItem in shellScriptInputs
-						do shell script theItem with administrator privileges
+						try
+							do shell script theItem with administrator privileges
+						on error errStr number errorNumber
+							if the errorNumber is equal to -128 then
+								-- Cancel is pressed:
+								return false
+							else
+								if the stopOnError is equal to true then
+									tell application frontmostApplication to activate
+									return errStr as text & "(" & errorNumber as text & ")\n\nWhen trying to execute:\n\n" & theItem
+								else
+									set errorMessage to errorMessage & "Error: " & errStr as text & "(" & errorNumber as text & "), when trying to execute: " & theItem & ".\n\n"
+								end if
+							end if
+						end try
 					end repeat
-					return true
-				on error errStr number errorNumber
-					if the errorNumber is equal to -128 then
-						return false
+					if the errorMessage is equal to "" then
+						tell application frontmostApplication to activate
+						return true
 					else
-						return errStr as text & "(" & errorNumber as text & ")\n\nWhen trying to execute:\n\n" & theItem
-					end if
+						tell application frontmostApplication to activate
+						return errorMessage
+					end
 				end try
 			end tell
 		]]
@@ -106,16 +125,19 @@ function tools.executeWithAdministratorPrivileges(input) -- Returns: 'true' if s
 	elseif type(input) == "string" then
 		local appleScript = [[
 			set frontmostApplication to (path to frontmost application as text)
-			tell application frontmostApplication
+			tell application id "]] .. hsBundleID .. [["
 				activate
 				set shellScriptInput to "]] .. input .. [["
 				try
 					do shell script shellScriptInput with administrator privileges
+					tell application frontmostApplication to activate
 					return true
 				on error errStr number errorNumber
 					if the errorNumber is equal to -128 then
+						tell application frontmostApplication to activate
 						return false
 					else
+						tell application frontmostApplication to activate
 						return errStr as text & "(" & errorNumber as text & ")\n\nWhen trying to execute:\n\n" & theItem
 					end if
 				end try
