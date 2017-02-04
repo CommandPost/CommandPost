@@ -82,6 +82,7 @@ local defaultSettings = {
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
 												["checkForUpdatesInterval"]						= 600,
+												["displayMenubarAsIcon"]						= true,
 }
 
 --------------------------------------------------------------------------------
@@ -155,6 +156,15 @@ end
 function loadScript()
 
 	--------------------------------------------------------------------------------
+	-- Apply Default Settings:
+	--------------------------------------------------------------------------------
+	for k, v in pairs(defaultSettings) do
+		if settings.get(metadata.settingsPrefix .. "." .. k) == nil then
+			settings.set(metadata.settingsPrefix .. "." .. k, v)
+		end
+	end
+
+	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
 	mod.debugMode = settings.get(metadata.settingsPrefix .. ".debugMode") or false
@@ -181,15 +191,6 @@ function loadScript()
 				end
 			end
 			settings.set(metadata.settingsPrefix .. ".lastFinalCutProVersion", fcp:getVersion())
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Apply Default Settings:
-	--------------------------------------------------------------------------------
-	for k, v in pairs(defaultSettings) do
-		if settings.get(metadata.settingsPrefix .. "." .. k) == nil then
-			settings.set(metadata.settingsPrefix .. "." .. k, v)
 		end
 	end
 
@@ -831,6 +832,7 @@ end
 		local advancedTable = {
 			{ title = "-" },
 			{ title = i18n("enableHacksShortcuts"), 													fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
+			{ title = "-" },
 			{ title = i18n("enableTimecodeOverlay"), 													fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
 			{ title = i18n("enableMovingMarkers"), 														fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
 			{ title = i18n("enableRenderingDuringPlayback"),											fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
@@ -840,7 +842,7 @@ end
 		}
 		local hacksTable = {
 			{ title = "-" },
-			{ title = string.upper(i18n("hacks")) .. ":", 												disabled = true },
+			{ title = string.upper(i18n("adminTools")) .. ":", 											disabled = true },
 			{ title = i18n("advancedFeatures"),															menu = advancedTable },
 		}
 
@@ -914,8 +916,7 @@ end
 		local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon") or false
 
 		local settingsMenubar = {
-			{ title = i18n("showTools"), 																fn = function() toggleMenubarDisplay("Tools") end, 					checked = menubarToolsEnabled},
-			{ title = i18n("showHacks"), 																fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
+			{ title = i18n("showAdminTools"), 															fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
 			{ title = "-" },
 			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
 			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},

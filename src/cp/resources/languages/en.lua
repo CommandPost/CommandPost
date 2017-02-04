@@ -356,15 +356,15 @@ return {
 				enableVoiceCommands				=			"Enable Voice Commands",
 
 		--------------------------------------------------------------------------------
-    	-- Hacks:
+    	-- Admin Tools:
     	--------------------------------------------------------------------------------
-    	hacks									=			"Hacks",
+    	adminTools								=			"Administrator",
     	advancedFeatures						=			"Advanced Features",
 
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
-			enableHacksShortcuts				=			"Enable Hacks Shortcuts in Final Cut Pro",
+			enableHacksShortcuts				=			"Add CommandPost Shortcuts to Final Cut Pro",
 			enableTimecodeOverlay				=			"Enable Timecode Overlay",
 			enableMovingMarkers					=			"Enable Moving Markers",
 			enableRenderingDuringPlayback		=			"Enable Rendering During Playback",
@@ -410,7 +410,7 @@ return {
 			showShortcuts						=			"Show Shortcuts",
 			showAutomation						=			"Show Automation",
 			showTools							=			"Show Tools",
-			showHacks							=			"Show Hacks",
+			showAdminTools						=			"Show Administrator",
 			displayProxyOriginalIcon			=			"Display Proxy/Original Icon",
 			displayThisMenuAsIcon				=			"Display This Menu As Icon",
 
