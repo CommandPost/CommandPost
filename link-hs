@@ -1,24 +1,24 @@
 #!/bin/sh
 
-### This script will erase or unlink the existing ~/.hammerspoon directory and 
+### This script will erase or unlink the existing ~/CommandPost directory and 
 ### link it to the src/ directory, thus automatically providing the latest code.
 
-if [ ! -d "$HOME/.hammerspoon/" ]; then
-  echo "Please install Hammerspoon: http://www.hammerspoon.org/"
+if [ ! -d "$HOME/CommandPost/" ]; then
+  echo "Please install CommandPost: http://commandpost.io"
 	exit 1
 fi
 
-if [ -L "$HOME/.hammerspoon" ]; then
-	echo "Unlinking existing Hammerspoon directory."
-	unlink "$HOME/.hammerspoon"
+if [ -L "$HOME/CommandPost" ]; then
+	echo "Unlinking existing CommandPost directory."
+	unlink "$HOME/CommandPost"
 fi
 
-if [ -d "$HOME/.hammerspoon" ]; then
-	echo "Deleting existing Hammerspoon directory."
-	rm -Rf "$HOME/.hammerspoon"
+if [ -d "$HOME/CommandPost" ]; then
+	echo "Deleting existing CommandPost directory."
+	rm -Rf "$HOME/CommandPost"
 fi
 
-echo "Linking FCPX Hacks source to Hammerspoon directory."
-ln -sFfv "$PWD/src" "$HOME/.hammerspoon"
+echo "Linking GitHub source to CommandPost directory."
+ln -sFfv "$PWD/src" "$HOME/CommandPost"
 
-echo "FCPX Hacks has been linked to your Hammerspoon directory."
+echo "GitHub Source has been linked to your CommandPost directory."
