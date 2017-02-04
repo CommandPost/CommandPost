@@ -260,6 +260,12 @@ return {
 			assignTitlesShortcuts				=			"Titles Shortcuts",
 			assignGeneratorsShortcuts			=			"Generators Shortcuts",
 
+			highlightPlayhead					=			"Highlight Playhead",
+			highlightPlayheadColour				=			"Colour",
+			highlightPlayheadShape				=			"Shape",
+			highlightPlayheadTime				=			"Time",
+
+
 			unassignedTitle						=			"Unassigned",
 
 				--------------------------------------------------------------------------------
@@ -378,12 +384,9 @@ return {
 			hudOptions							=			"HUD Options",
 			touchBar							=			"Touch Bar",
 			touchBarLocation					=			"Location",
-			highlightPlayheadColour				=			"Highlight Playhead Colour",
-			highlightPlayheadShape				=			"Highlight Playhead Shape",
-			highlightPlayheadTime				=			"Highlight Playhead Time",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
-			trashPreferences					=			"Trash %s Preferences",
+			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			scriptVersion						=			"Script Version",
