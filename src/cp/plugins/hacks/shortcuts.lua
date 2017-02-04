@@ -1,6 +1,7 @@
 -- Imports
 
 local settings		= require("hs.settings")
+local fs			= require("hs.fs")
 
 local fcp			= require("cp.finalcutpro")
 local dialog		= require("cp.dialog")
@@ -16,6 +17,89 @@ local PRIORITY 		= 1000
 local mod = {}
 
 -- Local Functions
+
+--------------------------------------------------------------------------------
+-- ENABLE HACKS SHORTCUTS:
+--------------------------------------------------------------------------------
+local function enableHacksShortcuts()
+
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+
+		local whichDirectory = finalCutProPath .. whichLanguage .. ".lproj"
+		if not tools.doesDirectoryExist(whichDirectory) then
+			table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
+		end
+
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
+
+	if type(result) == "string" then
+		log.wf("The following error(s) occurred:\n\n" .. result .. "However, Hacks Shortcuts were still enabled.")
+	elseif result == false then
+		--------------------------------------------------------------------------------
+		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
+		-- just leave the old Hacks Shortcut Plist files in place.
+		--------------------------------------------------------------------------------
+		return false
+	end
+	-- Success!
+	return true
+end
+
+--------------------------------------------------------------------------------
+-- DISABLE HACKS SHORTCUTS:
+--------------------------------------------------------------------------------
+local function disableHacksShortcuts()
+
+	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/old/"
+
+	local executeStrings = {
+		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+	}
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+
+		local whichDirectory = finalCutProPath .. whichLanguage .. ".lproj"
+		if not tools.doesDirectoryExist(whichDirectory) then
+			table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
+		end
+
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	end
+
+	local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
+
+	if type(result) == "string" then
+		log.wf("The following error(s) occurred:\n\n" .. result .. "However, Hacks Shortcuts were still disabled.")
+	elseif result == false then
+		--------------------------------------------------------------------------------
+		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
+		-- just leave the old Hacks Shortcut Plist files in place.
+		--------------------------------------------------------------------------------
+		return false
+	end
+
+	-- Success!
+	return true
+end
 
 --------------------------------------------------------------------------------
 -- Switches to or from having FCPX Hacks commands editible inside FCPX.
@@ -39,11 +123,11 @@ local function updateFCPXCommands(editable)
 		if dialog.displayYesNoQuestion(enableOrDisableText .. " " .. i18n("hacksShortcutsRestart") .. " " .. i18n("doYouWantToContinue")) then
 			restartStatus = true
 		else
-			return "Done"
+			return false
 		end
 	else
 		if not dialog.displayYesNoQuestion(enableOrDisableText .. " " .. i18n("hacksShortcutAdminPassword") .. " " .. i18n("doYouWantToContinue")) then
-			return "Done"
+			return false
 		end
 	end
 
@@ -79,83 +163,8 @@ local function updateFCPXCommands(editable)
 	end
 
 	-- Reload Hammerspoon to reset shortcuts to defaults if necessary.
-	hs.reload()
+	--hs.reload()
 
-	return true
-end
-
---------------------------------------------------------------------------------
--- ENABLE HACKS SHORTCUTS:
---------------------------------------------------------------------------------
-local function enableHacksShortcuts()
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10-3/new/"
-
-	local executeStrings = {
-		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
-	}
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
-
-	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-
-	if type(result) == "string" then
-		dialog.displayErrorMessage(result)
-		mod.setEditable(false, true)
-		return false
-	elseif result == false then
-		--------------------------------------------------------------------------------
-		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
-		-- just leave the old Hacks Shortcut Plist files in place.
-		--------------------------------------------------------------------------------
-		return false
-	end
-	-- Success!
-	return true
-end
-
---------------------------------------------------------------------------------
--- DISABLE HACKS SHORTCUTS:
---------------------------------------------------------------------------------
-local function disableHacksShortcuts()
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-	local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10-3/old/"
-
-	local executeStrings = {
-		executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-		executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
-	}
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
-
-	local result = tools.executeWithAdministratorPrivileges(executeStrings)
-
-	if type(result) == "string" then
-		dialog.displayErrorMessage(result)
-		mod.setEditable(true, true)
-		return false
-	elseif result == false then
-		--------------------------------------------------------------------------------
-		-- NOTE: When Cancel is pressed whilst entering the admin password, let's
-		-- just leave the old Hacks Shortcut Plist files in place.
-		--------------------------------------------------------------------------------
-		return false
-	end
-
-	-- success!
 	return true
 end
 
