@@ -24,10 +24,10 @@ Then download or clone this repository. You can either link the `~/CommandPost` 
 
 1. Open a Terminal window.
 2. Navigate to the CommandPost project root directory.
-3. Execute `./link-cp`
+3. Execute `./scripts/link-cp`
 
 ### Option 2: Copy
 
 1. Open a Terminal window.
 2. Navigate to the CommandPost project root directory.
-2. Execute `./install-cp`
+2. Execute `./scripts/install-cp`
