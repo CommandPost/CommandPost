@@ -20,7 +20,7 @@ function plugin.init(deps)
 	local top 		= deps.top
 	local global	= deps.global
 
-	top:addItem(PRIORITY, function()
+	top:addItem(PRIORITY + 1, function()
 		return { title = i18n("open") .. " Final Cut Pro",	fn = openFcpx }
 	end)
 

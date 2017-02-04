@@ -13,7 +13,7 @@ local log			= require("hs.logger").new("lang")
 
 -- Constants
 
-local PRIORITY = 1000
+local PRIORITY = 2
 
 local LANGUAGE_PATH = metadata.languagePath
 
@@ -99,13 +99,15 @@ end
 local plugin = {}
 
 plugin.dependencies = {
+	["cp.plugins.menu.top"]	= "top",
 	["cp.plugins.menu.preferences"]	= "prefs",
 }
 
 function plugin.init(deps)
-	local section = deps.prefs:addSection(PRIORITY)
 
-	section:addSeparator(0)
+	local section = deps.top:addSection(PRIORITY)
+
+	--section:addSeparator(0)
 
 	-- The FCPX Languages Menu
 	local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
@@ -123,6 +125,8 @@ function plugin.init(deps)
 	end)
 
 	-- The FCPX Hacks Languages Menu
+
+	local section = deps.prefs:addSection(PRIORITY)
 
 	local fcpxHacksLangs = section:addMenu(200, function() return metadata.scriptName .. " " .. i18n("language") end)
 	fcpxHacksLangs:addItems(1, function()
