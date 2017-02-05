@@ -95,6 +95,15 @@ end
 function mod.init()
 
     --------------------------------------------------------------------------------
+    -- Check Versions & Language:
+    --------------------------------------------------------------------------------
+    local fcpVersion    		= fcp:getVersion()
+    local fcpPath				= fcp:getPath()
+    local osVersion    			= tools.macOSVersion()
+    local fcpLanguage   		= fcp:getCurrentLanguage()
+    local hammerspoonVersion	= hs.processInfo["version"]
+
+    --------------------------------------------------------------------------------
     -- Clear The Console:
     --------------------------------------------------------------------------------
     console.clearConsole()
@@ -111,15 +120,6 @@ function mod.init()
 		font = { name = "Helvetica", size = 14 },
 	}))
 	console.printStyledtext("")
-
-    --------------------------------------------------------------------------------
-    -- Check Versions & Language:
-    --------------------------------------------------------------------------------
-    local fcpVersion    		= fcp:getVersion()
-    local fcpPath				= fcp:getPath()
-    local osVersion    			= tools.macOSVersion()
-    local fcpLanguage   		= fcp:getCurrentLanguage()
-    local hammerspoonVersion	= hs.processInfo["version"]
 
     --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:
