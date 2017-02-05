@@ -14,11 +14,9 @@ Download the latest release [here](https://github.com/CommandPost/CommandPost/re
 
 ## Developer Installation:
 
-CommandPost is made up of two seperate components - the [standalone app](https://github.com/CommandPost/CommandPost-App), and [Lua](https://www.lua.org/about.html) scripts contained within this repository.
+CommandPost is made up of two seperate components - the [standalone app](https://github.com/CommandPost/CommandPost-App) (which is a fork of [Hammerspoon](http://www.hammerspoon.org)), and the [Lua](https://www.lua.org/about.html) scripts contained within this repository.
 
-To install, first download or clone then build the [standalone app](https://github.com/CommandPost/CommandPost-App).
-
-Then download or clone this repository. You can either link the `~/CommandPost` directory to the `src` directory, or copy the contents of `src` into said directory.
+To build your own version of CommandPost, first download or clone this repository. You can then either link the `~/CommandPost` directory to the GitHub `src` directory, or copy the contents of GitHub `src` into said directory.
 
 ### Option 1: Link
 
@@ -31,3 +29,13 @@ Then download or clone this repository. You can either link the `~/CommandPost` 
 1. Open a Terminal window.
 2. Navigate to the CommandPost project root directory.
 2. Execute `./scripts/install-cp`
+
+Next download or clone, then build the [standalone app](https://github.com/CommandPost/CommandPost-App):
+
+1. Create a self-signed Code Signing certificate named 'Internal Code Signing' as described [here](http://bd808.com/blog/2013/10/21/creating-a-self-signed-code-certificate-for-xcode/). 
+2. Open a Terminal window.
+3. Navigate to the CommandPost-App project root directory.
+4. Execute `./scripts/build_commandpost.sh`
+
+On load, the standalone app will try to load `~/CommandPost/init.lua` first, and if that fails, it will then load the Lua scripts within the Application Bundle. This means you can keep developing by modifying the files within `~/CommandPost`, and then when you're done, simply execute `./scripts/build_commandpost.sh` again for distribution.
+
