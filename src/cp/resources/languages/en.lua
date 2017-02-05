@@ -55,6 +55,8 @@ return {
 			done								=			"Done",
 			cancel								=			"Cancel",
 			buttonContinueBatchExport			=			"Continue Batch Export",
+			continue							=			"Continue",
+			quit								=			"Quit",
 
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
@@ -120,7 +122,8 @@ return {
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
-			noValidFinalCutPro 					= 			"CommandPost couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\nCommandPost will now quit.",
+			accessibilityError					=			"%{scriptName} requires Accessibility Permissions to do its magic. By clicking Continue you will be asked to enable these permissions.\n\nThe %{scriptName} menubar will appear once these permissions are granted.",
+			noValidFinalCutPro 					= 			"%{scriptName} couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\n%{scriptName} will now quit.",
 
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 

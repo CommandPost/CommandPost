@@ -212,14 +212,6 @@ function loadScript()
 		finalCutProWindowWatcher()
 
 		--------------------------------------------------------------------------------
-		-- Watch For Hammerspoon Script Updates:
-		--------------------------------------------------------------------------------
-		local bundleID = hs.processInfo["bundleID"]
-		if bundleID == "org.hammerspoon.Hammerspoon" then
-			hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
-		end
-
-		--------------------------------------------------------------------------------
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
 		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
@@ -885,10 +877,10 @@ end
 		--------------------------------------------------------------------------------
 		local settingsMenuTable = {
 			{ title = "-" },
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
+			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforUpdates, 								checked = hammerspoonCheckForUpdates	},
+			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchOnStartup, 										checked = startHammerspoonOnLaunch		},
 			{ title = "-" },
-			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
+			{ title = i18n("console") .. "...", 														fn = openConsole },
 			{ title = i18n("trashPreferences"), 														fn = resetSettings },
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
@@ -1091,14 +1083,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE CHECK FOR UPDATES:
-	--------------------------------------------------------------------------------
-	function toggleCheckForUpdates()
-		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates")
-		settings.set(metadata.settingsPrefix .. ".enableCheckForUpdates", not enableCheckForUpdates)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE MENUBAR DISPLAY:
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplay(value)
@@ -1116,25 +1100,9 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE HAMMERSPOON DOCK ICON:
-	--------------------------------------------------------------------------------
-	function toggleHammerspoonDockIcon()
-		local originalValue = hs.dockIcon()
-		hs.dockIcon(not originalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HAMMERSPOON MENU ICON:
-	--------------------------------------------------------------------------------
-	function toggleHammerspoonMenuIcon()
-		local originalValue = hs.menuIcon()
-		hs.menuIcon(not originalValue)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE LAUNCH HAMMERSPOON ON START:
 	--------------------------------------------------------------------------------
-	function toggleLaunchHammerspoonOnStartup()
+	function toggleLaunchOnStartup()
 		local originalValue = hs.autoLaunch()
 		hs.autoLaunch(not originalValue)
 	end
@@ -1142,7 +1110,7 @@ end
 	--------------------------------------------------------------------------------
 	-- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
 	--------------------------------------------------------------------------------
-	function toggleCheckforHammerspoonUpdates()
+	function toggleCheckforUpdates()
 		local originalValue = hs.automaticallyCheckForUpdates()
 		hs.automaticallyCheckForUpdates(not originalValue)
 	end
@@ -1363,7 +1331,7 @@ end
 	--------------------------------------------------------------------------------
 	-- OPEN HAMMERSPOON CONSOLE:
 	--------------------------------------------------------------------------------
-	function openHammerspoonConsole()
+	function openConsole()
 		hs.openConsole()
 	end
 
@@ -1416,20 +1384,6 @@ end
 		--------------------------------------------------------------------------------
 		hs.reload()
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET SCRIPT UPDATE:
-	--------------------------------------------------------------------------------
-	function getScriptUpdate()
-		os.execute('open "' .. metadata.updateURL .. '"')
-	end
-
-	--------------------------------------------------------------------------------
-	-- GO TO LATENITE FILMS SITE:
-	--------------------------------------------------------------------------------
-	function gotoLateNiteSite()
-		os.execute('open "' .. metadata.developerURL .. '"')
 	end
 
 --------------------------------------------------------------------------------
@@ -2192,22 +2146,35 @@ end
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get(metadata.checkUpdateURL, nil)
-			if updateResponse == 200 then
-				if updateBody:sub(1,8) == "LATEST: " then
-					--------------------------------------------------------------------------------
-					-- Update Script Version:
-					--------------------------------------------------------------------------------
-					latestScriptVersion = updateBody:sub(9)
+
+			http.asyncGet(metadata.checkUpdateURL, nil, function(responseCode, responseBody, _)
+				if responseCode < 0 then
+					log.ef(responseBody)
+					return
+				end
+				local responseJSON = hs.json.decode(responseBody)
+				local thisVersion = hs.processInfo.version
+				local remoteVersion = responseJSON.tag_name
+
+				-- Remove the "v":
+				if remoteVersion ~= nil then
+					if string.sub(remoteVersion, 1, 1) == "v" then
+						remoteVersion = string.sub(remoteVersion, 2)
+					end
+				end
+
+				if thisVersion and remoteVersion then
+					log.df("thisVersion: " .. thisVersion)
+					log.df("remoteVersion: " .. remoteVersion)
 
 					--------------------------------------------------------------------------------
 					-- macOS Notification:
 					--------------------------------------------------------------------------------
 					if not mod.shownUpdateNotification then
-						if latestScriptVersion > metadata.scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(metadata.iconPath))
+						if remoteVersion > thisVersion then
+							updateNotification = notify.new(function() hs.checkForUpdates() end):setIdImage(image.imageFromPath(metadata.iconPath))
 																:title(metadata.scriptName .. " Update Available")
-																:subTitle("Version " .. latestScriptVersion)
+																:subTitle("Version " .. remoteVersion)
 																:informativeText("Do you wish to install?")
 																:hasActionButton(true)
 																:actionButtonTitle("Install")
@@ -2216,10 +2183,10 @@ end
 							mod.shownUpdateNotification = true
 						end
 					end
-				end
-			end
-		end
 
+				end
+			end)
+		end
 	end
 
 --------------------------------------------------------------------------------
@@ -2456,21 +2423,6 @@ function finalCutProSettingsWatcher(files)
 			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
 		end
 
-    end
-end
-
---------------------------------------------------------------------------------
--- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:
---------------------------------------------------------------------------------
-function hammerspoonConfigWatcher(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == ".lua" then
-            doReload = true
-        end
-    end
-    if doReload then
-        hs.reload()
     end
 end
 
