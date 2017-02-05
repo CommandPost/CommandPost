@@ -15,7 +15,6 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- HAMMERSPOON EXTENSIONS:
 --------------------------------------------------------------------------------
-
 local application               = require("hs.application")
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
@@ -25,20 +24,19 @@ local inspect                   = require("hs.inspect")
 local keycodes                  = require("hs.keycodes")
 local logger                    = require("hs.logger")
 local mouse                     = require("hs.mouse")
+local pathwatcher		= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- 3RD PARTY EXTENSIONS:
 --------------------------------------------------------------------------------
-
 local ax                        = require("hs._asm.axuielement")
 local semver                    = require("semver.semver")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
 --------------------------------------------------------------------------------
-
 local metadata					= require("cp.metadata")
 local tools                     = require("cp.tools")
 
@@ -51,13 +49,8 @@ if metadata.get("debugMode")  then
     -- Logger Level (defaults to 'warn' if not specified)
     --------------------------------------------------------------------------------
     logger.defaultLogLevel = 'debug'
-
-    --------------------------------------------------------------------------------
-    -- This will test that our global/local values are set up correctly
-    -- by forcing a garbage collection.
-    --------------------------------------------------------------------------------
-    timer.doAfter(5, collectgarbage)
-
+else
+	logger.defaultLogLevel = 'warning'
 end
 
 --------------------------------------------------------------------------------
@@ -81,18 +74,16 @@ i18n.setLocale(userLocale)
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS (THAT REQUIRE I18N):
 --------------------------------------------------------------------------------
-
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
-
 local hsBundleID                = hs.processInfo["bundleID"]
 
 --------------------------------------------------------------------------------
--- LOAD SCRIPT:
+-- WRITE TO CONSOLE FOR DEBUG MESSAGES:
 --------------------------------------------------------------------------------
 local function writeToConsoleDebug(value)
     console.printStyledtext(styledtext.new(value, {
@@ -100,7 +91,20 @@ local function writeToConsoleDebug(value)
 		font = { name = "Menlo", size = 12 },
 	}))
 end
+
+--------------------------------------------------------------------------------
+-- INITIALISE:
+--------------------------------------------------------------------------------
 function mod.init()
+
+    --------------------------------------------------------------------------------
+    -- Check Versions & Language:
+    --------------------------------------------------------------------------------
+    local fcpVersion    		= fcp:getVersion()
+    local fcpPath				= fcp:getPath()
+    local osVersion    			= tools.macOSVersion()
+    local fcpLanguage   		= fcp:getCurrentLanguage()
+    local hammerspoonVersion	= hs.processInfo["version"]
 
     --------------------------------------------------------------------------------
     -- Clear The Console:
@@ -121,17 +125,9 @@ function mod.init()
 	console.printStyledtext("")
 
     --------------------------------------------------------------------------------
-    -- Check Versions & Language:
-    --------------------------------------------------------------------------------
-    local fcpVersion    		= fcp:getVersion()
-    local fcpPath				= fcp:getPath()
-    local osVersion    			= tools.macOSVersion()
-    local fcpLanguage   		= fcp:getCurrentLanguage()
-    local hammerspoonVersion	= hs.processInfo["version"]
-
-    --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:
     --------------------------------------------------------------------------------
+    											writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
     if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
         										writeToConsoleDebug(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
     if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
@@ -141,10 +137,25 @@ function mod.init()
                                                 writeToConsoleDebug("", true)
 
 	--------------------------------------------------------------------------------
+	-- Watch for Script Updates:
+	--------------------------------------------------------------------------------
+	scriptWatcher = pathwatcher.new(hs.configdir, function(files)
+	    local doReload = false
+		for _,file in pairs(files) do
+			if file:sub(-4) == ".lua" then
+				doReload = true
+			end
+		end
+		if doReload then
+			hs.reload()
+		end
+	end):start()
+
+	--------------------------------------------------------------------------------
 	-- Accessibility Check:
 	--------------------------------------------------------------------------------
 	if not hs.accessibilityState() then
-		local result = dialog.displayMessage(metadata.scriptName .. " requires Accessibility Permissions to do its magic. By clicking Continue you will be asked to enable these permissions.\n\nThe " .. metadata.scriptName .. " menubar will appear once these permissions are granted.", {"Continue", "Quit"})
+		local result = dialog.displayMessage(i18n("accessibilityError", {scriptName = metadata.scriptName}), {i18n("Continue"), i18n("Quit")})
 		if result == "Quit" then
 			application.applicationsForBundleID(hsBundleID)[1]:kill()
 		else
@@ -164,12 +175,9 @@ function mod.init()
 end
 
 --------------------------------------------------------------------------------
--- LOAD FCPX HACKS VERSION:
+-- LOAD MAIN SCRIPT:
 --------------------------------------------------------------------------------
 function loadScriptVersion()
-	--------------------------------------------------------------------------------
-	-- Load the correct version of FCPX Hacks:
-	--------------------------------------------------------------------------------
 	local fcpVersion = fcp:getVersion()
     local validFinalCutProVersion = false
     if fcpVersion:sub(1,4) == "10.3" then
@@ -177,7 +185,7 @@ function loadScriptVersion()
         require("cp.fcpx10-3")
     end
     if not validFinalCutProVersion then
-        dialog.displayAlertMessage(i18n("noValidFinalCutPro"))
+        dialog.displayAlertMessage(i18n("noValidFinalCutPro", {scriptName = metadata.scriptName}))
         application.applicationsForBundleID(hsBundleID)[1]:kill()
     end
 end

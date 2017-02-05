@@ -1241,6 +1241,7 @@ function App:_initWatchers()
 		end
 	):start()
 
+	windowfilter.setLogLevel("error") -- The wfilter errors are too annoying.
 	self._windowWatcher = windowfilter.new{"Final Cut Pro"}
 
 	--------------------------------------------------------------------------------

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+### This script will erase the existing ~/CommandPost directory and 
+### copy in the contents of the src/ directory, thus updating it with the latest code.
+
+CP_PATH="$HOME/CommandPost"
+
+if [ ! -d $CP_PATH ]; then
+	echo "Please install CommandPost: http://commandpost.io"
+	exit 1
+fi
+
+if [ -L $CP_PATH ] ; then
+	echo "Unlinking existing CommandPost directory."
+	unlink "$CP_PATH"
+fi
+
+if [ -d $CP_PATH ]; then
+	echo "Deleting existing CommandPost directory."
+	rm -Rf "$CP_PATH"
+fi
+
+echo "Copying GitHub source to CommandPost directory."
+cp -R src/ "$CP_PATH"
+
+echo "CommandPost has been installed successfully."

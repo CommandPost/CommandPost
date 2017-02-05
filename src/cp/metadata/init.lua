@@ -1,30 +1,29 @@
 local mod = {}
 
-local settings			= require("hs.settings")
-
-local bundleID 			= hs.processInfo["bundleID"]
-local configdir			= hs.configdir
-local resourcePath		= hs.processInfo["resourcePath"]
-
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
+
 mod.scriptName			= "CommandPost"
 mod.settingsPrefix		= "cp"
 mod.scriptVersion       = "0.79"
 mod.bugReportEmail      = "chris@latenitefilms.com"
-mod.developerURL        = "https://latenitefilms.com/blog/final-cut-pro-hacks/"
-mod.updateURL           = "https://latenitefilms.com/blog/final-cut-pro-hacks/#download"
-mod.checkUpdateURL      = "https://latenitefilms.com/downloads/fcpx-hammerspoon-version.html"
+mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
-if bundleID == "org.hammerspoon.Hammerspoon" then
-	mod.scriptPath			= configdir
-	mod.assetsPath			= configdir .. "/cp/resources/assets/"
+if hs.hasinitfile then
+	-------------------------------------------------------------------------------
+	-- Use assets in ~/CommandPost directory:
+	-------------------------------------------------------------------------------
+	mod.scriptPath			= os.getenv("HOME") .. "/CommandPost/"
+	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
 	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
 	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 else
-	mod.scriptPath			= resourcePath .. "/extensions/"
-	mod.assetsPath			= resourcePath .. "/cp/resources/assets/"
+	-------------------------------------------------------------------------------
+	-- Use assets within the Application Bundle:
+	-------------------------------------------------------------------------------
+	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions/"
+	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
 	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
 	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 end
