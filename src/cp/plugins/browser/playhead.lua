@@ -1,5 +1,4 @@
 -- Imports
-local settings						= require("hs.settings")
 local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
@@ -24,19 +23,19 @@ local mod = {}
 -- Get Highlight Colour Preferences:
 --------------------------------------------------------------------------------
 function mod.getHighlightColor()
-	return settings.get(metadata.settingsPrefix .. ".displayHighlightColour") or DEFAULT_COLOR
+	return metadata.get("displayHighlightColour", DEFAULT_COLOR)
 end
 
 function mod.setHighlightColor(value)
-	settings.set(metadata.settingsPrefix .. ".displayHighlightColour", value)
+	metadata.set("displayHighlightColour", value)
 end
 
 function mod.getHighlightCustomColor()
-	return settings.get(metadata.settingsPrefix .. ".displayHighlightCustomColour")
+	return metadata.get("displayHighlightCustomColour")
 end
 
 function mod.setHighlightCustomColor(value)
-	settings.set(metadata.settingsPrefix .. ".displayHighlightCustomColour", value)
+	metadata.set("displayHighlightCustomColour", value)
 end
 
 --------------------------------------------------------------------------------
@@ -53,25 +52,25 @@ function mod.changeHighlightColor(value)
 end
 
 function mod.getHighlightShape()
-	return settings.get(metadata.settingsPrefix .. ".displayHighlightShape") or SHAPE_RECTANGLE
+	return metadata.get("displayHighlightShape", SHAPE_RECTANGLE)
 end
 
 --------------------------------------------------------------------------------
 -- CHANGE HIGHLIGHT SHAPE:
 --------------------------------------------------------------------------------
 function mod.setHighlightShape(value)
-	settings.set(metadata.settingsPrefix .. ".displayHighlightShape", value)
+	metadata.set("displayHighlightShape", value)
 end
 
 --------------------------------------------------------------------------------
 -- Get Highlight Playhead Time in seconds:
 --------------------------------------------------------------------------------
 function mod.getHighlightTime()
-	return settings.get(metadata.settingsPrefix .. ".highlightPlayheadTime") or DEFAULT_TIME
+	return metadata.get("highlightPlayheadTime", DEFAULT_TIME)
 end
 
 function mod.setHighlightTime(value)
-	settings.set(metadata.settingsPrefix .. ".highlightPlayheadTime", value)
+	metadata.set("highlightPlayheadTime", value)
 end
 
 --------------------------------------------------------------------------------
@@ -107,19 +106,19 @@ function mod.highlightFrame(frame)
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
 	local displayHighlightShape = nil
-	displayHighlightShape = settings.get(metadata.settingsPrefix .. ".displayHighlightShape")
+	displayHighlightShape = metadata.get("displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
-	local displayHighlightColour = settings.get(metadata.settingsPrefix .. ".displayHighlightColour") or "Red"
+	local displayHighlightColour = metadata.get("displayHighlightColour", "Red")
 	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
 	if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
 	if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
 	if displayHighlightColour == "Custom" then
-		local displayHighlightCustomColour = settings.get(metadata.settingsPrefix .. ".displayHighlightCustomColour")
+		local displayHighlightCustomColour = metadata.get("displayHighlightCustomColour")
 		displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
 	end
 

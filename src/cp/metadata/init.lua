@@ -1,5 +1,7 @@
 local mod = {}
 
+local settings			= require("hs.settings")
+
 local bundleID 			= hs.processInfo["bundleID"]
 local configdir			= hs.configdir
 local resourcePath		= hs.processInfo["resourcePath"]
@@ -28,6 +30,30 @@ else
 end
 
 mod.languagePath			= mod.scriptPath .. "/cp/resources/languages/"
+
+-------------------------------------------------------------------------------
+-- Settings
+-------------------------------------------------------------------------------
+
+function mod.get(key, defaultValue)
+	local value = settings.get(mod.settingsPrefix .. "." .. key)
+	if value == nil then
+		value = defaultValue
+	end
+	return value
+end
+
+function mod.set(key, value)
+	return settings.set(mod.settingsPrefix .. "." .. key, value)
+end
+
+function mod.reset()
+	for i, v in ipairs(settings.getKeys()) do
+		if (v:sub(1,string.len(mod.settingsPrefix .. "."))) == mod.settingsPrefix .. "." then
+			settings.set(v, nil)
+		end
+	end
+end
 
 -------------------------------------------------------------------------------
 

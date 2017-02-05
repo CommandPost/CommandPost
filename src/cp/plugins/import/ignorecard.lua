@@ -1,6 +1,4 @@
 -- Imports
-
-local settings					= require("hs.settings")
 local fs						= require("hs.fs")
 local application				= require("hs.application")
 local timer						= require("hs.timer")
@@ -21,14 +19,14 @@ local mod = {}
 -- RETURNS THE CURRENT ENABLED STATUS
 --------------------------------------------------------------------------------
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableMediaImportWatcher") or false
+	return metadata.get("enableMediaImportWatcher", false)
 end
 
 --------------------------------------------------------------------------------
 -- SETS THE ENABLED STATUS AND UPDATES THE WATCHER APPROPRIATELY
 --------------------------------------------------------------------------------
 function mod.setEnabled(enabled)
-	settings.set(metadata.settingsPrefix .. ".enableMediaImportWatcher", enabled)
+	metadata.set("enableMediaImportWatcher", enabled)
 	mod.update()
 end
 

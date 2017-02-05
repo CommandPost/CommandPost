@@ -1,5 +1,4 @@
 -- Imports
-local settings									= require("hs.settings")
 local http										= require("hs.http")
 
 local slaxdom 									= require("slaxml.slaxdom")
@@ -37,11 +36,11 @@ end
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".prowlNotificationsEnabled") or false
+	return metadata.get("prowlNotificationsEnabled", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".prowlNotificationsEnabled", value)
+	metadata.set("prowlNotificationsEnabled", value)
 	mod.update(true)
 end
 
@@ -50,11 +49,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getAPIKey()
-	return settings.get(metadata.settingsPrefix .. ".prowlAPIKey") or nil
+	return metadata.get("prowlAPIKey", nil)
 end
 
 function mod.setAPIKey(value)
-	settings.set(metadata.settingsPrefix .. ".prowlAPIKey", value)
+	metadata.set("prowlAPIKey", value)
 end
 
 local function requestProwlAPIKey()
@@ -105,7 +104,7 @@ function mod.init(notifications)
 end
 
 function mod.sendNotification(message)
-	local prowlAPIKey = settings.get(metadata.settingsPrefix .. ".prowlAPIKey") or nil
+	local prowlAPIKey = metadata.get("prowlAPIKey", nil)
 	if prowlAPIKey ~= nil then
 		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 		local prowlEvent = http.encodeForQuery("")

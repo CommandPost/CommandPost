@@ -1,5 +1,4 @@
 -- Imports
-local settings							= require("hs.settings")
 local eventtap							= require("hs.eventtap")
 local timer								= require("hs.timer")
 
@@ -24,11 +23,11 @@ local FULLSCREEN_KEYS = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSel
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableShortcutsDuringFullscreenPlayback") or false
+	return metadata.get("enableShortcutsDuringFullscreenPlayback", false)
 end
 
 function mod.setEnabled(enabled)
-	settings.set(metadata.settingsPrefix .. ".enableShortcutsDuringFullscreenPlayback", enabled)
+	metadata.set("enableShortcutsDuringFullscreenPlayback", enabled)
 	mod.update()
 end
 

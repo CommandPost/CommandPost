@@ -1,5 +1,4 @@
 -- Imports
-local settings			= require("hs.settings")
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -24,18 +23,18 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesShortcuts") or {}
+	return metadata.get(fcp:getCurrentLanguage() .. ".titlesShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
+	metadata.set(fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
 end
 
 function mod.getTitles()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allTitles")
+	return metadata.get(fcp:getCurrentLanguage() .. ".allTitles")
 end
 
 --------------------------------------------------------------------------------
@@ -296,8 +295,8 @@ function mod.updateTitlesList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTitles", allTitles)
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".titlesListUpdated", true)
+	metadata.get(currentLanguage .. ".allTitles", allTitles)
+	metadata.get(currentLanguage .. ".titlesListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -311,7 +310,7 @@ function mod.updateTitlesList()
 end
 
 function mod.isTitlesListUpdated()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".titlesListUpdated") or false
+	return metadata.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
 end
 
 -- The Plugin

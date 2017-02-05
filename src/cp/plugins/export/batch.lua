@@ -1,7 +1,4 @@
 -- Imports
-
-local settings		= require("hs.settings")
-
 local fcp 			= require("cp.finalcutpro")
 local dialog		= require("cp.dialog")
 local tools			= require("cp.tools")
@@ -144,13 +141,13 @@ function mod.changeExportDestinationPreset()
 		end
 	end
 
-	local batchExportDestinationPreset = settings.get(metadata.settingsPrefix .. ".batchExportDestinationPreset")
+	local batchExportDestinationPreset = metadata.get("batchExportDestinationPreset")
 	local defaultItems = {}
 	if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
 
 	local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
 	if result and #result > 0 then
-		settings.set(metadata.settingsPrefix .. ".batchExportDestinationPreset", result[1])
+		metadata.set("batchExportDestinationPreset", result[1])
 	end
 end
 
@@ -161,7 +158,7 @@ function mod.changeExportDestinationFolder()
 	local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
 	if result == false then return end
 
-	settings.set(metadata.settingsPrefix .. ".batchExportDestinationFolder", result)
+	metadata.set("batchExportDestinationFolder", result)
 end
 
 --------------------------------------------------------------------------------
@@ -172,7 +169,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Set Custom Export Path (or Default to Desktop):
 	--------------------------------------------------------------------------------
-	local batchExportDestinationFolder = settings.get(metadata.settingsPrefix .. ".batchExportDestinationFolder")
+	local batchExportDestinationFolder = metadata.get("batchExportDestinationFolder")
 	local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
 	local exportPath = "~/Desktop"
 	if batchExportDestinationFolder ~= nil then
@@ -188,7 +185,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Destination Preset:
 	--------------------------------------------------------------------------------
-	local destinationPreset = settings.get(metadata.settingsPrefix .. ".batchExportDestinationPreset")
+	local destinationPreset = metadata.get("batchExportDestinationPreset")
 	if destinationPreset == nil then
 
 		destinationPreset = fcp:menuBar():findMenuUI("File", "Share", function(menuItem)
@@ -212,7 +209,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Replace Existing Files Option:
 	--------------------------------------------------------------------------------
-	local replaceExisting = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles")
+	local replaceExisting = metadata.get("batchExportReplaceExistingFiles")
 
 	--------------------------------------------------------------------------------
 	-- Delete All Highlights:
@@ -280,8 +277,8 @@ end
 -- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
 --------------------------------------------------------------------------------
 function mod.toggleReplaceExistingFiles()
-	local batchExportReplaceExistingFiles = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles")
-	settings.set(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
+	local batchExportReplaceExistingFiles = metadata.get("batchExportReplaceExistingFiles")
+	metadata.set("batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
 end
 
 -- The Plugin
@@ -309,7 +306,7 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = settings.get(metadata.settingsPrefix .. ".batchExportReplaceExistingFiles") },
+			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = metadata.get("batchExportReplaceExistingFiles") },
 		}
 	end)
 

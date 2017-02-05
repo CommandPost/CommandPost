@@ -25,7 +25,6 @@ local inspect                   = require("hs.inspect")
 local keycodes                  = require("hs.keycodes")
 local logger                    = require("hs.logger")
 local mouse                     = require("hs.mouse")
-local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
 
@@ -46,7 +45,7 @@ local tools                     = require("cp.tools")
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
 --------------------------------------------------------------------------------
-if settings.get(metadata.settingsPrefix .. ".debugMode") then
+if metadata.get("debugMode")  then
 
     --------------------------------------------------------------------------------
     -- Logger Level (defaults to 'warn' if not specified)
@@ -72,10 +71,10 @@ for file in fs.dir(languagePath) do
 	end
 end
 local userLocale = nil
-if settings.get(metadata.settingsPrefix .. ".language") == nil then
+if metadata.get("language") == nil then
 	userLocale = tools.userLocale()
 else
-	userLocale = settings.get(metadata.settingsPrefix .. ".language")
+	userLocale = metadata.get("language")
 end
 i18n.setLocale(userLocale)
 
@@ -262,7 +261,7 @@ function debugMessage(value, value2)
     else
         if value ~= nil then
             if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-            if settings.get(metadata.settingsPrefix .. ".debugMode") then
+            if metadata.get("debugMode") then
                 local consoleStyledText = styledtext.new(" > " .. value, {
                     color = drawing.color.definedCollections.hammerspoon["red"],
                     font = { name = "Menlo", size = 12 },

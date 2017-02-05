@@ -5,7 +5,6 @@ local host										= require("hs.host")
 local image										= require("hs.image")
 local notify									= require("hs.notify")
 local pathwatcher								= require("hs.pathwatcher")
-local settings									= require("hs.settings")
 
 local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
@@ -23,11 +22,11 @@ local PRIORITY = 4000
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableXMLSharing") or false
+	return metadata.get("enableXMLSharing", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".enableXMLSharing", value)
+	metadata.set("enableXMLSharing", value)
 	mod.update()
 end
 
@@ -36,11 +35,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getSharingPath()
-	return settings.get(metadata.settingsPrefix .. ".xmlSharingPath")
+	return metadata.get("xmlSharingPath")
 end
 
 function mod.setSharingPath(value)
-	settings.set(metadata.settingsPrefix .. ".xmlSharingPath", value)
+	metadata.set("xmlSharingPath", value)
 end
 
 --------------------------------------------------------------------------------

@@ -9,7 +9,6 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local settings						= require("hs.settings")
 local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
 
@@ -26,7 +25,7 @@ local mod = {}
 
 mod.CACHE = {}
 
-mod.SETTINGS_DISABLED = metadata.settingsPrefix .. ".plugins.disabled"
+mod.SETTINGS_DISABLED = "plugins.disabled"
 
 --- hs.plugins.loadPackage(package) -> boolean
 --- Function
@@ -191,21 +190,21 @@ function mod.loadDependencies(plugin)
 end
 
 function mod.disable(pluginPath)
-	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
+	local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 	disabled[pluginPath] = true
-	settings.set(mod.SETTINGS_DISABLED, disabled)
+	metadata.set(mod.SETTINGS_DISABLED, disabled)
 	hs.reload()
 end
 
 function mod.enable(pluginPath)
-	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
+	local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 	disabled[pluginPath] = false
-	settings.set(mod.SETTINGS_DISABLED, disabled)
+	metadata.set(mod.SETTINGS_DISABLED, disabled)
 	hs.reload()
 end
 
 function mod.isDisabled(pluginPath)
-	local disabled = settings.get(mod.SETTINGS_DISABLED) or {}
+	local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 	return disabled[pluginPath] == true
 end
 
