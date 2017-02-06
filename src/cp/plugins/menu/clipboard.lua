@@ -1,14 +1,14 @@
-local settings					= require("hs.settings")
+-- Imports
 local metadata					= require("cp.metadata")
 
 --- The CLIPBOARD menu section.
 
 local PRIORITY = 2500
 
-local SETTING = metadata.settingsPrefix .. ".menubarClipboardEnabled"
+local SETTING = "menubarClipboardEnabled"
 
 local function isSectionDisabled()
-	local setting = settings.get(SETTING)
+	local setting = metadata.get(SETTING)
 	if setting ~= nil then
 		return not setting
 	else
@@ -17,8 +17,8 @@ local function isSectionDisabled()
 end
 
 local function toggleSectionDisabled()
-	local menubarEnabled = settings.get(SETTING)
-	settings.set(SETTING, not menubarEnabled)
+	local menubarEnabled = metadata.get(SETTING)
+	metadata.set(SETTING, not menubarEnabled)
 end
 
 --- The Plugin

@@ -1,6 +1,4 @@
 -- Imports
-
-local settings			= require("hs.settings")
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -25,18 +23,18 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".generatorsShortcuts") or {}
+	return metadata.get(fcp:getCurrentLanguage() .. ".generatorsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)
+	metadata.set(fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)
 end
 
 function mod.getGenerators()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allGenerators")
+	return metadata.get(fcp:getCurrentLanguage() .. ".allGenerators")
 end
 
 --------------------------------------------------------------------------------
@@ -297,8 +295,8 @@ function mod.updateGeneratorsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allGenerators", allGenerators)
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".generatorsListUpdated", true)
+	metadata.get(currentLanguage .. ".allGenerators", allGenerators)
+	metadata.get(currentLanguage .. ".generatorsListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -312,7 +310,7 @@ function mod.updateGeneratorsList()
 end
 
 function mod.isGeneratorsListUpdated()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".generatorsListUpdated") or false
+	return metadata.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
 end
 
 -- The Plugin

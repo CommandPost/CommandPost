@@ -10,7 +10,6 @@
 --------------------------------------------------------------------------------
 
 local menubar									= require("hs.menubar")
-local settings									= require("hs.settings")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 
@@ -55,8 +54,8 @@ manager.ORIGINAL_QUALITY	= 5
 manager.ORIGINAL_ICON		= "🔵"
 
 function manager.updateMenubarIcon()
-	local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon") or false
-	local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon") or false
+	local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", false)
+	local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", false)
 
 	local title = metadata.scriptName
 	local icon = nil

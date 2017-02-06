@@ -21,7 +21,6 @@ local fnutils 									= require("hs.fnutils")
 local menubar									= require("hs.menubar")
 local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
-local settings									= require("hs.settings")
 local timer										= require("hs.timer")
 
 local ax 										= require("hs._asm.axuielement")
@@ -98,8 +97,8 @@ function hacksconsole.show()
 	--------------------------------------------------------------------------------
 	-- Remember last query?
 	--------------------------------------------------------------------------------
-	local chooserRememberLast = settings.get(metadata.settingsPrefix .. ".chooserRememberLast")
-	local chooserRememberLastValue = settings.get(metadata.settingsPrefix .. ".chooserRememberLastValue") or ""
+	local chooserRememberLast = metadata.get("chooserRememberLast")
+	local chooserRememberLastValue = metadata.get("chooserRememberLastValue", "")
 	if not chooserRememberLast then
 		hacksconsole.hacksChooser:query("")
 	else
@@ -136,7 +135,7 @@ function hacksconsole.hide()
 	--------------------------------------------------------------------------------
 	-- Save Last Query to Settings:
 	--------------------------------------------------------------------------------
-	settings.set(metadata.settingsPrefix .. ".chooserRememberLastValue", hacksconsole.hacksChooser:query())
+	metadata.set("chooserRememberLastValue", hacksconsole.hacksChooser:query())
 
 	--------------------------------------------------------------------------------
 	-- Put focus back on Final Cut Pro:
@@ -165,17 +164,17 @@ function hacksconsole.choices()
 	-- Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 				= fcp:getCurrentLanguage()
-	local chooserFavourited				= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserFavourited") or {}
-	local chooserRemoved 				= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved") or {}
-	local chooserShowAutomation 		= settings.get(metadata.settingsPrefix .. ".chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get(metadata.settingsPrefix .. ".chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get(metadata.settingsPrefix .. ".chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get(metadata.settingsPrefix .. ".chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get(metadata.settingsPrefix .. ".chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get(metadata.settingsPrefix .. ".chooserShowTransitions")
-	local chooserShowTitles 			= settings.get(metadata.settingsPrefix .. ".chooserShowTitles")
-	local chooserShowGenerators 		= settings.get(metadata.settingsPrefix .. ".chooserShowGenerators")
-	local chooserShowMenuItems 			= settings.get(metadata.settingsPrefix .. ".chooserShowMenuItems")
+	local chooserFavourited				= metadata.get(currentLanguage .. ".chooserFavourited", {})
+	local chooserRemoved 				= metadata.get(currentLanguage .. ".chooserRemoved", {})
+	local chooserShowAutomation 		= metadata.get("chooserShowAutomation")
+	local chooserShowShortcuts 			= metadata.get("chooserShowShortcuts")
+	local chooserShowHacks 				= metadata.get("chooserShowHacks")
+	local chooserShowVideoEffects 		= metadata.get("chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= metadata.get("chooserShowAudioEffects")
+	local chooserShowTransitions 		= metadata.get("chooserShowTransitions")
+	local chooserShowTitles 			= metadata.get("chooserShowTitles")
+	local chooserShowGenerators 		= metadata.get("chooserShowGenerators")
+	local chooserShowMenuItems 			= metadata.get("chooserShowMenuItems")
 
 	local individualEffect = nil
 
@@ -493,7 +492,7 @@ function hacksconsole.choices()
 		--------------------------------------------------------------------------------
 		-- Menu Items:
 		--------------------------------------------------------------------------------
-		local chooserMenuItems = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserMenuItems") or {}
+		local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems", {})
 		if chooserShowMenuItems then
 			if next(chooserMenuItems) == nil then
 				debugMessage("Building a list of Final Cut Pro menu items for the first time.")
@@ -562,7 +561,7 @@ function hacksconsole.choices()
 						end
 					end
 				end
-				settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserMenuItems", chooserMenuItems)
+				metadata.set(currentLanguage .. ".chooserMenuItems", chooserMenuItems)
 			else
 				--------------------------------------------------------------------------------
 				-- Insert Menu Items from Settings:
@@ -578,7 +577,7 @@ function hacksconsole.choices()
 		-- Video Effects List:
 		--------------------------------------------------------------------------------
 		if chooserShowVideoEffects then
-			local allVideoEffects = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".allVideoEffects")
+			local allVideoEffects = metadata.get(currentLanguage .. ".allVideoEffects")
 			if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 				for i=1, #allVideoEffects do
 					individualEffect = {
@@ -600,7 +599,7 @@ function hacksconsole.choices()
 		-- Audio Effects List:
 		--------------------------------------------------------------------------------
 		if chooserShowAudioEffects then
-			local allAudioEffects = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".allAudioEffects")
+			local allAudioEffects = metadata.get(currentLanguage .. ".allAudioEffects")
 			if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 				for i=1, #allAudioEffects do
 					individualEffect = {
@@ -622,7 +621,7 @@ function hacksconsole.choices()
 		-- Transitions List:
 		--------------------------------------------------------------------------------
 		if chooserShowTransitions then
-			local allTransitions = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTransitions")
+			local allTransitions = metadata.get(currentLanguage .. ".allTransitions")
 			if allTransitions ~= nil and next(allTransitions) ~= nil then
 				for i=1, #allTransitions do
 					local individualEffect = {
@@ -644,7 +643,7 @@ function hacksconsole.choices()
 		-- Titles List:
 		--------------------------------------------------------------------------------
 		if chooserShowTitles then
-			local allTitles = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTitles")
+			local allTitles = metadata.get(currentLanguage .. ".allTitles")
 			if allTitles ~= nil and next(allTitles) ~= nil then
 				for i=1, #allTitles do
 					individualEffect = {
@@ -666,7 +665,7 @@ function hacksconsole.choices()
 		-- Generators List:
 		--------------------------------------------------------------------------------
 		if chooserShowGenerators then
-			local allGenerators = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".allGenerators")
+			local allGenerators = metadata.get(currentLanguage .. ".allGenerators")
 			if allGenerators ~= nil and next(allGenerators) ~= nil then
 				for i=1, #allGenerators do
 					local individualEffect = {
@@ -740,7 +739,7 @@ end
 function hacksconsole.completionAction(result)
 
 	local currentLanguage = fcp:getCurrentLanguage()
-	local chooserRemoved = settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved") or {}
+	local chooserRemoved = metadata.get(currentLanguage .. ".chooserRemoved", {})
 
 	--------------------------------------------------------------------------------
 	-- Nothing selected:
@@ -778,7 +777,7 @@ function hacksconsole.completionAction(result)
 	elseif hacksconsole.mode == "remove" then
 
 		chooserRemoved[#chooserRemoved + 1] = result
-		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved", chooserRemoved)
+		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
 		hacksconsole.refresh()
 		hacksconsole.hacksChooser:show()
 
@@ -792,7 +791,7 @@ function hacksconsole.completionAction(result)
 				table.remove(chooserRemoved, x)
 			end
 		end
-		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved", chooserRemoved)
+		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
 		if next(chooserRemoved) == nil then hacksconsole.mode = "normal" end
 		hacksconsole.refresh()
 		hacksconsole.hacksChooser:show()
@@ -810,22 +809,22 @@ function hacksconsole.rightClickAction()
 	-- Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 				= fcp:getCurrentLanguage()
-	local chooserRememberLast 			= settings.get(metadata.settingsPrefix .. ".chooserRememberLast")
-	local chooserRemoved 				= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved") or {}
-	local chooserFavourited				= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserFavourited") or {}
+	local chooserRememberLast 			= metadata.get("chooserRememberLast")
+	local chooserRemoved 				= metadata.get(currentLanguage .. ".chooserRemoved", {})
+	local chooserFavourited				= metadata.get(currentLanguage .. ".chooserFavourited", {})
 
 	--------------------------------------------------------------------------------
 	-- Display Options:
 	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= settings.get(metadata.settingsPrefix .. ".chooserShowAutomation")
-	local chooserShowShortcuts 			= settings.get(metadata.settingsPrefix .. ".chooserShowShortcuts")
-	local chooserShowHacks 				= settings.get(metadata.settingsPrefix .. ".chooserShowHacks")
-	local chooserShowVideoEffects 		= settings.get(metadata.settingsPrefix .. ".chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= settings.get(metadata.settingsPrefix .. ".chooserShowAudioEffects")
-	local chooserShowTransitions 		= settings.get(metadata.settingsPrefix .. ".chooserShowTransitions")
-	local chooserShowTitles				= settings.get(metadata.settingsPrefix .. ".chooserShowTitles")
-	local chooserShowGenerators 		= settings.get(metadata.settingsPrefix .. ".chooserShowGenerators")
-	local chooserShowMenuItems 			= settings.get(metadata.settingsPrefix .. ".chooserShowMenuItems")
+	local chooserShowAutomation 		= metadata.get("chooserShowAutomation")
+	local chooserShowShortcuts 			= metadata.get("chooserShowShortcuts")
+	local chooserShowHacks 				= metadata.get("chooserShowHacks")
+	local chooserShowVideoEffects 		= metadata.get("chooserShowVideoEffects")
+	local chooserShowAudioEffects 		= metadata.get("chooserShowAudioEffects")
+	local chooserShowTransitions 		= metadata.get("chooserShowTransitions")
+	local chooserShowTitles				= metadata.get("chooserShowTitles")
+	local chooserShowGenerators 		= metadata.get("chooserShowGenerators")
+	local chooserShowMenuItems 			= metadata.get("chooserShowMenuItems")
 
 	local selectedRowContents 			= hacksconsole.hacksChooser:selectedRowContents()
 
@@ -872,13 +871,13 @@ function hacksconsole.rightClickAction()
 							table.remove(chooserFavourited, x)
 						end
 					end
-					settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserFavourited", chooserRemoved)
+					metadata.get(currentLanguage .. ".chooserFavourited", chooserRemoved)
 				else
 					--------------------------------------------------------------------------------
 					-- Add to favourites:
 					--------------------------------------------------------------------------------
 					chooserFavourited[#chooserFavourited + 1] = selectedRowContents
-					settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserFavourited", chooserFavourited)
+					metadata.get(currentLanguage .. ".chooserFavourited", chooserFavourited)
 				end
 
 				hacksconsole.refresh()
@@ -887,7 +886,7 @@ function hacksconsole.rightClickAction()
 			end },
 			{ title = i18n("removeFromList"), fn = function()
 				chooserRemoved[#chooserRemoved + 1] = selectedRowContents
-				settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".chooserRemoved", chooserRemoved)
+				metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
 				hacksconsole.refresh()
 				hacksconsole.hacksChooser:show()
 			end },
@@ -904,54 +903,54 @@ function hacksconsole.rightClickAction()
      	{ title = "-" },
      	{ title = i18n("displayOptions"), menu = {
 			{ title = i18n("showNone"), disabled=hacksconsole.mode == "restore", fn = function()
-				settings.set(metadata.settingsPrefix .. ".chooserShowAutomation", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowShortcuts", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowHacks", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowVideoEffects", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowAudioEffects", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowTransitions", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowTitles", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowGenerators", false)
-				settings.set(metadata.settingsPrefix .. ".chooserShowMenuItems", false)
+				metadata.set("chooserShowAutomation", false)
+				metadata.set("chooserShowShortcuts", false)
+				metadata.set("chooserShowHacks", false)
+				metadata.set("chooserShowVideoEffects", false)
+				metadata.set("chooserShowAudioEffects", false)
+				metadata.set("chooserShowTransitions", false)
+				metadata.set("chooserShowTitles", false)
+				metadata.set("chooserShowGenerators", false)
+				metadata.set("chooserShowMenuItems", false)
 				hacksconsole.refresh()
 			end },
 			{ title = i18n("showAll"), 				checked = chooserShowAll, disabled=hacksconsole.mode == "restore" or chooserShowAll, fn = function()
-				settings.set(metadata.settingsPrefix .. ".chooserShowAutomation", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowShortcuts", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowHacks", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowVideoEffects", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowAudioEffects", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowTransitions", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowTitles", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowGenerators", true)
-				settings.set(metadata.settingsPrefix .. ".chooserShowMenuItems", true)
+				metadata.set("chooserShowAutomation", true)
+				metadata.set("chooserShowShortcuts", true)
+				metadata.set("chooserShowHacks", true)
+				metadata.set("chooserShowVideoEffects", true)
+				metadata.set("chooserShowAudioEffects", true)
+				metadata.set("chooserShowTransitions", true)
+				metadata.set("chooserShowTitles", true)
+				metadata.set("chooserShowGenerators", true)
+				metadata.set("chooserShowMenuItems", true)
 				hacksconsole.refresh()
 			end },
 			{ title = "-" },
-			{ title = i18n("showAutomation"), 		checked = chooserShowAutomation,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowAutomation", not chooserShowAutomation); 			hacksconsole.refresh() end },
-			{ title = i18n("showHacks"), 			checked = chooserShowHacks,			disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowHacks", not chooserShowHacks); 						hacksconsole.refresh() end },
-			{ title = i18n("showShortcuts"), 		checked = chooserShowShortcuts,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowShortcuts", not chooserShowShortcuts); 				hacksconsole.refresh() end },
+			{ title = i18n("showAutomation"), 		checked = chooserShowAutomation,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowAutomation", not chooserShowAutomation); 			hacksconsole.refresh() end },
+			{ title = i18n("showHacks"), 			checked = chooserShowHacks,			disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowHacks", not chooserShowHacks); 						hacksconsole.refresh() end },
+			{ title = i18n("showShortcuts"), 		checked = chooserShowShortcuts,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowShortcuts", not chooserShowShortcuts); 				hacksconsole.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showVideoEffects"), 	checked = chooserShowVideoEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowVideoEffects", not chooserShowVideoEffects); 		hacksconsole.refresh() end },
-			{ title = i18n("showAudioEffects"), 	checked = chooserShowAudioEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowAudioEffects", not chooserShowAudioEffects); 		hacksconsole.refresh() end },
+			{ title = i18n("showVideoEffects"), 	checked = chooserShowVideoEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowVideoEffects", not chooserShowVideoEffects); 		hacksconsole.refresh() end },
+			{ title = i18n("showAudioEffects"), 	checked = chooserShowAudioEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowAudioEffects", not chooserShowAudioEffects); 		hacksconsole.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showTransitions"), 		checked = chooserShowTransitions,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowTransitions", not chooserShowTransitions); 			hacksconsole.refresh() end },
-			{ title = i18n("showTitles"), 			checked = chooserShowTitles,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowTitles", not chooserShowTitles); 					hacksconsole.refresh() end },
-			{ title = i18n("showGenerators"), 		checked = chooserShowGenerators,	disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowGenerators", not chooserShowGenerators); 			hacksconsole.refresh() end },
+			{ title = i18n("showTransitions"), 		checked = chooserShowTransitions,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowTransitions", not chooserShowTransitions); 			hacksconsole.refresh() end },
+			{ title = i18n("showTitles"), 			checked = chooserShowTitles,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowTitles", not chooserShowTitles); 					hacksconsole.refresh() end },
+			{ title = i18n("showGenerators"), 		checked = chooserShowGenerators,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowGenerators", not chooserShowGenerators); 			hacksconsole.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showMenuItems"), 		checked = chooserShowMenuItems,		disabled=hacksconsole.mode == "restore", 	fn = function() settings.set(metadata.settingsPrefix .. ".chooserShowMenuItems", not chooserShowMenuItems); 				hacksconsole.refresh() end },
+			{ title = i18n("showMenuItems"), 		checked = chooserShowMenuItems,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowMenuItems", not chooserShowMenuItems); 				hacksconsole.refresh() end },
 			},
 		},
        	{ title = "-" },
        	{ title = i18n("preferences") .. "...", menu = {
-			{ title = i18n("rememberLastQuery"), 	checked = chooserRememberLast,						fn= function() settings.set(metadata.settingsPrefix .. ".chooserRememberLast", not chooserRememberLast) end },
+			{ title = i18n("rememberLastQuery"), 	checked = chooserRememberLast,						fn= function() metadata.set("chooserRememberLast", not chooserRememberLast) end },
 			{ title = "-" },
 			{ title = i18n("update"), menu = {
 				{ title = i18n("effectsShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.effects").updateEffectsList();				end },
 				{ title = i18n("transitionsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList(); 		end },
 				{ title = i18n("titlesShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()	 				end },
 				{ title = i18n("generatorsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.generators")updateGeneratorsList() 			end },
-				{ title = i18n("menuItems"),				fn= function() settings.set(metadata.settingsPrefix .. ".chooserMenuItems", nil); 			hacksconsole.refresh() end },
+				{ title = i18n("menuItems"),				fn= function() metadata.set("chooserMenuItems", nil); 			hacksconsole.refresh() end },
 			}},
 		}},
 	}

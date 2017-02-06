@@ -1,6 +1,4 @@
 -- Imports
-local settings								= require("hs.settings")
-
 local fcp									= require("cp.finalcutpro")
 local metadata								= require("cp.metadata")
 
@@ -17,11 +15,11 @@ mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
 mod.log										= log
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableClipboardHistory") or false
+	return metadata.get("enableClipboardHistory", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".enableClipboardHistory", value == true)
+	metadata.set("enableClipboardHistory", value == true)
 	mod.update()
 end
 
@@ -31,14 +29,14 @@ end
 
 function mod.getHistory()
 	if not mod._history then
-		mod._history = settings.get(metadata.settingsPrefix .. ".clipboardHistory") or {}
+		mod._history = metadata.get("clipboardHistory", {})
 	end
 	return mod._history
 end
 
 function mod.setHistory(history)
 	mod._history = history
-	settings.set(metadata.settingsPrefix .. ".clipboardHistory", history)
+	metadata.set("clipboardHistory", history)
 end
 
 function mod.clearHistory()
