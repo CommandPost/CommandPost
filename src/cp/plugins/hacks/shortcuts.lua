@@ -270,8 +270,6 @@ function mod.init()
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
 	local lastVersion = metadata.get("lastScriptVersion")
-	log.df("lastVersion: %s", lastVersion)
-	log.df("scriptVersion: %s", metadata.scriptVersion)
 	if lastVersion == nil then
 		mod.setEditable(false)
 	elseif tonumber(lastVersion) < tonumber(metadata.scriptVersion) then

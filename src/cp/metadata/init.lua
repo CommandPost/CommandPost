@@ -1,5 +1,7 @@
 local mod = {}
 
+local settings			= require("hs.settings")
+
 -------------------------------------------------------------------------------
 -- CONSTANTS:
 -------------------------------------------------------------------------------
@@ -16,17 +18,16 @@ if hs.hasinitfile then
 	-------------------------------------------------------------------------------
 	mod.scriptPath			= os.getenv("HOME") .. "/CommandPost/"
 	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
-	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
-	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 else
 	-------------------------------------------------------------------------------
 	-- Use assets within the Application Bundle:
 	-------------------------------------------------------------------------------
 	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions/"
 	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
-	mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
-	mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 end
+
+mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
+mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 
 mod.languagePath			= mod.scriptPath .. "/cp/resources/languages/"
 

@@ -68,7 +68,7 @@ function mod.loadPackage(package)
 
 	local files = tools.dirFiles(path)
 	for i,file in ipairs(files) do
-		if file ~= "." and file ~= ".." then
+		if file ~= "." and file ~= ".." and file ~= "init.lua" then
 			local filePath = path .. "/" .. file
 			if fs.attributes(filePath).mode == "directory" then
 				local attrs, err = fs.attributes(filePath .. "/init.lua")
