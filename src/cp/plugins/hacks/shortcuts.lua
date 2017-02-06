@@ -1,6 +1,5 @@
 -- Imports
 
-local settings		= require("hs.settings")
 local fs			= require("hs.fs")
 
 local fcp			= require("cp.finalcutpro")
@@ -215,16 +214,16 @@ end
 -- The Module
 
 function mod.isEditable()
-	return settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro") or false
+	return metadata.get("enableHacksShortcutsInFinalCutPro", false)
 end
 
 function mod.setEditable(enabled, skipFCPXupdate)
 	local editable = mod.isEditable()
 	if editable ~= enabled then
-		settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", enabled)
+		metadata.set("enableHacksShortcutsInFinalCutPro", enabled)
 		if not skipFCPXUpdate then
 			if not updateFCPXCommands(enabled) then
-				settings.set(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro", not enabled)
+				metadata.set("enableHacksShortcutsInFinalCutPro", not enabled)
 			end
 		end
 	end
@@ -270,18 +269,17 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
-	if settings.get(metadata.settingsPrefix .. ".lastVersion") == nil then
-		settings.set(metadata.settingsPrefix .. ".lastVersion", metadata.scriptVersion)
+	local lastVersion = metadata.get("lastScriptVersion")
+	if lastVersion == nil then
 		mod.setEditable(false)
-	else
-		if tonumber(settings.get(metadata.settingsPrefix .. ".lastVersion")) < tonumber(metadata.scriptVersion) then
-			if mod.isEditable() then
-				dialog.displayMessage(i18n("newKeyboardShortcuts"))
-				updateFCPXCommands(true)
-			end
+	elseif tonumber(lastVersion) < tonumber(metadata.scriptVersion) then
+		if mod.isEditable() then
+			dialog.displayMessage(i18n("newKeyboardShortcuts"))
+			updateFCPXCommands(true)
 		end
-		settings.set(metadata.settingsPrefix .. ".lastVersion", metadata.scriptVersion)
 	end
+
+	metadata.set("lastScriptVersion", metadata.scriptVersion)
 
 	mod.update()
 end
@@ -290,9 +288,9 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.top"] 			= "top",
+	["cp.plugins.menu.top"] 		= "top",
 	["cp.plugins.commands.global"]	= "globalCmds",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
+	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
 }
 
 function plugin.init(deps)

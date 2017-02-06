@@ -1,5 +1,4 @@
 -- Imports
-local settings						= require("hs.settings")
 local log							= require("hs.logger").new("matchframe")
 
 local fcp							= require("cp.finalcutpro")

@@ -1,5 +1,4 @@
 -- Imports
-local settings									= require("hs.settings")
 local messages									= require("hs.messages")
 
 local dialog									= require("cp.dialog")
@@ -14,11 +13,11 @@ local PRIORITY = 2000
 local mod = {}
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".iMessageNotificationsEnabled") or false
+	return metadata.get("iMessageNotificationsEnabled", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".iMessageNotificationsEnabled", value)
+	metadata.set("iMessageNotificationsEnabled", value)
 	mod.update(true)
 end
 
@@ -27,11 +26,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getTarget()
-	return settings.get(metadata.settingsPrefix .. ".iMessageTarget") or nil
+	return metadata.get("iMessageTarget", nil)
 end
 
 function mod.setTarget(value)
-	settings.set(metadata.settingsPrefix .. ".iMessageTarget", value)
+	metadata.set("iMessageTarget", value)
 end
 
 function mod.sendNotification(message)

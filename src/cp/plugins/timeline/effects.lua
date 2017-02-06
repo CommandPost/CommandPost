@@ -1,6 +1,5 @@
 -- Imports
 
-local settings			= require("hs.settings")
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -23,22 +22,22 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsShortcuts") or {}
+	return metadata.get(fcp:getCurrentLanguage() .. ".effectsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
+	metadata.set(fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
 end
 
 function mod.getVideoEffects()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allVideoEffects")
+	return metadata.get(fcp:getCurrentLanguage() .. ".allVideoEffects")
 end
 
 function mod.getAudioEffects()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allAudioEffects")
+	return metadata.get(fcp:getCurrentLanguage() .. ".allAudioEffects")
 end
 
 --------------------------------------------------------------------------------
@@ -356,9 +355,9 @@ function mod.updateEffectsList()
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allVideoEffects", allVideoEffects)
-		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allAudioEffects", allAudioEffects)
-		settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".effectsListUpdated", true)
+		metadata.get(currentLanguage .. ".allVideoEffects", allVideoEffects)
+		metadata.get(currentLanguage .. ".allAudioEffects", allAudioEffects)
+		metadata.get(currentLanguage .. ".effectsListUpdated", true)
 
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
@@ -374,7 +373,7 @@ function mod.updateEffectsList()
 end
 
 function mod.isEffectsListUpdated()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".effectsListUpdated") or false
+	return metadata.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
 end
 
 -- The Plugin

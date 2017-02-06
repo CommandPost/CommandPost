@@ -1,6 +1,5 @@
 -- Includes
 local touchbar 									= require("hs._asm.touchbar")
-local settings									= require("hs.settings")
 local eventtap									= require("hs.eventtap")
 
 local fcp										= require("cp.finalcutpro")
@@ -24,19 +23,19 @@ function mod.isSupported()
 end
 
 function mod.getLastLocation()
-	settings.get(metadata.settingsPrefix .. ".lastTouchBarLocation")
+	metadata.get("lastTouchBarLocation")
 end
 
 function mod.setLastLocation(value)
-	settings.set(metadata.settingsPrefix .. ".lastTouchBarLocation", value)
+	metadata.set("lastTouchBarLocation", value)
 end
 
 function mod.getLocation()
-	return settings.get(metadata.settingsPrefix .. ".displayTouchBarLocation") or LOCATION_MOUSE
+	return metadata.get("displayTouchBarLocation", LOCATION_MOUSE)
 end
 
 function mod.setLocation(value)
-	settings.set(metadata.settingsPrefix .. ".displayTouchBarLocation", value)
+	metadata.set("displayTouchBarLocation", value)
 	mod.update()
 end
 
@@ -77,11 +76,11 @@ function mod.updateLocation()
 end
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".displayTouchBar") or false
+	return metadata.get("displayTouchBar", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".displayTouchBar", value)
+	metadata.set("displayTouchBar", value)
 	mod.update()
 end
 

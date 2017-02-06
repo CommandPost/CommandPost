@@ -1,5 +1,4 @@
 -- Imports
-local settings			= require("hs.settings")
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -22,18 +21,18 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.getShortcuts()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts") or {}
+	return metadata.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	settings.set(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
+	metadata.set(fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
 end
 
 function mod.getTransitions()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".allTransitions")
+	return metadata.get(fcp:getCurrentLanguage() .. ".allTransitions")
 end
 
 --------------------------------------------------------------------------------
@@ -303,8 +302,8 @@ function mod.updateTransitionsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".allTransitions", allTransitions)
-	settings.set(metadata.settingsPrefix .. "." .. currentLanguage .. ".transitionsListUpdated", true)
+	metadata.get(currentLanguage .. ".allTransitions", allTransitions)
+	metadata.get(currentLanguage .. ".transitionsListUpdated", true)
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -318,7 +317,7 @@ function mod.updateTransitionsList()
 end
 
 function mod.isTransitionsListUpdated()
-	return settings.get(metadata.settingsPrefix .. "." .. fcp:getCurrentLanguage() .. ".transitionsListUpdated") or false
+	return metadata.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
 end
 
 -- The Plugin

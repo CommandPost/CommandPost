@@ -148,7 +148,7 @@ return {
 			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
 			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
 
-			touchBarError						=			"Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
+			touchBarError						=			"Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
 			item								=
 			{
@@ -351,7 +351,7 @@ return {
 				--------------------------------------------------------------------------------
 				-- Tools Options:
 				--------------------------------------------------------------------------------
-				enableTouchBar					=			"Enable Touch Bar",
+				enableTouchBar					=			"Enable Virtual Touch Bar",
 				enableHacksHUD					=			"Enable Hacks HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
@@ -385,7 +385,7 @@ return {
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
-			touchBar							=			"Touch Bar",
+			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",
