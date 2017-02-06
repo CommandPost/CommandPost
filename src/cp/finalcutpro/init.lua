@@ -1092,9 +1092,13 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 				self._currentLanguage = userLocale
 				return userLocale
 			else
-				if string.sub(userLocale, 1, string.find(userLocale, "_") - 1) == finalCutProLanguages[i] then
-					self._currentLanguage = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
-					return string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+				local subLang = string.find(userLocale, "_")
+				if subLang ~= nil then
+					local lang = string.sub(userLocale, 1, subLang - 1)
+					if lang == finalCutProLanguages[i] then
+						self._currentLanguage = lang
+						return lang
+					end
 				end
 			end
 		end
@@ -1121,13 +1125,16 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 				self._currentLanguage = AppleLanguages
 				return AppleLanguages
 			else
-				if string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1) == finalCutProLanguages[i] then
-					self._currentLanguage = string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
-					return string.sub(AppleLanguages, 1, string.find(AppleLanguages, "-") - 1)
+				local subLang = string.find(AppleLanguages, "-")
+				if subLang ~= nil then
+					local lang = string.sub(AppleLanguages, 1, subLang - 1)
+					if lang == finalCutProLanguages[i] then
+						self._currentLanguage = lang
+						return lang
+					end
 				end
 			end
 		end
-
 	end
 
 	--------------------------------------------------------------------------------
