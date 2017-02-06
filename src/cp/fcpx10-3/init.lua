@@ -30,7 +30,6 @@ local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local screen									= require("hs.screen")
-local sharing									= require("hs.sharing")
 local timer										= require("hs.timer")
 local windowfilter								= require("hs.window.filter")
 
@@ -863,8 +862,6 @@ end
 			{ title = i18n("console") .. "...", 														fn = openConsole },
 			{ title = i18n("trashPreferences"), 														fn = resetSettings },
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
-			{ title = "-" },
-			{ title = i18n("provideFeedback"),															fn = emailBugReport },
 		}
 
 		return settingsMenuTable
@@ -2097,14 +2094,6 @@ end
 --------------------------------------------------------------------------------
 -- GENERAL:
 --------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- EMAIL BUG REPORT:
-	--------------------------------------------------------------------------------
-	function emailBugReport()
-		local mailer = sharing.newShare("com.apple.share.Mail.compose"):subject("[" .. metadata.scriptName .. " " .. metadata.scriptVersion .. "] Bug Report"):recipients({metadata.bugReportEmail})
-																	   :shareItems({"Please enter any notes, comments or suggestions here.\n\n---",console.getConsole(true), screen.mainScreen():snapshot()})
-	end
 
 	--------------------------------------------------------------------------------
 	-- DELETE ALL HIGHLIGHTS:
