@@ -1,6 +1,6 @@
 --- The 'Preferences' menu section
 
-local PRIORITY = 8888888
+local PRIORITY = 8888889
 
 --- The Plugin
 local plugin = {}
@@ -13,7 +13,8 @@ function plugin.init(dependencies)
 	local section = dependencies.bottom:addSection(PRIORITY)
 
 	return section
-		:addMenu(0, function() return i18n("preferences") end)
+		:addSeparator(100)
+		:addMenu(0, function() return i18n("helpAndSupport") end)
 end
 
 return plugin

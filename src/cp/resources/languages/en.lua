@@ -377,8 +377,11 @@ return {
 		--------------------------------------------------------------------------------
     	-- Preferences:
     	--------------------------------------------------------------------------------
+    	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
-    	quit									=			"Quit",
+    	credits									=			"Credits",
+    	helpCentre								=			"Help Centre",
+    	userGuide								=			"User Guide",
 
 			--------------------------------------------------------------------------------
 			-- Preferences:

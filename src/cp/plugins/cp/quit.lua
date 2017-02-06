@@ -17,8 +17,8 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	deps.bottom:addItem(PRIORITY, function()
-		return { title = i18n("quit") .. " " .. metadata.scriptName,	fn = quitScript }
+	deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
+		return { title = i18n("quit"),	fn = quitScript }
 	end)
 
 	return quitScript
