@@ -55,6 +55,8 @@ return {
 			done								=			"Done",
 			cancel								=			"Cancel",
 			buttonContinueBatchExport			=			"Continue Batch Export",
+			continue							=			"Continue",
+			quit								=			"Quit",
 
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
@@ -120,7 +122,8 @@ return {
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
-			noValidFinalCutPro 					= 			"CommandPost couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\nCommandPost will now quit.",
+			accessibilityError					=			"%{scriptName} requires Accessibility Permissions to do its magic. By clicking Continue you will be asked to enable these permissions.\n\nThe %{scriptName} menubar will appear once these permissions are granted.",
+			noValidFinalCutPro 					= 			"%{scriptName} couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\n%{scriptName} will now quit.",
 
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
@@ -145,7 +148,7 @@ return {
 			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
 			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
 
-			touchBarError						=			"Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
+			touchBarError						=			"Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
 			item								=
 			{
@@ -348,7 +351,7 @@ return {
 				--------------------------------------------------------------------------------
 				-- Tools Options:
 				--------------------------------------------------------------------------------
-				enableTouchBar					=			"Enable Touch Bar",
+				enableTouchBar					=			"Enable Virtual Touch Bar",
 				enableHacksHUD					=			"Enable Hacks HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
@@ -382,7 +385,7 @@ return {
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
-			touchBar							=			"Touch Bar",
+			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
 			enableDebugMode						=			"Enable Debug Mode",

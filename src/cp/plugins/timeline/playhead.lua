@@ -2,7 +2,6 @@
 
 -- Imports
 
-local settings					= require("hs.settings")
 local geometry					= require("hs.geometry")
 local eventtap					= require("hs.eventtap")
 local mouse						= require("hs.mouse")
@@ -23,11 +22,11 @@ local PRIORITY = 1000
 local mod = {}
 
 function mod.isScrollingTimelineActive()
-	return settings.get(metadata.settingsPrefix .. ".scrollingTimelineActive") or false
+	return metadata.get("scrollingTimelineActive", false)
 end
 
 function mod.setScrollingTimelineActive(active)
-	settings.set(metadata.settingsPrefix .. ".scrollingTimelineActive", active)
+	metadata.set("scrollingTimelineActive", active)
 	mod.update()
 end
 
@@ -198,11 +197,11 @@ end
 --------------------------------------------------------------------------------
 
 function mod.isPlayheadLocked()
-	return settings.get(metadata.settingsPrefix .. ".lockTimelinePlayhead") or false
+	return metadata.get("lockTimelinePlayhead", false)
 end
 
 function mod.setPlayheadLocked(locked)
-	settings.set(metadata.settingsPrefix .. ".lockTimelinePlayhead", locked)
+	metadata.set("lockTimelinePlayhead", locked)
 	mod.update()
 end
 

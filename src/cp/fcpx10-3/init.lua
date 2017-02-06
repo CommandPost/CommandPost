@@ -30,7 +30,6 @@ local notify									= require("hs.notify")
 local osascript									= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local screen									= require("hs.screen")
-local settings									= require("hs.settings")
 local sharing									= require("hs.sharing")
 local timer										= require("hs.timer")
 local windowfilter								= require("hs.window.filter")
@@ -159,40 +158,21 @@ function loadScript()
 	-- Apply Default Settings:
 	--------------------------------------------------------------------------------
 	for k, v in pairs(defaultSettings) do
-		if settings.get(metadata.settingsPrefix .. "." .. k) == nil then
-			settings.set(metadata.settingsPrefix .. "." .. k, v)
+		if metadata.get(k) == nil then
+			metadata.get(k, v)
 		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	mod.debugMode = settings.get(metadata.settingsPrefix .. ".debugMode") or false
+	mod.debugMode = metadata.get("debugMode", false)
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
 	-- Activate Menu Manager
 	--------------------------------------------------------------------------------
 	menuManager()
-
-	--------------------------------------------------------------------------------
-	-- Check for Final Cut Pro Updates:
-	--------------------------------------------------------------------------------
-	local lastFinalCutProVersion = settings.get(metadata.settingsPrefix .. ".lastFinalCutProVersion")
-	if lastFinalCutProVersion == nil then
-		settings.set(metadata.settingsPrefix .. ".lastFinalCutProVersion", fcp:getVersion())
-	else
-		if lastFinalCutProVersion ~= fcp:getVersion() then
-			for i, v in ipairs(settings.getKeys()) do
-				if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
-					if v:sub(-16) == "chooserMenuItems" then
-						settings.set(v, nil)
-					end
-				end
-			end
-			settings.set(metadata.settingsPrefix .. ".lastFinalCutProVersion", fcp:getVersion())
-		end
-	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Watches:
@@ -212,14 +192,6 @@ function loadScript()
 		finalCutProWindowWatcher()
 
 		--------------------------------------------------------------------------------
-		-- Watch For Hammerspoon Script Updates:
-		--------------------------------------------------------------------------------
-		local bundleID = hs.processInfo["bundleID"]
-		if bundleID == "org.hammerspoon.Hammerspoon" then
-			hammerspoonWatcher = pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", hammerspoonConfigWatcher):start()
-		end
-
-		--------------------------------------------------------------------------------
 		-- Watch for Final Cut Pro plist Changes:
 		--------------------------------------------------------------------------------
 		preferencesWatcher = pathwatcher.new("~/Library/Preferences/", finalCutProSettingsWatcher):start()
@@ -233,7 +205,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Load Hacks HUD:
 	--------------------------------------------------------------------------------
-	if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+	if metadata.get("enableHacksHUD") then
 		hackshud.new()
 	end
 
@@ -254,7 +226,7 @@ function loadScript()
 		--------------------------------------------------------------------------------
 		-- Show Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+		if metadata.get("enableHacksHUD") then
 			hackshud.show()
 		end
 
@@ -284,7 +256,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
 	--------------------------------------------------------------------------------
-	local checkForUpdatesInterval = settings.get(metadata.settingsPrefix .. ".checkForUpdatesInterval")
+	local checkForUpdatesInterval = metadata.get("checkForUpdatesInterval")
 	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
 
@@ -524,7 +496,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 	--------------------------------------------------------------------------------
-	local enableHacksShortcutsInFinalCutPro = settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro")
+	local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro")
 	if enableHacksShortcutsInFinalCutPro == nil then enableHacksShortcutsInFinalCutPro = false end
 
 	--------------------------------------------------------------------------------
@@ -774,17 +746,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
 		--------------------------------------------------------------------------------
-		local enableHacksShortcutsInFinalCutPro = settings.get(metadata.settingsPrefix .. ".enableHacksShortcutsInFinalCutPro") or false
+		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
-		local enableHacksHUD 		= settings.get(metadata.settingsPrefix .. ".enableHacksHUD") or false
+		local enableHacksHUD 		= metadata.get("enableHacksHUD", false)
 
-		local hudButtonOne 			= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
-		local hudButtonTwo 			= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
-		local hudButtonThree 		= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
-		local hudButtonFour 		= settings.get(metadata.settingsPrefix .. "." .. currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
+		local hudButtonOne 			= metadata.get(currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
+		local hudButtonTwo 			= metadata.get(currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
+		local hudButtonThree 		= metadata.get(currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
+		local hudButtonFour 		= metadata.get(currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
 
 		if hudButtonOne ~= " (Unassigned)" then		hudButtonOne = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonOne["text"]),maxTextLength,"...") 	.. ")" end
 		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
@@ -794,15 +766,15 @@ end
 		--------------------------------------------------------------------------------
 		-- HUD Preferences:
 		--------------------------------------------------------------------------------
-		local hudShowInspector 		= settings.get(metadata.settingsPrefix .. ".hudShowInspector")
-		local hudShowDropTargets 	= settings.get(metadata.settingsPrefix .. ".hudShowDropTargets")
-		local hudShowButtons 		= settings.get(metadata.settingsPrefix .. ".hudShowButtons")
+		local hudShowInspector 		= metadata.get("hudShowInspector")
+		local hudShowDropTargets 	= metadata.get("hudShowDropTargets")
+		local hudShowButtons 		= metadata.get("hudShowButtons")
 
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarToolsEnabled")
-		local menubarHacksEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarHacksEnabled")
+		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
+		local menubarHacksEnabled = 		metadata.get("menubarHacksEnabled")
 
 		local settingsHUDButtons = {
 			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
@@ -878,17 +850,17 @@ end
 		--------------------------------------------------------------------------------
 		-- Enable Check for Updates:
 		--------------------------------------------------------------------------------
-		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates") or false
+		local enableCheckForUpdates = metadata.get("enableCheckForUpdates", false)
 
 		--------------------------------------------------------------------------------
 		-- Setup Menu:
 		--------------------------------------------------------------------------------
 		local settingsMenuTable = {
 			{ title = "-" },
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforHammerspoonUpdates, 								checked = hammerspoonCheckForUpdates	},
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchHammerspoonOnStartup, 								checked = startHammerspoonOnLaunch		},
+			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforUpdates, 								checked = hammerspoonCheckForUpdates	},
+			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchOnStartup, 										checked = startHammerspoonOnLaunch		},
 			{ title = "-" },
-			{ title = i18n("console") .. "...", 														fn = openHammerspoonConsole },
+			{ title = i18n("console") .. "...", 														fn = openConsole },
 			{ title = i18n("trashPreferences"), 														fn = resetSettings },
 			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
 			{ title = "-" },
@@ -902,18 +874,18 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
 		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarToolsEnabled")
-		local menubarHacksEnabled = 		settings.get(metadata.settingsPrefix .. ".menubarHacksEnabled")
+		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
+		local menubarHacksEnabled = 		metadata.get("menubarHacksEnabled")
 
 		--------------------------------------------------------------------------------
 		-- Get Enable Proxy Menu Item:
 		--------------------------------------------------------------------------------
-		local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon") or false
+		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", false)
 
 		--------------------------------------------------------------------------------
 		-- Get Menubar Display Mode from Settings:
 		--------------------------------------------------------------------------------
-		local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon") or false
+		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", false)
 
 		local settingsMenubar = {
 			{ title = i18n("showAdminTools"), 															fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
@@ -1070,8 +1042,8 @@ end
 	-- TOGGLE ENABLE HACKS HUD:
 	--------------------------------------------------------------------------------
 	function toggleEnableHacksHUD()
-		local enableHacksHUD = settings.get(metadata.settingsPrefix .. ".enableHacksHUD")
-		settings.set(metadata.settingsPrefix .. ".enableHacksHUD", not enableHacksHUD)
+		local enableHacksHUD = metadata.get("enableHacksHUD")
+		metadata.set("enableHacksHUD", not enableHacksHUD)
 
 		if enableHacksHUD then
 			hackshud.hide()
@@ -1086,55 +1058,31 @@ end
 	-- TOGGLE DEBUG MODE:
 	--------------------------------------------------------------------------------
 	function toggleDebugMode()
-		settings.set(metadata.settingsPrefix .. ".debugMode", not mod.debugMode)
+		metadata.set("debugMode", not mod.debugMode)
 		hs.reload()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE CHECK FOR UPDATES:
-	--------------------------------------------------------------------------------
-	function toggleCheckForUpdates()
-		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates")
-		settings.set(metadata.settingsPrefix .. ".enableCheckForUpdates", not enableCheckForUpdates)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE MENUBAR DISPLAY:
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplay(value)
-		local menubarEnabled = settings.get(metadata.settingsPrefix .. ".menubar" .. value .. "Enabled")
-		settings.set(metadata.settingsPrefix .. ".menubar" .. value .. "Enabled", not menubarEnabled)
+		local menubarEnabled = metadata.get("menubar" .. value .. "Enabled")
+		metadata.set("menubar" .. value .. "Enabled", not menubarEnabled)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE HUD OPTION:
 	--------------------------------------------------------------------------------
 	function toggleHUDOption(value)
-		local result = settings.get(metadata.settingsPrefix .. "." .. value)
-		settings.set(metadata.settingsPrefix .. "." .. value, not result)
+		local result = metadata.get(value)
+		metadata.get(value, not result)
 		hackshud.reload()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HAMMERSPOON DOCK ICON:
-	--------------------------------------------------------------------------------
-	function toggleHammerspoonDockIcon()
-		local originalValue = hs.dockIcon()
-		hs.dockIcon(not originalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HAMMERSPOON MENU ICON:
-	--------------------------------------------------------------------------------
-	function toggleHammerspoonMenuIcon()
-		local originalValue = hs.menuIcon()
-		hs.menuIcon(not originalValue)
 	end
 
 	--------------------------------------------------------------------------------
 	-- TOGGLE LAUNCH HAMMERSPOON ON START:
 	--------------------------------------------------------------------------------
-	function toggleLaunchHammerspoonOnStartup()
+	function toggleLaunchOnStartup()
 		local originalValue = hs.autoLaunch()
 		hs.autoLaunch(not originalValue)
 	end
@@ -1142,7 +1090,7 @@ end
 	--------------------------------------------------------------------------------
 	-- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
 	--------------------------------------------------------------------------------
-	function toggleCheckforHammerspoonUpdates()
+	function toggleCheckforUpdates()
 		local originalValue = hs.automaticallyCheckForUpdates()
 		hs.automaticallyCheckForUpdates(not originalValue)
 	end
@@ -1151,12 +1099,12 @@ end
 	-- TOGGLE ENABLE PROXY MENU ICON:
 	--------------------------------------------------------------------------------
 	function toggleEnableProxyMenuIcon()
-		local enableProxyMenuIcon = settings.get(metadata.settingsPrefix .. ".enableProxyMenuIcon")
+		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon")
 		if enableProxyMenuIcon == nil then
-			settings.set(metadata.settingsPrefix .. ".enableProxyMenuIcon", true)
+			metadata.set("enableProxyMenuIcon", true)
 			enableProxyMenuIcon = true
 		else
-			settings.set(metadata.settingsPrefix .. ".enableProxyMenuIcon", not enableProxyMenuIcon)
+			metadata.set("enableProxyMenuIcon", not enableProxyMenuIcon)
 		end
 
 		updateMenubarIcon()
@@ -1340,16 +1288,16 @@ end
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplayMode()
 
-		local displayMenubarAsIcon = settings.get(metadata.settingsPrefix .. ".displayMenubarAsIcon")
+		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon")
 
 
 		if displayMenubarAsIcon == nil then
-			 settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", true)
+			 metadata.set("displayMenubarAsIcon", true)
 		else
 			if displayMenubarAsIcon then
-				settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", false)
+				metadata.set("displayMenubarAsIcon", false)
 			else
-				settings.set(metadata.settingsPrefix .. ".displayMenubarAsIcon", true)
+				metadata.set("displayMenubarAsIcon", true)
 			end
 		end
 
@@ -1363,7 +1311,7 @@ end
 	--------------------------------------------------------------------------------
 	-- OPEN HAMMERSPOON CONSOLE:
 	--------------------------------------------------------------------------------
-	function openHammerspoonConsole()
+	function openConsole()
 		hs.openConsole()
 	end
 
@@ -1393,11 +1341,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
-		for i, v in ipairs(settings.getKeys()) do
-			if (v:sub(1,string.len(metadata.settingsPrefix .. "."))) == metadata.settingsPrefix .. "." then
-				settings.set(v, nil)
-			end
-		end
+		metadata.reset()
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro if running:
@@ -1416,20 +1360,6 @@ end
 		--------------------------------------------------------------------------------
 		hs.reload()
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET SCRIPT UPDATE:
-	--------------------------------------------------------------------------------
-	function getScriptUpdate()
-		os.execute('open "' .. metadata.updateURL .. '"')
-	end
-
-	--------------------------------------------------------------------------------
-	-- GO TO LATENITE FILMS SITE:
-	--------------------------------------------------------------------------------
-	function gotoLateNiteSite()
-		os.execute('open "' .. metadata.developerURL .. '"')
 	end
 
 --------------------------------------------------------------------------------
@@ -1535,7 +1465,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Save Values to Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get(metadata.settingsPrefix .. ".savedKeywords")
+		local savedKeywords = metadata.get("savedKeywords")
 		if savedKeywords == nil then savedKeywords = {} end
 		for i=1, 9 do
 			if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
@@ -1543,7 +1473,7 @@ end
 			end
 			savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
 		end
-		settings.set(metadata.settingsPrefix .. ".savedKeywords", savedKeywords)
+		metadata.set("savedKeywords", savedKeywords)
 
 		--------------------------------------------------------------------------------
 		-- Saved:
@@ -1565,7 +1495,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Get Values from Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = settings.get(metadata.settingsPrefix .. ".savedKeywords")
+		local savedKeywords = metadata.get("savedKeywords")
 		local restoredKeywordValues = {}
 
 		if savedKeywords == nil then
@@ -1922,14 +1852,14 @@ end
 
 				local selectedRow = noteChooser:selectedRow()
 
-				local recentNotes = settings.get(metadata.settingsPrefix .. ".recentNotes") or {}
+				local recentNotes = metadata.get("recentNotes", {})
 				if selectedRow == 1 then
 					table.insert(recentNotes, 1, result)
-					settings.set(metadata.settingsPrefix .. ".recentNotes", recentNotes)
+					metadata.set("recentNotes", recentNotes)
 				else
 					table.remove(recentNotes, selectedRow)
 					table.insert(recentNotes, 1, result)
-					settings.set(metadata.settingsPrefix .. ".recentNotes", recentNotes)
+					metadata.set("recentNotes", recentNotes)
 				end
 			end
 
@@ -1943,7 +1873,7 @@ end
 			--------------------------------------------------------------------------------
 			-- Chooser Query Changed by User:
 			--------------------------------------------------------------------------------
-			local recentNotes = settings.get(metadata.settingsPrefix .. ".recentNotes") or {}
+			local recentNotes = metadata.get("recentNotes", {})
 
 			local currentQuery = noteChooser:query()
 
@@ -2188,26 +2118,39 @@ end
 	--------------------------------------------------------------------------------
 	function checkForUpdates()
 
-		local enableCheckForUpdates = settings.get(metadata.settingsPrefix .. ".enableCheckForUpdates")
+		local enableCheckForUpdates = metadata.get("enableCheckForUpdates")
 		if enableCheckForUpdates then
 			debugMessage("Checking for updates.")
 			latestScriptVersion = nil
-			updateResponse, updateBody, updateHeader = http.get(metadata.checkUpdateURL, nil)
-			if updateResponse == 200 then
-				if updateBody:sub(1,8) == "LATEST: " then
-					--------------------------------------------------------------------------------
-					-- Update Script Version:
-					--------------------------------------------------------------------------------
-					latestScriptVersion = updateBody:sub(9)
+
+			http.asyncGet(metadata.checkUpdateURL, nil, function(responseCode, responseBody, _)
+				if responseCode < 0 then
+					log.ef(responseBody)
+					return
+				end
+				local responseJSON = hs.json.decode(responseBody)
+				local thisVersion = hs.processInfo.version
+				local remoteVersion = responseJSON.tag_name
+
+				-- Remove the "v":
+				if remoteVersion ~= nil then
+					if string.sub(remoteVersion, 1, 1) == "v" then
+						remoteVersion = string.sub(remoteVersion, 2)
+					end
+				end
+
+				if thisVersion and remoteVersion then
+					log.df("thisVersion: " .. thisVersion)
+					log.df("remoteVersion: " .. remoteVersion)
 
 					--------------------------------------------------------------------------------
 					-- macOS Notification:
 					--------------------------------------------------------------------------------
 					if not mod.shownUpdateNotification then
-						if latestScriptVersion > metadata.scriptVersion then
-							updateNotification = notify.new(function() getScriptUpdate() end):setIdImage(image.imageFromPath(metadata.iconPath))
+						if remoteVersion > thisVersion then
+							updateNotification = notify.new(function() hs.checkForUpdates() end):setIdImage(image.imageFromPath(metadata.iconPath))
 																:title(metadata.scriptName .. " Update Available")
-																:subTitle("Version " .. latestScriptVersion)
+																:subTitle("Version " .. remoteVersion)
 																:informativeText("Do you wish to install?")
 																:hasActionButton(true)
 																:actionButtonTitle("Install")
@@ -2216,10 +2159,10 @@ end
 							mod.shownUpdateNotification = true
 						end
 					end
-				end
-			end
-		end
 
+				end
+			end)
+		end
 	end
 
 --------------------------------------------------------------------------------
@@ -2276,7 +2219,7 @@ function finalCutProWindowWatcher()
 									-------------------------------------------------------------------------------
 									-- Hide HUD:
 									--------------------------------------------------------------------------------
-									if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+									if metadata.get("enableHacksHUD") then
 											hackshud:hide()
 											wasInFullscreenMode = true
 									end
@@ -2299,7 +2242,7 @@ function finalCutProWindowWatcher()
 				-- Show HUD:
 				--------------------------------------------------------------------------------
 				if wasInFullscreenMode then
-					if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+					if metadata.get("enableHacksHUD") then
 							hackshud:show()
 					end
 				end
@@ -2333,7 +2276,7 @@ function finalCutProWindowWatcher()
 			--------------------------------------------------------------------------------
 			-- Show the HUD:
 			--------------------------------------------------------------------------------
-			if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+			if metadata.get("enableHacksHUD") then
 				hackshud.show()
 			end
 		end
@@ -2374,7 +2317,7 @@ end
 		-- Enable Hacks HUD:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
-			if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+			if metadata.get("enableHacksHUD") then
 				hackshud:show()
 			end
 		end)
@@ -2416,7 +2359,7 @@ end
 		-------------------------------------------------------------------------------
 		-- If not focussed on Hammerspoon then hide HUD:
 		--------------------------------------------------------------------------------
-		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+		if metadata.get("enableHacksHUD") then
 			if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
 				hackshud:hide()
 			end
@@ -2452,25 +2395,10 @@ function finalCutProSettingsWatcher(files)
  		--------------------------------------------------------------------------------
 		-- Reload Hacks HUD:
 		--------------------------------------------------------------------------------
-		if settings.get(metadata.settingsPrefix .. ".enableHacksHUD") then
+		if metadata.get("enableHacksHUD") then
 			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
 		end
 
-    end
-end
-
---------------------------------------------------------------------------------
--- AUTOMATICALLY RELOAD HAMMERSPOON WHEN CONFIG FILES ARE UPDATED:
---------------------------------------------------------------------------------
-function hammerspoonConfigWatcher(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == ".lua" then
-            doReload = true
-        end
-    end
-    if doReload then
-        hs.reload()
     end
 end
 

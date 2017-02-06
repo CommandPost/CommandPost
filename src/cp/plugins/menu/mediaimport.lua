@@ -1,15 +1,13 @@
-local settings					= require("hs.settings")
-
 local metadata					= require("cp.metadata")
 
 --- The SHORTCUTS menu section.
 
 local PRIORITY = 1000
 
-local SETTING = metadata.settingsPrefix .. ".menubarMediaImportEnabled"
+local SETTING = "menubarMediaImportEnabled"
 
 local function isSectionDisabled()
-	local setting = settings.get(SETTING)
+	local setting = metadata.get(SETTING)
 	if setting ~= nil then
 		return not setting
 	else
@@ -18,8 +16,8 @@ local function isSectionDisabled()
 end
 
 local function toggleSectionDisabled()
-	local menubarEnabled = settings.get(SETTING)
-	settings.set(SETTING, not menubarEnabled)
+	local menubarEnabled = metadata.get(SETTING)
+	metadata.set(SETTING, not menubarEnabled)
 end
 
 --- The Plugin

@@ -1,5 +1,4 @@
 -- Imports
-local settings								= require("hs.settings")
 local osascript								= require("hs.osascript")
 local speech   								= require("hs.speech")
 
@@ -19,11 +18,11 @@ mod.commandTitles = {}
 mod.commandsByTitle = {}
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableVoiceCommands") or false
+	return metadata.get("enableVoiceCommands", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".enableVoiceCommands", value)
+	metadata.set("enableVoiceCommands", value)
 	mod.update()
 end
 
@@ -32,11 +31,11 @@ function mod.toggleEnabled()
 end
 
 function mod.isAnnouncementsEnabled()
-	return settings.get(metadata.settingsPrefix .. ".voiceCommandEnableAnnouncements") or false
+	return metadata.get("voiceCommandEnableAnnouncements", false)
 end
 
 function mod.setAnnouncementsEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".voiceCommandEnableAnnouncements", value)
+	metadata.set("voiceCommandEnableAnnouncements", value)
 end
 
 function mod.toggleAnnouncementsEnabled()
@@ -44,11 +43,11 @@ function mod.toggleAnnouncementsEnabled()
 end
 
 function mod.isVisualAlertsEnabled()
-	return settings.get(metadata.settingsPrefix .. ".voiceCommandEnableVisualAlerts") or false
+	return metadata.get("voiceCommandEnableVisualAlerts", false)
 end
 
 function mod.setVisualAlertsEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".voiceCommandEnableVisualAlerts", value)
+	metadata.set("voiceCommandEnableVisualAlerts", value)
 end
 
 function mod.toggleVisualAlertsEnabled()

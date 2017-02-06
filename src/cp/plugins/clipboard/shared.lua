@@ -1,5 +1,4 @@
 -- Imports
-local settings									= require("hs.settings")
 local host										= require("hs.host")
 local json										= require("hs.json")
 local base64									= require("hs.base64")
@@ -28,11 +27,11 @@ mod.maxHistory				= 5
 mod.log						= log
 
 function mod.isEnabled()
-	return settings.get(metadata.settingsPrefix .. ".enableSharedClipboard") or false
+	return metadata.get("enableSharedClipboard", false)
 end
 
 function mod.setEnabled(value)
-	settings.set(metadata.settingsPrefix .. ".enableSharedClipboard", value)
+	metadata.set("enableSharedClipboard", value)
 	mod.update()
 end
 
@@ -41,11 +40,11 @@ function mod.toggleEnabled()
 end
 
 function mod.getRootPath()
-	return settings.get(metadata.settingsPrefix .. ".sharedClipboardPath")
+	return metadata.get("sharedClipboardPath")
 end
 
 function mod.setRootPath(path)
-	settings.set(metadata.settingsPrefix .. ".sharedClipboardPath", path)
+	metadata.set("sharedClipboardPath", path)
 end
 
 local function watchUpdate(data, name)

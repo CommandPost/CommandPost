@@ -29,7 +29,6 @@ local geometry									= require("hs.geometry")
 local host										= require("hs.host")
 local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
-local settings									= require("hs.settings")
 local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
@@ -72,9 +71,9 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	-- Work out HUD height based off settings:
 	--------------------------------------------------------------------------------
-	local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-	local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-	local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+	local hudShowInspector 		= metadata.get("hudShowInspector")
+	local hudShowDropTargets 	= metadata.get("hudShowDropTargets")
+	local hudShowButtons 		= metadata.get("hudShowButtons")
 
 	local hudHeight = 0
 	if hudShowInspector then hudHeight = hudHeight + hackshud.heightInspector end
@@ -86,7 +85,7 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultHUDRect = {x = (screenFrame['w']/2) - (hackshud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hackshud.width, h = hudHeight}
-	local hudPosition = settings.get("fcpxHacks.hudPosition") or {}
+	local hudPosition = metadata.get("hudPosition", {})
 	if next(hudPosition) ~= nil then
 		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hackshud.width, h = hudHeight}
 	end
@@ -129,7 +128,7 @@ function hackshud.new()
 			if hackshud.active() then
 				local result = hackshud.hudWebView:hswindow():frame()
 				if result ~= nil then
-					settings.set("fcpxHacks.hudPosition", result)
+					metadata.set("hudPosition", result)
 				end
 			end
 		end
@@ -141,7 +140,7 @@ function hackshud.new()
 	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
 			if not hackshud.ignoreWindowChange then
-				settings.set("fcpxHacks.enableHacksHUD", false)
+				metadata.set("enableHacksHUD", false)
 			end
 		end
 	end, true)
@@ -247,7 +246,7 @@ end
 --------------------------------------------------------------------------------
 function hackshud.reload()
 
-	local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
+	local enableHacksHUD = metadata.get("enableHacksHUD")
 	local hudActive = hackshud.active()
 
 	hackshud.delete()
@@ -306,10 +305,10 @@ function hackshud.chooserAction(result)
 		-- Save the selection:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-		if hackshud.whichButton == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonOne", 	result) end
-		if hackshud.whichButton == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonTwo", 	result) end
-		if hackshud.whichButton == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonThree", 	result) end
-		if hackshud.whichButton == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonFour", 	result) end
+		if hackshud.whichButton == 1 then metadata.set(currentLanguage .. ".hudButtonOne", 	result) end
+		if hackshud.whichButton == 2 then metadata.set(currentLanguage .. ".hudButtonTwo", 	result) end
+		if hackshud.whichButton == 3 then metadata.set(currentLanguage .. ".hudButtonThree", 	result) end
+		if hackshud.whichButton == 4 then metadata.set(currentLanguage .. ".hudButtonFour", 	result) end
 	end
 
 	--------------------------------------------------------------------------------
@@ -322,7 +321,7 @@ function hackshud.chooserAction(result)
 	--------------------------------------------------------------------------------
 	-- Reload HUD:
 	--------------------------------------------------------------------------------
-	local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
+	local enableHacksHUD = metadata.get("enableHacksHUD")
 	if enableHacksHUD then
 		hackshud.reload()
 	end
@@ -650,7 +649,7 @@ function hackshud.choices()
 	-- Menu Items:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	local chooserMenuItems = settings.get("fcpxHacks." .. currentLanguage .. ".chooserMenuItems") or {}
+	local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems", {})
 	if next(chooserMenuItems) == nil then
 		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
 		local fcpxElements = ax.applicationElement(fcp:application())
@@ -718,7 +717,7 @@ function hackshud.choices()
 				end
 			end
 		end
-		settings.set("fcpxHacks." .. currentLanguage .. ".chooserMenuItems", chooserMenuItems)
+		metadata.set(currentLanguage .. ".chooserMenuItems", chooserMenuItems)
 	else
 		--------------------------------------------------------------------------------
 		-- Insert Menu Items from Settings:
@@ -732,7 +731,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
-	local allVideoEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
+	local allVideoEffects = metadata.get(currentLanguage .. ".allVideoEffects")
 	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 		for i=1, #allVideoEffects do
 			individualEffect = {
@@ -752,7 +751,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Audio Effects List:
 	--------------------------------------------------------------------------------
-	local allAudioEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
+	local allAudioEffects = metadata.get(currentLanguage .. ".allAudioEffects")
 	if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 		for i=1, #allAudioEffects do
 			individualEffect = {
@@ -772,7 +771,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Transitions List:
 	--------------------------------------------------------------------------------
-	local allTransitions = settings.get("fcpxHacks." .. currentLanguage .. ".allTransitions")
+	local allTransitions = metadata.get(currentLanguage .. ".allTransitions")
 	if allTransitions ~= nil and next(allTransitions) ~= nil then
 		for i=1, #allTransitions do
 			local individualEffect = {
@@ -792,7 +791,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Titles List:
 	--------------------------------------------------------------------------------
-	local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
+	local allTitles = metadata.get(currentLanguage .. ".allTitles")
 	if allTitles ~= nil and next(allTitles) ~= nil then
 		for i=1, #allTitles do
 			individualEffect = {
@@ -812,7 +811,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Generators List:
 	--------------------------------------------------------------------------------
-	local allGenerators = settings.get("fcpxHacks." .. currentLanguage .. ".allGenerators")
+	local allGenerators = metadata.get(currentLanguage .. ".allGenerators")
 	if allGenerators ~= nil and next(allGenerators) ~= nil then
 		for i=1, #allGenerators do
 			local individualEffect = {
@@ -886,9 +885,9 @@ function generateHTML()
 	--------------------------------------------------------------------------------
 	-- HUD Settings:
 	--------------------------------------------------------------------------------
-	local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-	local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-	local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+	local hudShowInspector 		= metadata.get("hudShowInspector")
+	local hudShowDropTargets 	= metadata.get("hudShowDropTargets")
+	local hudShowButtons 		= metadata.get("hudShowButtons")
 
 	--------------------------------------------------------------------------------
 	-- Get Custom HUD Button Values:
@@ -903,10 +902,10 @@ function generateHTML()
 		["function4"] = "",
 	}
 	local currentLanguage 	= fcp:getCurrentLanguage()
-	local hudButtonOne 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or unallocatedButton
-	local hudButtonTwo 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or unallocatedButton
-	local hudButtonThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonThree") 	or unallocatedButton
-	local hudButtonFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonFour") 	or unallocatedButton
+	local hudButtonOne 		= metadata.get(currentLanguage .. ".hudButtonOne") 	or unallocatedButton
+	local hudButtonTwo 		= metadata.get(currentLanguage .. ".hudButtonTwo") 	or unallocatedButton
+	local hudButtonThree 	= metadata.get(currentLanguage .. ".hudButtonThree") 	or unallocatedButton
+	local hudButtonFour 	= metadata.get(currentLanguage .. ".hudButtonFour") 	or unallocatedButton
 
 	local hudButtonOneURL	= hudButtonFunctionsToURL(hudButtonOne)
 	local hudButtonTwoURL	= hudButtonFunctionsToURL(hudButtonTwo)
@@ -1179,14 +1178,14 @@ end
 --------------------------------------------------------------------------------
 function hackshud.shareXML(incomingXML)
 
-	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+	local enableXMLSharing = metadata.get("enableXMLSharing", false)
 
 	if enableXMLSharing then
 
 		--------------------------------------------------------------------------------
 		-- Get Settings:
 		--------------------------------------------------------------------------------
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		local xmlSharingPath = metadata.get("xmlSharingPath")
 
 		--------------------------------------------------------------------------------
 		-- Get only the needed XML content:
