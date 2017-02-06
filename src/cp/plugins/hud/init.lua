@@ -138,18 +138,22 @@ function hackshud.setButton(index, value)
 	metadata.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 end
 
+function hackshud.isFrontmost()
+	return hackshud.hudWebView ~= nil and window.focusedWindow() == hackshud.hudWebView:hswindow()
+end
+
 function hackshud.update()
 	if hackshud.canShow() then
 		log.df("showing")
-		timer.doAfter(0.001, hackshud.show)
+		timer.doAfter(0.1, hackshud.show)
 	else
 		log.df("hiding")
-		timer.doAfter(0.001, hackshud.hide)
+		timer.doAfter(0.1, hackshud.hide)
 	end
 end
 
 function hackshud.canShow()
-	return (fcp:isFrontmost() or metadata.isFrontmost())
+	return (fcp:isFrontmost() or hackshud.isFrontmost() or metadata.isFrontmost())
 	and not fcp:fullScreenWindow():isShowing()
 	and not fcp:commandEditor():isShowing()
 	and hackshud.isEnabled()
