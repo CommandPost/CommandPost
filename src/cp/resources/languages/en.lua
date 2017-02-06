@@ -479,6 +479,7 @@ return {
 	hudXMLNameDialog					=			"How would you like to label this XML file?",
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
 	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
+	hudButtonItem						=			"Button %{count} (%{title})",
 
 	--------------------------------------------------------------------------------
 	-- CONSOLE:

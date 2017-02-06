@@ -1,6 +1,7 @@
 local mod = {}
 
 local settings			= require("hs.settings")
+local application		= require("hs.application")
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -29,7 +30,18 @@ end
 mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
 mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 
-mod.languagePath			= mod.scriptPath .. "/cp/resources/languages/"
+mod.languagePath		= mod.scriptPath .. "/cp/resources/languages/"
+
+mod.bundleID			= hs.processInfo["bundleID"]
+mod.processID			= hs.processInfo["processID"]
+
+function mod.application()
+	return application.applicationForPID(mod.processID)
+end
+
+function mod.isFrontmost()
+	return mod.application():isFrontmost()
+end
 
 -------------------------------------------------------------------------------
 -- Settings

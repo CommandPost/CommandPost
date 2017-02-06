@@ -42,9 +42,13 @@ local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
 local tools										= require("cp.tools")
 
+local log										= require("hs.logger").new("hud")
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
+
+local PRIORITY									= 10000
 
 hackshud.name									= i18n("hacksHUD")
 hackshud.width									= 350
@@ -55,6 +59,9 @@ hackshud.heightButtons							= 70
 hackshud.fcpGreen 								= "#3f9253"
 hackshud.fcpRed 								= "#d1393e"
 
+hackshud.maxButtons								= 4
+hackshud.maxTextLength 							= 25
+
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
@@ -64,6 +71,90 @@ hackshud.windowID								= nil
 
 hackshud.hsBundleID								= hs.processInfo["bundleID"]
 
+function hackshud.isEnabled()
+	return metadata.get("enableHacksHUD", false)
+end
+
+function hackshud.setEnabled(value)
+	metadata.set("enableHacksHUD", value)
+	hackshud.update()
+end
+
+function hackshud.toggleEnable()
+	hackshud.setEnabled(not hackshud.isEnabled())
+end
+
+function hackshud.isInspectorShown()
+	return metadata.get("hudShowInspector", true)
+end
+
+function hackshud.setInspectorShown(value)
+	metadata.set("hudShowInspector", value)
+end
+
+function hackshud.toggleInspectorShown()
+	hackshud.setInspectorShown(not hackshud.isInspectorShown())
+end
+
+function hackshud.isDropTargetsShown()
+	return metadata.get("hudShowDropTargets", true)
+end
+
+function hackshud.setDropTargetsShown(value)
+	return metadata.set("hudShowDropTargets", value)
+end
+
+function hackshud.toggleDropTargetsShown()
+	hackshud.setDropTargetsShown(not hackshud.isDropTargetsShown())
+end
+
+function hackshud.isButtonsShown()
+	return metadata.get("hudShowButtons", true)
+end
+
+function hackshud.setButtonsShown(value)
+	metadata.set("hudShowButtons", value)
+end
+
+function hackshud.toggleButtonsShown()
+	hackshud.setButtonsShown(not hackshud.isButtonsShown())
+end
+
+function hackshud.getPosition()
+	return metadata.get("hudPosition", {})
+end
+
+function hackshud.setPosition(value)
+	metadata.set("hudPosition", value)
+end
+
+function hackshud.getButton(index, defaultValue)
+	local currentLanguage = fcp:getCurrentLanguage()
+	return metadata.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
+end
+
+function hackshud.setButton(index, value)
+	local currentLanguage = fcp:getCurrentLanguage()
+	metadata.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
+end
+
+function hackshud.update()
+	if hackshud.canShow() then
+		log.df("showing")
+		timer.doAfter(0.001, hackshud.show)
+	else
+		log.df("hiding")
+		timer.doAfter(0.001, hackshud.hide)
+	end
+end
+
+function hackshud.canShow()
+	return (fcp:isFrontmost() or metadata.isFrontmost())
+	and not fcp:fullScreenWindow():isShowing()
+	and not fcp:commandEditor():isShowing()
+	and hackshud.isEnabled()
+end
+
 --------------------------------------------------------------------------------
 -- CREATE THE HACKS HUD:
 --------------------------------------------------------------------------------
@@ -72,9 +163,9 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	-- Work out HUD height based off settings:
 	--------------------------------------------------------------------------------
-	local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-	local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-	local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+	local hudShowInspector 		= hackshud.isInspectorShown()
+	local hudShowDropTargets 	= hackshud.isDropTargetsShown()
+	local hudShowButtons 		= hackshud.isButtonsShown()
 
 	local hudHeight = 0
 	if hudShowInspector then hudHeight = hudHeight + hackshud.heightInspector end
@@ -86,7 +177,7 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultHUDRect = {x = (screenFrame['w']/2) - (hackshud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hackshud.width, h = hudHeight}
-	local hudPosition = settings.get("fcpxHacks.hudPosition") or {}
+	local hudPosition = hackshud.getPosition()
 	if next(hudPosition) ~= nil then
 		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hackshud.width, h = hudHeight}
 	end
@@ -129,7 +220,7 @@ function hackshud.new()
 			if hackshud.active() then
 				local result = hackshud.hudWebView:hswindow():frame()
 				if result ~= nil then
-					settings.set("fcpxHacks.hudPosition", result)
+					hackshud.setPosition(result)
 				end
 			end
 		end
@@ -141,7 +232,7 @@ function hackshud.new()
 	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
 			if not hackshud.ignoreWindowChange then
-				settings.set("fcpxHacks.enableHacksHUD", false)
+				hackshud.setEnable(false)
 			end
 		end
 	end, true)
@@ -247,7 +338,6 @@ end
 --------------------------------------------------------------------------------
 function hackshud.reload()
 
-	local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
 	local hudActive = hackshud.active()
 
 	hackshud.delete()
@@ -278,55 +368,44 @@ function hackshud.assignButton(button)
 	--------------------------------------------------------------------------------
 	-- Was Final Cut Pro Open?
 	--------------------------------------------------------------------------------
-	hackshud.wasFinalCutProOpen = fcp:isFrontmost()
-	hackshud.whichButton = button
+	local wasFinalCutProOpen = fcp:isFrontmost()
+	local whichButton = button
+	local hudButtonChooser = nil
+	
+	local chooserAction = function(result)
 
-	hudButtonChooser = chooser.new(hackshud.chooserAction):bgDark(true)
-														  :fgColor(drawing.color.x11.snow)
-														  :subTextColor(drawing.color.x11.snow)
-														  :choices(hackshud.choices)
-														  :show()
-end
-
---------------------------------------------------------------------------------
--- CHOOSER ACTION:
---------------------------------------------------------------------------------
-function hackshud.chooserAction(result)
-
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	hudButtonChooser:hide()
-
-	--------------------------------------------------------------------------------
-	-- Perform Specific Function:
-	--------------------------------------------------------------------------------
-	if result ~= nil then
 		--------------------------------------------------------------------------------
-		-- Save the selection:
+		-- Hide Chooser:
 		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-		if hackshud.whichButton == 1 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonOne", 	result) end
-		if hackshud.whichButton == 2 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonTwo", 	result) end
-		if hackshud.whichButton == 3 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonThree", 	result) end
-		if hackshud.whichButton == 4 then settings.set("fcpxHacks." .. currentLanguage .. ".hudButtonFour", 	result) end
+		hudButtonChooser:hide()
+
+		--------------------------------------------------------------------------------
+		-- Perform Specific Function:
+		--------------------------------------------------------------------------------
+		if result ~= nil then
+			hackshud.setButton(whichButton, result)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Put focus back in Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if hackshud.wasFinalCutProOpen then
+			fcp:launch()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Reload HUD:
+		--------------------------------------------------------------------------------
+		if hackshud.isEnabled() then
+			hackshud.reload()
+		end
 	end
 
-	--------------------------------------------------------------------------------
-	-- Put focus back in Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if hackshud.wasFinalCutProOpen then
-		fcp:launch()
-	end
-
-	--------------------------------------------------------------------------------
-	-- Reload HUD:
-	--------------------------------------------------------------------------------
-	local enableHacksHUD = settings.get("fcpxHacks.enableHacksHUD")
-	if enableHacksHUD then
-		hackshud.reload()
-	end
-
+	hudButtonChooser = chooser.new(chooserAction):bgDark(true)
+												  :fgColor(drawing.color.x11.snow)
+												  :subTextColor(drawing.color.x11.snow)
+												  :choices(hackshud.choices)
+												  :show()
 end
 
 --------------------------------------------------------------------------------
@@ -650,7 +729,7 @@ function hackshud.choices()
 	-- Menu Items:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	local chooserMenuItems = settings.get("fcpxHacks." .. currentLanguage .. ".chooserMenuItems") or {}
+	local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems") or {}
 	if next(chooserMenuItems) == nil then
 		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
 		local fcpxElements = ax.applicationElement(fcp:application())
@@ -718,7 +797,7 @@ function hackshud.choices()
 				end
 			end
 		end
-		settings.set("fcpxHacks." .. currentLanguage .. ".chooserMenuItems", chooserMenuItems)
+		metadata.set(currentLanguage .. ".chooserMenuItems", chooserMenuItems)
 	else
 		--------------------------------------------------------------------------------
 		-- Insert Menu Items from Settings:
@@ -732,7 +811,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
-	local allVideoEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allVideoEffects")
+	local allVideoEffects = metadata.get(currentLanguage .. ".allVideoEffects")
 	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 		for i=1, #allVideoEffects do
 			individualEffect = {
@@ -752,7 +831,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Audio Effects List:
 	--------------------------------------------------------------------------------
-	local allAudioEffects = settings.get("fcpxHacks." .. currentLanguage .. ".allAudioEffects")
+	local allAudioEffects = metadata.get(currentLanguage .. ".allAudioEffects")
 	if allAudioEffects ~= nil and next(allAudioEffects) ~= nil then
 		for i=1, #allAudioEffects do
 			individualEffect = {
@@ -772,7 +851,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Transitions List:
 	--------------------------------------------------------------------------------
-	local allTransitions = settings.get("fcpxHacks." .. currentLanguage .. ".allTransitions")
+	local allTransitions = metadata.get(currentLanguage .. ".allTransitions")
 	if allTransitions ~= nil and next(allTransitions) ~= nil then
 		for i=1, #allTransitions do
 			local individualEffect = {
@@ -792,7 +871,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Titles List:
 	--------------------------------------------------------------------------------
-	local allTitles = settings.get("fcpxHacks." .. currentLanguage .. ".allTitles")
+	local allTitles = metadata.get(currentLanguage .. ".allTitles")
 	if allTitles ~= nil and next(allTitles) ~= nil then
 		for i=1, #allTitles do
 			individualEffect = {
@@ -812,7 +891,7 @@ function hackshud.choices()
 	--------------------------------------------------------------------------------
 	-- Generators List:
 	--------------------------------------------------------------------------------
-	local allGenerators = settings.get("fcpxHacks." .. currentLanguage .. ".allGenerators")
+	local allGenerators = metadata.get(currentLanguage .. ".allGenerators")
 	if allGenerators ~= nil and next(allGenerators) ~= nil then
 		for i=1, #allGenerators do
 			local individualEffect = {
@@ -886,9 +965,9 @@ function generateHTML()
 	--------------------------------------------------------------------------------
 	-- HUD Settings:
 	--------------------------------------------------------------------------------
-	local hudShowInspector 		= settings.get("fcpxHacks.hudShowInspector")
-	local hudShowDropTargets 	= settings.get("fcpxHacks.hudShowDropTargets")
-	local hudShowButtons 		= settings.get("fcpxHacks.hudShowButtons")
+	local hudShowInspector 		= hackshud.isInspectorShown()
+	local hudShowDropTargets 	= hackshud.isDropTargetsShown()
+	local hudShowButtons 		= hackshud.isButtonsShown()
 
 	--------------------------------------------------------------------------------
 	-- Get Custom HUD Button Values:
@@ -903,10 +982,10 @@ function generateHTML()
 		["function4"] = "",
 	}
 	local currentLanguage 	= fcp:getCurrentLanguage()
-	local hudButtonOne 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonOne") 	or unallocatedButton
-	local hudButtonTwo 		= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonTwo") 	or unallocatedButton
-	local hudButtonThree 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonThree") 	or unallocatedButton
-	local hudButtonFour 	= settings.get("fcpxHacks." .. currentLanguage .. ".hudButtonFour") 	or unallocatedButton
+	local hudButtonOne 		= metadata.get(currentLanguage .. ".hudButtonOne") 	or unallocatedButton
+	local hudButtonTwo 		= metadata.get(currentLanguage .. ".hudButtonTwo") 	or unallocatedButton
+	local hudButtonThree 	= metadata.get(currentLanguage .. ".hudButtonThree") 	or unallocatedButton
+	local hudButtonFour 	= metadata.get(currentLanguage .. ".hudButtonFour") 	or unallocatedButton
 
 	local hudButtonOneURL	= hudButtonFunctionsToURL(hudButtonOne)
 	local hudButtonTwoURL	= hudButtonFunctionsToURL(hudButtonTwo)
@@ -1179,14 +1258,14 @@ end
 --------------------------------------------------------------------------------
 function hackshud.shareXML(incomingXML)
 
-	local enableXMLSharing = settings.get("fcpxHacks.enableXMLSharing") or false
+	local enableXMLSharing = hackshud.isEnabled()
 
 	if enableXMLSharing then
 
 		--------------------------------------------------------------------------------
 		-- Get Settings:
 		--------------------------------------------------------------------------------
-		local xmlSharingPath = settings.get("fcpxHacks.xmlSharingPath")
+		local xmlSharingPath = hackshud.xmlSharing.getSharingPath()
 
 		--------------------------------------------------------------------------------
 		-- Get only the needed XML content:
@@ -1238,6 +1317,13 @@ function hackshud.shareXML(incomingXML)
 
 end
 
+function hackshud.init(xmlSharing, fcpxCmds)
+	hackshud.xmlSharing = xmlSharing
+	hackshud.fcpxCmds	= fcpxCmds
+	hackshud.update()
+	return hackshud
+end
+
 --------------------------------------------------------------------------------
 -- END OF MODULE:
 --------------------------------------------------------------------------------
@@ -1245,8 +1331,61 @@ end
 -- The Plugin
 local plugin = {}
 
+plugin.dependencies = {
+	["cp.plugins.sharing.xml"]		= "xmlSharing",
+	["cp.plugins.menu.tools"]		= "tools",
+	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
+}
+
 function plugin.init(deps)
-	hackshud.new()
+	hackshud.init(deps.xmlSharing, deps.fcpxCmds)
+	
+	fcp:watch({
+		active		= hackshud.update,
+		inactive	= hackshud.update,
+	})
+	
+	fcp:fullScreenWindow():watch({
+		show		= hackshud.update,
+		hide		= hackshud.update,
+	})
+	
+	fcp:commandEditor():watch({
+		show		= hackshud.update,
+		hide		= hackshud.update,
+	})
+	
+	-- Menus
+	local hudMenu = deps.tools:addMenu(PRIORITY, function() return i18n("hud") end)
+	hudMenu:addItem(1000, function()
+			return { title = i18n("enableHacksHUD"),	fn = hackshud.toggleEnabled,		checked = hackshud.isEnabled()}
+		end)
+	hudMenu:addSeparator(2000)
+	hudMenu:addMenu(3000, function() return i18n("enableHacksHUD") end)
+		:addItems(1000, function()
+			return {
+				{ title = i18n("showInspector"),	fn = hackshud.toggleInspctorShown,		checked = hackshud.isInspectorShown()},
+				{ title = i18n("showDropTargets"),	fn = hackshud.toggleDropTargetsShown, 	checked = hackshud.isDropTargetsShown()},
+				{ title = i18n("showButtons"),		fn = hackshud.toggleButtonsShown, 		checked = hackshud.isButtonsShown()},
+			}
+		end)
+		
+	hudMenu:addMenu(4000, function() return i18n("assignHUDButtons") end)
+		:addItems(1000, function() 
+			local items = {}
+			for i = 1, hackshud.maxButtons do
+				local button = hackshud.getButton(i, {})["text"] or i18n("unassigned")
+				button = tools.stringMaxLength(tools.cleanupButtonText(button), hackshud.maxTextLength, "...")
+				items[#items + 1] = { title = i18n("hudButtonItem", {count = i, title = button}),	fn = function() hackshud.assignButton(i) end }
+			end
+			return items
+		end)
+		
+	-- Commands
+	deps.fcpxCmds:add("FCPXHackHUD")
+		:activatedBy():ctrl():option():cmd("a")
+		:whenActivated(hackshud.toggleEnabled)
+	
 	return hackshud
 end
 
