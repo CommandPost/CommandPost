@@ -125,7 +125,7 @@ function plugin.init(deps)
 
 	local section = deps.prefs:addSection(PRIORITY)
 
-	local fcpxHacksLangs = section:addMenu(200, function() return metadata.scriptName .. " " .. i18n("language") end)
+	local fcpxHacksLangs = section:addMenu(200, function() return i18n("language") end)
 	fcpxHacksLangs:addItems(1, function()
 		local settingsLanguage = {}
 		local userLocale = metadata.get("language", tools.userLocale())

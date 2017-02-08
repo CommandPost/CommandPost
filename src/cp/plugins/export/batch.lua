@@ -297,8 +297,6 @@ function plugin.init(deps)
 	local section = deps.prefs:addSection(PRIORITY)
 	mod.manager = deps.manager
 
-	--section:addSeparator(0)
-
 	local menu = section:addMenu(1000, function() return i18n("batchExport") end)
 
 	menu:addItems(1, function()
@@ -314,8 +312,6 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("FCPXHackBatchExportFromBrowser")
 		:activatedBy():ctrl():option():cmd("e")
 		:whenActivated(mod.batchExport)
-
-	--section:addSeparator(9000)
 
 	-- Return the module
 	return mod
