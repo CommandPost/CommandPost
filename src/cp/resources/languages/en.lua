@@ -437,10 +437,11 @@ return {
 			--------------------------------------------------------------------------------
 			-- Touch Bar Location:
 			--------------------------------------------------------------------------------
-			mouseLocation						=			"Mouse Location",
+			draggable							=			"Draggable",
+			mouseLocation						=			"Centre of Mouse Location",
 			topCentreOfTimeline					=			"Top Centre of Timeline",
-			touchBarTipOne						=			"TIP: Hold down left OPTION",
-			touchBarTipTwo						=			"key & drag to move Touch Bar.",
+			touchBarTipOne						=			"You can drag by holding",
+			touchBarTipTwo						=			"down the left OPTION key.",
 
 			--------------------------------------------------------------------------------
 			-- Highlight Colour:
