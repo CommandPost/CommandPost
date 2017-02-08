@@ -95,7 +95,7 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackChangeBackupInterval")
+	deps.fcpxCmds:add("cpChangeBackupInterval")
 		:activatedBy():ctrl():option():cmd("b")
 		:whenActivated(mod.changeBackupInterval)
 

@@ -24,7 +24,7 @@ function plugin.init(deps)
 		return { title = i18n("open") .. " Final Cut Pro",	fn = openFcpx }
 	end)
 
-	global:add("FCPXHackLaunchFinalCutPro")
+	global:add("cpLaunchFinalCutPro")
 		:activatedBy():ctrl():alt():cmd("l")
 		:whenPressed(openFcpx)
 

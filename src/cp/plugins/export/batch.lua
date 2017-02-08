@@ -309,7 +309,7 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackBatchExportFromBrowser")
+	deps.fcpxCmds:add("cpBatchExportFromBrowser")
 		:activatedBy():ctrl():option():cmd("e")
 		:whenActivated(mod.batchExport)
 

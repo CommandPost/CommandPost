@@ -303,11 +303,11 @@ function plugin.init(deps)
 	deps.top:addItem(PRIORITY, createMenuItem)
 
 	-- Add Commands
-	deps.globalCmds:add("FCPXHackShowListOfShortcutKeys")
+	deps.globalCmds:add("cpShowListOfShortcutKeys")
 		:activatedBy():ctrl():option():cmd("f1")
 		:whenActivated(mod.displayShortcutList)
 
-	deps.fcpxCmds:add("FCPXHackOpenCommandEditor")
+	deps.fcpxCmds:add("cpOpenCommandEditor")
 		:titled(i18n("openCommandEditor"))
 		:whenActivated(mod.editCommands)
 

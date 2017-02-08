@@ -355,7 +355,7 @@ function plugin.init(deps)
 	-- Commands
 
 	for i = 1, MAX_SHORTCUTS do
-		deps.fcpxCmds:add("FCPXHackGenerators"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
+		deps.fcpxCmds:add("cpGenerators"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
 	end
 
 	return mod

@@ -83,7 +83,7 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleTimecodeOverlays")
+	deps.fcpxCmds:add("cpToggleTimecodeOverlays")
 		:activatedBy():ctrl():option():cmd("t")
 		:whenActivated(mod.toggleTimecodeOverlay)
 

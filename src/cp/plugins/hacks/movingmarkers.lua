@@ -98,7 +98,7 @@ function plugin.init(deps)
 	:addSeparator(PRIORITY + 1)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleMovingMarkers")
+	deps.fcpxCmds:add("cpToggleMovingMarkers")
 		:activatedBy():ctrl():option():cmd("y")
 		:whenActivated(mod.toggleMovingMarkers)
 
