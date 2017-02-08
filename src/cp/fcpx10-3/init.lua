@@ -63,7 +63,6 @@ local shortcut									= require("cp.commands.shortcut")
 --------------------------------------------------------------------------------
 
 local defaultSettings = {
-												["enableHacksShortcutsInFinalCutPro"] 			= false,
 												["chooserRememberLast"]							= true,
 												["chooserShowShortcuts"] 						= true,
 												["chooserShowHacks"] 							= true,
@@ -73,14 +72,9 @@ local defaultSettings = {
 												["chooserShowTitles"] 							= true,
 												["chooserShowGenerators"] 						= true,
 												["chooserShowMenuItems"]						= true,
-												["menubarToolsEnabled"] 						= true,
-												["menubarHacksEnabled"] 						= true,
-												["enableCheckForUpdates"]						= true,
 												["hudShowInspector"]							= true,
 												["hudShowDropTargets"]							= true,
 												["hudShowButtons"]								= true,
-												["checkForUpdatesInterval"]						= 600,
-												["displayMenubarAsIcon"]						= true,
 }
 
 --------------------------------------------------------------------------------
@@ -138,8 +132,6 @@ function menuManager()
 		local manualSection = mod._menuManager.addSection(10000)
 		manualSection:addItems(0, function() return generateMenuBar(true) end)
 
-		local menubarPrefs = plugins("cp.plugins.menu.preferences.menubar")
-		menubarPrefs:addItems(10000, function() return generateMenubarPrefsMenuBar() end)
 	end
 	return mod._menuManager
 end
@@ -300,11 +292,6 @@ function defaultShortcutKeys()
 	local controlOptionCommandShift = {"ctrl", "option", "command", "shift"}
 
     local defaultShortcutKeys = {
-        FCPXHackChangeBackupInterval                                = { characterString = shortcut.textToKeyCode("b"),            modifiers = controlOptionCommand,                   fn = function() changeBackupInterval() end,                         releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleTimecodeOverlays                              = { characterString = shortcut.textToKeyCode("t"),            modifiers = controlOptionCommand,                   fn = function() toggleTimecodeOverlay() end,                        releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackToggleMovingMarkers                                 = { characterString = shortcut.textToKeyCode("y"),            modifiers = controlOptionCommand,                   fn = function() toggleMovingMarkers() end,                          releasedFn = nil,                                                       repeatFn = nil },
-        FCPXHackAllowTasksDuringPlayback                            = { characterString = shortcut.textToKeyCode("p"),            modifiers = controlOptionCommand,                   fn = function() togglePerformTasksDuringPlayback() end,             releasedFn = nil,                                                       repeatFn = nil },
-
         FCPXHackSelectColorBoardPuckOne                             = { characterString = shortcut.textToKeyCode("m"),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "global") end,            releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackSelectColorBoardPuckTwo                             = { characterString = shortcut.textToKeyCode(","),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "shadows") end,           releasedFn = nil,                                                       repeatFn = nil },
         FCPXHackSelectColorBoardPuckThree                           = { characterString = shortcut.textToKeyCode("."),            modifiers = controlOptionCommand,                   fn = function() colorBoardSelectPuck("*", "midtones") end,          releasedFn = nil,                                                       repeatFn = nil },
@@ -398,8 +385,6 @@ function defaultShortcutKeys()
         FCPXHackExposurePuckTwoDown                                 = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "shadows", "down") end,        releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
         FCPXHackExposurePuckThreeDown                               = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "midtones", "down") end,       releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
         FCPXHackExposurePuckFourDown                                = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("exposure", "highlights", "down") end,     releasedFn = function() colorBoardSelectPuckRelease() end,  repeatFn = nil },
-
-        FCPXHackChangeSmartCollectionsLabel                         = { characterString = "",                                   modifiers = {},                                     fn = function() changeSmartCollectionsLabel() end,                  releasedFn = nil,                                                       repeatFn = nil },
 
         FCPXHackPuckOneMouse                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("*", "global") end,             releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
         FCPXHackPuckTwoMouse                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("*", "shadows") end,            releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
@@ -650,6 +635,7 @@ end
 	-- TEMPORARY - GENERATE MENU BAR:
 	--------------------------------------------------------------------------------
 	function generateMenuBar(refreshPlistValues)
+
 		--------------------------------------------------------------------------------
 		-- Maximum Length of Menubar Strings:
 		--------------------------------------------------------------------------------
@@ -665,78 +651,6 @@ end
 		-- Current Language:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-
-		--------------------------------------------------------------------------------
-		-- We only refresh plist values if necessary as this takes time:
-		--------------------------------------------------------------------------------
-		if refreshPlistValues == true then
-
-			--------------------------------------------------------------------------------
-			-- Read Final Cut Pro Preferences:
-			--------------------------------------------------------------------------------
-			local preferences = fcp:getPreferences()
-			if preferences == nil then
-				dialog.displayErrorMessage(i18n("failedToReadFCPPreferences"))
-				return "Fail"
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for Allow Moving Markers:
-			--------------------------------------------------------------------------------
-			mod.allowMovingMarkers = false
-			local result = plist.fileToTable(fcp:getPath() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist")
-			if result ~= nil then
-				if result["TLKMarkerHandler"] ~= nil then
-					if result["TLKMarkerHandler"]["Configuration"] ~= nil then
-						if result["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] ~= nil then
-							mod.allowMovingMarkers = result["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
-						end
-					end
-				end
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFPeriodicBackupInterval:
-			--------------------------------------------------------------------------------
-			if preferences["FFPeriodicBackupInterval"] == nil then
-				mod.FFPeriodicBackupInterval = "15"
-			else
-				mod.FFPeriodicBackupInterval = preferences["FFPeriodicBackupInterval"]
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFSuspendBGOpsDuringPlay:
-			--------------------------------------------------------------------------------
-			if preferences["FFSuspendBGOpsDuringPlay"] == nil then
-				mod.FFSuspendBGOpsDuringPlay = false
-			else
-				mod.FFSuspendBGOpsDuringPlay = preferences["FFSuspendBGOpsDuringPlay"]
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFEnableGuards:
-			--------------------------------------------------------------------------------
-			if preferences["FFEnableGuards"] == nil then
-				mod.FFEnableGuards = false
-			else
-				mod.FFEnableGuards = preferences["FFEnableGuards"]
-			end
-
-			--------------------------------------------------------------------------------
-			-- Get plist values for FFAutoRenderDelay:
-			--------------------------------------------------------------------------------
-			if preferences["FFAutoRenderDelay"] == nil then
-				mod.FFAutoRenderDelay = "0.3"
-			else
-				mod.FFAutoRenderDelay = preferences["FFAutoRenderDelay"]
-			end
-
-		end
-
-		--------------------------------------------------------------------------------
-		-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
-		--------------------------------------------------------------------------------
-		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
 
 		--------------------------------------------------------------------------------
 		-- Enable Hacks HUD:
@@ -760,12 +674,6 @@ end
 		local hudShowDropTargets 	= metadata.get("hudShowDropTargets")
 		local hudShowButtons 		= metadata.get("hudShowButtons")
 
-		--------------------------------------------------------------------------------
-		-- Get Menubar Settings:
-		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
-		local menubarHacksEnabled = 		metadata.get("menubarHacksEnabled")
-
 		local settingsHUDButtons = {
 			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
 			{ title = i18n("button") .. " " .. i18n("two") .. hudButtonTwo, 							fn = function() hackshud.assignButton(2) end },
@@ -774,8 +682,8 @@ end
 		}
 
 		-- The main menu
-		local menuTable = {
-		}
+		local menuTable = {}
+
 		local settingsHUD = {
 			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
@@ -790,182 +698,14 @@ end
 		local toolsTable = {
 			{ title = i18n("hud"),																		menu = hudMenu },
 		}
-		local advancedTable = {
-			{ title = "-" },
-			{ title = i18n("enableHacksShortcuts"), 													fn = toggleEnableHacksShortcutsInFinalCutPro, 						checked = enableHacksShortcutsInFinalCutPro},
-			{ title = "-" },
-			{ title = i18n("enableTimecodeOverlay"), 													fn = toggleTimecodeOverlay, 										checked = mod.FFEnableGuards },
-			{ title = i18n("enableMovingMarkers"), 														fn = toggleMovingMarkers, 											checked = mod.allowMovingMarkers },
-			{ title = i18n("enableRenderingDuringPlayback"),											fn = togglePerformTasksDuringPlayback, 								checked = not mod.FFSuspendBGOpsDuringPlay },
-			{ title = "-" },
-			{ title = i18n("changeBackupInterval") .. " (" .. tostring(mod.FFPeriodicBackupInterval) .. " " .. i18n("mins") .. ")", fn = changeBackupInterval },
-			{ title = i18n("changeSmartCollectionLabel"),												fn = changeSmartCollectionsLabel },
-		}
-		local hacksTable = {
-
-		}
 
 		--------------------------------------------------------------------------------
 		-- Setup Menubar:
 		--------------------------------------------------------------------------------
+		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
 		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
-		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
 
 		return menuTable
-	end
-
-	--------------------------------------------------------------------------------
-	-- TEMPORARY - GENERATE MENU PREFERENCES:
-	--------------------------------------------------------------------------------
-	function generateMenubarPrefsMenuBar()
-		--------------------------------------------------------------------------------
-		-- Get Menubar Settings:
-		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
-		local menubarHacksEnabled = 		metadata.get("menubarHacksEnabled")
-
-		local settingsMenubar = {
-			{ title = i18n("showAdminTools"), 															fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
-		}
-		return settingsMenubar
-	end
-
-	--------------------------------------------------------------------------------
-	-- UPDATE MENUBAR ICON:
-	--------------------------------------------------------------------------------
-	function updateMenubarIcon()
-		menuManager():updateMenubarIcon()
-	end
-
---------------------------------------------------------------------------------
--- CHANGE:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- FCPX CHANGE BACKUP INTERVAL:
-	--------------------------------------------------------------------------------
-	function changeBackupInterval()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		if fcp:getPreference("FFPeriodicBackupInterval") == nil then
-			mod.FFPeriodicBackupInterval = 15
-		else
-			mod.FFPeriodicBackupInterval = fcp:getPreference("FFPeriodicBackupInterval")
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeBackupIntervalMessage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Ask user what to set the backup interval to:
-		--------------------------------------------------------------------------------
-		local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), mod.FFPeriodicBackupInterval)
-		if not userSelectedBackupInterval then
-			return "Cancel"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("FFPeriodicBackupInterval", tostring(userSelectedBackupInterval))
-		if result == nil then
-			dialog.displayErrorMessage(i18n("backupIntervalFail"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE SMART COLLECTIONS LABEL:
-	--------------------------------------------------------------------------------
-	function changeSmartCollectionsLabel()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings'")
-		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Ask user what to set the backup interval to:
-		--------------------------------------------------------------------------------
-		local userSelectedSmartCollectionsLabel = dialog.displayTextBoxMessage(i18n("smartCollectionsLabelTextbox"), i18n("smartCollectionsLabelError"), tools.trim(FFOrganizerSmartCollections))
-		if not userSelectedSmartCollectionsLabel then
-			return "Cancel"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist for every Flexo language:
-		--------------------------------------------------------------------------------
-		local executeCommands = {}
-		for k, v in pairs(fcp:getFlexoLanguages()) do
-			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp:getFlexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
-			executeCommands[#executeCommands + 1] = executeCommand
-		end
-		local result = tools.executeWithAdministratorPrivileges(executeCommands)
-		if type(result) == "string" then
-			dialog.displayErrorMessage(result)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
 	end
 
 --------------------------------------------------------------------------------
@@ -989,160 +729,12 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE MENUBAR DISPLAY:
-	--------------------------------------------------------------------------------
-	function toggleMenubarDisplay(value)
-		local menubarEnabled = metadata.get("menubar" .. value .. "Enabled")
-		metadata.set("menubar" .. value .. "Enabled", not menubarEnabled)
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE HUD OPTION:
 	--------------------------------------------------------------------------------
 	function toggleHUDOption(value)
 		local result = metadata.get(value)
 		metadata.get(value, not result)
 		hackshud.reload()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HACKS SHORTCUTS IN FINAL CUT PRO:
-	--------------------------------------------------------------------------------
-	function toggleEnableHacksShortcutsInFinalCutPro()
-		plugins("cp.plugins.hacks.shortcuts").toggleEditable()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MOVING MARKERS:
-	--------------------------------------------------------------------------------
-	function toggleMovingMarkers()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		mod.allowMovingMarkers = false
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :TLKMarkerHandler:Configuration:'Allow Moving Markers'\" '" .. fcp:getPath() .. "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist'")
-		if tools.trim(executeResult) == "true" then mod.allowMovingMarkers = true end
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		if mod.allowMovingMarkers then
-			local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if type(result) == "string" then
-				dialog.displayErrorMessage(result)
-			end
-		else
-			local executeStatus = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp:getPath() .. [[/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist']])
-			if type(result) == "string" then
-				dialog.displayErrorMessage(result)
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE PERFORM TASKS DURING PLAYBACK:
-	--------------------------------------------------------------------------------
-	function togglePerformTasksDuringPlayback()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		if fcp:getPreference("FFSuspendBGOpsDuringPlay") == nil then
-			mod.FFSuspendBGOpsDuringPlay = false
-		else
-			mod.FFSuspendBGOpsDuringPlay = fcp:getPreference("FFSuspendBGOpsDuringPlay")
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("togglingBackgroundTasksRestart") .. "\n\n" ..i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("FFSuspendBGOpsDuringPlay", not mod.FFSuspendBGOpsDuringPlay)
-		if result == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE MENUBAR DISPLAY MODE:
-	--------------------------------------------------------------------------------
-	function toggleMenubarDisplayMode()
-
-		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon")
-
-
-		if displayMenubarAsIcon == nil then
-			 metadata.set("displayMenubarAsIcon", true)
-		else
-			if displayMenubarAsIcon then
-				metadata.set("displayMenubarAsIcon", false)
-			else
-				metadata.set("displayMenubarAsIcon", true)
-			end
-		end
-
-		updateMenubarIcon()
 	end
 
 --------------------------------------------------------------------------------
@@ -1170,7 +762,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		--------------------------------------------------------------------------------
 		-- Check to see if the Keyword Editor is already open:
@@ -1273,7 +865,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		--------------------------------------------------------------------------------
 		-- Get Values from Settings:
@@ -1399,7 +991,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		--------------------------------------------------------------------------------
 		-- Show the Color Board with the correct panel
@@ -1462,7 +1054,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		colorBoard = fcp:colorBoard()
 
@@ -1706,7 +1298,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		--------------------------------------------------------------------------------
 		-- Change Value of Zoom Slider:
@@ -1862,30 +1454,6 @@ end
 
 		return true
 
-	end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     C O M M O N    F U N C T I O N S                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- GENERAL:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- DELETE ALL HIGHLIGHTS:
-	--------------------------------------------------------------------------------
-	function deleteAllHighlights()
-		plugins("cp.plugins.browser.playhead").deleteHighlight()
 	end
 
 --------------------------------------------------------------------------------
@@ -2077,7 +1645,7 @@ end
 		--------------------------------------------------------------------------------
 		-- Delete the Mouse Circle:
 		--------------------------------------------------------------------------------
-		deleteAllHighlights()
+		plugins("cp.plugins.browser.playhead").deleteHighlight()
 
 		-------------------------------------------------------------------------------
 		-- If not focussed on Hammerspoon then hide HUD:
@@ -2113,7 +1681,7 @@ function finalCutProSettingsWatcher(files)
     	--------------------------------------------------------------------------------
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
-    	timer.doAfter(0.0000000000001, function() updateMenubarIcon() end)
+    	timer.doAfter(0.0000000000001, function() menuManager():updateMenubarIcon() end)
 
  		--------------------------------------------------------------------------------
 		-- Reload Hacks HUD:

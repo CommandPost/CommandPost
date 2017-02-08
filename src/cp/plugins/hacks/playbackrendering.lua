@@ -1,42 +1,46 @@
 local application		= require("hs.application")
-local log				= require("hs.logger").new("timecodeoverlay")
+local log				= require("hs.logger").new("playbackrendering")
 
 local metadata			= require("cp.metadata")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
+local plist				= require("cp.plist")
+local tools				= require("cp.tools")
 
--- Constants:
+-- Constants
 
-local PRIORITY 			= 5000
+local PRIORITY 			= 5500
 local DEFAULT_VALUE		= false
-local PREFERENCES_KEY 	= "FFEnableGuards"
+local PREFERENCES_KEY 	= "FFSuspendBGOpsDuringPlay"
 
 local mod = {}
 
--- The Module:
+-- The Module
 
 function mod.isEnabled()
-	local FFEnableGuards = DEFAULT_VALUE
+
+	local FFSuspendBGOpsDuringPlay = DEFAULT_VALUE
 	local preferences = fcp:getPreferences()
 	if preferences and preferences[PREFERENCES_KEY] then
-		FFEnableGuards = preferences[PREFERENCES_KEY]
+		FFSuspendBGOpsDuringPlay = preferences[PREFERENCES_KEY]
 	end
-	return FFEnableGuards
+	return FFSuspendBGOpsDuringPlay
+
 end
 
-function mod.toggleTimecodeOverlay()
+function mod.togglePerformTasksDuringPlayback()
 
 	--------------------------------------------------------------------------------
 	-- Get existing value:
 	--------------------------------------------------------------------------------
-	local FFEnableGuards = mod.isEnabled()
+	local FFSuspendBGOpsDuringPlay = mod.isEnabled()
 
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running...
 	--------------------------------------------------------------------------------
 	local restartStatus = false
 	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+		if dialog.displayYesNoQuestion(i18n("togglingBackgroundTasksRestart") .. "\n\n" ..i18n("doYouWantToContinue")) then
 			restartStatus = true
 		else
 			return "Done"
@@ -46,7 +50,7 @@ function mod.toggleTimecodeOverlay()
 	--------------------------------------------------------------------------------
 	-- Update plist:
 	--------------------------------------------------------------------------------
-	local result = fcp:setPreference(PREFERENCES_KEY, not FFEnableGuards)
+	local result = fcp:setPreference(PREFERENCES_KEY, not FFSuspendBGOpsDuringPlay)
 	if result == nil then
 		dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 		return "Failed"
@@ -64,7 +68,6 @@ function mod.toggleTimecodeOverlay()
 			return "Failed"
 		end
 	end
-
 end
 
 --- The Plugin:
@@ -79,13 +82,13 @@ plugin.dependencies = {
 function plugin.init(deps)
 
 	deps.timeline:addItem(PRIORITY, function()
-		return { title = i18n("enableTimecodeOverlay"),	fn = mod.toggleTimecodeOverlay, checked=mod.isEnabled() }
+		return { title = i18n("enableRenderingDuringPlayback"),	fn = mod.togglePerformTasksDuringPlayback, checked=mod.isEnabled() }
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleTimecodeOverlays")
-		:activatedBy():ctrl():option():cmd("t")
-		:whenActivated(mod.toggleTimecodeOverlay)
+	deps.fcpxCmds:add("FCPXHackAllowTasksDuringPlayback")
+		:activatedBy():ctrl():option():cmd("p")
+		:whenActivated(mod.togglePerformTasksDuringPlayback)
 
 	return mod
 

@@ -29,24 +29,6 @@ local tools										= require("cp.tools")
 local metadata									= require("cp.metadata")
 
 --------------------------------------------------------------------------------
--- RETRIEVES THE PLUGINS MANAGER:
--- If `pluginPath` is provided, the named plugin will be returned. If not,
--- the plugins module is returned.
---------------------------------------------------------------------------------
-function plugins(pluginPath)
-	if not mod._plugins then
-		mod._plugins = require("cp.plugins")
-		mod._plugins.init("cp.plugins")
-	end
-
-	if pluginPath then
-		return mod._plugins(pluginPath)
-	else
-		return mod._plugins
-	end
-end
-
---------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:
 --------------------------------------------------------------------------------
 local function as(appleScript)
