@@ -32,7 +32,7 @@ To build your own version of CommandPost, first download or clone this repositor
 
 Next download or clone, then build the [standalone app](https://github.com/CommandPost/CommandPost-App):
 
-1. Create a self-signed Code Signing certificate named 'Internal Code Signing' as described [here](http://bd808.com/blog/2013/10/21/creating-a-self-signed-code-certificate-for-xcode/). 
+1. Create a self-signed Code Signing certificate named **Internal Code Signing** as explained [here](http://bd808.com/blog/2013/10/21/creating-a-self-signed-code-certificate-for-xcode/) - however, please make sure you label the certificate "Internal Code Signing" and not "Self-signed Applications".
 2. Open a Terminal window.
 3. Navigate to the CommandPost-App project root directory.
 4. Install `pip` by following [these instructions](https://packaging.python.org/installing/#install-pip-setuptools-and-wheel).
