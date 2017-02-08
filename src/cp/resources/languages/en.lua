@@ -462,7 +462,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
-			console								=			"Console",
+			openConsole							=			"Open Error Console",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
@@ -472,7 +472,7 @@ return {
 	-- HACKS HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
-	hacksHUD							=			"Hacks HUD",
+	hacksHUD							=			"CommandPost HUD",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
 	betterPerformance					=			"Better Performance",

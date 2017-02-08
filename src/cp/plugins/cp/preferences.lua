@@ -115,7 +115,7 @@ function plugin.init(deps)
 	:addSeparator(PRIORITY+4)
 
 	:addItem(PRIORITY+5, function()
-		return { title = i18n("console") .. "...",	fn = function() hs.openConsole() end }
+		return { title = i18n("openConsole"),	fn = function() hs.openConsole() end }
 	end)
 
 	deps.menubar:addSeparator(MENUBAR_OPTIONS_PRIORITY)
