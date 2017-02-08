@@ -2,1394 +2,1394 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FCPXCopyWithCustomLabel</key>
+	<key>cpCopyWithCustomLabel</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
 		<string>FCPXCopyWithCustomLabel:</string>
 	</dict>
-	<key>FCPXCopyWithCustomLabelAndFolder</key>
+	<key>cpCopyWithCustomLabelAndFolder</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXCopyWithCustomLabelAndFolder:</string>
+		<string>cpCopyWithCustomLabelAndFolder:</string>
 	</dict>
-	<key>FCPXAddNoteToSelectedClip</key>
+	<key>cpAddNoteToSelectedClip</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXAddNoteToSelectedClip:</string>
+		<string>cpAddNoteToSelectedClip:</string>
 	</dict>
-	<key>FCPXHackSelectForward</key>
+	<key>cpSelectForward</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectForward:</string>
+		<string>cpSelectForward:</string>
 	</dict>
-	<key>FCPXHackSelectBackwards</key>
+	<key>cpSelectBackwards</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectBackwards:</string>
+		<string>cpSelectBackwards:</string>
 	</dict>
-	<key>FCPXHackToggleVoiceCommands</key>
+	<key>cpToggleVoiceCommands</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackToggleVoiceCommands:</string>
+		<string>cpToggleVoiceCommands:</string>
 	</dict>
-	<key>FCPXHackLockPlayhead</key>
+	<key>cpLockPlayhead</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackLockPlayhead:</string>
+		<string>cpLockPlayhead:</string>
 	</dict>
-	<key>FCPXHackHUD</key>
+	<key>cpHUD</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackHUD:</string>
+		<string>cpHUD:</string>
 	</dict>
-	<key>FCPXHackGeneratorsOne</key>
+	<key>cpGeneratorsOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackGeneratorsOne:</string>
+		<string>cpGeneratorsOne:</string>
 	</dict>
-	<key>FCPXHackGeneratorsTwo</key>
+	<key>cpGeneratorsTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackGeneratorsTwo:</string>
+		<string>cpGeneratorsTwo:</string>
 	</dict>
-	<key>FCPXHackGeneratorsThree</key>
+	<key>cpGeneratorsThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackGeneratorsThree:</string>
+		<string>cpGeneratorsThree:</string>
 	</dict>
-	<key>FCPXHackGeneratorsFour</key>
+	<key>cpGeneratorsFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackGeneratorsFour:</string>
+		<string>cpGeneratorsFour:</string>
 	</dict>
-	<key>FCPXHackGeneratorsFive</key>
+	<key>cpGeneratorsFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackGeneratorsFive:</string>
+		<string>cpGeneratorsFive:</string>
 	</dict>
-	<key>FCPXHackTitlesOne</key>
+	<key>cpTitlesOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTitlesOne:</string>
+		<string>cpTitlesOne:</string>
 	</dict>
-	<key>FCPXHackTitlesTwo</key>
+	<key>cpTitlesTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTitlesTwo:</string>
+		<string>cpTitlesTwo:</string>
 	</dict>
-	<key>FCPXHackTitlesThree</key>
+	<key>cpTitlesThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTitlesThree:</string>
+		<string>cpTitlesThree:</string>
 	</dict>
-	<key>FCPXHackTitlesFour</key>
+	<key>cpTitlesFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTitlesFour:</string>
+		<string>cpTitlesFour:</string>
 	</dict>
-	<key>FCPXHackTitlesFive</key>
+	<key>cpTitlesFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTitlesFive:</string>
+		<string>cpTitlesFive:</string>
 	</dict>
-	<key>FCPXHackTransitionsOne</key>
+	<key>cpTransitionsOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTransitionsOne:</string>
+		<string>cpTransitionsOne:</string>
 	</dict>
-	<key>FCPXHackTransitionsTwo</key>
+	<key>cpTransitionsTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTransitionsTwo:</string>
+		<string>cpTransitionsTwo:</string>
 	</dict>
-	<key>FCPXHackTransitionsThree</key>
+	<key>cpTransitionsThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTransitionsThree:</string>
+		<string>cpTransitionsThree:</string>
 	</dict>
-	<key>FCPXHackTransitionsFour</key>
+	<key>cpTransitionsFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTransitionsFour:</string>
+		<string>cpTransitionsFour:</string>
 	</dict>
-	<key>FCPXHackTransitionsFive</key>
+	<key>cpTransitionsFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackTransitionsFive:</string>
+		<string>cpTransitionsFive:</string>
 	</dict>
-	<key>FCPXHackToggleTouchBar</key>
+	<key>cpToggleTouchBar</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackToggleTouchBar:</string>
+		<string>cpToggleTouchBar:</string>
 	</dict>
-	<key>FCPXHackConsole</key>
+	<key>cpConsole</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackConsole:</string>
+		<string>cpConsole:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle01Video</key>
+	<key>cpCutSwitchAngle01Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle01Video:</string>
+		<string>cpCutSwitchAngle01Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle02Video</key>
+	<key>cpCutSwitchAngle02Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle02Video:</string>
+		<string>cpCutSwitchAngle02Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle03Video</key>
+	<key>cpCutSwitchAngle03Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle03Video:</string>
+		<string>cpCutSwitchAngle03Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle04Video</key>
+	<key>cpCutSwitchAngle04Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle04Video:</string>
+		<string>cpCutSwitchAngle04Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle05Video</key>
+	<key>cpCutSwitchAngle05Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle05Video:</string>
+		<string>cpCutSwitchAngle05Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle06Video</key>
+	<key>cpCutSwitchAngle06Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle06Video:</string>
+		<string>cpCutSwitchAngle06Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle07Video</key>
+	<key>cpCutSwitchAngle07Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle07Video:</string>
+		<string>cpCutSwitchAngle07Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle08Video</key>
+	<key>cpCutSwitchAngle08Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle08Video:</string>
+		<string>cpCutSwitchAngle08Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle09Video</key>
+	<key>cpCutSwitchAngle09Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle09Video:</string>
+		<string>cpCutSwitchAngle09Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle10Video</key>
+	<key>cpCutSwitchAngle10Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle10Video:</string>
+		<string>cpCutSwitchAngle10Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle11Video</key>
+	<key>cpCutSwitchAngle11Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle11Video:</string>
+		<string>cpCutSwitchAngle11Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle12Video</key>
+	<key>cpCutSwitchAngle12Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle12Video:</string>
+		<string>cpCutSwitchAngle12Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle13Video</key>
+	<key>cpCutSwitchAngle13Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle13Video:</string>
+		<string>cpCutSwitchAngle13Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle14Video</key>
+	<key>cpCutSwitchAngle14Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle14Video:</string>
+		<string>cpCutSwitchAngle14Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle15Video</key>
+	<key>cpCutSwitchAngle15Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle15Video:</string>
+		<string>cpCutSwitchAngle15Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle16Video</key>
+	<key>cpCutSwitchAngle16Video</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle16Video:</string>
+		<string>cpCutSwitchAngle16Video:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle01Audio</key>
+	<key>cpCutSwitchAngle01Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle01Audio:</string>
+		<string>cpCutSwitchAngle01Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle02Audio</key>
+	<key>cpCutSwitchAngle02Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle02Audio:</string>
+		<string>cpCutSwitchAngle02Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle03Audio</key>
+	<key>cpCutSwitchAngle03Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle03Audio:</string>
+		<string>cpCutSwitchAngle03Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle04Audio</key>
+	<key>cpCutSwitchAngle04Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle04Audio:</string>
+		<string>cpCutSwitchAngle04Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle05Audio</key>
+	<key>cpCutSwitchAngle05Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle05Audio:</string>
+		<string>cpCutSwitchAngle05Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle06Audio</key>
+	<key>cpCutSwitchAngle06Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle06Audio:</string>
+		<string>cpCutSwitchAngle06Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle07Audio</key>
+	<key>cpCutSwitchAngle07Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle07Audio:</string>
+		<string>cpCutSwitchAngle07Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle08Audio</key>
+	<key>cpCutSwitchAngle08Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle08Audio:</string>
+		<string>cpCutSwitchAngle08Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle09Audio</key>
+	<key>cpCutSwitchAngle09Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle09Audio:</string>
+		<string>cpCutSwitchAngle09Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle10Audio</key>
+	<key>cpCutSwitchAngle10Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle10Audio:</string>
+		<string>cpCutSwitchAngle10Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle11Audio</key>
+	<key>cpCutSwitchAngle11Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle11Audio:</string>
+		<string>cpCutSwitchAngle11Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle12Audio</key>
+	<key>cpCutSwitchAngle12Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle12Audio:</string>
+		<string>cpCutSwitchAngle12Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle13Audio</key>
+	<key>cpCutSwitchAngle13Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle13Audio:</string>
+		<string>cpCutSwitchAngle13Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle14Audio</key>
+	<key>cpCutSwitchAngle14Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle14Audio:</string>
+		<string>cpCutSwitchAngle14Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle15Audio</key>
+	<key>cpCutSwitchAngle15Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle15Audio:</string>
+		<string>cpCutSwitchAngle15Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle16Audio</key>
+	<key>cpCutSwitchAngle16Audio</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle16Audio:</string>
+		<string>cpCutSwitchAngle16Audio:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle01Both</key>
+	<key>cpCutSwitchAngle01Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle01Both:</string>
+		<string>cpCutSwitchAngle01Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle02Both</key>
+	<key>cpCutSwitchAngle02Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle02Both:</string>
+		<string>cpCutSwitchAngle02Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle03Both</key>
+	<key>cpCutSwitchAngle03Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle03Both:</string>
+		<string>cpCutSwitchAngle03Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle04Both</key>
+	<key>cpCutSwitchAngle04Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle04Both:</string>
+		<string>cpCutSwitchAngle04Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle05Both</key>
+	<key>cpCutSwitchAngle05Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle05Both:</string>
+		<string>cpCutSwitchAngle05Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle06Both</key>
+	<key>cpCutSwitchAngle06Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle06Both:</string>
+		<string>cpCutSwitchAngle06Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle07Both</key>
+	<key>cpCutSwitchAngle07Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle07Both:</string>
+		<string>cpCutSwitchAngle07Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle08Both</key>
+	<key>cpCutSwitchAngle08Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle08Both:</string>
+		<string>cpCutSwitchAngle08Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle09Both</key>
+	<key>cpCutSwitchAngle09Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle09Both:</string>
+		<string>cpCutSwitchAngle09Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle10Both</key>
+	<key>cpCutSwitchAngle10Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle10Both:</string>
+		<string>cpCutSwitchAngle10Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle11Both</key>
+	<key>cpCutSwitchAngle11Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle11Both:</string>
+		<string>cpCutSwitchAngle11Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle12Both</key>
+	<key>cpCutSwitchAngle12Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle12Both:</string>
+		<string>cpCutSwitchAngle12Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle13Both</key>
+	<key>cpCutSwitchAngle13Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle13Both:</string>
+		<string>cpCutSwitchAngle13Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle14Both</key>
+	<key>cpCutSwitchAngle14Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle14Both:</string>
+		<string>cpCutSwitchAngle14Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle15Both</key>
+	<key>cpCutSwitchAngle15Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle15Both:</string>
+		<string>cpCutSwitchAngle15Both:</string>
 	</dict>
-	<key>FCPXHackCutSwitchAngle16Both</key>
+	<key>cpCutSwitchAngle16Both</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCutSwitchAngle16Both:</string>
+		<string>cpCutSwitchAngle16Both:</string>
 	</dict>
-	<key>FCPXHackMoveToPlayhead</key>
+	<key>cpMoveToPlayhead</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackMoveToPlayhead:</string>
+		<string>cpMoveToPlayhead:</string>
 	</dict>
 
-	<key>FCPXHackPuckOneMouse</key>
+	<key>cpPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackPuckOneMouse:</string>
+		<string>cpPuckOneMouse:</string>
 	</dict>
-	<key>FCPXHackPuckTwoMouse</key>
+	<key>cpPuckTwoMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackPuckTwoMouse:</string>
+		<string>cpPuckTwoMouse:</string>
 	</dict>
-	<key>FCPXHackPuckThreeMouse</key>
+	<key>cpPuckThreeMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackPuckThreeMouse:</string>
+		<string>cpPuckThreeMouse:</string>
 	</dict>
-	<key>FCPXHackPuckFourMouse</key>
+	<key>cpPuckFourMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackPuckFourMouse:</string>
+		<string>cpPuckFourMouse:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneMouse</key>
+	<key>cpColorPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneMouse:</string>
+		<string>cpColorPuckOneMouse:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwoMouse</key>
+	<key>cpColorPuckTwoMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwoMouse:</string>
+		<string>cpColorPuckTwoMouse:</string>
 	</dict>
-	<key>FCPXHackColorPuckThreeMouse</key>
+	<key>cpColorPuckThreeMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThreeMouse:</string>
+		<string>cpColorPuckThreeMouse:</string>
 	</dict>
-	<key>FCPXHackColorPuckFourMouse</key>
+	<key>cpColorPuckFourMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFourMouse:</string>
+		<string>cpColorPuckFourMouse:</string>
 	</dict>
 
-	<key>FCPXHackSaturationPuckOneMouse</key>
+	<key>cpSaturationPuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckOneMouse:</string>
+		<string>cpSaturationPuckOneMouse:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckTwoMouse</key>
+	<key>cpSaturationPuckTwoMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckTwoMouse:</string>
+		<string>cpSaturationPuckTwoMouse:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckThreeMouse</key>
+	<key>cpSaturationPuckThreeMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckThreeMouse:</string>
+		<string>cpSaturationPuckThreeMouse:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckFourMouse</key>
+	<key>cpSaturationPuckFourMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckFourMouse:</string>
+		<string>cpSaturationPuckFourMouse:</string>
 	</dict>
-	<key>FCPXHackExposurePuckOneMouse</key>
+	<key>cpExposurePuckOneMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckOneMouse:</string>
+		<string>cpExposurePuckOneMouse:</string>
 	</dict>
-	<key>FCPXHackExposurePuckTwoMouse</key>
+	<key>cpExposurePuckTwoMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckTwoMouse:</string>
+		<string>cpExposurePuckTwoMouse:</string>
 	</dict>
-	<key>FCPXHackExposurePuckThreeMouse</key>
+	<key>cpExposurePuckThreeMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckThreeMouse:</string>
+		<string>cpExposurePuckThreeMouse:</string>
 	</dict>
-	<key>FCPXHackExposurePuckFourMouse</key>
+	<key>cpExposurePuckFourMouse</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckFourMouse:</string>
+		<string>cpExposurePuckFourMouse:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneOne</key>
+	<key>cpSelectClipAtLaneOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneOne:</string>
+		<string>cpSelectClipAtLaneOne:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneTwo</key>
+	<key>cpSelectClipAtLaneTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneTwo:</string>
+		<string>cpSelectClipAtLaneTwo:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneThree</key>
+	<key>cpSelectClipAtLaneThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneThree:</string>
+		<string>cpSelectClipAtLaneThree:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneFour</key>
+	<key>cpSelectClipAtLaneFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneFour:</string>
+		<string>cpSelectClipAtLaneFour:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneFive</key>
+	<key>cpSelectClipAtLaneFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneFive:</string>
+		<string>cpSelectClipAtLaneFive:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneSix</key>
+	<key>cpSelectClipAtLaneSix</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneSix:</string>
+		<string>cpSelectClipAtLaneSix:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneSeven</key>
+	<key>cpSelectClipAtLaneSeven</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneSeven:</string>
+		<string>cpSelectClipAtLaneSeven:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneEight</key>
+	<key>cpSelectClipAtLaneEight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneEight:</string>
+		<string>cpSelectClipAtLaneEight:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneNine</key>
+	<key>cpSelectClipAtLaneNine</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneNine:</string>
+		<string>cpSelectClipAtLaneNine:</string>
 	</dict>
-	<key>FCPXHackSelectClipAtLaneTen</key>
+	<key>cpSelectClipAtLaneTen</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectClipAtLaneTen:</string>
+		<string>cpSelectClipAtLaneTen:</string>
 	</dict>
-	<key>FCPXHackChangeSmartCollectionsLabel</key>
+	<key>cpChangeSmartCollectionsLabel</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackChangeSmartCollectionLabel:</string>
+		<string>cpChangeSmartCollectionLabel:</string>
 	</dict>
-	<key>FCPXHackCreateOptimizedMediaOn</key>
+	<key>cpCreateOptimizedMediaOn</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateOptimizedMediaOn:</string>
+		<string>cpCreateOptimizedMediaOn:</string>
 	</dict>
-	<key>FCPXHackCreateOptimizedMediaOff</key>
+	<key>cpCreateOptimizedMediaOff</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateOptimizedMediaOff:</string>
+		<string>cpCreateOptimizedMediaOff:</string>
 	</dict>
-	<key>FCPXHackCreateMulticamOptimizedMediaOn</key>
+	<key>cpCreateMulticamOptimizedMediaOn</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateMulticamOptimizedMediaOn:</string>
+		<string>cpCreateMulticamOptimizedMediaOn:</string>
 	</dict>
-	<key>FCPXHackCreateMulticamOptimizedMediaOff</key>
+	<key>cpCreateMulticamOptimizedMediaOff</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateMulticamOptimizedMediaOff:</string>
+		<string>cpCreateMulticamOptimizedMediaOff:</string>
 	</dict>
-	<key>FCPXHackCreateProxyMediaOn</key>
+	<key>cpCreateProxyMediaOn</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateProxyMediaOn:</string>
+		<string>cpCreateProxyMediaOn:</string>
 	</dict>
-	<key>FCPXHackCreateProxyMediaOff</key>
+	<key>cpCreateProxyMediaOff</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackCreateProxyMediaOff:</string>
+		<string>cpCreateProxyMediaOff:</string>
 	</dict>
-	<key>FCPXHackLeaveInPlaceOn</key>
+	<key>cpLeaveInPlaceOn</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackLeaveInPlaceOn:</string>
+		<string>cpLeaveInPlaceOn:</string>
 	</dict>
-	<key>FCPXHackLeaveInPlaceOff</key>
+	<key>cpLeaveInPlaceOff</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackLeaveInPlaceOff:</string>
+		<string>cpLeaveInPlaceOff:</string>
 	</dict>
-	<key>FCPXHackBackgroundRenderOn</key>
+	<key>cpBackgroundRenderOn</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackBackgroundRenderOn:</string>
+		<string>cpBackgroundRenderOn:</string>
 	</dict>
-	<key>FCPXHackBackgroundRenderOff</key>
+	<key>cpBackgroundRenderOff</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackBackgroundRenderOff:</string>
+		<string>cpBackgroundRenderOff:</string>
 	</dict>
-	<key>FCPXHackChangeTimelineClipHeightUp</key>
+	<key>cpChangeTimelineClipHeightUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackChangeTimelineClipHeightUp:</string>
+		<string>cpChangeTimelineClipHeightUp:</string>
 	</dict>
-	<key>FCPXHackChangeTimelineClipHeightDown</key>
+	<key>cpChangeTimelineClipHeightDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackChangeTimelineClipHeightDown:</string>
+		<string>cpChangeTimelineClipHeightDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneUp</key>
+	<key>cpColorPuckOneUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneUp:</string>
+		<string>cpColorPuckOneUp:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwoUp</key>
+	<key>cpColorPuckTwoUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwoUp:</string>
+		<string>cpColorPuckTwoUp:</string>
 	</dict>
-	<key>FCPXHackColorPuckThreeUp</key>
+	<key>cpColorPuckThreeUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThreeUp:</string>
+		<string>cpColorPuckThreeUp:</string>
 	</dict>
-	<key>FCPXHackColorPuckFourUp</key>
+	<key>cpColorPuckFourUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFourUp:</string>
+		<string>cpColorPuckFourUp:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneDown</key>
+	<key>cpColorPuckOneDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneDown:</string>
+		<string>cpColorPuckOneDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwoDown</key>
+	<key>cpColorPuckTwoDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwoDown:</string>
+		<string>cpColorPuckTwoDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckThreeDown</key>
+	<key>cpColorPuckThreeDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThreeDown:</string>
+		<string>cpColorPuckThreeDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckFourDown</key>
+	<key>cpColorPuckFourDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFourDown:</string>
+		<string>cpColorPuckFourDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneLeft</key>
+	<key>cpColorPuckOneLeft</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneLeft:</string>
+		<string>cpColorPuckOneLeft:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwoLeft</key>
+	<key>cpColorPuckTwoLeft</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwoLeft:</string>
+		<string>cpColorPuckTwoLeft:</string>
 	</dict>
-	<key>FCPXHackColorPuckThreeLeft</key>
+	<key>cpColorPuckThreeLeft</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThreeLeft:</string>
+		<string>cpColorPuckThreeLeft:</string>
 	</dict>
-	<key>FCPXHackColorPuckFourLeft</key>
+	<key>cpColorPuckFourLeft</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFourLeft:</string>
+		<string>cpColorPuckFourLeft:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneRight</key>
+	<key>cpColorPuckOneRight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneRight:</string>
+		<string>cpColorPuckOneRight:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwoRight</key>
+	<key>cpColorPuckTwoRight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwoRight:</string>
+		<string>cpColorPuckTwoRight:</string>
 	</dict>
-	<key>FCPXHackColorPuckThreeRight</key>
+	<key>cpColorPuckThreeRight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThreeRight:</string>
+		<string>cpColorPuckThreeRight:</string>
 	</dict>
-	<key>FCPXHackColorPuckFourRight</key>
+	<key>cpColorPuckFourRight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFourRight:</string>
+		<string>cpColorPuckFourRight:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckOneUp</key>
+	<key>cpSaturationPuckOneUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckOneUp:</string>
+		<string>cpSaturationPuckOneUp:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckTwoUp</key>
+	<key>cpSaturationPuckTwoUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckTwoUp:</string>
+		<string>cpSaturationPuckTwoUp:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckThreeUp</key>
+	<key>cpSaturationPuckThreeUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckThreeUp:</string>
+		<string>cpSaturationPuckThreeUp:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckFourUp</key>
+	<key>cpSaturationPuckFourUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckFourUp:</string>
+		<string>cpSaturationPuckFourUp:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckOneDown</key>
+	<key>cpSaturationPuckOneDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckOneDown:</string>
+		<string>cpSaturationPuckOneDown:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckTwoDown</key>
+	<key>cpSaturationPuckTwoDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckTwoDown:</string>
+		<string>cpSaturationPuckTwoDown:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckThreeDown</key>
+	<key>cpSaturationPuckThreeDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckThreeDown:</string>
+		<string>cpSaturationPuckThreeDown:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckFourDown</key>
+	<key>cpSaturationPuckFourDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckFourDown:</string>
+		<string>cpSaturationPuckFourDown:</string>
 	</dict>
-	<key>FCPXHackExposurePuckOneUp</key>
+	<key>cpExposurePuckOneUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckOneUp:</string>
+		<string>cpExposurePuckOneUp:</string>
 	</dict>
-	<key>FCPXHackExposurePuckTwoUp</key>
+	<key>cpExposurePuckTwoUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckTwoUp:</string>
+		<string>cpExposurePuckTwoUp:</string>
 	</dict>
-	<key>FCPXHackExposurePuckThreeUp</key>
+	<key>cpExposurePuckThreeUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckThreeUp:</string>
+		<string>cpExposurePuckThreeUp:</string>
 	</dict>
-	<key>FCPXHackExposurePuckFourUp</key>
+	<key>cpExposurePuckFourUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckFourUp:</string>
+		<string>cpExposurePuckFourUp:</string>
 	</dict>
-	<key>FCPXHackExposurePuckOneDown</key>
+	<key>cpExposurePuckOneDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckOneDown:</string>
+		<string>cpExposurePuckOneDown:</string>
 	</dict>
-	<key>FCPXHackExposurePuckTwoDown</key>
+	<key>cpExposurePuckTwoDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckTwoDown:</string>
+		<string>cpExposurePuckTwoDown:</string>
 	</dict>
-	<key>FCPXHackExposurePuckThreeDown</key>
+	<key>cpExposurePuckThreeDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckThreeDown:</string>
+		<string>cpExposurePuckThreeDown:</string>
 	</dict>
-	<key>FCPXHackExposurePuckFourDown</key>
+	<key>cpExposurePuckFourDown</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckFourDown:</string>
+		<string>cpExposurePuckFourDown:</string>
 	</dict>
-	<key>FCPXHackColorPuckOne</key>
+	<key>cpColorPuckOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOne:</string>
+		<string>cpColorPuckOne:</string>
 	</dict>
-	<key>FCPXHackColorPuckTwo</key>
+	<key>cpColorPuckTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckTwo:</string>
+		<string>cpColorPuckTwo:</string>
 	</dict>
 
-	<key>FCPXHackColorPuckThree</key>
+	<key>cpColorPuckThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckThree:</string>
+		<string>cpColorPuckThree:</string>
 	</dict>
-	<key>FCPXHackColorPuckFour</key>
+	<key>cpColorPuckFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckFour:</string>
+		<string>cpColorPuckFour:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckOne</key>
+	<key>cpSaturationPuckOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckOne:</string>
+		<string>cpSaturationPuckOne:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckTwo</key>
+	<key>cpSaturationPuckTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckTwo:</string>
+		<string>cpSaturationPuckTwo:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckThree</key>
+	<key>cpSaturationPuckThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckThree:</string>
+		<string>cpSaturationPuckThree:</string>
 	</dict>
-	<key>FCPXHackSaturationPuckFour</key>
+	<key>cpSaturationPuckFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaturationPuckFour:</string>
+		<string>cpSaturationPuckFour:</string>
 	</dict>
-	<key>FCPXHackExposurePuckOne</key>
+	<key>cpExposurePuckOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckOne:</string>
+		<string>cpExposurePuckOne:</string>
 	</dict>
-	<key>FCPXHackExposurePuckTwo</key>
+	<key>cpExposurePuckTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckTwo:</string>
+		<string>cpExposurePuckTwo:</string>
 	</dict>
-	<key>FCPXHackExposurePuckThree</key>
+	<key>cpExposurePuckThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckThree:</string>
+		<string>cpExposurePuckThree:</string>
 	</dict>
-	<key>FCPXHackExposurePuckFour</key>
+	<key>cpExposurePuckFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackExposurePuckFour:</string>
+		<string>cpExposurePuckFour:</string>
 	</dict>
-	<key>FCPXHackColorPuckOneUp</key>
+	<key>cpColorPuckOneUp</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackColorPuckOneUp:</string>
+		<string>cpColorPuckOneUp:</string>
 	</dict>
-	<key>FCPXHackScrollingTimeline</key>
+	<key>cpScrollingTimeline</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackScrollingTimeline:</string>
+		<string>cpScrollingTimeline:</string>
 	</dict>
-	<key>FCPXHackEffectsOne</key>
+	<key>cpEffectsOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackEffectsOne:</string>
+		<string>cpEffectsOne:</string>
 	</dict>
-	<key>FCPXHackEffectsTwo</key>
+	<key>cpEffectsTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackEffectsTwo:</string>
+		<string>cpEffectsTwo:</string>
 	</dict>
-	<key>FCPXHackEffectsThree</key>
+	<key>cpEffectsThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackEffectsThree:</string>
+		<string>cpEffectsThree:</string>
 	</dict>
-	<key>FCPXHackEffectsFour</key>
+	<key>cpEffectsFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackEffectsFour:</string>
+		<string>cpEffectsFour:</string>
 	</dict>
-	<key>FCPXHackEffectsFive</key>
+	<key>cpEffectsFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackEffectsFive:</string>
+		<string>cpEffectsFive:</string>
 	</dict>
-	<key>FCPXHackLaunchFinalCutPro</key>
+	<key>cpLaunchFinalCutPro</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackLaunchFinalCutPro:</string>
+		<string>cpLaunchFinalCutPro:</string>
 	</dict>
-	<key>FCPXHackShowListOfShortcutKeys</key>
+	<key>cpShowListOfShortcutKeys</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackShowListOfShortcutKeys:</string>
+		<string>cpShowListOfShortcutKeys:</string>
 	</dict>
-	<key>FCPXHackHighlightBrowserPlayhead</key>
+	<key>cpHighlightBrowserPlayhead</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackHighlightBrowserPlayhead:</string>
+		<string>cpHighlightBrowserPlayhead:</string>
 	</dict>
-	<key>FCPXHackRevealInBrowserAndHighlight</key>
+	<key>cpRevealInBrowserAndHighlight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRevealInBrowserAndHighlight:</string>
+		<string>cpRevealInBrowserAndHighlight:</string>
 	</dict>
-	<key>FCPXHackSingleMatchFrameAndHighlight</key>
+	<key>cpSingleMatchFrameAndHighlight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSingleMatchFrameAndHighlight:</string>
+		<string>cpSingleMatchFrameAndHighlight:</string>
 	</dict>
-	<key>FCPXHackRevealMulticamClipInBrowserAndHighlight</key>
+	<key>cpRevealMulticamClipInBrowserAndHighlight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRevealMulticamClipInBrowserAndHighlight:</string>
+		<string>cpRevealMulticamClipInBrowserAndHighlight:</string>
 	</dict>
-	<key>FCPXHackRevealMulticamClipInAngleEditorAndHighlight</key>
+	<key>cpRevealMulticamClipInAngleEditorAndHighlight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRevealMulticamClipInAngleEditorAndHighlight:</string>
+		<string>cpRevealMulticamClipInAngleEditorAndHighlight:</string>
 	</dict>
-	<key>FCPXHackBatchExportFromBrowser</key>
+	<key>cpBatchExportFromBrowser</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackBatchExportFromBrowser:</string>
+		<string>cpBatchExportFromBrowser:</string>
 	</dict>
-	<key>FCPXHackChangeBackupInterval</key>
+	<key>cpChangeBackupInterval</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackChangeBackupInterval:</string>
+		<string>cpChangeBackupInterval:</string>
 	</dict>
-	<key>FCPXHackToggleTimecodeOverlays</key>
+	<key>cpToggleTimecodeOverlays</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackToggleTimecodeOverlays:</string>
+		<string>cpToggleTimecodeOverlays:</string>
 	</dict>
-	<key>FCPXHackToggleMovingMarkers</key>
+	<key>cpToggleMovingMarkers</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackToggleMovingMarkers:</string>
+		<string>cpToggleMovingMarkers:</string>
 	</dict>
-	<key>FCPXHackAllowTasksDuringPlayback</key>
+	<key>cpAllowTasksDuringPlayback</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackAllowTasksDuringPlayback:</string>
+		<string>cpAllowTasksDuringPlayback:</string>
 	</dict>
-	<key>FCPXHackSelectColorBoardPuckOne</key>
+	<key>cpSelectColorBoardPuckOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectColorBoardPuckOne:</string>
+		<string>cpSelectColorBoardPuckOne:</string>
 	</dict>
-	<key>FCPXHackSelectColorBoardPuckTwo</key>
+	<key>cpSelectColorBoardPuckTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectColorBoardPuckTwo:</string>
+		<string>cpSelectColorBoardPuckTwo:</string>
 	</dict>
-	<key>FCPXHackSelectColorBoardPuckThree</key>
+	<key>cpSelectColorBoardPuckThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectColorBoardPuckThree:</string>
+		<string>cpSelectColorBoardPuckThree:</string>
 	</dict>
-	<key>FCPXHackSelectColorBoardPuckFour</key>
+	<key>cpSelectColorBoardPuckFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSelectColorBoardPuckFour:</string>
+		<string>cpSelectColorBoardPuckFour:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetOne</key>
+	<key>cpRestoreKeywordPresetOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetOne:</string>
+		<string>cpRestoreKeywordPresetOne:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetTwo</key>
+	<key>cpRestoreKeywordPresetTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetTwo:</string>
+		<string>cpRestoreKeywordPresetTwo:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetThree</key>
+	<key>cpRestoreKeywordPresetThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetThree:</string>
+		<string>cpRestoreKeywordPresetThree:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetFour</key>
+	<key>cpRestoreKeywordPresetFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetFour:</string>
+		<string>cpRestoreKeywordPresetFour:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetFive</key>
+	<key>cpRestoreKeywordPresetFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetFive:</string>
+		<string>cpRestoreKeywordPresetFive:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetSix</key>
+	<key>cpRestoreKeywordPresetSix</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetSix:</string>
+		<string>cpRestoreKeywordPresetSix:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetSeven</key>
+	<key>cpRestoreKeywordPresetSeven</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetSeven:</string>
+		<string>cpRestoreKeywordPresetSeven:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetEight</key>
+	<key>cpRestoreKeywordPresetEight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetEight:</string>
+		<string>cpRestoreKeywordPresetEight:</string>
 	</dict>
-	<key>FCPXHackRestoreKeywordPresetNine</key>
+	<key>cpRestoreKeywordPresetNine</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>FCPXHackRestoreKeywordPresetNine:</string>
+		<string>cpRestoreKeywordPresetNine:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetOne</key>
+	<key>cpSaveKeywordPresetOne</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetOne:</string>
+		<string>cpSaveKeywordPresetOne:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetTwo</key>
+	<key>cpSaveKeywordPresetTwo</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetTwo:</string>
+		<string>cpSaveKeywordPresetTwo:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetThree</key>
+	<key>cpSaveKeywordPresetThree</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetThree:</string>
+		<string>cpSaveKeywordPresetThree:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetFour</key>
+	<key>cpSaveKeywordPresetFour</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetFour:</string>
+		<string>cpSaveKeywordPresetFour:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetFive</key>
+	<key>cpSaveKeywordPresetFive</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetFive:</string>
+		<string>cpSaveKeywordPresetFive:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetSix</key>
+	<key>cpSaveKeywordPresetSix</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetSix:</string>
+		<string>cpSaveKeywordPresetSix:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetSeven</key>
+	<key>cpSaveKeywordPresetSeven</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetSeven:</string>
+		<string>cpSaveKeywordPresetSeven:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetEight</key>
+	<key>cpSaveKeywordPresetEight</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetEight:</string>
+		<string>cpSaveKeywordPresetEight:</string>
 	</dict>
-	<key>FCPXHackSaveKeywordPresetNine</key>
+	<key>cpSaveKeywordPresetNine</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>1</integer>
 		<key>downSelector</key>
-		<string>FCPXHackSaveKeywordPresetNine:</string>
+		<string>cpSaveKeywordPresetNine:</string>
 	</dict>
 	<key>AddMarker</key>
 	<dict>

@@ -332,7 +332,7 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXCopyWithCustomLabelAndFolder")
+	deps.fcpxCmds:add("cpCopyWithCustomLabelAndFolder")
 		:whenActivated(mod.copyWithCustomClipNameAndFolder)
 
 	return mod

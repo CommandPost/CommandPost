@@ -516,46 +516,57 @@ return {
 	--------------------------------------------------------------------------------
 	-- Command Titles:
 	--------------------------------------------------------------------------------
-	-- Global:
-	FCPXHackLaunchFinalCutPro_title								=	"Open Final Cut Pro",
 
-	-- FCPX:
-	FCPXHackScrollingTimeline_title								=	"Toggle Scrolling Timeline",
-	FCPXHackLockPlayhead_title									=	"Toggle Playhead Lock",
+		--------------------------------------------------------------------------------
+		-- Global:
+		--------------------------------------------------------------------------------
+		cpLaunchFinalCutPro_title								=	"Open Final Cut Pro",
 
-	FCPXHackEffectsOne_title									=	"Apply Effects Shortcut 1",
-	FCPXHackEffectsTwo_title									=	"Apply Effects Shortcut 2",
-	FCPXHackEffectsThree_title									=	"Apply Effects Shortcut 3",
-	FCPXHackEffectsFour_title									=	"Apply Effects Shortcut 4",
-	FCPXHackEffectsFive_title									=	"Apply Effects Shortcut 5",
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro:
+		--------------------------------------------------------------------------------
+		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
+		cpLockPlayhead_title									=	"Toggle Playhead Lock",
 
-	FCPXHackTransitionsOne_title								=	"Apply Transitions Shortcut 1",
-	FCPXHackTransitionsTwo_title								=	"Apply Transitions Shortcut 2",
-	FCPXHackTransitionsThree_title								=	"Apply Transitions Shortcut 3",
-	FCPXHackTransitionsFour_title								=	"Apply Transitions Shortcut 4",
-	FCPXHackTransitionsFive_title								=	"Apply Transitions Shortcut 5",
+		cpEffectsOne_title										=	"Apply Effects Shortcut 1",
+		cpEffectsTwo_title										=	"Apply Effects Shortcut 2",
+		cpEffectsThree_title									=	"Apply Effects Shortcut 3",
+		cpEffectsFour_title										=	"Apply Effects Shortcut 4",
+		cpEffectsFive_title										=	"Apply Effects Shortcut 5",
 
-	FCPXHackGeneratorsOne_title									=	"Apply Generators Shortcut 1",
-	FCPXHackGeneratorsTwo_title									=	"Apply Generators Shortcut 2",
-	FCPXHackGeneratorsThree_title								=	"Apply Generators Shortcut 3",
-	FCPXHackGeneratorsFour_title								=	"Apply Generators Shortcut 4",
-	FCPXHackGeneratorsFive_title								=	"Apply Generators Shortcut 5",
+		cpTransitionsOne_title									=	"Apply Transitions Shortcut 1",
+		cpTransitionsTwo_title									=	"Apply Transitions Shortcut 2",
+		cpTransitionsThree_title								=	"Apply Transitions Shortcut 3",
+		cpTransitionsFour_title									=	"Apply Transitions Shortcut 4",
+		cpTransitionsFive_title									=	"Apply Transitions Shortcut 5",
 
-	FCPXHackTitlesOne_title										=	"Apply Titles Shortcut 1",
-	FCPXHackTitlesTwo_title										=	"Apply Titles Shortcut 2",
-	FCPXHackTitlesThree_title									=	"Apply Titles Shortcut 3",
-	FCPXHackTitlesFour_title									=	"Apply Titles Shortcut 4",
-	FCPXHackTitlesFive_title									=	"Apply Titles Shortcut 5",
+		cpGeneratorsOne_title									=	"Apply Generators Shortcut 1",
+		cpGeneratorsTwo_title									=	"Apply Generators Shortcut 2",
+		cpGeneratorsThree_title									=	"Apply Generators Shortcut 3",
+		cpGeneratorsFour_title									=	"Apply Generators Shortcut 4",
+		cpGeneratorsFive_title									=	"Apply Generators Shortcut 5",
 
-	FCPXHackHighlightBrowserPlayhead_title						=	"Highlight Playhead",
-	FCPXHackRevealMulticamClipInBrowserAndHighlight_title		=	"Reveal Multicam Clip in Browser",
-	FCPXHackRevealMulticamClipInAngleEditorAndHighlight_title	=	"Reveal Multicam Clip in Angle Editor",
-	FCPXHackRevealInBrowserAndHighlight_title					= 	"Reveal in Browser and Highlight",
+		cpTitlesOne_title										=	"Apply Titles Shortcut 1",
+		cpTitlesTwo_title										=	"Apply Titles Shortcut 2",
+		cpTitlesThree_title										=	"Apply Titles Shortcut 3",
+		cpTitlesFour_title										=	"Apply Titles Shortcut 4",
+		cpTitlesFive_title										=	"Apply Titles Shortcut 5",
 
-	FCPXHackSelectClipAtLane_customTitle						=	"Select Clip at Lane %{count}",
+		cpHighlightBrowserPlayhead_title						=	"Highlight Playhead",
+		cpRevealMulticamClipInBrowserAndHighlight_title			=	"Reveal Multicam Clip in Browser",
+		cpRevealMulticamClipInAngleEditorAndHighlight_title		=	"Reveal Multicam Clip in Angle Editor",
+		cpRevealInBrowserAndHighlight_title						= 	"Reveal in Browser and Highlight",
 
-	FCPXHackPlay_title											=	"Play",
-	FCPXHackPause_title											=	"Pause",
+		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
+
+		cpPlay_title											=	"Play",
+		cpPause_title											=	"Pause",
+
+		cpChangeBackupInterval_title							=	"Change Backup Interval",
+		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
+		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
+		cpShowListOfShortcutKeys_title							=	"Show Keyboard Shortcuts",
+		cpOpenCommandEditor_title								=	"Open Command Editor",
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:

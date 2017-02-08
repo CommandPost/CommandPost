@@ -420,7 +420,7 @@ function plugin.init(deps)
 	-- Commands with default shortcuts
 	local fcpxCmds = deps.fcpxCmds
 	for i = 1, MAX_SHORTCUTS do
-		fcpxCmds:add("FCPXHackEffects"..tools.numberToWord(i))
+		fcpxCmds:add("cpEffects"..tools.numberToWord(i))
 			:activatedBy():ctrl():shift(tostring(i))
 			:whenPressed(function() mod.apply(i) end)
 	end

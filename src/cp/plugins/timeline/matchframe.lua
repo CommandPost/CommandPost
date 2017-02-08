@@ -367,19 +367,19 @@ function plugin.init(deps)
 
 	-- Commands
 	local cmds = deps.fcpxCmds
-	cmds:add("FCPXHackRevealMulticamClipInBrowserAndHighlight")
+	cmds:add("cpRevealMulticamClipInBrowserAndHighlight")
 		:activatedBy():ctrl():option():cmd("d")
 		:whenActivated(function() mod.multicamMatchFrame(true) end)
 
-	cmds:add("FCPXHackRevealMulticamClipInAngleEditorAndHighlight")
+	cmds:add("cpRevealMulticamClipInAngleEditorAndHighlight")
 		:activatedBy():ctrl():option():cmd("g")
 		:whenActivated(function() mod.multicamMatchFrame(false) end)
 
-	cmds:add("FCPXHackRevealInBrowserAndHighlight")
+	cmds:add("cpRevealInBrowserAndHighlight")
 		:activatedBy():ctrl():option():cmd("f")
 		:whenActivated(function() mod.matchFrame(false) end)
 
-	cmds:add("FCPXHackSingleMatchFrameAndHighlight")
+	cmds:add("cpSingleMatchFrameAndHighlight")
 		:activatedBy():ctrl():option():cmd("s")
 		:whenActivated(function() mod.matchFrame(true) end)
 

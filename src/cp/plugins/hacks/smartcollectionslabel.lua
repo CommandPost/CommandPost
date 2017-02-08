@@ -91,7 +91,7 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackChangeSmartCollectionsLabel")
+	deps.fcpxCmds:add("cpChangeSmartCollectionsLabel")
 		:whenActivated(mod.changeSmartCollectionsLabel)
 
 	return mod

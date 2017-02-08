@@ -24,10 +24,10 @@ function plugin.init(deps)
 
 	local cmds = deps.fcpxCmds
 
-	cmds:add("FCPXHackPlay")
+	cmds:add("cpPlay")
 		:whenActivated(mod.play)
 
-	cmds:add("FCPXHackPause")
+	cmds:add("cpPause")
 		:whenActivated(mod.pause)
 
 

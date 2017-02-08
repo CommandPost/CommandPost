@@ -256,7 +256,7 @@ function plugin.init(deps)
 		end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleTouchBar")
+	deps.fcpxCmds:add("cpToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
 		:whenActivated(function() mod.toggleEnabled() end)
 

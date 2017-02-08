@@ -355,7 +355,7 @@ function plugin.init(deps)
 	-- Commands
 	local fcpxCmds = deps.fcpxCmds
 	for i = 1, MAX_SHORTCUTS do
-		fcpxCmds:add("FCPXHackTitles"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
+		fcpxCmds:add("cpTitles"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
 	end
 
 	return mod

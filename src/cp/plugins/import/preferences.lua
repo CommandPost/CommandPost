@@ -171,25 +171,25 @@ function plugin.init(deps)
 
 	-- Commands
 	local fcpxCmds = deps.fcpxCmds
-	fcpxCmds:add("FCPXHackCreateOptimizedMediaOn")
+	fcpxCmds:add("cpCreateOptimizedMediaOn")
 		:whenActivated(function() mod.toggleCreateOptimizedMedia(true) end)
-	fcpxCmds:add("FCPXHackCreateOptimizedMediaOff")
+	fcpxCmds:add("cpCreateOptimizedMediaOff")
 		:whenActivated(function() mod.toggleCreateOptimizedMedia(false) end)
 
-	fcpxCmds:add("FCPXHackCreateMulticamOptimizedMediaOn")
+	fcpxCmds:add("cpCreateMulticamOptimizedMediaOn")
 		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(true) end)
-	fcpxCmds:add("FCPXHackCreateMulticamOptimizedMediaOff")
+	fcpxCmds:add("cpCreateMulticamOptimizedMediaOff")
 		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(false) end)
 
-	fcpxCmds:add("FCPXHackCreateProxyMediaOn")
+	fcpxCmds:add("cpCreateProxyMediaOn")
 		:whenActivated(function() mod.toggleCreateProxyMedia(true) end)
-	fcpxCmds:add("FCPXHackCreateProxyMediaOff")
+	fcpxCmds:add("cpCreateProxyMediaOff")
 		:whenActivated(function() mod.toggleCreateProxyMedia(false) end)
 
 
-	fcpxCmds:add("FCPXHackLeaveInPlaceOn")
+	fcpxCmds:add("cpLeaveInPlaceOn")
 		:whenActivated(function() mod.toggleLeaveInPlace(true) end)
-	fcpxCmds:add("FCPXHackLeaveInPlaceOff")
+	fcpxCmds:add("cpLeaveInPlaceOff")
 		:whenActivated(function() mod.toggleLeaveInPlace(false) end)
 
 	return mod
