@@ -802,9 +802,7 @@ end
 			{ title = i18n("changeSmartCollectionLabel"),												fn = changeSmartCollectionsLabel },
 		}
 		local hacksTable = {
-			{ title = "-" },
-			{ title = string.upper(i18n("adminTools")) .. ":", 											disabled = true },
-			{ title = i18n("advancedFeatures"),															menu = advancedTable },
+
 		}
 
 		--------------------------------------------------------------------------------
@@ -1107,60 +1105,6 @@ end
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		local result = fcp:setPreference("FFSuspendBGOpsDuringPlay", not mod.FFSuspendBGOpsDuringPlay)
-		if result == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE TIMECODE OVERLAY:
-	--------------------------------------------------------------------------------
-	function toggleTimecodeOverlay()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		deleteAllHighlights()
-
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		if fcp:getPreference("FFEnableGuards") == nil then
-			mod.FFEnableGuards = false
-		else
-			mod.FFEnableGuards = fcp:getPreference("FFEnableGuards")
-		end
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("FFEnableGuards", not mod.FFEnableGuards)
 		if result == nil then
 			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 			return "Failed"
