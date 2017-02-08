@@ -90,7 +90,6 @@ local defaultSettings = {
 local execute									= hs.execute									-- Execute!
 local log										= logger.new("fcpx10-3")
 
-mod.debugMode									= false											-- Debug Mode is off by default.
 mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
 
@@ -139,9 +138,6 @@ function menuManager()
 		local manualSection = mod._menuManager.addSection(10000)
 		manualSection:addItems(0, function() return generateMenuBar(true) end)
 
-		local preferences = plugins("cp.plugins.menu.preferences")
-		preferences:addItems(10000, function() return generatePreferencesMenuBar() end)
-
 		local menubarPrefs = plugins("cp.plugins.menu.preferences.menubar")
 		menubarPrefs:addItems(10000, function() return generateMenubarPrefsMenuBar() end)
 	end
@@ -165,7 +161,6 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	mod.debugMode = metadata.get("debugMode", false)
 	debugMessage("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
@@ -583,7 +578,7 @@ function bindKeyboardShortcuts()
 	--------------------------------------------------------------------------------
 	-- Development Shortcut:
 	--------------------------------------------------------------------------------
-	if mod.debugMode then
+	if metadata.get("debugMode", false) then
 		hotkey.bind({"ctrl", "option", "command"}, "q", function() testingGround() end)
 	end
 
@@ -651,6 +646,9 @@ end
 -- MENUBAR:
 --------------------------------------------------------------------------------
 
+	--------------------------------------------------------------------------------
+	-- TEMPORARY - GENERATE MENU BAR:
+	--------------------------------------------------------------------------------
 	function generateMenuBar(refreshPlistValues)
 		--------------------------------------------------------------------------------
 		-- Maximum Length of Menubar Strings:
@@ -774,16 +772,15 @@ end
 			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
 			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
 		}
+
 		-- The main menu
 		local menuTable = {
 		}
-
 		local settingsHUD = {
 			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
 			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
 			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
 		}
-
 		local hudMenu = {
 			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
 			{ title = "-" },
@@ -816,32 +813,12 @@ end
 		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
 		if menubarHacksEnabled then 		menuTable = fnutils.concat(menuTable, hacksTable)		end
 
-		--------------------------------------------------------------------------------
-		-- Check for Updates:
-		--------------------------------------------------------------------------------
-		if latestScriptVersion ~= nil then
-			if latestScriptVersion > metadata.scriptVersion then
-				table.insert(menuTable, 1, { title = i18n("updateAvailable") .. " (" .. i18n("version") .. " " .. latestScriptVersion .. ")", fn = getScriptUpdate})
-				table.insert(menuTable, 2, { title = "-" })
-			end
-		end
-
 		return menuTable
 	end
 
-	function generatePreferencesMenuBar()
-
-		local settingsMenuTable = {
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchOnStartup, 										checked = hs.autoLaunch()		},
-			{ title = "-" },
-			{ title = i18n("console") .. "...", 														fn = openConsole },
-			{ title = i18n("trashPreferences"), 														fn = resetSettings },
-			{ title = i18n("enableDebugMode"), 															fn = toggleDebugMode, 												checked = mod.debugMode},
-		}
-
-		return settingsMenuTable
-	end
-
+	--------------------------------------------------------------------------------
+	-- TEMPORARY - GENERATE MENU PREFERENCES:
+	--------------------------------------------------------------------------------
 	function generateMenubarPrefsMenuBar()
 		--------------------------------------------------------------------------------
 		-- Get Menubar Settings:
@@ -849,21 +826,8 @@ end
 		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
 		local menubarHacksEnabled = 		metadata.get("menubarHacksEnabled")
 
-		--------------------------------------------------------------------------------
-		-- Get Enable Proxy Menu Item:
-		--------------------------------------------------------------------------------
-		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", false)
-
-		--------------------------------------------------------------------------------
-		-- Get Menubar Display Mode from Settings:
-		--------------------------------------------------------------------------------
-		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", false)
-
 		local settingsMenubar = {
 			{ title = i18n("showAdminTools"), 															fn = function() toggleMenubarDisplay("Hacks") end, 					checked = menubarHacksEnabled},
-			{ title = "-" },
-			{ title = i18n("displayProxyOriginalIcon"), 												fn = toggleEnableProxyMenuIcon, 									checked = enableProxyMenuIcon},
-			{ title = i18n("displayThisMenuAsIcon"), 													fn = toggleMenubarDisplayMode, 										checked = displayMenubarAsIcon},
 		}
 		return settingsMenubar
 	end
@@ -1027,14 +991,6 @@ end
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE DEBUG MODE:
-	--------------------------------------------------------------------------------
-	function toggleDebugMode()
-		metadata.set("debugMode", not mod.debugMode)
-		hs.reload()
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE MENUBAR DISPLAY:
 	--------------------------------------------------------------------------------
 	function toggleMenubarDisplay(value)
@@ -1049,29 +1005,6 @@ end
 		local result = metadata.get(value)
 		metadata.get(value, not result)
 		hackshud.reload()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE LAUNCH HAMMERSPOON ON START:
-	--------------------------------------------------------------------------------
-	function toggleLaunchOnStartup()
-		local originalValue = hs.autoLaunch()
-		hs.autoLaunch(not originalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE PROXY MENU ICON:
-	--------------------------------------------------------------------------------
-	function toggleEnableProxyMenuIcon()
-		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon")
-		if enableProxyMenuIcon == nil then
-			metadata.set("enableProxyMenuIcon", true)
-			enableProxyMenuIcon = true
-		else
-			metadata.set("enableProxyMenuIcon", not enableProxyMenuIcon)
-		end
-
-		updateMenubarIcon()
 	end
 
 	--------------------------------------------------------------------------------
@@ -1266,64 +1199,6 @@ end
 		end
 
 		updateMenubarIcon()
-	end
-
---------------------------------------------------------------------------------
--- OTHER:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- OPEN HAMMERSPOON CONSOLE:
-	--------------------------------------------------------------------------------
-	function openConsole()
-		hs.openConsole()
-	end
-
-	--------------------------------------------------------------------------------
-	-- RESET SETTINGS:
-	--------------------------------------------------------------------------------
-	function resetSettings()
-
-		local finalCutProRunning = fcp:isRunning()
-
-		local resetMessage = i18n("trashFCPXHacksPreferences")
-		if finalCutProRunning then
-			resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequiredAndRestart")
-		else
-			resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequired")
-		end
-
-		if not dialog.displayYesNoQuestion(resetMessage) then
-		 	return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Remove Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		plugins("cp.plugins.hacks.shortcuts").disableHacksShortcuts()
-
-		--------------------------------------------------------------------------------
-		-- Trash all Script Settings:
-		--------------------------------------------------------------------------------
-		metadata.reset()
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro if running:
-		--------------------------------------------------------------------------------
-		if finalCutProRunning then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayMessage(i18n("restartFinalCutProFailed"))
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Reload Hammerspoon:
-		--------------------------------------------------------------------------------
-		hs.reload()
-
 	end
 
 --------------------------------------------------------------------------------
