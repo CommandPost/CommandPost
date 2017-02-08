@@ -78,30 +78,22 @@ local defaultSettings = {
 }
 
 --------------------------------------------------------------------------------
--- VARIABLES:
+-- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
 
-local execute									= hs.execute									-- Execute!
+local execute									= hs.execute
 local log										= logger.new("fcpx10-3")
 
-mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
-mod.shownUpdateNotification		 				= false											-- Shown Update Notification Already?
+--------------------------------------------------------------------------------
+-- MODULE VARIABLES:
+--------------------------------------------------------------------------------
 
+mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
-mod.newDeviceMounted 							= nil											-- New Device Mounted Volume Watcher
 mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
-mod.allowMovingMarkers							= nil											-- Used in generateMenuBar
-mod.FFPeriodicBackupInterval 					= nil											-- Used in generateMenuBar
-mod.FFSuspendBGOpsDuringPlay 					= nil											-- Used in generateMenuBar
-mod.FFEnableGuards								= nil											-- Used in generateMenuBar
-mod.FFAutoRenderDelay							= nil											-- Used in generateMenuBar
-
 mod.hacksLoaded 								= false											-- Has FCPX Hacks Loaded Yet?
-
 mod.isFinalCutProActive 						= false											-- Is Final Cut Pro Active? Used by Watchers.
-mod.wasFinalCutProOpen							= false											-- Used by Assign Transitions/Effects/Titles/Generators Shortcut
-
 
 --------------------------------------------------------------------------------
 -- RETRIEVES THE PLUGINS MANAGER:
