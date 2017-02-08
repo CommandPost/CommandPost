@@ -2,7 +2,7 @@ local fcp			= require("cp.finalcutpro")
 
 --- The function
 
-local PRIORITY = 0
+local PRIORITY = 3
 
 local function openFcpx()
 	fcp:launch()
