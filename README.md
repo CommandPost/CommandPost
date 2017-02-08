@@ -35,6 +35,8 @@ Next download or clone, then build the [standalone app](https://github.com/Comma
 1. Create a self-signed Code Signing certificate named 'Internal Code Signing' as described [here](http://bd808.com/blog/2013/10/21/creating-a-self-signed-code-certificate-for-xcode/). 
 2. Open a Terminal window.
 3. Navigate to the CommandPost-App project root directory.
+4. Install `pip` by following [these instructions](https://packaging.python.org/installing/#install-pip-setuptools-and-wheel).
+5. Execute `pip install -r requirements.txt`
 4. Execute `./scripts/build_commandpost.sh`
 
 On load, the standalone app will try to load `~/CommandPost/init.lua` first, and if that fails, it will then load the Lua scripts within the Application Bundle. This means you can keep developing by modifying the files within `~/CommandPost`, and then when you're done, simply execute `./scripts/build_commandpost.sh` again for distribution.
