@@ -252,13 +252,6 @@ function loadScript()
 	writeToConsole("Successfully loaded.")
 	dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 
-	--------------------------------------------------------------------------------
-	-- Check for Script Updates:
-	--------------------------------------------------------------------------------
-	local checkForUpdatesInterval = metadata.get("checkForUpdatesInterval")
-	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
-	checkForUpdatesTimer:fire()
-
 	mod.hacksLoaded = true
 
 end
@@ -838,26 +831,8 @@ end
 
 	function generatePreferencesMenuBar()
 
-		--------------------------------------------------------------------------------
-		-- Hammerspoon Settings:
-		--------------------------------------------------------------------------------
-		local startHammerspoonOnLaunch = hs.autoLaunch()
-		local hammerspoonCheckForUpdates = hs.automaticallyCheckForUpdates()
-		local hammerspoonDockIcon = hs.dockIcon()
-		local hammerspoonMenuIcon = hs.menuIcon()
-
-		--------------------------------------------------------------------------------
-		-- Enable Check for Updates:
-		--------------------------------------------------------------------------------
-		local enableCheckForUpdates = metadata.get("enableCheckForUpdates", false)
-
-		--------------------------------------------------------------------------------
-		-- Setup Menu:
-		--------------------------------------------------------------------------------
 		local settingsMenuTable = {
-			{ title = "-" },
-			{ title = i18n("checkForUpdates"), 															fn = toggleCheckforUpdates, 								checked = hammerspoonCheckForUpdates	},
-			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchOnStartup, 										checked = startHammerspoonOnLaunch		},
+			{ title = i18n("launchAtStartup"), 															fn = toggleLaunchOnStartup, 										checked = hs.autoLaunch()		},
 			{ title = "-" },
 			{ title = i18n("console") .. "...", 														fn = openConsole },
 			{ title = i18n("trashPreferences"), 														fn = resetSettings },
@@ -1082,14 +1057,6 @@ end
 	function toggleLaunchOnStartup()
 		local originalValue = hs.autoLaunch()
 		hs.autoLaunch(not originalValue)
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HAMMERSPOON CHECK FOR UPDATES:
-	--------------------------------------------------------------------------------
-	function toggleCheckforUpdates()
-		local originalValue = hs.automaticallyCheckForUpdates()
-		hs.automaticallyCheckForUpdates(not originalValue)
 	end
 
 	--------------------------------------------------------------------------------
@@ -2100,58 +2067,6 @@ end
 	--------------------------------------------------------------------------------
 	function deleteAllHighlights()
 		plugins("cp.plugins.browser.playhead").deleteHighlight()
-	end
-
-	--------------------------------------------------------------------------------
-	-- CHECK FOR SCRIPT UPDATES:
-	--------------------------------------------------------------------------------
-	function checkForUpdates()
-
-		local enableCheckForUpdates = metadata.get("enableCheckForUpdates")
-		if enableCheckForUpdates then
-			debugMessage("Checking for updates.")
-			latestScriptVersion = nil
-
-			http.asyncGet(metadata.checkUpdateURL, nil, function(responseCode, responseBody, _)
-				if responseCode < 0 then
-					log.ef(responseBody)
-					return
-				end
-				local responseJSON = hs.json.decode(responseBody)
-				local thisVersion = hs.processInfo.version
-				local remoteVersion = responseJSON.tag_name
-
-				-- Remove the "v":
-				if remoteVersion ~= nil then
-					if string.sub(remoteVersion, 1, 1) == "v" then
-						remoteVersion = string.sub(remoteVersion, 2)
-					end
-				end
-
-				if thisVersion and remoteVersion then
-					log.df("thisVersion: " .. thisVersion)
-					log.df("remoteVersion: " .. remoteVersion)
-
-					--------------------------------------------------------------------------------
-					-- macOS Notification:
-					--------------------------------------------------------------------------------
-					if not mod.shownUpdateNotification then
-						if remoteVersion > thisVersion then
-							updateNotification = notify.new(function() hs.checkForUpdates() end):setIdImage(image.imageFromPath(metadata.iconPath))
-																:title(metadata.scriptName .. " Update Available")
-																:subTitle("Version " .. remoteVersion)
-																:informativeText("Do you wish to install?")
-																:hasActionButton(true)
-																:actionButtonTitle("Install")
-																:otherButtonTitle("Not Yet")
-																:send()
-							mod.shownUpdateNotification = true
-						end
-					end
-
-				end
-			end)
-		end
 	end
 
 --------------------------------------------------------------------------------
