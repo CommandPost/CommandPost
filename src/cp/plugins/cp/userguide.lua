@@ -5,7 +5,7 @@ local metadata			= require("cp.metadata")
 local PRIORITY = 1
 
 local function helpButton()
-	os.execute('open "http://commandpost.io"')
+	os.execute('open "http://commandpost.io/userguide/"')
 end
 
 --- The Plugin

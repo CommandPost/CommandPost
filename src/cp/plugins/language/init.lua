@@ -11,7 +11,7 @@ local log			= require("hs.logger").new("lang")
 
 -- Constants
 
-local PRIORITY = 4
+local PRIORITY = 6
 
 local LANGUAGE_PATH = metadata.languagePath
 
