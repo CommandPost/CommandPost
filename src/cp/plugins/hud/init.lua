@@ -35,6 +35,7 @@ local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
+local ax										= require("hs._asm.axuielement")
 
 local plugins									= require("cp.plugins")
 local dialog									= require("cp.dialog")
@@ -80,7 +81,7 @@ function hackshud.setEnabled(value)
 	hackshud.update()
 end
 
-function hackshud.toggleEnable()
+function hackshud.toggleEnabled()
 	hackshud.setEnabled(not hackshud.isEnabled())
 end
 
@@ -139,24 +140,36 @@ function hackshud.setButton(index, value)
 end
 
 function hackshud.isFrontmost()
-	return hackshud.hudWebView ~= nil and window.focusedWindow() == hackshud.hudWebView:hswindow()
+	if hackshud.hudWebView ~= nil then
+		log.df("focusedWindow: %s; webView window: %s", hs.inspect(window.focusedWindow()), hs.inspect(hackshud.hudWebView:hswindow()))
+		return window.focusedWindow() == hackshud.hudWebView:hswindow()
+	else
+		log.df("not frontmost")
+		return false
+	end
 end
 
 function hackshud.update()
 	if hackshud.canShow() then
-		log.df("showing")
-		timer.doAfter(0.1, hackshud.show)
+		log.df("update: showing")
+		-- timer.doAfter(0.00001, hackshud.show)
+		hackshud.show()
 	else
-		log.df("hiding")
-		timer.doAfter(0.1, hackshud.hide)
+		log.df("update: hiding")
+		-- timer.doAfter(0.00001, hackshud.hide)
+		hackshud.hide()
 	end
 end
 
 function hackshud.canShow()
-	return (fcp:isFrontmost() or hackshud.isFrontmost() or metadata.isFrontmost())
+	-- return hackshud.isEnabled()
+	log.df("canShow: FCP: %s, HUD: %s, CommandPost: %s", fcp:isFrontmost(), hackshud.isFrontmost(), metadata.isFrontmost())
+	local result = (fcp:isFrontmost() or hackshud.isFrontmost() or metadata.isFrontmost())
 	and not fcp:fullScreenWindow():isShowing()
 	and not fcp:commandEditor():isShowing()
 	and hackshud.isEnabled()
+	log.df("canShow: %s", hs.inspect(result))
+	return result
 end
 
 --------------------------------------------------------------------------------
@@ -208,7 +221,7 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	-- URL Events:
 	--------------------------------------------------------------------------------
-	hackshud.urlEvent = urlevent.bind("fcpxhacks", hackshud.hudCallback)
+	hackshud.urlEvent = urlevent.bind("cmd", hackshud.hudCallback)
 
 	--------------------------------------------------------------------------------
 	-- Window Watcher:
@@ -221,6 +234,7 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	hackshud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
+			log.df("HUD moved...")
 			if hackshud.active() then
 				local result = hackshud.hudWebView:hswindow():frame()
 				if result ~= nil then
@@ -233,47 +247,41 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	-- HUD Closed:
 	--------------------------------------------------------------------------------
-	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, function(window, applicationName, event)
+	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, 
+	function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
+			log.df("HUD closed")
 			if not hackshud.ignoreWindowChange then
-				hackshud.setEnable(false)
+				hackshud.setEnabled(false)
 			end
 		end
 	end, true)
 
+	--------------------------------------------------------------------------------
+	-- Watches all apps:
+	--------------------------------------------------------------------------------
+	hackshud.windowFilter = windowfilter.new(true)
+	
 	--------------------------------------------------------------------------------
 	-- HUD Unfocussed:
 	--------------------------------------------------------------------------------
-	hackshud.hudFilter:subscribe(windowfilter.windowUnfocused, function(window, applicationName, event)
-		if window:id() ~= hackshud.windowID then
-			local hsFrontmost = application.applicationsForBundleID(hackshud.hsBundleID)[1]:isFrontmost()
-			if hsFrontmost ~= nil then
-				if not fcp:isFrontmost() and hsFrontmost then
-					hackshud.hide()
-				else
-					--[[
-					if not fcp:isFrontmost() and window.frontmostWindow():title() == "Hammerspoon Console" then
-
-						--------------------------------------------------------------------------------
-						-- Check to see if user is dragging the HUD:
-						--------------------------------------------------------------------------------
-						local leftMousePressed = eventtap.checkMouseButtons()[1]
-						local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-						local hudFrame = hackshud.hudWebView:hswindow():frame()
-
-						if leftMousePressed and mouseLocation:inside(hudFrame) then
-							--print("Dragging")
-						else
-							hackshud.hide()
-						end
-
-					end
-					--]]
-				end
+	hackshud.windowFilter:subscribe(windowfilter.windowFocused, 
+	function(window, applicationName, event)
+		log.df("window focused: %s", hs.inspect(window:id()))
+		hackshud.update()
+	end, true)
+	
+	log.df("app watcher initialising...")
+	local watcher = application.watcher
+	hackshud.appWatcher = watcher.new(
+		function(appName, eventType, appObject)
+			if eventType == watcher.activated or eventType == watcher.deactivated or eventType == watcher.terminated then
+				hackshud.update()
 			end
 		end
-	end, true)
-
+	)
+	hackshud.appWatcher:start()
+	log.df("app watcher started")
 end
 
 --------------------------------------------------------------------------------
@@ -291,7 +299,7 @@ function hackshud.show()
 	--------------------------------------------------------------------------------
 	-- Keep checking for a window ID until we get an answer:
 	--------------------------------------------------------------------------------
-	hacksHUDWindowIDTimerDone = false
+	local hacksHUDWindowIDTimerDone = false
 	timer.doUntil(function() return hacksHUDWindowIDTimerDone end, function()
 		if hackshud.hudWebView:hswindow() ~= nil then
 			if hackshud.hudWebView:hswindow():id() ~= nil then
@@ -299,7 +307,10 @@ function hackshud.show()
 				hacksHUDWindowIDTimerDone = true
 			end
 		end
-	 end, 0.05):fire()
+	end, 0.05):fire()
+	
+	if hackshud.windowFilter then hackshud.windowFilter:resume() end
+	if hackshud.appWatcher then hackshud.appWatcher:start() end
 
 	hackshud.ignoreWindowChange = false
 end
@@ -325,6 +336,8 @@ function hackshud.hide()
 	if hackshud.active() then
 		hackshud.ignoreWindowChange = true
 		hackshud.hudWebView:hide()
+		if hackshud.windowFilter then hackshud.windowFilter:pause() end
+		if hackshud.appWatcher then hackshud.appWatcher:stop() end
 	end
 end
 
@@ -334,6 +347,8 @@ end
 function hackshud.delete()
 	if hackshud.active() then
 		hackshud.hudWebView:delete()
+		if hackshud.windowFocus then hackshud.windowFocus:delete() end
+		if hackshud.appWatcher then hackshud.appWatcher:stop() end
 	end
 end
 
@@ -955,7 +970,7 @@ local function hudButtonFunctionsToURL(table)
 	end
 
 	if result == "" then result = "?function=displayUnallocatedHUDMessage" end
-	result = "hammerspoon://fcpxhacks" .. result
+	result = "commandpost://cmd" .. result
 
 	return result
 

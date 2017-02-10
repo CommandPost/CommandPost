@@ -237,7 +237,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Check for Script Updates:
 	--------------------------------------------------------------------------------
-	local checkForUpdatesInterval = metadata.get("checkForUpdatesInterval")
+	local checkForUpdatesInterval = metadata.get("checkForUpdatesInterval", 3600)
 	checkForUpdatesTimer = timer.doEvery(checkForUpdatesInterval, checkForUpdates)
 	checkForUpdatesTimer:fire()
 

@@ -2,6 +2,7 @@ local mod = {}
 
 local settings			= require("hs.settings")
 local application		= require("hs.application")
+local window			= require("hs.window")
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -36,11 +37,17 @@ mod.bundleID			= hs.processInfo["bundleID"]
 mod.processID			= hs.processInfo["processID"]
 
 function mod.application()
-	return application.applicationForPID(mod.processID)
+	if not mod._application then
+		mod._application = application.applicationForPID(mod.processID)
+	end
+	return mod._application
 end
 
 function mod.isFrontmost()
-	return mod.application():isFrontmost()
+	local app = mod.application()
+	local fw = window.focusedWindow()
+	
+	return fw ~= nil and fw:application() == app
 end
 
 -------------------------------------------------------------------------------
