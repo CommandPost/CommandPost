@@ -293,8 +293,6 @@ function defaultShortcutKeys()
 
         FCPXAddNoteToSelectedClip	 								= { characterString = "",                                   modifiers = {},                                     fn = function() addNoteToSelectedClip() end,                        releasedFn = nil,                                                       repeatFn = nil },
 
-        cpMoveToPlayhead                                      = { characterString = "",                                   modifiers = {},                                     fn = function() moveToPlayhead() end,                               releasedFn = nil,                                                       repeatFn = nil },
-
         cpColorPuckOne                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "global") end,                    releasedFn = nil,                                           repeatFn = nil },
         cpColorPuckTwo                                        = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "shadows") end,                   releasedFn = nil,                                           repeatFn = nil },
         cpColorPuckThree                                      = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardSelectPuck("color", "midtones") end,                  releasedFn = nil,                                           repeatFn = nil },
@@ -1354,28 +1352,6 @@ end
 			return "Failed"
 		end
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- MOVE TO PLAYHEAD:
-	--------------------------------------------------------------------------------
-	function moveToPlayhead()
-		local clipboardManager = plugins("cp.plugins.clipboard.manager")
-
-		clipboardManager.stopWatching()
-
-		if not fcp:performShortcut("Cut") then
-			dialog.displayErrorMessage("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
-			goto moveToPlayheadEnd
-		end
-
-		if not fcp:performShortcut("Paste") then
-			dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
-			goto moveToPlayheadEnd
-		end
-
-		::moveToPlayheadEnd::
-		timer.doAfter(2, function() clipboardManager.startWatching() end)
 	end
 
 --------------------------------------------------------------------------------
