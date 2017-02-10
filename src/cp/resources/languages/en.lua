@@ -559,6 +559,10 @@ return {
 
 		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
 
+		cpCutSwitchVideoAngle_customTitle						=	"Cut n Switch Video Angle %{count}",
+		cpCutSwitchAudioAngle_customTitle						=	"Cut n Switch Audio Angle %{count}",
+		cpCutSwitchBothAngle_customTitle						=	"Cut n Switch Both Angle %{count}",
+
 		cpPlay_title											=	"Play",
 		cpPause_title											=	"Pause",
 

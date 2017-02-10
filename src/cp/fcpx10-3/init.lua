@@ -368,56 +368,6 @@ function defaultShortcutKeys()
         cpExposurePuckThreeMouse                              = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("exposure", "midtones") end,    releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
         cpExposurePuckFourMouse                               = { characterString = "",                                   modifiers = {},                                     fn = function() colorBoardMousePuck("exposure", "highlights") end,  releasedFn = function() colorBoardMousePuckRelease() end,               repeatFn = nil },
 
-        cpCutSwitchAngle01Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 1) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle02Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 2) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle03Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 3) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle04Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 4) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle05Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 5) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle06Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 6) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle07Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 7) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle08Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 8) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle09Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 9) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle10Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 10) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle11Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 11) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle12Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 12) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle13Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 13) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle14Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 14) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle15Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 15) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle16Video                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Video", 16) end,              releasedFn = nil,                                                       repeatFn = nil },
-
-        cpCutSwitchAngle01Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 1) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle02Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 2) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle03Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 3) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle04Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 4) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle05Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 5) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle06Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 6) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle07Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 7) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle08Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 8) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle09Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 9) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle10Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 10) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle11Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 11) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle12Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 12) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle13Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 13) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle14Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 14) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle15Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 15) end,              releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle16Audio                               = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Audio", 16) end,              releasedFn = nil,                                                       repeatFn = nil },
-
-        cpCutSwitchAngle01Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 1) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle02Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 2) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle03Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 3) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle04Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 4) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle05Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 5) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle06Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 6) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle07Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 7) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle08Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 8) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle09Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 9) end,                releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle10Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 10) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle11Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 11) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle12Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 12) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle13Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 13) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle14Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 14) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle15Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 15) end,               releasedFn = nil,                                                       repeatFn = nil },
-        cpCutSwitchAngle16Both                                = { characterString = "",                                   modifiers = {},                                     fn = function() cutAndSwitchMulticam("Both", 16) end,               releasedFn = nil,                                                       repeatFn = nil },
     }
 	return defaultShortcutKeys
 end
@@ -1317,39 +1267,6 @@ end
 			fcpxElements[whichMenuBar][i][1][x][1][y]:performAction("AXPress")
 		elseif i ~= "" and x ~= "" and y ~= "" and z ~= "" then
 			fcpxElements[whichMenuBar][i][1][x][1][y][1][z]:performAction("AXPress")
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- CUT AND SWITCH MULTI-CAM:
-	--------------------------------------------------------------------------------
-	function cutAndSwitchMulticam(whichMode, whichAngle)
-
-		if whichMode == "Audio" then
-			if not fcp:performShortcut("MultiAngleEditStyleAudio") then
-				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-				return "Failed"
-			end
-		end
-
-		if whichMode == "Video" then
-			if not fcp:performShortcut("MultiAngleEditStyleVideo") then
-				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-				return "Failed"
-			end
-		end
-
-		if whichMode == "Both" then
-			if not fcp:performShortcut("MultiAngleEditStyleAudioVideo") then
-				dialog.displayErrorMessage("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-				return "Failed"
-			end
-		end
-
-		if not fcp:performShortcut("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
-			dialog.displayErrorMessage("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-			return "Failed"
 		end
 
 	end
