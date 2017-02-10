@@ -565,6 +565,8 @@ return {
 		cpSelectForward_title									=	"Select Clips Forward",
 		cpSelectBackwards_title									=	"Select Clips Backwards",
 
+		cpMoveToPlayhead_title									=	"Move to Playhead",
+
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
