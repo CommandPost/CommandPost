@@ -24,7 +24,7 @@ local inspect                   = require("hs.inspect")
 local keycodes                  = require("hs.keycodes")
 local logger                    = require("hs.logger")
 local mouse                     = require("hs.mouse")
-local pathwatcher		= require("hs.pathwatcher")
+local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
 
@@ -44,10 +44,6 @@ local tools                     = require("cp.tools")
 -- DEBUG MODE:
 --------------------------------------------------------------------------------
 if metadata.get("debugMode")  then
-
-    --------------------------------------------------------------------------------
-    -- Logger Level (defaults to 'warn' if not specified)
-    --------------------------------------------------------------------------------
     logger.defaultLogLevel = 'debug'
 else
 	logger.defaultLogLevel = 'warning'
@@ -110,6 +106,11 @@ function mod.init()
     -- Clear The Console:
     --------------------------------------------------------------------------------
     console.clearConsole()
+
+    --------------------------------------------------------------------------------
+    -- Console should always be on top:
+    --------------------------------------------------------------------------------
+    console.level(hs.drawing.windowLevels["_MaximumWindowLevelKey"])
 
     --------------------------------------------------------------------------------
     -- Display Welcome Message In The Console:
