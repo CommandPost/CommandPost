@@ -279,9 +279,6 @@ function defaultShortcutKeys()
         cpChangeTimelineClipHeightUp                          = { characterString = shortcut.textToKeyCode("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
         cpChangeTimelineClipHeightDown                        = { characterString = shortcut.textToKeyCode("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
 
-        cpSelectForward                                       = { characterString = shortcut.textToKeyCode("right"),        modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(true) end,                   releasedFn = nil,                                                       repeatFn = nil },
-        cpSelectBackwards                                     = { characterString = shortcut.textToKeyCode("left"),         modifiers = controlOptionCommand,                   fn = function() selectAllTimelineClips(false) end,                  releasedFn = nil,                                                       repeatFn = nil },
-
         cpSaveKeywordPresetOne                                = { characterString = shortcut.textToKeyCode("1"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetTwo                                = { characterString = shortcut.textToKeyCode("2"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(2) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetThree                              = { characterString = shortcut.textToKeyCode("3"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(3) end,                         releasedFn = nil,                                                       repeatFn = nil },
@@ -1379,34 +1376,6 @@ end
 
 		::moveToPlayheadEnd::
 		timer.doAfter(2, function() clipboardManager.startWatching() end)
-	end
-
-	--------------------------------------------------------------------------------
-	-- SELECT ALL TIMELINE CLIPS IN SPECIFIC DIRECTION:
-	--------------------------------------------------------------------------------
-	function selectAllTimelineClips(forwards)
-
-		local content = fcp:timeline():contents()
-		local playheadX = content:playhead():getPosition()
-
-		local clips = content:clipsUI(false, function(clip)
-			local frame = clip:frame()
-			if forwards then
-				return playheadX <= frame.x
-			else
-				return playheadX >= frame.x
-			end
-		end)
-
-		if clips == nil then
-			displayErrorMessage("No clips could be detected.\n\nError occurred in selectAllTimelineClips().")
-			return false
-		end
-
-		content:selectClips(clips)
-
-		return true
-
 	end
 
 --------------------------------------------------------------------------------
