@@ -276,9 +276,6 @@ function defaultShortcutKeys()
 
         cpHUD                                                 = { characterString = shortcut.textToKeyCode("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
 
-        cpChangeTimelineClipHeightUp                          = { characterString = shortcut.textToKeyCode("+"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("up") end,                 releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
-        cpChangeTimelineClipHeightDown                        = { characterString = shortcut.textToKeyCode("-"),            modifiers = controlOptionCommand,                   fn = function() changeTimelineClipHeight("down") end,               releasedFn = function() changeTimelineClipHeightRelease() end,          repeatFn = nil },
-
         cpSaveKeywordPresetOne                                = { characterString = shortcut.textToKeyCode("1"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(1) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetTwo                                = { characterString = shortcut.textToKeyCode("2"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(2) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetThree                              = { characterString = shortcut.textToKeyCode("3"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(3) end,                         releasedFn = nil,                                                       repeatFn = nil },
@@ -1238,59 +1235,6 @@ end
 		noteChooser:show()
 
 	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE TIMELINE CLIP HEIGHT:
-	--------------------------------------------------------------------------------
-	function changeTimelineClipHeight(direction)
-
-		--------------------------------------------------------------------------------
-		-- Prevent multiple keypresses:
-		--------------------------------------------------------------------------------
-		if mod.changeTimelineClipHeightAlreadyInProgress then return end
-		mod.changeTimelineClipHeightAlreadyInProgress = true
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		plugins("cp.plugins.browser.playhead").deleteHighlight()
-
-		--------------------------------------------------------------------------------
-		-- Change Value of Zoom Slider:
-		--------------------------------------------------------------------------------
-		shiftClipHeight(direction)
-
-		--------------------------------------------------------------------------------
-		-- Keep looping it until the key is released.
-		--------------------------------------------------------------------------------
-		timer.doUntil(function() return not mod.changeTimelineClipHeightAlreadyInProgress end, function()
-			shiftClipHeight(direction)
-		end, eventtap.keyRepeatInterval())
-	end
-
-		--------------------------------------------------------------------------------
-		-- SHIFT CLIP HEIGHT:
-		--------------------------------------------------------------------------------
-		function shiftClipHeight(direction)
-			--------------------------------------------------------------------------------
-			-- Find the Timeline Appearance Button:
-			--------------------------------------------------------------------------------
-			local appearance = fcp:timeline():toolbar():appearance()
-			appearance:show()
-			if direction == "up" then
-				appearance:clipHeight():increment()
-			else
-				appearance:clipHeight():decrement()
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- CHANGE TIMELINE CLIP HEIGHT RELEASE:
-		--------------------------------------------------------------------------------
-		function changeTimelineClipHeightRelease()
-			mod.changeTimelineClipHeightAlreadyInProgress = false
-			fcp:timeline():toolbar():appearance():hide()
-		end
 
 	--------------------------------------------------------------------------------
 	-- MENU ITEM SHORTCUT:

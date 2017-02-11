@@ -567,6 +567,9 @@ return {
 
 		cpMoveToPlayhead_title									=	"Move to Playhead",
 
+		cpChangeTimelineClipHeightUp_title						=	"Timeline Clip Height Increase",
+		cpChangeTimelineClipHeightDown_title					=	"Timeline Clip Height Decrease",
+
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
