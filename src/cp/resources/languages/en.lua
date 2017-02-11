@@ -560,6 +560,12 @@ return {
 
 		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
 
+		cpSelectColorBoardPuck_customTitle						=	"Select Color Board Puck %{count}",
+		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
+		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
+		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
+		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+
 		cpCutSwitchVideoAngle_customTitle						=	"Cut n Switch Video Angle %{count}",
 		cpCutSwitchAudioAngle_customTitle						=	"Cut n Switch Audio Angle %{count}",
 		cpCutSwitchBothAngle_customTitle						=	"Cut n Switch Both Angle %{count}",
