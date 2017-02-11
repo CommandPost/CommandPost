@@ -27,6 +27,8 @@ local timer										= require("hs.timer")
 
 local just										= require("cp.just")
 
+local log										= require("hs.logger").new("tools")
+
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
@@ -146,7 +148,7 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
 		_,result = osascript.applescript(appleScript)
 		return result
 	else
-		debugMessage("ERROR: Expected a Table or String in tools.executeWithAdministratorPrivileges()")
+		log.ef("ERROR: Expected a Table or String in tools.executeWithAdministratorPrivileges()")
 		return nil
 	end
 end

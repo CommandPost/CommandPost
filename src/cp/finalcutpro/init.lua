@@ -1313,12 +1313,12 @@ function App:_listWindows()
 	log.d("Listing FCPX windows:")
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
-		debugMessage(string.format("%7d", i)..": "..self:_describeWindow(w))
+		log.df(string.format("%7d", i)..": "..self:_describeWindow(w))
 	end
 
-	debugMessage("")
-	debugMessage("   Main: "..self:_describeWindow(self:UI():mainWindow()))
-	debugMessage("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
+	log.df("")
+	log.df("   Main: "..self:_describeWindow(self:UI():mainWindow()))
+	log.df("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
 end
 
 function App:_describeWindow(w)

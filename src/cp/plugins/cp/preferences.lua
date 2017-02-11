@@ -1,5 +1,6 @@
 local application		= require("hs.application")
 local log				= require("hs.logger").new("preferences")
+local console			= require("hs.console")
 
 local metadata			= require("cp.metadata")
 local fcp				= require("cp.finalcutpro")
@@ -53,6 +54,7 @@ local function resetSettings()
 	--------------------------------------------------------------------------------
 	-- Reload Hammerspoon:
 	--------------------------------------------------------------------------------
+	console.clearConsole()
 	hs.reload()
 
 end
@@ -60,6 +62,7 @@ end
 local function toggleDebugMode()
 	local debugMode = metadata.get("debugMode")
 	metadata.set("debugMode", not debugMode)
+	console.clearConsole()
 	hs.reload()
 end
 

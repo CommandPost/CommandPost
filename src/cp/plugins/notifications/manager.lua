@@ -58,7 +58,7 @@ end
 --------------------------------------------------------------------------------
 local function notificationWatcherAction(name, object, userInfo)
 	-- FOR DEBUGGING/DEVELOPMENT
-	-- debugMessage(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
+	-- log.df(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo)))
 
 	local message = nil
 	if name == "uploadSuccess" then
