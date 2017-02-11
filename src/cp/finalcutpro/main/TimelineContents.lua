@@ -362,7 +362,7 @@ function TimelineContents:selectClipInAngle(angleNumber)
 		if clipUI then
 			self:selectClip(clipUI)
 		else
-			debugMessage("Unable to find the clip under the playhead for angle "..angleNumber..".")
+			log.df("Unable to find the clip under the playhead for angle "..angleNumber..".")
 		end
 	end
 	return self

@@ -41,6 +41,8 @@ local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
 local tools										= require("cp.tools")
 
+local log										= require("hs.logger").new("hackshud")
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
@@ -651,7 +653,7 @@ function hackshud.choices()
 	local currentLanguage = fcp:getCurrentLanguage()
 	local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems", {})
 	if next(chooserMenuItems) == nil then
-		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
+		log.df("Building a list of Final Cut Pro menu items for the first time.")
 		local fcpxElements = ax.applicationElement(fcp:application())
 		if fcpxElements ~= nil then
 			local whichMenuBar = nil
@@ -722,7 +724,7 @@ function hackshud.choices()
 		--------------------------------------------------------------------------------
 		-- Insert Menu Items from Settings:
 		--------------------------------------------------------------------------------
-		debugMessage("Using Menu Items from Settings.")
+		log.df("Using Menu Items from Settings.")
 		for i=1, #chooserMenuItems do
 			table.insert(result, 1, chooserMenuItems[i])
 		end
@@ -1199,11 +1201,11 @@ function hackshud.shareXML(incomingXML)
 		if startOfXML == nil or endOfXML == nil then
 			dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data you dropped. Please try again.\n\nError occurred in hackshud.shareXML().")
 			if incomingXML ~= nil then
-				debugMessage("Start of incomingXML.")
-				debugMessage(incomingXML)
-				debugMessage("End of incomingXML.")
+				log.df("Start of incomingXML.")
+				log.df(incomingXML)
+				log.df("End of incomingXML.")
 			else
-				debugMessage("ERROR: incomingXML is nil.")
+				log.df("ERROR: incomingXML is nil.")
 			end
 			return "fail"
 		end

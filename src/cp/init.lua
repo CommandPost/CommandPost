@@ -13,6 +13,12 @@ local mod = {}
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- LOGGING:
+--------------------------------------------------------------------------------
+local logger					= require("hs.logger")
+local log						= logger.new("cp")
+
+--------------------------------------------------------------------------------
 -- HAMMERSPOON EXTENSIONS:
 --------------------------------------------------------------------------------
 local application               = require("hs.application")
@@ -27,6 +33,7 @@ local mouse                     = require("hs.mouse")
 local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local timer                     = require("hs.timer")
+local drawing					= require("hs.drawing")
 
 --------------------------------------------------------------------------------
 -- 3RD PARTY EXTENSIONS:
@@ -43,7 +50,8 @@ local tools                     = require("cp.tools")
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
 --------------------------------------------------------------------------------
-if metadata.get("debugMode")  then
+local debugMode 				= metadata.get("debugMode")
+if debugMode then
     logger.defaultLogLevel = 'debug'
 else
 	logger.defaultLogLevel = 'warning'
@@ -103,14 +111,15 @@ function mod.init()
     local hammerspoonVersion	= hs.processInfo["version"]
 
     --------------------------------------------------------------------------------
-    -- Clear The Console:
-    --------------------------------------------------------------------------------
-    console.clearConsole()
-
-    --------------------------------------------------------------------------------
     -- Console should always be on top:
     --------------------------------------------------------------------------------
-    console.level(hs.drawing.windowLevels["_MaximumWindowLevelKey"])
+    console.level(drawing.windowLevels["_MaximumWindowLevelKey"])
+
+    --------------------------------------------------------------------------------
+    -- Clear The Console:
+    --------------------------------------------------------------------------------
+    consoleLoadingContent = console.getConsole()
+    console.clearConsole()
 
     --------------------------------------------------------------------------------
     -- Display Welcome Message In The Console:
@@ -128,14 +137,25 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Display Useful Debugging Information in Console:
     --------------------------------------------------------------------------------
-    											writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
     if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
         										writeToConsoleDebug(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
     if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
     if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
     if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
+    											writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
+    											writeToConsoleDebug("Debug Mode:                     " .. tostring(debugMode))
                                                 writeToConsoleDebug("", true)
+    console.printStyledtext(styledtext.new("Start of Log:\n", {
+		color = drawing.color.definedCollections.hammerspoon["black"],
+		font = { name = "Helvetica", size = 14 },
+
+	}))
+
+	--------------------------------------------------------------------------------
+	-- Display the content that was displayed before loading...
+	--------------------------------------------------------------------------------
+	print(consoleLoadingContent)
 
 	--------------------------------------------------------------------------------
 	-- Watch for Script Updates:
@@ -148,6 +168,7 @@ function mod.init()
 			end
 		end
 		if doReload then
+			console.clearConsole()
 			hs.reload()
 		end
 	end):start()
@@ -197,89 +218,6 @@ end
 
 
 
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     C O M M O N    F U N C T I O N S                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- REPLACE THE BUILT-IN PRINT FEATURE:
---------------------------------------------------------------------------------
-print = function(value)
-    if type(value) == "table" then
-        value = inspect(value)
-    else
-        value = tostring(value)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Reformat hs.logger values:
-    --------------------------------------------------------------------------------
-    if string.sub(value, 1, 8) == string.match(value, "%d%d:%d%d:%d%d") then
-        value = string.sub(value, 9, string.len(value)) .. " [" .. string.sub(value, 1, 8) .. "]"
-        value = string.gsub(value, "     ", " ")
-        value = " > " .. string.gsub(value, "^%s*(.-)%s*$", "%1")
-        local consoleStyledText = styledtext.new(value, {
-            color = drawing.color.definedCollections.hammerspoon["red"],
-            font = { name = "Menlo", size = 12 },
-        })
-        console.printStyledtext(consoleStyledText)
-        return
-    end
-
-    if (value:sub(1, 21) ~= "-- Loading extension:") and (value:sub(1, 8) ~= "-- Done.") then
-        value = string.gsub(value, "     ", " ")
-        value = string.gsub(value, "^%s*(.-)%s*$", "%1")
-        local consoleStyledText = styledtext.new(" > " .. value, {
-            color = drawing.color.definedCollections.hammerspoon["red"],
-            font = { name = "Menlo", size = 12 },
-        })
-        console.printStyledtext(consoleStyledText)
-    end
-end
-
---------------------------------------------------------------------------------
--- WRITE TO CONSOLE:
---------------------------------------------------------------------------------
-function writeToConsole(value, overrideLabel)
-    if value ~= nil then
-        if not overrideLabel then
-            value = "> "..value
-        end
-        if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-        local consoleStyledText = styledtext.new(tostring(value), {
-            color = drawing.color.definedCollections.hammerspoon["blue"],
-            font = { name = "Menlo", size = 12 },
-        })
-        console.printStyledtext(consoleStyledText)
-    end
-end
-
---------------------------------------------------------------------------------
--- DEBUG MESSAGE:
---------------------------------------------------------------------------------
-function debugMessage(value, value2)
-    if value2 ~= nil then
-        local consoleStyledText = styledtext.new(" > " .. tostring(value) .. ": " .. tostring(value2), {
-            color = drawing.color.definedCollections.hammerspoon["red"],
-            font = { name = "Menlo", size = 12 },
-        })
-        console.printStyledtext(consoleStyledText)
-    else
-        if value ~= nil then
-            if type(value) == "string" then value = string.gsub(value, "\n\n", "\n > ") end
-            if metadata.get("debugMode") then
-                local consoleStyledText = styledtext.new(" > " .. value, {
-                    color = drawing.color.definedCollections.hammerspoon["red"],
-                    font = { name = "Menlo", size = 12 },
-                })
-                console.printStyledtext(consoleStyledText)
-            end
-        end
-    end
-end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
