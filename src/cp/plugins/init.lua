@@ -11,6 +11,7 @@
 
 local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
+local console						= require("hs.console")
 
 local tools							= require("cp.tools")
 local metadata						= require("cp.metadata")
@@ -193,6 +194,7 @@ function mod.disable(pluginPath)
 	local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 	disabled[pluginPath] = true
 	metadata.set(mod.SETTINGS_DISABLED, disabled)
+	console.clearConsole()
 	hs.reload()
 end
 
@@ -200,6 +202,7 @@ function mod.enable(pluginPath)
 	local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 	disabled[pluginPath] = false
 	metadata.set(mod.SETTINGS_DISABLED, disabled)
+	console.clearConsole()
 	hs.reload()
 end
 

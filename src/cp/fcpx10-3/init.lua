@@ -145,7 +145,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMessage("Debug Mode Activated.")
+	log.df("Debug Mode Activated.")
 
 	--------------------------------------------------------------------------------
 	-- Activate Menu Manager
@@ -228,7 +228,7 @@ function loadScript()
 	--------------------------------------------------------------------------------
 	-- All loaded!
 	--------------------------------------------------------------------------------
-	writeToConsole("Successfully loaded.")
+	log.df("Successfully loaded.")
 	dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 
 	mod.hacksLoaded = true
@@ -925,7 +925,7 @@ function finalCutProWindowWatcher()
 			-- Disable Hotkeys:
 			--------------------------------------------------------------------------------
 			if hotkeys ~= nil then -- For the rare case when Command Editor is open on load.
-				debugMessage("Disabling Hotkeys")
+				log.df("Disabling Hotkeys")
 				hotkeys:exit()
 			end
 

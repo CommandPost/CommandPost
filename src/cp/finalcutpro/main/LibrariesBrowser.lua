@@ -247,7 +247,7 @@ function Libraries:selectClip(clipUI)
 	elseif self:isFilmstripView() then
 		self:filmstrip():selectClip(clipUI)
 	else
-		debugMessage("ERROR: cannot find either list or filmstrip UI")
+		log.df("ERROR: cannot find either list or filmstrip UI")
 	end
 	return self
 end
