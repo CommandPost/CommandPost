@@ -10,10 +10,13 @@ local log										= require("hs.logger").new("touchbar")
 
 -- Constants
 
-local PRIORITY			= 1000
+local PRIORITY				= 1000
 
-local LOCATION_MOUSE	= "Mouse"
-local LOCATION_TIMELINE	= "TimelineTopCentre"
+local LOCATION_DRAGGABLE 	= "Draggable"
+local LOCATION_MOUSE		= "Mouse"
+local LOCATION_TIMELINE		= "TimelineTopCentre"
+
+local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 
 -- The Module
 local mod = {}
@@ -31,7 +34,7 @@ function mod.setLastLocation(value)
 end
 
 function mod.getLocation()
-	return metadata.get("displayTouchBarLocation", LOCATION_MOUSE)
+	return metadata.get("displayTouchBarLocation", DEFAULT_VALUE)
 end
 
 function mod.setLocation(value)
@@ -50,6 +53,14 @@ function mod.updateLocation()
 	local displayTouchBarLocation = mod.getLocation()
 
 	--------------------------------------------------------------------------------
+	-- Put it back to last known position:
+	--------------------------------------------------------------------------------
+	local lastLocation = mod.getLastLocation()
+	if lastLocation then
+		mod.touchBarWindow:topLeft(lastLocation)
+	end
+
+	--------------------------------------------------------------------------------
 	-- Show Touch Bar at Top Centre of Timeline:
 	--------------------------------------------------------------------------------
 	local timeline = fcp:timeline()
@@ -58,10 +69,12 @@ function mod.updateLocation()
 		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 		--------------------------------------------------------------------------------
 		local viewFrame = timeline:contents():viewFrame()
+		if viewFrame then
+			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
+			mod.touchBarWindow:topLeft(topLeft)
+		end
+	elseif displayTouchBarLocation == LOCATION_MOUSE then
 
-		local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
-		mod.touchBarWindow:topLeft(topLeft)
-	else
 		--------------------------------------------------------------------------------
 		-- Position Touch Bar to Mouse Pointer Location:
 		--------------------------------------------------------------------------------
@@ -177,7 +190,7 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mod.mouseInsideTouchbar then
+			if mod.mouseInsideTouchbar and mod.getLocation() == LOCATION_DRAGGABLE then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
 					mod.touchBarWindow:backgroundColor{ red = 1 }
 								  	:movable(true)
@@ -200,8 +213,8 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.menu.tools"]	= "prefs",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
+	["cp.plugins.menu.tools"]		= "prefs",
+	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
 }
 
 function plugin.init(deps)
@@ -223,28 +236,27 @@ function plugin.init(deps)
 	})
 
 	-- Menu items
-	--if mod.isSupported() then
-		local section = deps.prefs:addSection(PRIORITY)
-		--section:addSeparator(1000)
-		section:addMenu(2000, function() return i18n("touchBar") end)
-			:addItems(1000, function()
-				local location = mod.getLocation()
-				return {
-					{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 								checked = mod.isEnabled(),					disabled = not mod.isSupported() },
-					{ title = "-" },
-					{ title = string.upper(i18n("touchBarLocation")),		disabled = true },
-					{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,	checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
-					{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,	checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
-					{ title = "-" },
-					{ title = i18n("touchBarTipOne"), 		disabled = true },
-					{ title = i18n("touchBarTipTwo"), 		disabled = true },
-				}
-			end)
-		--section:addSeparator(3000)
-	-- end
+
+	local section = deps.prefs:addSection(PRIORITY)
+
+	section:addMenu(2000, function() return i18n("touchBar") end)
+		:addItems(1000, function()
+			local location = mod.getLocation()
+			return {
+				{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 									checked = mod.isEnabled(),					disabled = not mod.isSupported() },
+				{ title = "-" },
+				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
+				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
+				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
+				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.isSupported() },
+				{ title = "-" },
+				{ title = i18n("touchBarTipOne"), 		disabled = true },
+				{ title = i18n("touchBarTipTwo"), 		disabled = true },
+			}
+		end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleTouchBar")
+	deps.fcpxCmds:add("cpToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
 		:whenActivated(function() mod.toggleEnabled() end)
 

@@ -51,8 +51,9 @@ plugin.dependencies = {
 function plugin.init(deps)
 
 	for i = 1, MAX_LANES do
-		deps.fcpxCmds:add("FCPXHackSelectClipAtLane" .. tools.numberToWord(i))
-			:titled(i18n("FCPXHackSelectClipAtLane_customTitle", {count = i}))
+		deps.fcpxCmds:add("cpSelectClipAtLane" .. tools.numberToWord(i))
+			:groupedBy("timeline")
+			:titled(i18n("cpSelectClipAtLane_customTitle", {count = i}))
 			:whenActivated(function() mod.selectClipAtLane(i) end)
 	end
 

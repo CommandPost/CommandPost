@@ -2,74 +2,117 @@ local command					= require("cp.commands.command")
 
 local commands = {}
 
---- hs.commands:new() -> commands
---- Creates a collection of commands. These commands can be enabled or disabled as a group.
+commands._groups = {}
+
+--- hs.commands.groupIds() -> table
+--- Function
+--- Returns an array of IDs of command groups which have been created.
+---
+--- Parameters:
+--- * N/A
 ---
 --- Returns:
----  * commands - The commands that was created.
+---  * `table` - The array of group IDs.
+---
+function commands.groupIds()
+	local ids = {}
+	for id,_ in pairs(commands._groups) do
+		ids[#ids + 1] = id
+	end
+	return ids
+end
+
+--- hs.commands.group(id) -> cp.command or nil
+--- Function
+--- Creates a collection of commands. These commands can be enabled or disabled as a group.
+---
+--- Parameters:
+--- * `id`		- The ID to retrieve
+---
+--- Returns:
+---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
+---
+function commands.group(id)
+	return commands._groups[id]
+end
+
+--- hs.commands:new(id) -> cp.commands
+--- Method
+--- Creates a collection of commands. These commands can be enabled or disabled as a group.
+
+--- Parameters:
+--- * `id`		- The unique ID for this command group.
+---
+--- Returns:
+---  * cp.commands - The commands group that was created.
 ---
 function commands:new(id)
+	if commands.group(id) ~= nil then
+		error("Duplicate command group ID: "..id)
+	end
 	o = {
-		id = id,
-		commands = {},
-		enabled = false,
+		_id = id,
+		_commands = {},
+		_enabled = false,
 	}
 	setmetatable(o, self)
 	self.__index = self
+	
+	commands._groups[id] = o
 	return o
 end
 
 function commands:id()
-	return self.id
+	return self._id
 end
 
 function commands:add(commandId)
 	local cmd = command:new(commandId)
-	self.commands[commandId] = cmd
+	self._commands[commandId] = cmd
 	if self:isEnabled() then cmd:enable() end
 	self:_notify("add", cmd)
 	return cmd
 end
 
 function commands:get(commandId)
-	return self.commands[commandId]
+	return self._commands[commandId]
 end
 
 function commands:getAll()
-	return self.commands
+	return self._commands
 end
 
 function commands:clear()
 	self:deleteShortcuts()
-	self.commands = {}
+	self._commands = {}
 	return self
 end
 
 function commands:deleteShortcuts()
-	for _,command in pairs(self.commands) do
+	for _,command in pairs(self._commands) do
 		command:deleteShortcuts()
 	end
 	return self
 end
 
 function commands:enable()
-	self.enabled = true
-	for _,command in pairs(self.commands) do
+	self._enabled = true
+	for _,command in pairs(self._commands) do
 		command:enable()
 	end
 	return self
 end
 
 function commands:disable()
-	for _,command in pairs(self.commands) do
+	for _,command in pairs(self._commands) do
 		command:disable()
 	end
-	self.enabled = false
+	self._enabled = false
 	return self
 end
 
 function commands:isEnabled()
-	return self.enabled
+	return self._enabled
 end
 
 function commands:watch(events)

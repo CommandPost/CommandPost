@@ -367,7 +367,7 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	-- Commands
-	deps.fcpxCmds:add("FCPXCopyWithCustomLabel")
+	deps.fcpxCmds:add("cpCopyWithCustomLabel")
 		:whenActivated(mod.copyWithCustomClipName)
 
 	return mod

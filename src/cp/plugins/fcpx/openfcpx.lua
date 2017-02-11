@@ -2,7 +2,7 @@ local fcp			= require("cp.finalcutpro")
 
 --- The function
 
-local PRIORITY = 0
+local PRIORITY = 3
 
 local function openFcpx()
 	fcp:launch()
@@ -24,7 +24,7 @@ function plugin.init(deps)
 		return { title = i18n("open") .. " Final Cut Pro",	fn = openFcpx }
 	end)
 
-	global:add("FCPXHackLaunchFinalCutPro")
+	global:add("cpLaunchFinalCutPro")
 		:activatedBy():ctrl():alt():cmd("l")
 		:whenPressed(openFcpx)
 

@@ -12,6 +12,7 @@ local log			= require("hs.logger").new("shortcuts")
 -- Constants
 
 local PRIORITY 		= 1000
+local ADVANCED_FEATURES_PRIORITY = 1
 
 local mod = {}
 
@@ -291,6 +292,7 @@ plugin.dependencies = {
 	["cp.plugins.menu.top"] 		= "top",
 	["cp.plugins.commands.global"]	= "globalCmds",
 	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
+	["cp.plugins.menu.administrator.advancedfeatures"] = "advancedfeatures",
 }
 
 function plugin.init(deps)
@@ -301,13 +303,19 @@ function plugin.init(deps)
 	deps.top:addItem(PRIORITY, createMenuItem)
 
 	-- Add Commands
-	deps.globalCmds:add("FCPXHackShowListOfShortcutKeys")
+	deps.globalCmds:add("cpShowListOfShortcutKeys")
 		:activatedBy():ctrl():option():cmd("f1")
 		:whenActivated(mod.displayShortcutList)
 
-	deps.fcpxCmds:add("FCPXHackOpenCommandEditor")
+	deps.fcpxCmds:add("cpOpenCommandEditor")
 		:titled(i18n("openCommandEditor"))
 		:whenActivated(mod.editCommands)
+
+	deps.advancedfeatures:addItem(ADVANCED_FEATURES_PRIORITY, function()
+		return { title = i18n("enableHacksShortcuts"),	fn = mod.toggleEditable, checked=mod.isEditable() }
+	end)
+
+	:addSeparator(ADVANCED_FEATURES_PRIORITY + 1)
 
 	return mod
 end

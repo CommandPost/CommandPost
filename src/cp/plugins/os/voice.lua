@@ -244,7 +244,7 @@ function plugin.init(deps)
 		end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackToggleVoiceCommands")
+	deps.fcpxCmds:add("cpToggleVoiceCommands")
 		:whenActivated(mod.toggleEnabled)
 
 	return mod

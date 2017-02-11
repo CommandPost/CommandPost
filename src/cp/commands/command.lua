@@ -18,13 +18,17 @@ local command = {}
 ---
 function command:new(id)
 	o = {
-		id = id,
-		shortcuts = {},
-		enabled = false,
+		_id = id,
+		_shortcuts = {},
+		_enabled = false,
 	}
 	setmetatable(o, self)
 	self.__index = self
 	return o
+end
+
+function command:id()
+	return self._id
 end
 
 --- hs.commands.command:titled(title) -> command
@@ -37,29 +41,38 @@ end
 ---  * command - The command that was created.
 ---
 function command:titled(title)
-	self.title = title
+	self._title = title
 	return self
 end
 
 function command:getTitle()
-	if self.title then
-		return self.title
+	if self._title then
+		return self._title
 	else
-		return i18n(self.id .. "_title")
+		return i18n(self:id() .. "_title")
 	end
 end
 
 function command:subtitled(subtitle)
-	self.subtitle = subtitle
+	self._subtitle = subtitle
 	return self
 end
 
 function command:getSubtitle()
-	if self.subtitle then
-		return self.subtitle
+	if self._subtitle then
+		return self._subtitle
 	else
-		return i18n(self.id .. "_subtitle")
+		return i18n(self:id() .. "_subtitle")
 	end
+end
+
+function command:groupedBy(group)
+	self._group = group
+	return self
+end
+
+function command:getGroup()
+	return self._group
 end
 
 --- hs.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
@@ -119,10 +132,10 @@ end
 ---  * command - The current command
 ---
 function command:deleteShortcuts()
-	for i,shortcut in ipairs(self.shortcuts) do
+	for i,shortcut in ipairs(self._shortcuts) do
 		shortcut:delete()
 	end
-	self.shortcuts = {}
+	self._shortcuts = {}
 	return self
 end
 
@@ -150,7 +163,7 @@ function command:addShortcut(newShortcut)
 		function() return self:repeated() end
 	)
 	-- mark it as a 'command' hotkey
-	local shortcuts = self.shortcuts
+	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
 
 	-- enable it if appropriate
@@ -167,7 +180,7 @@ end
 --- Returns:
 ---  * The associated shortcuts.
 function command:getShortcuts()
-	return self.shortcuts
+	return self._shortcuts
 end
 
 --- hs.commands.command:whenActivated(function) -> command
@@ -299,23 +312,23 @@ function command:activated(repeats)
 end
 
 function command:enable()
-	self.enabled = true
-	for _,shortcut in ipairs(self.shortcuts) do
+	self._enabled = true
+	for _,shortcut in ipairs(self._shortcuts) do
 		shortcut:enable()
 	end
 	return self
 end
 
 function command:disable()
-	self.enabled = false
-	for _,shortcut in ipairs(self.shortcuts) do
+	self._enabled = false
+	for _,shortcut in ipairs(self._shortcuts) do
 		shortcut:disable()
 	end
 	return self
 end
 
 function command:isEnabled()
-	return self.enabled
+	return self._enabled
 end
 
 return command

@@ -42,6 +42,7 @@ local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
 local tools										= require("cp.tools")
+local commands									= require("cp.commands")
 
 local log										= require("hs.logger").new("hud")
 
@@ -134,6 +135,17 @@ function hackshud.getButton(index, defaultValue)
 	return metadata.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
 end
 
+function hackshud.getButtonCommand(index)
+	local button = hackshud.getButton(index)
+	if button then
+		local group = commands.group(button.group)
+		if group then
+			return group:get(button.id)
+		end
+	end
+	return nil
+end
+
 function hackshud.setButton(index, value)
 	local currentLanguage = fcp:getCurrentLanguage()
 	metadata.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
@@ -141,34 +153,26 @@ end
 
 function hackshud.isFrontmost()
 	if hackshud.hudWebView ~= nil then
-		log.df("focusedWindow: %s; webView window: %s", hs.inspect(window.focusedWindow()), hs.inspect(hackshud.hudWebView:hswindow()))
 		return window.focusedWindow() == hackshud.hudWebView:hswindow()
 	else
-		log.df("not frontmost")
 		return false
 	end
 end
 
 function hackshud.update()
 	if hackshud.canShow() then
-		log.df("update: showing")
-		-- timer.doAfter(0.00001, hackshud.show)
 		hackshud.show()
 	else
-		log.df("update: hiding")
-		-- timer.doAfter(0.00001, hackshud.hide)
 		hackshud.hide()
 	end
 end
 
 function hackshud.canShow()
 	-- return hackshud.isEnabled()
-	log.df("canShow: FCP: %s, HUD: %s, CommandPost: %s", fcp:isFrontmost(), hackshud.isFrontmost(), metadata.isFrontmost())
 	local result = (fcp:isFrontmost() or hackshud.isFrontmost() or metadata.isFrontmost())
 	and not fcp:fullScreenWindow():isShowing()
 	and not fcp:commandEditor():isShowing()
 	and hackshud.isEnabled()
-	log.df("canShow: %s", hs.inspect(result))
 	return result
 end
 
@@ -219,11 +223,6 @@ function hackshud.new()
 		:level(drawing.windowLevels.modalPanel)
 
 	--------------------------------------------------------------------------------
-	-- URL Events:
-	--------------------------------------------------------------------------------
-	hackshud.urlEvent = urlevent.bind("cmd", hackshud.hudCallback)
-
-	--------------------------------------------------------------------------------
 	-- Window Watcher:
 	--------------------------------------------------------------------------------
 	hackshud.hudFilter = windowfilter.new(true)
@@ -234,7 +233,6 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	hackshud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
-			log.df("HUD moved...")
 			if hackshud.active() then
 				local result = hackshud.hudWebView:hswindow():frame()
 				if result ~= nil then
@@ -250,7 +248,6 @@ function hackshud.new()
 	hackshud.hudFilter:subscribe(windowfilter.windowDestroyed, 
 	function(window, applicationName, event)
 		if window:id() == hackshud.windowID then
-			log.df("HUD closed")
 			if not hackshud.ignoreWindowChange then
 				hackshud.setEnabled(false)
 			end
@@ -267,11 +264,9 @@ function hackshud.new()
 	--------------------------------------------------------------------------------
 	hackshud.windowFilter:subscribe(windowfilter.windowFocused, 
 	function(window, applicationName, event)
-		log.df("window focused: %s", hs.inspect(window:id()))
 		hackshud.update()
 	end, true)
 	
-	log.df("app watcher initialising...")
 	local watcher = application.watcher
 	hackshud.appWatcher = watcher.new(
 		function(appName, eventType, appObject)
@@ -281,7 +276,6 @@ function hackshud.new()
 		end
 	)
 	hackshud.appWatcher:start()
-	log.df("app watcher started")
 end
 
 --------------------------------------------------------------------------------
@@ -402,7 +396,7 @@ function hackshud.assignButton(button)
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
 		if result ~= nil then
-			hackshud.setButton(whichButton, result)
+			hackshud.setButton(whichButton, {group = result.group, id = result.id})
 		end
 
 		--------------------------------------------------------------------------------
@@ -434,152 +428,32 @@ function hackshud.choices()
 
 	local result = {}
 	local individualEffect = nil
+	
+	local chooserCommands = {}
+	
+	for _,id in pairs(commands.groupIds()) do
+		local group = commands.group(id)
+		for _,cmd in pairs(group:getAll()) do
+			local title = cmd:getTitle()
+			if title then
+				local subText = cmd:getSubtitle()
+				if not subText and cmd:getGroup() then
+					subText = i18n(cmd:getGroup() .. "_group")
+				end
+				chooserCommands[#chooserCommands + 1] = {
+					text		= title,
+					subText		= subText,
+					group		= group:id(),
+					id			= cmd:id(),
+				}
+			end
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- Hardcoded Choices:
 	--------------------------------------------------------------------------------
 	local chooserAutomation = {
-		{
-			["text"] 		= "Toggle Scrolling Timeline",
-			["subText"] 	= "Automation",
-			["plugin"]		= "hs.fcpxhacks.plugins.timeline.playhead",
-			["function"] 	= "toggleScrollingTimeline",
-		},
-		{
-			["text"] = "Highlight Browser Playhead",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.browser.playhead",
-			["function"] = "highlight",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal in Browser & Highlight",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugin.timeline.matchframe",
-			["function"] = "matchFrame",
-			["function1"] = nil,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 1",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 1,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 2",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 2,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 3",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 3,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 4",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 4,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 5",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 5,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 6",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 6,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 7",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 7,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 8",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 8,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 9",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 9,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Select Clip At Lane 10",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
-			["function"] = "selectClipAtLane",
-			["function1"] = 10,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Single Match Frame & Highlight",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
-			["function"] = "matchFrame",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal Multicam in Browser & Highlight",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
-			["function"] = "multicamMatchFrame",
-			["function1"] = true,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
-		{
-			["text"] = "Reveal Multicam in Angle Editor & Highlight",
-			["subText"] = "Automation",
-			["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
-			["function"] = "multicamMatchFrame",
-			["function1"] = false,
-			["function2"] = nil,
-			["function3"] = nil,
-		},
 		{
 			["text"] = "Select Color Board Puck 1",
 			["subText"] = "Automation",
@@ -740,6 +614,7 @@ function hackshud.choices()
 		},
 	}
 
+	fnutils.concat(result, chooserCommands)
 	fnutils.concat(result, chooserAutomation)
 	fnutils.concat(result, chooserShortcuts)
 	fnutils.concat(result, chooserHacks)
@@ -1240,39 +1115,6 @@ function hackshud.javaScriptCallback(message)
 end
 
 --------------------------------------------------------------------------------
--- URL EVENT CALLBACK:
---------------------------------------------------------------------------------
-function hackshud.hudCallback(eventName, params)
-
-	local f1 = params["function1"] or ""
-	local f2 = params["function2"] or ""
-	local f3 = params["function3"] or ""
-	local f4 = params["function4"] or ""
-
-	if tonumber(f1) ~= nil then f1 = tonumber(f1) end
-	if tonumber(f2) ~= nil then f2 = tonumber(f2) end
-	if tonumber(f3) ~= nil then f3 = tonumber(f3) end
-	if tonumber(f4) ~= nil then f4 = tonumber(f4) end
-
-	local source = _G
-	if params["plugin"] then
-		source = plugins(params["plugin"])
-	end
-
-	timer.doAfter(0.0000000001, function() source[params["function"]](f1, f2, f3, f4) end )
-
-	fcp:launch()
-
-end
-
---------------------------------------------------------------------------------
--- DISPLAY UNALLOCATED HUD MESSAGE:
---------------------------------------------------------------------------------
-function displayUnallocatedHUDMessage()
-	dialog.displayMessage(i18n("hudButtonError"))
-end
-
---------------------------------------------------------------------------------
 -- SHARED XML:
 --------------------------------------------------------------------------------
 function hackshud.shareXML(incomingXML)
@@ -1380,7 +1222,7 @@ function plugin.init(deps)
 			return { title = i18n("enableHacksHUD"),	fn = hackshud.toggleEnabled,		checked = hackshud.isEnabled()}
 		end)
 	hudMenu:addSeparator(2000)
-	hudMenu:addMenu(3000, function() return i18n("enableHacksHUD") end)
+	hudMenu:addMenu(3000, function() return i18n("hudOptions") end)
 		:addItems(1000, function()
 			return {
 				{ title = i18n("showInspector"),	fn = hackshud.toggleInspctorShown,		checked = hackshud.isInspectorShown()},
@@ -1392,10 +1234,17 @@ function plugin.init(deps)
 	hudMenu:addMenu(4000, function() return i18n("assignHUDButtons") end)
 		:addItems(1000, function() 
 			local items = {}
+			local unassignedText = i18n("unassigned")
 			for i = 1, hackshud.maxButtons do
-				local button = hackshud.getButton(i, {})["text"] or i18n("unassigned")
-				button = tools.stringMaxLength(tools.cleanupButtonText(button), hackshud.maxTextLength, "...")
-				items[#items + 1] = { title = i18n("hudButtonItem", {count = i, title = button}),	fn = function() hackshud.assignButton(i) end }
+				local title = unassignedText
+				
+				local cmd = hackshud.getButtonCommand(i)
+				if cmd then
+					title = cmd:getTitle()
+				end
+				
+				title = tools.stringMaxLength(tools.cleanupButtonText(title), hackshud.maxTextLength, "...")
+				items[#items + 1] = { title = i18n("hudButtonItem", {count = i, title = title}),	fn = function() hackshud.assignButton(i) end }
 			end
 			return items
 		end)

@@ -183,7 +183,7 @@ function dialog.displayErrorMessage(whatError)
 	--------------------------------------------------------------------------------
 	-- Send bug report:
 	--------------------------------------------------------------------------------
-	if result then emailBugReport() end
+	if result then plugins("cp.plugins.cp.feedback").emailBugReport() end
 
 end
 

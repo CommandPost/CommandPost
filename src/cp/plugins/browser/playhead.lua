@@ -217,7 +217,8 @@ function plugin.init(deps)
 	end)
 
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackHighlightBrowserPlayhead")
+	deps.fcpxCmds:add("cpHighlightBrowserPlayhead")
+		:groupedBy("browser")
 		:activatedBy():cmd():option():ctrl("h")
 		:whenActivated(mod.highlight)
 

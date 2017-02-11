@@ -20,6 +20,9 @@ local section									= require("cp.plugins.menu.manager.section")
 
 local log										= require("hs.logger").new("menumanager")
 
+local DEFAULT_DISPLAY_MENUBAR_AS_ICON = true
+local DEFAULT_ENABLE_PROXY_MENU_ICON = false
+
 local manager = {}
 
 manager.rootSection = section:new()
@@ -54,8 +57,8 @@ manager.ORIGINAL_QUALITY	= 5
 manager.ORIGINAL_ICON		= "🔵"
 
 function manager.updateMenubarIcon()
-	local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", false)
-	local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", false)
+	local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+	local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 
 	local title = metadata.scriptName
 	local icon = nil

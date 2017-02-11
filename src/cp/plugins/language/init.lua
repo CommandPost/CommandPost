@@ -11,7 +11,7 @@ local log			= require("hs.logger").new("lang")
 
 -- Constants
 
-local PRIORITY = 2
+local PRIORITY = 4
 
 local LANGUAGE_PATH = metadata.languagePath
 
@@ -125,7 +125,7 @@ function plugin.init(deps)
 
 	local section = deps.prefs:addSection(PRIORITY)
 
-	local fcpxHacksLangs = section:addMenu(200, function() return metadata.scriptName .. " " .. i18n("language") end)
+	local fcpxHacksLangs = section:addMenu(200, function() return i18n("language") end)
 	fcpxHacksLangs:addItems(1, function()
 		local settingsLanguage = {}
 		local userLocale = metadata.get("language", tools.userLocale())
