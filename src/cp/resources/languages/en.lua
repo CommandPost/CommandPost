@@ -41,6 +41,7 @@ return {
 			enabled								=			"Enabled",
 			disabled							=			"Disabled",
 			show								=			"Show",
+			clearList							=			"Clear List",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -568,6 +569,8 @@ return {
 
 		cpSelectForward_title									=	"Select Clips Forward",
 		cpSelectBackwards_title									=	"Select Clips Backwards",
+
+		cpAddNoteToSelectedClip_title							=	"Add Note to Selected Clip",
 
 		cpMoveToPlayhead_title									=	"Move to Playhead",
 
