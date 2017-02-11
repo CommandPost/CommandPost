@@ -41,6 +41,7 @@ return {
 			enabled								=			"Enabled",
 			disabled							=			"Disabled",
 			show								=			"Show",
+			clearList							=			"Clear List",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -575,8 +576,28 @@ return {
 
 		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
 
+		cpSelectColorBoardPuck_customTitle						=	"Select Color Board Puck %{count}",
+		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
+		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
+		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
+		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+
+		cpCutSwitchVideoAngle_customTitle						=	"Cut n Switch Video Angle %{count}",
+		cpCutSwitchAudioAngle_customTitle						=	"Cut n Switch Audio Angle %{count}",
+		cpCutSwitchBothAngle_customTitle						=	"Cut n Switch Both Angle %{count}",
+
 		cpPlay_title											=	"Play",
 		cpPause_title											=	"Pause",
+
+		cpSelectForward_title									=	"Select Clips Forward",
+		cpSelectBackwards_title									=	"Select Clips Backwards",
+
+		cpAddNoteToSelectedClip_title							=	"Add Note to Selected Clip",
+
+		cpMoveToPlayhead_title									=	"Move to Playhead",
+
+		cpChangeTimelineClipHeightUp_title						=	"Timeline Clip Height Increase",
+		cpChangeTimelineClipHeightDown_title					=	"Timeline Clip Height Decrease",
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",

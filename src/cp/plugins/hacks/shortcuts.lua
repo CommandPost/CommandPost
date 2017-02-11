@@ -11,7 +11,7 @@ local log			= require("hs.logger").new("shortcuts")
 
 -- Constants
 
-local PRIORITY 		= 1000
+local PRIORITY 		= 5
 local ADVANCED_FEATURES_PRIORITY = 1
 
 local mod = {}
@@ -199,19 +199,6 @@ local function applyCommandSetShortcuts()
 	})
 end
 
-local function createMenuItem()
-	--------------------------------------------------------------------------------
-	-- Get Enable Hacks Shortcuts in Final Cut Pro from Settings:
-	--------------------------------------------------------------------------------
-	local hacksInFcpx = mod.isEditable()
-
-	if hacksInFcpx then
-		return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
-	else
-		return { title = i18n("displayKeyboardShortcuts"), fn = mod.displayShortcutList }
-	end
-end
-
 -- The Module
 
 function mod.isEditable()
@@ -293,6 +280,7 @@ plugin.dependencies = {
 	["cp.plugins.commands.global"]	= "globalCmds",
 	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
 	["cp.plugins.menu.administrator.advancedfeatures"] = "advancedfeatures",
+	["cp.plugins.menu.helpandsupport"] = "helpandsupport",
 }
 
 function plugin.init(deps)
@@ -300,7 +288,15 @@ function plugin.init(deps)
 	mod.fcpxCmds	= deps.fcpxCmds
 
 	-- Add the menu item to the top section.
-	deps.top:addItem(PRIORITY, createMenuItem)
+	deps.top:addItem(PRIORITY, function()
+		return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
+	end)
+
+	deps.helpandsupport:addItem(1.1, function()
+		if not mod.isEditable() then
+			return { title = i18n("displayKeyboardShortcuts"), fn = mod.displayShortcutList }
+		end
+	end)
 
 	-- Add Commands
 	deps.globalCmds:add("cpShowListOfShortcutKeys")
