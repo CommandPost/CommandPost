@@ -99,6 +99,7 @@ function plugin.init(deps)
 
 	-- Commands
 	deps.fcpxCmds:add("cpToggleMovingMarkers")
+		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("y")
 		:whenActivated(mod.toggleMovingMarkers)
 

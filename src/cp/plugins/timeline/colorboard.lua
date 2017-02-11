@@ -133,44 +133,52 @@ function plugin.init(deps)
 
 	for i=1, 4 do
 		deps.fcpxCmds:add("cpSelectColorBoardPuck" .. tools.numberToWord(i))
+			:titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
+			:groupedBy("colorboard")
 			:activatedBy():ctrl():option():cmd(selectColorBoardPuckDefaultShortcuts[i])
 			:whenActivated(function() mod.selectPuck("*", colorFunction[i]) end)
-			:titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
 
 		deps.fcpxCmds:add("cpPuck" .. tools.numberToWord(i) .. "Mouse")
-			:whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
 			:titled(i18n("cpPuckMouse_customTitle", {count = i}))
+			:groupedBy("colorboard")
+			:whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
 
 		for _, whichPanel in ipairs(colorBoardPanel) do
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i))
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i]) end)
 				:titled(i18n("cpPuck_customTitle", {count = i, panel = whichPanel}))
+				:groupedBy("colorboard")
+				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i]) end)
 
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Up")
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
 				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Up"}))
+				:groupedBy("colorboard")
+				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
 				:whenReleased(function() colorBoardSelectPuckRelease() end)
 
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Down")
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
 				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Down"}))
+				:groupedBy("colorboard")
+				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
 				:whenReleased(function() colorBoardSelectPuckRelease() end)
 
 			if whichPanel == "Color" then
 				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Left")
-					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
 					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Left"}))
+					:groupedBy("colorboard")
+					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
 					:whenReleased(function() colorBoardSelectPuckRelease() end)
 
 				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Right")
-					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
 					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Right"}))
+					:groupedBy("colorboard")
+					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
 					:whenReleased(function() colorBoardSelectPuckRelease() end)
 			end
 
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Mouse")
-				:whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
 				:titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = whichPanel}))
+				:groupedBy("colorboard")
+				:whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
 				:whenReleased(function() colorBoardMousePuckRelease() end)
 		end
 	end

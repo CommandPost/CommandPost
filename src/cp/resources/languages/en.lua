@@ -529,6 +529,9 @@ return {
 	
 	timeline_group						=			"Timeline",
 	browser_group						=			"Browser",
+	colorboard_group					=			"Colour Board",
+	mediaImport_group					=			"Media Import",
+	hacks_group							=			"Advanced Features",
 
 	--------------------------------------------------------------------------------
 	-- Command Titles:
@@ -604,6 +607,26 @@ return {
 		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
 		cpShowListOfShortcutKeys_title							=	"Show Keyboard Shortcuts",
 		cpOpenCommandEditor_title								=	"Open Command Editor",
+		
+		cpCreateOptimizedMediaOn_title							=	"Enable Create Optimized Media",
+		cpCreateOptimizedMediaOff_title							=	"Disable Create Optimized Media",
+		
+		cpCreateMulticamOptimizedMediaOn_title					=	"Enable Multicam Optimized Media",
+		cpCreateMulticamOptimizedMediaOff_title					=	"Disable Multicam Optimized Media",
+		
+		cpCreateProxyMediaOn_title								=	"Enable Create Proxy Media",
+		cpCreateProxyMediaOff_title								=	"Disable Create Proxy Media",
+		
+		cpLeaveInPlaceOn_title									=	"Enable Leave In Place on Import",
+		cpLeaveInPlaceOff_title									=	"Disable Leave In Place on Import",
+		
+		cpBackgroundRenderOn_title								=	"Enable Background Render",
+		cpBackgroundRenderOff_title								=	"Disable Background Render",
+		
+		cpChangeBackupInterval_title							=	"Change Backup Interval...",
+		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
+		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
+		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:
