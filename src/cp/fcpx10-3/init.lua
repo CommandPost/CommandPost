@@ -54,7 +54,6 @@ local tools										= require("cp.tools")
 -- PLUGINS:
 --------------------------------------------------------------------------------
 
-local hacksconsole								= require("cp.fcpx10-3.hacksconsole")
 local hackshud									= require("cp.fcpx10-3.hackshud")
 local shortcut									= require("cp.commands.shortcut")
 
@@ -88,7 +87,6 @@ local log										= logger.new("fcpx10-3")
 -- MODULE VARIABLES:
 --------------------------------------------------------------------------------
 
-mod.releaseColorBoardDown						= false											-- Color Board Shortcut Currently Being Pressed
 mod.finalCutProShortcutKey 						= nil											-- Table of all Final Cut Pro Shortcuts
 mod.finalCutProShortcutKeyPlaceholders 			= nil											-- Table of all needed Final Cut Pro Shortcuts
 mod.lastCommandSet								= nil											-- Last Keyboard Shortcut Command Set
@@ -220,11 +218,6 @@ function loadScript()
 		hotkeys:exit()
 	end
 
-	-------------------------------------------------------------------------------
-	-- Set up Chooser:
-	-------------------------------------------------------------------------------
-	hacksconsole.new()
-
 	--------------------------------------------------------------------------------
 	-- All loaded!
 	--------------------------------------------------------------------------------
@@ -279,8 +272,6 @@ function defaultShortcutKeys()
         cpSaveKeywordPresetSeven                              = { characterString = shortcut.textToKeyCode("7"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(7) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetEight                              = { characterString = shortcut.textToKeyCode("8"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(8) end,                         releasedFn = nil,                                                       repeatFn = nil },
         cpSaveKeywordPresetNine                               = { characterString = shortcut.textToKeyCode("9"),            modifiers = controlOptionCommandShift,              fn = function() saveKeywordSearches(9) end,                         releasedFn = nil,                                                       repeatFn = nil },
-
-        cpConsole                                             = { characterString = shortcut.textToKeyCode("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
 
         cpHUD                                                 = { characterString = shortcut.textToKeyCode("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
 

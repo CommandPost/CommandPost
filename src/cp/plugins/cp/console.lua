@@ -1,62 +1,49 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F C P X    H A C K S    C O N S O L E                    --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
--- Module created by Chris Hocking (https://github.com/latenitefilms).
---
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
+local chooser			= require("hs.chooser")
+local drawing 			= require("hs.drawing")
+local fnutils 			= require("hs.fnutils")
+local menubar			= require("hs.menubar")
+local mouse				= require("hs.mouse")
+local screen			= require("hs.screen")
+local timer				= require("hs.timer")
+
+local ax 				= require("hs._asm.axuielement")
+
+local plugins			= require("cp.plugins")
+local fcp				= require("cp.finalcutpro")
+local metadata			= require("cp.metadata")
+
+local log				= require("hs.logger").new("console")
+
+local mod = {}
+
+mod.hacksChooser		= nil 		-- the actual hs.chooser
+mod.active 				= false		-- is the Hacks Console Active?
+mod.chooserChoices		= nil		-- Choices Table
+mod.mode 				= "normal"	-- normal, remove, restore
+mod.reduceTransparency	= false
 
 --------------------------------------------------------------------------------
--- THE MODULE:
+-- LOAD CONSOLE:
 --------------------------------------------------------------------------------
-
-local hacksconsole = {}
-
-local chooser									= require("hs.chooser")
-local drawing 									= require("hs.drawing")
-local fnutils 									= require("hs.fnutils")
-local menubar									= require("hs.menubar")
-local mouse										= require("hs.mouse")
-local screen									= require("hs.screen")
-local timer										= require("hs.timer")
-
-local ax 										= require("hs._asm.axuielement")
-
-local plugins									= require("cp.plugins")
-local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.metadata")
-
-hacksconsole.hacksChooser						= nil 		-- the actual hs.chooser
-hacksconsole.active 							= false		-- is the Hacks Console Active?
-hacksconsole.chooserChoices						= nil		-- Choices Table
-hacksconsole.mode 								= "normal"	-- normal, remove, restore
-hacksconsole.reduceTransparency					= false
-
---------------------------------------------------------------------------------
--- LOAD HACKS CONSOLE:
---------------------------------------------------------------------------------
-function hacksconsole.new()
+function mod.new()
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.hacksChooser = chooser.new(hacksconsole.completionAction):bgDark(true)
-											           				 	  :rightClickCallback(hacksconsole.rightClickAction)
-											        				 	  :choices(hacksconsole.choices)
+	mod.hacksChooser = chooser.new(mod.completionAction):bgDark(true)
+											           	:rightClickCallback(mod.rightClickAction)
+											        	:choices(mod.choices)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
 	local reduceTransparency = screen.accessibilitySettings()["ReduceTransparency"]
-	hacksconsole.reduceTransparency = reduceTransparency
+	mod.reduceTransparency = reduceTransparency
 	if reduceTransparency then
-		hacksconsole.hacksChooser:fgColor(nil)
+		mod.hacksChooser:fgColor(nil)
 								 :subTextColor(nil)
 	else
-		hacksconsole.hacksChooser:fgColor(drawing.color.x11.snow)
+		mod.hacksChooser:fgColor(drawing.color.x11.snow)
 								 :subTextColor(drawing.color.x11.snow)
 
 	end
@@ -64,35 +51,35 @@ function hacksconsole.new()
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running, lets preemptively refresh the choices:
 	--------------------------------------------------------------------------------
-	if fcp:isRunning() then timer.doAfter(3, hacksconsole.refresh) end
+	if fcp:isRunning() then timer.doAfter(3, mod.refresh) end
 
 end
 
 --------------------------------------------------------------------------------
--- REFRESH HACKS CONSOLE CHOICES:
+-- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
-function hacksconsole.refresh()
-	hacksconsole.hacksChooser:refreshChoicesCallback()
+function mod.refresh()
+	mod.hacksChooser:refreshChoicesCallback()
 end
 
 --------------------------------------------------------------------------------
--- SHOW HACKS CONSOLE:
+-- SHOW CONSOLE:
 --------------------------------------------------------------------------------
-function hacksconsole.show()
+function mod.show()
 
 	--------------------------------------------------------------------------------
 	-- Reload Console if Reduce Transparency
 	--------------------------------------------------------------------------------
 	local reduceTransparency = screen.accessibilitySettings()["ReduceTransparency"]
-	if reduceTransparency ~= hacksconsole.reduceTransparency then
-		hacksconsole.new()
+	if reduceTransparency ~= mod.reduceTransparency then
+		mod.new()
 	end
 
 	--------------------------------------------------------------------------------
-	-- The Hacks Console always loads in 'normal' mode:
+	-- The Console always loads in 'normal' mode:
 	--------------------------------------------------------------------------------
-	hacksconsole.mode = "normal"
-	hacksconsole.refresh()
+	mod.mode = "normal"
+	mod.refresh()
 
 	--------------------------------------------------------------------------------
 	-- Remember last query?
@@ -100,42 +87,42 @@ function hacksconsole.show()
 	local chooserRememberLast = metadata.get("chooserRememberLast")
 	local chooserRememberLastValue = metadata.get("chooserRememberLastValue", "")
 	if not chooserRememberLast then
-		hacksconsole.hacksChooser:query("")
+		mod.hacksChooser:query("")
 	else
-		hacksconsole.hacksChooser:query(chooserRememberLastValue)
+		mod.hacksChooser:query(chooserRememberLastValue)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Hacks Console is Active:
+	-- Console is Active:
 	--------------------------------------------------------------------------------
-	hacksconsole.active = true
+	mod.active = true
 
 	--------------------------------------------------------------------------------
-	-- Show Hacks Console:
+	-- Show Console:
 	--------------------------------------------------------------------------------
-	hacksconsole.hacksChooser:show()
+	mod.hacksChooser:show()
 
 end
 
 --------------------------------------------------------------------------------
--- HIDE HACKS CONSOLE:
+-- HIDE CONSOLE:
 --------------------------------------------------------------------------------
-function hacksconsole.hide()
+function mod.hide()
 
 	--------------------------------------------------------------------------------
 	-- No Longer Active:
 	--------------------------------------------------------------------------------
-	hacksconsole.active = false
+	mod.active = false
 
 	--------------------------------------------------------------------------------
 	-- Hide Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.hacksChooser:hide()
+	mod.hacksChooser:hide()
 
 	--------------------------------------------------------------------------------
 	-- Save Last Query to Settings:
 	--------------------------------------------------------------------------------
-	metadata.set("chooserRememberLastValue", hacksconsole.hacksChooser:query())
+	metadata.set("chooserRememberLastValue", mod.hacksChooser:query())
 
 	--------------------------------------------------------------------------------
 	-- Put focus back on Final Cut Pro:
@@ -145,20 +132,20 @@ function hacksconsole.hide()
 end
 
 --------------------------------------------------------------------------------
--- HACKS CONSOLE CHOICES:
+-- CONSOLE CHOICES:
 --------------------------------------------------------------------------------
-function hacksconsole.choices()
+function mod.choices()
 
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMessage("Updating Hacks Console Choices.")
+	log.df("Updating Console Choices.")
 
 	--------------------------------------------------------------------------------
 	-- Reset Choices:
 	--------------------------------------------------------------------------------
-	hacksconsole.chooserChoices = nil
-	hacksconsole.chooserChoices = {}
+	mod.chooserChoices = nil
+	mod.chooserChoices = {}
 
 	--------------------------------------------------------------------------------
 	-- Settings:
@@ -178,7 +165,7 @@ function hacksconsole.choices()
 
 	local individualEffect = nil
 
-	if hacksconsole.mode == "normal" or hacksconsole.mode == "remove" then
+	if mod.mode == "normal" or mod.mode == "remove" then
 
 		--------------------------------------------------------------------------------
 		-- Hardcoded Choices:
@@ -187,13 +174,13 @@ function hacksconsole.choices()
 			{
 				["text"] 		= "Toggle Scrolling Timeline",
 				["subText"] 	= "Automation",
-				["plugin"]		= "hs.fcpxhacks.plugins.timeline.playhead",
+				["plugin"]		= "cp.plugins.timeline.playhead",
 				["function"] 	= "toggleScrollingTimeline",
 			},
 			{
 				["text"] = "Highlight Browser Playhead",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.browser.playhead",
+				["plugin"] = "cp.plugins.browser.playhead",
 				["function"] = "highlight",
 				["function1"] = nil,
 				["function2"] = nil,
@@ -202,7 +189,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Reveal in Browser & Highlight",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["plugin"] = "cp.plugins.timeline.matchframe",
 				["function"] = "matchFrame",
 				["function1"] = nil,
 				["function2"] = nil,
@@ -211,7 +198,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 1",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 1,
 				["function2"] = nil,
@@ -220,7 +207,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 2",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 2,
 				["function2"] = nil,
@@ -229,7 +216,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 3",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 3,
 				["function2"] = nil,
@@ -238,7 +225,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 4",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 4,
 				["function2"] = nil,
@@ -247,7 +234,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 5",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 5,
 				["function2"] = nil,
@@ -256,7 +243,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 6",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 6,
 				["function2"] = nil,
@@ -265,7 +252,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 7",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 7,
 				["function2"] = nil,
@@ -274,7 +261,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 8",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 8,
 				["function2"] = nil,
@@ -283,7 +270,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 9",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 9,
 				["function2"] = nil,
@@ -292,7 +279,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Select Clip At Lane 10",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.lanes",
+				["plugin"] = "cp.plugins.timeline.lanes",
 				["function"] = "selectClipAtLane",
 				["function1"] = 10,
 				["function2"] = nil,
@@ -301,7 +288,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Single Match Frame & Highlight",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["plugin"] = "cp.plugins.timeline.matchframe",
 				["function"] = "matchFrame",
 				["function1"] = true,
 				["function2"] = nil,
@@ -310,7 +297,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Reveal Multicam in Browser & Highlight",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["plugin"] = "cp.plugins.timeline.matchframe",
 				["function"] = "multicamMatchFrame",
 				["function1"] = true,
 				["function2"] = nil,
@@ -319,7 +306,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Reveal Multicam in Angle Editor & Highlight",
 				["subText"] = "Automation",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.matchframe",
+				["plugin"] = "cp.plugins.timeline.matchframe",
 				["function"] = "multicamMatchFrame",
 				["function1"] = false,
 				["function2"] = nil,
@@ -362,7 +349,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Activate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -371,7 +358,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -380,7 +367,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Activate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -389,7 +376,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Multicam Optimized Media (Deactivate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateMulticamOptimizedMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -398,7 +385,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Activate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = true,
 				["function2"] = nil,
@@ -407,7 +394,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Create Proxy Media (Deactivate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleCreateProxyMedia",
 				["function1"] = false,
 				["function2"] = nil,
@@ -416,7 +403,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Activate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = true,
 				["function2"] = nil,
@@ -425,7 +412,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Leave Files In Place On Import (Deactivate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.import.preferences",
+				["plugin"] = "cp.plugins.import.preferences",
 				["function"] = "toggleLeaveInPlace",
 				["function1"] = false,
 				["function2"] = nil,
@@ -434,7 +421,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Activate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
+				["plugin"] = "cp.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = true,
 				["function2"] = nil,
@@ -443,7 +430,7 @@ function hacksconsole.choices()
 			{
 				["text"] = "Background Render (Deactivate)",
 				["subText"] = "Shortcut",
-				["plugin"] = "hs.fcpxhacks.plugins.timeline.preferences",
+				["plugin"] = "cp.plugins.timeline.preferences",
 				["function"] = "toggleBackgroundRender",
 				["function1"] = false,
 				["function2"] = nil,
@@ -485,9 +472,9 @@ function hacksconsole.choices()
 			},
 		}
 
-		if chooserShowAutomation then fnutils.concat(hacksconsole.chooserChoices, chooserAutomation) end
-		if chooserShowShortcuts then fnutils.concat(hacksconsole.chooserChoices, chooserShortcuts) end
-		if chooserShowHacks then fnutils.concat(hacksconsole.chooserChoices, chooserHacks) end
+		if chooserShowAutomation then fnutils.concat(mod.chooserChoices, chooserAutomation) end
+		if chooserShowShortcuts then fnutils.concat(mod.chooserChoices, chooserShortcuts) end
+		if chooserShowHacks then fnutils.concat(mod.chooserChoices, chooserHacks) end
 
 		--------------------------------------------------------------------------------
 		-- Menu Items:
@@ -495,7 +482,7 @@ function hacksconsole.choices()
 		local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems", {})
 		if chooserShowMenuItems then
 			if next(chooserMenuItems) == nil then
-				debugMessage("Building a list of Final Cut Pro menu items for the first time.")
+				log.df("Building a list of Final Cut Pro menu items for the first time.")
 				local fcpxElements = ax.applicationElement(fcp:application())
 				if fcpxElements ~= nil and hs.accessibilityState() then
 					local whichMenuBar = nil
@@ -519,7 +506,7 @@ function hacksconsole.choices()
 										["function4"] = "",
 									}
 									table.insert(chooserMenuItems, 1, individualEffect)
-									table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+									table.insert(mod.chooserChoices, 1, individualEffect)
 								end
 								if fcpxElements[whichMenuBar][i][1][x]:attributeValueCount("AXChildren") ~= 0 then
 									for y=1, fcpxElements[whichMenuBar][i][1][x][1]:attributeValueCount("AXChildren") do
@@ -535,7 +522,7 @@ function hacksconsole.choices()
 												["function4"] = "",
 											}
 											table.insert(chooserMenuItems, 1, individualEffect)
-											table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+											table.insert(mod.chooserChoices, 1, individualEffect)
 										end
 										if fcpxElements[whichMenuBar][i][1][x][1][y]:attributeValueCount("AXChildren") ~= 0 then
 											for z=1, fcpxElements[whichMenuBar][i][1][x][1][y][1]:attributeValueCount("AXChildren") do
@@ -551,7 +538,7 @@ function hacksconsole.choices()
 														["function4"] = z,
 													}
 													table.insert(chooserMenuItems, 1, individualEffect)
-													table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+													table.insert(mod.chooserChoices, 1, individualEffect)
 												end
 											end
 										end
@@ -566,9 +553,9 @@ function hacksconsole.choices()
 				--------------------------------------------------------------------------------
 				-- Insert Menu Items from Settings:
 				--------------------------------------------------------------------------------
-				debugMessage("Using Menu Items from Settings.")
+				log.df("Using Menu Items from Settings.")
 				for i=1, #chooserMenuItems do
-					table.insert(hacksconsole.chooserChoices, 1, chooserMenuItems[i])
+					table.insert(mod.chooserChoices, 1, chooserMenuItems[i])
 				end
 			end
 		end
@@ -583,14 +570,14 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allVideoEffects[i],
 						["subText"] = "Video Effect",
-						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["plugin"] = "cp.plugins.timeline.effects",
 						["function"] = "apply",
 						["function1"] = allVideoEffects[i],
 						["function2"] = "",
 						["function3"] = "",
 						["function4"] = "",
 					}
-					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+					table.insert(mod.chooserChoices, 1, individualEffect)
 				end
 			end
 		end
@@ -605,14 +592,14 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allAudioEffects[i],
 						["subText"] = "Audio Effect",
-						["plugin"] = "hs.fcpxhacks.plugins.timeline.effects",
+						["plugin"] = "cp.plugins.timeline.effects",
 						["function"] = "apply",
 						["function1"] = allAudioEffects[i],
 						["function2"] = "",
 						["function3"] = "",
 						["function4"] = "",
 					}
-					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+					table.insert(mod.chooserChoices, 1, individualEffect)
 				end
 			end
 		end
@@ -627,14 +614,14 @@ function hacksconsole.choices()
 					local individualEffect = {
 						["text"] = allTransitions[i],
 						["subText"] = "Transition",
-						["plugin"] = "hs.fcpxhacks.plugins.timeline.transitions",
+						["plugin"] = "cp.plugins.timeline.transitions",
 						["function"] = "apply",
 						["function1"] = allTransitions[i],
 						["function2"] = "",
 						["function3"] = "",
 						["function4"] = "",
 					}
-					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+					table.insert(mod.chooserChoices, 1, individualEffect)
 				end
 			end
 		end
@@ -649,14 +636,14 @@ function hacksconsole.choices()
 					individualEffect = {
 						["text"] = allTitles[i],
 						["subText"] = "Title",
-						["plugin"] = "hs.fcpxhacks.plugins.timeline.titles",
+						["plugin"] = "cp.plugins.timeline.titles",
 						["function"] = "apply",
 						["function1"] = allTitles[i],
 						["function2"] = "",
 						["function3"] = "",
 						["function4"] = "",
 					}
-					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+					table.insert(mod.chooserChoices, 1, individualEffect)
 				end
 			end
 		end
@@ -671,14 +658,14 @@ function hacksconsole.choices()
 					local individualEffect = {
 						["text"] = allGenerators[i],
 						["subText"] = "Generator",
-						["plugin"] = "hs.fcpxhacks.plugins.timeline.generators",
+						["plugin"] = "cp.plugins.timeline.generators",
 						["function"] = "apply",
 						["function1"] = allGenerators[i],
 						["function2"] = "",
 						["function3"] = "",
 						["function4"] = "",
 					}
-					table.insert(hacksconsole.chooserChoices, 1, individualEffect)
+					table.insert(mod.chooserChoices, 1, individualEffect)
 				end
 			end
 		end
@@ -688,9 +675,9 @@ function hacksconsole.choices()
 		--------------------------------------------------------------------------------
 		if next(chooserRemoved) ~= nil then
 			for i=1, #chooserRemoved do
-				for x=#hacksconsole.chooserChoices,1,-1  do
-					if hacksconsole.chooserChoices[x]["text"] == chooserRemoved[i]["text"] and hacksconsole.chooserChoices[x]["subText"] == chooserRemoved[i]["subText"] then
-						table.remove(hacksconsole.chooserChoices, x)
+				for x=#mod.chooserChoices,1,-1  do
+					if mod.chooserChoices[x]["text"] == chooserRemoved[i]["text"] and mod.chooserChoices[x]["subText"] == chooserRemoved[i]["subText"] then
+						table.remove(mod.chooserChoices, x)
 					end
 				end
 			end
@@ -702,10 +689,10 @@ function hacksconsole.choices()
 		local tempFavouiteItems = {}
 		if next(chooserFavourited) ~= nil then
 			for i=1, #chooserFavourited do
-				for x=#hacksconsole.chooserChoices,1,-1  do
-					if hacksconsole.chooserChoices[x]["text"] == chooserFavourited[i]["text"] and hacksconsole.chooserChoices[x]["subText"] == chooserFavourited[i]["subText"] then
-						tempFavouiteItems[#tempFavouiteItems + 1] = hacksconsole.chooserChoices[x]
-						table.remove(hacksconsole.chooserChoices, x)
+				for x=#mod.chooserChoices,1,-1  do
+					if mod.chooserChoices[x]["text"] == chooserFavourited[i]["text"] and mod.chooserChoices[x]["subText"] == chooserFavourited[i]["subText"] then
+						tempFavouiteItems[#tempFavouiteItems + 1] = mod.chooserChoices[x]
+						table.remove(mod.chooserChoices, x)
 					end
 				end
 			end
@@ -714,29 +701,29 @@ function hacksconsole.choices()
 		--------------------------------------------------------------------------------
 		-- Sort everything:
 		--------------------------------------------------------------------------------
-		table.sort(hacksconsole.chooserChoices, function(a, b) return a.text < b.text end)
+		table.sort(mod.chooserChoices, function(a, b) return a.text < b.text end)
 		table.sort(tempFavouiteItems, function(a, b) return a.text < b.text end)
 
 		--------------------------------------------------------------------------------
 		-- Merge the Tables Back Together:
 		--------------------------------------------------------------------------------
-		hacksconsole.chooserChoices = fnutils.concat(tempFavouiteItems, hacksconsole.chooserChoices)
+		mod.chooserChoices = fnutils.concat(tempFavouiteItems, mod.chooserChoices)
 
 		--------------------------------------------------------------------------------
 		-- Return Choices:
 		--------------------------------------------------------------------------------
-		return hacksconsole.chooserChoices
+		return mod.chooserChoices
 
-	elseif hacksconsole.mode == "restore" then
+	elseif mod.mode == "restore" then
 		return chooserRemoved
 	end
 
 end
 
 --------------------------------------------------------------------------------
--- HACKS CONSOLE TRIGGER ACTION:
+-- CONSOLE TRIGGER ACTION:
 --------------------------------------------------------------------------------
-function hacksconsole.completionAction(result)
+function mod.completionAction(result)
 
 	local currentLanguage = fcp:getCurrentLanguage()
 	local chooserRemoved = metadata.get(currentLanguage .. ".chooserRemoved", {})
@@ -746,20 +733,20 @@ function hacksconsole.completionAction(result)
 	--------------------------------------------------------------------------------
 	if result == nil then
 		--------------------------------------------------------------------------------
-		-- Hide Hacks Console:
+		-- Hide Console:
 		--------------------------------------------------------------------------------
-		hacksconsole.hide()
+		mod.hide()
 		return
 	end
 
 	--------------------------------------------------------------------------------
 	-- Normal Mode:
 	--------------------------------------------------------------------------------
-	if hacksconsole.mode == "normal" then
+	if mod.mode == "normal" then
 		--------------------------------------------------------------------------------
-		-- Hide Hacks Console:
+		-- Hide Console:
 		--------------------------------------------------------------------------------
-		hacksconsole.hide()
+		mod.hide()
 
 		--------------------------------------------------------------------------------
 		-- Perform Specific Function:
@@ -774,17 +761,17 @@ function hacksconsole.completionAction(result)
 	--------------------------------------------------------------------------------
 	-- Remove Mode:
 	--------------------------------------------------------------------------------
-	elseif hacksconsole.mode == "remove" then
+	elseif mod.mode == "remove" then
 
 		chooserRemoved[#chooserRemoved + 1] = result
 		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-		hacksconsole.refresh()
-		hacksconsole.hacksChooser:show()
+		mod.refresh()
+		mod.hacksChooser:show()
 
 	--------------------------------------------------------------------------------
 	-- Restore Mode:
 	--------------------------------------------------------------------------------
-	elseif hacksconsole.mode == "restore" then
+	elseif mod.mode == "restore" then
 
 		for x=#chooserRemoved,1,-1 do
 			if chooserRemoved[x]["text"] == result["text"] and chooserRemoved[x]["subText"] == result["subText"] then
@@ -792,9 +779,9 @@ function hacksconsole.completionAction(result)
 			end
 		end
 		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-		if next(chooserRemoved) == nil then hacksconsole.mode = "normal" end
-		hacksconsole.refresh()
-		hacksconsole.hacksChooser:show()
+		if next(chooserRemoved) == nil then mod.mode = "normal" end
+		mod.refresh()
+		mod.hacksChooser:show()
 
 	end
 
@@ -803,7 +790,7 @@ end
 --------------------------------------------------------------------------------
 -- CHOOSER RIGHT CLICK:
 --------------------------------------------------------------------------------
-function hacksconsole.rightClickAction()
+function mod.rightClickAction()
 
 	--------------------------------------------------------------------------------
 	-- Settings:
@@ -826,7 +813,7 @@ function hacksconsole.rightClickAction()
 	local chooserShowGenerators 		= metadata.get("chooserShowGenerators")
 	local chooserShowMenuItems 			= metadata.get("chooserShowMenuItems")
 
-	local selectedRowContents 			= hacksconsole.hacksChooser:selectedRowContents()
+	local selectedRowContents 			= mod.hacksChooser:selectedRowContents()
 
 	--------------------------------------------------------------------------------
 	-- 'Show All' Display Option:
@@ -839,12 +826,12 @@ function hacksconsole.rightClickAction()
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	hacksconsole.rightClickMenubar = menubar.new(false)
+	mod.rightClickMenubar = menubar.new(false)
 
 	local selectedItemMenu = {}
 	local rightClickMenu = {}
 
-	if next(hacksconsole.hacksChooser:selectedRowContents()) ~= nil and hacksconsole.mode == "normal" then
+	if next(mod.hacksChooser:selectedRowContents()) ~= nil and mod.mode == "normal" then
 
 		local isFavourite = false
 		if next(chooserFavourited) ~= nil then
@@ -880,15 +867,15 @@ function hacksconsole.rightClickAction()
 					metadata.get(currentLanguage .. ".chooserFavourited", chooserFavourited)
 				end
 
-				hacksconsole.refresh()
-				hacksconsole.hacksChooser:show()
+				mod.refresh()
+				mod.hacksChooser:show()
 
 			end },
 			{ title = i18n("removeFromList"), fn = function()
 				chooserRemoved[#chooserRemoved + 1] = selectedRowContents
 				metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-				hacksconsole.refresh()
-				hacksconsole.hacksChooser:show()
+				mod.refresh()
+				mod.hacksChooser:show()
 			end },
 			{ title = "-" },
 		}
@@ -896,13 +883,13 @@ function hacksconsole.rightClickAction()
 
 	rightClickMenu = {
 		{ title = i18n("mode"), menu = {
-			{ title = i18n("normal"), 				checked = hacksconsole.mode == "normal",			fn = function() hacksconsole.mode = "normal"; 		hacksconsole.refresh() end },
-			{ title = i18n("removeFromList"),		checked = hacksconsole.mode == "remove",			fn = function() hacksconsole.mode = "remove"; 		hacksconsole.refresh() end },
-			{ title = i18n("restoreToList"),		disabled = next(chooserRemoved) == nil, 			checked = hacksconsole.mode == "restore",			fn = function() hacksconsole.mode = "restore"; 		hacksconsole.refresh() end },
+			{ title = i18n("normal"), 				checked = mod.mode == "normal",				fn = function() mod.mode = "normal"; 		mod.refresh() end },
+			{ title = i18n("removeFromList"),		checked = mod.mode == "remove",				fn = function() mod.mode = "remove"; 		mod.refresh() end },
+			{ title = i18n("restoreToList"),		disabled = next(chooserRemoved) == nil, 	checked = mod.mode == "restore",			fn = function() mod.mode = "restore"; 		mod.refresh() end },
 		}},
      	{ title = "-" },
      	{ title = i18n("displayOptions"), menu = {
-			{ title = i18n("showNone"), disabled=hacksconsole.mode == "restore", fn = function()
+			{ title = i18n("showNone"), disabled=mod.mode == "restore", fn = function()
 				metadata.set("chooserShowAutomation", false)
 				metadata.set("chooserShowShortcuts", false)
 				metadata.set("chooserShowHacks", false)
@@ -912,9 +899,9 @@ function hacksconsole.rightClickAction()
 				metadata.set("chooserShowTitles", false)
 				metadata.set("chooserShowGenerators", false)
 				metadata.set("chooserShowMenuItems", false)
-				hacksconsole.refresh()
+				mod.refresh()
 			end },
-			{ title = i18n("showAll"), 				checked = chooserShowAll, disabled=hacksconsole.mode == "restore" or chooserShowAll, fn = function()
+			{ title = i18n("showAll"), 				checked = chooserShowAll, disabled=mod.mode == "restore" or chooserShowAll, fn = function()
 				metadata.set("chooserShowAutomation", true)
 				metadata.set("chooserShowShortcuts", true)
 				metadata.set("chooserShowHacks", true)
@@ -924,21 +911,21 @@ function hacksconsole.rightClickAction()
 				metadata.set("chooserShowTitles", true)
 				metadata.set("chooserShowGenerators", true)
 				metadata.set("chooserShowMenuItems", true)
-				hacksconsole.refresh()
+				mod.refresh()
 			end },
 			{ title = "-" },
-			{ title = i18n("showAutomation"), 		checked = chooserShowAutomation,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowAutomation", not chooserShowAutomation); 			hacksconsole.refresh() end },
-			{ title = i18n("showHacks"), 			checked = chooserShowHacks,			disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowHacks", not chooserShowHacks); 						hacksconsole.refresh() end },
-			{ title = i18n("showShortcuts"), 		checked = chooserShowShortcuts,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowShortcuts", not chooserShowShortcuts); 				hacksconsole.refresh() end },
+			{ title = i18n("showAutomation"), 		checked = chooserShowAutomation,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowAutomation", not chooserShowAutomation); 			mod.refresh() end },
+			{ title = i18n("showHacks"), 			checked = chooserShowHacks,			disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowHacks", not chooserShowHacks); 						mod.refresh() end },
+			{ title = i18n("showShortcuts"), 		checked = chooserShowShortcuts,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowShortcuts", not chooserShowShortcuts); 				mod.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showVideoEffects"), 	checked = chooserShowVideoEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowVideoEffects", not chooserShowVideoEffects); 		hacksconsole.refresh() end },
-			{ title = i18n("showAudioEffects"), 	checked = chooserShowAudioEffects,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowAudioEffects", not chooserShowAudioEffects); 		hacksconsole.refresh() end },
+			{ title = i18n("showVideoEffects"), 	checked = chooserShowVideoEffects,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowVideoEffects", not chooserShowVideoEffects); 		mod.refresh() end },
+			{ title = i18n("showAudioEffects"), 	checked = chooserShowAudioEffects,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowAudioEffects", not chooserShowAudioEffects); 		mod.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showTransitions"), 		checked = chooserShowTransitions,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowTransitions", not chooserShowTransitions); 			hacksconsole.refresh() end },
-			{ title = i18n("showTitles"), 			checked = chooserShowTitles,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowTitles", not chooserShowTitles); 					hacksconsole.refresh() end },
-			{ title = i18n("showGenerators"), 		checked = chooserShowGenerators,	disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowGenerators", not chooserShowGenerators); 			hacksconsole.refresh() end },
+			{ title = i18n("showTransitions"), 		checked = chooserShowTransitions,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowTransitions", not chooserShowTransitions); 			mod.refresh() end },
+			{ title = i18n("showTitles"), 			checked = chooserShowTitles,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowTitles", not chooserShowTitles); 					mod.refresh() end },
+			{ title = i18n("showGenerators"), 		checked = chooserShowGenerators,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowGenerators", not chooserShowGenerators); 			mod.refresh() end },
 			{ title = "-" },
-			{ title = i18n("showMenuItems"), 		checked = chooserShowMenuItems,		disabled=hacksconsole.mode == "restore", 	fn = function() metadata.set("chooserShowMenuItems", not chooserShowMenuItems); 				hacksconsole.refresh() end },
+			{ title = i18n("showMenuItems"), 		checked = chooserShowMenuItems,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowMenuItems", not chooserShowMenuItems); 				mod.refresh() end },
 			},
 		},
        	{ title = "-" },
@@ -946,11 +933,11 @@ function hacksconsole.rightClickAction()
 			{ title = i18n("rememberLastQuery"), 	checked = chooserRememberLast,						fn= function() metadata.set("chooserRememberLast", not chooserRememberLast) end },
 			{ title = "-" },
 			{ title = i18n("update"), menu = {
-				{ title = i18n("effectsShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.effects").updateEffectsList();				end },
-				{ title = i18n("transitionsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.transitions").updateTransitionsList(); 		end },
-				{ title = i18n("titlesShortcuts"),			fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.titles").updateTitlesList()	 				end },
-				{ title = i18n("generatorsShortcuts"),		fn= function() hacksconsole.hide(); 		plugins("hs.fcpxhacks.plugins.timeline.generators")updateGeneratorsList() 			end },
-				{ title = i18n("menuItems"),				fn= function() metadata.set("chooserMenuItems", nil); 			hacksconsole.refresh() end },
+				{ title = i18n("effectsShortcuts"),			fn= function() mod.hide(); 		plugins("cp.plugins.timeline.effects").updateEffectsList();				end },
+				{ title = i18n("transitionsShortcuts"),		fn= function() mod.hide(); 		plugins("cp.plugins.timeline.transitions").updateTransitionsList(); 		end },
+				{ title = i18n("titlesShortcuts"),			fn= function() mod.hide(); 		plugins("cp.plugins.timeline.titles").updateTitlesList()	 				end },
+				{ title = i18n("generatorsShortcuts"),		fn= function() mod.hide(); 		plugins("cp.plugins.timeline.generators")updateGeneratorsList() 			end },
+				{ title = i18n("menuItems"),				fn= function() metadata.set("chooserMenuItems", nil); 			mod.refresh() end },
 			}},
 		}},
 	}
@@ -958,9 +945,28 @@ function hacksconsole.rightClickAction()
 
 	rightClickMenu = fnutils.concat(selectedItemMenu, rightClickMenu)
 
-	hacksconsole.rightClickMenubar:setMenu(rightClickMenu)
-	hacksconsole.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+	mod.rightClickMenubar:setMenu(rightClickMenu)
+	mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 
 end
 
-return hacksconsole
+-- The Plugin
+local plugin = {}
+
+plugin.dependencies = {
+	["cp.plugins.commands.fcpx"]	= "fcpxCmds",
+}
+
+function plugin.init(deps)
+
+	mod.new()
+
+	deps.fcpxCmds:add("cpConsole")
+		:whenActivated(function() mod.show() end)
+		:activatedBy():ctrl("space")
+
+	return mod
+
+end
+
+return plugin

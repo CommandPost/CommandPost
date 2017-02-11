@@ -526,6 +526,8 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
+		cpConsole												=	"Open Console",
+
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",
 

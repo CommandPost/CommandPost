@@ -8,7 +8,6 @@ local mouse						= require("hs.mouse")
 
 local dialog					= require("cp.dialog")
 local fcp						= require("cp.finalcutpro")
-local hacksconsole				= require("cp.fcpx10-3.hacksconsole")
 local metadata					= require("cp.metadata")
 
 local log						= require("hs.logger").new("playhead")
@@ -142,7 +141,7 @@ function mod.checkScrollingTimeline()
 	--------------------------------------------------------------------------------
 	-- Make sure the Command Editor and hacks console are closed:
 	--------------------------------------------------------------------------------
-	if fcp:commandEditor():isShowing() or hacksconsole.active then
+	if fcp:commandEditor():isShowing() or plugins("cp.plugins.cp.console").active then
 		debugMessage("Spacebar pressed while other windows are visible.")
 		return false
 	end
