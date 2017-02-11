@@ -560,6 +560,9 @@ return {
 
 		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
 
+		cpSaveKeywordPreset_customTitle							=	"Save Keyword Preset %{count}",
+		cpRestoreKeywordPreset_customTitle						=	"Restore Keyword Preset %{count}",
+
 		cpSelectColorBoardPuck_customTitle						=	"Select Color Board Puck %{count}",
 		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
 		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
