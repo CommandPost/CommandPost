@@ -8,7 +8,6 @@ local inspect			= require("hs.inspect")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local metadata			= require("cp.metadata")
 
 local log				= require("hs.logger").new("generators")
@@ -301,7 +300,7 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.refresh()
+	plugins("cp.plugins.cp.console").refresh()
 
 	--------------------------------------------------------------------------------
 	-- Let the user know everything's good:

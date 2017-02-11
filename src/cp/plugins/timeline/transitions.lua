@@ -7,7 +7,6 @@ local inspect			= require("hs.inspect")
 
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local tools				= require("cp.tools")
 local metadata			= require("cp.metadata")
 
@@ -308,7 +307,7 @@ function mod.updateTransitionsList()
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.refresh()
+	plugins("cp.plugins.cp.console").refresh()
 
 	--------------------------------------------------------------------------------
 	-- Let the user know everything's good:
