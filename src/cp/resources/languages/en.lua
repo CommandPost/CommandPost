@@ -474,6 +474,10 @@ return {
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
 	hacksHUD							=			"CommandPost HUD",
+	media								=			"Media",
+	quality								=			"Quality",
+	backgroundRender					=			"Background Render",
+	xmlSharing							=			"XML Sharing",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
 	betterPerformance					=			"Better Performance",
@@ -522,6 +526,7 @@ return {
 	cmdMismatchError					=			"Expected '%{expected}' command ID but got '%{actual}.",
 	cmdIdMissingError					=			"A command ID is required to execute.",
 	cmdDoesNotExistError				=			"No command with the ID of %{id} could be found.",
+	cmdUndefinedError					=			"No command was specified to execute.",
 	
 	--------------------------------------------------------------------------------
 	-- Command Groups:

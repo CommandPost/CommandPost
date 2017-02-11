@@ -67,7 +67,7 @@ function commands:id()
 end
 
 function commands:add(commandId)
-	local cmd = command:new(commandId)
+	local cmd = command:new(commandId, self)
 	self._commands[commandId] = cmd
 	if self:isEnabled() then cmd:enable() end
 	self:_notify("add", cmd)
@@ -100,6 +100,7 @@ function commands:enable()
 	for _,command in pairs(self._commands) do
 		command:enable()
 	end
+	self:_notify('enable')
 	return self
 end
 
@@ -108,6 +109,7 @@ function commands:disable()
 		command:disable()
 	end
 	self._enabled = false
+	self:_notify('disable')
 	return self
 end
 
@@ -130,6 +132,10 @@ function commands:_notify(type, ...)
 			end
 		end
 	end
+end
+
+function commands:activate()
+	self:_notify('activate')
 end
 
 return commands

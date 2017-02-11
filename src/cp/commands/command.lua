@@ -16,9 +16,10 @@ local command = {}
 --- Returns:
 ---  * command - The command that was created.
 ---
-function command:new(id)
+function command:new(id, parent)
 	o = {
 		_id = id,
+		_parent = parent,
 		_shortcuts = {},
 		_enabled = false,
 	}
@@ -29,6 +30,10 @@ end
 
 function command:id()
 	return self._id
+end
+
+function command:parent()
+	return self._parent
 end
 
 --- hs.commands.command:titled(title) -> command

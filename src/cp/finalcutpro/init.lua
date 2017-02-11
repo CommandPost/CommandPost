@@ -738,7 +738,7 @@ function App:getPreferences(forceReload)
 	return self._preferences
 end
 
---- cp.finalcutpro.getPreference(preferenceName) -> string or nil
+--- cp.finalcutpro.getPreference(value, default, forceReload) -> string or nil
 --- Function
 --- Get an individual Final Cut Pro preference
 ---
