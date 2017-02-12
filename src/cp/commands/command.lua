@@ -5,6 +5,9 @@ local shortcut				= require("cp.commands.shortcut")
 
 local log					= require("hs.logger").new("command")
 
+-- Only show Hotkey Errors:
+hotkey.setLogLevel("error")
+
 local command = {}
 
 --- hs.commands.command:new() -> command

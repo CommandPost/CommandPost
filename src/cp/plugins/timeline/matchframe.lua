@@ -339,7 +339,7 @@ function mod.matchFrame(focus)
 			--------------------------------------------------------------------------------
 			libraries:search():setValue(clipName)
 		else
-			debugMessage("Unable to find the clip title.")
+			log.df("Unable to find the clip title.")
 		end
 	end
 

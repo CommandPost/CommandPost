@@ -28,6 +28,8 @@ local fcp										= require("cp.finalcutpro")
 local tools										= require("cp.tools")
 local metadata									= require("cp.metadata")
 
+local log										= require("hs.logger").new("dialog")
+
 --------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:
 --------------------------------------------------------------------------------
@@ -163,7 +165,7 @@ function dialog.displayErrorMessage(whatError)
 	--------------------------------------------------------------------------------
 	-- Write error message to console:
 	--------------------------------------------------------------------------------
-	writeToConsole(whatError)
+	log.ef(whatError)
 
 	--------------------------------------------------------------------------------
 	-- Display Dialog Box:

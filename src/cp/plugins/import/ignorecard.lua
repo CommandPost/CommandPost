@@ -6,6 +6,8 @@ local timer						= require("hs.timer")
 local fcp						= require("cp.finalcutpro")
 local metadata					= require("cp.metadata")
 
+local log						= require("hs.logger").new("ignorecard")
+
 -- Constants
 
 local PRIORITY = 20000
@@ -54,24 +56,24 @@ end
 --------------------------------------------------------------------------------
 function mod.getDeviceWatcher()
 	if not mod.newDeviceMounted then
-		debugMessage("Watching for new media...")
+		log.df("Watching for new media...")
 		mod.newDeviceMounted = fs.volume.new(function(event, table)
 			if event == fs.volume.didMount then
 
-				debugMessage("Media Inserted.")
+				log.df("Media Inserted.")
 
 				local mediaImport = fcp:mediaImport()
 
 				if mediaImport:isShowing() then
 					-- Media Import was already open. Bail!
-					debugMessage("Already in Media Import. Continuing...")
+					log.df("Already in Media Import. Continuing...")
 					return
 				end
 
 				local mediaImportCount = 0
 				local stopMediaImportTimer = false
 				local currentApplication = application.frontmostApplication()
-				debugMessage("Currently using '"..currentApplication:name().."'")
+				log.df("Currently using '"..currentApplication:name().."'")
 
 				local fcpxHidden = not fcp:isShowing()
 
@@ -81,19 +83,19 @@ function mod.getDeviceWatcher()
 					end,
 					function()
 						if not fcp:isRunning() then
-							debugMessage("FCPX is not running. Stop watching.")
+							log.df("FCPX is not running. Stop watching.")
 							stopMediaImportTimer = true
 						else
 							if mediaImport:isShowing() then
 								mediaImport:hide()
 								if fcpxHidden then fcp:hide() end
 								currentApplication:activate()
-								debugMessage("Hid FCPX and returned to '"..currentApplication:name().."'.")
+								log.df("Hid FCPX and returned to '"..currentApplication:name().."'.")
 								stopMediaImportTimer = true
 							end
 							mediaImportCount = mediaImportCount + 1
 							if mediaImportCount == 500 then
-								debugMessage("Gave up watching for the Media Import window after 5 seconds.")
+								log.df("Gave up watching for the Media Import window after 5 seconds.")
 								stopMediaImportTimer = true
 							end
 						end
