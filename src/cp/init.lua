@@ -177,7 +177,7 @@ function mod.init()
 	-- Accessibility Check:
 	--------------------------------------------------------------------------------
 	if not hs.accessibilityState() then
-		local result = dialog.displayMessage(i18n("accessibilityError", {scriptName = metadata.scriptName}), {i18n("Continue"), i18n("Quit")})
+		local result = dialog.displayMessage(i18n("accessibilityError", {scriptName = metadata.scriptName}), {i18n("continue"), i18n("quit")})
 		if result == "Quit" then
 			application.applicationsForBundleID(hsBundleID)[1]:kill()
 		else
