@@ -100,7 +100,7 @@ function hud.toggleInspectorShown()
 end
 
 function hud.isDropTargetsShown()
-	return metadata.get("hudShowDropTargets", true)
+	return metadata.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
 end
 
 function hud.setDropTargetsShown(value)
@@ -670,9 +670,9 @@ function hud.generateHTML()
 	--------------------------------------------------------------------------------
 	-- Set up the template environment
 	--------------------------------------------------------------------------------
-	local env 	= template.defaultEnv()
-	env.i18n	= i18n
-	env.hud		= hud
+	local env 		= template.defaultEnv()
+	env.i18n		= i18n
+	env.hud			= hud
 
 	--------------------------------------------------------------------------------
 	-- FFPlayerQuality
@@ -686,24 +686,24 @@ function hud.generateHTML()
 	if playerQuality == PROXY then
 		env.media 	= { 
 			text	= i18n("proxy"), 
-			color	= hud.fcpRed,
+			class	= "bad",
 		}
 	else
 		env.media	= { 
 			text	= i18n("originalOptimised"), 
-			color	= hud.fcpGreen,
+			class	= "good",
 		}
 	end
 	
 	if playerQuality == ORIGINAL_QUALITY then
 		env.quality	= { 
 			text	= i18n("betterQuality"),
-			color	= hud.fcpGreen,
+			class	= "good",
 		}
 	else
 		env.quality	= { 
-			color	= hud.fcpRed,
-			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterQuality") or i18n("proxy"),
+			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
+			class	= "bad",
 		}
 	end
 
@@ -712,13 +712,13 @@ function hud.generateHTML()
 	if autoStartBGRender then
 		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 		env.backgroundRender	= { 
-			color	= hud.fcpGreen, 
 			text	= string.format("%s (%d %s)", i18n("enabled"), autoRenderDelay, i18n("secs", {count=autoRenderDelay})),
+			class	= "good",
 		}
 	else
 		env.backgroundRender	= {
-			color 	= hud.fcpRed,
 			text	= i18n("disabled"),
+			class	= "bad",
 		}
 	end
 	
@@ -764,11 +764,11 @@ function hud.shareXML(incomingXML)
 		if startOfXML == nil or endOfXML == nil then
 			dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data you dropped. Please try again.\n\nError occurred in hud.shareXML().")
 			if incomingXML ~= nil then
-				debugMessage("Start of incomingXML.")
-				debugMessage(incomingXML)
-				debugMessage("End of incomingXML.")
+				log.d("Start of incomingXML.")
+				log.d(incomingXML)
+				log.d("End of incomingXML.")
 			else
-				debugMessage("ERROR: incomingXML is nil.")
+				log.e("incomingXML is nil.")
 			end
 			return "fail"
 		end
@@ -820,7 +820,7 @@ plugin.dependencies = {
 	["cp.plugins.sharing.xml"]			= "xmlSharing",
 	["cp.plugins.menu.tools"]			= "tools",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.commands.urlhandler"]	= "urlhandler"
+	["cp.plugins.commands.urlhandler"]	= "urlhandler",
 }
 
 function plugin.init(deps)
@@ -851,7 +851,7 @@ function plugin.init(deps)
 		:addItems(1000, function()
 			return {
 				{ title = i18n("showInspector"),	fn = hud.toggleInspctorShown,		checked = hud.isInspectorShown()},
-				{ title = i18n("showDropTargets"),	fn = hud.toggleDropTargetsShown, 	checked = hud.isDropTargetsShown()},
+				{ title = i18n("showDropTargets"),	fn = hud.toggleDropTargetsShown, 	checked = hud.isDropTargetsShown(),	disabled = not hud.xmlSharing.isEnabled()},
 				{ title = i18n("showButtons"),		fn = hud.toggleButtonsShown, 		checked = hud.isButtonsShown()},
 			}
 		end)

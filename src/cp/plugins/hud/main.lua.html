@@ -64,6 +64,12 @@
 			color: white;
 			text-align:center;
 		}
+		.good {
+			color: #3f9253;
+		}
+		.bad {
+			color: #d1393e;
+		}
 		</style>
 
 		<!-- Javascript: -->
@@ -97,16 +103,16 @@
 		<table>
 			<tr>
 				<th>{{ i18n("media") }}:</th>
-				<th><span style="color: '{{media.color}}';">{{media.text}}</span><th>
+				<th><span class="{{media.class}}" style="color: {{media.color}};">{{media.text}}</span><th>
 			</tr>
 			<tr>
 				<th>{{ i18n("quality") }}:</th>
-				<th><span style="color: '{{quality.color}}';">{{quality.text}}</span><th>
+				<th><span class="{{quality.class}}" style="color: {{quality.color}};">{{quality.text}}</span><th>
 			</tr>
 
 			<tr>
 				<th>{{ i18n("backgroundRender") }}:</th>
-				<th><span style="color: '{{backgroundRender.color}}';">{{backgroundRender.text}}</span></th>
+				<th><span class="{{backgroundRender.class}}" style="color: {{backgroundRender.color}};">{{backgroundRender.text}}</span></th>
 			</tr>
 		</table>
 		{% if hud.isDropTargetsShown() or hud.isButtonsShown() then }}

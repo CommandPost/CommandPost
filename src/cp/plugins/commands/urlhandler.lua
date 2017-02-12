@@ -36,13 +36,11 @@ function mod.init(...)
 				return
 			end
 			
-			log.df("activating '%s'", cmds:id())
 			cmds:activate()
 			local count = 0
 			timer.waitUntil(
 				function() count = count + 1; return cmds:isEnabled() or count == 1000 end,
 				function() 
-					log.df("activating '%s': enabled = ", cmd:id(), cmd:isEnabled())
 					cmd:activated()
 				end,
 				0.001
