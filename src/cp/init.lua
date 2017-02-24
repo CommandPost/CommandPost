@@ -174,57 +174,35 @@ function mod.init()
 	end):start()
 
 	--------------------------------------------------------------------------------
-	-- Accessibility Check:
+	-- Load Welcome Screen:
 	--------------------------------------------------------------------------------
-	if not hs.accessibilityState() then
-		local result = dialog.displayMessage(i18n("accessibilityError", {scriptName = metadata.scriptName}), {i18n("Continue"), i18n("Quit")})
-		if result == "Quit" then
-			application.applicationsForBundleID(hsBundleID)[1]:kill()
-		else
-			hs.accessibilityState(true)
-			timer.doEvery(3, function()
-				if hs.accessibilityState() then
-					loadScriptVersion()
-				end
-			end)
-		end
-	else
-		loadScriptVersion()
-	end
+	local welcome = require("cp.welcome")
 
-    return self
+    return mod
 
 end
 
 --------------------------------------------------------------------------------
--- LOAD MAIN SCRIPT:
+-- LOAD PLUGINS:
 --------------------------------------------------------------------------------
-function loadScriptVersion()
-	local fcpVersion = fcp:getVersion()
-    local validFinalCutProVersion = false
-    if fcpVersion:sub(1,4) == "10.3" then
-        validFinalCutProVersion = true
-        require("cp.fcpx10-3")
-    end
-    if not validFinalCutProVersion then
-        dialog.displayAlertMessage(i18n("noValidFinalCutPro", {scriptName = metadata.scriptName}))
-        application.applicationsForBundleID(hsBundleID)[1]:kill()
-    end
+function mod.loadPlugins()
+	--------------------------------------------------------------------------------
+	-- TODO: Eventually move all the core functions from
+	--       cp.fcpx10-3 into this script.
+	--------------------------------------------------------------------------------
+	require("cp.fcpx10-3")
 end
 
 --------------------------------------------------------------------------------
+-- SHUTDOWN CALLBACK:
 --------------------------------------------------------------------------------
-
-
-
-
+function hs.shutdownCallback()
+	console.clearConsole()
+end
 
 --------------------------------------------------------------------------------
+-- RETURN MODULE:
 --------------------------------------------------------------------------------
---                L E T ' S     D O     T H I S     T H I N G !               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 return mod.init()
 
 --------------------------------------------------------------------------------

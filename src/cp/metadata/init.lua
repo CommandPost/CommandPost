@@ -1,6 +1,8 @@
 local mod = {}
 
 local settings			= require("hs.settings")
+local application		= require("hs.application")
+local window			= require("hs.window")
 
 -------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -29,7 +31,24 @@ end
 mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
 mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
 
-mod.languagePath			= mod.scriptPath .. "/cp/resources/languages/"
+mod.languagePath		= mod.scriptPath .. "/cp/resources/languages/"
+
+mod.bundleID			= hs.processInfo["bundleID"]
+mod.processID			= hs.processInfo["processID"]
+
+function mod.application()
+	if not mod._application then
+		mod._application = application.applicationForPID(mod.processID)
+	end
+	return mod._application
+end
+
+function mod.isFrontmost()
+	local app = mod.application()
+	local fw = window.focusedWindow()
+	
+	return fw ~= nil and fw:application() == app
+end
 
 -------------------------------------------------------------------------------
 -- Settings
