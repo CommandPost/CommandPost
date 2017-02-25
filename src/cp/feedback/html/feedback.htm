@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	 <style>
+	 	body \{
+	 		background-color: #ececec;
+	 		font-family: -apple-system;
+	 		font-size: 13px;
+	 	}
+		.button \{
+			text-decoration: none;
+			color: black;
+			padding: 2px 18px;
+			border:1px solid #c7c7c7;
+			margin: 2px 2px;
+			display: inline-block;
+			background-color: white;
+			border-radius: 3px;
+			cursor: default;
+		}
+		.button:active \{
+			color: white;
+		 	border-color:#1262fb;
+		 	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+		}
+		.button.selected \{
+			color: white;
+		 	border-color:#1262fb;
+		 	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+		}
+		.button.disabled \{
+			color: #999!important;
+			background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+		}
+		.textarea \{
+		 	-webkit-box-sizing: border-box;
+		 	padding: 4px 4px;
+			margin: 10px 0px;
+			background-color: white;
+			border:1px solid #c5c5c5;
+			width: 99%;
+			height: 200px;
+			outline: 0px solid transparent;
+		    max-height: 200px;
+		    overflow: auto;
+		}
+		.main-form \{
+			width: 350px;
+			display: block;
+		}
+		.bottom-buttons \{
+			text-align: right;
+		}
+		.email-note \{
+			padding: 10px 0px;
+		}
+		.user-details \{
+			padding: 10px 0px;
+			text-align: center;
+		}
+		.user-details input \{
+			width: 45%;
+		}
+		.contact-checkbox input \{
+			margin-right: 5px;
+		}
+		.error \{
+			border:1px solid #fc615d;
+		}
+		.loading \{
+			display: none;
+			z-index: 999;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: 100%;
+			height: 100%;
+			background-color: #ececec;
+			font-size: 25px;
+			text-align: center;
+		}
+		.loading-text \{
+  			display: table-cell;
+			vertical-align: middle;
+		}
+    </style>
+  </head>
+  <body>
+  		<div id="loading" class="loading">
+  			<span class="loading-text">Please wait while we upload your feedback...</span>
+  		</div>
+  		<form id="feedback-form" class="main-form" action="https://latenitefilms.com/cp/feedback.php" method="post">
+			<div><a id="button-bug-report" class="button selected" href="#">{{ i18n("bugReport") }}</a> <a id="button-feature-request" class="button" href="#">{{ i18n("featureRequest") }}</a> <a id="button-support" class="button" href="#">{{ i18n("support") }}</a></div>
+			<div id="bugreport-comments" class="textarea" contenteditable><strong>{{ i18n("whatWentWrong") }}</strong><br />
+				<br />
+				<br />
+				<br />
+				<strong>{{ i18n("whatDidYouExpectToHappen") }}</strong><br />
+				<br />
+				<br />
+				<br />
+				<strong>{{ i18n("whatStepsToRecreate") }}</strong><br />
+				<br />
+				<br />
+			</div>
+			<div id="feature-request-comments" class="textarea" hidden contenteditable><strong>{{ i18n("whatFeatures") }}</strong><br />
+				<br />
+			</div>
+			<div id="support-comments" class="textarea" hidden contenteditable><strong>{{ i18n("howCanWeHelp") }}</strong><br />
+				<br />
+			</div>
+			<div class="contact-checkbox"><input id="include-log-files" type="checkbox" checked>{{ i18n("attachLog") }}</div>
+			<div class="contact-checkbox"><input id="include-screnshots" type="checkbox" checked>{{ i18n("attachScreenshot") }}</div>
+			<div class="email-note">{{ i18n("emailResponse") }}</div>
+			<div class="contact-checkbox"><input id="include-contact-info" type="checkbox" checked>{{ i18n("includeContactInfo") }}:</div>
+			<div class="user-details"><input id="fullname" type="text" name="name" value="{{ userFullName }}"> <input id="email" type="text" name="email" value="{{ userEmail }}"></div>
+			<div class="bottom-buttons"><a class="button" href="commandpost://feedback?action=cancel">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
+			<!-- Hidden Fields: -->
+			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
+			<div id="console-output" hidden>{{ consoleOutput }}</div>
+			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
+			{% for i, v in ipairs(screenshots) do }}
+				<div id="screenshot{{ i }}" hidden>
+				<img style='display:block; width:100px;height:100px;' id='base64image{{ i }}' src='data:image/jpeg;base64, {{ v }}' />
+				</div>
+				<textarea id="form-screenshot{{ i }}" name="form-screenshot{{ i }}" style="display:none"></textarea>
+			{% end }}
+		</form>
+		<script>
+
+			/* SAVE DEFAULT VALUES: */
+			var defaultBugReportValue = document.getElementById("bugreport-comments").innerHTML;
+			var defaultFeatureRequestValue = document.getElementById("feature-request-comments").innerHTML;
+			var defaultSupportValue = document.getElementById("support-comments").innerHTML;
+
+			/* PUT FOCUS ON BUG REPORT COMMENTS TEXTBOX: */
+			var el = document.getElementById("bugreport-comments");
+			var range = document.createRange();
+			var sel = window.getSelection();
+			range.setStart(el.childNodes[2], 5);
+			range.collapse(true);
+			sel.removeAllRanges();
+			sel.addRange(range);
+
+			/* FOCUS AT END OF TEXTBOX: */
+			function placeCaretAtEnd(el) \{
+				el.focus();
+				if (typeof window.getSelection != "undefined"
+						&& typeof document.createRange != "undefined") \{
+					var range = document.createRange();
+					range.selectNodeContents(el);
+					range.collapse(false);
+					var sel = window.getSelection();
+					sel.removeAllRanges();
+					sel.addRange(range);
+				} else if (typeof document.body.createTextRange != "undefined") \{
+					var textRange = document.body.createTextRange();
+					textRange.moveToElementText(el);
+					textRange.collapse(false);
+					textRange.select();
+				}
+			}
+
+			/* SUBMIT FORM: */
+			function submitForm() \{
+
+				document.getElementById("loading").style.display = "table";
+
+				if (document.getElementById("include-log-files").checked) \{
+					document.getElementById("form-console-output").value = document.getElementById("console-output").innerHTML;
+				}
+
+				if (!document.getElementById("button-bug-report").hidden) \{
+					 document.getElementById("form-feedback").value = document.getElementById("bugreport-comments").innerHTML;
+				} else if (!document.getElementById("feature-request-comments").hidden) \{
+				 	document.getElementById("form-feedback").value = document.getElementById("feature-request-comments").innerHTML;
+				} else if (!document.getElementById("support-comments").hidden) \{
+				 	document.getElementById("form-feedback").value = document.getElementById("support-comments").innerHTML;
+				};
+
+				if (document.getElementById("include-screnshots").checked) \{
+					{% for i, v in ipairs(screenshots) do }}
+						document.getElementById("form-screenshot{{ i }}").value = document.getElementById("screenshot{{ i }}").innerHTML;
+					{% end }}
+				}
+
+				document.getElementById("feedback-form").submit();
+
+			}
+
+			/* SEND BUTTON PRESSED: */
+			document.getElementById("button-send").onclick = function() \{
+
+				var includeContactInfo = document.getElementById("include-contact-info").checked;
+				var fullnameValid = !(document.getElementById("fullname").value == "{{ userFullName }}");
+				var emailValid = !(document.getElementById("email").value == "{{ userEmail }}");
+
+				var newBugReportValue = document.getElementById("bugreport-comments").innerHTML;
+				var newFeatureRequestValue = document.getElementById("feature-request-comments").innerHTML;
+				var newSupportValue = document.getElementById("support-comments").innerHTML;
+
+				var userCommentsValid = true;
+				if (!document.getElementById("bugreport-comments").hidden) \{
+
+					if ( defaultBugReportValue == newBugReportValue ) \{
+						document.getElementById("bugreport-comments").className = "textarea error";
+						var userCommentsValid = false;
+					} else \{
+						document.getElementById("bugreport-comments").className = "textarea";
+					}
+
+				} else if (!document.getElementById("feature-request-comments").hidden) \{
+
+					if ( defaultFeatureRequestValue == newFeatureRequestValue ) \{
+						document.getElementById("feature-request-comments").className = "textarea error";
+						var userCommentsValid = false;
+					} else \{
+						document.getElementById("feature-request-comments").className = "textarea";
+					}
+
+
+				} else if (!document.getElementById("support-comments").hidden) \{
+
+					if ( defaultSupportValue == newSupportValue ) \{
+						document.getElementById("support-comments").className = "textarea error";
+						var userCommentsValid = false;
+					} else \{
+						document.getElementById("support-comments").className = "textarea";
+					}
+
+				};
+
+				if (includeContactInfo) \{
+					if (fullnameValid && emailValid) \{
+						submitForm();
+					} else if (!fullnameValid && !emailValid ) \{
+						document.getElementById("fullname").className = "error";
+						document.getElementById("email").className = "error";
+					} else if (!fullnameValid) \{
+						document.getElementById("fullname").className = "error";
+						document.getElementById("email").className = "";
+					} else if (!emailValid) \{
+						document.getElementById("fullname").className = "";
+						document.getElementById("email").className = "error";
+					};
+				} else \{
+					if (userCommentsValid) \{
+						submitForm();
+					}
+				};
+
+			};
+			document.getElementById("button-bug-report").onclick = function() \{
+				document.getElementById("bugreport-comments").hidden = false;
+				document.getElementById("feature-request-comments").hidden = true;
+				document.getElementById("support-comments").hidden = true;
+				document.getElementById("button-bug-report").className = "button selected";
+				document.getElementById("button-feature-request").className = "button";
+				document.getElementById("button-support").className = "button";
+
+				var el = document.getElementById("bugreport-comments");
+				var range = document.createRange();
+				var sel = window.getSelection();
+				range.setStart(el.childNodes[2], 5);
+				range.collapse(true);
+				sel.removeAllRanges();
+				sel.addRange(range);
+
+			};
+			document.getElementById("button-feature-request").onclick = function() \{
+				document.getElementById("bugreport-comments").hidden = true;
+				document.getElementById("feature-request-comments").hidden = false;
+				document.getElementById("support-comments").hidden = true;
+				document.getElementById("button-bug-report").className = "button";
+				document.getElementById("button-feature-request").className = "button selected";
+				document.getElementById("button-support").className = "button";
+				placeCaretAtEnd( document.getElementById("feature-request-comments") );
+			};
+			document.getElementById("button-support").onclick = function() \{
+				document.getElementById("bugreport-comments").hidden = true;
+				document.getElementById("feature-request-comments").hidden = true;
+				document.getElementById("support-comments").hidden = false;
+				document.getElementById("button-bug-report").className = "button";
+				document.getElementById("button-feature-request").className = "button";
+				document.getElementById("button-support").className = "button selected";
+				placeCaretAtEnd( document.getElementById("support-comments") );
+			};
+			document.getElementById("include-contact-info").onclick = function() \{
+				document.getElementById("fullname").disabled = !document.getElementById("fullname").disabled;
+				document.getElementById("email").disabled = !document.getElementById("email").disabled;
+			};
+		</script>
+  </body>
+</html>
