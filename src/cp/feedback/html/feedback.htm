@@ -213,14 +213,14 @@
 				if (!document.getElementById("bugreport-comments").hidden) \{
 					if ( defaultBugReportValue == newBugReportValue ) \{
 						document.getElementById("bugreport-comments").className = "textarea error";
-						var userCommentsValid = false;
+						userCommentsValid = false;
 					} else \{
 						document.getElementById("bugreport-comments").className = "textarea";
 					}
 				} else if (!document.getElementById("feature-request-comments").hidden) \{
 					if ( defaultFeatureRequestValue == newFeatureRequestValue ) \{
 						document.getElementById("feature-request-comments").className = "textarea error";
-						var userCommentsValid = false;
+						userCommentsValid = false;
 					} else \{
 						document.getElementById("feature-request-comments").className = "textarea";
 					}
@@ -228,7 +228,7 @@
 
 					if ( defaultSupportValue == newSupportValue ) \{
 						document.getElementById("support-comments").className = "textarea error";
-						var userCommentsValid = false;
+						userCommentsValid = false;
 					} else \{
 						document.getElementById("support-comments").className = "textarea";
 					}
@@ -236,7 +236,7 @@
 				};
 
 				if (includeContactInfo) \{
-					if (fullnameValid && emailValid) \{
+					if (fullnameValid && emailValid && userCommentsValid) \{
 						submitForm();
 					} else if (!fullnameValid && !emailValid ) \{
 						document.getElementById("fullname").className = "error";
