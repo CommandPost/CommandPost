@@ -1,1 +1,1 @@
-commandPost = require("cp")
+cp = require("cp")

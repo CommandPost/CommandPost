@@ -320,4 +320,8 @@ function plugin.postInit(deps)
 	mod.init()
 end
 
+function plugin.enableHacksShortcuts()
+	return enableHacksShortcuts()
+end
+
 return plugin
