@@ -42,6 +42,7 @@ return {
 			disabled							=			"Disabled",
 			show								=			"Show",
 			clearList							=			"Clear List",
+			feedback							=			"Feedback",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -58,6 +59,7 @@ return {
 			buttonContinueBatchExport			=			"Continue Batch Export",
 			continue							=			"Continue",
 			quit								=			"Quit",
+			send								=			"Send",
 
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
@@ -75,6 +77,24 @@ return {
 			-- Welcome Screen:
 			--------------------------------------------------------------------------------
 			welcomeTitle						=			"Welcome to CommandPost",
+
+			--------------------------------------------------------------------------------
+			-- Feedback Module:
+			--------------------------------------------------------------------------------
+			bugReport							=			"Bug Report",
+			featureRequest						=			"Feature Request",
+			support								=			"Support",
+			whatWentWrong						=			"What went wrong?",
+			whatDidYouExpectToHappen			=			"What did you expect to happen?",
+			whatStepsToRecreate					=			"What are the steps to recreate the problem?",
+			whatFeatures						=			"What feature would you like to see implemented or improved?",
+			howCanWeHelp						=			"How can we help you?",
+			emailResponse						=			"If you want an email response you will need to enter your email address:",
+			includeContactInfo					=			"Include contact info",
+			attachLog							=			"Attach Error Log",
+			attachScreenshot					=			"Attach Screenshot",
+			fullName							=			"Full Name",
+			emailAddress						=			"Email Address",
 
 			--------------------------------------------------------------------------------
 			-- Notifications:
