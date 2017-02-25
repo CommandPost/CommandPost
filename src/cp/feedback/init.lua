@@ -114,9 +114,20 @@ function mod.showFeedback(quitOnComplete)
 	local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
 
 	--------------------------------------------------------------------------------
+	-- Setup Web View Controller:
+	--------------------------------------------------------------------------------
+	mod.feedbackWebViewController = webview.usercontent.new("feedback")
+		:setCallback(function(message)
+			if type(message["body"]) == "table" then
+				metadata.set("userFullName", message["body"][1])
+				metadata.set("userEmail", message["body"][2])
+			end
+		end)
+
+	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
-	mod.feedbackWebView = webview.new(defaultRect, {developerExtrasEnabled = true})
+	mod.feedbackWebView = webview.new(defaultRect, {}, mod.feedbackWebViewController)
 		:windowStyle({"titled"})
 		:shadow(true)
 		:allowNewWindows(false)

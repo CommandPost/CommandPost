@@ -166,6 +166,15 @@
 
 				document.getElementById("loading").style.display = "table";
 
+				if (document.getElementById("include-contact-info").checked) \{
+					try \{
+						var settings = new Array(document.getElementById("fullname").value, document.getElementById("email").value);
+						webkit.messageHandlers.feedback.postMessage(settings);
+					} catch(err) \{
+						console.log('The controller does not exist yet');
+					}
+				}
+
 				if (document.getElementById("include-log-files").checked) \{
 					document.getElementById("form-console-output").value = document.getElementById("console-output").innerHTML;
 				}
