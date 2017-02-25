@@ -48,14 +48,15 @@ mod.defaultTitle 		= i18n("welcomeTitle")
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML(whichTemplate)
-	--------------------------------------------------------------------------------
-	-- TODO: I should probably use cp.template for this eventually.
-	--------------------------------------------------------------------------------
-	local file = io.open(metadata.scriptPath .. "/cp/welcome/html/" .. whichTemplate .. ".htm", "r")
-	result = file:read("*all")
-	file:close()
 
-	return result
+	local env = template.defaultEnv()
+
+	env.i18n = i18n
+	env.scriptName = metadata.scriptName
+	env.content = template.compileFile(metadata.scriptPath .. "/cp/welcome/html/" .. whichTemplate .. ".htm", env)
+
+	return template.compileFile(metadata.scriptPath .. "/cp/welcome/html/template.htm", env)
+
 end
 
 --------------------------------------------------------------------------------
