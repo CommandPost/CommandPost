@@ -93,7 +93,7 @@ local function checkCommand(whichModifier, whichKey)
 	-- Don't repeat if key is held down:
 	--------------------------------------------------------------------------------
 	if mod.watcherWorking then
-		debugMessage("plugins.fullscreen.shortcuts.checkCommand() already in progress.")
+		log.df("plugins.fullscreen.shortcuts.checkCommand() already in progress.")
 		return false
 	end
 	mod.watcherWorking = true
@@ -108,7 +108,7 @@ local function checkCommand(whichModifier, whichKey)
 		--------------------------------------------------------------------------------
 		local activeCommandSet = fcp:getActiveCommandSet()
 		if type(activeCommandSet) ~= "table" then
-			debugMessage("Failed to get Active Command Set. Error occurred in plugins.fullscreen.shortcuts.checkCommand().")
+			log.df("Failed to get Active Command Set. Error occurred in plugins.fullscreen.shortcuts.checkCommand().")
 			return
 		end
 

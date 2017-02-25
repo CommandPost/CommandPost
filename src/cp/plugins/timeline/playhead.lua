@@ -143,7 +143,7 @@ function mod.checkScrollingTimeline()
 	-- Make sure the Command Editor and hacks console are closed:
 	--------------------------------------------------------------------------------
 	if fcp:commandEditor():isShowing() or hacksconsole.active then
-		debugMessage("Spacebar pressed while other windows are visible.")
+		log.df("Spacebar pressed while other windows are visible.")
 		return false
 	end
 
@@ -151,7 +151,7 @@ function mod.checkScrollingTimeline()
 	-- Don't activate scrollbar in fullscreen mode:
 	--------------------------------------------------------------------------------
 	if fcp:fullScreenWindow():isShowing() then
-		debugMessage("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
+		log.df("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
 		return false
 	end
 
@@ -161,7 +161,7 @@ function mod.checkScrollingTimeline()
 	-- Get Timeline Scroll Area:
 	--------------------------------------------------------------------------------
 	if not timeline:isShowing() then
-		writeToConsole("ERROR: Could not find Timeline Scroll Area.")
+		log.ef("ERROR: Could not find Timeline Scroll Area.")
 		return false
 	end
 
@@ -176,15 +176,15 @@ function mod.checkScrollingTimeline()
 			--------------------------------------------------------------------------------
 			-- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
 			--------------------------------------------------------------------------------
-			debugMessage("Mouse inside Timeline Area.")
+			log.df("Mouse inside Timeline Area.")
 			timeline:lockPlayhead(true)
 			return true
 		else
-			debugMessage("Mouse outside of Timeline Area.")
+			log.df("Mouse outside of Timeline Area.")
 			return false
 		end
 	else
-		debugMessage("No viewFrame detected in plugins.timeline.playhead.checkScrollingTimeline().")
+		log.df("No viewFrame detected in plugins.timeline.playhead.checkScrollingTimeline().")
 		return false
 	end
 

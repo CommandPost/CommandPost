@@ -29,6 +29,8 @@ local plugins									= require("cp.plugins")
 local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
 
+local log										= require("hs.logger").new("hacksconsole")
+
 hacksconsole.hacksChooser						= nil 		-- the actual hs.chooser
 hacksconsole.active 							= false		-- is the Hacks Console Active?
 hacksconsole.chooserChoices						= nil		-- Choices Table
@@ -152,7 +154,7 @@ function hacksconsole.choices()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	debugMessage("Updating Hacks Console Choices.")
+	log.df("Updating Hacks Console Choices.")
 
 	--------------------------------------------------------------------------------
 	-- Reset Choices:
@@ -495,7 +497,7 @@ function hacksconsole.choices()
 		local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems", {})
 		if chooserShowMenuItems then
 			if next(chooserMenuItems) == nil then
-				debugMessage("Building a list of Final Cut Pro menu items for the first time.")
+				log.df("Building a list of Final Cut Pro menu items for the first time.")
 				local fcpxElements = ax.applicationElement(fcp:application())
 				if fcpxElements ~= nil and hs.accessibilityState() then
 					local whichMenuBar = nil
@@ -566,7 +568,7 @@ function hacksconsole.choices()
 				--------------------------------------------------------------------------------
 				-- Insert Menu Items from Settings:
 				--------------------------------------------------------------------------------
-				debugMessage("Using Menu Items from Settings.")
+				log.df("Using Menu Items from Settings.")
 				for i=1, #chooserMenuItems do
 					table.insert(hacksconsole.chooserChoices, 1, chooserMenuItems[i])
 				end
