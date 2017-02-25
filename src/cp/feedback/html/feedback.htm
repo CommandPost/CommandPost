@@ -116,6 +116,7 @@
 			<div class="user-details"><input id="fullname" type="text" name="name" value="{{ userFullName }}"> <input id="email" type="text" name="email" value="{{ userEmail }}"></div>
 			<div class="bottom-buttons"><a class="button" href="commandpost://feedback?action=cancel">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
 			<!-- Hidden Fields: -->
+			<input type="hidden" name="script-version" value="{{ scriptVersion }}">
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
 			<div id="console-output" hidden>{{ consoleOutput }}</div>
 			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
@@ -179,7 +180,7 @@
 					document.getElementById("form-console-output").value = document.getElementById("console-output").innerHTML;
 				}
 
-				if (!document.getElementById("button-bug-report").hidden) \{
+				if (!document.getElementById("bugreport-comments").hidden) \{
 					 document.getElementById("form-feedback").value = document.getElementById("bugreport-comments").innerHTML;
 				} else if (!document.getElementById("feature-request-comments").hidden) \{
 				 	document.getElementById("form-feedback").value = document.getElementById("feature-request-comments").innerHTML;
@@ -201,8 +202,8 @@
 			document.getElementById("button-send").onclick = function() \{
 
 				var includeContactInfo = document.getElementById("include-contact-info").checked;
-				var fullnameValid = !(document.getElementById("fullname").value == "{{ userFullName }}");
-				var emailValid = !(document.getElementById("email").value == "{{ userEmail }}");
+				var fullnameValid = !(document.getElementById("fullname").value == "{{ defaultUserFullName }}");
+				var emailValid = !(document.getElementById("email").value == "{{ defaultUserEmail }}");
 
 				var newBugReportValue = document.getElementById("bugreport-comments").innerHTML;
 				var newFeatureRequestValue = document.getElementById("feature-request-comments").innerHTML;
@@ -210,24 +211,19 @@
 
 				var userCommentsValid = true;
 				if (!document.getElementById("bugreport-comments").hidden) \{
-
 					if ( defaultBugReportValue == newBugReportValue ) \{
 						document.getElementById("bugreport-comments").className = "textarea error";
 						var userCommentsValid = false;
 					} else \{
 						document.getElementById("bugreport-comments").className = "textarea";
 					}
-
 				} else if (!document.getElementById("feature-request-comments").hidden) \{
-
 					if ( defaultFeatureRequestValue == newFeatureRequestValue ) \{
 						document.getElementById("feature-request-comments").className = "textarea error";
 						var userCommentsValid = false;
 					} else \{
 						document.getElementById("feature-request-comments").className = "textarea";
 					}
-
-
 				} else if (!document.getElementById("support-comments").hidden) \{
 
 					if ( defaultSupportValue == newSupportValue ) \{

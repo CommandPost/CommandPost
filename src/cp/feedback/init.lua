@@ -76,8 +76,14 @@ local function generateHTML()
 	local env = template.defaultEnv()
 
 	env.i18n = i18n
-	env.userFullName = metadata.get("userFullName", i18n("fullName"))
-	env.userEmail = metadata.get("userEmail", i18n("emailAddress"))
+
+	env.scriptVersion = metadata.scriptVersion
+
+	env.defaultUserFullName = i18n("fullName")
+	env.defaultUserEmail = i18n("emailAddress")
+
+	env.userFullName = metadata.get("userFullName", env.defaultUserFullName)
+	env.userEmail = metadata.get("userEmail", env.defaultUserEmail)
 
 	--------------------------------------------------------------------------------
 	-- Get Console output:
