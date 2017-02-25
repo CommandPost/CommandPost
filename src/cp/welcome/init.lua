@@ -95,6 +95,7 @@ function mod.init()
 		:windowStyle({"titled"})
 		:shadow(true)
 		:allowNewWindows(false)
+		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 
 	--------------------------------------------------------------------------------
@@ -169,6 +170,7 @@ function mod.init()
 	-- Show Welcome Screen:
 	--------------------------------------------------------------------------------
 	mod.welcomeWebView:show()
+	timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
 
 	return mod
 
