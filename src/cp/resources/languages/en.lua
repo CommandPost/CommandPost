@@ -3,6 +3,11 @@ return {
 	en = {
 
 		--------------------------------------------------------------------------------
+		-- SCRIPT NAME:
+		--------------------------------------------------------------------------------
+		scriptName								=			"CommandPost",
+
+		--------------------------------------------------------------------------------
 		-- GENERIC:
 		--------------------------------------------------------------------------------
 
@@ -66,8 +71,10 @@ return {
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
+			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
 			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to email this bug to Chris so that he can try and come up with a fix?",
+			sendBugReport						=			"Send Bug Report",
 
 			--------------------------------------------------------------------------------
 			-- Common Strings:
@@ -393,7 +400,7 @@ return {
 				enableVoiceCommands				=			"Enable Voice Commands",
 
 		--------------------------------------------------------------------------------
-    	-- Admin Tools:
+    	-- ADMIN TOOLS:
     	--------------------------------------------------------------------------------
     	adminTools								=			"Administrator",
     	advancedFeatures						=			"Advanced Features",
@@ -409,7 +416,7 @@ return {
 			changeSmartCollectionLabel			=			"Change Smart Collections Label",
 
 		--------------------------------------------------------------------------------
-    	-- Preferences:
+    	-- PREFERENCES:
     	--------------------------------------------------------------------------------
     	scanFinalCutPro							=			"Scan Final Cut Pro",
     	helpAndSupport							=			"Help & Support",
@@ -504,7 +511,7 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
-	-- HACKS HUD:
+	-- HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
 	hacksHUD							=			"CommandPost HUD",
@@ -549,7 +556,7 @@ return {
 	menuItems							=			"Menu Items",
 
 	--------------------------------------------------------------------------------
-	-- Command Titles:
+	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
 
 		--------------------------------------------------------------------------------

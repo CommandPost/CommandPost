@@ -8,7 +8,7 @@ local window			= require("hs.window")
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-mod.scriptName			= "CommandPost"
+mod.scriptName			= i18n("scriptName")
 mod.settingsPrefix		= "cp"
 mod.scriptVersion       = "0.79"
 mod.bugReportEmail      = "chris@latenitefilms.com"
@@ -46,7 +46,7 @@ end
 function mod.isFrontmost()
 	local app = mod.application()
 	local fw = window.focusedWindow()
-	
+
 	return fw ~= nil and fw:application() == app
 end
 
