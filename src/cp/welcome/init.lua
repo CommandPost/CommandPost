@@ -134,9 +134,11 @@ function mod.init()
 			mod.welcomeWebView:html(generateHTML("complete"))
 		elseif params["action"] == "checkaccessibility" then
 			hs.accessibilityState(true)
-			timer.doEvery(1, function()
+			local accessibilityStateCheck = timer.doEvery(1, function()
 				if hs.accessibilityState() then
 					mod.welcomeWebView:html(generateHTML("scanfinalcutpro"))
+					timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
+					accessibilityStateCheck:stop()
 				end
 			end)
 		elseif params["action"] == "scanfinalcutpro" then
@@ -147,14 +149,15 @@ function mod.init()
 			else
 				mod.welcomeWebView:html(generateHTML("scanfinalcutpro"))
 			end
+			timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
 		elseif params["action"] == "addshortcuts" then
-
 			local shortcutsPlugin = require("cp.plugins.hacks.shortcuts")
 			local result = shortcutsPlugin.enableHacksShortcuts()
 			if result then
 				if fcp:isRunning() then fcp:restart() end
 				metadata.set("enableHacksShortcutsInFinalCutPro", true)
 				mod.welcomeWebView:html(generateHTML("complete"))
+				timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
 			end
 		elseif params["action"] == "close" then
 			mod.welcomeWebView:delete()
