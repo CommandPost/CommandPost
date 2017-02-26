@@ -8,7 +8,7 @@ local window			= require("hs.window")
 -- CONSTANTS:
 -------------------------------------------------------------------------------
 
-mod.scriptName			= i18n("scriptName")
+mod.scriptName			= "CommandPost"
 mod.settingsPrefix		= "cp"
 mod.scriptVersion       = "0.79"
 mod.bugReportEmail      = "chris@latenitefilms.com"
