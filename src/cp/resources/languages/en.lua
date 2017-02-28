@@ -433,7 +433,7 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDebugMode						=			"Enable Debug Mode",
+			enableDebugMode						=			"Enable Developer Mode",
 			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",

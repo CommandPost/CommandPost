@@ -99,6 +99,22 @@ local function generateHTML()
 
 end
 
+local function urlQueryStringDecode(s)
+	s = s:gsub('+', ' ')
+	s = s:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+	return string.sub(s, 2, -2)
+end
+
+--------------------------------------------------------------------------------
+-- NAVIGATION CALLBACK:
+--------------------------------------------------------------------------------
+local function feedbackWebViewNavigationWatcher(action, webView, navID, errorTable)
+	print("Action: " .. hs.inspect(action))
+	print("webView: " .. hs.inspect(webView))
+	print("navID: " .. hs.inspect(navID))
+	print("errorTable: " .. hs.inspect(errorTable))
+end
+
 --------------------------------------------------------------------------------
 -- CREATE THE FEEDBACK SCREEN:
 --------------------------------------------------------------------------------
@@ -133,7 +149,10 @@ function mod.showFeedback(quitOnComplete)
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
-	mod.feedbackWebView = webview.new(defaultRect, {}, mod.feedbackWebViewController)
+	local developerExtrasEnabled = {}
+	if metadata.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+	mod.feedbackWebView = webview.new(defaultRect, developerExtrasEnabled, mod.feedbackWebViewController)
+		--:navigationCallback(feedbackWebViewNavigationWatcher)
 		:windowStyle({"titled"})
 		:shadow(true)
 		:allowNewWindows(false)
@@ -150,7 +169,15 @@ function mod.showFeedback(quitOnComplete)
 			mod.feedbackWebView:delete()
 			mod.feedbackWebView = nil
 		elseif params["action"] == "error" then
-			dialog.displayMessage("Something went wrong when trying to send the form.")
+
+			local errorMessage = "Unknown"
+			if params["message"] then errorMessage = params["message"] end
+
+			print("Feedback Error Message:")
+			print(urlQueryStringDecode(errorMessage))
+
+			dialog.displayMessage("The following error occurred when trying to process the form:\n\n" .. urlQueryStringDecode(errorMessage))
+
 			mod.feedbackWebView:delete()
 			mod.feedbackWebView = nil
 		elseif params["action"] == "done" then
