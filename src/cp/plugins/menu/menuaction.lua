@@ -2,7 +2,7 @@
 --- The plugin registers itself with the `cp.plugins.actions.actionmanager`.
 
 -- Includes
-local choices			= require("cp.chooser.choices")
+local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local fnutils			= require("hs.fnutils")
 
