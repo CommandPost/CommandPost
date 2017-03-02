@@ -3,6 +3,11 @@ return {
 	en = {
 
 		--------------------------------------------------------------------------------
+		-- SCRIPT NAME:
+		--------------------------------------------------------------------------------
+		scriptName								=			"CommandPost",
+
+		--------------------------------------------------------------------------------
 		-- GENERIC:
 		--------------------------------------------------------------------------------
 
@@ -42,6 +47,7 @@ return {
 			disabled							=			"Disabled",
 			show								=			"Show",
 			clearList							=			"Clear List",
+			feedback							=			"Feedback",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -58,18 +64,57 @@ return {
 			buttonContinueBatchExport			=			"Continue Batch Export",
 			continue							=			"Continue",
 			quit								=			"Quit",
+			send								=			"Send",
+			skip								=			"Skip",
+			close								=			"Close",
 
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
+			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
 			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to email this bug to Chris so that he can try and come up with a fix?",
+			sendBugReport						=			"Send Bug Report",
 
 			--------------------------------------------------------------------------------
 			-- Common Strings:
 			--------------------------------------------------------------------------------
 			pleaseTryAgain						=			"Please try again.",
 			doYouWantToContinue					=			"Do you want to continue?",
+
+			--------------------------------------------------------------------------------
+			-- Welcome Screen:
+			--------------------------------------------------------------------------------
+			welcomeTitle						=			"Welcome to CommandPost",
+			welcomeTagLine						=			"Workflow Toolkit for Professional Editors",
+			welcomeIntro						=			"Thank you for installing CommandPost. This guide will help you set things up.",
+			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> option in the Preferences menubar.",
+			scanFinalCutPro						=			"Scan Final Cut Pro",
+			finalCutProMissingHeading			=			"CommandPost requires Final Cut Pro 10.3 or later.",
+			finalCutProMissingText				=			"Unfortunately we couldn't detect a valid installation of Final Cut Pro installed.<br /><br />Please install the latest version of Final Cut Pro from the App Store<br />and try running CommandPost again.",
+			completeHeading						=			"CommandPost is now setup and ready to go!",
+			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
+			commandSetText						=			"CommandPost has the ability to add handy new functions to Final Cut Pro’s Command Editor.<br /><br />This allows you to customise the shortcuts for CommandPost directly within Final Cut Pro.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.",
+			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
+			enableAccessibility					=			"Enable Accessibility",
+
+			--------------------------------------------------------------------------------
+			-- Feedback Module:
+			--------------------------------------------------------------------------------
+			bugReport							=			"Bug Report",
+			featureRequest						=			"Feature Request",
+			support								=			"Support",
+			whatWentWrong						=			"What went wrong?",
+			whatDidYouExpectToHappen			=			"What did you expect to happen?",
+			whatStepsToRecreate					=			"What are the steps to recreate the problem?",
+			whatFeatures						=			"What feature would you like to see implemented or improved?",
+			howCanWeHelp						=			"How can we help you?",
+			emailResponse						=			"If you want an email response you will need to enter your email address:",
+			includeContactInfo					=			"Include contact info",
+			attachLog							=			"Attach Error Log",
+			attachScreenshot					=			"Attach Screenshot",
+			fullName							=			"Full Name",
+			emailAddress						=			"Email Address",
 
 			--------------------------------------------------------------------------------
 			-- Notifications:
@@ -123,9 +168,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
-			accessibilityError					=			"%{scriptName} requires Accessibility Permissions to do its magic. By clicking Continue you will be asked to enable these permissions.\n\nThe %{scriptName} menubar will appear once these permissions are granted.",
-			noValidFinalCutPro 					= 			"%{scriptName} couldn't find a compatible version of Final Cut Pro installed on this system.\n\nPlease make sure Final Cut Pro 10.3 or later is installed.\n\n%{scriptName} will now quit.",
-
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
@@ -225,7 +267,6 @@ return {
 			shareDetails_Youku					=			"Type: Youku\nLogin: %{login}\nTitle: %{title}",
 			shareDetails_Tudou					=			"Type: Tudou\nLogin: %{login}\nTitle: %{title}",
 
-
 		--------------------------------------------------------------------------------
 		-- MENUBAR:
 		--------------------------------------------------------------------------------
@@ -268,7 +309,6 @@ return {
 			highlightPlayheadColour				=			"Colour",
 			highlightPlayheadShape				=			"Shape",
 			highlightPlayheadTime				=			"Time",
-
 
 			unassignedTitle						=			"Unassigned",
 
@@ -360,7 +400,7 @@ return {
 				enableVoiceCommands				=			"Enable Voice Commands",
 
 		--------------------------------------------------------------------------------
-    	-- Admin Tools:
+    	-- ADMIN TOOLS:
     	--------------------------------------------------------------------------------
     	adminTools								=			"Administrator",
     	advancedFeatures						=			"Advanced Features",
@@ -376,8 +416,9 @@ return {
 			changeSmartCollectionLabel			=			"Change Smart Collections Label",
 
 		--------------------------------------------------------------------------------
-    	-- Preferences:
+    	-- PREFERENCES:
     	--------------------------------------------------------------------------------
+    	scanFinalCutPro							=			"Scan Final Cut Pro",
     	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
     	credits									=			"Credits",
@@ -392,7 +433,7 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDebugMode						=			"Enable Debug Mode",
+			enableDebugMode						=			"Enable Developer Mode",
 			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
@@ -470,7 +511,7 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
-	-- HACKS HUD:
+	-- HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
 	hacksHUD							=			"CommandPost HUD",
@@ -542,7 +583,7 @@ return {
 	hacks_group							=			"Advanced Features",
 
 	--------------------------------------------------------------------------------
-	-- Command Titles:
+	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
 
 		--------------------------------------------------------------------------------
@@ -586,6 +627,9 @@ return {
 		cpRevealInBrowserAndHighlight_title						= 	"Reveal in Browser and Highlight",
 
 		cpSelectClipAtLane_customTitle							=	"Select Clip at Lane %{count}",
+
+		cpSaveKeywordPreset_customTitle							=	"Save Keyword Preset %{count}",
+		cpRestoreKeywordPreset_customTitle						=	"Restore Keyword Preset %{count}",
 
 		cpSelectColorBoardPuck_customTitle						=	"Select Color Board Puck %{count}",
 		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
