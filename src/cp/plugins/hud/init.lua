@@ -138,26 +138,28 @@ end
 
 function hud.getButtonCommand(index)
 	local button = hud.getButton(index)
-	if button then
-		local group = commands.group(button.group)
-		if group then
-			return group:get(button.id)
+	if button and button.action then
+		if button.action.type == "command" then
+			local group = commands.group(button.action.group)
+			if group then
+				return group:get(button.action.id)
+			end
 		end
 	end
 	return nil
 end
 
 function hud.getButtonText(index)
-	local cmd = hud.getButtonCommand(index)
-	if cmd then
-		return tools.stringMaxLength(tools.cleanupButtonText(cmd:getTitle()), hud.maxTextLength, "...")
+	local button = hud.getButton(index)
+	if button and button.text then
+		return tools.stringMaxLength(tools.cleanupButtonText(button.text), hud.maxTextLength, "...")
 	else
 		return i18n("unassigned")
 	end
 end
 
 function hud.getButtonURL(index)
-	return hud.urlhandler.getURL(hud.getButtonCommand(index))
+	return hud.actionmanager.getURL(hud.getButton(index))
 end
 
 function hud.setButton(index, value)
@@ -410,7 +412,7 @@ function hud.assignButton(button)
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
 		if result ~= nil then
-			hud.setButton(whichButton, {group = result.group, id = result.id})
+			hud.setButton(whichButton, result)
 		end
 
 		--------------------------------------------------------------------------------
@@ -439,119 +441,18 @@ end
 -- HACKS CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function hud.choices()
+	
+	if hud.actionmanager then
+		return hud.actionmanager.choices()
+	end
 
 	local result = {}
 	local individualEffect = nil
-	
-	local chooserCommands = {}
-	
-	for _,id in pairs(commands.groupIds()) do
-		local group = commands.group(id)
-		for _,cmd in pairs(group:getAll()) do
-			local title = cmd:getTitle()
-			if title then
-				local subText = cmd:getSubtitle()
-				if not subText and cmd:getGroup() then
-					subText = i18n(cmd:getGroup() .. "_group")
-				end
-				chooserCommands[#chooserCommands + 1] = {
-					text		= title,
-					subText		= subText,
-					group		= group:id(),
-					id			= cmd:id(),
-				}
-			end
-		end
-	end
-
-	fnutils.concat(result, chooserCommands)
-
-	--------------------------------------------------------------------------------
-	-- Menu Items:
-	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
-	local chooserMenuItems = metadata.get(currentLanguage .. ".chooserMenuItems") or {}
-	if next(chooserMenuItems) == nil then
-		debugMessage("Building a list of Final Cut Pro menu items for the first time.")
-		local fcpxElements = ax.applicationElement(fcp:application())
-		if fcpxElements ~= nil then
-			local whichMenuBar = nil
-			for i=1, fcpxElements:attributeValueCount("AXChildren") do
-				if fcpxElements[i]:attributeValue("AXRole") == "AXMenuBar" then
-					whichMenuBar = i
-				end
-			end
-			if whichMenuBar ~= nil then
-				for i=2, fcpxElements[whichMenuBar]:attributeValueCount("AXChildren") -1 do
-					for x=1, fcpxElements[whichMenuBar][i][1]:attributeValueCount("AXChildren") do
-						if fcpxElements[whichMenuBar][i][1][x]:attributeValue("AXTitle") ~= "" and fcpxElements[whichMenuBar][i][1][x]:attributeValueCount("AXChildren") == 0 then
-							local title = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x]:attributeValue("AXTitle")
-							individualEffect = {
-								["text"] = title,
-								["subText"] = "Menu Item",
-								["function"] = "menuItemShortcut",
-								["function1"] = i,
-								["function2"] = x,
-								["function3"] = "",
-								["function4"] = "",
-							}
-							table.insert(chooserMenuItems, 1, individualEffect)
-							table.insert(result, 1, individualEffect)
-						end
-						if fcpxElements[whichMenuBar][i][1][x]:attributeValueCount("AXChildren") ~= 0 then
-							for y=1, fcpxElements[whichMenuBar][i][1][x][1]:attributeValueCount("AXChildren") do
-								if fcpxElements[whichMenuBar][i][1][x][1][y]:attributeValue("AXTitle") ~= "" then
-									local title = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x][1][y]:attributeValue("AXTitle")
-									individualEffect = {
-										["text"] = title,
-										["subText"] = "Menu Item",
-										["function"] = "menuItemShortcut",
-										["function1"] = i,
-										["function2"] = x,
-										["function3"] = y,
-										["function4"] = "",
-									}
-									table.insert(chooserMenuItems, 1, individualEffect)
-									table.insert(result, 1, individualEffect)
-								end
-								if fcpxElements[whichMenuBar][i][1][x][1][y]:attributeValueCount("AXChildren") ~= 0 then
-									for z=1, fcpxElements[whichMenuBar][i][1][x][1][y][1]:attributeValueCount("AXChildren") do
-										if fcpxElements[whichMenuBar][i][1][x][1][y][1][z]:attributeValue("AXTitle") ~= "" then
-											local title = fcpxElements[whichMenuBar][i]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x][1][y]:attributeValue("AXTitle") .. " > " .. fcpxElements[whichMenuBar][i][1][x][1][y][1][z]:attributeValue("AXTitle")
-											individualEffect = {
-												["text"] = title,
-												["subText"] = "Menu Item",
-												["function"] = "menuItemShortcut",
-												["function1"] = i,
-												["function2"] = x,
-												["function3"] = y,
-												["function4"] = z,
-											}
-											table.insert(chooserMenuItems, 1, individualEffect)
-											table.insert(result, 1, individualEffect)
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-		metadata.set(currentLanguage .. ".chooserMenuItems", chooserMenuItems)
-	else
-		--------------------------------------------------------------------------------
-		-- Insert Menu Items from Settings:
-		--------------------------------------------------------------------------------
-		debugMessage("Using Menu Items from Settings.")
-		for i=1, #chooserMenuItems do
-			table.insert(result, 1, chooserMenuItems[i])
-		end
-	end
 
 	--------------------------------------------------------------------------------
 	-- Video Effects List:
 	--------------------------------------------------------------------------------
+	local currentLanguage = fcp:getCurrentLanguage()
 	local allVideoEffects = metadata.get(currentLanguage .. ".allVideoEffects")
 	if allVideoEffects ~= nil and next(allVideoEffects) ~= nil then
 		for i=1, #allVideoEffects do
@@ -802,10 +703,9 @@ function hud.shareXML(incomingXML)
 
 end
 
-function hud.init(xmlSharing, fcpxCmds, urlhandler)
+function hud.init(xmlSharing, actionmanager)
 	hud.xmlSharing = xmlSharing
-	hud.fcpxCmds	= fcpxCmds
-	hud.urlhandler = urlhandler
+	hud.actionmanager = actionmanager
 	return hud
 end
 
@@ -817,14 +717,14 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.sharing.xml"]			= "xmlSharing",
-	["cp.plugins.menu.tools"]			= "tools",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.commands.urlhandler"]	= "urlhandler",
+	["cp.plugins.sharing.xml"]				= "xmlSharing",
+	["cp.plugins.menu.tools"]				= "tools",
+	["cp.plugins.commands.fcpx"]			= "fcpxCmds",
+	["cp.plugins.actions.actionmanager"]	= "actionmanager",
 }
 
 function plugin.init(deps)
-	hud.init(deps.xmlSharing, deps.fcpxCmds, deps.urlhandler)
+	hud.init(deps.xmlSharing, deps.actionmanager)
 	
 	fcp:watch({
 		active		= hud.update,
@@ -859,15 +759,8 @@ function plugin.init(deps)
 	hudMenu:addMenu(4000, function() return i18n("assignHUDButtons") end)
 		:addItems(1000, function() 
 			local items = {}
-			local unassignedText = i18n("unassigned")
 			for i = 1, hud.maxButtons do
-				local title = unassignedText
-				
-				local cmd = hud.getButtonCommand(i)
-				if cmd then
-					title = cmd:getTitle()
-				end
-				
+				local title = hud.getButtonText(i)
 				title = tools.stringMaxLength(tools.cleanupButtonText(title), hud.maxTextLength, "...")
 				items[#items + 1] = { title = i18n("hudButtonItem", {count = i, title = title}),	fn = function() hud.assignButton(i) end }
 			end

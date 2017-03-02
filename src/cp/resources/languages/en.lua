@@ -489,6 +489,8 @@ return {
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
 	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
 	hudButtonItem						=			"Button %{count} (%{title})",
+	
+	menuChoiceSubText					=			"Menu: %{path}",
 
 	--------------------------------------------------------------------------------
 	-- CONSOLE:
@@ -523,10 +525,11 @@ return {
 	-- Command URL Execution:
 	--------------------------------------------------------------------------------
 	
-	cmdMismatchError					=			"Expected '%{expected}' command ID but got '%{actual}.",
+	actionMismatchError					=			"Expected '%{expected}' command ID but got '%{actual}.",
 	cmdIdMissingError					=			"A command ID is required to execute.",
 	cmdDoesNotExistError				=			"No command with the ID of %{id} could be found.",
-	cmdUndefinedError					=			"No command was specified to execute.",
+	actionUndefinedError					=			"No command was specified to execute.",
+	cmdGroupNotActivated				=			"Unable to activate the '%{id}' command group.",
 	
 	--------------------------------------------------------------------------------
 	-- Command Groups:

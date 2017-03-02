@@ -1,4 +1,5 @@
 local command					= require("cp.commands.command")
+local timer						= require("hs.timer")
 
 local commands = {}
 
@@ -134,8 +135,24 @@ function commands:_notify(type, ...)
 	end
 end
 
-function commands:activate()
+function commands:activate(successFn, failureFn)
 	self:_notify('activate')
+	local count = 0
+	timer.waitUntil(
+		function() count = count + 1; return self:isEnabled() or count == 1000 end,
+		function()
+			if self:isEnabled() then
+				if successFn then
+					successFn(self)
+				end
+			else
+				if failureFn then
+					failureFn(self)
+				end
+			end
+		end,
+		0.001
+	)
 end
 
 return commands
