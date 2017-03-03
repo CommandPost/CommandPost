@@ -566,10 +566,10 @@ return {
 	-- Command URL Execution:
 	--------------------------------------------------------------------------------
 	
-	actionMismatchError					=			"Expected '%{expected}' command ID but got '%{actual}.",
+	actionMismatchError					=			"Expected '%{expected}' action type but got '%{actual}.",
+	actionUndefinedError				=			"No action was specified to execute.",
 	cmdIdMissingError					=			"A command ID is required to execute.",
 	cmdDoesNotExistError				=			"No command with the ID of %{id} could be found.",
-	actionUndefinedError					=			"No command was specified to execute.",
 	cmdGroupNotActivated				=			"Unable to activate the '%{id}' command group.",
 	
 	--------------------------------------------------------------------------------
@@ -581,6 +581,11 @@ return {
 	colorboard_group					=			"Colour Board",
 	mediaImport_group					=			"Media Import",
 	hacks_group							=			"Advanced Features",
+	videoEffect_group					=			"Video Effect",
+	audioEffect_group					=			"Audio Effect",
+	title_group							= 			"Title",
+	transition_group					=			"Transition",
+	generator_group						=			"Generator",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:

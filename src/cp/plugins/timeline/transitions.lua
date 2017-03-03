@@ -5,6 +5,7 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local inspect			= require("hs.inspect")
 
+local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
@@ -16,9 +17,47 @@ local log				= require("hs.logger").new("transitions")
 -- Constants
 local MAX_SHORTCUTS = 5
 
--- The Module
 
+-- Effects Action
+local action = {}
 local mod = {}
+
+function action.id()
+	return "transition"
+end
+
+function action.choices()
+	if not action._choices then
+		action._choices = choices.new(action.id())
+		--------------------------------------------------------------------------------
+		-- Transition List:
+		--------------------------------------------------------------------------------
+		
+		local list = mod.getTransitions()
+		if list ~= nil and next(list) ~= nil then
+			for i,name in ipairs(list) do
+				action._choices:add(name)
+					:subText(i18n("transition_group"))
+					:params({
+						name = name,
+					})
+			end
+		end
+	end
+	return action._choices
+end
+
+function action.execute(params)
+	if params and params.name then
+		mod.apply(params.name)
+	end
+end
+
+function action.reset()
+	action._choices = nil
+end
+
+-- The Module
 
 function mod.getShortcuts()
 	return metadata.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
@@ -302,8 +341,9 @@ function mod.updateTransitionsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.get(currentLanguage .. ".allTransitions", allTransitions)
-	metadata.get(currentLanguage .. ".transitionsListUpdated", true)
+	metadata.set(currentLanguage .. ".allTransitions", allTransitions)
+	metadata.set(currentLanguage .. ".transitionsListUpdated", true)
+	action.reset()
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -327,13 +367,17 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.timeline.assignshortcuts"]	= "automation",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.os.touchbar"]		= "touchbar",
+	["cp.plugins.commands.fcpx"]					= "fcpxCmds",
+	["cp.plugins.os.touchbar"]						= "touchbar",
+	["cp.plugins.actions.actionmanager"]			= "actionmanager",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
+	
+	-- Register the Action
+	deps.actionmanager.addAction(action)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTransitionsShortcuts") end)

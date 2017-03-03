@@ -5,6 +5,7 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local inspect			= require("hs.inspect")
 
+local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
@@ -18,9 +19,46 @@ local PRIORITY = 4000
 
 local MAX_SHORTCUTS = 5
 
--- The Module
-
+-- Effects Action
+local action = {}
 local mod = {}
+
+function action.id()
+	return "generator"
+end
+
+function action.choices()
+	if not action._choices then
+		action._choices = choices.new(action.id())
+		--------------------------------------------------------------------------------
+		-- Generator List:
+		--------------------------------------------------------------------------------
+		
+		local items = mod.getGenerators()
+		if items ~= nil and next(items) ~= nil then
+			for i,name in ipairs(items) do
+				action._choices:add(name)
+					:subText(i18n("generator_group"))
+					:params({
+						name = name,
+					})
+			end
+		end
+	end
+	return action._choices
+end
+
+function action.execute(params)
+	if params and params.name then
+		mod.apply(params.name)
+	end
+end
+
+function action.reset()
+	action._choices = nil
+end
+
+-- The Module
 
 function mod.getShortcuts()
 	return metadata.get(fcp:getCurrentLanguage() .. ".generatorsShortcuts", {})
@@ -295,8 +333,9 @@ function mod.updateGeneratorsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.get(currentLanguage .. ".allGenerators", allGenerators)
-	metadata.get(currentLanguage .. ".generatorsListUpdated", true)
+	metadata.set(currentLanguage .. ".allGenerators", allGenerators)
+	metadata.set(currentLanguage .. ".generatorsListUpdated", true)
+	action.reset()
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
@@ -318,13 +357,17 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.timeline.assignshortcuts"]	= "automation",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.os.touchbar"]		= "touchbar",
+	["cp.plugins.commands.fcpx"]					= "fcpxCmds",
+	["cp.plugins.os.touchbar"]						= "touchbar",
+	["cp.plugins.actions.actionmanager"]			= "actionmanager",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
+	
+	-- Add the action
+	deps.actionmanager.addAction(action)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignGeneratorsShortcuts") end)

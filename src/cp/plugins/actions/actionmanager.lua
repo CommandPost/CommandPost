@@ -10,6 +10,26 @@ local mod = {
 }
 
 local ARRAY_DELIM = "||"
+local UNDEFINED = "_undefined"
+
+local function split(str, pat)
+   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pat
+   local last_end = 1
+   local s, e, cap = str:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+         table.insert(t,cap)
+      end
+      last_end = e+1
+      s, e, cap = str:find(fpat, last_end)
+   end
+   if last_end <= #str then
+      cap = str:sub(last_end)
+      table.insert(t, cap)
+   end
+   return t
+end
 
 local function isNumberString(value)
 	return value:match("^[0-9\\.\\-]$") ~= nil
@@ -36,7 +56,7 @@ local function thawParams(params)
 	local thawed = {}
 	for key,value in pairs(params) do
 		if value:find(ARRAY_DELIM) then
-			value = string.split(value, ARRAY_DELIM)
+			value = split(value, ARRAY_DELIM)
 		elseif isNumberString(value) then
 			value = tonumber(value)
 		end
@@ -47,7 +67,7 @@ end
 
 function mod.init()
 	-- Unknown command handler
-	urlevent.bind("_undefined", function()
+	urlevent.bind(UNDEFINED, function()
 		dialog.displayMessage(i18n("actionUndefinedError"))
 	end)
 end
@@ -58,11 +78,12 @@ function mod.getURL(choice)
 		local params = freezeParams(choice.params)
 		return string.format("commandpost://%s?%s", choice.type, params)
 	else
-		return string.format("commandpost://_undefined")
+		return string.format("commandpost://"..UNDEFINED)
 	end
 end
 
 function mod.addAction(action)
+	-- log.df("adding action: %s", hs.inspect(action))
 	mod._actions[action.id()] = action
 	
 	urlevent.bind(action.id(), function(eventName, params)

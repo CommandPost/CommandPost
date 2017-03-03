@@ -45,10 +45,13 @@ end
 ---
 --- * `true` if the action was executed successfully.
 function mod.execute(params)
-	fcp:launch()
+	if params and params.path then
+		fcp:launch()
 	
-	fcp:menuBar():selectMenu(params.path)
-	return true
+		fcp:menuBar():selectMenu(table.unpack(params.path))
+		return true
+	end
+	return false
 end
 
 -- The Plugin
