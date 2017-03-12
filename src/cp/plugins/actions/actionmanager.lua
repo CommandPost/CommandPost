@@ -128,6 +128,7 @@ function mod.choices()
 		end
 		fnutils.concat(result, c:getChoices())
 	end
+	table.sort(result, function(a, b) return a.text < b.text end)
 	return result
 end
 
