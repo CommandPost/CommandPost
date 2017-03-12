@@ -393,7 +393,7 @@ return {
 				-- Tools Options:
 				--------------------------------------------------------------------------------
 				enableTouchBar					=			"Enable Virtual Touch Bar",
-				enableHacksHUD					=			"Enable Hacks HUD",
+				enableHUD						=			"Enable HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
 				enableXMLSharing				=			"Enable XML Sharing",
@@ -514,7 +514,6 @@ return {
 	-- HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
-	hacksHUD							=			"CommandPost HUD",
 	media								=			"Media",
 	quality								=			"Quality",
 	backgroundRender					=			"Background Render",
@@ -530,7 +529,7 @@ return {
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
 	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
 	hudButtonItem						=			"Button %{count} (%{title})",
-	
+
 	menuChoiceSubText					=			"Menu: %{path}",
 
 	--------------------------------------------------------------------------------
@@ -561,21 +560,21 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
-	
+
 	--------------------------------------------------------------------------------
 	-- Command URL Execution:
 	--------------------------------------------------------------------------------
-	
+
 	actionMismatchError					=			"Expected '%{expected}' action type but got '%{actual}.",
 	actionUndefinedError				=			"No action was specified to execute.",
 	cmdIdMissingError					=			"A command ID is required to execute.",
 	cmdDoesNotExistError				=			"No command with the ID of %{id} could be found.",
 	cmdGroupNotActivated				=			"Unable to activate the '%{id}' command group.",
-	
+
 	--------------------------------------------------------------------------------
 	-- Command Groups:
 	--------------------------------------------------------------------------------
-	
+
 	timeline_group						=			"Timeline",
 	browser_group						=			"Browser",
 	colorboard_group					=			"Colour Board",
@@ -664,22 +663,22 @@ return {
 		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
 		cpShowListOfShortcutKeys_title							=	"Show Keyboard Shortcuts",
 		cpOpenCommandEditor_title								=	"Open Command Editor",
-		
+
 		cpCreateOptimizedMediaOn_title							=	"Enable Create Optimized Media",
 		cpCreateOptimizedMediaOff_title							=	"Disable Create Optimized Media",
-		
+
 		cpCreateMulticamOptimizedMediaOn_title					=	"Enable Multicam Optimized Media",
 		cpCreateMulticamOptimizedMediaOff_title					=	"Disable Multicam Optimized Media",
-		
+
 		cpCreateProxyMediaOn_title								=	"Enable Create Proxy Media",
 		cpCreateProxyMediaOff_title								=	"Disable Create Proxy Media",
-		
+
 		cpLeaveInPlaceOn_title									=	"Enable Leave In Place on Import",
 		cpLeaveInPlaceOff_title									=	"Disable Leave In Place on Import",
-		
+
 		cpBackgroundRenderOn_title								=	"Enable Background Render",
 		cpBackgroundRenderOff_title								=	"Disable Background Render",
-		
+
 		cpChangeBackupInterval_title							=	"Change Backup Interval...",
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
