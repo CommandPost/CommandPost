@@ -278,11 +278,6 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	fcp:launch()
 
-	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateGeneratorsListWarning"))
-
 	local generators = fcp:generators()
 
 	local browserLayout = fcp:browser():saveLayout()
@@ -341,11 +336,6 @@ function mod.updateGeneratorsList()
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
 	hacksconsole.refresh()
-
-	--------------------------------------------------------------------------------
-	-- Let the user know everything's good:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateGeneratorsListDone"))
 end
 
 function mod.isGeneratorsListUpdated()
@@ -371,14 +361,7 @@ function plugin.init(deps)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignGeneratorsShortcuts") end)
-
-	-- The 'Update' menu
-	menu:addItem(1000, function()
-		return { title = i18n("updateGeneratorsList"),	fn = mod.updateGeneratorsList, disabled = not fcpxRunning }
-	end)
-	menu:addSeparator(2000)
-
-	menu:addItems(3000, function()
+	menu:addItems(1000, function()
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------

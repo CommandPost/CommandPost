@@ -130,32 +130,15 @@ return {
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
 
 			--------------------------------------------------------------------------------
-			-- Update Effects List:
+			-- Scan Final Cut Pro:
 			--------------------------------------------------------------------------------
-			updateEffectsListWarning			=			"Depending on how many Effects you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
+			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
+			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
+
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
-			updateEffectsListDone				=			"Effects List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Transitions List:
-			--------------------------------------------------------------------------------
-			updateTransitionsListWarning		=			"Depending on how many Transitions you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateTransitionsListFailed			=			"Unfortunately the Transitions List was not successfully updated.",
-			updateTransitionsListDone			=			"Transitions List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Titles List:
-			--------------------------------------------------------------------------------
-			updateTitlesListWarning				=			"Depending on how many Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateTitlesListFailed				=			"Unfortunately the Titles List was not successfully updated.",
-			updateTitlesListDone				=			"Titles List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Generators List:
-			--------------------------------------------------------------------------------
-			updateGeneratorsListWarning			=			"Depending on how many Generators you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateGeneratorsListFailed			=			"Unfortunately the Generators List was not successfully updated.",
-			updateGeneratorsListDone			=			"Generators List updated successfully.",
 
 			--------------------------------------------------------------------------------
 			-- Assign Shortcut Errors:

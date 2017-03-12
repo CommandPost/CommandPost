@@ -269,11 +269,6 @@ function mod.updateTransitionsList()
 	fcp:launch()
 
 	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTransitionsListWarning"))
-
-	--------------------------------------------------------------------------------
 	-- Save the layout of the Effects panel, in case we switch away...
 	--------------------------------------------------------------------------------
 	local effects = fcp:effects()
@@ -349,11 +344,6 @@ function mod.updateTransitionsList()
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
 	hacksconsole.refresh()
-
-	--------------------------------------------------------------------------------
-	-- Let the user know everything's good:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTransitionsListDone"))
 end
 
 function mod.isTransitionsListUpdated()
@@ -382,13 +372,7 @@ function plugin.init(deps)
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTransitionsShortcuts") end)
 
-	-- The 'Update' menu
-	menu:addItem(1000, function()
-		return { title = i18n("updateTransitionsList"),	fn = mod.updateTransitionsList, disabled = not fcpxRunning }
-	end)
-	menu:addSeparator(2000)
-
-	menu:addItems(3000, function()
+	menu:addItems(1000, function()
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
