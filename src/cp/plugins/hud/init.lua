@@ -573,18 +573,20 @@ function hud.shareXML(incomingXML)
 		--------------------------------------------------------------------------------
 		local textboxResult = dialog.displayTextBoxMessage(i18n("hudXMLNameDialog"), i18n("hudXMLNameError"), "")
 
-		--------------------------------------------------------------------------------
-		-- Save the XML content to the Shared XML Folder:
-		--------------------------------------------------------------------------------
-		local newXMLPath = xmlSharingPath .. host.localizedName() .. "/"
+		if textboxResult then
+			--------------------------------------------------------------------------------
+			-- Save the XML content to the Shared XML Folder:
+			--------------------------------------------------------------------------------
+			local newXMLPath = xmlSharingPath .. host.localizedName() .. "/"
 
-		if not tools.doesDirectoryExist(newXMLPath) then
-			fs.mkdir(newXMLPath)
+			if not tools.doesDirectoryExist(newXMLPath) then
+				fs.mkdir(newXMLPath)
+			end
+
+			local file = io.open(newXMLPath .. textboxResult .. ".fcpxml", "w")
+			currentClipboardData = file:write(newXML)
+			file:close()
 		end
-
-		local file = io.open(newXMLPath .. textboxResult .. ".fcpxml", "w")
-		currentClipboardData = file:write(newXML)
-		file:close()
 
 	else
 		dialog.displayMessage(i18n("hudXMLSharingDisabled"))
