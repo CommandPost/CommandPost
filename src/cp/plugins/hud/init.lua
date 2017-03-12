@@ -48,7 +48,7 @@ local log										= require("hs.logger").new("hud")
 
 local PRIORITY									= 10000
 
-hud.name										= i18n("hacksHUD")
+hud.name										= metadata.scriptName
 hud.width										= 350
 hud.heightInspector								= 75
 hud.heightDropTargets							= 75
@@ -192,7 +192,6 @@ function hud.update()
 end
 
 function hud.canShow()
-	-- return hud.isEnabled()
 	local result = (fcp:isFrontmost() or hud.isFrontmost() or metadata.isFrontmost())
 	and not fcp:fullScreenWindow():isShowing()
 	and not fcp:commandEditor():isShowing()
@@ -645,7 +644,7 @@ function plugin.init(deps)
 	-- Menus
 	local hudMenu = deps.tools:addMenu(PRIORITY, function() return i18n("hud") end)
 	hudMenu:addItem(1000, function()
-			return { title = i18n("enableHacksHUD"),	fn = hud.toggleEnabled,		checked = hud.isEnabled()}
+			return { title = i18n("enableHUD"),	fn = hud.toggleEnabled,		checked = hud.isEnabled()}
 		end)
 	hudMenu:addSeparator(2000)
 	hudMenu:addMenu(3000, function() return i18n("hudOptions") end)
