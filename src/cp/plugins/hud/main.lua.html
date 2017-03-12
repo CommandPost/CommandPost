@@ -3,7 +3,7 @@
 	<head>
 		<!-- Style Sheets: -->
 		<style>
-		.button {
+		.button \{
 			text-align: center;
 			display:block;
 			width: 136px;
@@ -20,28 +20,28 @@
 			margin-left: auto;
 		    margin-right: auto;
 		}
-		body {
+		body \{
 			background-color:#1f1f1f;
 			color: #bfbebb;
 			font-family: -apple-system;
 			font-size: 11px;
 			font-weight: lighter;
 		}
-		table {
+		table \{
 			width:100%;
 			text-align:left;
 		}
-		th {
+		th \{
 			width:50%;
 		}
-		h1 {
+		h1 \{
 			font-size: 12px;
 			font-weight: bold;
 			text-align: center;
 			margin: 0px;
 			padding: 0px;
 		}
-		hr {
+		hr \{
 			height:1px;
 			border-width:0;
 			color:gray;
@@ -53,7 +53,7 @@
 			margin-right: auto;
 			border-style: inset;
 		}
-		input[type=text] {
+		input[type=text] \{
 			width: 100%;
 			padding: 5px 5px;
 			margin: 8px 0;
@@ -64,10 +64,10 @@
 			color: white;
 			text-align:center;
 		}
-		.good {
+		.good \{
 			color: #3f9253;
 		}
-		.bad {
+		.bad \{
 			color: #d1393e;
 		}
 		</style>
@@ -76,18 +76,18 @@
 		<script>
 
 			// Disable Right Clicking:
-			document.addEventListener("contextmenu", function(e){
+			document.addEventListener("contextmenu", function(e)\{
 			    e.preventDefault();
 			}, false);
 
 			// Something has been dropped onto our Dropbox:
-			function dropboxAction() {
+			function dropboxAction() \{
 				var x = document.getElementById("dropbox");
 				var dropboxValue = x.value;
 
-				try {
+				try \{
 					webkit.messageHandlers.hud.postMessage(dropboxValue);
-				} catch(err) {
+				} catch(err) \{
 					console.log('The controller does not exist yet');
 				}
 
