@@ -261,7 +261,7 @@ function hud.new()
 	--------------------------------------------------------------------------------
 	-- HUD Closed:
 	--------------------------------------------------------------------------------
-	hud.hudFilter:subscribe(windowfilter.windowDestroyed, 
+	hud.hudFilter:subscribe(windowfilter.windowDestroyed,
 	function(window, applicationName, event)
 		if window:id() == hud.windowID then
 			if not hud.ignoreWindowChange then
@@ -274,15 +274,15 @@ function hud.new()
 	-- Watches all apps:
 	--------------------------------------------------------------------------------
 	hud.windowFilter = windowfilter.new(true)
-	
+
 	--------------------------------------------------------------------------------
 	-- HUD Unfocussed:
 	--------------------------------------------------------------------------------
-	hud.windowFilter:subscribe(windowfilter.windowFocused, 
+	hud.windowFilter:subscribe(windowfilter.windowFocused,
 	function(window, applicationName, event)
 		hud.update()
 	end, true)
-	
+
 	local watcher = application.watcher
 	hud.appWatcher = watcher.new(
 		function(appName, eventType, appObject)
@@ -318,7 +318,7 @@ function hud.show()
 			end
 		end
 	end, 0.05):fire()
-	
+
 	if hud.windowFilter then hud.windowFilter:resume() end
 	if hud.appWatcher then hud.appWatcher:start() end
 
@@ -400,7 +400,7 @@ function hud.assignButton(button)
 	local wasFinalCutProOpen = fcp:isFrontmost()
 	local whichButton = button
 	local hudButtonChooser = nil
-	
+
 	local chooserAction = function(result)
 
 		--------------------------------------------------------------------------------
@@ -474,24 +474,24 @@ function hud.generateHTML()
 	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
 
 	if playerQuality == PROXY then
-		env.media 	= { 
-			text	= i18n("proxy"), 
+		env.media 	= {
+			text	= i18n("proxy"),
 			class	= "bad",
 		}
 	else
-		env.media	= { 
-			text	= i18n("originalOptimised"), 
+		env.media	= {
+			text	= i18n("originalOptimised"),
 			class	= "good",
 		}
 	end
-	
+
 	if playerQuality == ORIGINAL_QUALITY then
-		env.quality	= { 
+		env.quality	= {
 			text	= i18n("betterQuality"),
 			class	= "good",
 		}
 	else
-		env.quality	= { 
+		env.quality	= {
 			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
 			class	= "bad",
 		}
@@ -501,7 +501,7 @@ function hud.generateHTML()
 
 	if autoStartBGRender then
 		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
-		env.backgroundRender	= { 
+		env.backgroundRender	= {
 			text	= string.format("%s (%d %s)", i18n("enabled"), autoRenderDelay, i18n("secs", {count=autoRenderDelay})),
 			class	= "good",
 		}
@@ -511,7 +511,7 @@ function hud.generateHTML()
 			class	= "bad",
 		}
 	end
-	
+
 	return template.compileFile(metadata.scriptPath .. "/cp/plugins/hud/main.lua.html", env)
 end
 
@@ -614,22 +614,22 @@ plugin.dependencies = {
 
 function plugin.init(deps)
 	hud.init(deps.xmlSharing, deps.actionmanager)
-	
+
 	fcp:watch({
 		active		= hud.update,
 		inactive	= hud.update,
 	})
-	
+
 	fcp:fullScreenWindow():watch({
 		show		= hud.update,
 		hide		= hud.update,
 	})
-	
+
 	fcp:commandEditor():watch({
 		show		= hud.update,
 		hide		= hud.update,
 	})
-	
+
 	-- Menus
 	local hudMenu = deps.tools:addMenu(PRIORITY, function() return i18n("hud") end)
 	hudMenu:addItem(1000, function()
@@ -644,9 +644,9 @@ function plugin.init(deps)
 				{ title = i18n("showButtons"),		fn = hud.toggleButtonsShown, 		checked = hud.isButtonsShown()},
 			}
 		end)
-		
+
 	hudMenu:addMenu(4000, function() return i18n("assignHUDButtons") end)
-		:addItems(1000, function() 
+		:addItems(1000, function()
 			local items = {}
 			for i = 1, hud.maxButtons do
 				local title = hud.getButtonText(i)
@@ -655,12 +655,12 @@ function plugin.init(deps)
 			end
 			return items
 		end)
-		
+
 	-- Commands
-	deps.fcpxCmds:add("FCPXHackHUD")
+	deps.fcpxCmds:add("cpHUD")
 		:activatedBy():ctrl():option():cmd("a")
 		:whenActivated(hud.toggleEnabled)
-	
+
 	return hud
 end
 
