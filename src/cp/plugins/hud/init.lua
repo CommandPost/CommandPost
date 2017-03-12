@@ -1,11 +1,6 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                       F C P X    H A C K S    H U D                        --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
--- Module created by Chris Hocking (https://github.com/latenitefilms).
---
+--                                H U D                                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -53,26 +48,26 @@ local log										= require("hs.logger").new("hud")
 
 local PRIORITY									= 10000
 
-hud.name									= i18n("hacksHUD")
-hud.width									= 350
-hud.heightInspector						= 75
-hud.heightDropTargets						= 75
-hud.heightButtons							= 70
+hud.name										= i18n("hacksHUD")
+hud.width										= 350
+hud.heightInspector								= 75
+hud.heightDropTargets							= 75
+hud.heightButtons								= 70
 
-hud.fcpGreen 								= "#3f9253"
-hud.fcpRed 									= "#d1393e"
+hud.fcpGreen 									= "#3f9253"
+hud.fcpRed 										= "#d1393e"
 
-hud.maxButtons								= 4
-hud.maxTextLength 							= 25
+hud.maxButtons									= 4
+hud.maxTextLength 								= 25
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
 
-hud.ignoreWindowChange						= true
-hud.windowID								= nil
+hud.ignoreWindowChange							= true
+hud.windowID									= nil
 
-hud.hsBundleID								= hs.processInfo["bundleID"]
+hud.hsBundleID									= hs.processInfo["bundleID"]
 
 function hud.isEnabled()
 	return metadata.get("enableHacksHUD", false)
@@ -193,7 +188,7 @@ function hud.canShow()
 end
 
 --------------------------------------------------------------------------------
--- CREATE THE HACKS HUD:
+-- CREATE THE HUD:
 --------------------------------------------------------------------------------
 function hud.new()
 
@@ -295,7 +290,7 @@ function hud.new()
 end
 
 --------------------------------------------------------------------------------
--- SHOW THE HACKS HUD:
+-- SHOW THE HUD:
 --------------------------------------------------------------------------------
 function hud.show()
 	hud.ignoreWindowChange = true
@@ -326,7 +321,7 @@ function hud.show()
 end
 
 --------------------------------------------------------------------------------
--- IS HACKS HUD ACTIVE:
+-- IS HUD ACTIVE:
 --------------------------------------------------------------------------------
 function hud.active()
 	if hud.hudWebView == nil then
@@ -340,7 +335,7 @@ function hud.active()
 end
 
 --------------------------------------------------------------------------------
--- HIDE THE HACKS HUD:
+-- HIDE THE HUD:
 --------------------------------------------------------------------------------
 function hud.hide()
 	if hud.active() then
@@ -352,7 +347,7 @@ function hud.hide()
 end
 
 --------------------------------------------------------------------------------
--- DELETE THE HACKS HUD:
+-- DELETE THE HUD:
 --------------------------------------------------------------------------------
 function hud.delete()
 	if hud.active() then
@@ -363,7 +358,7 @@ function hud.delete()
 end
 
 --------------------------------------------------------------------------------
--- RELOAD THE HACKS HUD:
+-- RELOAD THE HUD:
 --------------------------------------------------------------------------------
 function hud.reload()
 
@@ -381,7 +376,7 @@ function hud.reload()
 end
 
 --------------------------------------------------------------------------------
--- REFRESH THE HACKS HUD:
+-- REFRESH THE HUD:
 --------------------------------------------------------------------------------
 function hud.refresh()
 	if hud.active() then
@@ -438,7 +433,7 @@ function hud.assignButton(button)
 end
 
 --------------------------------------------------------------------------------
--- HACKS CONSOLE CHOICES:
+-- HUD CHOICES:
 --------------------------------------------------------------------------------
 function hud.choices()
 	if hud.actionmanager then
