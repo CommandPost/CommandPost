@@ -82,12 +82,25 @@ function hud.toggleEnabled()
 	hud.setEnabled(not hud.isEnabled())
 end
 
+function hud.checkOptions()
+	return hud.isInspectorShown() or hud.isDropTargetsShown() or hud.isButtonsShown()
+end
+
+function hud.setOption(name, value)
+	metadata.set(name, value)
+	if hud.checkOptions() then
+		hud.reload()
+	else
+		metadata.set(name, not value)
+	end
+end
+
 function hud.isInspectorShown()
 	return metadata.get("hudShowInspector", true)
 end
 
 function hud.setInspectorShown(value)
-	metadata.set("hudShowInspector", value)
+	hud.setOption("hudShowInspector", value)
 end
 
 function hud.toggleInspectorShown()
@@ -99,7 +112,7 @@ function hud.isDropTargetsShown()
 end
 
 function hud.setDropTargetsShown(value)
-	return metadata.set("hudShowDropTargets", value)
+	hud.setOption("hudShowDropTargets", value)
 end
 
 function hud.toggleDropTargetsShown()
@@ -111,7 +124,7 @@ function hud.isButtonsShown()
 end
 
 function hud.setButtonsShown(value)
-	metadata.set("hudShowButtons", value)
+	hud.setOption("hudShowButtons", value)
 end
 
 function hud.toggleButtonsShown()
@@ -368,6 +381,8 @@ function hud.reload()
 	hud.ignoreWindowChange	= true
 	hud.windowID			= nil
 	hud.new()
+
+	hud.refresh()
 
 	if hudActive and fcp:isFrontmost() then
 		hud.show()
@@ -636,7 +651,7 @@ function plugin.init(deps)
 	hudMenu:addMenu(3000, function() return i18n("hudOptions") end)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("showInspector"),	fn = hud.toggleInspctorShown,		checked = hud.isInspectorShown()},
+				{ title = i18n("showInspector"),	fn = hud.toggleInspectorShown,		checked = hud.isInspectorShown()},
 				{ title = i18n("showDropTargets"),	fn = hud.toggleDropTargetsShown, 	checked = hud.isDropTargetsShown(),	disabled = not hud.xmlSharing.isEnabled()},
 				{ title = i18n("showButtons"),		fn = hud.toggleButtonsShown, 		checked = hud.isButtonsShown()},
 			}
