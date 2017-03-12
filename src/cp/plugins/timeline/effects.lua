@@ -32,7 +32,7 @@ function action.choices()
 		--------------------------------------------------------------------------------
 		-- Video Effects List:
 		--------------------------------------------------------------------------------
-		
+
 		local effects = mod.getVideoEffects()
 		if effects ~= nil and next(effects) ~= nil then
 			for i,name in ipairs(effects) do
@@ -43,7 +43,7 @@ function action.choices()
 					})
 			end
 		end
-		
+
 		local effects = mod.getAudioEffects()
 		if effects ~= nil and next(effects) ~= nil then
 			for i,name in ipairs(effects) do
@@ -54,7 +54,7 @@ function action.choices()
 					})
 			end
 		end
-		
+
 	end
 	return action._choices
 end
@@ -196,7 +196,7 @@ function mod.choices()
 		mod._choices = choices.new("effect")
 	end
 	return mod._choices
-	
+
 end
 
 --------------------------------------------------------------------------------
@@ -415,7 +415,7 @@ function mod.updateEffectsList()
 		--------------------------------------------------------------------------------
 		-- Update Chooser:
 		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
+		-- hacksconsole.refresh()
 	end
 
 end
@@ -439,7 +439,7 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- Add the event action
 	deps.actionmanager.addAction(action)
 

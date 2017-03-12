@@ -33,7 +33,7 @@ function action.choices()
 		--------------------------------------------------------------------------------
 		-- Titles List:
 		--------------------------------------------------------------------------------
-		
+
 		local list = mod.getTitles()
 		if list ~= nil and next(list) ~= nil then
 			for i,name in ipairs(list) do
@@ -335,7 +335,7 @@ function mod.updateTitlesList()
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.refresh()
+	--hacksconsole.refresh()
 end
 
 function mod.isTitlesListUpdated()
@@ -355,7 +355,7 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- Register the Action
 	deps.actionmanager.addAction(action)
 

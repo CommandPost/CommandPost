@@ -335,7 +335,7 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.refresh()
+	--hacksconsole.refresh()
 end
 
 function mod.isGeneratorsListUpdated()
