@@ -130,32 +130,15 @@ return {
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
 
 			--------------------------------------------------------------------------------
-			-- Update Effects List:
+			-- Scan Final Cut Pro:
 			--------------------------------------------------------------------------------
-			updateEffectsListWarning			=			"Depending on how many Effects you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
+			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
+			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
+
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
-			updateEffectsListDone				=			"Effects List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Transitions List:
-			--------------------------------------------------------------------------------
-			updateTransitionsListWarning		=			"Depending on how many Transitions you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateTransitionsListFailed			=			"Unfortunately the Transitions List was not successfully updated.",
-			updateTransitionsListDone			=			"Transitions List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Titles List:
-			--------------------------------------------------------------------------------
-			updateTitlesListWarning				=			"Depending on how many Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateTitlesListFailed				=			"Unfortunately the Titles List was not successfully updated.",
-			updateTitlesListDone				=			"Titles List updated successfully.",
-
-			--------------------------------------------------------------------------------
-			-- Update Generators List:
-			--------------------------------------------------------------------------------
-			updateGeneratorsListWarning			=			"Depending on how many Generators you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			updateGeneratorsListFailed			=			"Unfortunately the Generators List was not successfully updated.",
-			updateGeneratorsListDone			=			"Generators List updated successfully.",
 
 			--------------------------------------------------------------------------------
 			-- Assign Shortcut Errors:
@@ -393,7 +376,7 @@ return {
 				-- Tools Options:
 				--------------------------------------------------------------------------------
 				enableTouchBar					=			"Enable Virtual Touch Bar",
-				enableHacksHUD					=			"Enable Hacks HUD",
+				enableHUD						=			"Enable HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
 				enableXMLSharing				=			"Enable XML Sharing",
@@ -514,7 +497,10 @@ return {
 	-- HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
-	hacksHUD							=			"CommandPost HUD",
+	media								=			"Media",
+	quality								=			"Quality",
+	backgroundRender					=			"Background Render",
+	xmlSharing							=			"XML Sharing",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
 	betterPerformance					=			"Better Performance",
@@ -525,6 +511,9 @@ return {
 	hudXMLNameDialog					=			"How would you like to label this XML file?",
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
 	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
+	hudButtonItem						=			"Button %{count} (%{title})",
+
+	menuChoiceSubText					=			"Menu: %{path}",
 
 	--------------------------------------------------------------------------------
 	-- CONSOLE:
@@ -554,6 +543,31 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
+
+	--------------------------------------------------------------------------------
+	-- Command URL Execution:
+	--------------------------------------------------------------------------------
+
+	actionMismatchError					=			"Expected '%{expected}' action type but got '%{actual}.",
+	actionUndefinedError				=			"No action was specified to execute.",
+	cmdIdMissingError					=			"A command ID is required to execute.",
+	cmdDoesNotExistError				=			"No command with the ID of %{id} could be found.",
+	cmdGroupNotActivated				=			"Unable to activate the '%{id}' command group.",
+
+	--------------------------------------------------------------------------------
+	-- Command Groups:
+	--------------------------------------------------------------------------------
+
+	timeline_group						=			"Timeline",
+	browser_group						=			"Browser",
+	colorboard_group					=			"Colour Board",
+	mediaImport_group					=			"Media Import",
+	hacks_group							=			"Advanced Features",
+	videoEffect_group					=			"Video Effect",
+	audioEffect_group					=			"Audio Effect",
+	title_group							= 			"Title",
+	transition_group					=			"Transition",
+	generator_group						=			"Generator",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
@@ -632,6 +646,26 @@ return {
 		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
 		cpShowListOfShortcutKeys_title							=	"Show Keyboard Shortcuts",
 		cpOpenCommandEditor_title								=	"Open Command Editor",
+
+		cpCreateOptimizedMediaOn_title							=	"Enable Create Optimized Media",
+		cpCreateOptimizedMediaOff_title							=	"Disable Create Optimized Media",
+
+		cpCreateMulticamOptimizedMediaOn_title					=	"Enable Multicam Optimized Media",
+		cpCreateMulticamOptimizedMediaOff_title					=	"Disable Multicam Optimized Media",
+
+		cpCreateProxyMediaOn_title								=	"Enable Create Proxy Media",
+		cpCreateProxyMediaOff_title								=	"Disable Create Proxy Media",
+
+		cpLeaveInPlaceOn_title									=	"Enable Leave In Place on Import",
+		cpLeaveInPlaceOff_title									=	"Disable Leave In Place on Import",
+
+		cpBackgroundRenderOn_title								=	"Enable Background Render",
+		cpBackgroundRenderOff_title								=	"Disable Background Render",
+
+		cpChangeBackupInterval_title							=	"Change Backup Interval...",
+		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
+		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
+		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:

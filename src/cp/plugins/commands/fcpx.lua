@@ -3,11 +3,17 @@
 
 local commands					= require("cp.commands")
 local fcp						= require("cp.finalcutpro")
+local log						= require("hs.logger").new("fcpxCmds")
 
 local plugin = {}
 
 function plugin.init()
 	local cmds = commands:new("fcpx")
+	
+	-- switch to fcp to activate
+	cmds:watch({
+		activate	= function() log.df("activated"); fcp:launch() end,
+	})
 
 	-- enable/disable as fcpx becomes active/inactive
 	fcp:watch({

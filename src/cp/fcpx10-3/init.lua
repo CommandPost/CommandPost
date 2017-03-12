@@ -55,7 +55,6 @@ local tools										= require("cp.tools")
 --------------------------------------------------------------------------------
 
 local hacksconsole								= require("cp.fcpx10-3.hacksconsole")
-local hackshud									= require("cp.fcpx10-3.hackshud")
 local shortcut									= require("cp.commands.shortcut")
 
 --------------------------------------------------------------------------------
@@ -72,9 +71,6 @@ local defaultSettings = {
 												["chooserShowTitles"] 							= true,
 												["chooserShowGenerators"] 						= true,
 												["chooserShowMenuItems"]						= true,
-												["hudShowInspector"]							= true,
-												["hudShowDropTargets"]							= true,
-												["hudShowButtons"]								= true,
 }
 
 --------------------------------------------------------------------------------
@@ -122,7 +118,6 @@ function menuManager()
 
 		--- TODO: Remove this once all menu manaement is migrated to plugins.
 		local manualSection = mod._menuManager.addSection(10000)
-		manualSection:addItems(0, function() return generateMenuBar(true) end)
 
 	end
 	return mod._menuManager
@@ -181,13 +176,6 @@ function loadScript()
 	bindKeyboardShortcuts()
 
 	--------------------------------------------------------------------------------
-	-- Load Hacks HUD:
-	--------------------------------------------------------------------------------
-	if metadata.get("enableHacksHUD") then
-		hackshud.new()
-	end
-
-	--------------------------------------------------------------------------------
 	-- Activate the correct modal state:
 	--------------------------------------------------------------------------------
 	if fcp:isFrontmost() then
@@ -200,14 +188,6 @@ function loadScript()
 		-- Enable Final Cut Pro Shortcut Keys:
 		--------------------------------------------------------------------------------
 		hotkeys:enter()
-
-		--------------------------------------------------------------------------------
-		-- Show Hacks HUD:
-		--------------------------------------------------------------------------------
-		if metadata.get("enableHacksHUD") then
-			hackshud.show()
-		end
-
 	else
 		--------------------------------------------------------------------------------
 		-- Used by Watchers to prevent double-ups:
@@ -260,7 +240,6 @@ function defaultShortcutKeys()
 
     local defaultShortcutKeys = {
         cpConsole                                             = { characterString = shortcut.textToKeyCode("space"),        modifiers = control,                                fn = function() hacksconsole.show() end,							releasedFn = nil,                                     					repeatFn = nil },
-        cpHUD                                                 = { characterString = shortcut.textToKeyCode("a"),            modifiers = controlOptionCommand,                   fn = function() toggleEnableHacksHUD() end,                         releasedFn = nil,                                                       repeatFn = nil },
     }
 	return defaultShortcutKeys
 end
@@ -421,129 +400,6 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                     M E N U B A R    F E A T U R E S                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- MENUBAR:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TEMPORARY - GENERATE MENU BAR:
-	--------------------------------------------------------------------------------
-	function generateMenuBar(refreshPlistValues)
-
-		--------------------------------------------------------------------------------
-		-- Maximum Length of Menubar Strings:
-		--------------------------------------------------------------------------------
-		local maxTextLength = 25
-
-		--------------------------------------------------------------------------------
-		-- Assume FCPX is closed if not told otherwise:
-		--------------------------------------------------------------------------------
-		local fcpxActive = fcp:isFrontmost()
-		local fcpxRunning = fcp:isRunning()
-
-		--------------------------------------------------------------------------------
-		-- Current Language:
-		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
-
-		--------------------------------------------------------------------------------
-		-- Enable Hacks HUD:
-		--------------------------------------------------------------------------------
-		local enableHacksHUD 		= metadata.get("enableHacksHUD", false)
-
-		local hudButtonOne 			= metadata.get(currentLanguage .. ".hudButtonOne") 	or " (Unassigned)"
-		local hudButtonTwo 			= metadata.get(currentLanguage .. ".hudButtonTwo") 	or " (Unassigned)"
-		local hudButtonThree 		= metadata.get(currentLanguage .. ".hudButtonThree") 	or " (Unassigned)"
-		local hudButtonFour 		= metadata.get(currentLanguage .. ".hudButtonFour") 	or " (Unassigned)"
-
-		if hudButtonOne ~= " (Unassigned)" then		hudButtonOne = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonOne["text"]),maxTextLength,"...") 	.. ")" end
-		if hudButtonTwo ~= " (Unassigned)" then 	hudButtonTwo = " (" .. 		tools.stringMaxLength(tools.cleanupButtonText(hudButtonTwo["text"]),maxTextLength,"...") 	.. ")" end
-		if hudButtonThree ~= " (Unassigned)" then 	hudButtonThree = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonThree["text"]),maxTextLength,"...") 	.. ")" end
-		if hudButtonFour ~= " (Unassigned)" then 	hudButtonFour = " (" .. 	tools.stringMaxLength(tools.cleanupButtonText(hudButtonFour["text"]),maxTextLength,"...") 	.. ")" end
-
-		--------------------------------------------------------------------------------
-		-- HUD Preferences:
-		--------------------------------------------------------------------------------
-		local hudShowInspector 		= metadata.get("hudShowInspector")
-		local hudShowDropTargets 	= metadata.get("hudShowDropTargets")
-		local hudShowButtons 		= metadata.get("hudShowButtons")
-
-		local settingsHUDButtons = {
-			{ title = i18n("button") .. " " .. i18n("one") .. hudButtonOne, 							fn = function() hackshud.assignButton(1) end },
-			{ title = i18n("button") .. " " .. i18n("two") .. hudButtonTwo, 							fn = function() hackshud.assignButton(2) end },
-			{ title = i18n("button") .. " " .. i18n("three") .. hudButtonThree, 						fn = function() hackshud.assignButton(3) end },
-			{ title = i18n("button") .. " " .. i18n("four") .. hudButtonFour, 							fn = function() hackshud.assignButton(4) end },
-		}
-
-		-- The main menu
-		local menuTable = {}
-
-		local settingsHUD = {
-			{ title = i18n("showInspector"), 															fn = function() toggleHUDOption("hudShowInspector") end, 			checked = hudShowInspector},
-			{ title = i18n("showDropTargets"), 															fn = function() toggleHUDOption("hudShowDropTargets") end, 			checked = hudShowDropTargets},
-			{ title = i18n("showButtons"), 																fn = function() toggleHUDOption("hudShowButtons") end, 				checked = hudShowButtons},
-		}
-		local hudMenu = {
-			{ title = i18n("enableHacksHUD"), 															fn = toggleEnableHacksHUD, 											checked = enableHacksHUD},
-			{ title = "-" },
-			{ title = i18n("hudOptions"), 																menu = settingsHUD},
-			{ title = i18n("assignHUDButtons"), 														menu = settingsHUDButtons },
-		}
-		local toolsTable = {
-			{ title = i18n("hud"),																		menu = hudMenu },
-		}
-
-		--------------------------------------------------------------------------------
-		-- Setup Menubar:
-		--------------------------------------------------------------------------------
-		local menubarToolsEnabled = 		metadata.get("menubarToolsEnabled")
-		if menubarToolsEnabled then 		menuTable = fnutils.concat(menuTable, toolsTable)		end
-
-		return menuTable
-	end
-
---------------------------------------------------------------------------------
--- TOGGLE:
---------------------------------------------------------------------------------
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE HACKS HUD:
-	--------------------------------------------------------------------------------
-	function toggleEnableHacksHUD()
-		local enableHacksHUD = metadata.get("enableHacksHUD")
-		metadata.set("enableHacksHUD", not enableHacksHUD)
-
-		if enableHacksHUD then
-			hackshud.hide()
-		else
-			if fcp:isFrontmost() then
-				hackshud.show()
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE HUD OPTION:
-	--------------------------------------------------------------------------------
-	function toggleHUDOption(value)
-		local result = metadata.get(value)
-		metadata.get(value, not result)
-		hackshud.reload()
-	end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --                             W A T C H E R S                                --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -566,60 +422,6 @@ end
 --------------------------------------------------------------------------------
 function finalCutProWindowWatcher()
 
-	wasInFullscreenMode = false
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Fullscreen Playback Filter:
-	--------------------------------------------------------------------------------
-	fullscreenPlaybackWatcher = windowfilter.new(true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Fullscreen Playback Window Created:
-	--------------------------------------------------------------------------------
-	fullscreenPlaybackWatcher:subscribe(windowfilter.windowCreated,(function(window, applicationName)
-		if applicationName == "Final Cut Pro" then
-			if window:title() == "" then
-				local fcpx = fcp:application()
-				if fcpx ~= nil then
-					local fcpxElements = ax.applicationElement(fcpx)
-					if fcpxElements ~= nil then
-						if fcpxElements[1] ~= nil then
-							if fcpxElements[1][1] ~= nil then
-								if fcpxElements[1][1]:attributeValue("AXIdentifier") == "_NS:523" then
-									-------------------------------------------------------------------------------
-									-- Hide HUD:
-									--------------------------------------------------------------------------------
-									if metadata.get("enableHacksHUD") then
-											hackshud:hide()
-											wasInFullscreenMode = true
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end), true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Fullscreen Playback Window Destroyed:
-	--------------------------------------------------------------------------------
-	fullscreenPlaybackWatcher:subscribe(windowfilter.windowDestroyed,(function(window, applicationName)
-		if applicationName == "Final Cut Pro" then
-			if window:title() == "" then
-				-------------------------------------------------------------------------------
-				-- Show HUD:
-				--------------------------------------------------------------------------------
-				if wasInFullscreenMode then
-					if metadata.get("enableHacksHUD") then
-							hackshud:show()
-					end
-				end
-			end
-		end
-	end), true)
-
 	-- Watch the command editor showing and hiding.
 	fcp:commandEditor():watch({
 		show = function(commandEditor)
@@ -630,11 +432,6 @@ function finalCutProWindowWatcher()
 				log.df("Disabling Hotkeys")
 				hotkeys:exit()
 			end
-
-			--------------------------------------------------------------------------------
-			-- Hide the HUD:
-			--------------------------------------------------------------------------------
-			hackshud.hide()
 		end,
 		hide = function(commandEditor)
 			--------------------------------------------------------------------------------
@@ -642,13 +439,6 @@ function finalCutProWindowWatcher()
 			--------------------------------------------------------------------------------
 			timer.doAfter(0.0000000000001, function() bindKeyboardShortcuts() end)
 			--------------------------------------------------------------------------------
-
-			--------------------------------------------------------------------------------
-			-- Show the HUD:
-			--------------------------------------------------------------------------------
-			if metadata.get("enableHacksHUD") then
-				hackshud.show()
-			end
 		end
 	})
 end
@@ -684,15 +474,6 @@ end
 		end)
 
 		--------------------------------------------------------------------------------
-		-- Enable Hacks HUD:
-		--------------------------------------------------------------------------------
-		timer.doAfter(0.0000000000001, function()
-			if metadata.get("enableHacksHUD") then
-				hackshud:show()
-			end
-		end)
-
-		--------------------------------------------------------------------------------
 		-- Update Current Language:
 		--------------------------------------------------------------------------------
 		timer.doAfter(0.0000000000001, function()
@@ -725,15 +506,6 @@ end
 		-- Delete the Mouse Circle:
 		--------------------------------------------------------------------------------
 		plugins("cp.plugins.browser.playhead").deleteHighlight()
-
-		-------------------------------------------------------------------------------
-		-- If not focussed on Hammerspoon then hide HUD:
-		--------------------------------------------------------------------------------
-		if metadata.get("enableHacksHUD") then
-			if application.frontmostApplication():bundleID() ~= "org.hammerspoon.Hammerspoon" then
-				hackshud:hide()
-			end
-		end
 	end
 
 --------------------------------------------------------------------------------
@@ -761,14 +533,6 @@ function finalCutProSettingsWatcher(files)
     	-- Update Menubar Icon:
     	--------------------------------------------------------------------------------
     	timer.doAfter(0.0000000000001, function() menuManager():updateMenubarIcon() end)
-
- 		--------------------------------------------------------------------------------
-		-- Reload Hacks HUD:
-		--------------------------------------------------------------------------------
-		if metadata.get("enableHacksHUD") then
-			timer.doAfter(0.0000000000001, function() hackshud:refresh() end)
-		end
-
     end
 end
 

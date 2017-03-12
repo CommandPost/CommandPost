@@ -5,6 +5,7 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local inspect			= require("hs.inspect")
 
+local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local metadata			= require("cp.metadata")
@@ -18,9 +19,46 @@ local PRIORITY = 3000
 
 local MAX_SHORTCUTS = 5
 
--- The Module
-
+-- Effects Action
+local action = {}
 local mod = {}
+
+function action.id()
+	return "title"
+end
+
+function action.choices()
+	if not action._choices then
+		action._choices = choices.new(action.id())
+		--------------------------------------------------------------------------------
+		-- Titles List:
+		--------------------------------------------------------------------------------
+		
+		local list = mod.getTitles()
+		if list ~= nil and next(list) ~= nil then
+			for i,name in ipairs(list) do
+				action._choices:add(name)
+					:subText(i18n("title_group"))
+					:params({
+						name = name,
+					})
+			end
+		end
+	end
+	return action._choices
+end
+
+function action.execute(params)
+	if params and params.name then
+		mod.apply(params.name)
+	end
+end
+
+function action.reset()
+	action._choices = nil
+end
+
+-- The Module
 
 function mod.getShortcuts()
 	return metadata.get(fcp:getCurrentLanguage() .. ".titlesShortcuts", {})
@@ -240,11 +278,6 @@ function mod.updateTitlesList()
 	--------------------------------------------------------------------------------
 	fcp:launch()
 
-	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTitlesListWarning"))
-
 	local generators = fcp:generators()
 
 	local browserLayout = fcp:browser():saveLayout()
@@ -295,18 +328,14 @@ function mod.updateTitlesList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.get(currentLanguage .. ".allTitles", allTitles)
-	metadata.get(currentLanguage .. ".titlesListUpdated", true)
+	metadata.set(currentLanguage .. ".allTitles", allTitles)
+	metadata.set(currentLanguage .. ".titlesListUpdated", true)
+	action.reset()
 
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
 	hacksconsole.refresh()
-
-	--------------------------------------------------------------------------------
-	-- Let the user know everything's good:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateTitlesListDone"))
 end
 
 function mod.isTitlesListUpdated()
@@ -318,24 +347,22 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.timeline.assignshortcuts"]	= "automation",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.os.touchbar"]		= "touchbar",
+	["cp.plugins.commands.fcpx"]					= "fcpxCmds",
+	["cp.plugins.os.touchbar"]						= "touchbar",
+	["cp.plugins.actions.actionmanager"]			= "actionmanager",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
+	
+	-- Register the Action
+	deps.actionmanager.addAction(action)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTitlesShortcuts") end)
 
-	-- The 'Update' menu
-	menu:addItem(1000, function()
-		return { title = i18n("updateTitlesList"),	fn = mod.updateTitlesList, disabled = not fcpxRunning }
-	end)
-	menu:addSeparator(2000)
-
-	menu:addItems(3000, function()
+	menu:addItems(1000, function()
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------

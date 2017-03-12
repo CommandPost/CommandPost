@@ -249,9 +249,11 @@ function plugin.init(deps)
 
 	-- commands
 	deps.fcpxCmds:add("cpScrollingTimeline")
+		:groupedBy("timeline")
 		:activatedBy():ctrl():option():cmd("w")
 		:whenActivated(mod.toggleScrollingTimeline)
 	deps.fcpxCmds:add("cpLockPlayhead")
+		:groupedBy("timeline")
 		:whenActivated(mod.togglePlayheadLock)
 
 	-- watch for changes

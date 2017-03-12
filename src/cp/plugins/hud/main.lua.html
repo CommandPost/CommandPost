@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Style Sheets: -->
+		<style>
+		.button \{
+			text-align: center;
+			display:block;
+			width: 136px;
+			font-family: -apple-system;
+			font-size: 10px;
+			text-decoration: none;
+			background-color: #333333;
+			color: #bfbebb;
+			padding: 2px 6px 2px 6px;
+			border-top: 1px solid #161616;
+			border-right: 1px solid #161616;
+			border-bottom: 0.5px solid #161616;
+			border-left: 1px solid #161616;
+			margin-left: auto;
+		    margin-right: auto;
+		}
+		body \{
+			background-color:#1f1f1f;
+			color: #bfbebb;
+			font-family: -apple-system;
+			font-size: 11px;
+			font-weight: lighter;
+		}
+		table \{
+			width:100%;
+			text-align:left;
+		}
+		th \{
+			width:50%;
+		}
+		h1 \{
+			font-size: 12px;
+			font-weight: bold;
+			text-align: center;
+			margin: 0px;
+			padding: 0px;
+		}
+		hr \{
+			height:1px;
+			border-width:0;
+			color:gray;
+			background-color:#797979;
+		    display: block;
+			margin-top: 10px;
+			margin-bottom: 10px;
+			margin-left: auto;
+			margin-right: auto;
+			border-style: inset;
+		}
+		input[type=text] \{
+			width: 100%;
+			padding: 5px 5px;
+			margin: 8px 0;
+			box-sizing: border-box;
+			border: 4px solid #22426f;
+			border-radius: 4px;
+			background-color: black;
+			color: white;
+			text-align:center;
+		}
+		.good \{
+			color: #3f9253;
+		}
+		.bad \{
+			color: #d1393e;
+		}
+		</style>
+
+		<!-- Javascript: -->
+		<script>
+
+			// Disable Right Clicking:
+			document.addEventListener("contextmenu", function(e)\{
+			    e.preventDefault();
+			}, false);
+
+			// Something has been dropped onto our Dropbox:
+			function dropboxAction() \{
+				var x = document.getElementById("dropbox");
+				var dropboxValue = x.value;
+
+				try \{
+					webkit.messageHandlers.hud.postMessage(dropboxValue);
+				} catch(err) \{
+					console.log('The controller does not exist yet');
+				}
+
+				x.value = "{{string.upper(i18n("hudDropZoneText"))}}";
+			}
+
+		</script>
+	</head>
+
+	<body>
+	{% if hud.isInspectorShown() then }}
+		<!-- HUD Inspector: -->
+		<table>
+			<tr>
+				<th>{{ i18n("media") }}:</th>
+				<th><span class="{{media.class}}" style="color: {{media.color}};">{{media.text}}</span><th>
+			</tr>
+			<tr>
+				<th>{{ i18n("quality") }}:</th>
+				<th><span class="{{quality.class}}" style="color: {{quality.color}};">{{quality.text}}</span><th>
+			</tr>
+
+			<tr>
+				<th>{{ i18n("backgroundRender") }}:</th>
+				<th><span class="{{backgroundRender.class}}" style="color: {{backgroundRender.color}};">{{backgroundRender.text}}</span></th>
+			</tr>
+		</table>
+		{% if hud.isDropTargetsShown() or hud.isButtonsShown() then }}
+		<hr />
+		{% end }}
+	{% end }}
+
+
+	{% if hud.isDropTargetsShown() then }}
+		<!-- HUD Drop Targets: -->
+		<table>
+			<tr>
+				<th style="width: 30%;">{{ i18n("xmlSharing") }}:</th>
+				<th style="width: 70%;"><form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="{{ string.upper(i18n("hudDropZoneText")) }}"></form></th>
+			<tr>
+		</table>
+
+		{% if hud.isButtonsShown() then }}
+		<hr />
+		{% end }}
+	{% end }}
+
+	{% if hud.isButtonsShown() then }}
+		<!-- HUD Buttons: -->
+		<table>
+			<tr>
+				<th><a href="{{ hud.getButtonURL(1) }}" class="button">{{ hud.getButtonText(1) }}</a></th> 				<th><a href="{{ hud.getButtonURL(2) }}" class="button">{{ hud.getButtonText(2) }}</a></th>
+			<tr>
+			<tr style="padding:80px;"><th></th></tr>
+			<tr>
+				<th><a href="{{ hud.getButtonURL(3) }}" class="button">{{ hud.getButtonText(3) }}</a></th> 				<th><a href="{{ hud.getButtonURL(4) }}" class="button">{{ hud.getButtonText(4) }}</a></th>
+			</tr>
+		</table>
+	{% end }}
+	</body>
+</html>

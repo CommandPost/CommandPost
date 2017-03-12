@@ -172,24 +172,32 @@ function plugin.init(deps)
 	-- Commands
 	local fcpxCmds = deps.fcpxCmds
 	fcpxCmds:add("cpCreateOptimizedMediaOn")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateOptimizedMedia(true) end)
 	fcpxCmds:add("cpCreateOptimizedMediaOff")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateOptimizedMedia(false) end)
 
 	fcpxCmds:add("cpCreateMulticamOptimizedMediaOn")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(true) end)
 	fcpxCmds:add("cpCreateMulticamOptimizedMediaOff")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateMulticamOptimizedMedia(false) end)
 
 	fcpxCmds:add("cpCreateProxyMediaOn")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateProxyMedia(true) end)
 	fcpxCmds:add("cpCreateProxyMediaOff")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleCreateProxyMedia(false) end)
 
 
 	fcpxCmds:add("cpLeaveInPlaceOn")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleLeaveInPlace(true) end)
 	fcpxCmds:add("cpLeaveInPlaceOff")
+		:groupedBy("mediaImport")
 		:whenActivated(function() mod.toggleLeaveInPlace(false) end)
 
 	return mod
