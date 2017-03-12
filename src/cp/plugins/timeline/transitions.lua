@@ -32,7 +32,7 @@ function action.choices()
 		--------------------------------------------------------------------------------
 		-- Transition List:
 		--------------------------------------------------------------------------------
-		
+
 		local list = mod.getTransitions()
 		if list ~= nil and next(list) ~= nil then
 			for i,name in ipairs(list) do
@@ -343,7 +343,7 @@ function mod.updateTransitionsList()
 	--------------------------------------------------------------------------------
 	-- Update Chooser:
 	--------------------------------------------------------------------------------
-	hacksconsole.refresh()
+	-- hacksconsole.refresh()
 end
 
 function mod.isTransitionsListUpdated()
@@ -365,7 +365,7 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- Register the Action
 	deps.actionmanager.addAction(action)
 
