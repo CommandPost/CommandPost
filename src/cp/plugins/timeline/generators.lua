@@ -33,7 +33,7 @@ function action.choices()
 		--------------------------------------------------------------------------------
 		-- Generator List:
 		--------------------------------------------------------------------------------
-		
+
 		local items = mod.getGenerators()
 		if items ~= nil and next(items) ~= nil then
 			for i,name in ipairs(items) do
@@ -154,7 +154,7 @@ function mod.apply(shortcut)
 		local index = string.find(shortcut, "-")
 		if index ~= nil then
 			local trimmedShortcut = string.sub(shortcut, index + 2)
-			effects:search():setValue(trimmedShortcut)
+			generators:search():setValue(trimmedShortcut)
 
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
@@ -365,7 +365,7 @@ plugin.dependencies = {
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
-	
+
 	-- Add the action
 	deps.actionmanager.addAction(action)
 
