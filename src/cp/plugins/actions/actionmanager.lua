@@ -3,6 +3,7 @@ local urlevent					= require("hs.urlevent")
 local fnutils					= require("hs.fnutils")
 local log						= require("hs.logger").new("actnmngr")
 local metadata					= require("cp.metadata")
+local timer						= require("hs.timer")
 
 -- The Module
 local mod = {
@@ -111,7 +112,6 @@ function mod.getOptions(actionId, params)
 	end
 end
 
-
 function mod.getFavorites()
 	if not mod._favorites then
 		mod._favorites = metadata.get("actionFavorites", {})
@@ -122,6 +122,8 @@ end
 function mod.setFavorites(value)
 	mod._favorites = value
 	metadata.set("actionFavorites", value)
+	-- Sort it in a timer.
+	timer.doAfter(1.0, mod.sortChoices)
 end
 
 function mod.isFavorite(id)
@@ -171,6 +173,8 @@ function mod.incPopularity(id)
 		local pop = index[id] or 0
 		index[id] = pop + 1
 		mod.setPopularityIndex(index)
+		-- Sort it in a timer.
+		timer.doAfter(1.0, mod.sortChoices)
 	end
 end
 
@@ -178,7 +182,9 @@ function mod.execute(actionId, params)
 	local action = mod.getAction(actionId)
 	if action then
 		if action.execute(params) then
-			mod.incPopularity(action.getId(params))
+			if action.getId then
+				mod.incPopularity(action.getId(params))
+			end
 			return true
 		else
 			log.wf("Unable to handle action %s with params: %s", hs.inspect(actionId), hs.inspect(params))
@@ -193,50 +199,60 @@ function mod.executeChoice(choice)
 	return mod.execute(choice.type, choice.params)
 end
 
-function mod.choices()
-	local result = {}
-	for type,action in pairs(mod._actions) do
-		local c = mod._cache[type]
-		if c == nil then
-			c = action:choices()
-			if c:isStatic() then
-				mod._cache[type] = c
-			end
-		end
-		fnutils.concat(result, c:getChoices())
+local function compareChoice(a, b)
+	-- Favorites get first priority
+	local afav = mod.isFavorite(a.id)
+	local bfav = mod.isFavorite(b.id)
+	if afav and not bfav then
+		return true
+	elseif bfav and not afav then
+		return false
 	end
-	table.sort(result, function(a, b)
-		-- Favorites get first priority
-		local afav = mod.isFavorite(a.id)
-		local bfav = mod.isFavorite(b.id)
-		if afav and not bfav then
-			return true
-		elseif bfav and not afav then
-			return false
-		end
 
-		-- Then popularity, if specified
-		local apop = mod.getPopularity(a.id)
-		local bpop = mod.getPopularity(b.id)
-		if apop > bpop then
-			return true
-		elseif bpop > apop then
-			return false
-		end
+	-- Then popularity, if specified
+	local apop = mod.getPopularity(a.id)
+	local bpop = mod.getPopularity(b.id)
+	if apop > bpop then
+		return true
+	elseif bpop > apop then
+		return false
+	end
 
-		-- Then text by alphabetical order
-		if a.text < b.text then
-			return true
-		elseif b.text < a.text then
-			return false
-		end
+	-- Then text by alphabetical order
+	if a.text < b.text then
+		return true
+	elseif b.text < a.text then
+		return false
+	end
 
-		-- Then subText by alphabetical order
-		local asub = a.subText or ""
-		local bsub = b.subText or ""
-		return asub < bsub
-	end)
-	return result
+	-- Then subText by alphabetical order
+	local asub = a.subText or ""
+	local bsub = b.subText or ""
+	return asub < bsub
+end
+
+function mod.sortChoices()
+	table.sort(mod._choices, compareChoice)
+end
+
+function mod.addChoices(choices)
+	local result = mod._choices or {}
+	fnutils.concat(result, choices:getChoices())
+	mod._choices = result
+	mod.sortChoices()
+end
+
+function mod.choices()
+	if not mod._choices then
+		local result = {}
+		for type,action in pairs(mod._actions) do
+			local c = action:choices()
+			fnutils.concat(result, c:getChoices())
+		end
+		mod._choices = result
+		mod.sortChoices()
+	end
+	return mod._choices
 end
 
 -- The Plugin

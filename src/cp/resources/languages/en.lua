@@ -521,6 +521,9 @@ return {
 	console								=			"Console",
 	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
+	consoleChoiceUnfavorite				=			"Unfavourite",
+	consoleChoiceFavorite				=			"Favourite",
+	
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",

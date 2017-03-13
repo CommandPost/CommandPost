@@ -5,6 +5,7 @@ local menubar			= require("hs.menubar")
 local mouse				= require("hs.mouse")
 local screen			= require("hs.screen")
 local timer				= require("hs.timer")
+local application		= require("hs.application")
 
 local ax 				= require("hs._asm.axuielement")
 
@@ -57,7 +58,7 @@ function mod.toggleLastQueryRemembered()
 end
 
 function mod.getLastQueryValue()
-	return metadata.get("consoleLastQueryValue", nil)
+	return metadata.get("consoleLastQueryValue", "")
 end
 
 function mod.setLastQueryValue(value)
@@ -78,7 +79,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	mod.hacksChooser = chooser.new(mod.completionAction):bgDark(true)
 											           	:rightClickCallback(mod.rightClickAction)
-											        	:choices(mod.actionmanager.choices)
+											        	:choices(mod.choices)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -98,6 +99,10 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	if fcp:isRunning() then timer.doAfter(3, mod.refresh) end
 
+end
+
+function mod.choices()
+	return mod.actionmanager.choices()
 end
 
 --------------------------------------------------------------------------------
@@ -121,6 +126,8 @@ function mod.show()
 	if not mod.isEnabled() then
 		return false
 	end
+	
+	mod._frontApp = application.frontmostApplication()
 
 	--------------------------------------------------------------------------------
 	-- Reload Console if Reduce Transparency
@@ -136,11 +143,11 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Remember last query?
 	--------------------------------------------------------------------------------
-	local chooserRememberLast = metadata.get("chooserRememberLast")
+	local chooserRememberLast = mod.isLastQueryRemembered()
 	if not chooserRememberLast then
 		mod.hacksChooser:query("")
 	else
-		mod.hacksChooser:query(metadata.get("chooserRememberLastValue", ""))
+		mod.hacksChooser:query(mod.getLastQueryValue())
 	end
 
 	--------------------------------------------------------------------------------
@@ -175,12 +182,12 @@ function mod.hide()
 	--------------------------------------------------------------------------------
 	-- Save Last Query to Settings:
 	--------------------------------------------------------------------------------
-	metadata.set("chooserRememberLastValue", mod.hacksChooser:query())
+	mod.setLastQueryValue(mod.hacksChooser:query())
 
-	--------------------------------------------------------------------------------
-	-- Put focus back on Final Cut Pro:
-	--------------------------------------------------------------------------------
-	fcp:launch()
+	if mod._frontApp then
+		log.df(string.format("Activating %s", mod._frontApp:title()))
+		mod._frontApp:activate()
+	end
 
 end
 
@@ -246,167 +253,41 @@ end
 --------------------------------------------------------------------------------
 -- CHOOSER RIGHT CLICK:
 --------------------------------------------------------------------------------
-function mod.rightClickAction()
+function mod.rightClickAction(index)
 
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage 				= fcp:getCurrentLanguage()
-	local chooserRememberLast 			= mod.isLastQueryRemembered()
-	local chooserRemoved 				= metadata.get(currentLanguage .. ".chooserRemoved", {})
-	local chooserFavourited				= metadata.get(currentLanguage .. ".chooserFavourited", {})
-
-	--------------------------------------------------------------------------------
-	-- Display Options:
-	--------------------------------------------------------------------------------
-	local chooserShowAutomation 		= metadata.get("chooserShowAutomation")
-	local chooserShowShortcuts 			= metadata.get("chooserShowShortcuts")
-	local chooserShowHacks 				= metadata.get("chooserShowHacks")
-	local chooserShowVideoEffects 		= metadata.get("chooserShowVideoEffects")
-	local chooserShowAudioEffects 		= metadata.get("chooserShowAudioEffects")
-	local chooserShowTransitions 		= metadata.get("chooserShowTransitions")
-	local chooserShowTitles				= metadata.get("chooserShowTitles")
-	local chooserShowGenerators 		= metadata.get("chooserShowGenerators")
-	local chooserShowMenuItems 			= metadata.get("chooserShowMenuItems")
-
-	local selectedRowContents 			= mod.hacksChooser:selectedRowContents()
-
-	--------------------------------------------------------------------------------
-	-- 'Show All' Display Option:
-	--------------------------------------------------------------------------------
-	local chooserShowAll = false
-	if chooserShowAutomation and chooserShowShortcuts and chooserShowHacks and chooserShowVideoEffects and chooserShowAudioEffects and chooserShowTransitions and chooserShowTitles and chooserShowGenerators then
-		chooserShowAll = true
-	end
+	local choice = mod.hacksChooser:selectedRowContents(index)
 
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
 	mod.rightClickMenubar = menubar.new(false)
 
-	local selectedItemMenu = {}
-	local rightClickMenu = {}
+	local choiceMenu = {}
 
-	if next(mod.hacksChooser:selectedRowContents()) ~= nil and mod.mode == "normal" then
-
-		local isFavourite = false
-		if next(chooserFavourited) ~= nil then
-			for i=1, #chooserFavourited do
-				if selectedRowContents["text"] == chooserFavourited[i]["text"] and selectedRowContents["subText"] == chooserFavourited[i]["subText"] then
-					isFavourite = true
-				end
-			end
+	if choice then
+		local isFavorite = mod.actionmanager.isFavorite(choice.id)
+		
+		choiceMenu[#choiceMenu + 1] = { title = string.upper(i18n("highlightedItem")) .. ":", disabled = true }
+		if isFavorite then
+			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceUnfavorite"), fn = function()
+				mod.actionmanager.unfavorite(choice.id)
+				mod.refresh()
+				mod.hacksChooser:show()
+			end }
+		else
+			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceFavorite"), fn = function()
+				mod.actionmanager.favorite(choice.id)
+				mod.refresh()
+				mod.hacksChooser:show()
+			end }
 		end
-
-		local favouriteTitle = "Unfavourite"
-		if not isFavourite then favouriteTitle = "Favourite" end
-
-		selectedItemMenu = {
-			{ title = string.upper(i18n("highlightedItem")) .. ":", disabled = true },
-			{ title = favouriteTitle, fn = function()
-
-				if isFavourite then
-					--------------------------------------------------------------------------------
-					-- Remove from favourites:
-					--------------------------------------------------------------------------------
-					for x=#chooserFavourited,1,-1 do
-						if chooserFavourited[x]["text"] == selectedRowContents["text"] and chooserFavourited[x]["subText"] == selectedRowContents["subText"] then
-							table.remove(chooserFavourited, x)
-						end
-					end
-					metadata.get(currentLanguage .. ".chooserFavourited", chooserRemoved)
-				else
-					--------------------------------------------------------------------------------
-					-- Add to favourites:
-					--------------------------------------------------------------------------------
-					chooserFavourited[#chooserFavourited + 1] = selectedRowContents
-					metadata.get(currentLanguage .. ".chooserFavourited", chooserFavourited)
-				end
-
-				mod.refresh()
-				mod.hacksChooser:show()
-
-			end },
-			{ title = i18n("removeFromList"), fn = function()
-				chooserRemoved[#chooserRemoved + 1] = selectedRowContents
-				metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-				mod.refresh()
-				mod.hacksChooser:show()
-			end },
-			{ title = "-" },
-		}
 	end
 
-	rightClickMenu = {
-		
-	}
-	local nada = {
-		{ title = i18n("mode"), menu = {
-			{ title = i18n("normal"), 				checked = mod.mode == "normal",				fn = function() mod.mode = "normal"; 		mod.refresh() end },
-			{ title = i18n("removeFromList"),		checked = mod.mode == "remove",				fn = function() mod.mode = "remove"; 		mod.refresh() end },
-			{ title = i18n("restoreToList"),		disabled = next(chooserRemoved) == nil, 	checked = mod.mode == "restore",			fn = function() mod.mode = "restore"; 		mod.refresh() end },
-		}},
-     	{ title = "-" },
-     	{ title = i18n("displayOptions"), menu = {
-			{ title = i18n("showNone"), disabled=mod.mode == "restore", fn = function()
-				metadata.set("chooserShowAutomation", false)
-				metadata.set("chooserShowShortcuts", false)
-				metadata.set("chooserShowHacks", false)
-				metadata.set("chooserShowVideoEffects", false)
-				metadata.set("chooserShowAudioEffects", false)
-				metadata.set("chooserShowTransitions", false)
-				metadata.set("chooserShowTitles", false)
-				metadata.set("chooserShowGenerators", false)
-				metadata.set("chooserShowMenuItems", false)
-				mod.refresh()
-			end },
-			{ title = i18n("showAll"), 				checked = chooserShowAll, disabled=mod.mode == "restore" or chooserShowAll, fn = function()
-				metadata.set("chooserShowAutomation", true)
-				metadata.set("chooserShowShortcuts", true)
-				metadata.set("chooserShowHacks", true)
-				metadata.set("chooserShowVideoEffects", true)
-				metadata.set("chooserShowAudioEffects", true)
-				metadata.set("chooserShowTransitions", true)
-				metadata.set("chooserShowTitles", true)
-				metadata.set("chooserShowGenerators", true)
-				metadata.set("chooserShowMenuItems", true)
-				mod.refresh()
-			end },
-			{ title = "-" },
-			{ title = i18n("showAutomation"), 		checked = chooserShowAutomation,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowAutomation", not chooserShowAutomation); 			mod.refresh() end },
-			{ title = i18n("showHacks"), 			checked = chooserShowHacks,			disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowHacks", not chooserShowHacks); 						mod.refresh() end },
-			{ title = i18n("showShortcuts"), 		checked = chooserShowShortcuts,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowShortcuts", not chooserShowShortcuts); 				mod.refresh() end },
-			{ title = "-" },
-			{ title = i18n("showVideoEffects"), 	checked = chooserShowVideoEffects,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowVideoEffects", not chooserShowVideoEffects); 		mod.refresh() end },
-			{ title = i18n("showAudioEffects"), 	checked = chooserShowAudioEffects,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowAudioEffects", not chooserShowAudioEffects); 		mod.refresh() end },
-			{ title = "-" },
-			{ title = i18n("showTransitions"), 		checked = chooserShowTransitions,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowTransitions", not chooserShowTransitions); 			mod.refresh() end },
-			{ title = i18n("showTitles"), 			checked = chooserShowTitles,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowTitles", not chooserShowTitles); 					mod.refresh() end },
-			{ title = i18n("showGenerators"), 		checked = chooserShowGenerators,	disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowGenerators", not chooserShowGenerators); 			mod.refresh() end },
-			{ title = "-" },
-			{ title = i18n("showMenuItems"), 		checked = chooserShowMenuItems,		disabled=mod.mode == "restore", 	fn = function() metadata.set("chooserShowMenuItems", not chooserShowMenuItems); 				mod.refresh() end },
-			},
-		},
-       	{ title = "-" },
-       	{ title = i18n("preferences") .. "...", menu = {
-			{ title = i18n("rememberLastQuery"), 	checked = chooserRememberLast,						fn= function() metadata.set("chooserRememberLast", not chooserRememberLast) end },
-			{ title = "-" },
-			{ title = i18n("update"), menu = {
-				{ title = i18n("effectsShortcuts"),			fn= function() mod.hide(); 		plugins("cp.plugins.timeline.effects").updateEffectsList();				end },
-				{ title = i18n("transitionsShortcuts"),		fn= function() mod.hide(); 		plugins("cp.plugins.timeline.transitions").updateTransitionsList(); 		end },
-				{ title = i18n("titlesShortcuts"),			fn= function() mod.hide(); 		plugins("cp.plugins.timeline.titles").updateTitlesList()	 				end },
-				{ title = i18n("generatorsShortcuts"),		fn= function() mod.hide(); 		plugins("cp.plugins.timeline.generators")updateGeneratorsList() 			end },
-				{ title = i18n("menuItems"),				fn= function() metadata.set("chooserMenuItems", nil); 			mod.refresh() end },
-			}},
-		}},
-	}
-
-
-	rightClickMenu = fnutils.concat(selectedItemMenu, rightClickMenu)
-
-	mod.rightClickMenubar:setMenu(rightClickMenu)
+	mod.rightClickMenubar:setMenu(choiceMenu)
 	mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
-
 end
 
 -- The Plugin
