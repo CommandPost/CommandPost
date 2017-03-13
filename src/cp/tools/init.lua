@@ -231,7 +231,7 @@ end
 function tools.stringMaxLength(string, maxLength, optionalEnd)
 
 	local result = string
-	if string.len(string) > maxLength then
+	if maxLength ~= nil and string.len(string) > maxLength then
 		result = string.sub(string, 1, maxLength)
 		if optionalEnd ~= nil then
 			result = result .. optionalEnd

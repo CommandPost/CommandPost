@@ -87,6 +87,7 @@ function plugin.init(deps)
 
 	-- Commands
 	deps.fcpxCmds:add("cpAllowTasksDuringPlayback")
+		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("p")
 		:whenActivated(mod.togglePerformTasksDuringPlayback)
 

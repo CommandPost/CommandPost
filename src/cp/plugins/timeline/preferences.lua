@@ -64,8 +64,12 @@ function plugin.init(deps)
 		}
 	end)
 
-	deps.fcpxCmds:add("cpBackgroundRenderOn"):whenActivated(function() toggleBackgroundRender(true) end)
-	deps.fcpxCmds:add("cpBackgroundRenderOff"):whenActivated(function() toggleBackgroundRender(false) end)
+	deps.fcpxCmds:add("cpBackgroundRenderOn")
+		:groupedBy("timeline")
+		:whenActivated(function() toggleBackgroundRender(true) end)
+	deps.fcpxCmds:add("cpBackgroundRenderOff")
+		:groupedBy("timeline")
+		:whenActivated(function() toggleBackgroundRender(false) end)
 
 	return mod
 end

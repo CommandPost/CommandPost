@@ -12,6 +12,7 @@ local eventtap									= require("hs.eventtap")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
+local pathwatcher								= require("hs.pathwatcher")
 local windowfilter								= require("hs.window.filter")
 
 local log										= require("hs.logger").new("finalcutpro")
@@ -738,7 +739,7 @@ function App:getPreferences(forceReload)
 	return self._preferences
 end
 
---- cp.finalcutpro.getPreference(preferenceName) -> string or nil
+--- cp.finalcutpro.getPreference(value, default, forceReload) -> string or nil
 --- Function
 --- Get an individual Final Cut Pro preference
 ---
@@ -1184,9 +1185,10 @@ end
 ---
 --- Parameters:
 --- * `events` - A table of functions with to watch. These may be:
---- 	* `active()`	- Triggered when the application is the active application.
---- 	* `inactive()`	- Triggered when the application is no longer the active application.
----     * `move()` 	 	- Triggered when the application window is moved.
+--- 	* `active()`		- Triggered when the application is the active application.
+--- 	* `inactive()`		- Triggered when the application is no longer the active application.
+---     * `move()` 	 		- Triggered when the application window is moved.
+--- 	* `preferences()`	- Triggered when the application preferences are updated.
 ---
 --- Returns:
 --- * An ID which can be passed to `unwatch` to stop watching.
@@ -1197,7 +1199,7 @@ function App:watch(events)
 		self._watchers = {}
 	end
 
-	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move}
+	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move, preferences = events.preferences}
 	local id = { id=#self._watchers }
 
 	-- If already active, we trigger an 'active' notification.
@@ -1225,6 +1227,10 @@ function App:unwatch(id)
 end
 
 function App:_initWatchers()
+
+	--------------------------------------------------------------------------------
+	-- Window Watchers:
+	--------------------------------------------------------------------------------
 	local watcher = application.watcher
 
 	self._active = false
@@ -1272,11 +1278,24 @@ function App:_initWatchers()
 	end, true)
 
 	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window On Screen:
+	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
 	self._windowWatcher:subscribe(windowfilter.windowMoved, function()
 		self:_notifyWatchers("move")
 	end, true)
+
+	--------------------------------------------------------------------------------
+	-- Preferences Watcher:
+	--------------------------------------------------------------------------------
+	self._preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files)
+		for _,file in pairs(files) do
+			if file:sub(-24) == "com.apple.FinalCut.plist" then
+				self:_notifyWatchers("preferences")
+				return
+			end
+		end
+	end):start()
+
 end
 
 function App:_notifyWatchers(event)

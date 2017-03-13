@@ -52,6 +52,7 @@ function plugin.init(deps)
 
 	for i = 1, MAX_LANES do
 		deps.fcpxCmds:add("cpSelectClipAtLane" .. tools.numberToWord(i))
+			:groupedBy("timeline")
 			:titled(i18n("cpSelectClipAtLane_customTitle", {count = i}))
 			:whenActivated(function() mod.selectClipAtLane(i) end)
 	end

@@ -46,7 +46,7 @@ end
 function mod.isFrontmost()
 	local app = mod.application()
 	local fw = window.focusedWindow()
-
+	
 	return fw ~= nil and fw:application() == app
 end
 

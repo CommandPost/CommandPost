@@ -21,25 +21,13 @@ local log						= logger.new("cp")
 --------------------------------------------------------------------------------
 -- HAMMERSPOON EXTENSIONS:
 --------------------------------------------------------------------------------
-local application               = require("hs.application")
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
-local geometry                  = require("hs.geometry")
-local inspect                   = require("hs.inspect")
 local keycodes                  = require("hs.keycodes")
-local logger                    = require("hs.logger")
 local mouse                     = require("hs.mouse")
 local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
-local timer                     = require("hs.timer")
-local drawing					= require("hs.drawing")
-
---------------------------------------------------------------------------------
--- 3RD PARTY EXTENSIONS:
---------------------------------------------------------------------------------
-local ax                        = require("hs._asm.axuielement")
-local semver                    = require("semver.semver")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:

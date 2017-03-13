@@ -59,7 +59,7 @@ local function resetSettings()
 
 end
 
-local function toggleDebugMode()
+local function toggleDeveloperMode()
 	local debugMode = metadata.get("debugMode")
 	metadata.set("debugMode", not debugMode)
 	console.clearConsole()
@@ -78,7 +78,7 @@ local function toggleDisplayMenubarAsIcon()
 	menuManager():updateMenubarIcon()
 end
 
-local function getDebugMode()
+local function getDeveloperMode()
 	return metadata.get("debugMode")
 end
 
@@ -108,18 +108,20 @@ function plugin.init(deps)
 	:addSeparator(PRIORITY+1)
 
 	:addItem(PRIORITY+2, function()
-		return { title = i18n("enableDebugMode"),	fn = toggleDebugMode, checked = getDebugMode() }
+		return { title = i18n("enableDeveloperMode"),	fn = toggleDeveloperMode, checked = getDeveloperMode() }
 	end)
 
-	:addItem(PRIORITY+3, function()
+	:addSeparator(PRIORITY+3)
+
+	:addItem(PRIORITY+4, function()
+		return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
+	end)
+
+	:addItem(PRIORITY+5, function()
 		return { title = i18n("trashPreferences"),	fn = resetSettings }
 	end)
 
-	:addSeparator(PRIORITY+4)
-
-	:addItem(PRIORITY+5, function()
-		return { title = i18n("openConsole"),	fn = function() hs.openConsole() end }
-	end)
+	-- MENUBAR:
 
 	deps.menubar:addSeparator(MENUBAR_OPTIONS_PRIORITY)
 

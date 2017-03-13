@@ -8,6 +8,7 @@
 --- Standard Modules
 local log											= require("hs.logger").new("menubar")
 local json											= require("hs.json")
+local fnutils										= require("hs.fnutils")
 local axutils										= require("cp.finalcutpro.axutils")
 local just											= require("cp.just")
 local metadata										= require("cp.metadata")
@@ -175,6 +176,49 @@ function MenuBar:findMenuItemsUI(...)
 	return menu
 end
 
+--- cp.finalcutpro.MenuBar:visitMenuItems(visitFn[, startPath]) -> nil
+--- Method
+--- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is, 
+--- `AXMenuItem`s that don't have any sub-menus.
+---
+--- The `visitFn` will be called on each menu item with the following parameters:
+---
+--- ```
+--- function(path, menuItem)
+--- ```
+---
+--- The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that
+--- menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be
+--- `{ "Edit" }`.
+---
+--- Parameters:
+---  * `visitFn`	- The function called for each menu item.
+---
+--- Returns:
+---  * True is successful otherwise Nil
+---
+function MenuBar:visitMenuItems(visitFn, ...)
+	local menu = self:UI()
+	local path = table.pack(...) or {}
+	path.n = nil
+	if #path > 0 then
+		menu = self:findMenuUI(...)
+	end
+	return self:_visitMenuItems(visitFn, path, menu)
+end
+
+function MenuBar:_visitMenuItems(visitFn, path, menu)
+	local title = menu:attributeValue("AXTitle")
+	if #menu > 0 then
+		local menuPath = fnutils.concat(fnutils.copy(path), { title })
+		for _,item in ipairs(menu) do
+			self:_visitMenuItems(visitFn, menuPath, item)
+		end
+	elseif title ~= nil and title ~= "" then
+		visitFn(path, menu)
+	end
+end
+
 --- cp.finalcutpro.MenuBar:generateMenuMap() -> boolean
 --- Function
 --- Generates a map of the menu bar and saves it in the location specified
@@ -187,7 +231,7 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:generateMenuMap()
-	local menuMap = self:_processMenuItems(self:UI())
+	local menuMap = self:_processMenuItems(self:UI()) or {}
 
 	-- Opens a file in append mode
 	file = io.open(MenuBar.MENU_MAP_FILE, "w")

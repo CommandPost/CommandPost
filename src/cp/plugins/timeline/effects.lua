@@ -6,9 +6,9 @@ local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 local inspect			= require("hs.inspect")
 
+local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local tools				= require("cp.tools")
 local metadata			= require("cp.metadata")
 
@@ -17,9 +17,58 @@ local log				= require("hs.logger").new("effects")
 -- Constants
 local MAX_SHORTCUTS = 5
 
--- The Module
-
+-- Effects Action
+local action = {}
 local mod = {}
+
+function action.id()
+	return "effect"
+end
+
+function action.choices()
+	if not action._choices then
+		action._choices = choices.new(action.id())
+		--------------------------------------------------------------------------------
+		-- Video Effects List:
+		--------------------------------------------------------------------------------
+
+		local effects = mod.getVideoEffects()
+		if effects ~= nil and next(effects) ~= nil then
+			for i,name in ipairs(effects) do
+				action._choices:add(name)
+					:subText(i18n("videoEffect_group"))
+					:params({
+						name = name,
+					})
+			end
+		end
+
+		local effects = mod.getAudioEffects()
+		if effects ~= nil and next(effects) ~= nil then
+			for i,name in ipairs(effects) do
+				action._choices:add(name)
+					:subText(i18n("audioEffect_group"))
+					:params({
+						name = name,
+					})
+			end
+		end
+
+	end
+	return action._choices
+end
+
+function action.execute(params)
+	if params and params.name then
+		mod.apply(params.name)
+	end
+end
+
+function action.reset()
+	action._choices = nil
+end
+
+-- The Module
 
 function mod.getShortcuts()
 	return metadata.get(fcp:getCurrentLanguage() .. ".effectsShortcuts", {})
@@ -139,6 +188,13 @@ function mod.apply(shortcut)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
 	end)
+end
+
+function mod.choices()
+	if not mod._choices then
+		mod._choices = choices.new("effect")
+	end
+	return mod._choices
 
 end
 
@@ -256,11 +312,6 @@ function mod.updateEffectsList()
 	fcp:launch()
 
 	--------------------------------------------------------------------------------
-	-- Warning message:
-	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("updateEffectsListWarning"))
-
-	--------------------------------------------------------------------------------
 	-- Save the layout of the Transitions panel in case we switch away...
 	--------------------------------------------------------------------------------
 	local transitions = fcp:transitions()
@@ -355,19 +406,10 @@ function mod.updateEffectsList()
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-		metadata.get(currentLanguage .. ".allVideoEffects", allVideoEffects)
-		metadata.get(currentLanguage .. ".allAudioEffects", allAudioEffects)
-		metadata.get(currentLanguage .. ".effectsListUpdated", true)
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		hacksconsole.refresh()
-
-		--------------------------------------------------------------------------------
-		-- Let the user know everything's good:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("updateEffectsListDone"))
+		metadata.set(currentLanguage .. ".allVideoEffects", allVideoEffects)
+		metadata.set(currentLanguage .. ".allAudioEffects", allAudioEffects)
+		metadata.set(currentLanguage .. ".effectsListUpdated", true)
+		action.reset()
 	end
 
 end
@@ -383,24 +425,22 @@ local plugin = {}
 
 plugin.dependencies = {
 	["cp.plugins.menu.timeline.assignshortcuts"]	= "automation",
-	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.os.touchbar"]		= "touchbar",
+	["cp.plugins.commands.fcpx"]					= "fcpxCmds",
+	["cp.plugins.os.touchbar"]						= "touchbar",
+	["cp.plugins.actions.actionmanager"]			= "actionmanager",
 }
 
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
 
+	-- Add the event action
+	deps.actionmanager.addAction(action)
+
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignEffectsShortcuts") end)
 
-	-- The 'Update' menu
-	menu:addItem(1000, function()
-		return { title = i18n("updateEffectsList"),	fn = mod.updateEffectsList, disabled = not fcpxRunning }
-	end)
-	menu:addSeparator(2000)
-
-	menu:addItems(3000, function()
+	menu:addItems(1000, function()
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------

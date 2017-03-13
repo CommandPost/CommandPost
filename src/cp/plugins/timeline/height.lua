@@ -73,7 +73,7 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpChangeTimelineClipHeightUp")
 		:whenActivated(function() mod.changeTimelineClipHeight("up") end)
 		:whenReleased(function() changeTimelineClipHeightRelease() end)
-		:activatedBy():ctrl():option():cmd("+")
+		:activatedBy():ctrl():option():cmd("=")
 
 	deps.fcpxCmds:add("cpChangeTimelineClipHeightDown")
 		:whenActivated(function() mod.changeTimelineClipHeight("down") end)

@@ -3,11 +3,6 @@
 --                        W E L C O M E   S C R E E N                         --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---
--- Module created by Chris Hocking (https://github.com/latenitefilms).
---
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -30,7 +25,6 @@ local webview									= require("hs.webview")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
-local plugins									= require("cp.plugins")
 local template									= require("cp.template")
 local tools										= require("cp.tools")
 
@@ -60,14 +54,42 @@ local function generateHTML(whichTemplate)
 end
 
 --------------------------------------------------------------------------------
+-- RETRIEVES THE PLUGINS MANAGER:
+-- If `pluginPath` is provided, the named plugin will be returned. If not,
+-- the plugins module is returned.
+--------------------------------------------------------------------------------
+function plugins(pluginPath)
+	if not mod._plugins then
+		mod._plugins = require("cp.plugins")
+		mod._plugins.init("cp.plugins")
+	end
+
+	if pluginPath then
+		return mod._plugins(pluginPath)
+	else
+		return mod._plugins
+	end
+end
+
+--------------------------------------------------------------------------------
+-- RETRIEVES THE MENU MANAGER:
+--------------------------------------------------------------------------------
+function menuManager()
+	if not mod._menuManager then
+		mod._menuManager = plugins("cp.plugins.menu.manager")
+	end
+	return mod._menuManager
+end
+
+--------------------------------------------------------------------------------
 -- LOAD COMMANDPOST:
 --------------------------------------------------------------------------------
-local function loadCommandPost()
-	--------------------------------------------------------------------------------
-	-- TODO: Eventually move all the core functions from
-	--       'cp.fcpx10-3' into 'cp/init.lua'
-	--------------------------------------------------------------------------------
-	require("cp.fcpx10-3")
+local function loadCommandPost(showNotification)
+	menuManager()
+	if showNotification then
+		log.df("Successfully loaded.")
+		dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -79,7 +101,7 @@ function mod.init()
 	-- Can we just skip the welcome screen?
 	--------------------------------------------------------------------------------
 	if hs.accessibilityState() and metadata.get("welcomeComplete", false) then
-		loadCommandPost()
+		loadCommandPost(true)
 		return
 	end
 
@@ -138,11 +160,11 @@ function mod.init()
 				if hs.accessibilityState() then
 					mod.welcomeWebView:html(generateHTML("scanfinalcutpro"))
 					timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
-					accessibilityStateCheck:stop()
+					if accessibilityStateCheck then accessibilityStateCheck:stop() end
 				end
 			end)
 		elseif params["action"] == "scanfinalcutpro" then
-			local scanFCP = require("cp.plugins.cp.scanfinalcutpro")
+			local scanFCP = plugins("cp.plugins.cp.scanfinalcutpro")
 			local scanResult = scanFCP.scanFinalCutPro()
 			if scanResult then
 				mod.welcomeWebView:html(generateHTML("commandset"))
@@ -151,7 +173,7 @@ function mod.init()
 			end
 			timer.doAfter(0.1, function() mod.welcomeWebView:hswindow():focus() end)
 		elseif params["action"] == "addshortcuts" then
-			local shortcutsPlugin = require("cp.plugins.hacks.shortcuts")
+			local shortcutsPlugin = plugins("cp.plugins.hacks.shortcuts")
 			local result = shortcutsPlugin.enableHacksShortcuts()
 			if result then
 				if fcp:isRunning() then fcp:restart() end
