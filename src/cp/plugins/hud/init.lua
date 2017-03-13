@@ -43,10 +43,18 @@ local template									= require("cp.template")
 local log										= require("hs.logger").new("hud")
 
 --------------------------------------------------------------------------------
--- SETTINGS:
+-- CONSTANTS:
 --------------------------------------------------------------------------------
 
 local PRIORITY									= 10000
+
+local ORIGINAL_QUALITY 							= 10
+local ORIGINAL_PERFORMANCE						= 5
+local PROXY										= 4
+
+--------------------------------------------------------------------------------
+-- VARIABLES:
+--------------------------------------------------------------------------------
 
 hud.name										= metadata.scriptName
 hud.width										= 350
@@ -60,14 +68,14 @@ hud.fcpRed 										= "#d1393e"
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
 
---------------------------------------------------------------------------------
--- VARIABLES:
---------------------------------------------------------------------------------
-
 hud.ignoreWindowChange							= true
 hud.windowID									= nil
 
 hud.hsBundleID									= hs.processInfo["bundleID"]
+
+--------------------------------------------------------------------------------
+-- FUNCTIONS:
+--------------------------------------------------------------------------------
 
 function hud.isEnabled()
 	return metadata.get("enableHacksHUD", false)
@@ -389,12 +397,86 @@ function hud.reload()
 
 end
 
+local function getEnv()
+	--------------------------------------------------------------------------------
+	-- Set up the template environment
+	--------------------------------------------------------------------------------
+	local env 		= template.defaultEnv()
+	env.i18n		= i18n
+	env.hud			= hud
+
+	--------------------------------------------------------------------------------
+	-- FFPlayerQuality
+	--------------------------------------------------------------------------------
+	-- 10 	= Original - Better Quality
+	-- 5 	= Original - Better Performance
+	-- 4 	= Proxy
+	--------------------------------------------------------------------------------
+	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
+
+	if playerQuality == PROXY then
+		env.media 	= {
+			text	= i18n("proxy"),
+			class	= "bad",
+		}
+	else
+		env.media	= {
+			text	= i18n("originalOptimised"),
+			class	= "good",
+		}
+	end
+
+	if playerQuality == ORIGINAL_QUALITY then
+		env.quality	= {
+			text	= i18n("betterQuality"),
+			class	= "good",
+		}
+	else
+		env.quality	= {
+			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
+			class	= "bad",
+		}
+	end
+
+	local autoStartBGRender	= fcp:getPreference("FFAutoStartBGRender", true)
+
+	if autoStartBGRender then
+		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
+		env.backgroundRender	= {
+			text	= string.format("%s (%d %s)", i18n("enabled"), autoRenderDelay, i18n("secs", {count=autoRenderDelay})),
+			class	= "good",
+		}
+	else
+		env.backgroundRender	= {
+			text	= i18n("disabled"),
+			class	= "bad",
+		}
+	end
+
+	return env
+end
+
 --------------------------------------------------------------------------------
 -- REFRESH THE HUD:
 --------------------------------------------------------------------------------
 function hud.refresh()
 	if hud.active() then
-		hud.hudWebView:html(hud.generateHTML())
+
+		local env = getEnv()
+
+		local javascriptToInject = [[
+			document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
+			document.getElementById('media').className = "]] .. env.media.class .. [[";
+
+			document.getElementById('quality').innerHTML = "]] .. env.quality.text .. [[";
+			document.getElementById('quality').className = "]] .. env.quality.class .. [[";
+
+			document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
+			document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
+		]]
+
+		hud.hudWebView:evaluateJavaScript(javascriptToInject)
+
 	end
 end
 
@@ -460,68 +542,8 @@ end
 --------------------------------------------------------------------------------
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
-local ORIGINAL_QUALITY 		= 10
-local ORIGINAL_PERFORMANCE	= 5
-local PROXY					= 4
-
 function hud.generateHTML()
-
-	--------------------------------------------------------------------------------
-	-- Set up the template environment
-	--------------------------------------------------------------------------------
-	local env 		= template.defaultEnv()
-	env.i18n		= i18n
-	env.hud			= hud
-
-	--------------------------------------------------------------------------------
-	-- FFPlayerQuality
-	--------------------------------------------------------------------------------
-	-- 10 	= Original - Better Quality
-	-- 5 	= Original - Better Performance
-	-- 4 	= Proxy
-	--------------------------------------------------------------------------------
-	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
-
-	if playerQuality == PROXY then
-		env.media 	= {
-			text	= i18n("proxy"),
-			class	= "bad",
-		}
-	else
-		env.media	= {
-			text	= i18n("originalOptimised"),
-			class	= "good",
-		}
-	end
-
-	if playerQuality == ORIGINAL_QUALITY then
-		env.quality	= {
-			text	= i18n("betterQuality"),
-			class	= "good",
-		}
-	else
-		env.quality	= {
-			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
-			class	= "bad",
-		}
-	end
-
-	local autoStartGBRender	= fcp:getPreference("FFAutoStartBGRender", true)
-
-	if autoStartBGRender then
-		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
-		env.backgroundRender	= {
-			text	= string.format("%s (%d %s)", i18n("enabled"), autoRenderDelay, i18n("secs", {count=autoRenderDelay})),
-			class	= "good",
-		}
-	else
-		env.backgroundRender	= {
-			text	= i18n("disabled"),
-			class	= "bad",
-		}
-	end
-
-	return template.compileFile(metadata.scriptPath .. "/cp/plugins/hud/main.lua.html", env)
+	return template.compileFile(metadata.scriptPath .. "/cp/plugins/hud/html/hud.html", getEnv())
 end
 
 --------------------------------------------------------------------------------
