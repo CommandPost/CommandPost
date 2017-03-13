@@ -3,7 +3,6 @@ local log				= require("hs.logger").new("scanfinalcutpro")
 
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local tools				= require("cp.tools")
 local metadata			= require("cp.metadata")
 local just				= require("cp.just")

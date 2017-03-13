@@ -9,7 +9,6 @@ local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local metadata			= require("cp.metadata")
 
 local log				= require("hs.logger").new("generators")
@@ -331,11 +330,6 @@ function mod.updateGeneratorsList()
 	metadata.set(currentLanguage .. ".allGenerators", allGenerators)
 	metadata.set(currentLanguage .. ".generatorsListUpdated", true)
 	action.reset()
-
-	--------------------------------------------------------------------------------
-	-- Update Chooser:
-	--------------------------------------------------------------------------------
-	--hacksconsole.refresh()
 end
 
 function mod.isGeneratorsListUpdated()

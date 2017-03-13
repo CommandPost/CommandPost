@@ -9,7 +9,6 @@ local inspect			= require("hs.inspect")
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 local tools				= require("cp.tools")
 local metadata			= require("cp.metadata")
 
@@ -411,11 +410,6 @@ function mod.updateEffectsList()
 		metadata.set(currentLanguage .. ".allAudioEffects", allAudioEffects)
 		metadata.set(currentLanguage .. ".effectsListUpdated", true)
 		action.reset()
-
-		--------------------------------------------------------------------------------
-		-- Update Chooser:
-		--------------------------------------------------------------------------------
-		-- hacksconsole.refresh()
 	end
 
 end

@@ -10,7 +10,6 @@ local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local metadata			= require("cp.metadata")
 local tools				= require("cp.tools")
-local hacksconsole		= require("cp.fcpx10-3.hacksconsole")
 
 local log				= require("hs.logger").new("titles")
 
@@ -331,11 +330,6 @@ function mod.updateTitlesList()
 	metadata.set(currentLanguage .. ".allTitles", allTitles)
 	metadata.set(currentLanguage .. ".titlesListUpdated", true)
 	action.reset()
-
-	--------------------------------------------------------------------------------
-	-- Update Chooser:
-	--------------------------------------------------------------------------------
-	--hacksconsole.refresh()
 end
 
 function mod.isTitlesListUpdated()
