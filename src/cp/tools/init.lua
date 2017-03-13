@@ -56,8 +56,12 @@ end
 -- DOES DIRECTORY EXIST:
 --------------------------------------------------------------------------------
 function tools.doesDirectoryExist(path)
-    local attr = fs.attributes(path)
-    return attr and attr.mode == 'directory'
+	if path then
+	    local attr = fs.attributes(path)
+    	return attr and attr.mode == 'directory'
+    else
+    	return false
+    end
 end
 
 --------------------------------------------------------------------------------
