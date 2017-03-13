@@ -126,9 +126,16 @@ function mod.load(pluginPath)
 		return cache.instance
 	end
 
-	local plugin = require(pluginPath)
-	if plugin == nil or type(plugin) ~= "table" then
-		log.ef("Unable to load plugin '%s'.", pluginPath)
+	local status, err = pcall(require, pluginPath)
+	local plugin = nil
+	if status then
+		plugin = require(pluginPath)
+		if plugin == nil or type(plugin) ~= "table" then
+			log.ef("Unable to load plugin '%s'.", pluginPath)
+			return nil
+		end
+	else
+		log.ef("Unable to load plugin '%s' due to the following error:\n\n%s", pluginPath, err)
 		return nil
 	end
 
