@@ -518,6 +518,8 @@ return {
 	--------------------------------------------------------------------------------
 	-- CONSOLE:
 	--------------------------------------------------------------------------------
+	console								=			"Console",
+	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
@@ -568,6 +570,7 @@ return {
 	title_group							= 			"Title",
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
+	commandPost_group					=			"CommandPost",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:

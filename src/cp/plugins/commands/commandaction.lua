@@ -4,6 +4,7 @@
 -- Includes
 local commands			= require("cp.commands")
 local choices			= require("cp.choices")
+local metadata			= require("cp.metadata")
 
 -- The Modules
 local mod = {}
@@ -30,18 +31,82 @@ function mod.choices()
 					if not subText and cmd:getGroup() then
 						subText = i18n(cmd:getGroup() .. "_group")
 					end
-				
+					local params = {
+						group	= group:id(),
+						id		= cmd:id(),
+					}
 					mod._choices:add(title)
 						:subText(subText)
-						:params({
-							group	= group:id(),
-							id		= cmd:id(),
-						})
+						:params(params)
+						:favorite(mod.isFavorite(params))
+						:popularity(mod.getPopularity(params))
 				end
 			end
 		end
 	end
 	return mod._choices
+end
+
+function mod.options(params)
+	local options = { "execute" }
+	if mod.isFavorite(params) then
+		options[#options + 1] = "unfavorite"
+	else
+		options[#options + 1] = "favorite"
+	end
+	return options
+end
+
+function mod.getFavorites()
+	return metadata.get("commandFavorites", {})
+end
+
+function mod.setFavorites(value)
+	metadata.set("commandFavorites", value)
+end
+
+function mod.isFavorite(params)
+	local favorites = mod.getFavorites()
+	local id = mod.getCommandID(params)
+	return id and favorites and favorites[id] == true
+end
+
+function mod.getCommandID(params)
+	return string.format("%s:%s", params.group, params.id)
+end
+
+function mod.favorite(params)
+	local favorites = mod.getFavorites()
+	favorites[mod.getCommandID(params)] = true
+	mod.setFavorites(favorites)
+end
+
+function mod.unfavorite(params)
+	local favorites = mod.getFavorites()
+	favorites[mod.getCommandID(params)] = nil
+	mod.setFavorites(favorites)
+end
+
+function mod.getPopularityIndex()
+	return metadata.get("commandPopularityIndex", {})
+end
+
+function mod.setPopularityIndex(value)
+	metadata.set("commandPopularityIndex", value)
+end
+
+function mod.getPopularity(params)
+	local index = mod.getPopularityIndex()
+	local id = mod.getCommandID(params)
+	return index[id] or 0
+end
+
+function mod.incPopularity(params)
+	local index = mod.getPopularityIndex()
+	local id = mod.getCommandID(params)
+	local pop = index[id] or 0
+	index[id] = pop + 1
+	mod.setPopularityIndex(index)
 end
 
 --- cp.plugins.actions.commandaction.execute(params) -> boolean
@@ -75,9 +140,15 @@ function mod.execute(params)
 			function() cmd:activated() end,
 			function() dialog.displayMessage(i18n("cmdGroupNotActivated"), {id = group.id}) end
 		)
+		mod.incPopularity(params)
+		mod.reset()
 		return true
 	end
 	return false
+end
+
+function mod.reset()
+	mod._choices = nil
 end
 
 -- The Plugin

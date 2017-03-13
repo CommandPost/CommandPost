@@ -101,15 +101,27 @@ function mod.getAction(id)
 	return mod._actions[id]
 end
 
+function mod.getOptions(actionId, params)
+	local action = mod.getAction(actionId)
+	if action.options then
+		return action.options(params)
+	else
+		return nil
+	end
+end
+
 function mod.execute(actionId, params)
 	local action = mod.getAction(actionId)
 	if action then
-		if action:execute(params) then
+		if action.execute(params) then
 			return true
 		else
-			log.wf("Unable to handle action '%s' with params: %s", hs.inspect(actionId), hs.inspect(params))
+			log.wf("Unable to handle action %s with params: %s", hs.inspect(actionId), hs.inspect(params))
 		end
+	else
+		log.wf("No action of type %s is registered", hs.inspect(actionId))
 	end
+	return false
 end
 
 function mod.executeChoice(choice)
@@ -128,7 +140,35 @@ function mod.choices()
 		end
 		fnutils.concat(result, c:getChoices())
 	end
-	table.sort(result, function(a, b) return a.text < b.text end)
+	table.sort(result, function(a, b)
+		-- Favorites get first priority
+		if a.favorite and not b.favorite then
+			return true
+		elseif b.favorite and not a.favorite then
+			return false
+		end
+
+		-- Then popularity, if specified
+		local apop = a.popularity or 0
+		local bpop = b.popularity or 0
+		if apop > bpop then
+			return true
+		elseif bpop > apop then
+			return false
+		end
+
+		-- Then text by alphabetical order
+		if a.text < b.text then
+			return true
+		elseif b.text < a.text then
+			return false
+		end
+		
+		-- Then subText by alphabetical order
+		local asub = a.subText or ""
+		local bsub = b.subText or ""
+		return asub < bsub
+	end)
 	return result
 end
 
