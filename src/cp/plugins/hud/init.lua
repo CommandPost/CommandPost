@@ -629,6 +629,7 @@ function plugin.init(deps)
 	fcp:watch({
 		active		= hud.update,
 		inactive	= hud.update,
+		preferences = hud.refresh,
 	})
 
 	fcp:fullScreenWindow():watch({
