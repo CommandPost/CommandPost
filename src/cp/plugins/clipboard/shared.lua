@@ -17,7 +17,6 @@ local TOOLS_PRIORITY		= 2000
 local OPTIONS_PRIORITY		= 2000
 
 local HISTORY_EXTENSION		= ".sharedClipboard"
-local LEGACY_EXTENSION		= ".fcpxhacks"
 
 -- The Module
 local mod = {}
@@ -40,11 +39,15 @@ function mod.toggleEnabled()
 end
 
 function mod.getRootPath()
-	return metadata.get("sharedClipboardPath")
+	return metadata.get("sharedClipboardPath", nil)
 end
 
 function mod.setRootPath(path)
 	metadata.set("sharedClipboardPath", path)
+end
+
+function mod.validRootPath()
+	return tools.doesDirectoryExist(mod.getRootPath())
 end
 
 local function watchUpdate(data, name)
@@ -83,20 +86,22 @@ end
 
 function mod.update()
 	if mod.isEnabled() then
-		if mod.getRootPath() == nil then
-			-- Assign a new root path
+		if not mod.validRootPath() then
+			-- Assign a new root path:
 			local result = dialog.displayChooseFolder(i18n("sharedClipboardRootFolder"))
 			if result then
 				mod.setRootPath(result)
+			else
+				mod.setEnabled(false)
 			end
 		end
-
-		if mod.getRootPath() ~= nil and not mod._watcherId then
+		if mod.validRootPath() and not mod._watcherId then
 			mod._watcherId = mod._manager.watch({
 				update	= watchUpdate,
 			})
 		end
-	else
+	end
+	if not mod.isEnabled() then
 		if mod._watcherId then
 			mod._manager.unwatch(mod._watcherId)
 			mod._watcherId = nil
@@ -108,22 +113,20 @@ end
 -- Returns the list of folder names as an array of strings.
 function mod.getFolderNames()
 	local folders = {}
-
 	local rootPath = mod.getRootPath()
 	if rootPath then
 		local path = fs.pathToAbsolute(rootPath)
-		local contents, data = fs.dir(path)
+		if path then
+			local contents, data = fs.dir(path)
 
-		for file in function() return contents(data) end do
-			local name = file:match("(.+)%"..HISTORY_EXTENSION.."$")
-			if not name then
-				name = file:match("(.+)%"..LEGACY_EXTENSION.."$")
+			for file in function() return contents(data) end do
+				local name = file:match("(.+)%"..HISTORY_EXTENSION.."$")
+				if name then
+					folders[#folders+1] = name
+				end
 			end
-			if name then
-				folders[#folders+1] = name
-			end
+			table.sort(folders, function(a, b) return a < b end)
 		end
-		table.sort(folders, function(a, b) return a < b end)
 	end
 	return folders
 end
@@ -156,39 +159,6 @@ function mod.copyWithCustomClipName()
 	end
 end
 
-local function migrateLegacyHistory(folderName)
-	local filePath = mod.getHistoryPath(folderName, LEGACY_EXTENSION)
-	if not fs.attributes(filePath) then
-		-- The legacy file doesn't exist.
-		return {}
-	end
-
-	local plistData = plist.xmlFileToTable(filePath)
-
-	local history = {}
-
-	if plistData then
-		-- convert it to the new history format
-		for i = 1,5 do
-			local item = {
-				name = plistData["SharedClipboardLabel"..i],
-				data = plistData["SharedClipboardData"..i],
-			}
-			if item.name ~= "" and item.data ~= "" then
-				history[#history + 1] = item
-			end
-		end
-
-		-- save it to the new format
-		if mod.setHistory(folderName, history) then
-			-- and erase the old file
-			os.remove(filePath)
-		end
-	end
-
-	return history
-end
-
 function mod.getHistoryPath(folderName, fileExtension)
 	fileExtension = fileExtension or HISTORY_EXTENSION
 	return mod.getRootPath() .. folderName .. fileExtension
@@ -203,9 +173,6 @@ function mod.getHistory(folderName)
 		local content = file:read("*all")
 		file:close()
 		history = json.decode(content)
-	else
-		-- Try migrating a legacy history file, if present
-		history = migrateLegacyHistory(folderName)
 	end
 	return history
 end
@@ -278,7 +245,19 @@ end
 
 function mod.init(manager)
 	mod._manager = manager
-	mod.update()
+
+	local setEnabledValue = false
+	if mod.isEnabled() then
+		if not mod.validRootPath() then
+			local result = dialog.displayMessage(i18n("sharedClipboardPathMissing"), {"Yes", "No"})
+			if result == "Yes" then
+				setEnabledValue = true
+			end
+		end
+	end
+
+	mod.setEnabled(setEnabledValue)
+
 	return self
 end
 
@@ -288,7 +267,7 @@ local plugin = {}
 plugin.dependencies = {
 	["cp.plugins.clipboard.manager"]	= "manager",
 	["cp.plugins.commands.fcpx"]		= "fcpxCmds",
-	["cp.plugins.menu.clipboard"]			= "tools",
+	["cp.plugins.menu.clipboard"]		= "tools",
 }
 
 function plugin.init(deps)
@@ -298,15 +277,15 @@ function plugin.init(deps)
 	local menu = deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
 
 	:addItem(1000, function()
-		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
+		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled() and mod.validRootPath() }
 	end)
 
 	:addSeparator(2000)
 
 	:addItems(3000, function()
 		local folderItems = {}
-		if mod.isEnabled() then
-		local fcpxRunning = fcp:isRunning()
+		if mod.isEnabled() and mod.validRootPath() then
+			local fcpxRunning = fcp:isRunning()
 			local folderNames = mod.getFolderNames()
 			if #folderNames > 0 then
 				for _,folder in ipairs(folderNames) do

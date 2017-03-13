@@ -178,6 +178,7 @@ return {
 			sharedClipboardRootFolder			=			"Shared Clipboard Root Folder",
 			sharedClipboardFileNotFound			=			"The Shared Clipboard file could not be found.",
 			sharedClipboardNotRead				=			"The Shared Clipboard file could not be read.",
+			sharedClipboardPathMissing			=			"The Shared Clipboard path no longer exists. Would you like to select a new location?",
 
 			restartFinalCutProFailed			=			"We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.",
 
