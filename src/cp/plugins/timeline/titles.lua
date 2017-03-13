@@ -36,21 +36,27 @@ function action.choices()
 		local list = mod.getTitles()
 		if list ~= nil and next(list) ~= nil then
 			for i,name in ipairs(list) do
+				local params = { name = name }
 				action._choices:add(name)
 					:subText(i18n("title_group"))
-					:params({
-						name = name,
-					})
+					:params(params)
+					:id(action.getId(params))
 			end
 		end
 	end
 	return action._choices
 end
 
+function action.getId(params)
+	return action.id() .. ":" .. params.name
+end
+
 function action.execute(params)
 	if params and params.name then
 		mod.apply(params.name)
+		return true
 	end
+	return false
 end
 
 function action.reset()

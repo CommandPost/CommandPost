@@ -47,7 +47,7 @@ function builder:subText(value)
 	return self
 end
 
---- cp.chooser.choices.builder:favorite(value) -> builder
+--- cp.chooser.choices.builder:id(value) -> builder
 --- Method
 --- Indicates the choice is a favorite.
 ---
@@ -56,22 +56,8 @@ end
 ---
 --- Returns:
 --- * The choice builder.
-function builder:favorite(value)
-	self._choice.favorite = value
-	return self
-end
-
---- cp.chooser.choices.builder:priority(value) -> builder
---- Method
---- Indicates the priority of the choice. The higher the number, the higher the priority.
----
---- Parameters:
---- * `value`	- The numeric priority..
----
---- Returns:
---- * The choice builder.
-function builder:popularity(value)
-	self._choice.popularity = value
+function builder:id(value)
+	self._choice.id = value
 	return self
 end
 

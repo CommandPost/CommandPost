@@ -2,6 +2,7 @@
 local urlevent					= require("hs.urlevent")
 local fnutils					= require("hs.fnutils")
 local log						= require("hs.logger").new("actnmngr")
+local metadata					= require("cp.metadata")
 
 -- The Module
 local mod = {
@@ -110,10 +111,74 @@ function mod.getOptions(actionId, params)
 	end
 end
 
+
+function mod.getFavorites()
+	if not mod._favorites then
+		mod._favorites = metadata.get("actionFavorites", {})
+	end
+	return mod._favorites
+end
+
+function mod.setFavorites(value)
+	mod._favorites = value
+	metadata.set("actionFavorites", value)
+end
+
+function mod.isFavorite(id)
+	local favorites = mod.getFavorites()
+	return id and favorites and favorites[id] == true
+end
+
+function mod.favorite(id)
+	if id then
+		local favorites = mod.getFavorites()
+		favorites[id] = true
+		mod.setFavorites(favorites)
+	end
+end
+
+function mod.unfavorite(id)
+	if id then
+		local favorites = mod.getFavorites()
+		favorites[id] = nil
+		mod.setFavorites(favorites)
+	end
+end
+
+function mod.getPopularityIndex()
+	if not mod._poplarityIndex then
+		mod._popularityIndex = metadata.get("actionPopularityIndex", {})
+	end
+	return mod._popularityIndex 
+end
+
+function mod.setPopularityIndex(value)
+	mod._popularityIndex = value
+	metadata.set("actionPopularityIndex", value)
+end
+
+function mod.getPopularity(id)
+	if id then
+		local index = mod.getPopularityIndex()
+		return index[id] or 0
+	end
+	return 0
+end
+
+function mod.incPopularity(id)
+	if id then
+		local index = mod.getPopularityIndex()
+		local pop = index[id] or 0
+		index[id] = pop + 1
+		mod.setPopularityIndex(index)
+	end
+end
+
 function mod.execute(actionId, params)
 	local action = mod.getAction(actionId)
 	if action then
 		if action.execute(params) then
+			mod.incPopularity(action.getId(params))
 			return true
 		else
 			log.wf("Unable to handle action %s with params: %s", hs.inspect(actionId), hs.inspect(params))
@@ -142,15 +207,17 @@ function mod.choices()
 	end
 	table.sort(result, function(a, b)
 		-- Favorites get first priority
-		if a.favorite and not b.favorite then
+		local afav = mod.isFavorite(a.id)
+		local bfav = mod.isFavorite(b.id)
+		if afav and not bfav then
 			return true
-		elseif b.favorite and not a.favorite then
+		elseif bfav and not afav then
 			return false
 		end
 
 		-- Then popularity, if specified
-		local apop = a.popularity or 0
-		local bpop = b.popularity or 0
+		local apop = mod.getPopularity(a.id)
+		local bpop = mod.getPopularity(b.id)
 		if apop > bpop then
 			return true
 		elseif bpop > apop then
@@ -163,7 +230,7 @@ function mod.choices()
 		elseif b.text < a.text then
 			return false
 		end
-		
+
 		-- Then subText by alphabetical order
 		local asub = a.subText or ""
 		local bsub = b.subText or ""

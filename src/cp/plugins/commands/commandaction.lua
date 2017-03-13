@@ -38,8 +38,7 @@ function mod.choices()
 					mod._choices:add(title)
 						:subText(subText)
 						:params(params)
-						:favorite(mod.isFavorite(params))
-						:popularity(mod.getPopularity(params))
+						:id(mod.getId(params))
 				end
 			end
 		end
@@ -47,66 +46,8 @@ function mod.choices()
 	return mod._choices
 end
 
-function mod.options(params)
-	local options = { "execute" }
-	if mod.isFavorite(params) then
-		options[#options + 1] = "unfavorite"
-	else
-		options[#options + 1] = "favorite"
-	end
-	return options
-end
-
-function mod.getFavorites()
-	return metadata.get("commandFavorites", {})
-end
-
-function mod.setFavorites(value)
-	metadata.set("commandFavorites", value)
-end
-
-function mod.isFavorite(params)
-	local favorites = mod.getFavorites()
-	local id = mod.getCommandID(params)
-	return id and favorites and favorites[id] == true
-end
-
-function mod.getCommandID(params)
-	return string.format("%s:%s", params.group, params.id)
-end
-
-function mod.favorite(params)
-	local favorites = mod.getFavorites()
-	favorites[mod.getCommandID(params)] = true
-	mod.setFavorites(favorites)
-end
-
-function mod.unfavorite(params)
-	local favorites = mod.getFavorites()
-	favorites[mod.getCommandID(params)] = nil
-	mod.setFavorites(favorites)
-end
-
-function mod.getPopularityIndex()
-	return metadata.get("commandPopularityIndex", {})
-end
-
-function mod.setPopularityIndex(value)
-	metadata.set("commandPopularityIndex", value)
-end
-
-function mod.getPopularity(params)
-	local index = mod.getPopularityIndex()
-	local id = mod.getCommandID(params)
-	return index[id] or 0
-end
-
-function mod.incPopularity(params)
-	local index = mod.getPopularityIndex()
-	local id = mod.getCommandID(params)
-	local pop = index[id] or 0
-	index[id] = pop + 1
-	mod.setPopularityIndex(index)
+function mod.getId(params)
+	return ID .. ":" .. string.format("%s:%s", params.group, params.id)
 end
 
 --- cp.plugins.actions.commandaction.execute(params) -> boolean
@@ -140,8 +81,6 @@ function mod.execute(params)
 			function() cmd:activated() end,
 			function() dialog.displayMessage(i18n("cmdGroupNotActivated"), {id = group.id}) end
 		)
-		mod.incPopularity(params)
-		mod.reset()
 		return true
 	end
 	return false

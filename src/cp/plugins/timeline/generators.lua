@@ -36,21 +36,27 @@ function action.choices()
 		local items = mod.getGenerators()
 		if items ~= nil and next(items) ~= nil then
 			for i,name in ipairs(items) do
+				local params = { name = name }
 				action._choices:add(name)
 					:subText(i18n("generator_group"))
-					:params({
-						name = name,
-					})
+					:params(params)
+					:id(action.getId(params))
 			end
 		end
 	end
 	return action._choices
 end
 
+function action.getId(params)
+	return action.id() .. ":" .. params.name
+end
+
 function action.execute(params)
 	if params and params.name then
 		mod.apply(params.name)
+		return true
 	end
+	return false
 end
 
 function action.reset()

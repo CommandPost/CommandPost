@@ -4,7 +4,10 @@
 -- Includes
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
+local metadata			= require("cp.metadata")
 local fnutils			= require("hs.fnutils")
+
+local log				= require("hs.logger").new("menuaction")
 
 -- The Modules
 local mod = {}
@@ -25,13 +28,21 @@ function mod.choices()
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
 		local title = menuItem:title()
 		
-		result:add(title)
-			:subText(i18n("menuChoiceSubText", {path = table.concat(path, " > ")}))
-			:params({
+		if path[1] ~= "Apple" then
+			local params = {
 				path	= fnutils.concat(fnutils.copy(path), { title }),
-			})
+			}
+			result:add(title)
+				:subText(i18n("menuChoiceSubText", {path = table.concat(path, " > ")}))
+				:params(params)
+				:id(mod.getId(params))
+		end
 	end)
 	return result
+end
+
+function mod.getId(params)
+	return ID .. ":" .. table.concat(params.path, "||")
 end
 
 --- cp.plugins.actions.commandaction.execute(params) -> boolean

@@ -16,13 +16,14 @@ local log				= require("hs.logger").new("effects")
 
 -- Constants
 local MAX_SHORTCUTS = 5
+local ID = "effect"
 
 -- Effects Action
 local action = {}
 local mod = {}
 
 function action.id()
-	return "effect"
+	return ID
 end
 
 function action.choices()
@@ -35,33 +36,38 @@ function action.choices()
 		local effects = mod.getVideoEffects()
 		if effects ~= nil and next(effects) ~= nil then
 			for i,name in ipairs(effects) do
+				local params = { name = name }
 				action._choices:add(name)
 					:subText(i18n("videoEffect_group"))
-					:params({
-						name = name,
-					})
+					:params(params)
+					:id(action.getId(params))
 			end
 		end
 
 		local effects = mod.getAudioEffects()
 		if effects ~= nil and next(effects) ~= nil then
 			for i,name in ipairs(effects) do
+				local params = { name = name }
 				action._choices:add(name)
 					:subText(i18n("audioEffect_group"))
-					:params({
-						name = name,
-					})
+					:params(params)
+					:id(action.getId(params))
 			end
 		end
-
 	end
 	return action._choices
+end
+
+function action.getId(params)
+	return ID .. ":" .. params.name
 end
 
 function action.execute(params)
 	if params and params.name then
 		mod.apply(params.name)
+		return true
 	end
+	return false
 end
 
 function action.reset()
