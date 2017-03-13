@@ -416,7 +416,7 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDebugMode						=			"Enable Developer Mode",
+			enableDeveloperMode					=			"Enable Developer Mode",
 			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
@@ -487,7 +487,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
-			openConsole							=			"Open Error Console",
+			openErrorLog						=			"Open Error Log",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
