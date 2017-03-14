@@ -84,6 +84,22 @@ function tools.trim(s)
 end
 
 --------------------------------------------------------------------------------
+-- SPLIT STRING LINES INTO TABLE:
+--------------------------------------------------------------------------------
+function tools.lines(str)
+	local t = {}
+	local function helper(line)
+		line = tools.trim(line)
+		if line ~= nil and line ~= "" then
+			table.insert(t, line)
+		end
+		return ""
+	end
+	helper((str:gsub("(.-)\r?\n", helper)))
+	return t
+end
+
+--------------------------------------------------------------------------------
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
 --------------------------------------------------------------------------------
 -- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
