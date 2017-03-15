@@ -157,7 +157,7 @@ local function initHUDWatchers()
 	function(window, applicationName, event)
 		if hud.isEnabled() then
 			if window:id() == hud.windowID then
-				log.df("HUD Closed.")
+				--log.df("HUD Closed.")
 				hud.setEnabled(false)
 				initHUDWebView() -- Need to reinitialise as the WebView will have been destroyed on close.
 			end
@@ -180,7 +180,7 @@ local function initHUDWatchers()
 					if hud.visible() then
 						local result = hud.hudWebView:hswindow():frame()
 						if result ~= nil then
-							log.df("HUD Moved.")
+							--log.df("HUD Moved.")
 							hud.setPosition(result)
 						end
 					end
@@ -193,7 +193,7 @@ local function initHUDWatchers()
 		--------------------------------------------------------------------------------
 		hud.hudFilter:subscribe(windowfilter.windowUnfocused, function(window, applicationName, event)
 			if hud.isEnabled() then
-				log.df("HUD Lost Focus.")
+				--log.df("HUD Lost Focus.")
 				hud.updateVisibility()
 			end
 		end, true)
@@ -339,7 +339,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
 		local commandEditorShowing = fcp:commandEditor():isShowing()
 		if fullscreenWindowShowing or commandEditorShowing then
-			log.df("Hiding HUD because a Fullscreen Window or Command Editor's frontmost.")
+			--log.df("Hiding HUD because a Fullscreen Window or Command Editor's frontmost.")
 			hud.hide()
 			return
 		end
@@ -349,7 +349,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		--------------------------------------------------------------------------------
 		local cpFrontmost = metadata.isFrontmost()
 		if not fcpFrontmost and not cpFrontmost then
-			log.df("Hiding because neither FCPX nor CP is frontmost.")
+			--log.df("Hiding because neither FCPX nor CP is frontmost.")
 			hud.hide()
 			return
 		end
@@ -359,7 +359,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		--------------------------------------------------------------------------------
 		local consoleFrontmost = window.frontmostWindow() == console.hswindow()
 		if consoleFrontmost and not leftFinalCutPro then
-			log.df("Hiding HUD because Console triggered it without coming from FCPX.")
+			--log.df("Hiding HUD because Console triggered it without coming from FCPX.")
 			hud.hide()
 			return
 		end
@@ -368,7 +368,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		-- Hide if you've come from FCPX directly to console:
 		--------------------------------------------------------------------------------
 		if leftFinalCutPro and consoleFrontmost then
-			log.df("Hiding HUD because came from FCPX directly to Console.")
+			--log.df("Hiding HUD because came from FCPX directly to Console.")
 			hud.hide()
 			return
 		end
@@ -377,7 +377,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		-- Hide if Console closed and FCPX didn't have and doesn't have focus:
 		--------------------------------------------------------------------------------
 		if console.hswindow() == nil and not leftFinalCutPro and not fcpFrontmost then
-			log.df("Hiding HUD because Console is closed, FCPX didn't previously have focus and it's not focussed now.")
+			--log.df("Hiding HUD because Console is closed, FCPX didn't previously have focus and it's not focussed now.")
 			hud.hide()
 			return
 		end
@@ -387,14 +387,14 @@ function hud.updateVisibility(leftFinalCutPro)
 		--------------------------------------------------------------------------------
 		local mousePressed = mouse.getButtons()
 		if next(mousePressed) ~= nil then
-			log.df("Ignorning because mouse is down.")
+			--log.df("Ignorning because mouse is down.")
 			return
 		end
 
 		--------------------------------------------------------------------------------
 		-- Otherwise, let's show:
 		--------------------------------------------------------------------------------
-		log.df("Nothing left, so showing HUD.")
+		--log.df("Nothing left, so showing HUD.")
 		hud.show()
 
 	end
@@ -560,7 +560,7 @@ function hud.refresh()
 		--------------------------------------------------------------------------------
 		-- Resize the HUD:
 		--------------------------------------------------------------------------------
-		log.df("Resizing HUD.")
+		--log.df("Resizing HUD.")
 		hud.hudWebView:hswindow():setSize(geometry.size(hud.width, getHUDHeight()))
 
 	end
