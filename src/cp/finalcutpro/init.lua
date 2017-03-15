@@ -1234,7 +1234,7 @@ end
 function App:_initWatchers()
 
 	--------------------------------------------------------------------------------
-	-- Window Watchers:
+	-- Application Watcher:
 	--------------------------------------------------------------------------------
 	local watcher = application.watcher
 

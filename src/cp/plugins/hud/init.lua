@@ -14,14 +14,18 @@ local hud = {}
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
 
+local log										= require("hs.logger").new("hud")
+
 local application								= require("hs.application")
 local chooser									= require("hs.chooser")
+local console									= require("hs.console")
 local drawing									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
 local fnutils 									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local geometry									= require("hs.geometry")
 local host										= require("hs.host")
+local mouse										= require("hs.mouse")
 local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
 local settings									= require("hs.settings")
@@ -30,6 +34,7 @@ local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 local window									= require("hs.window")
 local windowfilter								= require("hs.window.filter")
+
 local ax										= require("hs._asm.axuielement")
 
 local plugins									= require("cp.plugins")
@@ -39,8 +44,6 @@ local metadata									= require("cp.metadata")
 local tools										= require("cp.tools")
 local commands									= require("cp.commands")
 local template									= require("cp.template")
-
-local log										= require("hs.logger").new("hud")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -52,14 +55,16 @@ local ORIGINAL_QUALITY 							= 10
 local ORIGINAL_PERFORMANCE						= 5
 local PROXY										= 4
 
+local PREFERENCES_KEY							= "enableHUD"
+
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
 
 hud.name										= metadata.scriptName
 hud.width										= 350
-hud.heightInspector								= 75
-hud.heightDropTargets							= 75
+hud.heightInspector								= 90
+hud.heightDropTargets							= 80
 hud.heightButtons								= 70
 
 hud.fcpGreen 									= "#3f9253"
@@ -68,36 +73,153 @@ hud.fcpRed 										= "#d1393e"
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
 
-hud.ignoreWindowChange							= true
 hud.windowID									= nil
 
-hud.hsBundleID									= hs.processInfo["bundleID"]
+--------------------------------------------------------------------------------
+-- GET HUD HEIGHT:
+--------------------------------------------------------------------------------
+local function getHUDHeight()
+
+	local hudHeight = nil
+
+	local hudShowInspector 		= hud.isInspectorShown()
+	local hudShowDropTargets 	= hud.isDropTargetsShown()
+	local hudShowButtons 		= hud.isButtonsShown()
+
+	local hudHeight = 0
+	if hudShowInspector then hudHeight = hudHeight + hud.heightInspector end
+	if hudShowDropTargets then hudHeight = hudHeight + hud.heightDropTargets end
+	if hudShowButtons then hudHeight = hudHeight + hud.heightButtons end
+
+	return hudHeight
+
+end
 
 --------------------------------------------------------------------------------
--- FUNCTIONS:
+-- GET HUD RECT:
 --------------------------------------------------------------------------------
+local function getHUDRect()
+
+	local hudHeight = getHUDHeight()
+
+	--------------------------------------------------------------------------------
+	-- Get last HUD position from settings otherwise default to centre screen:
+	--------------------------------------------------------------------------------
+	local screenFrame = screen.mainScreen():frame()
+	local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.width, h = hudHeight}
+	local hudPosition = hud.getPosition()
+	if next(hudPosition) ~= nil then
+		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hud.width, h = hudHeight}
+	end
+
+	return defaultHUDRect
+
+end
+
+--------------------------------------------------------------------------------
+-- SETUP WEBVIEW:
+--------------------------------------------------------------------------------
+local function initHUDWebView()
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View Controller:
+	--------------------------------------------------------------------------------
+	hud.hudWebViewController = webview.usercontent.new("hud")
+		:setCallback(hud.javaScriptCallback)
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View:
+	--------------------------------------------------------------------------------
+	hud.hudWebView = webview.new(getHUDRect(), {}, hud.hudWebViewController)
+		:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
+		:shadow(true)
+		--:closeOnEscape(true)
+		:html(hud.generateHTML())
+		:allowGestures(false)
+		:allowNewWindows(false)
+		:windowTitle(hud.name)
+		:level(drawing.windowLevels.utility)
+
+end
+
+--------------------------------------------------------------------------------
+-- SETUP WATCHERS:
+--------------------------------------------------------------------------------
+local function initHUDWatchers()
+
+	--------------------------------------------------------------------------------
+	-- HUD Closed Window Watcher:
+	--------------------------------------------------------------------------------
+	hud.hudClosedFilter = windowfilter.new(true)
+	:pause()
+
+	hud.hudClosedFilter:subscribe(windowfilter.windowDestroyed,
+	function(window, applicationName, event)
+		if hud.isEnabled() then
+			if window:id() == hud.windowID then
+				log.df("HUD Closed.")
+				hud.setEnabled(false)
+				initHUDWebView() -- Need to reinitialise as the WebView will have been destroyed on close.
+			end
+		end
+	end, true)
+
+	--------------------------------------------------------------------------------
+	-- CommandPost & Final Cut Pro Window Watcher:
+	--------------------------------------------------------------------------------
+	hud.hudFilter = windowfilter.new(true)
+	:setFilters({metadata.scriptName, "Final Cut Pro"})
+	:pause()
+
+		--------------------------------------------------------------------------------
+		-- HUD Moved:
+		--------------------------------------------------------------------------------
+		hud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
+			if hud.isEnabled() then
+				if window:id() == hud.windowID then
+					if hud.visible() then
+						local result = hud.hudWebView:hswindow():frame()
+						if result ~= nil then
+							log.df("HUD Moved.")
+							hud.setPosition(result)
+						end
+					end
+				end
+			end
+		end, true)
+
+		--------------------------------------------------------------------------------
+		-- CommandPost or Final Cut Pro Unfocussed:
+		--------------------------------------------------------------------------------
+		hud.hudFilter:subscribe(windowfilter.windowUnfocused, function(window, applicationName, event)
+			if hud.isEnabled() then
+				log.df("HUD Lost Focus.")
+				hud.updateVisibility()
+			end
+		end, true)
+end
 
 function hud.isEnabled()
-	return metadata.get("enableHacksHUD", false)
+	return metadata.get(PREFERENCES_KEY, false)
 end
 
 function hud.setEnabled(value)
-	metadata.set("enableHacksHUD", value)
-	hud.update()
+	metadata.set(PREFERENCES_KEY, value)
 end
 
 function hud.toggleEnabled()
 	hud.setEnabled(not hud.isEnabled())
+	hud.updateVisibility()
 end
 
-function hud.checkOptions()
+local function checkOptions()
 	return hud.isInspectorShown() or hud.isDropTargetsShown() or hud.isButtonsShown()
 end
 
 function hud.setOption(name, value)
 	metadata.set(name, value)
-	if hud.checkOptions() then
-		hud.reload()
+	if checkOptions() then
+		hud.refresh()
 	else
 		metadata.set(name, not value)
 	end
@@ -184,173 +306,130 @@ function hud.setButton(index, value)
 end
 
 function hud.isFrontmost()
-	if hud.hudWebView ~= nil then
-		return window.focusedWindow() == hud.hudWebView:hswindow()
-	else
-		return false
-	end
+	return window.focusedWindow() == hud.hudWebView:hswindow()
 end
 
-function hud.update()
-	if hud.canShow() then
+--------------------------------------------------------------------------------
+-- SHOW OR HIDE THE HUD BASED ON CURRENT GUI:
+--------------------------------------------------------------------------------
+function hud.updateVisibility(leftFinalCutPro)
+
+	if hud.isEnabled() then
+
+		--------------------------------------------------------------------------------
+		-- Hide if FCPX is not running:
+		--------------------------------------------------------------------------------
+		if not fcp:isRunning() then
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Always show if FCPX has focus:
+		--------------------------------------------------------------------------------
+		local fcpFrontmost = fcp:isFrontmost()
+		if fcpFrontmost then
+			hud.show()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Hide if Full Screen Window or Command Editor is Showing:
+		--------------------------------------------------------------------------------
+		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
+		local commandEditorShowing = fcp:commandEditor():isShowing()
+		if fullscreenWindowShowing or commandEditorShowing then
+			log.df("Hiding HUD because a Fullscreen Window or Command Editor's frontmost.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Hide if FCPX and CommandPost aren't Frontmost:
+		--------------------------------------------------------------------------------
+		local cpFrontmost = metadata.isFrontmost()
+		if not fcpFrontmost and not cpFrontmost then
+			log.df("Hiding because neither FCPX nor CP is frontmost.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Hide if Console is Triggered without coming from FCPX:
+		--------------------------------------------------------------------------------
+		local consoleFrontmost = window.frontmostWindow() == console.hswindow()
+		if consoleFrontmost and not leftFinalCutPro then
+			log.df("Hiding HUD because Console triggered it without coming from FCPX.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Hide if you've come from FCPX directly to console:
+		--------------------------------------------------------------------------------
+		if leftFinalCutPro and consoleFrontmost then
+			log.df("Hiding HUD because came from FCPX directly to Console.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Hide if Console closed and FCPX didn't have and doesn't have focus:
+		--------------------------------------------------------------------------------
+		if console.hswindow() == nil and not leftFinalCutPro and not fcpFrontmost then
+			log.df("Hiding HUD because Console is closed, FCPX didn't previously have focus and it's not focussed now.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Ignore if mouse is pressed down:
+		--------------------------------------------------------------------------------
+		local mousePressed = mouse.getButtons()
+		if next(mousePressed) ~= nil then
+			log.df("Ignorning because mouse is down.")
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Otherwise, let's show:
+		--------------------------------------------------------------------------------
+		log.df("Nothing left, so showing HUD.")
 		hud.show()
-	else
-		hud.hide()
-	end
-end
 
-function hud.canShow()
-	local result = (fcp:isFrontmost() or hud.isFrontmost() or metadata.isFrontmost())
-	and not fcp:fullScreenWindow():isShowing()
-	and not fcp:commandEditor():isShowing()
-	and hud.isEnabled()
-	return result
-end
-
---------------------------------------------------------------------------------
--- CREATE THE HUD:
---------------------------------------------------------------------------------
-function hud.new()
-
-	--------------------------------------------------------------------------------
-	-- Work out HUD height based off settings:
-	--------------------------------------------------------------------------------
-	local hudShowInspector 		= hud.isInspectorShown()
-	local hudShowDropTargets 	= hud.isDropTargetsShown()
-	local hudShowButtons 		= hud.isButtonsShown()
-
-	local hudHeight = 0
-	if hudShowInspector then hudHeight = hudHeight + hud.heightInspector end
-	if hudShowDropTargets then hudHeight = hudHeight + hud.heightDropTargets end
-	if hudShowButtons then hudHeight = hudHeight + hud.heightButtons end
-
-	--------------------------------------------------------------------------------
-	-- Get last HUD position from settings otherwise default to centre screen:
-	--------------------------------------------------------------------------------
-	local screenFrame = screen.mainScreen():frame()
-	local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.width, h = hudHeight}
-	local hudPosition = hud.getPosition()
-	if next(hudPosition) ~= nil then
-		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hud.width, h = hudHeight}
 	end
 
-	--------------------------------------------------------------------------------
-	-- Setup Web View Controller:
-	--------------------------------------------------------------------------------
-	hud.hudWebViewController = webview.usercontent.new("hud")
-		:setCallback(hud.javaScriptCallback)
-
-	--------------------------------------------------------------------------------
-	-- Setup Web View:
-	--------------------------------------------------------------------------------
-	hud.hudWebView = webview.new(defaultHUDRect, {}, hud.hudWebViewController)
-		:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable"})
-		:shadow(true)
-		:closeOnEscape(true)
-		:html(hud.generateHTML())
-		:allowGestures(false)
-		:allowNewWindows(false)
-		:windowTitle(hud.name)
-		:level(drawing.windowLevels.modalPanel)
-
-	--------------------------------------------------------------------------------
-	-- Window Watcher:
-	--------------------------------------------------------------------------------
-	hud.hudFilter = windowfilter.new(true)
-		:setAppFilter(hud.name, {activeApplication=true})
-
-	--------------------------------------------------------------------------------
-	-- HUD Moved:
-	--------------------------------------------------------------------------------
-	hud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
-		if window:id() == hud.windowID then
-			if hud.active() then
-				local result = hud.hudWebView:hswindow():frame()
-				if result ~= nil then
-					hud.setPosition(result)
-				end
-			end
-		end
-	end, true)
-
-	--------------------------------------------------------------------------------
-	-- HUD Closed:
-	--------------------------------------------------------------------------------
-	hud.hudFilter:subscribe(windowfilter.windowDestroyed,
-	function(window, applicationName, event)
-		if window:id() == hud.windowID then
-			if not hud.ignoreWindowChange then
-				hud.setEnabled(false)
-			end
-		end
-	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Watches all apps:
-	--------------------------------------------------------------------------------
-	hud.windowFilter = windowfilter.new(true)
-
-	--------------------------------------------------------------------------------
-	-- HUD Unfocussed:
-	--------------------------------------------------------------------------------
-	hud.windowFilter:subscribe(windowfilter.windowFocused,
-	function(window, applicationName, event)
-		hud.update()
-	end, true)
-
-	local watcher = application.watcher
-	hud.appWatcher = watcher.new(
-		function(appName, eventType, appObject)
-			if eventType == watcher.activated or eventType == watcher.deactivated or eventType == watcher.terminated then
-				hud.update()
-			end
-		end
-	)
-	hud.appWatcher:start()
 end
 
 --------------------------------------------------------------------------------
 -- SHOW THE HUD:
 --------------------------------------------------------------------------------
 function hud.show()
-	hud.ignoreWindowChange = true
-	if hud.hudWebView == nil then
-		hud.new()
+	if hud.hudWebView then
+		--------------------------------------------------------------------------------
+		-- Show the HUD:
+		--------------------------------------------------------------------------------
 		hud.hudWebView:show()
-	else
-		hud.hudWebView:show()
-	end
+		hud.refresh()
 
-	--------------------------------------------------------------------------------
-	-- Keep checking for a window ID until we get an answer:
-	--------------------------------------------------------------------------------
-	local hacksHUDWindowIDTimerDone = false
-	timer.doUntil(function() return hacksHUDWindowIDTimerDone end, function()
-		if hud.hudWebView:hswindow() ~= nil then
-			if hud.hudWebView:hswindow():id() ~= nil then
-				hud.windowID = hud.hudWebView:hswindow():id()
-				hacksHUDWindowIDTimerDone = true
+		--------------------------------------------------------------------------------
+		-- Keep checking for a window ID until we get an answer:
+		--------------------------------------------------------------------------------
+		local hacksHUDWindowIDTimerDone = false
+		timer.doUntil(function() return hacksHUDWindowIDTimerDone end, function()
+			if hud.hudWebView:hswindow() ~= nil then
+				if hud.hudWebView:hswindow():id() ~= nil then
+					hud.windowID = hud.hudWebView:hswindow():id()
+					hacksHUDWindowIDTimerDone = true
+				end
 			end
-		end
-	end, 0.05):fire()
+		end, 0.000001):fire()
 
-	if hud.windowFilter then hud.windowFilter:resume() end
-	if hud.appWatcher then hud.appWatcher:start() end
-
-	hud.ignoreWindowChange = false
-end
-
---------------------------------------------------------------------------------
--- IS HUD ACTIVE:
---------------------------------------------------------------------------------
-function hud.active()
-	if hud.hudWebView == nil then
-		return false
-	end
-	if hud.hudWebView:hswindow() == nil then
-		return false
-	else
-		return true
+		--------------------------------------------------------------------------------
+		-- Resume Watchers:
+		--------------------------------------------------------------------------------
+		hud.hudClosedFilter:resume()
+		hud.hudFilter:resume()
 	end
 end
 
@@ -358,45 +437,24 @@ end
 -- HIDE THE HUD:
 --------------------------------------------------------------------------------
 function hud.hide()
-	if hud.active() then
-		hud.ignoreWindowChange = true
+	if hud.hudWebView and hud.visible() then
+		hud.hudClosedFilter:pause()
+		hud.hudFilter:pause()
 		hud.hudWebView:hide()
-		if hud.windowFilter then hud.windowFilter:pause() end
-		if hud.appWatcher then hud.appWatcher:stop() end
 	end
 end
 
 --------------------------------------------------------------------------------
--- DELETE THE HUD:
+-- IS HUD VISIBLE:
 --------------------------------------------------------------------------------
-function hud.delete()
-	if hud.active() then
-		hud.hudWebView:delete()
-		if hud.windowFocus then hud.windowFocus:delete() end
-		if hud.appWatcher then hud.appWatcher:stop() end
-	end
+function hud.visible()
+	if hud.hudWebView and hud.hudWebView:hswindow() ~= nil then return true end
+	return false
 end
 
 --------------------------------------------------------------------------------
--- RELOAD THE HUD:
+-- SET UP TEMPLATE ENVIRONMENT:
 --------------------------------------------------------------------------------
-function hud.reload()
-
-	local hudActive = hud.active()
-
-	hud.delete()
-	hud.ignoreWindowChange	= true
-	hud.windowID			= nil
-	hud.new()
-
-	hud.refresh()
-
-	if hudActive and fcp:isFrontmost() then
-		hud.show()
-	end
-
-end
-
 local function getEnv()
 	--------------------------------------------------------------------------------
 	-- Set up the template environment
@@ -457,10 +515,21 @@ local function getEnv()
 end
 
 --------------------------------------------------------------------------------
+-- DISPLAY DIV VALUE:
+--------------------------------------------------------------------------------
+local function displayDiv(value)
+	if value then
+		return "block"
+	else
+		return "none"
+	end
+end
+
+--------------------------------------------------------------------------------
 -- REFRESH THE HUD:
 --------------------------------------------------------------------------------
 function hud.refresh()
-	if hud.active() then
+	if hud.visible() then
 
 		local env = getEnv()
 
@@ -473,9 +542,26 @@ function hud.refresh()
 
 			document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
 			document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
+
+			document.getElementById('button1').innerHTML = "]] .. hud.getButtonText(1) .. [[";
+			document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
+			document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
+			document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
+
+			document.getElementById('hudInspector').style.display = ']] .. displayDiv( hud.isInspectorShown() ) .. [[';
+			document.getElementById('hr1').style.display = ']] .. displayDiv( hud.isInspectorShown() and (hud.isDropTargetsShown() or hud.isButtonsShown()) ) .. [[';
+			document.getElementById('hudDropTargets').style.display = ']] .. displayDiv( hud.isDropTargetsShown() ) .. [[';
+			document.getElementById('hr2').style.display = ']] .. displayDiv( (hud.isDropTargetsShown() and hud.isButtonsShown()) ) .. [[';
+			document.getElementById('hudButtons').style.display = ']] .. displayDiv( hud.isButtonsShown() ) .. [[';
 		]]
 
 		hud.hudWebView:evaluateJavaScript(javascriptToInject)
+
+		--------------------------------------------------------------------------------
+		-- Resize the HUD:
+		--------------------------------------------------------------------------------
+		log.df("Resizing HUD.")
+		hud.hudWebView:hswindow():setSize(geometry.size(hud.width, getHUDHeight()))
 
 	end
 end
@@ -514,10 +600,10 @@ function hud.assignButton(button)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Reload HUD:
+		-- Refresh HUD:
 		--------------------------------------------------------------------------------
 		if hud.isEnabled() then
-			hud.reload()
+			hud.refresh()
 		end
 	end
 
@@ -625,6 +711,9 @@ function hud.shareXML(incomingXML)
 
 end
 
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
 function hud.init(xmlSharing, actionmanager)
 	hud.xmlSharing = xmlSharing
 	hud.actionmanager = actionmanager
@@ -649,19 +738,19 @@ function plugin.init(deps)
 	hud.init(deps.xmlSharing, deps.actionmanager)
 
 	fcp:watch({
-		active		= hud.update,
-		inactive	= hud.update,
+		active		= hud.updateVisibility,
+		inactive	= function() hud.updateVisibility(true) end,
 		preferences = hud.refresh,
 	})
 
 	fcp:fullScreenWindow():watch({
-		show		= hud.update,
-		hide		= hud.update,
+		show		= hud.updateVisibility,
+		hide		= hud.updateVisibility,
 	})
 
 	fcp:commandEditor():watch({
-		show		= hud.update,
-		hide		= hud.update,
+		show		= hud.updateVisibility,
+		hide		= hud.updateVisibility,
 	})
 
 	-- Menus
@@ -699,7 +788,11 @@ function plugin.init(deps)
 end
 
 function plugin.postInit(deps)
-	hud.update()
+
+	initHUDWebView()
+	initHUDWatchers()
+	hud.updateVisibility()
+
 end
 
 return plugin
