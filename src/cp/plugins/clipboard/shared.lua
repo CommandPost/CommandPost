@@ -253,6 +253,8 @@ function mod.init(manager)
 			if result == "Yes" then
 				setEnabledValue = true
 			end
+		else
+			setEnabledValue = true
 		end
 	end
 
@@ -286,11 +288,38 @@ function plugin.init(deps)
 		local folderItems = {}
 		if mod.isEnabled() and mod.validRootPath() then
 			local fcpxRunning = fcp:isRunning()
-			local folderNames = mod.getFolderNames()
+
+			local sharedClipboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
+			local folderNames = nil
+			if sharedClipboardFolderModified ~= mod._sharedClipboardFolderModified or mod._folderNames == nil then
+				folderNames = mod.getFolderNames()
+				mod._folderNames = folderNames
+				mod._sharedClipboardFolderModified = sharedClipboardFolderModified
+				--log.df("Creating Folder Names Cache")
+			else
+				folderNames = mod._folderNames
+				--log.df("Using Folder Names Cache")
+			end
+
 			if #folderNames > 0 then
 				for _,folder in ipairs(folderNames) do
 					local historyItems = {}
-					local history = mod.getHistory(folder)
+
+					local history = nil
+					local historyFolderModified = fs.attributes(mod.getHistoryPath(folder), "modification")
+
+					if mod._historyFolderModified == nil or mod._historyFolderModified[folder] == nil or historyFolderModified ~= mod._historyFolderModified[folder] or mod._history == nil or mod._history[folder] == nil then
+						history = mod.getHistory(folder)
+						if mod._history == nil then mod._history = {} end
+						mod._history[folder] = history
+						if mod._historyFolderModified == nil then mod._historyFolderModified = {} end
+						mod._historyFolderModified[folder] = historyFolderModified
+						--log.df("Creating History Cache for " .. folder)
+					else
+						history = mod._history[folder]
+						--log.df("Using History Cache for " .. folder)
+					end
+
 					if #history > 0 then
 						for i=#history, 1, -1 do
 							local item = history[i]
