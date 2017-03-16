@@ -167,6 +167,10 @@ function section:generateMenuTable()
 	end
 	return menuTable
 end
+
+--------------------------------------------------------------------------------
+-- DEBUGGING USE ONLY:
+--------------------------------------------------------------------------------
 function section:generateMenuTableDEBUG()
 	if self:isDisabled() then
 		return nil
@@ -185,14 +189,14 @@ function section:generateMenuTableDEBUG()
 		elseif generator.section then
 			local items = generator.section:generateMenuTable()
 			local diff = hs.timer.secondsSinceEpoch() - start
-			log.df("generated '%s' menu in %f seconds", items and #items >= 1 and items[1].title or "N/A", diff)
+			log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			if items then
 				fnutils.concat(menuTable, items)
 			end
 		elseif generator.itemsFn then
 			local items = generator.itemsFn()
 			local diff = hs.timer.secondsSinceEpoch() - start
-			log.df("generated '%s' menu in %f seconds", items and #items >= 1 and items[1].title or "N/A", diff)
+			log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			if items then
 				fnutils.concat(menuTable, items)
 			end
@@ -200,5 +204,6 @@ function section:generateMenuTableDEBUG()
 	end
 	return menuTable
 end
+--------------------------------------------------------------------------------
 
 return section
