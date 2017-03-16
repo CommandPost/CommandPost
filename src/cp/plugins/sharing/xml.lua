@@ -27,6 +27,11 @@ end
 
 function mod.setEnabled(value)
 	metadata.set("enableXMLSharing", value)
+	if value then
+		mod:_notify('enable')
+	else
+		mod:_notify('disable')
+	end
 	mod.update()
 end
 
@@ -200,6 +205,23 @@ function mod.listFilesMenu()
 		--table.insert(menu, { title = i18n("disabled"), disabled = true })
 	end
 	return menu
+end
+
+function mod:watch(events)
+	if not self.watchers then
+		self.watchers = {}
+	end
+	self.watchers[#self.watchers + 1] = events
+end
+
+function mod:_notify(type, ...)
+	if self.watchers then
+		for _,watcher in ipairs(self.watchers) do
+			if watcher[type] then
+				watcher[type](...)
+			end
+		end
+	end
 end
 
 -- The Plugin

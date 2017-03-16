@@ -767,6 +767,11 @@ function plugin.init(deps)
 		hide		= hud.updateVisibility,
 	})
 
+	hud.xmlSharing:watch({
+		enable		= hud.updateVisibility,
+		disable		= hud.updateVisibility,
+	})
+
 	-- Menus
 	local hudMenu = deps.tools:addMenu(PRIORITY, function() return i18n("hud") end)
 	hudMenu:addItem(1000, function()
