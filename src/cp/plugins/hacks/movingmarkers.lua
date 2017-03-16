@@ -1,4 +1,5 @@
 local application		= require("hs.application")
+local fs				= require("hs.fs")
 local log				= require("hs.logger").new("movingmarkers")
 
 local metadata			= require("cp.metadata")
@@ -17,19 +18,22 @@ local mod = {}
 
 -- The Module
 
-function mod.isEnabled()
-
-	local allowMovingMarkers = DEFAULT_VALUE
+function mod.isEnabled(forceReload)
 
 	local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
-	local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
+	local modified = fs.attributes(eventDescriptionsPath, "modification")
+	if forceReload or modified ~= mod._allowMovingMarkersModified then
+		local allowMovingMarkers = DEFAULT_VALUE
+		local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
+		if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
+			allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+		end
 
-	if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
-		allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+		mod._allowMovingMarkers = allowMovingMarkers
+		mod._allowMovingMarkersModified = modified
 	end
 
-	return allowMovingMarkers
-
+	return _allowMovingMarkers
 end
 
 function mod.toggleMovingMarkers()
