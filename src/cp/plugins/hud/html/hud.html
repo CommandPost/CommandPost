@@ -3,10 +3,18 @@
 	<head>
 		<!-- Style Sheets: -->
 		<style>
+		body \{
+			background-color:#1f1f1f;
+			color: #bfbebb;
+			font-family: -apple-system;
+			font-size: 11px;
+			font-weight: lighter;
+			overflow:hidden;
+		}
 		.button \{
 			text-align: center;
 			display:block;
-			width: 136px;
+			width: 85%;
 			font-family: -apple-system;
 			font-size: 10px;
 			text-decoration: none;
@@ -19,13 +27,6 @@
 			border-left: 1px solid #161616;
 			margin-left: auto;
 		    margin-right: auto;
-		}
-		body \{
-			background-color:#1f1f1f;
-			color: #bfbebb;
-			font-family: -apple-system;
-			font-size: 11px;
-			font-weight: lighter;
 		}
 		table \{
 			width:100%;
@@ -100,7 +101,7 @@
 	<body>
 
 		<!-- HUD Inspector: -->
-		<div id="hudInspector">
+		<div id="hudInspector" style="display: {{ hudInspector }};">
 			<table>
 				<tr>
 					<th>{{ i18n("media") }}:</th>
@@ -119,12 +120,12 @@
 		</div>
 
 		<!-- Seperator -->
-		<div id="hr1">
+		<div id="hr1" style="display: {{ hr1 }};">
 			<hr />
 		</div>
 
 		<!-- HUD Drop Targets: -->
-		<div id="hudDropTargets">
+		<div id="hudDropTargets" style="display: {{ hudDropTargets }};">
 			<table>
 				<tr>
 					<th style="width: 30%;">{{ i18n("xmlSharing") }}:</th>
@@ -134,12 +135,12 @@
 		</div>
 
 		<!-- Seperator -->
-		<div id="hr2">
+		<div id="hr2" style="display: {{ hr2 }};">
 			<hr />
 		</div>
 
 		<!-- HUD Buttons: -->
-		<div id="hudButtons">
+		<div id="hudButtons" style="display: {{ hudButtons }};">
 			<table>
 				<tr>
 					<th><a id="button1" href="{{ hud.getButtonURL(1) }}" class="button">{{ hud.getButtonText(1) }}</a></th> 				<th><a id="button2" href="{{ hud.getButtonURL(2) }}" class="button">{{ hud.getButtonText(2) }}</a></th>
