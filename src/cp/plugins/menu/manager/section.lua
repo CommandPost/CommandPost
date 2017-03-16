@@ -19,7 +19,7 @@ function section:new()
 	}
 	setmetatable(o, self)
 	self.__index = self
-	
+
 	return o
 end
 
@@ -145,7 +145,7 @@ function section:generateMenuTable()
 	if self:isDisabled() then
 		return nil
 	end
-	
+
 	local menuTable = {}
 	for _,generator in ipairs(self._generators) do
 		if generator.itemFn then
@@ -160,6 +160,39 @@ function section:generateMenuTable()
 			end
 		elseif generator.itemsFn then
 			local items = generator.itemsFn()
+			if items then
+				fnutils.concat(menuTable, items)
+			end
+		end
+	end
+	return menuTable
+end
+function section:generateMenuTableDEBUG()
+	if self:isDisabled() then
+		return nil
+	end
+
+	local menuTable = {}
+	for _,generator in ipairs(self._generators) do
+		local start = hs.timer.secondsSinceEpoch()
+		if generator.itemFn then
+			local item = generator.itemFn()
+			local diff = hs.timer.secondsSinceEpoch() - start
+			log.df("generated '%s' menu in %f seconds", item and item.title or "N/A", diff)
+			if item then
+				menuTable[#menuTable + 1] = item
+			end
+		elseif generator.section then
+			local items = generator.section:generateMenuTable()
+			local diff = hs.timer.secondsSinceEpoch() - start
+			log.df("generated '%s' menu in %f seconds", items and #items >= 1 and items[1].title or "N/A", diff)
+			if items then
+				fnutils.concat(menuTable, items)
+			end
+		elseif generator.itemsFn then
+			local items = generator.itemsFn()
+			local diff = hs.timer.secondsSinceEpoch() - start
+			log.df("generated '%s' menu in %f seconds", items and #items >= 1 and items[1].title or "N/A", diff)
 			if items then
 				fnutils.concat(menuTable, items)
 			end
