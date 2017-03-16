@@ -7,13 +7,11 @@
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
-
 local hud = {}
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-
 local log										= require("hs.logger").new("hud")
 
 local application								= require("hs.application")
@@ -48,24 +46,24 @@ local template									= require("cp.template")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-
 local PRIORITY									= 10000
-
-local ORIGINAL_QUALITY 							= 10
-local ORIGINAL_PERFORMANCE						= 5
-local PROXY										= 4
-
 local PREFERENCES_KEY							= "enableHUD"
+
+--------------------------------------------------------------------------------
+-- FFPlayerQuality CONSTANTS:
+--------------------------------------------------------------------------------
+local ORIGINAL_QUALITY 							= 10	-- Original - Better Quality
+local ORIGINAL_PERFORMANCE						= 5		-- Original - Better Performance
+local PROXY										= 4		-- Proxy
 
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
-
-hud.name										= metadata.scriptName
+hud.title										= metadata.scriptName
 hud.width										= 350
 hud.heightInspector								= 90
-hud.heightDropTargets							= 80
-hud.heightButtons								= 70
+hud.heightDropTargets							= 85
+hud.heightButtons								= 85
 
 hud.fcpGreen 									= "#3f9253"
 hud.fcpRed 										= "#d1393e"
@@ -90,6 +88,10 @@ local function getHUDHeight()
 	if hudShowInspector then hudHeight = hudHeight + hud.heightInspector end
 	if hudShowDropTargets then hudHeight = hudHeight + hud.heightDropTargets end
 	if hudShowButtons then hudHeight = hudHeight + hud.heightButtons end
+
+	if hudShowInspector and hudShowDropTargets and (not hudShowButtons) then hudHeight = hudHeight - 15 end
+	if hudShowInspector and (not hudShowDropTargets) and hudShowButtons then hudHeight = hudHeight - 20 end
+	if hudShowInspector and hudShowDropTargets and hudShowButtons then  hudHeight = hudHeight - 20 end
 
 	return hudHeight
 
@@ -137,7 +139,7 @@ local function initHUDWebView()
 		:html(hud.generateHTML())
 		:allowGestures(false)
 		:allowNewWindows(false)
-		:windowTitle(hud.name)
+		:windowTitle(hud.title)
 		:level(drawing.windowLevels.utility)
 
 end
@@ -150,7 +152,8 @@ local function initHUDWatchers()
 	--------------------------------------------------------------------------------
 	-- HUD Closed Window Watcher:
 	--------------------------------------------------------------------------------
-	hud.hudClosedFilter = windowfilter.new(true)
+	hud.hudClosedFilter = windowfilter.new(metadata.scriptName)
+	:setAppFilter(metadata.scriptName, {allowRoles="*",allowTitles=hud.title})
 	:pause()
 
 	hud.hudClosedFilter:subscribe(windowfilter.windowDestroyed,
@@ -158,6 +161,12 @@ local function initHUDWatchers()
 		if hud.isEnabled() then
 			if window:id() == hud.windowID then
 				--log.df("HUD Closed.")
+				--[[
+				log.df("window: %s", window)
+				log.df("window app name: %s", window:application():name())
+				log.df("applicationName: %s", applicationName)
+				log.df("event: %s", event)
+				--]]
 				hud.setEnabled(false)
 				initHUDWebView() -- Need to reinitialise as the WebView will have been destroyed on close.
 			end
@@ -167,8 +176,8 @@ local function initHUDWatchers()
 	--------------------------------------------------------------------------------
 	-- CommandPost & Final Cut Pro Window Watcher:
 	--------------------------------------------------------------------------------
-	hud.hudFilter = windowfilter.new(true)
-	:setFilters({metadata.scriptName, "Final Cut Pro"})
+	hud.hudFilter = windowfilter.new(metadata.scriptName)
+	:setAppFilter(metadata.scriptName, {allowRoles="*",allowTitles=hud.title})
 	:pause()
 
 		--------------------------------------------------------------------------------
@@ -177,12 +186,12 @@ local function initHUDWatchers()
 		hud.hudFilter:subscribe(windowfilter.windowMoved, function(window, applicationName, event)
 			if hud.isEnabled() then
 				if window:id() == hud.windowID then
-					if hud.visible() then
-						local result = hud.hudWebView:hswindow():frame()
-						if result ~= nil then
-							--log.df("HUD Moved.")
-							hud.setPosition(result)
-						end
+					local result = hud.hudWebView:hswindow():frame()
+					if result ~= nil then
+						--log.df("HUD Moved.")
+						hud.setPosition(result)
+					else
+						--log.df("Could not find HUD frame when moved.")
 					end
 				end
 			end
@@ -208,6 +217,7 @@ function hud.setEnabled(value)
 end
 
 function hud.toggleEnabled()
+	--log.df("Toggle HUD Visibility")
 	hud.setEnabled(not hud.isEnabled())
 	hud.updateVisibility()
 end
@@ -325,6 +335,17 @@ function hud.updateVisibility(leftFinalCutPro)
 		end
 
 		--------------------------------------------------------------------------------
+		-- Hide if Full Screen Window or Command Editor is Showing:
+		--------------------------------------------------------------------------------
+		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
+		local commandEditorShowing = fcp:commandEditor():isShowing()
+		if fullscreenWindowShowing or commandEditorShowing then
+			--log.df("Hiding HUD because a Fullscreen Window or Command Editor's frontmost.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
 		-- Always show if FCPX has focus:
 		--------------------------------------------------------------------------------
 		local fcpFrontmost = fcp:isFrontmost()
@@ -334,13 +355,12 @@ function hud.updateVisibility(leftFinalCutPro)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Hide if Full Screen Window or Command Editor is Showing:
+		-- Always show if HUD is being dragged:
 		--------------------------------------------------------------------------------
-		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
-		local commandEditorShowing = fcp:commandEditor():isShowing()
-		if fullscreenWindowShowing or commandEditorShowing then
-			--log.df("Hiding HUD because a Fullscreen Window or Command Editor's frontmost.")
-			hud.hide()
+		local orderedWindows = window.orderedWindows()
+		if orderedWindows[1]:application():name() == "Final Cut Pro" and orderedWindows[2]:application():name() == "Final Cut Pro" then
+			--log.df("Showing HUD because we assume it's being dragged?")
+			hud.show()
 			return
 		end
 
@@ -358,7 +378,7 @@ function hud.updateVisibility(leftFinalCutPro)
 		-- Hide if Console is Triggered without coming from FCPX:
 		--------------------------------------------------------------------------------
 		local consoleFrontmost = window.frontmostWindow() == console.hswindow()
-		if consoleFrontmost and not leftFinalCutPro then
+		if consoleFrontmost then --and not leftFinalCutPro then
 			--log.df("Hiding HUD because Console triggered it without coming from FCPX.")
 			hud.hide()
 			return
@@ -383,21 +403,15 @@ function hud.updateVisibility(leftFinalCutPro)
 		end
 
 		--------------------------------------------------------------------------------
-		-- Ignore if mouse is pressed down:
-		--------------------------------------------------------------------------------
-		local mousePressed = mouse.getButtons()
-		if next(mousePressed) ~= nil then
-			--log.df("Ignorning because mouse is down.")
-			return
-		end
-
-		--------------------------------------------------------------------------------
 		-- Otherwise, let's show:
 		--------------------------------------------------------------------------------
 		--log.df("Nothing left, so showing HUD.")
 		hud.show()
+		return
 
 	end
+
+	hud.hide()
 
 end
 
@@ -453,6 +467,17 @@ function hud.visible()
 end
 
 --------------------------------------------------------------------------------
+-- DISPLAY DIV VALUE:
+--------------------------------------------------------------------------------
+local function displayDiv(value)
+	if value then
+		return "block"
+	else
+		return "none"
+	end
+end
+
+--------------------------------------------------------------------------------
 -- SET UP TEMPLATE ENVIRONMENT:
 --------------------------------------------------------------------------------
 local function getEnv()
@@ -462,14 +487,8 @@ local function getEnv()
 	local env 		= template.defaultEnv()
 	env.i18n		= i18n
 	env.hud			= hud
+	env.displayDiv	= displayDiv
 
-	--------------------------------------------------------------------------------
-	-- FFPlayerQuality
-	--------------------------------------------------------------------------------
-	-- 10 	= Original - Better Quality
-	-- 5 	= Original - Better Performance
-	-- 4 	= Proxy
-	--------------------------------------------------------------------------------
 	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
 
 	if playerQuality == PROXY then
@@ -511,18 +530,13 @@ local function getEnv()
 		}
 	end
 
-	return env
-end
+	env.hudInspector 		= displayDiv( hud.isInspectorShown() )
+	env.hr1 				= displayDiv( hud.isInspectorShown() and (hud.isDropTargetsShown() or hud.isButtonsShown()) )
+	env.hudDropTargets		= displayDiv( hud.isDropTargetsShown() )
+	env.hr2					= displayDiv( (hud.isDropTargetsShown() and hud.isButtonsShown()) )
+	env.hudButtons			= displayDiv( hud.isButtonsShown() )
 
---------------------------------------------------------------------------------
--- DISPLAY DIV VALUE:
---------------------------------------------------------------------------------
-local function displayDiv(value)
-	if value then
-		return "block"
-	else
-		return "none"
-	end
+	return env
 end
 
 --------------------------------------------------------------------------------
@@ -548,11 +562,11 @@ function hud.refresh()
 			document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
 			document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
 
-			document.getElementById('hudInspector').style.display = ']] .. displayDiv( hud.isInspectorShown() ) .. [[';
-			document.getElementById('hr1').style.display = ']] .. displayDiv( hud.isInspectorShown() and (hud.isDropTargetsShown() or hud.isButtonsShown()) ) .. [[';
-			document.getElementById('hudDropTargets').style.display = ']] .. displayDiv( hud.isDropTargetsShown() ) .. [[';
-			document.getElementById('hr2').style.display = ']] .. displayDiv( (hud.isDropTargetsShown() and hud.isButtonsShown()) ) .. [[';
-			document.getElementById('hudButtons').style.display = ']] .. displayDiv( hud.isButtonsShown() ) .. [[';
+			document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
+			document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
+			document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
+			document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
+			document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
 		]]
 
 		hud.hudWebView:evaluateJavaScript(javascriptToInject)
