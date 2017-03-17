@@ -3,17 +3,16 @@
 --              T O O L S     S U P P O R T     L I B R A R Y                 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---
--- Module created by Chris Hocking (https://latenitefilms.com).
---
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
-
 local tools = {}
+
+--------------------------------------------------------------------------------
+-- EXTENSIONS:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("tools")
 
 local eventtap									= require("hs.eventtap")
 local fnutils									= require("hs.fnutils")
@@ -27,18 +26,14 @@ local timer										= require("hs.timer")
 
 local just										= require("cp.just")
 
-local log										= require("hs.logger").new("tools")
-
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-
 tools.DEFAULT_DELAY 	= 0
 
 --------------------------------------------------------------------------------
 -- LOCAL VARIABLES:
 --------------------------------------------------------------------------------
-
 local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
@@ -101,8 +96,8 @@ end
 
 --------------------------------------------------------------------------------
 -- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
---------------------------------------------------------------------------------
 -- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
+--------------------------------------------------------------------------------
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
 	local hsBundleID = hs.processInfo["bundleID"]
 	if type(stopOnError) ~= "boolean" then stopOnError = true end
@@ -226,7 +221,7 @@ function tools.ninjaMouseAction(point, fn)
 end
 
 --------------------------------------------------------------------------------
--- HOW MANY ITEMS IN A TABLE?
+-- HOW MANY ITEMS IN A TABLE:
 --------------------------------------------------------------------------------
 function tools.tableCount(table)
 	local count = 0
@@ -321,7 +316,7 @@ function tools.incrementFilename(value)
 end
 
 --------------------------------------------------------------------------------
--- Returns a list of file names for the path in an array.
+-- RETURNS A LIST OF FILE NAMES FOR THE PATH IN AN ARRAY:
 --------------------------------------------------------------------------------
 function tools.dirFiles(path)
 	path = fs.pathToAbsolute(path)
@@ -334,6 +329,9 @@ function tools.dirFiles(path)
 	return files
 end
 
+--------------------------------------------------------------------------------
+-- NUMBER TO WORD:
+--------------------------------------------------------------------------------
 function tools.numberToWord(number)
 	if number == 1 then return "One" end
 	if number == 2 then return "Two" end

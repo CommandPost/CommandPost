@@ -3,17 +3,16 @@
 --            D I A L O G B O X     S U P P O R T     L I B R A R Y           --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---
--- Module created by Chris Hocking (https://latenitefilms.com)
---
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
-
 local dialog = {}
+
+--------------------------------------------------------------------------------
+-- EXTENSIONS:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("dialog")
 
 local alert										= require("hs.alert")
 local console									= require("hs.console")
@@ -27,8 +26,6 @@ local inspect									= require("hs.inspect")
 local fcp										= require("cp.finalcutpro")
 local tools										= require("cp.tools")
 local metadata									= require("cp.metadata")
-
-local log										= require("hs.logger").new("dialog")
 
 --------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:
@@ -249,7 +246,7 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 		set listOptions to ]] .. inspect(listOptions) .. "\n\n" .. [[
 		set defaultItems to ]] .. inspect(defaultItems) .. "\n\n" .. [[
 
-		return choose from list listOptions with title "FCPX Hacks" with prompt dialogPrompt default items defaultItems
+		return choose from list listOptions with title "]] .. metadata.scriptName .. [[" with prompt dialogPrompt default items defaultItems
 	]]
 
 	return as(appleScript)

@@ -169,34 +169,46 @@ function section:generateMenuTable()
 end
 
 --------------------------------------------------------------------------------
--- DEBUGGING USE ONLY:
+--------------------------------------------------------------------------------
+--                      USE FOR DEBUGGING & TESTING ONLY                      --
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function section:generateMenuTableDEBUG()
+
+	local warningDiff = 0.005
+
 	if self:isDisabled() then
 		return nil
 	end
 
+	local timer = require("hs.timer")
 	local menuTable = {}
 	for _,generator in ipairs(self._generators) do
-		local start = hs.timer.secondsSinceEpoch()
+		local start = timer.secondsSinceEpoch()
 		if generator.itemFn then
 			local item = generator.itemFn()
-			local diff = hs.timer.secondsSinceEpoch() - start
-			log.df("generated '%s' menu in %f seconds", item and item.title or "N/A", diff)
+			local diff = timer.secondsSinceEpoch() - start
+			if diff > warningDiff then
+				log.df("generated '%s' menu in %f seconds", item and item.title or "N/A", diff)
+			end
 			if item then
 				menuTable[#menuTable + 1] = item
 			end
 		elseif generator.section then
 			local items = generator.section:generateMenuTable()
-			local diff = hs.timer.secondsSinceEpoch() - start
-			log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			local diff = timer.secondsSinceEpoch() - start
+			if diff > warningDiff then
+				log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			end
 			if items then
 				fnutils.concat(menuTable, items)
 			end
 		elseif generator.itemsFn then
 			local items = generator.itemsFn()
-			local diff = hs.timer.secondsSinceEpoch() - start
-			log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			local diff = timer.secondsSinceEpoch() - start
+			if diff > warningDiff then
+				log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			end
 			if items then
 				fnutils.concat(menuTable, items)
 			end
@@ -204,6 +216,7 @@ function section:generateMenuTableDEBUG()
 	end
 	return menuTable
 end
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 return section
