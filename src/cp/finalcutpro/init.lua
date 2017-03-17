@@ -14,12 +14,14 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local windowfilter								= require("hs.window.filter")
+local task										= require("hs.task")
 
 local log										= require("hs.logger").new("finalcutpro")
 
 --- Local Modules:
 local plist										= require("cp.plist")
 local just										= require("cp.just")
+local tools										= require("cp.tools")
 
 local axutils									= require("cp.finalcutpro.axutils")
 
@@ -732,7 +734,11 @@ end
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		log.d("Reloading FCPX preferences from file...")
+		log.d("Reloading Final Cut Pro Preferences.")
+
+		-- See: https://macmule.com/2014/02/07/mavericks-preference-caching/
+		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
+
 		self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
 		self._preferencesModified = modified
 	 end
@@ -1033,6 +1039,9 @@ App.fileMenuTitle = {
 ---
 function App:getCurrentLanguage(forceReload, forceLanguage)
 
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Supported Languages:
+	--------------------------------------------------------------------------------
 	local finalCutProLanguages = App.SUPPORTED_LANGUAGES
 
 	--------------------------------------------------------------------------------
@@ -1047,6 +1056,7 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	-- Caching:
 	--------------------------------------------------------------------------------
 	if self._currentLanguage ~= nil and not forceReload then
+		--log.df("Using Final Cut Pro Language from Cache")
 		return self._currentLanguage
 	end
 
@@ -1055,11 +1065,9 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
 		local menuBar = self:menuBar()
-
 		local fileMenu = menuBar:findMenuUI("File")
 		if fileMenu then
 			fileValue = fileMenu:attributeValue("AXTitle") or nil
-
 			self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
 			if self._currentLanguage then
 				return self._currentLanguage
@@ -1084,7 +1092,6 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	--------------------------------------------------------------------------------
 	local a, userLocale = osascript.applescript("return user locale of (get system info)")
 	if userLocale ~= nil then
-
 		--------------------------------------------------------------------------------
 		-- Only return languages Final Cut Pro actually supports:
 		--------------------------------------------------------------------------------
@@ -1103,35 +1110,39 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 				end
 			end
 		end
-
 	end
 
 	--------------------------------------------------------------------------------
 	-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
 	--------------------------------------------------------------------------------
-	local a, AppleLanguages = hs.osascript.applescript([[
-		set lang to do shell script "defaults read NSGlobalDomain AppleLanguages"
-			tell application "System Events"
-				set pl to make new property list item with properties {text:lang}
-				set r to value of pl
-			end tell
-		return item 1 of r ]])
-	if AppleLanguages ~= nil then
-
-		--------------------------------------------------------------------------------
-		-- Only return languages Final Cut Pro actually supports:
-		--------------------------------------------------------------------------------
-		for i=1, #finalCutProLanguages do
-			if AppleLanguages == finalCutProLanguages[i] then
-				self._currentLanguage = AppleLanguages
-				return AppleLanguages
-			else
-				local subLang = string.find(AppleLanguages, "-")
-				if subLang ~= nil then
-					local lang = string.sub(AppleLanguages, 1, subLang - 1)
-					if lang == finalCutProLanguages[i] then
-						self._currentLanguage = lang
-						return lang
+	local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
+	if status then
+		local appleLanguages = tools.lines(output)
+		if next(appleLanguages) ~= nil then
+			if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
+				for i=2, #appleLanguages - 1 do
+					local firstCharacter = string.sub(appleLanguages[i], 1, 1)
+					local lastCharacter = string.sub(appleLanguages[i], -1)
+					if firstCharacter == '"' and lastCharacter == '"' and string.len(appleLanguages[i]) > 2 then
+						--------------------------------------------------------------------------------
+						-- Only return languages Final Cut Pro actually supports:
+						--------------------------------------------------------------------------------
+						local currentLanguage = string.sub(appleLanguages[i], 2, -2)
+						for x=1, #finalCutProLanguages do
+							if currentLanguage == finalCutProLanguages[x] then
+								self._currentLanguage = currentLanguage
+								return currentLanguage
+							else
+								local subLang = string.find(currentLanguage, "-")
+								if subLang ~= nil then
+									local lang = string.sub(currentLanguage, 1, subLang - 1)
+									if lang == finalCutProLanguages[x] then
+										self._currentLanguage = lang
+										return lang
+									end
+								end
+							end
+						end
 					end
 				end
 			end
@@ -1229,7 +1240,7 @@ end
 function App:_initWatchers()
 
 	--------------------------------------------------------------------------------
-	-- Window Watchers:
+	-- Application Watcher:
 	--------------------------------------------------------------------------------
 	local watcher = application.watcher
 

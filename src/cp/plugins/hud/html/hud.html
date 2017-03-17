@@ -3,10 +3,18 @@
 	<head>
 		<!-- Style Sheets: -->
 		<style>
+		body \{
+			background-color:#1f1f1f;
+			color: #bfbebb;
+			font-family: -apple-system;
+			font-size: 11px;
+			font-weight: lighter;
+			overflow:hidden;
+		}
 		.button \{
 			text-align: center;
 			display:block;
-			width: 136px;
+			width: 85%;
 			font-family: -apple-system;
 			font-size: 10px;
 			text-decoration: none;
@@ -19,13 +27,6 @@
 			border-left: 1px solid #161616;
 			margin-left: auto;
 		    margin-right: auto;
-		}
-		body \{
-			background-color:#1f1f1f;
-			color: #bfbebb;
-			font-family: -apple-system;
-			font-size: 11px;
-			font-weight: lighter;
 		}
 		table \{
 			width:100%;
@@ -98,54 +99,58 @@
 	</head>
 
 	<body>
-	{% if hud.isInspectorShown() then }}
+
 		<!-- HUD Inspector: -->
-		<table>
-			<tr>
-				<th>{{ i18n("media") }}:</th>
-				<th><span class="{{media.class}}" style="color: {{media.color}};">{{media.text}}</span><th>
-			</tr>
-			<tr>
-				<th>{{ i18n("quality") }}:</th>
-				<th><span class="{{quality.class}}" style="color: {{quality.color}};">{{quality.text}}</span><th>
-			</tr>
+		<div id="hudInspector" style="display: {{ hudInspector }};">
+			<table>
+				<tr>
+					<th>{{ i18n("media") }}:</th>
+					<th><span id="media" class="{{media.class}}">{{media.text}}</span><th>
+				</tr>
+				<tr>
+					<th>{{ i18n("quality") }}:</th>
+					<th><span id="quality" class="{{quality.class}}">{{quality.text}}</span><th>
+				</tr>
 
-			<tr>
-				<th>{{ i18n("backgroundRender") }}:</th>
-				<th><span class="{{backgroundRender.class}}" style="color: {{backgroundRender.color}};">{{backgroundRender.text}}</span></th>
-			</tr>
-		</table>
-		{% if hud.isDropTargetsShown() or hud.isButtonsShown() then }}
-		<hr />
-		{% end }}
-	{% end }}
+				<tr>
+					<th>{{ i18n("backgroundRender") }}:</th>
+					<th><span id="backgroundRender" class="{{backgroundRender.class}}">{{backgroundRender.text}}</span></th>
+				</tr>
+			</table>
+		</div>
 
+		<!-- Seperator -->
+		<div id="hr1" style="display: {{ hr1 }};">
+			<hr />
+		</div>
 
-	{% if hud.isDropTargetsShown() then }}
 		<!-- HUD Drop Targets: -->
-		<table>
-			<tr>
-				<th style="width: 30%;">{{ i18n("xmlSharing") }}:</th>
-				<th style="width: 70%;"><form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="{{ string.upper(i18n("hudDropZoneText")) }}"></form></th>
-			<tr>
-		</table>
+		<div id="hudDropTargets" style="display: {{ hudDropTargets }};">
+			<table>
+				<tr>
+					<th style="width: 30%;">{{ i18n("xmlSharing") }}:</th>
+					<th style="width: 70%;"><form><input type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" value="{{ string.upper(i18n("hudDropZoneText")) }}"></form></th>
+				<tr>
+			</table>
+		</div>
 
-		{% if hud.isButtonsShown() then }}
-		<hr />
-		{% end }}
-	{% end }}
+		<!-- Seperator -->
+		<div id="hr2" style="display: {{ hr2 }};">
+			<hr />
+		</div>
 
-	{% if hud.isButtonsShown() then }}
 		<!-- HUD Buttons: -->
-		<table>
-			<tr>
-				<th><a href="{{ hud.getButtonURL(1) }}" class="button">{{ hud.getButtonText(1) }}</a></th> 				<th><a href="{{ hud.getButtonURL(2) }}" class="button">{{ hud.getButtonText(2) }}</a></th>
-			<tr>
-			<tr style="padding:80px;"><th></th></tr>
-			<tr>
-				<th><a href="{{ hud.getButtonURL(3) }}" class="button">{{ hud.getButtonText(3) }}</a></th> 				<th><a href="{{ hud.getButtonURL(4) }}" class="button">{{ hud.getButtonText(4) }}</a></th>
-			</tr>
-		</table>
-	{% end }}
+		<div id="hudButtons" style="display: {{ hudButtons }};">
+			<table>
+				<tr>
+					<th><a id="button1" href="{{ hud.getButtonURL(1) }}" class="button">{{ hud.getButtonText(1) }}</a></th> 				<th><a id="button2" href="{{ hud.getButtonURL(2) }}" class="button">{{ hud.getButtonText(2) }}</a></th>
+				<tr>
+				<tr style="padding:80px;"><th></th></tr>
+				<tr>
+					<th><a id="button3" href="{{ hud.getButtonURL(3) }}" class="button">{{ hud.getButtonText(3) }}</a></th> 				<th><a id="button4" href="{{ hud.getButtonURL(4) }}" class="button">{{ hud.getButtonText(4) }}</a></th>
+				</tr>
+			</table>
+		</div>
+
 	</body>
 </html>

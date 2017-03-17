@@ -1,110 +1,143 @@
-local application		= require("hs.application")
-local log				= require("hs.logger").new("movingmarkers")
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                M O V I N G   M A R K E R S   P L U G I N                   --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-local metadata			= require("cp.metadata")
-local fcp				= require("cp.finalcutpro")
-local dialog			= require("cp.dialog")
-local plist				= require("cp.plist")
-local tools				= require("cp.tools")
+--------------------------------------------------------------------------------
+-- EXTENSIONS:
+--------------------------------------------------------------------------------
+local log						= require("hs.logger").new("movingmarkers")
 
--- Constants
+local application				= require("hs.application")
+local fs						= require("hs.fs")
 
-local PRIORITY = 5
-local DEFAULT_VALUE = false
-local EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
+local metadata					= require("cp.metadata")
+local fcp						= require("cp.finalcutpro")
+local dialog					= require("cp.dialog")
+local plist						= require("cp.plist")
+local tools						= require("cp.tools")
 
+--------------------------------------------------------------------------------
+-- CONSTANTS:
+--------------------------------------------------------------------------------
+local PRIORITY 					= 5
+local DEFAULT_VALUE 			= false
+local EVENT_DESCRIPTION_PATH 	= "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
+
+--------------------------------------------------------------------------------
+-- THE MODULE:
+--------------------------------------------------------------------------------
 local mod = {}
 
--- The Module
+	--------------------------------------------------------------------------------
+	-- ARE MOVING MARKERS ENABLED:
+	--------------------------------------------------------------------------------
+	function mod.isEnabled(forceReload)
 
-function mod.isEnabled()
+		local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
+		local modified = fs.attributes(eventDescriptionsPath, "modification")
+		if forceReload or modified ~= mod._allowMovingMarkersModified then
+			local allowMovingMarkers = DEFAULT_VALUE
+			local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
+			if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
+				allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+			end
 
-	local allowMovingMarkers = DEFAULT_VALUE
+			mod._allowMovingMarkers = allowMovingMarkers
+			mod._allowMovingMarkersModified = modified
+		end
 
-	local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
-	local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
-
-	if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
-		allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+		return _allowMovingMarkers
 	end
 
-	return allowMovingMarkers
-
-end
-
-function mod.toggleMovingMarkers()
-
 	--------------------------------------------------------------------------------
-	-- Get existing value:
+	-- TOGGLE MOVING MARKERS:
 	--------------------------------------------------------------------------------
-	local allowMovingMarkers = mod.isEnabled()
+	function mod.toggleMovingMarkers()
 
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartStatus = false
-	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			restartStatus = true
+		--------------------------------------------------------------------------------
+		-- Get existing value:
+		--------------------------------------------------------------------------------
+		local allowMovingMarkers = mod.isEnabled()
+
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local restartStatus = false
+		if fcp:isRunning() then
+			if dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+				restartStatus = true
+			else
+				return "Done"
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		if allowMovingMarkers then
+			local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. EVENT_DESCRIPTION_PATH .. "'")
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
+			end
 		else
-			return "Done"
+			local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp:getPath() .. EVENT_DESCRIPTION_PATH .. "'")
+			if type(result) == "string" then
+				dialog.displayErrorMessage(result)
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if restartStatus then
+			if not fcp:restart() then
+				--------------------------------------------------------------------------------
+				-- Failed to restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				dialog.displayErrorMessage(i18n("failedToRestart"))
+				return "Failed"
+			end
 		end
 	end
 
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	if allowMovingMarkers then
-		local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' false\" ']] .. fcp:getPath() .. EVENT_DESCRIPTION_PATH .. "'")
-		if type(result) == "string" then
-			dialog.displayErrorMessage(result)
-		end
-	else
-		local result = tools.executeWithAdministratorPrivileges([[/usr/libexec/PlistBuddy -c \"Set :TLKMarkerHandler:Configuration:'Allow Moving Markers' true\" ']] .. fcp:getPath() .. EVENT_DESCRIPTION_PATH .. "'")
-		if type(result) == "string" then
-			dialog.displayErrorMessage(result)
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartStatus then
-		if not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return "Failed"
-		end
-	end
-end
-
---- The Plugin:
-
+--------------------------------------------------------------------------------
+-- THE PLUGIN:
+--------------------------------------------------------------------------------
 local plugin = {}
 
-plugin.dependencies = {
-	["cp.plugins.menu.administrator.advancedfeatures"] = "advancedfeatures",
-	["cp.plugins.commands.fcpx"] = "fcpxCmds",
-}
+	plugin.dependencies = {
+		["cp.plugins.menu.administrator.advancedfeatures"] = "advancedfeatures",
+		["cp.plugins.commands.fcpx"] = "fcpxCmds",
+	}
 
-function plugin.init(deps)
+	function plugin.init(deps)
 
-	deps.advancedfeatures:addItem(PRIORITY, function()
-		return { title = i18n("enableMovingMarkers"),	fn = mod.toggleMovingMarkers, checked=mod.isEnabled() }
-	end)
+		--------------------------------------------------------------------------------
+		-- Cache status on load:
+		--------------------------------------------------------------------------------
+		mod.isEnabled()
 
-	:addSeparator(PRIORITY + 1)
+		--------------------------------------------------------------------------------
+		-- Setup Menu:
+		--------------------------------------------------------------------------------
+		deps.advancedfeatures:addItem(PRIORITY, function()
+			return { title = i18n("enableMovingMarkers"),	fn = mod.toggleMovingMarkers, checked=mod.isEnabled() }
+		end)
 
-	-- Commands
-	deps.fcpxCmds:add("cpToggleMovingMarkers")
-		:groupedBy("hacks")
-		:activatedBy():ctrl():option():cmd("y")
-		:whenActivated(mod.toggleMovingMarkers)
+		:addSeparator(PRIORITY + 1)
 
-	return mod
+		--------------------------------------------------------------------------------
+		-- Setup Commands:
+		--------------------------------------------------------------------------------
+		deps.fcpxCmds:add("cpToggleMovingMarkers")
+			:groupedBy("hacks")
+			:activatedBy():ctrl():option():cmd("y")
+			:whenActivated(mod.toggleMovingMarkers)
 
-end
+		return mod
+
+	end
 
 return plugin

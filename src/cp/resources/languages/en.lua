@@ -161,6 +161,7 @@ return {
 			sharedClipboardRootFolder			=			"Shared Clipboard Root Folder",
 			sharedClipboardFileNotFound			=			"The Shared Clipboard file could not be found.",
 			sharedClipboardNotRead				=			"The Shared Clipboard file could not be read.",
+			sharedClipboardPathMissing			=			"The Shared Clipboard path no longer exists. Would you like to select a new location?",
 
 			restartFinalCutProFailed			=			"We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.",
 
@@ -416,7 +417,7 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDebugMode						=			"Enable Developer Mode",
+			enableDeveloperMode					=			"Enable Developer Mode",
 			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
@@ -487,7 +488,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
-			openConsole							=			"Open Error Console",
+			openErrorLog						=			"Open Error Log",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
