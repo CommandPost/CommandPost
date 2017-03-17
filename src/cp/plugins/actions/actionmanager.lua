@@ -8,6 +8,7 @@ local timer						= require("hs.timer")
 -- The Module
 local mod = {
 	_actions	= {},
+	_actionIds	= {},
 	_cache		= {},
 }
 
@@ -84,14 +85,24 @@ function mod.getURL(choice)
 	end
 end
 
+function mod.getActionIds()
+	return mod._actionsIds
+end
+
+function mod.getActions()
+	return mod._actions
+end
+
 function mod.addAction(action)
 	-- log.df("adding action: %s", hs.inspect(action))
-	mod._actions[action.id()] = action
+	local id = action.id()
+	mod._actions[id] = action
+	mod._actionIds[#mod._actionIds + 1] = id
 	
-	urlevent.bind(action.id(), function(eventName, params)
-		if eventName ~= action.id() then
+	urlevent.bind(id, function(eventName, params)
+		if eventName ~= id then
 			-- Mismatch!
-			dialog.displayMessage(i18n("actionMismatchError", {expected = action.id(), actual = eventName}))
+			dialog.displayMessage(i18n("actionMismatchError", {expected = id, actual = eventName}))
 			return
 		end
 		params = thawParams(params)
@@ -101,6 +112,13 @@ end
 
 function mod.getAction(id)
 	return mod._actions[id]
+end
+
+function mod.toggleActionEnabled(id)
+	local action = mod.getAction(id)
+	if action and action.toggleEnabled then
+		action:toggleEnabled()
+	end
 end
 
 function mod.getOptions(actionId, params)
@@ -148,7 +166,7 @@ function mod.unfavorite(id)
 end
 
 function mod.getPopularityIndex()
-	if not mod._poplarityIndex then
+	if not mod._popularityIndex then
 		mod._popularityIndex = metadata.get("actionPopularityIndex", {})
 	end
 	return mod._popularityIndex 
@@ -232,7 +250,7 @@ local function compareChoice(a, b)
 end
 
 function mod.sortChoices()
-	table.sort(mod._choices, compareChoice)
+	return table.sort(mod._choices, compareChoice)
 end
 
 function mod.addChoices(choices)
@@ -246,13 +264,18 @@ function mod.choices()
 	if not mod._choices then
 		local result = {}
 		for type,action in pairs(mod._actions) do
-			local c = action:choices()
-			fnutils.concat(result, c:getChoices())
+			if not action.isEnabled or action.isEnabled() then
+				fnutils.concat(result, action.choices():getChoices())
+			end
 		end
 		mod._choices = result
 		mod.sortChoices()
 	end
 	return mod._choices
+end
+
+function mod.refresh()
+	mod._choices = nil
 end
 
 -- The Plugin

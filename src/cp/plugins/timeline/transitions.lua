@@ -21,8 +21,26 @@ local MAX_SHORTCUTS = 5
 local action = {}
 local mod = {}
 
+function action.init(actionmanager)
+	action._manager = actionmanager
+	action._manager.addAction(action)
+end
+
 function action.id()
 	return "transition"
+end
+
+function action.setEnabled(value)
+	metadata.set(action.id().."ActionEnabled", value)
+	action._manager.refresh()
+end
+
+function action.isEnabled()
+	return metadata.get(action.id().."ActionEnabled", true)
+end
+
+function action.toggleEnabled()
+	action.setEnabled(not action.isEnabled())
 end
 
 function action.choices()
@@ -367,7 +385,7 @@ function plugin.init(deps)
 	mod.touchbar = deps.touchbar
 
 	-- Register the Action
-	deps.actionmanager.addAction(action)
+	action.init(deps.actionmanager)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTransitionsShortcuts") end)

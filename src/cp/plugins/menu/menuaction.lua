@@ -14,8 +14,26 @@ local mod = {}
 
 local ID	= "menu"
 
+function mod.init(actionmanager)
+	mod._manager = actionmanager
+	mod._manager.addAction(mod)
+end
+
 function mod.id()
 	return ID
+end
+
+function mod.setEnabled(value)
+	metadata.set("menuActionEnabled", value)
+	mod._manager.refresh()
+end
+
+function mod.isEnabled()
+	return metadata.get("menuActionEnabled", true)
+end
+
+function mod.toggleEnabled()
+	mod.setEnabled(not mod.isEnabled())
 end
 
 --- cp.plugins.actions.commandaction.choices() -> table
@@ -29,9 +47,9 @@ function mod.choices()
 		local title = menuItem:title()
 		
 		if path[1] ~= "Apple" then
-			local params = {
-				path	= fnutils.concat(fnutils.copy(path), { title }),
-			}
+			local params = {}
+			params.path	= fnutils.concat(fnutils.copy(path), { title })
+			
 			result:add(title)
 				:subText(i18n("menuChoiceSubText", {path = table.concat(path, " > ")}))
 				:params(params)
@@ -73,7 +91,7 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	deps.actionmanager.addAction(mod)
+	mod.init(deps.actionmanager)
 	return mod
 end
 

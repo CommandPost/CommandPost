@@ -524,6 +524,13 @@ return {
 	consoleChoiceUnfavorite				=			"Unfavourite",
 	consoleChoiceFavorite				=			"Favourite",
 	
+	command_action						=			"Commands",
+	menu_action							=			"Menu Items",
+	effect_action						=			"Audio & Video Effects",
+	generator_action					=			"Generators",
+	title_action						=			"Titles",
+	transition_action					=			"Transitions",
+	
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",

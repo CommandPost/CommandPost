@@ -309,8 +309,9 @@ function plugin.init(deps)
 		:whenActivated(function() mod.show() end)
 		:activatedBy():ctrl("space")
 		
-	-- Add the menus
+	-- Add the 'Console' menu items
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
+	
 	menu:addItem(1000, function()
 		return { title = i18n("enableConsole"),	fn = mod.toggleEnabled, checked = mod.isEnabled() }
 	end)
@@ -322,7 +323,25 @@ function plugin.init(deps)
 			{ title = i18n("rememberLastQuery"),	fn=mod.toggleLastQueryRemembered, checked = mod.isLastQueryRemembered(),  },
 		}
 	end)
-
+	
+	menu:addSeparator(4000)
+	
+	menu:addItems(5000, function()
+		local actionItems = {}
+		for id,action in pairs(deps.actionmanager.getActions()) do
+			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,	
+				fn=function()
+					action.toggleEnabled()
+					deps.actionmanager.refresh()
+				end,
+				checked = action.isEnabled(), }
+		end
+		
+		table.sort(actionItems, function(a, b) return a.title < b.title end)
+		
+		return actionItems
+	end)
+	
 	return mod
 
 end

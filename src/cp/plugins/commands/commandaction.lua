@@ -11,8 +11,26 @@ local mod = {}
 
 local ID	= "command"
 
+function mod.init(actionmanager)
+	mod._manager = actionmanager
+	mod._manager.addAction(mod)
+end
+
 function mod.id()
 	return ID
+end
+
+function mod.setEnabled(value)
+	metadata.set("commandActionEnabled", value)
+	mod._manager.refresh()
+end
+
+function mod.isEnabled()
+	return metadata.get("commandActionEnabled", true)
+end
+
+function mod.toggleEnabled()
+	mod.setEnabled(not mod.isEnabled())
 end
 
 --- cp.plugins.actions.commandaction.choices() -> table
@@ -98,7 +116,7 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	deps.actionmanager.addAction(mod)
+	mod.init(deps.actionmanager)
 	return mod
 end
 
