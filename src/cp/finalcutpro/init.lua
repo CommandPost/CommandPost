@@ -14,6 +14,7 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local windowfilter								= require("hs.window.filter")
+local task										= require("hs.task")
 
 local log										= require("hs.logger").new("finalcutpro")
 
@@ -733,7 +734,11 @@ end
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		log.d("Reloading FCPX preferences from file...")
+		log.d("Reloading Final Cut Pro Preferences.")
+
+		-- See: https://macmule.com/2014/02/07/mavericks-preference-caching/
+		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
+
 		self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
 		self._preferencesModified = modified
 	 end
@@ -1051,6 +1056,7 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	-- Caching:
 	--------------------------------------------------------------------------------
 	if self._currentLanguage ~= nil and not forceReload then
+		--log.df("Using Final Cut Pro Language from Cache")
 		return self._currentLanguage
 	end
 

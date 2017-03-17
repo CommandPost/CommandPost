@@ -24,10 +24,12 @@ local log						= logger.new("cp")
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
+local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local mouse                     = require("hs.mouse")
 local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
+local toolbar                   = require("hs.webview.toolbar")
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS:
@@ -44,6 +46,29 @@ if debugMode then
 else
 	logger.defaultLogLevel = 'warning'
 end
+
+--------------------------------------------------------------------------------
+-- ADD TOOLBAR TO ERROR LOG:
+--------------------------------------------------------------------------------
+function consoleOnTopIcon()
+	if hs.consoleOnTop() then
+		return image.imageFromName("NSStatusAvailable")
+	else
+		return image.imageFromName("NSStatusUnavailable")
+	end
+end
+local toolbar = require("hs.webview.toolbar")
+errorLogToolbar = toolbar.new("myConsole", {
+		{ id = "Always On Top", image = consoleOnTopIcon(),
+			fn = function()
+				hs.consoleOnTop(not hs.consoleOnTop())
+				errorLogToolbar:modifyItem({id = "Always On Top", image = consoleOnTopIcon()})
+			end
+		}
+    })
+	:canCustomize(true)
+    :autosaves(true)
+console.toolbar(errorLogToolbar)
 
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
@@ -116,10 +141,7 @@ function mod.init()
 		color = drawing.color.definedCollections.hammerspoon["black"],
 		font = { name = "Helvetica", size = 18 },
 	}))
-    console.printStyledtext(styledtext.new("Developed by Chris Hocking & David Peterson", {
-		color = drawing.color.definedCollections.hammerspoon["black"],
-		font = { name = "Helvetica", size = 14 },
-	}))
+
 	console.printStyledtext("")
 
     --------------------------------------------------------------------------------
@@ -132,18 +154,14 @@ function mod.init()
     if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
     if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
     											writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
-    											writeToConsoleDebug("Debug Mode:                     " .. tostring(debugMode))
-                                                writeToConsoleDebug("", true)
-    console.printStyledtext(styledtext.new("Start of Log:\n", {
-		color = drawing.color.definedCollections.hammerspoon["black"],
-		font = { name = "Helvetica", size = 14 },
+    											writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
 
-	}))
+	console.printStyledtext("")
 
 	--------------------------------------------------------------------------------
 	-- Display the content that was displayed before loading...
 	--------------------------------------------------------------------------------
-	print(consoleLoadingContent)
+	print(tools.trim(consoleLoadingContent))
 
 	--------------------------------------------------------------------------------
 	-- Watch for Script Updates:
