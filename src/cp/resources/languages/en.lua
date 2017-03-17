@@ -525,6 +525,7 @@ return {
 	consoleChoiceUnfavorite				=			"Unfavourite",
 	consoleChoiceFavorite				=			"Favourite",
 	
+	consoleSections						=			"Sections",
 	command_action						=			"Commands",
 	menu_action							=			"Menu Items",
 	effect_action						=			"Audio & Video Effects",

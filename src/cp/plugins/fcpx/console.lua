@@ -134,10 +134,6 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	mod.checkReducedTransparency()
 
-	--------------------------------------------------------------------------------
-	-- The Console always loads in 'normal' mode:
-	--------------------------------------------------------------------------------
-	mod.mode = "normal"
 	mod.refresh()
 
 	--------------------------------------------------------------------------------
@@ -196,58 +192,14 @@ end
 --------------------------------------------------------------------------------
 function mod.completionAction(result)
 
-	local currentLanguage = fcp:getCurrentLanguage()
-	local chooserRemoved = metadata.get(currentLanguage .. ".chooserRemoved", {})
+	mod.hide()
 
 	--------------------------------------------------------------------------------
 	-- Nothing selected:
 	--------------------------------------------------------------------------------
-	if result == nil then
-		--------------------------------------------------------------------------------
-		-- Hide Console:
-		--------------------------------------------------------------------------------
-		mod.hide()
-		return
-	end
-
-	--------------------------------------------------------------------------------
-	-- Normal Mode:
-	--------------------------------------------------------------------------------
-	if mod.mode == "normal" then
-		--------------------------------------------------------------------------------
-		-- Hide Console:
-		--------------------------------------------------------------------------------
-		mod.hide()
-
+	if result then
 		mod.actionmanager.execute(result.type, result.params)
-
-	--------------------------------------------------------------------------------
-	-- Remove Mode:
-	--------------------------------------------------------------------------------
-	elseif mod.mode == "remove" then
-
-		chooserRemoved[#chooserRemoved + 1] = result
-		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-		mod.refresh()
-		mod.hacksChooser:show()
-
-	--------------------------------------------------------------------------------
-	-- Restore Mode:
-	--------------------------------------------------------------------------------
-	elseif mod.mode == "restore" then
-
-		for x=#chooserRemoved,1,-1 do
-			if chooserRemoved[x]["text"] == result["text"] and chooserRemoved[x]["subText"] == result["subText"] then
-				table.remove(chooserRemoved, x)
-			end
-		end
-		metadata.get(currentLanguage .. ".chooserRemoved", chooserRemoved)
-		if next(chooserRemoved) == nil then mod.mode = "normal" end
-		mod.refresh()
-		mod.hacksChooser:show()
-
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -284,6 +236,11 @@ function mod.rightClickAction(index)
 				mod.hacksChooser:show()
 			end }
 		end
+		choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceHide"), fn = function()
+			mod.actionmanager.hide(choice.id)
+			mod.refresh()
+			mod.hacksChooser:show()
+		end}
 	end
 
 	mod.rightClickMenubar:setMenu(choiceMenu)
@@ -326,7 +283,9 @@ function plugin.init(deps)
 	
 	menu:addSeparator(4000)
 	
-	menu:addItems(5000, function()
+	local sections = menu:addMenu(5000, function() return i18n("consoleSections") end)
+	
+	sections:addItems(2000, function()
 		local actionItems = {}
 		for id,action in pairs(deps.actionmanager.getActions()) do
 			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,	
