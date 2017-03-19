@@ -59,12 +59,24 @@ function consoleOnTopIcon()
 end
 local toolbar = require("hs.webview.toolbar")
 errorLogToolbar = toolbar.new("myConsole", {
+		{ id = "Reload", image = image.imageFromName("NSPreferencesGeneral"),
+			fn = function()
+				console.clearConsole()
+				print("Reloading CommandPost...")
+				hs.reload()
+			end
+		},
+		{ id = "Clear Console", image = image.imageFromName("NSTrashFull"),
+			fn = function()
+				console.clearConsole()
+			end
+		},
 		{ id = "Always On Top", image = consoleOnTopIcon(),
 			fn = function()
 				hs.consoleOnTop(not hs.consoleOnTop())
 				errorLogToolbar:modifyItem({id = "Always On Top", image = consoleOnTopIcon()})
 			end
-		}
+		},
     })
 	:canCustomize(true)
     :autosaves(true)
