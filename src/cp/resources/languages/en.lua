@@ -130,6 +130,13 @@ return {
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
 
 			--------------------------------------------------------------------------------
+			-- Error Log:
+			--------------------------------------------------------------------------------
+			clearLog							=			"Clear Log",
+			alwaysOnTop							=			"Always On Top",
+			reload								=			"Reload",
+
+			--------------------------------------------------------------------------------
 			-- Scan Final Cut Pro:
 			--------------------------------------------------------------------------------
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",

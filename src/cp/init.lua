@@ -48,41 +48,6 @@ else
 end
 
 --------------------------------------------------------------------------------
--- ADD TOOLBAR TO ERROR LOG:
---------------------------------------------------------------------------------
-function consoleOnTopIcon()
-	if hs.consoleOnTop() then
-		return image.imageFromName("NSStatusAvailable")
-	else
-		return image.imageFromName("NSStatusUnavailable")
-	end
-end
-local toolbar = require("hs.webview.toolbar")
-errorLogToolbar = toolbar.new("myConsole", {
-		{ id = "Reload", image = image.imageFromName("NSPreferencesGeneral"),
-			fn = function()
-				console.clearConsole()
-				print("Reloading CommandPost...")
-				hs.reload()
-			end
-		},
-		{ id = "Clear Console", image = image.imageFromName("NSTrashFull"),
-			fn = function()
-				console.clearConsole()
-			end
-		},
-		{ id = "Always On Top", image = consoleOnTopIcon(),
-			fn = function()
-				hs.consoleOnTop(not hs.consoleOnTop())
-				errorLogToolbar:modifyItem({id = "Always On Top", image = consoleOnTopIcon()})
-			end
-		},
-    })
-	:canCustomize(true)
-    :autosaves(true)
-console.toolbar(errorLogToolbar)
-
---------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
 --------------------------------------------------------------------------------
 i18n = require("i18n")
@@ -99,6 +64,41 @@ else
 	userLocale = metadata.get("language")
 end
 i18n.setLocale(userLocale)
+
+--------------------------------------------------------------------------------
+-- ADD TOOLBAR TO ERROR LOG:
+--------------------------------------------------------------------------------
+function consoleOnTopIcon()
+	if hs.consoleOnTop() then
+		return image.imageFromName("NSStatusAvailable")
+	else
+		return image.imageFromName("NSStatusUnavailable")
+	end
+end
+local toolbar = require("hs.webview.toolbar")
+errorLogToolbar = toolbar.new("myConsole", {
+		{ id = i18n("reload"), image = image.imageFromName("NSPreferencesGeneral"),
+			fn = function()
+				console.clearConsole()
+				print("Reloading CommandPost...")
+				hs.reload()
+			end
+		},
+		{ id = i18n("clearLog"), image = image.imageFromName("NSTrashFull"),
+			fn = function()
+				console.clearConsole()
+			end
+		},
+		{ id = i18n("alwaysOnTop"), image = consoleOnTopIcon(),
+			fn = function()
+				hs.consoleOnTop(not hs.consoleOnTop())
+				errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+			end
+		},
+    })
+	:canCustomize(true)
+    :autosaves(true)
+console.toolbar(errorLogToolbar)
 
 --------------------------------------------------------------------------------
 -- INTERNAL EXTENSIONS (THAT REQUIRE I18N):
