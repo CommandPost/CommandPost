@@ -643,7 +643,7 @@ local hud = {}
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
 	function hud.generateHTML()
-		return template.compileFile(metadata.scriptPath .. "/cp/plugins/hud/html/hud.html", getEnv())
+		return template.compileFile(metadata.scriptPath .. "/cp/plugins/finalcutpro/hud/html/hud.html", getEnv())
 	end
 
 	--------------------------------------------------------------------------------
