@@ -130,6 +130,13 @@ return {
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
 
 			--------------------------------------------------------------------------------
+			-- Error Log:
+			--------------------------------------------------------------------------------
+			clearLog							=			"Clear Log",
+			alwaysOnTop							=			"Always On Top",
+			reload								=			"Reload",
+
+			--------------------------------------------------------------------------------
 			-- Scan Final Cut Pro:
 			--------------------------------------------------------------------------------
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
@@ -164,6 +171,7 @@ return {
 			sharedClipboardPathMissing			=			"The Shared Clipboard path no longer exists. Would you like to select a new location?",
 
 			restartFinalCutProFailed			=			"We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.",
+			loadFinalCutProFailed				=			"Failed to load Final Cut Pro. Please try again.",
 
 			keywordEditorAlreadyOpen			=			"This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.",
 			keywordShortcutsVisibleError		=			"Please make sure that the Keyboard Shortcuts are visible before using this feature.",
@@ -218,7 +226,7 @@ return {
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
 
 
-			trashFCPXHacksPreferences			=			"Are you sure you want to trash the CommandPost Preferences?",
+			trashPreferences					=			"Are you sure you want to trash the CommandPost Preferences?",
 			adminPasswordRequiredAndRestart		=			"This will require your Administrator password and require Final Cut Pro to restart.",
 			adminPasswordRequired				=			"This will require your Administrator password.",
 
@@ -548,7 +556,6 @@ return {
 	--------------------------------------------------------------------------------
 	-- Command URL Execution:
 	--------------------------------------------------------------------------------
-
 	actionMismatchError					=			"Expected '%{expected}' action type but got '%{actual}.",
 	actionUndefinedError				=			"No action was specified to execute.",
 	cmdIdMissingError					=			"A command ID is required to execute.",
@@ -558,7 +565,6 @@ return {
 	--------------------------------------------------------------------------------
 	-- Command Groups:
 	--------------------------------------------------------------------------------
-
 	timeline_group						=			"Timeline",
 	browser_group						=			"Browser",
 	colorboard_group					=			"Colour Board",
