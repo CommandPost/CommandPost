@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === cp.plugins.core.menu.manager.section ===
+---
+--- Controls sections for the CommandPost menu.
+
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
@@ -19,7 +23,7 @@ local section = {}
 
 	section.DEFAULT_PRIORITY = 0
 
-	--- cp.plugins.core.menu.section:new() -> section
+	--- cp.plugins.core.menu.manager.section:new() -> section
 	--- Creates a new menu section, which can have items and sub-menus added to it.
 	---
 	--- Returns:
@@ -43,7 +47,7 @@ local section = {}
 		return self._disabledFn and self._disabledFn()
 	end
 
-	--- cp.plugins.core.menu.section:_addGenerator() -> section
+	--- cp.plugins.core.menu.manager.section:_addGenerator() -> section
 	--- A private method for registering a generator. This should not be called directly.
 	---
 	--- Parameters:
@@ -58,7 +62,7 @@ local section = {}
 		return self
 	end
 
-	--- cp.plugins.core.menu.section:addItem(priority, itemFn) -> section
+	--- cp.plugins.core.menu.manager.section:addItem(priority, itemFn) -> section
 	--- Registers a function which will generate a single table item.
 	---
 	--- Parameters:
@@ -77,7 +81,7 @@ local section = {}
 		return self
 	end
 
-	--- cp.plugins.core.menu.section:addItems(priority, itemsFn) -> section
+	--- cp.plugins.core.menu.manager.section:addItems(priority, itemsFn) -> section
 	--- Registers a function which will generate multiple table items.
 	---
 	--- Parameters:
@@ -102,7 +106,7 @@ local section = {}
 		end)
 	end
 
-	--- cp.plugins.core.menu.section:addMenu(priority, titleFn) -> section
+	--- cp.plugins.core.menu.manager.section:addMenu(priority, titleFn) -> section
 	--- Adds a new sub-menu with the specified priority. The section that will contain
 	--- the items in the menu is returned.
 	---
@@ -124,7 +128,7 @@ local section = {}
 		return menuSection
 	end
 
-	--- cp.plugins.core.menu.section:addSection(priority, itemFn) -> section
+	--- cp.plugins.core.menu.manager.section:addSection(priority, itemFn) -> section
 	--- Adds a new sub-section with the specified priority. The new sub-section is returned.
 	---
 	--- Parameters:
@@ -143,7 +147,7 @@ local section = {}
 		return newSection
 	end
 
-	--- cp.plugins.core.menu.section:generateTable() -> table
+	--- cp.plugins.core.menu.manager.section:generateTable() -> table
 	--- Generates a new menu table based on the registered items and sections inside this section.
 	---
 	--- Parameters:

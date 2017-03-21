@@ -94,22 +94,23 @@ local plugin = {}
 	-- DEPENDENCIES:
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
-		["cp.plugins.core.menu.preferences"]				= "prefs",
 		["cp.plugins.finalcutpro.timeline.effects"]			= "effects",
 		["cp.plugins.finalcutpro.timeline.generators"]		= "generators",
 		["cp.plugins.finalcutpro.timeline.titles"]			= "titles",
 		["cp.plugins.finalcutpro.timeline.transitions"]		= "transitions",
+		["cp.plugins.core.preferences.panels.general"]		= "general",
 	}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(deps)
+
 		mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-		deps.prefs:addItem(PRIORITY, function()
+		deps.general:addButton(2, function()
 			return { title = i18n("scanFinalCutPro"),	fn = mod.scanFinalCutPro }
-		end):addSeparator(2)
+		end)
 
 		return mod
 	end

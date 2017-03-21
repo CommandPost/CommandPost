@@ -28,8 +28,10 @@ local plugin = {}
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(dependencies)
+		--[[
 		local section = dependencies.prefs:addSection(PRIORITY)
 			:addMenu(1000, function() return i18n("menubarOptions") end)
+		--]]
 		return section
 	end
 

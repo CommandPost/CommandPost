@@ -49,8 +49,9 @@ local plugin = {}
 	-- DEPENDENCIES:
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
-		["cp.plugins.core.menu.top"] 			= "top",
-		["cp.plugins.core.menu.preferences"]	= "prefs",
+		["cp.plugins.core.menu.top"] 					= "top",
+		["cp.plugins.core.menu.preferences"]			= "prefs",
+		["cp.plugins.core.preferences.panels.general"]	= "general",
 	}
 
 	--------------------------------------------------------------------------------
@@ -71,11 +72,19 @@ local plugin = {}
 		end)
 		:addSeparator(2)
 
+		deps.general:addCheckbox(3, function()
+			if hs.canCheckForUpdates() then
+				return { title = i18n("checkForUpdates"),	fn = mod.toggleCheckForUpdates, checked = mod.automaticallyCheckForUpdates }
+			end
+		end)
+
+		--[[
 		deps.prefs:addSeparator(UPDATE_PREFERENCES_PRIORITY-1):addItem(UPDATE_PREFERENCES_PRIORITY, function()
 			if hs.canCheckForUpdates() then
 				return { title = i18n("checkForUpdates"),	fn = mod.toggleCheckForUpdates, checked = mod.automaticallyCheckForUpdates }
 			end
 		end)
+		--]]
 
 	end
 

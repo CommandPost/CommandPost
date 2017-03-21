@@ -19,9 +19,6 @@ local dialog			= require("cp.dialog")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 							= 90000
-local MENUBAR_OPTIONS_PRIORITY 			= 10001
-
 local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 local DEFAULT_ENABLE_PROXY_MENU_ICON 	= false
 
@@ -144,8 +141,7 @@ local plugin = {}
 	-- DEPENDENCIES:
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
-		["cp.plugins.core.menu.preferences"]			= "prefs",
-		["cp.plugins.core.menu.preferences.menubar"] 	= "menubar",
+		["cp.plugins.core.preferences.panels.general"]	= "general",
 	}
 
 	--------------------------------------------------------------------------------
@@ -159,36 +155,42 @@ local plugin = {}
 		mod._autoLaunch = hs.autoLaunch()
 
 		--------------------------------------------------------------------------------
-		-- Setup Menu:
+		-- Setup Preferences Panel:
 		--------------------------------------------------------------------------------
-		deps.prefs:addItem(PRIORITY, function()
+		deps.general:addHeading(1, function()
+			return { title = "General Settings" }
+		end)
+
+		:addCheckbox(3, function()
 			return { title = i18n("launchAtStartup"), fn = mod.toggleAutoLaunch, checked = mod._autoLaunch }
 		end)
 
-		:addSeparator(PRIORITY+1)
-
-		:addItem(PRIORITY+2, function()
-			return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
+		:addHeading(20, function()
+			return { title = "Menubar Options" }
 		end)
 
-		:addSeparator(PRIORITY+3)
-
-		:addItem(PRIORITY+4, function()
-			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
+		:addCheckbox(21, function()
+			return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
 		end)
 
-		:addItem(PRIORITY+5, function()
-			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
-		end)
-
-		deps.menubar:addSeparator(MENUBAR_OPTIONS_PRIORITY)
-
-		:addItem(MENUBAR_OPTIONS_PRIORITY+1, function()
+		:addCheckbox(22, function()
 			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
 		end)
 
-		:addItem(MENUBAR_OPTIONS_PRIORITY+1, function()
-			return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
+		:addHeading(30, function()
+			return { title = "Developer Tools" }
+		end)
+
+		:addCheckbox(31, function()
+			return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
+		end)
+
+		:addButton(40, function()
+			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
+		end)
+
+		:addButton(41, function()
+			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
 		end)
 
 	end

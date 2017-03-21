@@ -9,7 +9,7 @@
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY = 8888889
+local PRIORITY = 8888888
 
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
@@ -28,7 +28,7 @@ local plugin = {}
 	--------------------------------------------------------------------------------
 	function plugin.init(dependencies)
 		local section = dependencies.bottom:addSection(PRIORITY)
-			:addSeparator(100)
+			--:addSeparator(100)
 			:addMenu(0, function() return i18n("helpAndSupport") end)
 
 		return section

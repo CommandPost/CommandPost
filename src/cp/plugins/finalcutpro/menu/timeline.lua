@@ -14,7 +14,7 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 2000
+local PRIORITY 					= 28
 local SETTING 					= "menubarTimelineEnabled"
 
 --------------------------------------------------------------------------------
@@ -44,27 +44,36 @@ local plugin = {}
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
 		["cp.plugins.core.menu.manager"] 				= "manager",
-		["cp.plugins.core.menu.preferences.menubar"] 	= "menubar",
+		["cp.plugins.core.preferences.panels.general"]	= "general",
 	}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(dependencies)
-		-- Create the 'SHORTCUTS' section
+
+		--------------------------------------------------------------------------------
+		-- Create the Timeline section:
+		--------------------------------------------------------------------------------
 		local shortcuts = dependencies.manager.addSection(PRIORITY)
 
-		-- Disable the section if the shortcuts option is disabled
+		--------------------------------------------------------------------------------
+		-- Disable the section if the Timeline option is disabled:
+		--------------------------------------------------------------------------------
 		shortcuts:setDisabledFn(isSectionDisabled)
 
-		-- Add the separator and title for the section.
+		--------------------------------------------------------------------------------
+		-- Add the separator and title for the section:
+		--------------------------------------------------------------------------------
 		shortcuts:addSeparator(0)
 			:addItem(1, function()
 				return { title = string.upper(i18n("timeline")) .. ":", disabled = true }
 			end)
 
-		-- Create the menubar preferences item
-		dependencies.menubar:addItem(PRIORITY, function()
+		--------------------------------------------------------------------------------
+		-- Add to General Preferences Panel:
+		--------------------------------------------------------------------------------
+		dependencies.general:addCheckbox(PRIORITY, function()
 			return { title = i18n("show") .. " " .. i18n("timeline"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

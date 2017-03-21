@@ -117,8 +117,9 @@ local plugin = {}
 	-- DEPENDENCIES:
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
-		["cp.plugins.core.menu.top"]			= "top",
-		["cp.plugins.core.menu.preferences"]	= "prefs",
+		["cp.plugins.core.menu.top"]					= "top",
+		["cp.plugins.core.menu.preferences"]			= "prefs",
+		["cp.plugins.core.preferences.panels.general"]	= "general",
 	}
 
 	--------------------------------------------------------------------------------
@@ -136,15 +137,19 @@ local plugin = {}
 		-------------------------------------------------------------------------------
 		local section = deps.top:addSection(PRIORITY)
 
+		deps.general:addDropdown(2, i18n("language"), getCommandPostLanguagesMenu)
+
 		-------------------------------------------------------------------------------
 		-- The CommandPost Languages Menu:
 		-------------------------------------------------------------------------------
+		--[[
 		local section = deps.prefs:addSection(PRIORITY)
 
 		local cpLangs = section:addMenu(200, function() return i18n("language") end)
 		cpLangs:addItems(1, getCommandPostLanguagesMenu)
 
 		section:addSeparator(9000)
+		--]]
 
 		return mod
 	end

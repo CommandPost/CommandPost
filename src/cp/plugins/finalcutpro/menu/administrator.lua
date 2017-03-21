@@ -14,7 +14,7 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 5000
+local PRIORITY 					= 25
 local SETTING 					= metadata.settingsPrefix .. ".menubarAdministratorEnabled"
 
 --------------------------------------------------------------------------------
@@ -44,27 +44,36 @@ local plugin = {}
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
 		["cp.plugins.core.menu.manager"] 				= "manager",
-		["cp.plugins.core.menu.preferences.menubar"] 	= "menubar",
+		["cp.plugins.core.preferences.panels.general"]	= "general",
 	}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(dependencies)
-		-- Create the 'SHORTCUTS' section
+
+		--------------------------------------------------------------------------------
+		-- Create the Administrator section
+		--------------------------------------------------------------------------------
 		local shortcuts = dependencies.manager.addSection(PRIORITY)
 
-		-- Disable the section if the shortcuts option is disabled
+		--------------------------------------------------------------------------------
+		-- Disable the section if the Administrator option is disabled
+		--------------------------------------------------------------------------------
 		shortcuts:setDisabledFn(isSectionDisabled)
 
+		--------------------------------------------------------------------------------
 		-- Add the separator and title for the section.
+		--------------------------------------------------------------------------------
 		shortcuts:addSeparator(0)
 			:addItem(1, function()
 				return { title = string.upper(i18n("adminTools")) .. ":", disabled = true }
 			end)
 
-		-- Create the menubar preferences item
-		dependencies.menubar:addItem(PRIORITY, function()
+		--------------------------------------------------------------------------------
+		-- Add to General Preferences Panel:
+		--------------------------------------------------------------------------------
+		dependencies.general:addCheckbox(PRIORITY, function()
 			return { title = i18n("showAdminTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

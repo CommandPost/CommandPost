@@ -1,41 +1,38 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                        T H E    M O D U L E                                --
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local mod = {}
+--- === cp ===
+---
+--- Core CommandPost functionality
 
 --------------------------------------------------------------------------------
+-- EXTENSIONS:
 --------------------------------------------------------------------------------
---                    T H E    M A I N    S C R I P T                         --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
+local log						= require("hs.logger").new("cp")
 
---------------------------------------------------------------------------------
--- LOGGING:
---------------------------------------------------------------------------------
-local logger					= require("hs.logger")
-local log						= logger.new("cp")
-
---------------------------------------------------------------------------------
--- HAMMERSPOON EXTENSIONS:
---------------------------------------------------------------------------------
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
+local logger					= require("hs.logger")
 local mouse                     = require("hs.mouse")
 local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
---------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS:
---------------------------------------------------------------------------------
 local metadata					= require("cp.metadata")
 local tools                     = require("cp.tools")
+
+--------------------------------------------------------------------------------
+-- SHUTDOWN CALLBACK:
+--------------------------------------------------------------------------------
+function hs.shutdownCallback()
+	console.clearConsole()
+end
 
 --------------------------------------------------------------------------------
 -- DEBUG MODE:
@@ -101,15 +98,10 @@ errorLogToolbar = toolbar.new("myConsole", {
 console.toolbar(errorLogToolbar)
 
 --------------------------------------------------------------------------------
--- INTERNAL EXTENSIONS (THAT REQUIRE I18N):
+-- EXTENSIONS (THAT REQUIRE i18N):
 --------------------------------------------------------------------------------
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.finalcutpro")
-
---------------------------------------------------------------------------------
--- VARIABLES:
---------------------------------------------------------------------------------
-local hsBundleID                = hs.processInfo["bundleID"]
 
 --------------------------------------------------------------------------------
 -- WRITE TO CONSOLE FOR DEBUG MESSAGES:
@@ -122,95 +114,100 @@ local function writeToConsoleDebug(value)
 end
 
 --------------------------------------------------------------------------------
--- INITIALISE:
+-- THE MODULE:
 --------------------------------------------------------------------------------
-function mod.init()
 
-    --------------------------------------------------------------------------------
-    -- Check Versions & Language:
-    --------------------------------------------------------------------------------
-    local fcpVersion    		= fcp:getVersion()
-    local fcpPath				= fcp:getPath()
-    local osVersion    			= tools.macOSVersion()
-    local fcpLanguage   		= fcp:getCurrentLanguage()
-    local hammerspoonVersion	= hs.processInfo["version"]
+local mod = {}
 
-    --------------------------------------------------------------------------------
-    -- Console should always be on top:
-    --------------------------------------------------------------------------------
-    -- console.level(drawing.windowLevels["_MaximumWindowLevelKey"])
+	--- cp.init()
+	--- Function
+	--- Initialise CommandPost
+	---
+	--- Parameters:
+	---  * None
+	---
+	--- Returns:
+	---  * None
+	function mod.init()
 
-    --------------------------------------------------------------------------------
-    -- Clear The Console:
-    --------------------------------------------------------------------------------
-    consoleLoadingContent = console.getConsole()
-    console.clearConsole()
+		--------------------------------------------------------------------------------
+		-- Check Versions & Language:
+		--------------------------------------------------------------------------------
+		local fcpVersion    		= fcp:getVersion()
+		local fcpPath				= fcp:getPath()
+		local osVersion    			= tools.macOSVersion()
+		local fcpLanguage   		= fcp:getCurrentLanguage()
+		local hammerspoonVersion	= hs.processInfo["version"]
 
-    --------------------------------------------------------------------------------
-    -- Display Welcome Message In The Console:
-    --------------------------------------------------------------------------------
-    console.printStyledtext(styledtext.new(metadata.scriptName .. " v" .. metadata.scriptVersion, {
-		color = drawing.color.definedCollections.hammerspoon["black"],
-		font = { name = "Helvetica", size = 18 },
-	}))
+		--------------------------------------------------------------------------------
+		-- Console should always be on top:
+		--------------------------------------------------------------------------------
+		-- console.level(drawing.windowLevels["_MaximumWindowLevelKey"])
 
-	console.printStyledtext("")
+		--------------------------------------------------------------------------------
+		-- Clear The Console:
+		--------------------------------------------------------------------------------
+		consoleLoadingContent = console.getConsole()
+		console.clearConsole()
 
-    --------------------------------------------------------------------------------
-    -- Display Useful Debugging Information in Console:
-    --------------------------------------------------------------------------------
-    if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
-        										writeToConsoleDebug(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
-    if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
-	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
-    if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
-    if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-    											writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
-    											writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
+		--------------------------------------------------------------------------------
+		-- Display Welcome Message In The Console:
+		--------------------------------------------------------------------------------
+		console.printStyledtext(styledtext.new(metadata.scriptName .. " v" .. metadata.scriptVersion, {
+			color = drawing.color.definedCollections.hammerspoon["black"],
+			font = { name = "Helvetica", size = 18 },
+		}))
 
-	console.printStyledtext("")
+		--------------------------------------------------------------------------------
+		-- Blank Line:
+		--------------------------------------------------------------------------------
+		console.printStyledtext("")
 
-	--------------------------------------------------------------------------------
-	-- Display the content that was displayed before loading...
-	--------------------------------------------------------------------------------
-	print(tools.trim(consoleLoadingContent))
+		--------------------------------------------------------------------------------
+		-- Display Useful Debugging Information in Console:
+		--------------------------------------------------------------------------------
+		if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
+													writeToConsoleDebug(metadata.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
+		if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
+		if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
+		if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
+		if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
+													writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
+													writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
 
-	--------------------------------------------------------------------------------
-	-- Watch for Script Updates:
-	--------------------------------------------------------------------------------
-	scriptWatcher = pathwatcher.new(hs.configdir, function(files)
-	    local doReload = false
-		for _,file in pairs(files) do
-			if file:sub(-4) == ".lua" then
-				doReload = true
+		--------------------------------------------------------------------------------
+		-- Blank Line:
+		--------------------------------------------------------------------------------
+		console.printStyledtext("")
+
+		--------------------------------------------------------------------------------
+		-- Display the content that was displayed before loading...
+		--------------------------------------------------------------------------------
+		print(tools.trim(consoleLoadingContent))
+
+		--------------------------------------------------------------------------------
+		-- Watch for Script Updates:
+		--------------------------------------------------------------------------------
+		scriptWatcher = pathwatcher.new(hs.configdir, function(files)
+			local doReload = false
+			for _,file in pairs(files) do
+				if file:sub(-4) == ".lua" then
+					doReload = true
+				end
 			end
-		end
-		if doReload then
-			console.clearConsole()
-			hs.reload()
-		end
-	end):start()
+			if doReload then
+				console.clearConsole()
+				hs.reload()
+			end
+		end):start()
 
-	--------------------------------------------------------------------------------
-	-- Load Welcome Screen:
-	--------------------------------------------------------------------------------
-	local welcome = require("cp.welcome")
+		--------------------------------------------------------------------------------
+		-- Load Welcome Screen:
+		--------------------------------------------------------------------------------
+		local welcome = require("cp.welcome")
 
-    return mod
+		return mod
 
-end
+	end
 
---------------------------------------------------------------------------------
--- SHUTDOWN CALLBACK:
---------------------------------------------------------------------------------
-function hs.shutdownCallback()
-	console.clearConsole()
-end
-
---------------------------------------------------------------------------------
--- RETURN MODULE:
---------------------------------------------------------------------------------
 return mod.init()
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
