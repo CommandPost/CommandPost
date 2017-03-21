@@ -14,7 +14,8 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 25
+local PRIORITY 					= 5000
+local PREFERENCES_PRIORITY		= 25
 local SETTING 					= metadata.settingsPrefix .. ".menubarAdministratorEnabled"
 
 --------------------------------------------------------------------------------
@@ -73,7 +74,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Add to General Preferences Panel:
 		--------------------------------------------------------------------------------
-		dependencies.general:addCheckbox(PRIORITY, function()
+		dependencies.general:addCheckbox(PREFERENCES_PRIORITY, function()
 			return { title = i18n("showAdminTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

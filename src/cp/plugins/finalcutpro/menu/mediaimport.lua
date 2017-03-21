@@ -14,7 +14,8 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 27
+local PRIORITY 					= 1000
+local PREFERENCES_PRIORITY		= 27
 local SETTING 					= "menubarMediaImportEnabled"
 
 --------------------------------------------------------------------------------
@@ -73,7 +74,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Add to General Preferences Panel:
 		--------------------------------------------------------------------------------
-		dependencies.general:addCheckbox(PRIORITY, function()
+		dependencies.general:addCheckbox(PREFERENCES_PRIORITY, function()
 			return { title = i18n("show") .. " " .. i18n("mediaImport"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

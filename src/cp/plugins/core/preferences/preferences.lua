@@ -177,6 +177,10 @@ local plugin = {}
 			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
 		end)
 
+		:addHeading(23, function()
+			return { title = "" }
+		end)
+
 		:addHeading(30, function()
 			return { title = "Developer Tools" }
 		end)

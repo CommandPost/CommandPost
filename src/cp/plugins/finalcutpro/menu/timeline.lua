@@ -14,7 +14,8 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 28
+local PRIORITY 					= 2000
+local PREFERENCES_PRIORITY		= 28
 local SETTING 					= "menubarTimelineEnabled"
 
 --------------------------------------------------------------------------------
@@ -73,7 +74,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Add to General Preferences Panel:
 		--------------------------------------------------------------------------------
-		dependencies.general:addCheckbox(PRIORITY, function()
+		dependencies.general:addCheckbox(PREFERENCES_PRIORITY, function()
 			return { title = i18n("show") .. " " .. i18n("timeline"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

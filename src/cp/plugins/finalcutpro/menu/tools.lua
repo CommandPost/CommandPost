@@ -14,7 +14,8 @@ local metadata					= require("cp.metadata")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 					= 29
+local PRIORITY 					= 3000
+local PREFERENCES_PRIORITY		= 29
 local SETTING 					= metadata.settingsPrefix .. ".menubarToolsEnabled"
 
 --------------------------------------------------------------------------------
@@ -73,7 +74,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Add to General Preferences Panel:
 		--------------------------------------------------------------------------------
-		dependencies.general:addCheckbox(PRIORITY, function()
+		dependencies.general:addCheckbox(PREFERENCES_PRIORITY, function()
 			return { title = i18n("showTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 
