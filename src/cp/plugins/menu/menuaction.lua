@@ -42,14 +42,14 @@ end
 function mod.choices()
 	-- Cache the choices, since commands don't change while the app is running.
 	local result = choices.new(ID)
-	
+
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
 		local title = menuItem:title()
-		
+
 		if path[1] ~= "Apple" then
 			local params = {}
 			params.path	= fnutils.concat(fnutils.copy(path), { title })
-			
+
 			result:add(title)
 				:subText(i18n("menuChoiceSubText", {path = table.concat(path, " > ")}))
 				:params(params)
@@ -76,7 +76,7 @@ end
 function mod.execute(params)
 	if params and params.path then
 		fcp:launch()
-	
+
 		fcp:menuBar():selectMenu(table.unpack(params.path))
 		return true
 	end
@@ -87,7 +87,7 @@ end
 local plugin = {}
 
 plugin.dependencies = {
-	["cp.plugins.actions.actionmanager"] = "actionmanager",
+	["cp.plugins.core.actions.actionmanager"] = "actionmanager",
 }
 
 function plugin.init(deps)
