@@ -1341,6 +1341,7 @@ end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")
+	self:show()
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
 		log.df(string.format("%7d", i)..": "..self:_describeWindow(w))

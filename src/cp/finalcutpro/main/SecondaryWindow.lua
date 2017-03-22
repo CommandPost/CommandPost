@@ -10,8 +10,7 @@ local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 local SecondaryWindow = {}
 
 function SecondaryWindow.matches(element)
-	if element and element:attributeValue("AXSubrole") == "AXUnknown"
-	and element:attributeValue("AXTitle") ~= "" then
+	if element and element:attributeValue("AXSubrole") == "AXUnknown" then
 		local children = element:attributeValue("AXChildren")
 		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
 	end
