@@ -87,7 +87,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		plugins("cp.plugins.browser.playhead").deleteHighlight()
+		--plugins("cp.plugins.finalcutpro.browser.playhead").deleteHighlight()
 
 		colorBoard = fcp:colorBoard()
 
