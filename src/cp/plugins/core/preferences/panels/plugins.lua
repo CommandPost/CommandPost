@@ -151,6 +151,8 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function findCustomPlugins(path)
 
+
+
 		local plugins = {}
 
 		local files = tools.dirFiles(path)
@@ -194,7 +196,10 @@ local mod = {}
 		local plugins = findPlugins(metadata.pluginPath)
 
 		local customPluginPath = getCustomPluginPath()
-		local customPlugins = findCustomPlugins(customPluginPath)
+		local customPlugins = {}
+		if tools.doesDirectoryExist(customPluginPath) then
+			customPlugins = findCustomPlugins(customPluginPath)
+		end
 
 		return fnutils.concat(plugins, customPlugins)
 
