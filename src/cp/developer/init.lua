@@ -1,3 +1,9 @@
+local mouse			= require("hs.mouse")
+local inspect		= require("hs.inspect")
+local geometry		= require("hs.geometry")
+local drawing		= require("hs.drawing")
+local timer			= require("hs.timer")
+
 --------------------------------------------------------------------------------
 -- ELEMENT AT MOUSE:
 --------------------------------------------------------------------------------
