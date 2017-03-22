@@ -47,6 +47,20 @@ function builder:subText(value)
 	return self
 end
 
+--- cp.chooser.choices.builder:id(value) -> builder
+--- Method
+--- Indicates the choice is a favorite.
+---
+--- Parameters:
+--- * `value`	- True or false.
+---
+--- Returns:
+--- * The choice builder.
+function builder:id(value)
+	self._choice.id = value
+	return self
+end
+
 --- cp.chooser.choices.builder:params(value) -> builder
 --- Method
 --- Specifies a table of parameter values for the choice. These

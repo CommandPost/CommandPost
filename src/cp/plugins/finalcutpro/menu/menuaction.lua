@@ -14,6 +14,7 @@ local fnutils			= require("hs.fnutils")
 
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
+local metadata			= require("cp.metadata")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -24,6 +25,19 @@ local ID				= "menu"
 -- THE MODULE:
 --------------------------------------------------------------------------------
 local mod = {}
+
+	function mod.setEnabled(value)
+		metadata.set("menuActionEnabled", value)
+		mod._manager.refresh()
+	end
+
+	function mod.isEnabled()
+		return metadata.get("menuActionEnabled", true)
+	end
+
+	function mod.toggleEnabled()
+		mod.setEnabled(not mod.isEnabled())
+	end
 
 	function mod.id()
 		return ID

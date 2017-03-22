@@ -22,8 +22,26 @@ local MAX_SHORTCUTS = 5
 local action = {}
 local mod = {}
 
+function action.init(actionmanager)
+	action._manager = actionmanager
+	action._manager.addAction(action)
+end
+
 function action.id()
 	return "generator"
+end
+
+function action.setEnabled(value)
+	metadata.set(action.id().."ActionEnabled", value)
+	action._manager.refresh()
+end
+
+function action.isEnabled()
+	return metadata.get(action.id().."ActionEnabled", true)
+end
+
+function action.toggleEnabled()
+	action.setEnabled(not action.isEnabled())
 end
 
 function action.choices()
@@ -36,21 +54,27 @@ function action.choices()
 		local items = mod.getGenerators()
 		if items ~= nil and next(items) ~= nil then
 			for i,name in ipairs(items) do
+				local params = { name = name }
 				action._choices:add(name)
 					:subText(i18n("generator_group"))
-					:params({
-						name = name,
-					})
+					:params(params)
+					:id(action.getId(params))
 			end
 		end
 	end
 	return action._choices
 end
 
+function action.getId(params)
+	return action.id() .. ":" .. params.name
+end
+
 function action.execute(params)
 	if params and params.name then
 		mod.apply(params.name)
+		return true
 	end
+	return false
 end
 
 function action.reset()
@@ -351,7 +375,7 @@ function plugin.init(deps)
 	mod.touchbar = deps.touchbar
 
 	-- Add the action
-	deps.actionmanager.addAction(action)
+	action.init(deps.actionmanager)
 
 	-- The 'Assign Shortcuts' menu
 	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignGeneratorsShortcuts") end)
