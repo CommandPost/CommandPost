@@ -13,50 +13,308 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsPlugin")
 
-local application								= require("hs.application")
-local base64									= require("hs.base64")
-local console									= require("hs.console")
-local drawing									= require("hs.drawing")
-local geometry									= require("hs.geometry")
-local screen									= require("hs.screen")
+local fnutils									= require("hs.fnutils")
+local fs										= require("hs.fs")
+local image										= require("hs.image")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
-local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
-local image										= require("hs.image")
-
 local dialog									= require("cp.dialog")
-local fcp										= require("cp.finalcutpro")
 local metadata									= require("cp.metadata")
-local plugins									= require("cp.plugins")
-local template									= require("cp.template")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
+-- None
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
 local mod = {}
 
+	mod.SETTINGS_DISABLED = "plugins.disabled"
+	mod.SETTINGS_USER_PLUGINS = "plugins.user"
+
+	--------------------------------------------------------------------------------
+	-- DISABLE PLUGIN:
+	--------------------------------------------------------------------------------
+	local function disablePlugin(path)
+
+		local result = dialog.displayMessage("Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
+		if result == "Yes" then
+			local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+			disabled[path] = true
+			metadata.set(mod.SETTINGS_DISABLED, disabled)
+			hs.reload()
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- ENABLE PLUGIN:
+	--------------------------------------------------------------------------------
+	local function enablePlugin(path)
+
+		local result = dialog.displayMessage("Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
+		if result == "Yes" then
+			local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+			disabled[path] = false
+			metadata.set(mod.SETTINGS_DISABLED, disabled)
+			hs.reload()
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- LOAD PLUGIN:
+	--------------------------------------------------------------------------------
+	local function loadPlugin()
+		local result = dialog.displayChooseFolder("Please select the folder containing the plugin:")
+		if result then
+			--log.df("Path: %s",result)
+			local userPlugins = metadata.get(mod.SETTINGS_USER_PLUGINS, {})
+			userPlugins[result] = true
+			metadata.set(mod.SETTINGS_USER_PLUGINS, userPlugins)
+			hs.reload()
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- CONTROLLER CALLBACK:
+	--------------------------------------------------------------------------------
+	local function controllerCallback(message)
+
+		if message["body"][1] == "openErrorLog" then
+			hs.openConsole()
+		elseif message["body"][1] == "loadPlugin" then
+			loadPlugin()
+		elseif message["body"][2] == "Disable" then
+			disablePlugin(message["body"][1])
+		elseif message["body"][2] == "Enable" then
+			enablePlugin(message["body"][1])
+		else
+			log.df(hs.inspect(message))
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- FIND PLUGINS:
+	--------------------------------------------------------------------------------
+	local function findPlugins(package)
+
+		local plugins = {}
+		local path = fs.pathToAbsolute(metadata.scriptPath .. "/" .. package:gsub("%.", "/"))
+
+		local files = tools.dirFiles(path)
+		for i,file in ipairs(files) do
+			if file ~= "." and file ~= ".." and file ~= "init.lua" then
+				local filePath = path .. "/" .. file
+				if fs.attributes(filePath).mode == "directory" then
+					local attrs, err = fs.attributes(filePath .. "/init.lua")
+					if attrs and attrs.mode == "file" then
+						--------------------------------------------------------------------------------
+						-- It's a plugin:
+						--------------------------------------------------------------------------------
+						plugins[#plugins+1] = package .. "." .. file
+					else
+						--------------------------------------------------------------------------------
+						-- It's a plain folder. Load it as a sub-package:
+						--------------------------------------------------------------------------------
+						local subPackages = findPlugins(package .. "." .. file)
+						for i, v in ipairs(subPackages) do
+							plugins[#plugins+1] = v
+					    end
+					end
+				else
+					local name = file:match("(.+)%.lua$")
+					if name then
+						plugins[#plugins+1] = package .. "." .. name
+					end
+				end
+			end
+		end
+
+		return plugins
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- GET LIST OF PLUGINS:
+	--------------------------------------------------------------------------------
+	local function getListOfPlugins()
+		local plugins = {}
+		plugins = findPlugins(metadata.pluginPath)
+		return plugins
+	end
+
+	--------------------------------------------------------------------------------
+	-- PLUGIN STATUS:
+	--------------------------------------------------------------------------------
+	local function pluginStatus(path)
+
+		for i, v in ipairs(failedPlugins) do
+			if v == path then
+				return [[<span style="font-weight:bold; color: red;">Failed</span>]]
+			else
+				local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+
+				if disabled[path] then
+					return [[<span style="font-weight:bold;">Disabled</span>]]
+				else
+					return "Enabled"
+				end
+
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- PLUGIN CATEGORY:
+	--------------------------------------------------------------------------------
+	local function pluginCategory(path)
+
+		local removedPluginPath = string.sub(path, string.len(metadata.pluginPath) + 2)
+		local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
+		return pluginComponents[1]
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- PLUGIN SHORT NAME:
+	--------------------------------------------------------------------------------
+	local function pluginShortName(path)
+		local pluginCategory = pluginCategory(path)
+		return string.sub(path, string.len(metadata.pluginPath) + string.len(pluginCategory) + 3)
+	end
+
+	--------------------------------------------------------------------------------
+	-- GENERATE CONTENT:
+	--------------------------------------------------------------------------------
 	local function generateContent()
-		return "The Plugin Manager is currently under construction."
+
+		local listOfPlugins = getListOfPlugins()
+
+		local pluginRows = ""
+
+		local lastCategory = ""
+
+	    for i, v in ipairs(listOfPlugins) do
+
+			local currentCategory = pluginCategory(v)
+			local cachedCurrentCategory = currentCategory
+			if currentCategory == lastCategory then currentCategory = "" end
+
+			local currentPluginStatus = pluginStatus(v)
+     		pluginRows = pluginRows .. [[
+				<tr>
+					<td class="rowCategory">]] .. currentCategory .. [[</td>
+					<td class="rowName">]] .. pluginShortName(v) .. [[</td>
+					<td class="rowStatus">]] .. currentPluginStatus .. [[</td>]]
+
+			if string.match(currentPluginStatus, "Failed") then
+				pluginRows = pluginRows .. [[
+					<td class="rowOption"><a href="#" id="error.]] .. v .. [[">Error Log</a></td>
+					<script>
+						document.getElementById("error.]] .. v .. [[").onclick = function() {
+							try {
+								var result = ["openErrorLog"];
+								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+							} catch(err) {
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+					</script>
+				]]
+			elseif string.match(currentPluginStatus, "Enabled") then
+
+				pluginRows = pluginRows .. [[
+					<td class="rowOption"><a id="]] .. v .. [[" href="#">Disable</></td>
+					<script>
+						document.getElementById("]] .. v .. [[").onclick = function() {
+							try {
+								var result = ["]] .. v .. [[", "Disable"];
+								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+							} catch(err) {
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+					</script>
+					]]
+
+			elseif string.match(currentPluginStatus, "Disabled") then
+
+				pluginRows = pluginRows .. [[
+					<td class="rowOption"><a id="]] .. v .. [[" href="#">Enable</></td>
+					<script>
+						document.getElementById("]] .. v .. [[").onclick = function() {
+							try {
+								var result = ["]] .. v .. [[", "Enable"];
+								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+							} catch(err) {
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+					</script>
+					]]
+			end
+
+			pluginRows = pluginRows .. "</tr>"
+
+
+			lastCategory = cachedCurrentCategory
+
+    	end
+
+		local result = [[
+			<h3>Plugins Manager:</h3>
+			<table class="plugins">
+				<thead>
+					<tr>
+						<th class="rowCategory">Category</th>
+						<th class="rowName">Plugin Name</th>
+						<th class="rowStatus">Status</th>
+						<th class="rowOption">Control</th>
+					</tr>
+				</thead>
+				<tbody>
+					]] .. pluginRows .. [[
+				</tbody>
+			</table>
+			<div style="display: block;">
+				<p style="text-align:right;"><a id="loadPlugin" href="" class="button">Load External Plugin</a></p>
+				<script>
+					document.getElementById("loadPlugin").onclick = function() {
+						try {
+							var result = ["loadPlugin"];
+							webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+						} catch(err) {
+							alert('An error has occurred. Does the controller exist yet?');
+						}
+					}
+				</script>
+			</div>
+		]]
+		return result
 	end
 
 	function mod.init(deps)
 
-		local id 		= "plugins"
-		local label 	= "Plugins"
-		local image		= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")
-		local priority	= 3
-		local tooltip	= "Plugins Panel"
-		local contentFn	= generateContent
+		mod._webviewLabel = deps.manager.getLabel()
 
-		deps.manager.addPanel(id, label, image, priority, tooltip, contentFn)
+		local id 			= "plugins"
+		local label 		= "Plugins"
+		local image			= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")
+		local priority		= 3
+		local tooltip		= "Plugins Panel"
+		local contentFn		= generateContent
+		local callbackFn 	= controllerCallback
+
+		deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
 
 	end
 

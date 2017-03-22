@@ -23,7 +23,7 @@ local mod = {}
 
 	mod.CACHE = {}
 
-	mod.SETTINGS_DISABLED = "plugins.disabled"
+	mod.SETTINGS_DISABLED 	= "plugins.disabled"
 
 	--- cp.plugins.loadPackage(package) -> boolean
 	--- Function
@@ -131,6 +131,7 @@ local mod = {}
 				return nil
 			end
 		else
+			failedPlugins[#failedPlugins + 1] = pluginPath
 			log.ef("Unable to load plugin '%s' due to the following error:\n\n%s", pluginPath, err)
 			return nil
 		end
@@ -147,6 +148,7 @@ local mod = {}
 			end)
 
 			if not status then
+				failedPlugins[#failedPlugins + 1] = pluginPath
 				log.ef("Error while initialising plugin '%s': %s", pluginPath, inspect(err))
 				return nil
 			end
@@ -215,6 +217,10 @@ local mod = {}
 	end
 
 	function mod.init(...)
+
+		-- Global Variable for Storing Failed Plugins:
+		failedPlugins = {}
+
 		-- load the plugins
 		for i=1,select('#', ...) do
 			package = select(i, ...)

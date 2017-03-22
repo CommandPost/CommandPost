@@ -108,7 +108,11 @@ local plugin = {}
 
 		mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-		deps.general:addButton(2, function()
+		deps.general:addHeading(30, function()
+			return { title = "<br />Scan Applications:" }
+		end)
+
+		:addButton(31, function()
 			return { title = i18n("scanFinalCutPro"),	fn = mod.scanFinalCutPro }
 		end)
 

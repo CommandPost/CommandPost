@@ -452,7 +452,7 @@ return {
 			showTools							=			"Show Tools",
 			showAdminTools						=			"Show Administrator",
 			displayProxyOriginalIcon			=			"Display Proxy/Original Icon",
-			displayThisMenuAsIcon				=			"Display This Menu As Icon",
+			displayThisMenuAsIcon				=			"Display Menubar As Icon",
 
 			--------------------------------------------------------------------------------
 			-- HUD Options:

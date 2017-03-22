@@ -142,6 +142,7 @@ local plugin = {}
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
 		["cp.plugins.core.preferences.panels.general"]	= "general",
+		["cp.plugins.core.preferences.panels.menubar"]	= "menubar",
 	}
 
 	--------------------------------------------------------------------------------
@@ -155,18 +156,37 @@ local plugin = {}
 		mod._autoLaunch = hs.autoLaunch()
 
 		--------------------------------------------------------------------------------
-		-- Setup Preferences Panel:
+		-- Setup General Preferences Panel:
 		--------------------------------------------------------------------------------
 		deps.general:addHeading(1, function()
-			return { title = "General Settings" }
+			return { title = "General:" }
 		end)
 
 		:addCheckbox(3, function()
 			return { title = i18n("launchAtStartup"), fn = mod.toggleAutoLaunch, checked = mod._autoLaunch }
 		end)
 
-		:addHeading(20, function()
-			return { title = "Menubar Options" }
+		:addHeading(50, function()
+			return { title = "<br />Developer:" }
+		end)
+
+		:addCheckbox(51, function()
+			return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
+		end)
+
+		:addButton(52, function()
+			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
+		end)
+
+		:addButton(53, function()
+			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Setup Menubar Preferences Panel:
+		--------------------------------------------------------------------------------
+		deps.menubar:addHeading(20, function()
+			return { title = "Options:" }
 		end)
 
 		:addCheckbox(21, function()
@@ -177,24 +197,8 @@ local plugin = {}
 			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
 		end)
 
-		:addHeading(23, function()
-			return { title = "" }
-		end)
-
-		:addHeading(30, function()
-			return { title = "Developer Tools" }
-		end)
-
-		:addCheckbox(31, function()
-			return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
-		end)
-
-		:addButton(40, function()
-			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
-		end)
-
-		:addButton(41, function()
-			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
+		:addHeading(24, function()
+			return { title = "<br />Sections:" }
 		end)
 
 	end

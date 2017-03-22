@@ -191,7 +191,7 @@ local mod = {}
 		scriptWatcher = pathwatcher.new(hs.configdir, function(files)
 			local doReload = false
 			for _,file in pairs(files) do
-				if file:sub(-4) == ".lua" then
+				if file:sub(-4) == ".lua" or file:sub(-5) == ".html" or file:sub(-4) == ".htm" then
 					doReload = true
 				end
 			end

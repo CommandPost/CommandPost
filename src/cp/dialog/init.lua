@@ -127,6 +127,24 @@ end
 --------------------------------------------------------------------------------
 -- DISPLAY CHOOSE FOLDER DIALOG:
 --------------------------------------------------------------------------------
+function dialog.displayChooseFile(whatMessage, fileType)
+	local appleScript = [[
+		set whatMessage to "]] .. whatMessage .. [["
+
+		try
+			set whichFile to POSIX path of (choose file with prompt whatMessage default location (path to desktop) of type {"]] .. fileType .. [["})
+			return whichFile
+		on error
+			-- Cancel Pressed:
+			return false
+		end try
+	]]
+	return as(appleScript)
+end
+
+--------------------------------------------------------------------------------
+-- DISPLAY CHOOSE FILE DIALOG:
+--------------------------------------------------------------------------------
 function dialog.displayChooseFolder(whatMessage)
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["

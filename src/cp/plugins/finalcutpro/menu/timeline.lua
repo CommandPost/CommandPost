@@ -45,7 +45,7 @@ local plugin = {}
 	--------------------------------------------------------------------------------
 	plugin.dependencies = {
 		["cp.plugins.core.menu.manager"] 				= "manager",
-		["cp.plugins.core.preferences.panels.general"]	= "general",
+		["cp.plugins.core.preferences.panels.menubar"]	= "menubar",
 	}
 
 	--------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Add to General Preferences Panel:
 		--------------------------------------------------------------------------------
-		dependencies.general:addCheckbox(PREFERENCES_PRIORITY, function()
+		dependencies.menubar:addCheckbox(PREFERENCES_PRIORITY, function()
 			return { title = i18n("show") .. " " .. i18n("timeline"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
 		end)
 

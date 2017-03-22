@@ -25,6 +25,8 @@ local mod = {}
 	mod.bugReportEmail      = "chris@latenitefilms.com"
 	mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
+	mod.pluginPath			= "cp.plugins"
+
 	if hs.hasinitfile then
 		-------------------------------------------------------------------------------
 		-- Use assets in ~/CommandPost directory:

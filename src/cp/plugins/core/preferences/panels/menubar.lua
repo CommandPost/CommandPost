@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.preferences.panels.general ===
+--- === cp.plugins.core.preferences.panels.menubar ===
 ---
---- General Preferences Panel
+--- Menubar Preferences Panel
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
@@ -123,11 +123,11 @@ local mod = {}
 
 		generate.setWebviewLabel(deps.manager.getLabel())
 
-		local id 			= "general"
-		local label 		= "General"
-		local image			= image.imageFromName("NSPreferencesGeneral")
-		local priority		= 1
-		local tooltip		= "General Preferences"
+		local id 			= "menubar"
+		local label 		= "Menubar"
+		local image			= image.imageFromPath("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")
+		local priority		= 2
+		local tooltip		= "Menubar Preferences"
 		local contentFn		= generateContent
 		local callbackFn 	= controllerCallback
 

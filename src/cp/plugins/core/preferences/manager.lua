@@ -47,11 +47,14 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- SETTINGS:
 	--------------------------------------------------------------------------------
-	mod.defaultWidth 		= 380
-	mod.defaultHeight 		= 450
+	mod.defaultWidth 		= 450
+	mod.defaultHeight 		= 400
 	mod.defaultTitle 		= i18n("preferences")
 	mod._panels				= {}
 
+	--------------------------------------------------------------------------------
+	-- GET LABEL:
+	--------------------------------------------------------------------------------
 	function mod.getLabel()
 		return WEBVIEW_LABEL
 	end
@@ -133,21 +136,13 @@ local mod = {}
 		local developerExtrasEnabled = {}
 		if metadata.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
 		mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
-			--:navigationCallback(preferencesWebViewNavigationWatcher)
-			:windowStyle({"titled", "closable", "nonactivating", "resizable"})
+			:windowStyle({"titled", "closable", "nonactivating"})
 			:shadow(true)
 			:allowNewWindows(false)
 			:allowTextEntry(true)
 			:windowTitle(mod.defaultTitle)
 			:html(generateHTML())
 			:toolbar(mod.toolbar)
-
-		--------------------------------------------------------------------------------
-		-- Setup URL Events:
-		--------------------------------------------------------------------------------
-		mod.urlEvent = urlevent.bind(WEBVIEW_LABEL, function(eventName, params)
-			-- if params["action"] == "cancel" then
-		end)
 
 		--------------------------------------------------------------------------------
 		-- Select Panel:

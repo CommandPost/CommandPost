@@ -35,6 +35,8 @@ local mod = {}
 	mod.defaultHeight 							= 470
 	mod.defaultTitle 							= i18n("welcomeTitle")
 
+	mod.SETTINGS_USER_PLUGINS 					= "plugins.user"
+
 	--------------------------------------------------------------------------------
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
@@ -51,38 +53,31 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
-	-- RETRIEVES THE PLUGINS MANAGER:
-	-- If `pluginPath` is provided, the named plugin will be returned. If not,
-	-- the plugins module is returned.
-	--------------------------------------------------------------------------------
-	function plugins(pluginPath)
-		if not mod._plugins then
-			mod._plugins = require("cp.plugins")
-			mod._plugins.init("cp.plugins")
-		end
-
-		if pluginPath then
-			return mod._plugins(pluginPath)
-		else
-			return mod._plugins
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- RETRIEVES THE MENU MANAGER:
-	--------------------------------------------------------------------------------
-	function menuManager()
-		if not mod._menuManager then
-			mod._menuManager = plugins("cp.plugins.core.menu.manager")
-		end
-		return mod._menuManager
-	end
-
-	--------------------------------------------------------------------------------
 	-- LOAD COMMANDPOST:
 	--------------------------------------------------------------------------------
 	local function loadCommandPost(showNotification)
-		menuManager()
+
+		--------------------------------------------------------------------------------
+		-- Load Plugins:
+		--------------------------------------------------------------------------------
+		dialog.displayNotification("Loading Plugins...")
+		log.df("Loading Plugins:")
+		mod._plugins = require("cp.plugins")
+		mod._plugins.init(metadata.pluginPath)
+
+		--------------------------------------------------------------------------------
+		-- Load User Plugins:
+		--------------------------------------------------------------------------------
+		log.df("Loading User Plugins:")
+		local userPlugins = metadata.get(mod.SETTINGS_USER_PLUGINS, {})
+
+		for i, v in pairs(userPlugins) do
+			if v then
+				-- TO-DO: Load User Plugin:
+				log.df("Load User Plugin: %s", i)
+			end
+		end
+
 		if showNotification then
 			log.df("Successfully loaded.")
 			dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
