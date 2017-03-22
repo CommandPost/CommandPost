@@ -93,7 +93,7 @@ local mod = {}
 		elseif message["body"][2] == "Enable" then
 			enablePlugin(message["body"][1])
 		else
-			log.df(hs.inspect(message))
+			log.df("controllerCallback unrecognised request: %s", hs.inspect(message))
 		end
 
 	end
@@ -154,29 +154,31 @@ local mod = {}
 		local plugins = {}
 
 		local files = tools.dirFiles(path)
-		for i,file in ipairs(files) do
-			if file ~= "." and file ~= ".." and file ~= "init.lua" then
-				local filePath = path .. "/" .. file
-				if fs.attributes(filePath).mode == "directory" then
-					local attrs, err = fs.attributes(filePath .. "/init.lua")
-					if attrs and attrs.mode == "file" then
-						--------------------------------------------------------------------------------
-						-- It's a plugin:
-						--------------------------------------------------------------------------------
-						plugins[#plugins+1] = file
+		if files then
+			for i,file in ipairs(files) do
+				if file ~= "." and file ~= ".." and file ~= "init.lua" then
+					local filePath = path .. "/" .. file
+					if fs.attributes(filePath).mode == "directory" then
+						local attrs, err = fs.attributes(filePath .. "/init.lua")
+						if attrs and attrs.mode == "file" then
+							--------------------------------------------------------------------------------
+							-- It's a plugin:
+							--------------------------------------------------------------------------------
+							plugins[#plugins+1] = file
+						else
+							--------------------------------------------------------------------------------
+							-- It's a plain folder. Load it as a sub-package:
+							--------------------------------------------------------------------------------
+							local subPackages = findCustomPlugins(path .. file .. "/")
+							for i, v in ipairs(subPackages) do
+								plugins[#plugins+1] = file .. "." .. v
+						    end
+						end
 					else
-						--------------------------------------------------------------------------------
-						-- It's a plain folder. Load it as a sub-package:
-						--------------------------------------------------------------------------------
-						local subPackages = findCustomPlugins(path .. file .. "/")
-						for i, v in ipairs(subPackages) do
-							plugins[#plugins+1] = file .. "." .. v
-					    end
-					end
-				else
-					local name = file:match("(.+)%.lua$")
-					if name then
-						plugins[#plugins+1] = package .. "." .. name
+						local name = file:match("(.+)%.lua$")
+						if name then
+							plugins[#plugins+1] = package .. "." .. name
+						end
 					end
 				end
 			end
@@ -194,10 +196,12 @@ local mod = {}
 		local plugins = findPlugins(metadata.pluginPath)
 
 		local customPluginPath = getCustomPluginPath()
-		local customPlugins = findCustomPlugins(customPluginPath)
-
-		return fnutils.concat(plugins, customPlugins)
-
+		log.df("customPluginPath: %s", hs.inspect(customPluginPath))
+		if customPluginPath then
+			local customPlugins = findCustomPlugins(customPluginPath)
+			fnutils.concat(plugins, customPlugins)
+		end
+		return plugins
 	end
 
 	--------------------------------------------------------------------------------

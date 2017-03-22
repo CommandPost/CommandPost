@@ -91,7 +91,7 @@ local mod = {}
 	function mod.toggleEnableProxyMenuIcon()
 		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 		metadata.set("enableProxyMenuIcon", not enableProxyMenuIcon)
-		menuManager():updateMenubarIcon()
+		mod.menuManager:updateMenubarIcon()
 	end
 
 	--------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ local mod = {}
 	function mod.toggleDisplayMenubarAsIcon()
 		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
 		metadata.set("displayMenubarAsIcon", not displayMenubarAsIcon)
-		menuManager():updateMenubarIcon()
+		mod.menuManager:updateMenubarIcon()
 	end
 
 	--------------------------------------------------------------------------------
@@ -143,12 +143,15 @@ local plugin = {}
 	plugin.dependencies = {
 		["cp.plugins.core.preferences.panels.general"]	= "general",
 		["cp.plugins.core.preferences.panels.menubar"]	= "menubar",
+		["cp.plugins.core.menu.manager"]				= "menuManager",
 	}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(deps)
+		
+		mod.menuManager = deps.menuManager
 
 		--------------------------------------------------------------------------------
 		-- Cache Auto Launch:

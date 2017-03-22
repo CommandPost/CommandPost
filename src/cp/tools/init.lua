@@ -320,6 +320,9 @@ end
 --------------------------------------------------------------------------------
 function tools.dirFiles(path)
 	path = fs.pathToAbsolute(path)
+	if not path then
+		return nil
+	end
 	local contents, data = fs.dir(path)
 
 	local files = {}
