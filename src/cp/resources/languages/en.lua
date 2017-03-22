@@ -527,7 +527,28 @@ return {
 	--------------------------------------------------------------------------------
 	-- CONSOLE:
 	--------------------------------------------------------------------------------
+	console								=			"Console",
+	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
+	consoleChoiceUnfavorite				=			"Unfavourite",
+	consoleChoiceFavorite				=			"Favourite",
+	consoleChoiceHide					=			"Hide",
+	consoleChoiceUnhide					=			"Unhide",
+	consoleHideUnhide					=			"Manage Hidden Items...",
+	
+	actionHiddenText					=			"%{text} [Hidden]",
+	
+	consoleSections						=			"Sections",
+	consoleSectionsShowAll				=			"Show All",
+	consoleSectionsHideAll				=			"Hide All",
+	command_action						=			"Commands",
+	menu_action							=			"Menu Items",
+	video_action						=			"Video Effects",
+	audio_action						=			"Audio Effects",
+	generator_action					=			"Generators",
+	title_action						=			"Titles",
+	transition_action					=			"Transitions",
+	
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",
@@ -575,6 +596,7 @@ return {
 	title_group							= 			"Title",
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
+	commandPost_group					=			"CommandPost",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
