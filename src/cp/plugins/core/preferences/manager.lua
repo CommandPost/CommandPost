@@ -48,7 +48,7 @@ local mod = {}
 	-- SETTINGS:
 	--------------------------------------------------------------------------------
 	mod.defaultWidth 		= 450
-	mod.defaultHeight 		= 400
+	mod.defaultHeight 		= 450
 	mod.defaultTitle 		= i18n("preferences")
 	mod._panels				= {}
 

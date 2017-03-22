@@ -292,7 +292,7 @@ local plugin = {}
 		["cp.plugins.core.commands.global"]									= "globalCmds",
 		["cp.plugins.core.menu.helpandsupport"] 							= "helpandsupport",
 		["cp.plugins.finalcutpro.commands.fcpx"]							= "fcpxCmds",
-		["cp.plugins.finalcutpro.menu.administrator.advancedfeatures"] 		= "advancedfeatures",
+		["cp.plugins.core.preferences.panels.shortcuts"]					= "shortcuts",
 	}
 
 	--------------------------------------------------------------------------------
@@ -326,11 +326,9 @@ local plugin = {}
 			:titled(i18n("openCommandEditor"))
 			:whenActivated(mod.editCommands)
 
-		deps.advancedfeatures:addItem(ADVANCED_FEATURES_PRIORITY, function()
+		deps.shortcuts:addCheckbox(ADVANCED_FEATURES_PRIORITY, function()
 			return { title = i18n("enableHacksShortcuts"),	fn = mod.toggleEditable, checked=mod.isEditable() }
 		end)
-
-		:addSeparator(ADVANCED_FEATURES_PRIORITY + 1)
 
 		return mod
 	end

@@ -36,6 +36,7 @@ local mod = {}
 	mod.defaultTitle 							= i18n("welcomeTitle")
 
 	mod.SETTINGS_USER_PLUGINS 					= "plugins.user"
+	mod.SETTINGS_CUSTOM_PATH 					= "plugins.custompath"
 
 	--------------------------------------------------------------------------------
 	-- GENERATE HTML:
@@ -66,18 +67,15 @@ local mod = {}
 		mod._plugins.init(metadata.pluginPath)
 
 		--------------------------------------------------------------------------------
-		-- Load User Plugins:
+		-- Load Custom Plugins:
 		--------------------------------------------------------------------------------
-		log.df("Loading User Plugins:")
-		local userPlugins = metadata.get(mod.SETTINGS_USER_PLUGINS, {})
-
-		for i, v in pairs(userPlugins) do
-			if v then
-				-- TO-DO: Load User Plugin:
-				log.df("Load User Plugin: %s", i)
-			end
+		local customPluginPath = metadata.get(mod.SETTINGS_CUSTOM_PATH, "~/CommandPost/Plugins/")
+		if tools.doesDirectoryExist(customPluginPath) then
+			log.df("Loading Custom Plugins:")
+			mod._plugins.loadCustomPlugins(customPluginPath)
+		else
+			log.wf("Custom Plugin Path does not exist: %s", customPluginPath)
 		end
-
 		if showNotification then
 			log.df("Successfully loaded.")
 			dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))

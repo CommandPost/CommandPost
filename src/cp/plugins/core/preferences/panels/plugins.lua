@@ -36,7 +36,7 @@ local tools										= require("cp.tools")
 local mod = {}
 
 	mod.SETTINGS_DISABLED = "plugins.disabled"
-	mod.SETTINGS_USER_PLUGINS = "plugins.user"
+	mod.SETTINGS_CUSTOM_PATH = "plugins.custompath"
 
 	--------------------------------------------------------------------------------
 	-- DISABLE PLUGIN:
@@ -69,15 +69,12 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
-	-- LOAD PLUGIN:
+	-- CHANGE CUSTOM PLUGIN PATH:
 	--------------------------------------------------------------------------------
-	local function loadPlugin()
-		local result = dialog.displayChooseFolder("Please select the folder containing the plugin:")
+	local function changeCustomPluginPath()
+		local result = dialog.displayChooseFolder("Please select the folder which contains your custom plugins:")
 		if result then
-			--log.df("Path: %s",result)
-			local userPlugins = metadata.get(mod.SETTINGS_USER_PLUGINS, {})
-			userPlugins[result] = true
-			metadata.set(mod.SETTINGS_USER_PLUGINS, userPlugins)
+			metadata.set(mod.SETTINGS_CUSTOM_PATH, result)
 			hs.reload()
 		end
 	end
@@ -89,8 +86,8 @@ local mod = {}
 
 		if message["body"][1] == "openErrorLog" then
 			hs.openConsole()
-		elseif message["body"][1] == "loadPlugin" then
-			loadPlugin()
+		elseif message["body"][1] == "changeCustomPluginPath" then
+			changeCustomPluginPath()
 		elseif message["body"][2] == "Disable" then
 			disablePlugin(message["body"][1])
 		elseif message["body"][2] == "Enable" then
@@ -143,12 +140,64 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
+	-- GET CUSTOM PLUGIN PATH:
+	--------------------------------------------------------------------------------
+	local function getCustomPluginPath()
+		return metadata.get(mod.SETTINGS_CUSTOM_PATH, "~/CommandPost/Plugins/")
+	end
+
+	--------------------------------------------------------------------------------
+	-- FIND CUSTOM PLUGINS:
+	--------------------------------------------------------------------------------
+	local function findCustomPlugins(path)
+
+		local plugins = {}
+
+		local files = tools.dirFiles(path)
+		for i,file in ipairs(files) do
+			if file ~= "." and file ~= ".." and file ~= "init.lua" then
+				local filePath = path .. "/" .. file
+				if fs.attributes(filePath).mode == "directory" then
+					local attrs, err = fs.attributes(filePath .. "/init.lua")
+					if attrs and attrs.mode == "file" then
+						--------------------------------------------------------------------------------
+						-- It's a plugin:
+						--------------------------------------------------------------------------------
+						plugins[#plugins+1] = file
+					else
+						--------------------------------------------------------------------------------
+						-- It's a plain folder. Load it as a sub-package:
+						--------------------------------------------------------------------------------
+						local subPackages = findCustomPlugins(path .. file .. "/")
+						for i, v in ipairs(subPackages) do
+							plugins[#plugins+1] = file .. "." .. v
+					    end
+					end
+				else
+					local name = file:match("(.+)%.lua$")
+					if name then
+						plugins[#plugins+1] = package .. "." .. name
+					end
+				end
+			end
+		end
+
+		return plugins
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- GET LIST OF PLUGINS:
 	--------------------------------------------------------------------------------
 	local function getListOfPlugins()
-		local plugins = {}
-		plugins = findPlugins(metadata.pluginPath)
-		return plugins
+
+		local plugins = findPlugins(metadata.pluginPath)
+
+		local customPluginPath = getCustomPluginPath()
+		local customPlugins = findCustomPlugins(customPluginPath)
+
+		return fnutils.concat(plugins, customPlugins)
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -171,6 +220,8 @@ local mod = {}
 			end
 		end
 
+		return "Unknown"
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -178,9 +229,13 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginCategory(path)
 
-		local removedPluginPath = string.sub(path, string.len(metadata.pluginPath) + 2)
-		local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
-		return pluginComponents[1]
+		if string.sub(path, 1, string.len(metadata.pluginPath)) == metadata.pluginPath then
+			local removedPluginPath = string.sub(path, string.len(metadata.pluginPath) + 2)
+			local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
+			return pluginComponents[1]
+		else
+			return "custom"
+		end
 
 	end
 
@@ -188,8 +243,12 @@ local mod = {}
 	-- PLUGIN SHORT NAME:
 	--------------------------------------------------------------------------------
 	local function pluginShortName(path)
-		local pluginCategory = pluginCategory(path)
-		return string.sub(path, string.len(metadata.pluginPath) + string.len(pluginCategory) + 3)
+		if string.sub(path, 1, string.len(metadata.pluginPath)) == metadata.pluginPath then
+			local pluginCategory = pluginCategory(path)
+			return string.sub(path, string.len(metadata.pluginPath) + string.len(pluginCategory) + 3)
+		else
+			return path
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -286,11 +345,13 @@ local mod = {}
 				</tbody>
 			</table>
 			<div style="display: block;">
-				<p style="text-align:right;"><a id="loadPlugin" href="" class="button">Load External Plugin</a></p>
+				<p><span style="font-weight: bold;">Custom Plugins</span> will be loaded if located in the following folder:</p>
+				<p style="padding-left: 20px;">]] .. getCustomPluginPath() .. [[</p>
+				<p style="text-align: right;"><a id="changeCustomPluginPath" href="#" class="button">Change Custom Plugin Folder</a></p>
 				<script>
-					document.getElementById("loadPlugin").onclick = function() {
+					document.getElementById("changeCustomPluginPath").onclick = function() {
 						try {
-							var result = ["loadPlugin"];
+							var result = ["changeCustomPluginPath"];
 							webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 						} catch(err) {
 							alert('An error has occurred. Does the controller exist yet?');

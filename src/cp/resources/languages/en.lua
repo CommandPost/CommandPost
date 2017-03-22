@@ -400,7 +400,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
-			enableHacksShortcuts				=			"Add CommandPost Shortcuts to Final Cut Pro",
+			enableHacksShortcuts				=			"Control CommandPost Shortcuts within Final Cut Pro",
 			enableTimecodeOverlay				=			"Enable Timecode Overlay",
 			enableMovingMarkers					=			"Enable Moving Markers",
 			enableRenderingDuringPlayback		=			"Enable Rendering During Playback",
