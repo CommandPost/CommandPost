@@ -50,7 +50,7 @@ function WindowWatcher:watch(events)
 		--------------------------------------------------------------------------------
 		local bundleID = self._window:app():getBundleID()
 		local filter = windowfilter.new(function(window)
-			return window:application():bundleID() == bundleID
+			return window and window:application():bundleID() == bundleID
 		end)
 		filter.setLogLevel("error") -- The wfilter errors are too annoying.
 
