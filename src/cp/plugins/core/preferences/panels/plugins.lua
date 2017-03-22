@@ -28,7 +28,7 @@ local tools										= require("cp.tools")
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
--- None
+local DEFAULT_CUSTOM_PATH						= "~/CommandPost/Plugins/"
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -143,13 +143,20 @@ local mod = {}
 	-- GET CUSTOM PLUGIN PATH:
 	--------------------------------------------------------------------------------
 	local function getCustomPluginPath()
-		return metadata.get(mod.SETTINGS_CUSTOM_PATH, "~/CommandPost/Plugins/")
+		local customPath = metadata.get(mod.SETTINGS_CUSTOM_PATH, DEFAULT_CUSTOM_PATH)
+		if tools.doesDirectoryExist(customPath) then
+			return customPath
+		else
+			return DEFAULT_CUSTOM_PATH
+		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- FIND CUSTOM PLUGINS:
 	--------------------------------------------------------------------------------
 	local function findCustomPlugins(path)
+
+
 
 		local plugins = {}
 
@@ -196,10 +203,9 @@ local mod = {}
 		local plugins = findPlugins(metadata.pluginPath)
 
 		local customPluginPath = getCustomPluginPath()
-		log.df("customPluginPath: %s", hs.inspect(customPluginPath))
-		if customPluginPath then
+		if tools.doesDirectoryExist(customPluginPath) then
 			local customPlugins = findCustomPlugins(customPluginPath)
-			fnutils.concat(plugins, customPlugins)
+			return fnutils.concat(plugins, customPlugins)
 		end
 		return plugins
 	end
