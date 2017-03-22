@@ -524,8 +524,15 @@ return {
 	highlightedItem						=			"Highlighted Item",
 	consoleChoiceUnfavorite				=			"Unfavourite",
 	consoleChoiceFavorite				=			"Favourite",
+	consoleChoiceHide					=			"Hide",
+	consoleChoiceUnhide					=			"Unhide",
+	consoleHideUnhide					=			"Manage Hidden Items...",
+	
+	actionHiddenText					=			"%{text} [Hidden]",
 	
 	consoleSections						=			"Sections",
+	consoleSectionsShowAll				=			"Show All",
+	consoleSectionsHideAll				=			"Hide All",
 	command_action						=			"Commands",
 	menu_action							=			"Menu Items",
 	effect_action						=			"Audio & Video Effects",

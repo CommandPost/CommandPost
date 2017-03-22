@@ -121,12 +121,66 @@ function mod.toggleActionEnabled(id)
 	end
 end
 
+function mod.enableAllActions()
+	for _,action in pairs(mod._actions) do
+		action.setEnabled(true)
+	end
+end
+
+function mod.disableAllActions()
+	for _,action in pairs(mod._actions) do
+		action.setEnabled(false)
+	end
+end
+
 function mod.getOptions(actionId, params)
 	local action = mod.getAction(actionId)
 	if action.options then
 		return action.options(params)
 	else
 		return nil
+	end
+end
+
+function mod.getHidden()
+	if not mod._hidden then
+		mod._hidden = metadata.get("actionHidden", {})
+	end
+	return mod._hidden
+end
+
+function mod.setHidden(value)
+	mod._hidden = value
+	metadata.set("actionHidden", value)
+	-- Refresh the cache next time it's accessed.
+	mod.refresh()
+end
+
+function mod.hide(id)
+	if id then
+		local hidden = mod.getHidden()
+		hidden[id] = true
+		mod.setHidden(hidden)
+	end
+end
+
+function mod.unhide(id)
+	if id then
+		local hidden = mod.getHidden()
+		hidden[id] = nil
+		mod.setHidden(hidden)
+	end
+end
+
+function mod.isHidden(id)
+	return mod.getHidden()[id] == true
+end
+
+function mod.toggleHidden(id)
+	if id then
+		local hidden = mod.getHidden()
+		hidden[id] = not hidden[id]
+		mod.setHidden(hidden)
 	end
 end
 
@@ -260,22 +314,50 @@ function mod.addChoices(choices)
 	mod.sortChoices()
 end
 
+function mod.allChoices()
+	if not mod._allChoices then
+		mod._findChoices()
+	end
+	return mod._allChoices
+end
+
 function mod.choices()
 	if not mod._choices then
-		local result = {}
-		for type,action in pairs(mod._actions) do
-			if not action.isEnabled or action.isEnabled() then
-				fnutils.concat(result, action.choices():getChoices())
-			end
-		end
-		mod._choices = result
-		mod.sortChoices()
+		mod._findChoices()
 	end
 	return mod._choices
 end
 
+function mod._findChoices()
+	local result = {}
+	for type,action in pairs(mod._actions) do
+		if not action.isEnabled or action.isEnabled() then
+			fnutils.concat(result, action.choices():getChoices())
+		end
+	end
+	local hidden = mod.getHidden()
+	for _,choice in ipairs(result) do
+		if choice.oldText then
+			choice.text = choice.oldText
+		end
+
+		if hidden[choice.id] then
+			choice.oldText = choice.text
+			choice.text = i18n("actionHiddenText", {text = choice.text})
+			choice.hidden = true
+		else
+			choice.oldText = nil
+			choice.hidden = nil
+		end
+	end
+	mod._allChoices = result
+	mod._choices = fnutils.filter(result, function(e) return not e.hidden end)
+	mod.sortChoices()
+end
+
 function mod.refresh()
 	mod._choices = nil
+	mod._allChoices = nil
 end
 
 -- The Plugin

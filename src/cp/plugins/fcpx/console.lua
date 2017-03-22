@@ -23,11 +23,10 @@ local PRIORITY = 11000
 
 local mod = {}
 
-mod.hacksChooser		= nil 		-- the actual hs.chooser
+mod.mainChooser			= nil 		-- the actual hs.chooser
+mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
+mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
-mod.chooserChoices		= nil		-- Choices Table
-mod.mode 				= "normal"	-- normal, remove, restore
-mod.reduceTransparency	= false
 
 function mod.isEnabled()
 	return metadata.get("consoleEnabled", true)
@@ -77,7 +76,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
 	--------------------------------------------------------------------------------
-	mod.hacksChooser = chooser.new(mod.completionAction):bgDark(true)
+	mod.mainChooser = chooser.new(mod.completionAction):bgDark(true)
 											           	:rightClickCallback(mod.rightClickAction)
 											        	:choices(mod.choices)
 
@@ -86,10 +85,30 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	mod.lastReducedTransparency = mod.isReducedTransparency()
 	if mod.lastReducedTransparency then
-		mod.hacksChooser:fgColor(nil)
+		mod.mainChooser:fgColor(nil)
 								 :subTextColor(nil)
 	else
-		mod.hacksChooser:fgColor(drawing.color.x11.snow)
+		mod.mainChooser:fgColor(drawing.color.x11.snow)
+								 :subTextColor(drawing.color.x11.snow)
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- Setup Hider Manager:
+	--------------------------------------------------------------------------------
+	mod.hiderChooser = chooser.new(mod.toggleHidden):bgDark(true)
+											           	:rightClickCallback(mod.rightClickAction)
+											        	:choices(mod.actionmanager.allChoices)
+
+	--------------------------------------------------------------------------------
+	-- Allow for Reduce Transparency:
+	--------------------------------------------------------------------------------
+	mod.lastReducedTransparency = mod.isReducedTransparency()
+	if mod.lastReducedTransparency then
+		mod.hiderChooser:fgColor(nil)
+								 :subTextColor(nil)
+	else
+		mod.hiderChooser:fgColor(drawing.color.x11.snow)
 								 :subTextColor(drawing.color.x11.snow)
 
 	end
@@ -98,7 +117,14 @@ function mod.new()
 	-- If Final Cut Pro is running, lets preemptively refresh the choices:
 	--------------------------------------------------------------------------------
 	if fcp:isRunning() then timer.doAfter(3, mod.refresh) end
+end
 
+function mod.toggleHidden(result)
+	if result and result.id then
+		mod.actionmanager.toggleHidden(result.id)
+		mod.refresh()
+		timer.doUntil(function() return mod.hiderChooser:isVisible() end, mod.showHider)
+	end
 end
 
 function mod.choices()
@@ -109,7 +135,8 @@ end
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function mod.refresh()
-	mod.hacksChooser:refreshChoicesCallback()
+	mod.mainChooser:refreshChoicesCallback()
+	mod.hiderChooser:refreshChoicesCallback()
 end
 
 function mod.checkReducedTransparency()
@@ -122,10 +149,19 @@ end
 -- SHOW CONSOLE:
 --------------------------------------------------------------------------------
 function mod.show()
-	
+	mod.showChooser(mod.mainChooser)
+end
+
+function mod.showHider()
+	mod.showChooser(mod.hiderChooser)
+end
+
+function mod.showChooser(chooser)
 	if not mod.isEnabled() then
 		return false
 	end
+	
+	mod.hide()
 	
 	mod._frontApp = application.frontmostApplication()
 
@@ -141,50 +177,52 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	local chooserRememberLast = mod.isLastQueryRemembered()
 	if not chooserRememberLast then
-		mod.hacksChooser:query("")
+		chooser:query("")
 	else
-		mod.hacksChooser:query(mod.getLastQueryValue())
+		chooser:query(mod.getLastQueryValue())
 	end
 
 	--------------------------------------------------------------------------------
 	-- Console is Active:
 	--------------------------------------------------------------------------------
 	mod.active = true
+	mod.activeChooser = chooser
 
 	--------------------------------------------------------------------------------
 	-- Show Console:
 	--------------------------------------------------------------------------------
-	mod.hacksChooser:show()
+	chooser:show()
 	
 	return true
-
 end
 
 --------------------------------------------------------------------------------
 -- HIDE CONSOLE:
 --------------------------------------------------------------------------------
 function mod.hide()
+	if mod.activeChooser then
+		local chooser = mod.activeChooser
 
-	--------------------------------------------------------------------------------
-	-- No Longer Active:
-	--------------------------------------------------------------------------------
-	mod.active = false
+		--------------------------------------------------------------------------------
+		-- No Longer Active:
+		--------------------------------------------------------------------------------
+		mod.active = false
+		mod.activeChooser = nil
 
-	--------------------------------------------------------------------------------
-	-- Hide Chooser:
-	--------------------------------------------------------------------------------
-	mod.hacksChooser:hide()
+		--------------------------------------------------------------------------------
+		-- Hide Chooser:
+		--------------------------------------------------------------------------------
+		chooser:hide()
 
-	--------------------------------------------------------------------------------
-	-- Save Last Query to Settings:
-	--------------------------------------------------------------------------------
-	mod.setLastQueryValue(mod.hacksChooser:query())
+		--------------------------------------------------------------------------------
+		-- Save Last Query to Settings:
+		--------------------------------------------------------------------------------
+		mod.setLastQueryValue(chooser:query())
 
-	if mod._frontApp then
-		log.df(string.format("Activating %s", mod._frontApp:title()))
-		mod._frontApp:activate()
+		if mod._frontApp then
+			mod._frontApp:activate()
+		end
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -206,11 +244,13 @@ end
 -- CHOOSER RIGHT CLICK:
 --------------------------------------------------------------------------------
 function mod.rightClickAction(index)
+	
+	local chooser = mod.activeChooser
 
 	--------------------------------------------------------------------------------
 	-- Settings:
 	--------------------------------------------------------------------------------
-	local choice = mod.hacksChooser:selectedRowContents(index)
+	local choice = chooser:selectedRowContents(index)
 
 	--------------------------------------------------------------------------------
 	-- Menubar:
@@ -227,20 +267,30 @@ function mod.rightClickAction(index)
 			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceUnfavorite"), fn = function()
 				mod.actionmanager.unfavorite(choice.id)
 				mod.refresh()
-				mod.hacksChooser:show()
+				chooser:show()
 			end }
 		else
 			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceFavorite"), fn = function()
 				mod.actionmanager.favorite(choice.id)
 				mod.refresh()
-				mod.hacksChooser:show()
+				chooser:show()
 			end }
 		end
-		choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceHide"), fn = function()
-			mod.actionmanager.hide(choice.id)
-			mod.refresh()
-			mod.hacksChooser:show()
-		end}
+		
+		local isHidden = mod.actionmanager.isHidden(choice.id)
+		if isHidden then
+			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceUnhide"), fn = function()
+				mod.actionmanager.unhide(choice.id)
+				mod.refresh()
+				chooser:show()
+			end}
+		else
+			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceHide"), fn = function()
+				mod.actionmanager.hide(choice.id)
+				mod.refresh()
+				chooser:show()
+			end}
+		end
 	end
 
 	mod.rightClickMenubar:setMenu(choiceMenu)
@@ -278,27 +328,41 @@ function plugin.init(deps)
 	menu:addItems(3000, function()
 		return {
 			{ title = i18n("rememberLastQuery"),	fn=mod.toggleLastQueryRemembered, checked = mod.isLastQueryRemembered(),  },
+			{ title = "-" },
+			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}
 	end)
 	
-	menu:addSeparator(4000)
-	
+	-- The 'Sections' menu
 	local sections = menu:addMenu(5000, function() return i18n("consoleSections") end)
 	
 	sections:addItems(2000, function()
 		local actionItems = {}
+		local allEnabled = true
+		local allDisabled = true
+		
 		for id,action in pairs(deps.actionmanager.getActions()) do
+			local enabled = action.isEnabled()
+			allEnabled = allEnabled and enabled
+			allDisabled = allDisabled and not enabled
 			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,	
 				fn=function()
 					action.toggleEnabled()
 					deps.actionmanager.refresh()
 				end,
-				checked = action.isEnabled(), }
+				checked = enabled, }
 		end
 		
 		table.sort(actionItems, function(a, b) return a.title < b.title end)
 		
-		return actionItems
+		local allItems = {
+			{ title = i18n("consoleSectionsShowAll"), fn = mod.actionmanager.enableAllActions, disabled = allEnabled },
+			{ title = i18n("consoleSectionsHideAll"), fn = mod.actionmanager.disableAllActions, disabled = allDisabled },
+			{ title = "-" }
+		}
+		fnutils.concat(allItems, actionItems)
+		
+		return allItems
 	end)
 	
 	return mod
