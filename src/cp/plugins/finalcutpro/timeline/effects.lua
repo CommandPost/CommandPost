@@ -16,37 +16,37 @@ local log				= require("hs.logger").new("effects")
 
 -- Constants
 local MAX_SHORTCUTS = 5
-local ID = "effect"
 
 -- Effects Action
-local action = {}
+local videoaction = {}
+local audioaction = {}
 local mod = {}
 
-function action.init(actionmanager)
-	action._manager = actionmanager
-	action._manager.addAction(action)
+function videoaction.init(videoactionmanager)
+	videoaction._manager = videoactionmanager
+	videoaction._manager.addAction(videoaction)
 end
 
-function action.id()
-	return ID
+function videoaction.id()
+	return "video"
 end
 
-function action.setEnabled(value)
-	metadata.set(action.id().."ActionEnabled", value)
-	action._manager.refresh()
+function videoaction.setEnabled(value)
+	metadata.set(videoaction.id().."ActionEnabled", value)
+	videoaction._manager.refresh()
 end
 
-function action.isEnabled()
-	return metadata.get(action.id().."ActionEnabled", true)
+function videoaction.isEnabled()
+	return metadata.get(videoaction.id().."ActionEnabled", true)
 end
 
-function action.toggleEnabled()
-	action.setEnabled(not action.isEnabled())
+function videoaction.toggleEnabled()
+	videoaction.setEnabled(not videoaction.isEnabled())
 end
 
-function action.choices()
-	if not action._choices then
-		action._choices = choices.new(action.id())
+function videoaction.choices()
+	if not videoaction._choices then
+		videoaction._choices = choices.new(videoaction.id())
 		--------------------------------------------------------------------------------
 		-- Video Effects List:
 		--------------------------------------------------------------------------------
@@ -55,32 +55,21 @@ function action.choices()
 		if effects ~= nil and next(effects) ~= nil then
 			for i,name in ipairs(effects) do
 				local params = { name = name }
-				action._choices:add(name)
+				videoaction._choices:add(name)
 					:subText(i18n("videoEffect_group"))
 					:params(params)
-					:id(action.getId(params))
-			end
-		end
-
-		local effects = mod.getAudioEffects()
-		if effects ~= nil and next(effects) ~= nil then
-			for i,name in ipairs(effects) do
-				local params = { name = name }
-				action._choices:add(name)
-					:subText(i18n("audioEffect_group"))
-					:params(params)
-					:id(action.getId(params))
+					:id(videoaction.getId(params))
 			end
 		end
 	end
-	return action._choices
+	return videoaction._choices
 end
 
-function action.getId(params)
-	return ID .. ":" .. params.name
+function videoaction.getId(params)
+	return videoaction.id() .. ":" .. params.name
 end
 
-function action.execute(params)
+function videoaction.execute(params)
 	if params and params.name then
 		mod.apply(params.name)
 		return true
@@ -88,8 +77,66 @@ function action.execute(params)
 	return false
 end
 
-function action.reset()
-	action._choices = nil
+function videoaction.reset()
+	videoaction._choices = nil
+end
+
+function audioaction.init(audioactionmanager)
+	audioaction._manager = audioactionmanager
+	audioaction._manager.addAction(audioaction)
+end
+
+function audioaction.id()
+	return "audio"
+end
+
+function audioaction.setEnabled(value)
+	metadata.set(audioaction.id().."ActionEnabled", value)
+	audioaction._manager.refresh()
+end
+
+function audioaction.isEnabled()
+	return metadata.get(audioaction.id().."ActionEnabled", true)
+end
+
+function audioaction.toggleEnabled()
+	audioaction.setEnabled(not audioaction.isEnabled())
+end
+
+function audioaction.choices()
+	if not audioaction._choices then
+		audioaction._choices = choices.new(audioaction.id())
+		--------------------------------------------------------------------------------
+		-- Audio Effects List:
+		--------------------------------------------------------------------------------
+		local effects = mod.getAudioEffects()
+		if effects ~= nil and next(effects) ~= nil then
+			for i,name in ipairs(effects) do
+				local params = { name = name }
+				audioaction._choices:add(name)
+					:subText(i18n("audioEffect_group"))
+					:params(params)
+					:id(audioaction.getId(params))
+			end
+		end
+	end
+	return audioaction._choices
+end
+
+function audioaction.getId(params)
+	return audioaction.id() .. ":" .. params.name
+end
+
+function audioaction.execute(params)
+	if params and params.name then
+		mod.apply(params.name)
+		return true
+	end
+	return false
+end
+
+function audioaction.reset()
+	audioaction._choices = nil
 end
 
 -- The Module
@@ -455,7 +502,8 @@ plugin.dependencies = {
 }
 
 function plugin.init(deps)
-	action.init(deps.actionmanager)
+	videoaction.init(deps.actionmanager)
+	audioaction.init(deps.actionmanager)
 	
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar
