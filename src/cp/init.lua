@@ -43,6 +43,7 @@ local tools                     = require("cp.tools")
 local debugMode 				= metadata.get("debugMode")
 if debugMode then
     logger.defaultLogLevel = 'debug'
+	require("cp.developer")
 else
 	logger.defaultLogLevel = 'warning'
 end
