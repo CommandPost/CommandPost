@@ -25,7 +25,8 @@ local mod = {}
 	mod.bugReportEmail      = "chris@latenitefilms.com"
 	mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
-	mod.pluginPath			= "cp.plugins"
+	mod.pluginPaths			= {"cp.plugins", "plugins"}
+	mod.customPluginPath	= "~/CommandPost/plugins"
 
 	if hs.hasinitfile then
 		-------------------------------------------------------------------------------

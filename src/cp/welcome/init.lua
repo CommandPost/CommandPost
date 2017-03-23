@@ -12,6 +12,7 @@ local log										= require("hs.logger").new("welcome")
 local application								= require("hs.application")
 local drawing									= require("hs.drawing")
 local geometry									= require("hs.geometry")
+local inspect									= require("hs.inspect")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
@@ -61,25 +62,39 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Load Plugins:
 		--------------------------------------------------------------------------------
-		dialog.displayNotification("Loading Plugins...")
 		log.df("Loading Plugins:")
 		mod._plugins = require("cp.plugins")
-		mod._plugins.init(metadata.pluginPath)
+		mod._plugins.init(metadata.pluginPaths[1])
 
 		--------------------------------------------------------------------------------
 		-- Load Custom Plugins:
 		--------------------------------------------------------------------------------
-		local customPluginPath = metadata.get(mod.SETTINGS_CUSTOM_PATH, "~/CommandPost/Plugins/")
-		if tools.doesDirectoryExist(customPluginPath) then
-			log.df("Loading Custom Plugins:")
-			mod._plugins.loadCustomPlugins(customPluginPath)
+		log.df("Loading Custom Plugins:")
+		if tools.doesDirectoryExist(metadata.customPluginPath) then
+
+			local package = metadata.pluginPaths[2]
+			log.df("Loading plugin package '%s'", package)
+			local status, err = pcall(function()
+				mod._plugins.loadPackage(package)
+			end)
+			if not status then
+				log.ef("Error while loading package '%s':\n%s", package, inspect(err))
+			end
+
+			-- TO DO: Need to notify them of a `postInit`
+
 		else
-			log.wf("Custom Plugin Path does not exist: %s", customPluginPath)
+			log.df("Skipping loading Custom Plugins as path does not exist.")
 		end
+
+		--------------------------------------------------------------------------------
+		-- Notifications:
+		--------------------------------------------------------------------------------
 		if showNotification then
 			log.df("Successfully loaded.")
 			dialog.displayNotification(metadata.scriptName .. " (v" .. metadata.scriptVersion .. ") " .. i18n("hasLoaded"))
 		end
+
 	end
 
 	--------------------------------------------------------------------------------

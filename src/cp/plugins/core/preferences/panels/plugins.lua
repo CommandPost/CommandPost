@@ -25,12 +25,6 @@ local metadata									= require("cp.metadata")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
--- CONSTANTS:
---------------------------------------------------------------------------------
-
-local DEFAULT_CUSTOM_PATH						= "~/CommandPost/Plugins/"
-
---------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
 local mod = {}
@@ -69,31 +63,16 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
-	-- CHANGE CUSTOM PLUGIN PATH:
-	--------------------------------------------------------------------------------
-	local function changeCustomPluginPath()
-		local result = dialog.displayChooseFolder("Please select the folder which contains your custom plugins:")
-		if result then
-			metadata.set(mod.SETTINGS_CUSTOM_PATH, result)
-			hs.reload()
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- CONTROLLER CALLBACK:
 	--------------------------------------------------------------------------------
 	local function controllerCallback(message)
 
 		if message["body"][1] == "openErrorLog" then
 			hs.openConsole()
-		elseif message["body"][1] == "changeCustomPluginPath" then
-			changeCustomPluginPath()
 		elseif message["body"][2] == "Disable" then
 			disablePlugin(message["body"][1])
 		elseif message["body"][2] == "Enable" then
 			enablePlugin(message["body"][1])
-		else
-			--log.df("controllerCallback unrecognised request: %s", hs.inspect(message))
 		end
 
 	end
@@ -137,18 +116,6 @@ local mod = {}
 
 		return plugins
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET CUSTOM PLUGIN PATH:
-	--------------------------------------------------------------------------------
-	local function getCustomPluginPath()
-		local customPath = metadata.get(mod.SETTINGS_CUSTOM_PATH, DEFAULT_CUSTOM_PATH)
-		if tools.doesDirectoryExist(customPath) then
-			return customPath
-		else
-			return DEFAULT_CUSTOM_PATH
-		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -200,7 +167,7 @@ local mod = {}
 
 		local plugins = findPlugins(metadata.pluginPath)
 
-		local customPluginPath = getCustomPluginPath()
+		local customPluginPath = metadata.customPluginPath
 		if tools.doesDirectoryExist(customPluginPath) then
 			local customPlugins = findCustomPlugins(customPluginPath)
 			return fnutils.concat(plugins, customPlugins)
@@ -429,19 +396,8 @@ local mod = {}
 				</tbody>
 			</table>
 			<div style="display: block;">
-				<p><span style="font-weight: bold;">Custom Plugins</span> will be loaded if located in the following folder:</p>
-				<p style="padding-left: 20px;">]] .. getCustomPluginPath() .. [[</p>
-				<p style="text-align: right;"><a id="changeCustomPluginPath" href="#" class="button">Change Custom Plugin Folder</a></p>
-				<script>
-					document.getElementById("changeCustomPluginPath").onclick = function() {
-						try {
-							var result = ["changeCustomPluginPath"];
-							webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
-						} catch(err) {
-							alert('An error has occurred. Does the controller exist yet?');
-						}
-					}
-				</script>
+				<p><span style="font-weight: bold;">Custom Plugins</span> will also be loaded if stored in the following folder:</p>
+				<p style="padding-left: 20px;">]] .. metadata.customPluginPath .. [[</p>
 			</div>
 		]]
 		return result
