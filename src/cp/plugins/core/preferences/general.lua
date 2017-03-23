@@ -150,7 +150,7 @@ local plugin = {}
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(deps)
-		
+
 		mod.menuManager = deps.menuManager
 
 		--------------------------------------------------------------------------------
@@ -189,19 +189,23 @@ local plugin = {}
 		-- Setup Menubar Preferences Panel:
 		--------------------------------------------------------------------------------
 		deps.menubar:addHeading(20, function()
-			return { title = "Options:" }
+			return { title = "Appearance:" }
 		end)
 
 		:addCheckbox(21, function()
 			return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
 		end)
 
-		:addCheckbox(22, function()
-			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
-		end)
-
 		:addHeading(24, function()
 			return { title = "<br />Sections:" }
+		end)
+
+		:addHeading(30, function()
+			return { title = "<br />Final Cut Pro:" }
+		end)
+
+		:addCheckbox(31, function()
+			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
 		end)
 
 	end

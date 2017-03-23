@@ -93,7 +93,7 @@ local mod = {}
 		elseif message["body"][2] == "Enable" then
 			enablePlugin(message["body"][1])
 		else
-			log.df("controllerCallback unrecognised request: %s", hs.inspect(message))
+			--log.df("controllerCallback unrecognised request: %s", hs.inspect(message))
 		end
 
 	end
@@ -155,8 +155,6 @@ local mod = {}
 	-- FIND CUSTOM PLUGINS:
 	--------------------------------------------------------------------------------
 	local function findCustomPlugins(path)
-
-
 
 		local plugins = {}
 
@@ -340,6 +338,82 @@ local mod = {}
     	end
 
 		local result = [[
+			<style>
+				.plugins {
+					table-layout: fixed;
+					width: 100%;
+					white-space: nowrap;
+
+					border: 1px solid #cccccc;
+					padding: 8px;
+					background-color: #ffffff;
+					text-align: left;
+				}
+
+				.plugins td {
+				  white-space: nowrap;
+				  overflow: hidden;
+				  text-overflow: ellipsis;
+				}
+
+				.rowCategory {
+					width:20%;
+					font-weight: bold;
+				}
+
+				.rowName {
+					width:50%;
+				}
+
+				.rowStatus {
+					width:15%;
+				}
+
+				.rowOption {
+					width:15%;
+				}
+
+				.plugins thead, .plugins tbody tr {
+					display:table;
+					table-layout:fixed;
+					width: calc( 100% - 1.5em );
+				}
+
+				.plugins tbody {
+					display:block;
+					height: 250px;
+					font-weight: normal;
+					font-size: 10px;
+
+					overflow-x: hidden;
+					overflow-y: auto;
+				}
+
+				.plugins tbody tr {
+					display:table;
+					width:100%;
+					table-layout:fixed;
+				}
+
+				.plugins thead {
+					font-weight: bold;
+					font-size: 12px;
+				}
+
+				.plugins tbody {
+					font-weight: normal;
+					font-size: 10px;
+				}
+
+				.plugins tbody tr:nth-child(even) {
+					background-color: #f5f5f5
+				}
+
+				.plugins tbody tr:hover {
+					background-color: #006dd4;
+					color: white;
+				}
+			</style>
 			<h3>Plugins Manager:</h3>
 			<table class="plugins">
 				<thead>

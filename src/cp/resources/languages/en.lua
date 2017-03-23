@@ -451,7 +451,7 @@ return {
 			showAutomation						=			"Show Automation",
 			showTools							=			"Show Tools",
 			showAdminTools						=			"Show Administrator",
-			displayProxyOriginalIcon			=			"Display Proxy/Original Icon",
+			displayProxyOriginalIcon			=			"Display Proxy/Original Icon in Menubar",
 			displayThisMenuAsIcon				=			"Display Menubar As Icon",
 
 			--------------------------------------------------------------------------------
@@ -535,9 +535,9 @@ return {
 	consoleChoiceHide					=			"Hide",
 	consoleChoiceUnhide					=			"Unhide",
 	consoleHideUnhide					=			"Manage Hidden Items...",
-	
+
 	actionHiddenText					=			"%{text} [Hidden]",
-	
+
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
@@ -548,7 +548,7 @@ return {
 	generator_action					=			"Generators",
 	title_action						=			"Titles",
 	transition_action					=			"Transitions",
-	
+
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",
