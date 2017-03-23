@@ -16,7 +16,7 @@ local notify									= require("hs.notify")
 local pathwatcher								= require("hs.pathwatcher")
 
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 
 local dialog									= require("cp.dialog")
 local tools										= require("cp.tools")

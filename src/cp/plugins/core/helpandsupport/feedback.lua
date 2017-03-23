@@ -8,7 +8,7 @@
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
 local feedback			= require("cp.feedback")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

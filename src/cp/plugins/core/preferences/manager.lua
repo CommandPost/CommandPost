@@ -26,7 +26,7 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 local plugins									= require("cp.plugins")
 local template									= require("cp.template")
 local tools										= require("cp.tools")

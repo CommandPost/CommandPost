@@ -25,7 +25,7 @@ local inspect									= require("hs.inspect")
 
 local fcp										= require("cp.finalcutpro")
 local tools										= require("cp.tools")
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:

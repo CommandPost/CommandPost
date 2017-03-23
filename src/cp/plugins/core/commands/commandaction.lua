@@ -4,7 +4,7 @@
 -- Includes
 local commands			= require("cp.commands")
 local choices			= require("cp.choices")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 -- The Modules
 local mod = {}

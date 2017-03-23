@@ -9,14 +9,14 @@
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 local PRIORITY 					= 3000
 local PREFERENCES_PRIORITY		= 29
-local SETTING 					= metadata.settingsPrefix .. ".menubarToolsEnabled"
+local SETTING 					= "menubarToolsEnabled"
 
 --------------------------------------------------------------------------------
 -- LOCAL FUNCTIONS:

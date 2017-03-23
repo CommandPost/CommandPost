@@ -12,7 +12,7 @@ local log				= require("hs.logger").new("updates")
 local application		= require("hs.application")
 local timer				= require("hs.timer")
 
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

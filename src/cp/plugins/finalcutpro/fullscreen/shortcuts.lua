@@ -13,7 +13,7 @@ local eventtap							= require("hs.eventtap")
 local timer								= require("hs.timer")
 
 local fcp								= require("cp.finalcutpro")
-local metadata							= require("cp.metadata")
+local metadata							= require("cp.config")
 local shortcut							= require("cp.commands.shortcut")
 local tools								= require("cp.tools")
 

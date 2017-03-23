@@ -12,7 +12,7 @@ local log						= require("hs.logger").new("movingmarkers")
 local application				= require("hs.application")
 local fs						= require("hs.fs")
 
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 local fcp						= require("cp.finalcutpro")
 local dialog					= require("cp.dialog")
 local plist						= require("cp.plist")

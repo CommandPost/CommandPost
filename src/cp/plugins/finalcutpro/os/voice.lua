@@ -14,7 +14,7 @@ local speech   								= require("hs.speech")
 
 local fcp									= require("cp.finalcutpro")
 local dialog 								= require("cp.dialog")
-local metadata								= require("cp.metadata")
+local metadata								= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

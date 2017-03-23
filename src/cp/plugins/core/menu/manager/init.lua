@@ -13,7 +13,7 @@ local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local menubar									= require("hs.menubar")
 
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 local fcp										= require("cp.finalcutpro")
 
 local section									= require("cp.plugins.core.menu.manager.section")

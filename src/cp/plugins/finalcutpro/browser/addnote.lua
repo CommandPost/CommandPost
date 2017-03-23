@@ -17,7 +17,7 @@ local eventtap							= require("hs.eventtap")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
 
-local metadata							= require("cp.metadata")
+local metadata							= require("cp.config")
 local fcp								= require("cp.finalcutpro")
 local axutils 							= require("cp.finalcutpro.axutils")
 

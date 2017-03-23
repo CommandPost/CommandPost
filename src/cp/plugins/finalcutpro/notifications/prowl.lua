@@ -13,7 +13,7 @@ local slaxdom 									= require("slaxml.slaxdom")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------

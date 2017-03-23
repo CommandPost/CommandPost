@@ -13,7 +13,7 @@ local console						= require("hs.console")
 local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
 
-local metadata						= require("cp.metadata")
+local metadata						= require("cp.config")
 local tools							= require("cp.tools")
 
 --------------------------------------------------------------------------------

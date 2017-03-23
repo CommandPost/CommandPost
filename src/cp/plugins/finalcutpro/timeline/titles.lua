@@ -8,7 +8,7 @@ local inspect			= require("hs.inspect")
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 local tools				= require("cp.tools")
 
 local log				= require("hs.logger").new("titles")

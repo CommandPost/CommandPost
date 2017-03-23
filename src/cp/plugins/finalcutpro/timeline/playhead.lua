@@ -8,7 +8,7 @@ local mouse						= require("hs.mouse")
 
 local dialog					= require("cp.dialog")
 local fcp						= require("cp.finalcutpro")
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 
 local log						= require("hs.logger").new("playhead")
 

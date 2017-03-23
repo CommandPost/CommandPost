@@ -18,7 +18,7 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 
 local generate									= require("cp.plugins.core.preferences.generate")
 

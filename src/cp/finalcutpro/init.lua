@@ -1,11 +1,18 @@
---- cp.finalcutpro
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro ===
 ---
 --- Represents the Final Cut Pro X application, providing functions that allow different tasks to be accomplished.
----
---- Author: David Peterson (david@randombits.org)
----
 
---- Standard Modules:
+--------------------------------------------------------------------------------
+--- EXTENSIONS:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("finalcutpro")
+
 local application								= require("hs.application")
 local ax 										= require("hs._asm.axuielement")
 local eventtap									= require("hs.eventtap")
@@ -13,12 +20,9 @@ local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
-local windowfilter								= require("hs.window.filter")
 local task										= require("hs.task")
+local windowfilter								= require("hs.window.filter")
 
-local log										= require("hs.logger").new("finalcutpro")
-
---- Local Modules:
 local plist										= require("cp.plist")
 local just										= require("cp.just")
 local tools										= require("cp.tools")
@@ -40,16 +44,34 @@ local MediaImport								= require("cp.finalcutpro.import.MediaImport")
 local kc										= require("cp.finalcutpro.keycodes")
 local shortcut									= require("cp.commands.shortcut")
 
---- The App module:
+--------------------------------------------------------------------------------
+-- APP MODULE:
+--------------------------------------------------------------------------------
 local App = {}
 
---- Constants:
+--- cp.finalcutpro.BUNDLE_ID
+--- Constant
+--- Final Cut Pro's Bundle ID
 App.BUNDLE_ID 									= "com.apple.FinalCut"
+
+--- cp.finalcutpro.PASTEBOARD_UTI
+--- Constant
+--- Final Cut Pro's Pasteboard UTI
 App.PASTEBOARD_UTI 								= "com.apple.flexo.proFFPasteboardUTI"
 
+--- cp.finalcutpro.PREFS_PLIST_PATH
+--- Constant
+--- Final Cut Pro's Preferences Path
 App.PREFS_PLIST_PATH 							= "~/Library/Preferences/com.apple.FinalCut.plist"
 
+--- cp.finalcutpro.SUPPORTED_LANGUAGES
+--- Constant
+--- Table of Final Cut Pro's supported Languages
 App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
+
+--- cp.finalcutpro.FLEXO_LANGUAGES
+--- Constant
+--- Table of Final Cut Pro's supported Languages for the Flexo Framework
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
 --- doesDirectoryExist() -> boolean

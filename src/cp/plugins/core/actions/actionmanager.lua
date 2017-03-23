@@ -2,7 +2,7 @@
 local urlevent					= require("hs.urlevent")
 local fnutils					= require("hs.fnutils")
 local log						= require("hs.logger").new("actnmngr")
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 local timer						= require("hs.timer")
 
 -- The Module
@@ -98,7 +98,7 @@ function mod.addAction(action)
 	local id = action.id()
 	mod._actions[id] = action
 	mod._actionIds[#mod._actionIds + 1] = id
-	
+
 	urlevent.bind(id, function(eventName, params)
 		if eventName ~= id then
 			-- Mismatch!
@@ -223,7 +223,7 @@ function mod.getPopularityIndex()
 	if not mod._popularityIndex then
 		mod._popularityIndex = metadata.get("actionPopularityIndex", {})
 	end
-	return mod._popularityIndex 
+	return mod._popularityIndex
 end
 
 function mod.setPopularityIndex(value)

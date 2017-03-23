@@ -15,7 +15,7 @@ local timer			= require("hs.timer")
 
 local dialog		= require("cp.dialog")
 local fcp 			= require("cp.finalcutpro")
-local metadata		= require("cp.metadata")
+local metadata		= require("cp.config")
 local tools			= require("cp.tools")
 
 --------------------------------------------------------------------------------

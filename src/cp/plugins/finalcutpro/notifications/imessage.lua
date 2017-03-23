@@ -12,7 +12,7 @@ local log										= require("hs.logger").new("iMessage")
 local messages									= require("hs.messages")
 
 local dialog									= require("cp.dialog")
-local metadata									= require("cp.metadata")
+local metadata									= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

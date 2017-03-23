@@ -13,7 +13,7 @@ local fs			= require("hs.fs")
 
 local fcp			= require("cp.finalcutpro")
 local dialog		= require("cp.dialog")
-local metadata		= require("cp.metadata")
+local metadata		= require("cp.config")
 local tools			= require("cp.tools")
 
 --------------------------------------------------------------------------------

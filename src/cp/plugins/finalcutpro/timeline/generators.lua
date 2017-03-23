@@ -9,7 +9,7 @@ local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 local log				= require("hs.logger").new("generators")
 

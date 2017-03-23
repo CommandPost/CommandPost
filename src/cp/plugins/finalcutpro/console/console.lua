@@ -11,7 +11,7 @@ local ax 				= require("hs._asm.axuielement")
 
 local plugins			= require("cp.plugins")
 local fcp				= require("cp.finalcutpro")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 local log				= require("hs.logger").new("console")
 

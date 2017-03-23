@@ -11,6 +11,8 @@
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
+local logger					= require("hs.logger")
+logger.defaultLogLevel = 'debug'
 local log						= require("hs.logger").new("cp")
 
 local console                   = require("hs.console")
@@ -18,13 +20,12 @@ local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
-local logger					= require("hs.logger")
 local mouse                     = require("hs.mouse")
 local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 local log 									= require("hs.logger").new("clipboardHistory")
 
 local fcp									= require("cp.finalcutpro")
-local metadata								= require("cp.metadata")
+local metadata								= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

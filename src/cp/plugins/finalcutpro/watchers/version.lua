@@ -10,7 +10,7 @@
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-local metadata					= require("cp.metadata")
+local metadata					= require("cp.config")
 local fcp						= require("cp.finalcutpro")
 local watcher					= require("cp.watcher")
 

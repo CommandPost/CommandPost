@@ -9,7 +9,7 @@
 --------------------------------------------------------------------------------
 local application		= require("hs.application")
 
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

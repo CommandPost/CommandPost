@@ -11,7 +11,7 @@ local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
 local axutils										= require("cp.finalcutpro.axutils")
 local just											= require("cp.just")
-local metadata										= require("cp.metadata")
+local metadata										= require("cp.config")
 
 local MenuBar = {}
 

@@ -15,7 +15,7 @@ local log				= require("hs.logger").new("menuaction")
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local fnutils			= require("hs.fnutils")
-local metadata			= require("cp.metadata")
+local metadata			= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
