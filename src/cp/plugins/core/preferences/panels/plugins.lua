@@ -165,7 +165,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function getListOfPlugins()
 
-		local plugins = findPlugins(metadata.pluginPath)
+		local plugins = findPlugins(metadata.pluginPaths[1])
 
 		local customPluginPath = metadata.customPluginPath
 		if tools.doesDirectoryExist(customPluginPath) then
@@ -173,12 +173,15 @@ local mod = {}
 			return fnutils.concat(plugins, customPlugins)
 		end
 		return plugins
+
 	end
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN STATUS:
 	--------------------------------------------------------------------------------
 	local function pluginStatus(path)
+
+
 
 		for i, v in ipairs(failedPlugins) do
 			if v == path then
@@ -195,6 +198,8 @@ local mod = {}
 			end
 		end
 
+		print(path)
+
 		return "Unknown"
 
 	end
@@ -204,8 +209,10 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginCategory(path)
 
-		if string.sub(path, 1, string.len(metadata.pluginPath)) == metadata.pluginPath then
-			local removedPluginPath = string.sub(path, string.len(metadata.pluginPath) + 2)
+		local pluginPath = metadata.pluginPaths[1]
+
+		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
+			local removedPluginPath = string.sub(path, string.len(pluginPath) + 2)
 			local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
 			return pluginComponents[1]
 		else
@@ -218,9 +225,11 @@ local mod = {}
 	-- PLUGIN SHORT NAME:
 	--------------------------------------------------------------------------------
 	local function pluginShortName(path)
-		if string.sub(path, 1, string.len(metadata.pluginPath)) == metadata.pluginPath then
+
+		local pluginPath = metadata.pluginPaths[1]
+		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
 			local pluginCategory = pluginCategory(path)
-			return string.sub(path, string.len(metadata.pluginPath) + string.len(pluginCategory) + 3)
+			return string.sub(path, string.len(pluginPath) + string.len(pluginCategory) + 3)
 		else
 			return path
 		end
