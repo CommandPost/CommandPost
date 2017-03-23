@@ -168,7 +168,7 @@ local mod = {}
 
 		local customPluginPath = metadata.customPluginPath
 
-		log.df("customPluginPath: %s", customPluginPath)
+		--log.df("customPluginPath: %s", customPluginPath)
 
 		if tools.doesDirectoryExist(customPluginPath) then
 
@@ -212,9 +212,15 @@ local mod = {}
 		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
 			local removedPluginPath = string.sub(path, string.len(pluginPath) + 2)
 			local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
-			return pluginComponents[1]
+			if pluginComponents[1] == "finalcutpro" then
+				return "Final Cut Pro"
+			elseif pluginComponents[1] == "core" then
+				return "Core"
+			else
+				return pluginComponents[1]
+			end
 		else
-			return "custom"
+			return "Custom"
 		end
 
 	end
@@ -224,13 +230,20 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginShortName(path)
 
+		local result = path
 		local pluginPath = metadata.pluginPaths[1]
 		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
 			local pluginCategory = pluginCategory(path)
-			return string.sub(path, string.len(pluginPath) + string.len(pluginCategory) + 3)
-		else
-			return path
+			result = string.sub(path, string.len(pluginPath) + string.len(pluginCategory) + 3)
 		end
+
+		local customLabel = i18n(string.gsub(path, "%.", "_") .. "_label", {default = path})
+		if customLabel ~= path then
+			result = [[<div class="tooltip">]] .. customLabel .. [[<span class="tooltiptext">]] .. result .. [[</span></div>]]
+		end
+
+		return result
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -313,6 +326,42 @@ local mod = {}
 
 		local result = [[
 			<style>
+				.tooltip {
+					position: relative;
+					display: inline-block;
+					/* border-bottom: 1px dotted black; */
+				}
+
+				.tooltip .tooltiptext {
+					visibility: hidden;
+					width: 120px;
+					background-color: black;
+					color: #fff;
+					text-align: center;
+					border-radius: 6px;
+					padding: 5px 0;
+					position: absolute;
+					z-index: 1;
+					bottom: 150%;
+					left: 50%;
+					margin-left: -60px;
+				}
+
+				.tooltip .tooltiptext::after {
+					content: "";
+					position: absolute;
+					top: 100%;
+					left: 50%;
+					margin-left: -5px;
+					border-width: 5px;
+					border-style: solid;
+					border-color: black transparent transparent transparent;
+				}
+
+				.tooltip:hover .tooltiptext {
+					visibility: visible;
+				}
+
 				.plugins {
 					table-layout: fixed;
 					width: 100%;
