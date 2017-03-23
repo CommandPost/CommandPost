@@ -171,9 +171,6 @@ local mod = {}
 			dialog.displayErrorMessage(i18n("failedToRestart"))
 		end
 
-		-- Reload Hammerspoon to reset shortcuts to defaults if necessary.
-		--hs.reload()
-
 		return true
 	end
 
@@ -299,8 +296,11 @@ local plugin = {}
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(deps)
+
 		mod.globalCmds 	= deps.globalCmds
 		mod.fcpxCmds	= deps.fcpxCmds
+
+		mod._shortcuts	= deps.shortcuts
 
 		--------------------------------------------------------------------------------
 		-- Add the menu item to the top section:
@@ -327,7 +327,10 @@ local plugin = {}
 			:whenActivated(mod.editCommands)
 
 		deps.shortcuts:addCheckbox(ADVANCED_FEATURES_PRIORITY, function()
-			return { title = i18n("enableHacksShortcuts"),	fn = mod.toggleEditable, checked=mod.isEditable() }
+			return { title = i18n("enableHacksShortcuts"),	fn = function()
+				mod.toggleEditable()
+				mod._shortcuts.updateCustomShortcutsVisibility()
+			end, checked=mod.isEditable() }
 		end)
 
 		return mod

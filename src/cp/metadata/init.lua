@@ -26,7 +26,7 @@ local mod = {}
 	mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
 	mod.pluginPaths			= {"cp.plugins", "plugins"}
-	mod.customPluginPath	= "~/CommandPost/plugins"
+	mod.customPluginPath	= "~/CommandPost/plugins/"
 
 	if hs.hasinitfile then
 		-------------------------------------------------------------------------------

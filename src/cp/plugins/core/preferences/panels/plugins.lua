@@ -30,7 +30,6 @@ local tools										= require("cp.tools")
 local mod = {}
 
 	mod.SETTINGS_DISABLED = "plugins.disabled"
-	mod.SETTINGS_CUSTOM_PATH = "plugins.custompath"
 
 	--------------------------------------------------------------------------------
 	-- DISABLE PLUGIN:
@@ -168,8 +167,14 @@ local mod = {}
 		local plugins = findPlugins(metadata.pluginPaths[1])
 
 		local customPluginPath = metadata.customPluginPath
+
+		log.df("customPluginPath: %s", customPluginPath)
+
 		if tools.doesDirectoryExist(customPluginPath) then
+
 			local customPlugins = findCustomPlugins(customPluginPath)
+			log.df("Custom Plugins: %s", hs.inspect(customPlugins))
+
 			return fnutils.concat(plugins, customPlugins)
 		end
 		return plugins
@@ -181,26 +186,19 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginStatus(path)
 
-
-
 		for i, v in ipairs(failedPlugins) do
 			if v == path then
 				return [[<span style="font-weight:bold; color: red;">Failed</span>]]
-			else
-				local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
-
-				if disabled[path] then
-					return [[<span style="font-weight:bold;">Disabled</span>]]
-				else
-					return "Enabled"
-				end
-
 			end
 		end
 
-		print(path)
+		local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
 
-		return "Unknown"
+		if disabled[path] then
+			return [[<span style="font-weight:bold;">Disabled</span>]]
+		else
+			return "Enabled"
+		end
 
 	end
 

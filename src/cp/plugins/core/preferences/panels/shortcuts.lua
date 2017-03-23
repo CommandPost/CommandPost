@@ -18,6 +18,8 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
+local metadata									= require("cp.metadata")
+
 local generate									= require("cp.plugins.core.preferences.generate")
 
 --------------------------------------------------------------------------------
@@ -112,7 +114,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
-		local result = "<h3>Keyboard Shortcuts:</h3>\n"
+		local result = [[<h3>Keyboard Shortcuts:</h3><div id="keyboardShortcuts">]]
 
 		table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
 		for i, v in ipairs(mod._uiItems) do
@@ -133,6 +135,8 @@ local mod = {}
 			end
 
 		end
+
+		result = result .. "</div>"
 
 		--------------------------------------------------------------------------------
 		-- Customise Shortcuts:
@@ -223,6 +227,12 @@ local mod = {}
 
     	end
 
+		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
+		local customShortcutsEnabled = ""
+		if enableHacksShortcutsInFinalCutPro then
+			customShortcutsEnabled = [[ style="pointer-events: none; opacity: 0.4;" ]]
+		end
+
 		result = result .. [[
 			<style>
 				.shortcuts {
@@ -301,7 +311,7 @@ local mod = {}
 				}
 			</style>
 			<h3>Customise Shortcuts:</h3>
-			<div id="customiseShortcuts" >
+			<div id="customiseShortcuts" ]] .. customShortcutsEnabled .. [[>
 				<table class="shortcuts">
 					<thead>
 						<tr>
@@ -323,6 +333,31 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
+	-- UPDATE CUSTOM SHORTCUTS SECTION:
+	--------------------------------------------------------------------------------
+	function mod.updateCustomShortcutsVisibility()
+
+		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
+
+		if enableHacksShortcutsInFinalCutPro then
+			mod._manager.injectScript([[
+				document.getElementById("customiseShortcuts").style.opacity = 0.4;
+				document.getElementById("customiseShortcuts").style.pointerEvents = "none";
+				document.getElementById("keyboardShortcuts").children[0].children[0].checked = true;
+			]])
+		else
+			mod._manager.injectScript([[
+				document.getElementById("customiseShortcuts").style.opacity = 1;
+				document.getElementById("customiseShortcuts").style.pointerEvents = "auto";
+				document.getElementById("keyboardShortcuts").children[0].children[0].checked = false;
+			]])
+		end
+
+		mod._manager.show()
+
+	end
+
+	--------------------------------------------------------------------------------
 	-- INITIALISE MODULE:
 	--------------------------------------------------------------------------------
 	function mod.init(deps)
@@ -330,6 +365,7 @@ local mod = {}
 		mod._commandaction = deps.commandaction
 		mod._global = deps.global
 		mod._fcpx = deps.fcpx
+		mod._manager = deps.manager
 
 		generate.setWebviewLabel(deps.manager.getLabel())
 		mod._webviewLabel = deps.manager.getLabel()

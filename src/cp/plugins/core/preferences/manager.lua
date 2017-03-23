@@ -173,12 +173,21 @@ local mod = {}
 		else
 			mod.webview:show()
 			timer.doAfter(0.1, function()
-				log.df("Attempting to bring Preferences Panel to focus.")
+				--log.df("Attempting to bring Preferences Panel to focus.")
 				mod.webview:hswindow():raise():focus()
 			end)
 			return true
 		end
 
+	end
+
+	--------------------------------------------------------------------------------
+	-- INJECT SCRIPT
+	--------------------------------------------------------------------------------
+	function mod.injectScript(script)
+		if mod.webview then
+			mod.webview:evaluateJavaScript(script)
+		end
 	end
 
 	--------------------------------------------------------------------------------
