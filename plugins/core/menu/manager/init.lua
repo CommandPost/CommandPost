@@ -7,7 +7,7 @@
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("menumanager")
+local log										= require("hs.logger").new("menumgr")
 
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
@@ -16,7 +16,7 @@ local menubar									= require("hs.menubar")
 local metadata									= require("cp.config")
 local fcp										= require("cp.finalcutpro")
 
-local section									= require("cp.plugins.core.menu.manager.section")
+local section									= require("section")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:

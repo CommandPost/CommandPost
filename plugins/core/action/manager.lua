@@ -361,9 +361,9 @@ function mod.refresh()
 end
 
 -- The Plugin
-local plugin = {}
-
-plugin.dependencies = {
+local plugin = {
+	id				= "core.action.manager",
+	group			= "core",
 }
 
 function plugin.init(deps)
