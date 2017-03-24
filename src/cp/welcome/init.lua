@@ -24,6 +24,8 @@ local metadata									= require("cp.config")
 local template									= require("cp.template")
 local tools										= require("cp.tools")
 
+local plugins									= require("cp.plugins")
+
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
@@ -63,8 +65,7 @@ local mod = {}
 		-- Load Plugins:
 		--------------------------------------------------------------------------------
 		log.df("Loading Plugins:")
-		mod._plugins = require("cp.plugins")
-		mod._plugins.init(metadata.pluginPaths[1])
+		plugins.init(metadata.pluginPaths[1])
 
 		--------------------------------------------------------------------------------
 		-- Load Custom Plugins:
@@ -75,7 +76,7 @@ local mod = {}
 			local package = metadata.pluginPaths[2]
 			log.df("Loading plugin package '%s'", package)
 			local status, err = pcall(function()
-				mod._plugins.loadPackage(package)
+				plugins.loadPackage(package)
 			end)
 			if not status then
 				log.ef("Error while loading package '%s':\n%s", package, inspect(err))

@@ -56,11 +56,11 @@ mod.pluginPaths			= {"cp.plugins", "Plugins"}
 --- Path to Custom Plugins
 mod.customPluginPath	= "~/Library/Application Support/CommandPost/Plugins"
 
-if fs.pathToAbsolute("~/Library/Application Support/CommandPost/cp/init.lua") then
+if fs.pathToAbsolute("~/Library/Application Support/CommandPost/Extensions/cp/init.lua") then
 	-------------------------------------------------------------------------------
 	-- Use assets in ~/CommandPost directory:
 	-------------------------------------------------------------------------------
-	mod.scriptPath			= os.getenv("HOME") .. "/Library/Application Support/CommandPost/"
+	mod.scriptPath			= os.getenv("HOME") .. "/Library/Application Support/CommandPost/Extensions/"
 	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
 else
 	-------------------------------------------------------------------------------

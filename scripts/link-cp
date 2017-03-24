@@ -4,19 +4,35 @@
 ### link it to the src/ directory, thus automatically providing the latest code.
 
 CP_PATH="$HOME/Library/Application Support/CommandPost"
+EXT_PATH="$CP_PATH/Extensions"
+PLUGIN_PATH="$CP_PATH/Plugins"
 
-if [ -L "$HOME/CommandPost" ]; then
-	echo "Unlinking existing CommandPost directory."
-	unlink "$CP_PATH"
+if [ -L "$EXT_PATH" ]; then
+	echo "Unlinking existing CommandPost extensions."
+	unlink "$EXT_PATH"
 fi
 
-if [ -d "$HOME/CommandPost" ]; then
-	echo "Deleting existing CommandPost directory."
-	rm -Rf "$CP_PATH"
+if [ -d "$EXT_PATH" ]; then
+	echo "Deleting existing CommandPost extensions."
+	rm -Rf "$EXT_PATH"
+fi
+
+if [ -L "$PLUGIN_PATH" ]; then
+	echo "Unlinking existing CommandPost plugins."
+	unlink "$PLUGIN_PATH"
+fi
+
+if [ -d "$PLUGIN_PATH" ]; then
+	echo "Deleting existing CommandPost plugins."
+	rm -Rf "$PLUGIN_PATH"
+fi
+
+if [ ! -d "$CP_PATH" ]; then
+	mkdir "$CP_PATH"
 fi
 
 echo "Linking GitHub source to CommandPost directory."
-ln -sFfv "$PWD/src" "$HOME/Library/Application Support"
-mv "$HOME/Library/Application Support/src" "$CP_PATH"
+ln -sFfv "$PWD/src" "$EXT_PATH"
+ln -sFfv "$PWD/plugins" "$PLUGIN_PATH"
 
 echo "GitHub Source has been linked to your CommandPost directory."
