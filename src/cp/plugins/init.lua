@@ -138,7 +138,7 @@ local mod = {}
 			return nil
 		end
 		
-		if cache.instance then
+		if cache.instance ~= nil then
 			-- we've already loaded it. Return the cache's instance.
 			return cache.instance
 		end
