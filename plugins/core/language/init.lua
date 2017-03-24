@@ -111,31 +111,30 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.preferences.panels.general"]	= "general",
+local plugin = {
+	id				= "core.language",
+	group			= "core",
+	dependencies	= {
+		["core.preferences.panels.general"]	= "general",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+
+	-------------------------------------------------------------------------------
+	-- Cache Languages on Load:
+	-------------------------------------------------------------------------------
+	getCommandPostLanguagesMenu()
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	deps.general:addDropdown(2, i18n("language"), getCommandPostLanguagesMenu)
 
-		-------------------------------------------------------------------------------
-		-- Cache Languages on Load:
-		-------------------------------------------------------------------------------
-		getCommandPostLanguagesMenu()
-
-		--------------------------------------------------------------------------------
-		-- Setup General Preferences Panel:
-		--------------------------------------------------------------------------------
-		deps.general:addDropdown(2, i18n("language"), getCommandPostLanguagesMenu)
-
-		return mod
-	end
+	return mod
+end
 
 return plugin

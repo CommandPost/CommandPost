@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.preferences.panels.general ===
+--- === cp.plugins.core.preferences.panels.menubar ===
 ---
---- General Preferences Panel
+--- Menubar Preferences Panel
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
@@ -18,7 +18,7 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local generate									= require("cp.plugins.core.preferences.generate")
+local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -123,11 +123,11 @@ local mod = {}
 
 		generate.setWebviewLabel(deps.manager.getLabel())
 
-		local id 			= "general"
-		local label 		= "General"
-		local image			= image.imageFromName("NSPreferencesGeneral")
-		local priority		= 1
-		local tooltip		= "General Preferences"
+		local id 			= "menubar"
+		local label 		= "Menubar"
+		local image			= image.imageFromPath("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")
+		local priority		= 2
+		local tooltip		= "Menubar Preferences"
 		local contentFn		= generateContent
 		local callbackFn 	= controllerCallback
 
@@ -211,20 +211,19 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.preferences.manager"]			= "manager",
+local plugin = {
+	id				= "core.preferences.panels.menubar",
+	group			= "core",
+	dependencies	= {
+		["core.preferences.manager"]			= "manager",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		return mod.init(deps)
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	return mod.init(deps)
+end
 
 return plugin

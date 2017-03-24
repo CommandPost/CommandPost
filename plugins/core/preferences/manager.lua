@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.preferences.manager ===
+--- === core.preferences.manager ===
 ---
 --- Manager for the CommandPost Preferences Panel.
 
@@ -151,7 +151,7 @@ local mod = {}
 
 	end
 
-	--- cp.plugins.core.preferences.manager.showPreferences() -> boolean
+	--- core.preferences.manager.showPreferences() -> boolean
 	--- Function
 	--- Shows the Preferences Window
 	---
@@ -240,27 +240,26 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.bottom"] = "bottom",
+local plugin = {
+	id				= "core.preferences.manager",
+	group			= "core",
+	dependencies	= {
+		["core.menu.bottom"]	= "bottom",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		deps.bottom:addItem(PRIORITY, function()
-			return { title = i18n("preferences") .. "...", fn = mod.show }
-		end)
+	deps.bottom:addItem(PRIORITY, function()
+		return { title = i18n("preferences") .. "...", fn = mod.show }
+	end)
 
-		--:addSeparator(PRIORITY+1)
+	--:addSeparator(PRIORITY+1)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

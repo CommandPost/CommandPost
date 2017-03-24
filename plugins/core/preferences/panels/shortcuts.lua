@@ -20,7 +20,7 @@ local webview									= require("hs.webview")
 
 local metadata									= require("cp.config")
 
-local generate									= require("cp.plugins.core.preferences.generate")
+local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
@@ -404,17 +404,16 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.preferences.manager"]			= "manager",
-		["cp.plugins.core.commands.commandaction"]		= "commandaction",
-		["cp.plugins.core.commands.global"]				= "global",
-		["cp.plugins.finalcutpro.commands.fcpx"]		= "fcpx",
+local plugin = {
+	id				= "core.preferences.panels.shortcuts",
+	group			= "core",
+	dependencies	= {
+		["core.preferences.manager"]		= "manager",
+		["core.commands.commandaction"]		= "commandaction",
+		["core.commands.global"]			= "global",
+		["finalcutpro.commands"]			= "fcpx",
 	}
+}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:

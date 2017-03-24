@@ -43,15 +43,14 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.top"] 					= "top",
-		["cp.plugins.core.preferences.panels.general"]	= "general",
+local plugin = {
+	id				= "core.preferences.updates",
+	group			= "core",
+	dependencies	= {
+		["core.menu.top"] 					= "top",
+		["core.preferences.panels.general"]	= "general",
 	}
+}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:

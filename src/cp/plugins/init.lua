@@ -325,7 +325,7 @@ local mod = {}
 				if attrs.mode == "directory" then
 					-- log.df("It's a directory...")
 					success = success and mod.scanDirectory(filePath)
-				else
+				elseif filePath:sub(-4) == ".lua" then
 					-- log.df("It's a file...")
 					success = success and mod.loadSimplePlugin(filePath) ~= nil
 				end

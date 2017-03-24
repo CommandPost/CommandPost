@@ -135,17 +135,15 @@ local mod = {}
 --------------------------------------------------------------------------------
 --- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.preferences.panels.general"]	= "general",
-		["cp.plugins.core.preferences.panels.menubar"]	= "menubar",
-		["cp.plugins.core.menu.manager"]				= "menuManager",
+local plugin = {
+	id				= "core.preferences.general",
+	group			= "core",
+	dependencies	= {
+		["core.preferences.panels.general"]	= "general",
+		["core.preferences.panels.menubar"]	= "menubar",
+		["core.menu.manager"]				= "menuManager",
 	}
-
+}
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
