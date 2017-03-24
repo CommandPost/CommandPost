@@ -46,10 +46,23 @@ mod.bugReportEmail      = "chris@latenitefilms.com"
 --- URL used for checking Application Updates
 mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
+--- cp.config.bundledPluginsPath
+--- Constant
+--- The path to bundled plugins
+mod.bundledPluginsPath	= hs.processInfo["resourcePath"] .. "/plugins"
+
+--- cp.config.bundledPluginsPath
+--- Constant
+--- The path to bundled plugins
+mod.userPluginsPath		= os.getenv("HOME") .. "/Library/Application Support/CommandPost/Plugins"
+
 --- cp.config.pluginPaths
 --- Constant
---- Table of Plugins Paths
-mod.pluginPaths			= {"cp.plugins", "Plugins"}
+--- Table of Plugins Paths. Earlier entries take precedence.
+mod.pluginPaths			= {
+	mod.userPluginsPath,
+	mod.bundledPluginsPath,
+}
 
 --- cp.config.customPluginPath
 --- Constant

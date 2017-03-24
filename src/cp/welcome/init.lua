@@ -65,28 +65,7 @@ local mod = {}
 		-- Load Plugins:
 		--------------------------------------------------------------------------------
 		log.df("Loading Plugins:")
-		plugins.init(metadata.pluginPaths[1])
-
-		--------------------------------------------------------------------------------
-		-- Load Custom Plugins:
-		--------------------------------------------------------------------------------
-		log.df("Loading Custom Plugins:")
-		if tools.doesDirectoryExist(metadata.customPluginPath) then
-
-			local package = metadata.pluginPaths[2]
-			log.df("Loading plugin package '%s'", package)
-			local status, err = pcall(function()
-				plugins.loadPackage(package)
-			end)
-			if not status then
-				log.ef("Error while loading package '%s':\n%s", package, inspect(err))
-			end
-
-			-- TO DO: Need to notify them of a `postInit`
-
-		else
-			log.df("Skipping loading Custom Plugins as path does not exist.")
-		end
+		plugins.init(metadata.pluginPaths)
 
 		--------------------------------------------------------------------------------
 		-- Notifications:
