@@ -1,48 +1,49 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                         U S E R     G U I D E                              --
+--                             F E E D B A C K                                --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
+local feedback			= require("cp.feedback")
 local metadata			= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 			= 1
+local PRIORITY 			= 2
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.openUserGuide()
-		os.execute('open "http://help.commandpost.io/"')
+	function mod.showFeedback()
+		feedback.showFeedback()
 	end
 
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.helpandsupport"] = "helpandsupport"
+local plugin = {
+	id				= "core.helpandsupport.feedback",
+	group			= "core",
+	dependencies	= {
+		["core.menu.helpandsupport"]	= "helpandsupport",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		deps.helpandsupport:addItem(PRIORITY, function()
-			return { title = i18n("userGuide"),	fn = mod.openUserGuide }
-		end)
-		return mod
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	deps.helpandsupport:addItem(PRIORITY, function()
+		return { title = i18n("provideFeedback"),	fn = mod.showFeedback }
+	end)
+
+	return mod
+end
 
 return plugin

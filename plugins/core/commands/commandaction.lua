@@ -109,10 +109,12 @@ function mod.reset()
 end
 
 -- The Plugin
-local plugin = {}
-
-plugin.dependencies = {
-	["cp.plugins.core.actions.actionmanager"] = "actionmanager",
+local plugin = {
+	id				= "core.commands.commandaction",
+	group			= "core",
+	dependencies	= {
+		["core.action.manager"] = "actionmanager",
+	}
 }
 
 function plugin.init(deps)

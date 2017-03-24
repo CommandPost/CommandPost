@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                             C R E D I T S                                  --
+--                         U S E R     G U I D E                              --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -12,39 +12,36 @@ local metadata			= require("cp.config")
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY 			= 3
+local PRIORITY 			= 1
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.openCredits()
-		hs.openAbout()
-	end
+function mod.openUserGuide()
+	os.execute('open "http://help.commandpost.io/"')
+end
 
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.helpandsupport"] = "helpandsupport"
+local plugin = {
+	id				= "core.helpandsupport.userguide",
+	group			= "core",
+	dependencies	= {
+		["core.menu.helpandsupport"]	= "helpandsupport",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-
-		deps.helpandsupport:addItem(PRIORITY, function()
-			return { title = i18n("credits"),	fn = mod.openCredits }
-		end)
-		return mod
-
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	deps.helpandsupport:addItem(PRIORITY, function()
+		return { title = i18n("userGuide"),	fn = mod.openUserGuide }
+	end)
+	return mod
+end
 
 return plugin
