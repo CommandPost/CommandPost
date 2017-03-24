@@ -1,13 +1,12 @@
 #!/bin/sh
 
-### This script will erase the existing ~/CommandPost directory and 
+### This script will erase the existing ~/CommandPost directory and
 ### copy in the contents of the src/ directory, thus updating it with the latest code.
 
-CP_PATH="$HOME/CommandPost"
+CP_PATH="$HOME/Library/Application Support/CommandPost"
 
 if [ ! -d $CP_PATH ]; then
-	echo "Please install CommandPost: http://commandpost.io"
-	exit 1
+	mkdir "$CP_PATH"
 fi
 
 if [ -L $CP_PATH ] ; then

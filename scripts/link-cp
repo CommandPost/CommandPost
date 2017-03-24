@@ -1,24 +1,22 @@
 #!/bin/sh
 
-### This script will erase or unlink the existing ~/CommandPost directory and 
+### This script will erase or unlink the existing ~/Library/Application Support/CommandPost directory and
 ### link it to the src/ directory, thus automatically providing the latest code.
 
-if [ ! -d "$HOME/CommandPost/" ]; then
-  echo "Please install CommandPost: http://commandpost.io"
-	exit 1
-fi
+CP_PATH="$HOME/Library/Application Support/CommandPost"
 
 if [ -L "$HOME/CommandPost" ]; then
 	echo "Unlinking existing CommandPost directory."
-	unlink "$HOME/CommandPost"
+	unlink "$CP_PATH"
 fi
 
 if [ -d "$HOME/CommandPost" ]; then
 	echo "Deleting existing CommandPost directory."
-	rm -Rf "$HOME/CommandPost"
+	rm -Rf "$CP_PATH"
 fi
 
 echo "Linking GitHub source to CommandPost directory."
-ln -sFfv "$PWD/src" "$HOME/CommandPost"
+ln -sFfv "$PWD/src" "$HOME/Library/Application Support"
+mv "$HOME/Library/Application Support/src" "$CP_PATH"
 
 echo "GitHub Source has been linked to your CommandPost directory."

@@ -68,6 +68,25 @@ local mod = {}
 
 		if message["body"][1] == "openErrorLog" then
 			hs.openConsole()
+		elseif message["body"][1] == "pluginsFolder" then
+
+			if not tools.doesDirectoryExist(metadata.customPluginPath) then
+				log.df("Creating Plugins directory.")
+				local _, status = hs.execute("mkdir Plugins")
+				if not status then
+					log.ef("Failed to create Plugins directory.")
+					return
+				end
+			end
+
+			local pathToOpen = fs.pathToAbsolute(metadata.customPluginPath)
+			if pathToOpen then
+				local _, status = hs.execute('open "' .. pathToOpen .. '"')
+				if status then return end
+			end
+
+			log.df("Failed to Open Plugins Window.")
+
 		elseif message["body"][2] == "Disable" then
 			disablePlugin(message["body"][1])
 		elseif message["body"][2] == "Enable" then
@@ -451,9 +470,53 @@ local mod = {}
 					]] .. pluginRows .. [[
 				</tbody>
 			</table>
-			<div style="display: block;">
-				<p><span style="font-weight: bold;">Custom Plugins</span> will also be loaded if stored in the following folder:</p>
-				<p style="padding-left: 20px;">]] .. metadata.customPluginPath .. [[</p>
+			<style>
+				divTable{
+					display: table;
+					width: 100%;
+				}
+				.divTableRow {
+					display: table-row;
+				}
+				.divTableHeading {
+					display: table-header-group;
+				}
+				.divTableCell, .divTableHead {
+					display: table-cell;
+					padding: 20px;
+				}
+				.divTableHeading {
+					display: table-header-group;
+				}
+				.divTableFoot {
+					display: table-footer-group;
+				}
+				.divTableBody {
+					display: table-row-group;
+				}
+			</style>
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell" style="vertical-align: middle;">
+							<span style="font-weight: bold;">Custom Plugins</span> can also be saved in the Plugins Folder.
+						</div>
+						<div class="divTableCell" style="width: 170px; vertical-align: middle; text-align: right;">
+							<a id="pluginsFolder" class="button" href="#">Open Plugins Folder</a>
+							<script>
+								var pluginsFolder=document.getElementById("pluginsFolder");
+								pluginsFolder.onclick = function (){
+									try {
+										var result = ["pluginsFolder"];
+										webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+									} catch(err) {
+										alert('An error has occurred. Does the controller exist yet?');
+									}
+								}
+							</script>
+						</div>
+					</div>
+				</div>
 			</div>
 		]]
 		return result
