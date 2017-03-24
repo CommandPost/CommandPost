@@ -1,37 +1,41 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                       H E L P   &   S U P P O R T                          --
+--                              B O T T O M                                   --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- The 'Preferences' menu section
+--- The bottom menu section.
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
-local PRIORITY = 8888888
+local PRIORITY = 9999999
 
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
+local plugin = {
+	id				= "core.menu.bottom",
+	group			= "core",
+	dependencies	= {
+		["core.menu.manager"]	= "manager",
+	},
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
+	local bottom = dependencies.manager.addSection(PRIORITY)
 
 	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
+	-- Add separator:
 	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.bottom"] = "bottom"
-	}
+	bottom:addItem(0, function()
+		return { title = "-" }
+	end)
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
-		local section = dependencies.bottom:addSection(PRIORITY)
-			--:addSeparator(100)
-			:addMenu(0, function() return i18n("helpAndSupport") end)
-
-		return section
-	end
+	return bottom
+end
 
 return plugin

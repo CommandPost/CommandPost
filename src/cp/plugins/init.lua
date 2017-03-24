@@ -212,7 +212,7 @@ local mod = {}
 					end
 				else
 					-- unable to load the dependency. Fail!
-					log.ef("Unable to load dependency for plugin '%s': %s", pluginPath, path)
+					log.ef("Unable to load dependency for plugin '%s': %s", plugin.id, path)
 					return nil
 				end
 			end
@@ -309,6 +309,7 @@ local mod = {}
 		
 		-- Check if it's a 'complex plugin' directory
 		if fs.pathToAbsolute(path .. "/init.lua") then
+			-- log.df("It's a complex plugin folder...")
 			return mod.loadComplexPlugin(path) ~= nil
 		end
 
@@ -318,11 +319,14 @@ local mod = {}
 		for i,file in ipairs(files) do
 			if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
 				local filePath = fs.pathToAbsolute(path .. "/" .. file)
+				-- log.df("Scanning '%s'...", filePath)
 				attrs = fs.attributes(filePath)
 				
 				if attrs.mode == "directory" then
+					-- log.df("It's a directory...")
 					success = success and mod.scanDirectory(filePath)
 				else
+					-- log.df("It's a file...")
 					success = success and mod.loadSimplePlugin(filePath) ~= nil
 				end
 			end
@@ -340,7 +344,7 @@ local mod = {}
 				return nil
 			else
 				if not plugin.id then
-					log.ef("The plugin at '%s' does not have an ID.")
+					log.ef("The plugin at '%s' does not have an ID.", pluginPath)
 					return nil
 				else
 					log.df("Loaded plugin: %s", plugin.id)

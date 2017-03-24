@@ -14,20 +14,19 @@ local PRIORITY = 0
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.manager"] = "manager"
+local plugin = {
+	id				= "core.menu.top",
+	group			= "core",
+	dependencies	= {
+		["core.menu.manager"] = "manager"
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
-		return dependencies.manager.addSection(PRIORITY)
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
+	return dependencies.manager.addSection(PRIORITY)
+end
 
 return plugin
