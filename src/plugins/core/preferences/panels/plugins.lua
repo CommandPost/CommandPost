@@ -58,6 +58,7 @@ local mod = {}
 	-- CONTROLLER CALLBACK:
 	--------------------------------------------------------------------------------
 	local function controllerCallback(message)
+		log.df("plugins panel clicked: %s", hs.inspect(message))
 
 		if message["body"][1] == "openErrorLog" then
 			hs.openConsole()
@@ -80,10 +81,12 @@ local mod = {}
 
 			log.df("Failed to Open Plugins Window.")
 
-		elseif message["body"][2] == "Disable" then
+		elseif message["body"][2] == "disable" then
 			disablePlugin(message["body"][1])
-		elseif message["body"][2] == "Enable" then
+		elseif message["body"][2] == "enable" then
 			enablePlugin(message["body"][1])
+		else
+			log.df("Unrecognised action: ", hs.inspect(message))
 		end
 
 	end
@@ -142,58 +145,40 @@ local mod = {}
 			local cachedCurrentCategory = currentCategory
 			if currentCategory == lastCategory then currentCategory = "" end
 
-			local currentPluginStatus = pluginStatus(id)
+			local status = plugins.getPluginStatus(id)
      		pluginRows = pluginRows .. [[
 				<tr>
 					<td class="rowCategory">]] .. currentCategory .. [[</td>
 					<td class="rowName">]] .. pluginShortName(id) .. [[</td>
-					<td class="rowStatus">]] .. currentPluginStatus .. [[</td>]]
+					<td class="rowStatus">]] .. i18n("plugin_status_"..status) .. [[</td>]]
 
-			if string.match(currentPluginStatus, "Failed") then
-				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a href="#" id="error.]] .. id .. [[">Error Log</a></td>
-					<script>
-						document.getElementById("error.]] .. id .. [[").onclick = function() {
-							try {
-								var result = ["openErrorLog"];
-								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
-							} catch(err) {
-								alert('An error has occurred. Does the controller exist yet?');
-							}
+			local action = nil
+					
+			if status == plugins.status.error then
+				action = "errorLog"
+			elseif status == plugins.status.active then
+				action = "disable"
+			elseif status == plugins.status.disabled then
+				action = "enable"
+			end
+
+			if action then
+			local actionLabel = i18n("plugin_action_" .. action,  {default = action})
+			pluginRows = pluginRows .. [[
+				<td class="rowOption"><a id="]] .. id .. [[" href="#">]] .. actionLabel .. [[</></td>
+				<script>
+					document.getElementById("]] .. id .. [[").onclick = function() {
+						try {
+							var result = ["]] .. id .. [[", "]] .. action .. [["];
+							webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+						} catch(err) {
+							alert('An error has occurred. Does the controller exist yet?');
 						}
-					</script>
+					}
+				</script>
 				]]
-			elseif string.match(currentPluginStatus, "Enabled") then
-
-				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a id="]] .. id .. [[" href="#">Disable</></td>
-					<script>
-						document.getElementById("]] .. id .. [[").onclick = function() {
-							try {
-								var result = ["]] .. id .. [[", "Disable"];
-								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
-							} catch(err) {
-								alert('An error has occurred. Does the controller exist yet?');
-							}
-						}
-					</script>
-					]]
-
-			elseif string.match(currentPluginStatus, "Disabled") then
-
-				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a id="]] .. id .. [[" href="#">Enable</></td>
-					<script>
-						document.getElementById("]] .. id .. [[").onclick = function() {
-							try {
-								var result = ["]] .. id .. [[", "Enable"];
-								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
-							} catch(err) {
-								alert('An error has occurred. Does the controller exist yet?');
-							}
-						}
-					</script>
-					]]
+			else
+				pluginRows = pluginRows .. [[<td class="rowOption">&nbsp;</td>]]
 			end
 
 			pluginRows = pluginRows .. "</tr>"

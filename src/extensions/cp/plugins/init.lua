@@ -31,18 +31,12 @@ end
 function env:pathToAbsolute(resourcePath)
 	local path = nil
 	if self.rootPath then
-		path = self.rootPath .. "/" .. resourcePath
+		path = fs.pathToAbsolute(self.rootPath .. "/" .. resourcePath)
 	end
 	
 	if path == nil then
 		-- look in the assets path
-		path = config.assetsPath .. "/" .. resourcePath
-	end
-	
-	log.df("env:pathToAbsolute(%s) = %s", hs.inspect(resourcePath), path)
-	if path then
-		-- make sure it's absolute
-		path = fs.pathToAbsolute(path)
+		path = fs.pathToAbsolute(config.assetsPath .. "/" .. resourcePath)
 	end
 	
 	return path
@@ -117,35 +111,35 @@ local mod = {}
 	function mod.initPlugin(pluginId)
 		-- log.df("Loading plugin '%s'", pluginId)
 
-		local cache = mod.CACHE[pluginId]
-		if not cache then
+		local info = mod.CACHE[pluginId]
+		if not info then
 			log.ef("Attempted to initialise non-existent plugin: %s", pluginId)
 			return nil
 		end
 		
-		if cache.instance ~= nil then
+		if info.instance ~= nil then
 			-- we've already loaded it. Return the cache's instance.
-			return cache.instance
+			return info.instance
 		end
 		
 		-- First, check the plugin is not disabled:
 		if mod.isDisabled(pluginId) then
 			log.df("Plugin disabled: '%s'", pluginId)
-			cache.status = mod.status.disabled
+			info.status = mod.status.disabled
 			return nil
 		end
 		
-		local plugin = cache.plugin
+		local plugin = info.plugin
 
 		-- Ensure all dependencies are loaded
 		local dependencies = mod.loadDependencies(plugin)
 		if not dependencies then
 			log.ef("Unable to load all dependencies for plugin '%s'.", pluginId)
-			cache.status = mod.status.error
+			info.status = mod.status.error
 			return nil
 		end
 		
-		cache.dependencies = dependencies
+		info.dependencies = dependencies
 
 		-- initialise the plugin instance
 		-- log.df("Initialising plugin '%s'.", pluginPath)
@@ -153,7 +147,7 @@ local mod = {}
 
 		if plugin.init then
 			local status, err = pcall(function()
-				instance = plugin.init(dependencies, env.new(plugin.rootPath))
+				instance = plugin.init(dependencies, env.new(info.rootPath))
 			end)
 
 			if not status then
@@ -170,8 +164,8 @@ local mod = {}
 		end
 
 		-- cache it
-		cache.instance = instance
-		cache.status = mod.status.initialized
+		info.instance = instance
+		info.status = mod.status.initialized
 		
 		-- return the instance
 		log.df("Initialised plugin: %s", pluginId)
@@ -256,10 +250,13 @@ local mod = {}
 		mod.initPlugins()
 
 		-- notify them of a `postInit`
-		for _,cached in pairs(mod.CACHE) do
-			local plugin = cached.plugin
-			if plugin.postInit then
-				plugin.postInit(cached.dependencies, env.new(cached.rootPath))
+		for _,info in pairs(mod.CACHE) do
+			if info.status == mod.status.initialized then
+				local plugin = info.plugin
+				if plugin.postInit then
+					plugin.postInit(info.dependencies, env.new(info.rootPath))
+				end
+				info.status = mod.status.active
 			end
 		end
 

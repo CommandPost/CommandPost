@@ -606,6 +606,10 @@ return {
 	plugin_status_active				=			"Active",
 	plugin_status_disabled				=			"Disabled",
 	plugin_status_error					=			"Failed",
+	
+	plugin_action_disable				=			"Disable",
+	plugin_action_enable				=			"Enable",
+	plugin_action_errorLog				=			"Error Log",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
