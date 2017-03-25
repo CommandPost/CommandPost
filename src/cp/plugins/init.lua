@@ -22,14 +22,15 @@ local tools							= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-	mod.CACHE = {}
+	mod.CACHE	= {}
+	mod.IDS		= {}
 	
 	mod.status = {
-		loaded				= 1,
-		initialized			= 5,
-		active				= 10,
-		disabled			= 99,
-		error				= 999,
+		loaded				= "loaded",
+		initialized			= "initialized",
+		active				= "active",
+		disabled			= "disabled",
+		error				= "error",
 	}
 
 	mod.SETTINGS_DISABLED 	= "plugins.disabled"
@@ -37,8 +38,23 @@ local mod = {}
 	local function cachePlugin(id, plugin, status)
 		if not mod.CACHE[id] then
 			mod.CACHE[id] = {plugin = plugin, status = status or mod.status.loaded}
+			mod.IDS[#mod.IDS + 1] = id
 		end
 		return plugin
+	end
+	
+	function mod.getPluginIds()
+		return mod.IDS
+	end
+	
+	function mod.getPluginGroup(id)
+		local info = mod.CACHE[id]
+		return info and info.plugin.group or nil
+	end
+	
+	function mod.getPluginStatus(id)
+		local info = mod.CACHE[id]
+		return info and info.status
 	end
 
 	--- cp.plugins.loadPackage(package) -> boolean
