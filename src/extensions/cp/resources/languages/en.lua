@@ -610,12 +610,15 @@ return {
 	plugin_action_disable				=			"Disable",
 	plugin_action_enable				=			"Enable",
 	plugin_action_errorLog				=			"Error Log",
+	
+	plugin_group_core					=			"Core",
+	plugin_group_finalcutpro			=			"Final Cut Pro",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
 	core_label												=	"Core",
-	core_actions_actionmanager_label						=	"Action Manager",
+	core_action_manager_label								=	"Action Manager",
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
 	core_helpandsupport_credits_label						=	"Help & Support: Credits",
@@ -642,8 +645,8 @@ return {
 	finalcutpro_clipboard_history_label						=	"Clipboard History",
 	finalcutpro_clipboard_manager_label						=	"Clipboard History Manager",
 	finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
-	finalcutpro_commands_fcpx_label							=	"Final Cut Pro Keyboard Commands",
-	finalcutpro_console_console_label						=	"Console",
+	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
+	finalcutpro_console_label								=	"Console",
 	finalcutpro_export_batch_label							=	"Batch Export",
 	finalcutpro_fullscreen_shortcuts_label					=	"Fullscreen Shortcuts",
 	finalcutpro_hacks_backupinterval_label					=	"Backup Interval",
@@ -669,7 +672,7 @@ return {
 	finalcutpro_notifications_imessage_label				=	"Notifications: iMessage",
 	finalcutpro_notifications_manager_label					=	"Notifications: Manager",
 	finalcutpro_notifications_prowl_label					=	"Notifications: Prowl",
-	finalcutpro_open_openfinalcutpro_label					=	"Open Final Cut Pro",
+	finalcutpro_open_label									=	"Open Final Cut Pro",
 	finalcutpro_os_touchbar_label							=	"Virtual Touch Bar",
 	finalcutpro_os_voice_label								=	"Voice Commands",
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Scan Final Cut Pro",

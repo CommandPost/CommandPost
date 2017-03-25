@@ -49,7 +49,7 @@ local mod = {}
 	local function enablePlugin(id)
 		local result = dialog.displayMessage("Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
 		if result == "Yes" then
-			plugins.disable(id)
+			plugins.enable(id)
 			hs.reload()
 		end
 	end
@@ -104,7 +104,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginCategory(id)
 		local group = plugins.getPluginGroup(id)
-		return i18n(group .. "_group", {default = group})
+		return i18n("plugin_group_" .. group, {default = group})
 	end
 
 	--------------------------------------------------------------------------------
@@ -112,20 +112,11 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function pluginShortName(path)
 
-		local result = path
-		local pluginPath = metadata.pluginPaths[1]
-		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
-			local pluginCategory = pluginCategory(path)
-			result = string.sub(path, string.len(pluginPath) + string.len(pluginCategory) + 3)
+		local result = i18n(string.gsub(path, "%.", "_") .. "_label") or path
+		if result ~= path then
+			result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', result, path)
 		end
-
-		local customLabel = i18n(string.gsub(path, "%.", "_") .. "_label", {default = path})
-		if customLabel ~= path then
-			result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', customLabel, result)
-		end
-
 		return result
-
 	end
 
 	--------------------------------------------------------------------------------
