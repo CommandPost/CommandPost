@@ -9,12 +9,15 @@
 --- Core CommandPost functionality
 
 --------------------------------------------------------------------------------
--- EXTENSIONS:
+-- SET UP LOGGER:
 --------------------------------------------------------------------------------
 local logger					= require("hs.logger")
-logger.defaultLogLevel = 'debug'
+logger.defaultLogLevel 			= 'debug'
 local log						= require("hs.logger").new("cp")
 
+--------------------------------------------------------------------------------
+-- EXTENSIONS:
+--------------------------------------------------------------------------------
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
@@ -133,11 +136,6 @@ function mod.init()
 	local hammerspoonVersion	= hs.processInfo["version"]
 
 	--------------------------------------------------------------------------------
-	-- Console should always be on top:
-	--------------------------------------------------------------------------------
-	-- console.level(drawing.windowLevels["_MaximumWindowLevelKey"])
-
-	--------------------------------------------------------------------------------
 	-- Clear The Console:
 	--------------------------------------------------------------------------------
 	consoleLoadingContent = console.getConsole()
@@ -152,11 +150,6 @@ function mod.init()
 	}))
 
 	--------------------------------------------------------------------------------
-	-- Blank Line:
-	--------------------------------------------------------------------------------
-	console.printStyledtext("")
-
-	--------------------------------------------------------------------------------
 	-- Write To Console For Debug Messages:
 	--------------------------------------------------------------------------------
 	local writeToConsoleDebug = function(value)
@@ -169,6 +162,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Useful Debugging Information in Console:
 	--------------------------------------------------------------------------------
+	console.printStyledtext("")
 	if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
 												writeToConsoleDebug(config.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
 	if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
@@ -177,10 +171,6 @@ function mod.init()
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
 												writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
 												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
-
-	--------------------------------------------------------------------------------
-	-- Blank Line:
-	--------------------------------------------------------------------------------
 	console.printStyledtext("")
 
 	--------------------------------------------------------------------------------

@@ -55,7 +55,6 @@ local mod = {}
 	-- SET WEBVIEW LABEL:
 	--------------------------------------------------------------------------------
 	function mod.setWebviewLabel(value)
-		log.df("setWebviewLabel to: %s", value)
 		mod._webviewLabel = value
 	end
 
