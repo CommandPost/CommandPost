@@ -85,7 +85,7 @@ local mod = {}
 	end
 	
 	function mod.initPlugins()
-		for id,_ in pairs(mod.CACHE) do
+		for _,id in ipairs(mod.IDS) do
 			mod.initPlugin(id)
 		end
 	end
@@ -346,14 +346,38 @@ local mod = {}
 			return false
 		end
 		
-		-- Add the plugin path to the package.path for execution of local .lua files
-		local oldPath = package.path
-		package.path = pluginPath .. "/?.lua;" .. pluginPath .. "/?/init.lua;" ..package.path 
+		-- Local reference to 'require' function
+		local globalRequire = require
+	
+		-- Stores cached modules from the plugin
+		local cache = {}
+		local searchPath = pluginPath .. "/?.lua;" .. pluginPath .. "/?/init.lua"
+	
+		local pluginRequire = function(name)
+			if cache[name] then
+				return cache[name]
+			end
+			local file = package.searchpath(name, searchPath)
+			if file then
+				local ok, result = pcall(dofile, file)
+				if ok then
+					cache[name] = result
+					return result
+				else
+					return nil
+				end
+			end
+			return globalRequire(name)
+		end
+		
+		-- replace default 'require'
+		require = pluginRequire
 		
 		local result = mod.loadSimplePlugin(initFile)
 		result.rootPath = pluginPath
 		
-		package.path = oldPath
+		-- Reset it to the global require
+		require = globalRequire
 		
 		return result
 	end
