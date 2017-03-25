@@ -94,27 +94,14 @@ local mod = {}
 	local function pluginStatus(id)
 		local status = plugins.getPluginStatus(id)
 		return string.format("<span class='status-%s'>%s</span>", status, i18n("plugin_status_" .. status))
-		for i, v in ipairs(failedPlugins) do
-			if v == path then
-				return [[<span style="font-weight:bold; color: red;">Failed</span>]]
-			end
-		end
-
-		local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
-
-		if disabled[path] then
-			return [[<span style="font-weight:bold;">Disabled</span>]]
-		else
-			return "Enabled"
-		end
-
 	end
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN CATEGORY:
 	--------------------------------------------------------------------------------
 	local function pluginCategory(id)
-		return i18n(plugins.getPluginGroup(id) .. "_group")
+		local group = plugins.getPluginGroup(id)
+		return i18n(group .. "_group", {default = group})
 	end
 
 	--------------------------------------------------------------------------------

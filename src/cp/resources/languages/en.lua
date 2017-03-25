@@ -597,6 +597,15 @@ return {
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
+	
+	--------------------------------------------------------------------------------
+	-- PLUGIN STATUSES:
+	--------------------------------------------------------------------------------
+	plugin_status_loaded				=			"Loaded",
+	plugin_status_initialized			=			"Initialised",
+	plugin_status_active				=			"Active",
+	plugin_status_disabled				=			"Disabled",
+	plugin_status_error					=			"Failed",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:

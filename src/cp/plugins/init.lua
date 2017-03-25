@@ -14,8 +14,39 @@ local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
 local fnutils						= require("hs.fnutils")
 
-local metadata						= require("cp.config")
+local config						= require("cp.config")
 local tools							= require("cp.tools")
+
+local env = {}
+
+function env.new(rootPath)
+	local o = {
+		rootPath = rootPath,
+	}
+	setmetatable(o, env)
+	env.__index = env
+	return o
+end
+
+function env:pathToAbsolute(resourcePath)
+	local path = nil
+	if self.rootPath then
+		path = self.rootPath .. "/" .. resourcePath
+	end
+	
+	if path == nil then
+		-- look in the assets path
+		path = config.assetsPath .. "/" .. resourcePath
+	end
+	
+	log.df("env:pathToAbsolute(%s) = %s", hs.inspect(resourcePath), path)
+	if path then
+		-- make sure it's absolute
+		path = fs.pathToAbsolute(path)
+	end
+	
+	return path
+end
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -36,11 +67,13 @@ local mod = {}
 	mod.SETTINGS_DISABLED 	= "plugins.disabled"
 	
 	local function cachePlugin(id, plugin, status)
+		local info = nil
 		if not mod.CACHE[id] then
-			mod.CACHE[id] = {plugin = plugin, status = status or mod.status.loaded}
+			info = {plugin = plugin, status = status or mod.status.loaded}
+			mod.CACHE[id] = info
 			mod.IDS[#mod.IDS + 1] = id
 		end
-		return plugin
+		return info
 	end
 	
 	function mod.getPluginIds()
@@ -55,70 +88,6 @@ local mod = {}
 	function mod.getPluginStatus(id)
 		local info = mod.CACHE[id]
 		return info and info.status
-	end
-
-	--- cp.plugins.loadPackage(package) -> boolean
-	--- Function
-	--- Loads any plugins present in the specified package.
-	--- Any `*.lua` file, or folder containing an `init.lua` file will automatically be
-	--- loaded as a plugin.
-	---
-	--- Eg:
-	---
-	--- ```
-	--- plugins.loadPackage("cp.plugins")
-	--- ```
-	---
-	--- Parameters:
-	---  * package - The LUA package to look in
-	---
-	--- Returns:
-	---  * boolean - `true` if all plugins loaded successfully
-	---
-	function mod.loadPackage(package)
-
-		if type(package) == "table" then
-			if next(package) == nil then
-				log.ef("Skipping: " .. inspect(package))
-				return false
-			end
-		end
-
-		local path = fs.pathToAbsolute(metadata.scriptPath .. "/" .. package:gsub("%.", "/"))
-		if not path then
-			log.ef("The provided path does not exist: '%s'", package)
-			return false
-		end
-
-		local attrs = fs.attributes(path)
-		if not attrs or attrs.mode ~= "directory" then
-			log.ef("The provided path is not a directory: '%s'", package)
-			return false
-		end
-
-		local files = tools.dirFiles(path)
-		for i,file in ipairs(files) do
-			if file ~= "." and file ~= ".." and file ~= "init.lua" then
-				local filePath = path .. "/" .. file
-				if fs.attributes(filePath).mode == "directory" then
-					local attrs, err = fs.attributes(filePath .. "/init.lua")
-					if attrs and attrs.mode == "file" then
-						-- it's a plugin
-						mod.load(package .. "." .. file)
-					else
-						-- it's a plain folder. Load it as a sub-package.
-						mod.loadPackage(package .. "." .. file)
-					end
-				else
-					local name = file:match("(.+)%.lua$")
-					if name then
-						mod.load(package .. "." .. name)
-					end
-				end
-			end
-		end
-
-		return true
 	end
 	
 	function mod.initPlugins()
@@ -184,7 +153,7 @@ local mod = {}
 
 		if plugin.init then
 			local status, err = pcall(function()
-				instance = plugin.init(dependencies)
+				instance = plugin.init(dependencies, env.new(plugin.rootPath))
 			end)
 
 			if not status then
@@ -237,23 +206,23 @@ local mod = {}
 	end
 
 	function mod.disable(pluginPath)
-		local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+		local disabled = config.get(mod.SETTINGS_DISABLED, {})
 		disabled[pluginPath] = true
-		metadata.set(mod.SETTINGS_DISABLED, disabled)
+		config.set(mod.SETTINGS_DISABLED, disabled)
 		console.clearConsole()
 		hs.reload()
 	end
 
 	function mod.enable(pluginPath)
-		local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+		local disabled = config.get(mod.SETTINGS_DISABLED, {})
 		disabled[pluginPath] = false
-		metadata.set(mod.SETTINGS_DISABLED, disabled)
+		config.set(mod.SETTINGS_DISABLED, disabled)
 		console.clearConsole()
 		hs.reload()
 	end
 
 	function mod.isDisabled(pluginPath)
-		local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
+		local disabled = config.get(mod.SETTINGS_DISABLED, {})
 		return disabled[pluginPath] == true
 	end
 
@@ -266,7 +235,7 @@ local mod = {}
 	--- Eg:
 	---
 	--- ```
-	--- plugins.loadPackage("~/Library/Application Support/CommandPost/Plugins")
+	--- plugins.init({"~/Library/Application Support/CommandPost/Plugins"})
 	--- ```
 	---
 	--- Parameters:
@@ -290,7 +259,7 @@ local mod = {}
 		for _,cached in pairs(mod.CACHE) do
 			local plugin = cached.plugin
 			if plugin.postInit then
-				plugin.postInit(cached.dependencies)
+				plugin.postInit(cached.dependencies, env.new(cached.rootPath))
 			end
 		end
 
@@ -385,6 +354,7 @@ local mod = {}
 		package.path = pluginPath .. "/?.lua;" .. pluginPath .. "/?/init.lua;" ..package.path 
 		
 		local result = mod.loadSimplePlugin(initFile)
+		result.rootPath = pluginPath
 		
 		package.path = oldPath
 		

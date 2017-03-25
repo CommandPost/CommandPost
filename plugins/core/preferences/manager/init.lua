@@ -37,7 +37,6 @@ local tools										= require("cp.tools")
 
 local PRIORITY 									= 8888889
 local WEBVIEW_LABEL								= "preferences"
-local TEMPLATE_PATH								= "/cp/plugins/core/preferences/html/template.htm"
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -58,6 +57,10 @@ local mod = {}
 	function mod.getLabel()
 		return WEBVIEW_LABEL
 	end
+	
+	function mod.setPanelTemplatePath(path)
+		mod.panelTemplatePath = path
+	end
 
 	--------------------------------------------------------------------------------
 	-- HIGHEST PRIORITY ID:
@@ -69,11 +72,17 @@ local mod = {}
 		return mod._panels[1]["id"]
 
 	end
-
+	
 	--------------------------------------------------------------------------------
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
 	local function generateHTML()
+		
+		local path = mod.panelTemplatePath
+		if not path then
+			log.ef("No panel template path provided.")
+			return ""
+		end
 
 		local env = template.defaultEnv()
 
@@ -93,7 +102,7 @@ local mod = {}
 
     	end
 
-		return template.compileFile(metadata.scriptPath .. TEMPLATE_PATH, env)
+		return template.compileFile(path, env)
 
 	end
 
@@ -251,7 +260,9 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init(deps, env)
+	
+	mod.setPanelTemplatePath(env:pathToAbsolute("html/panel.htm"))
 
 	deps.bottom:addItem(PRIORITY, function()
 		return { title = i18n("preferences") .. "...", fn = mod.show }
