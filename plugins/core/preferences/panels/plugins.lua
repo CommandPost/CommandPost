@@ -23,6 +23,7 @@ local webview									= require("hs.webview")
 local dialog									= require("cp.dialog")
 local metadata									= require("cp.config")
 local tools										= require("cp.tools")
+local plugins									= require("cp.plugins")
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -34,31 +35,23 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- DISABLE PLUGIN:
 	--------------------------------------------------------------------------------
-	local function disablePlugin(path)
-
+	local function disablePlugin(id)
 		local result = dialog.displayMessage("Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
 		if result == "Yes" then
-			local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
-			disabled[path] = true
-			metadata.set(mod.SETTINGS_DISABLED, disabled)
+			plugins.disable(id)
 			hs.reload()
 		end
-
 	end
 
 	--------------------------------------------------------------------------------
 	-- ENABLE PLUGIN:
 	--------------------------------------------------------------------------------
-	local function enablePlugin(path)
-
+	local function enablePlugin(id)
 		local result = dialog.displayMessage("Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
 		if result == "Yes" then
-			local disabled = metadata.get(mod.SETTINGS_DISABLED, {})
-			disabled[path] = false
-			metadata.set(mod.SETTINGS_DISABLED, disabled)
+			plugins.disable(id)
 			hs.reload()
 		end
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -70,16 +63,16 @@ local mod = {}
 			hs.openConsole()
 		elseif message["body"][1] == "pluginsFolder" then
 
-			if not tools.doesDirectoryExist(metadata.customPluginPath) then
+			if not tools.doesDirectoryExist(metadata.userPluginsPath) then
 				log.df("Creating Plugins directory.")
-				local _, status = hs.execute("mkdir Plugins")
+				local status, err = fs.mkdir(metadata.userPluginsPath)
 				if not status then
-					log.ef("Failed to create Plugins directory.")
+					log.ef("Failed to create Plugins directory: %s", err)
 					return
 				end
 			end
 
-			local pathToOpen = fs.pathToAbsolute(metadata.customPluginPath)
+			local pathToOpen = fs.pathToAbsolute(metadata.userPluginsPath)
 			if pathToOpen then
 				local _, status = hs.execute('open "' .. pathToOpen .. '"')
 				if status then return end
@@ -96,115 +89,11 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
-	-- FIND PLUGINS:
-	--------------------------------------------------------------------------------
-	local function findPlugins(package)
-
-		local plugins = {}
-		local path = fs.pathToAbsolute(metadata.scriptPath .. "/" .. package:gsub("%.", "/"))
-
-		local files = tools.dirFiles(path)
-		for i,file in ipairs(files) do
-			if file ~= "." and file ~= ".." and file ~= "init.lua" then
-				local filePath = path .. "/" .. file
-				if fs.attributes(filePath).mode == "directory" then
-					local attrs, err = fs.attributes(filePath .. "/init.lua")
-					if attrs and attrs.mode == "file" then
-						--------------------------------------------------------------------------------
-						-- It's a plugin:
-						--------------------------------------------------------------------------------
-						plugins[#plugins+1] = package .. "." .. file
-					else
-						--------------------------------------------------------------------------------
-						-- It's a plain folder. Load it as a sub-package:
-						--------------------------------------------------------------------------------
-						local subPackages = findPlugins(package .. "." .. file)
-						for i, v in ipairs(subPackages) do
-							plugins[#plugins+1] = v
-					    end
-					end
-				else
-					local name = file:match("(.+)%.lua$")
-					if name then
-						plugins[#plugins+1] = package .. "." .. name
-					end
-				end
-			end
-		end
-
-		return plugins
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- FIND CUSTOM PLUGINS:
-	--------------------------------------------------------------------------------
-	local function findCustomPlugins(path)
-
-		local plugins = {}
-
-		local files = tools.dirFiles(path)
-		if files then
-			for i,file in ipairs(files) do
-				if file ~= "." and file ~= ".." and file ~= "init.lua" then
-					local filePath = path .. "/" .. file
-					if fs.attributes(filePath).mode == "directory" then
-						local attrs, err = fs.attributes(filePath .. "/init.lua")
-						if attrs and attrs.mode == "file" then
-							--------------------------------------------------------------------------------
-							-- It's a plugin:
-							--------------------------------------------------------------------------------
-							plugins[#plugins+1] = file
-						else
-							--------------------------------------------------------------------------------
-							-- It's a plain folder. Load it as a sub-package:
-							--------------------------------------------------------------------------------
-							local subPackages = findCustomPlugins(path .. file .. "/")
-							for i, v in ipairs(subPackages) do
-								plugins[#plugins+1] = file .. "." .. v
-						    end
-						end
-					else
-						local name = file:match("(.+)%.lua$")
-						if name then
-							plugins[#plugins+1] = package .. "." .. name
-						end
-					end
-				end
-			end
-		end
-
-		return plugins
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET LIST OF PLUGINS:
-	--------------------------------------------------------------------------------
-	local function getListOfPlugins()
-
-		local plugins = findPlugins(metadata.pluginPaths[1])
-
-		local customPluginPath = metadata.customPluginPath
-
-		--log.df("customPluginPath: %s", customPluginPath)
-
-		if tools.doesDirectoryExist(customPluginPath) then
-
-			local customPlugins = findCustomPlugins(customPluginPath)
-			log.df("Custom Plugins: %s", hs.inspect(customPlugins))
-
-			return fnutils.concat(plugins, customPlugins)
-		end
-		return plugins
-
-	end
-
-	--------------------------------------------------------------------------------
 	-- PLUGIN STATUS:
 	--------------------------------------------------------------------------------
-	local function pluginStatus(path)
-
+	local function pluginStatus(id)
+		local status = plugins.getPluginStatus(id)
+		return string.format("<span class='status-%s'>%s</span>", status, i18n("plugin_status_" .. status))
 		for i, v in ipairs(failedPlugins) do
 			if v == path then
 				return [[<span style="font-weight:bold; color: red;">Failed</span>]]
@@ -224,24 +113,8 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- PLUGIN CATEGORY:
 	--------------------------------------------------------------------------------
-	local function pluginCategory(path)
-
-		local pluginPath = metadata.pluginPaths[1]
-
-		if string.sub(path, 1, string.len(pluginPath)) == pluginPath then
-			local removedPluginPath = string.sub(path, string.len(pluginPath) + 2)
-			local pluginComponents = fnutils.split(removedPluginPath, ".", nil, true)
-			if pluginComponents[1] == "finalcutpro" then
-				return "Final Cut Pro"
-			elseif pluginComponents[1] == "core" then
-				return "Core"
-			else
-				return pluginComponents[1]
-			end
-		else
-			return "Custom"
-		end
-
+	local function pluginCategory(id)
+		return i18n(plugins.getPluginGroup(id) .. "_group")
 	end
 
 	--------------------------------------------------------------------------------
@@ -258,7 +131,7 @@ local mod = {}
 
 		local customLabel = i18n(string.gsub(path, "%.", "_") .. "_label", {default = path})
 		if customLabel ~= path then
-			result = [[<div class="tooltip">]] .. customLabel .. [[<span class="tooltiptext">]] .. result .. [[</span></div>]]
+			result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', customLabel, result)
 		end
 
 		return result
@@ -270,30 +143,30 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function generateContent()
 
-		local listOfPlugins = getListOfPlugins()
+		local listOfPlugins = plugins.getPluginIds()
 
 		local pluginRows = ""
 
 		local lastCategory = ""
 
-	    for i, v in ipairs(listOfPlugins) do
+	    for _,id in ipairs(listOfPlugins) do
 
-			local currentCategory = pluginCategory(v)
+			local currentCategory = pluginCategory(id)
 			local cachedCurrentCategory = currentCategory
 			if currentCategory == lastCategory then currentCategory = "" end
 
-			local currentPluginStatus = pluginStatus(v)
+			local currentPluginStatus = pluginStatus(id)
      		pluginRows = pluginRows .. [[
 				<tr>
 					<td class="rowCategory">]] .. currentCategory .. [[</td>
-					<td class="rowName">]] .. pluginShortName(v) .. [[</td>
+					<td class="rowName">]] .. pluginShortName(id) .. [[</td>
 					<td class="rowStatus">]] .. currentPluginStatus .. [[</td>]]
 
 			if string.match(currentPluginStatus, "Failed") then
 				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a href="#" id="error.]] .. v .. [[">Error Log</a></td>
+					<td class="rowOption"><a href="#" id="error.]] .. id .. [[">Error Log</a></td>
 					<script>
-						document.getElementById("error.]] .. v .. [[").onclick = function() {
+						document.getElementById("error.]] .. id .. [[").onclick = function() {
 							try {
 								var result = ["openErrorLog"];
 								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
@@ -306,11 +179,11 @@ local mod = {}
 			elseif string.match(currentPluginStatus, "Enabled") then
 
 				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a id="]] .. v .. [[" href="#">Disable</></td>
+					<td class="rowOption"><a id="]] .. id .. [[" href="#">Disable</></td>
 					<script>
-						document.getElementById("]] .. v .. [[").onclick = function() {
+						document.getElementById("]] .. id .. [[").onclick = function() {
 							try {
-								var result = ["]] .. v .. [[", "Disable"];
+								var result = ["]] .. id .. [[", "Disable"];
 								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 							} catch(err) {
 								alert('An error has occurred. Does the controller exist yet?');
@@ -322,11 +195,11 @@ local mod = {}
 			elseif string.match(currentPluginStatus, "Disabled") then
 
 				pluginRows = pluginRows .. [[
-					<td class="rowOption"><a id="]] .. v .. [[" href="#">Enable</></td>
+					<td class="rowOption"><a id="]] .. id .. [[" href="#">Enable</></td>
 					<script>
-						document.getElementById("]] .. v .. [[").onclick = function() {
+						document.getElementById("]] .. id .. [[").onclick = function() {
 							try {
-								var result = ["]] .. v .. [[", "Enable"];
+								var result = ["]] .. id .. [[", "Enable"];
 								webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 							} catch(err) {
 								alert('An error has occurred. Does the controller exist yet?');
@@ -454,6 +327,15 @@ local mod = {}
 				.plugins tbody tr:hover {
 					background-color: #006dd4;
 					color: white;
+				}
+				
+				.plugins .status-failed {
+					font-weight: bold;
+					color: red;
+				}
+				
+				.plugins .status-disabled {
+					font-weight: bold;
 				}
 			</style>
 			<h3>Plugins Manager:</h3>
