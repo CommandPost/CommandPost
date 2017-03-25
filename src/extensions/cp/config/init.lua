@@ -51,9 +51,9 @@ mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/
 --- The path to bundled plugins
 mod.bundledPluginsPath	= hs.processInfo["resourcePath"] .. "/plugins"
 
---- cp.config.bundledPluginsPath
+--- cp.config.userPluginsPath
 --- Constant
---- The path to bundled plugins
+--- The path to user plugins
 mod.userPluginsPath		= os.getenv("HOME") .. "/Library/Application Support/CommandPost/Plugins"
 
 --- cp.config.pluginPaths
@@ -64,6 +64,13 @@ mod.pluginPaths			= {
 	mod.bundledPluginsPath,
 }
 
+--- cp.config.scriptPath
+--- Constant
+--- Path to where Application Scripts are stored
+
+--- cp.config.assetsPath
+--- Constant
+--- Path to where Application Assets are stored
 if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
 	-------------------------------------------------------------------------------
 	-- Use assets in either the Developer or User Library directory:
@@ -78,15 +85,19 @@ else
 	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
 end
 
---- cp.config.scriptPath
+--- cp.config.basePath
 --- Constant
---- Path to where Application Scripts are stored
-mod.scriptPath = mod.scriptPath
+--- Path to where the Extensions & Plugins folders are stored.
+mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..") .. "/"
 
---- cp.config.assetsPath
+--- cp.config.pluginPath
 --- Constant
---- Path to where Application Assets are stored
-mod.assetsPath = mod.assetsPath
+--- Path to active Plugins Folder
+if fs.pathToAbsolute(mod.basePath .. "Plugins/") then
+	mod.pluginPath			= mod.basePath .. "Plugins/"
+else
+	mod.pluginPath			= mod.basePath .. "plugins/"
+end
 
 --- cp.config.iconPath
 --- Constant

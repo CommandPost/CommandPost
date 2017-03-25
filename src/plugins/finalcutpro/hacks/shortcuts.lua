@@ -34,11 +34,11 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
+		local executeCommand = "cp -f '" .. metadata.scriptPath .. "cp/resources/plist/10.3/new/"
 
 		local executeStrings = {
-			executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-			executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+			executeCommand .. "NSProCommands.plist' '" .. finalCutProPath .. "NSProCommands.plist'",
 		}
 
 		for _, whichLanguage in ipairs(finalCutProLanguages) do
@@ -48,9 +48,9 @@ local mod = {}
 				table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
 			end
 
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset' '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
 		end
 
 		local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
@@ -75,11 +75,11 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f " .. metadata.scriptPath .. "/cp/resources/plist/10.3/old/"
+		local executeCommand = "cp -f '" .. metadata.scriptPath .. "cp/resources/plist/10.3/old/"
 
 		local executeStrings = {
-			executeCommand .. "NSProCommandGroups.plist '" .. finalCutProPath .. "NSProCommandGroups.plist'",
-			executeCommand .. "NSProCommands.plist '" .. finalCutProPath .. "NSProCommands.plist'",
+			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",
+			executeCommand .. "NSProCommands.plist' '" .. finalCutProPath .. "NSProCommands.plist'",
 		}
 
 		for _, whichLanguage in ipairs(finalCutProLanguages) do
@@ -89,9 +89,9 @@ local mod = {}
 				table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
 			end
 
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset' '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
+			table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
 		end
 
 		local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
@@ -333,20 +333,7 @@ local plugin = {
 		end)
 
 		return mod
-	end
 
-	--------------------------------------------------------------------------------
-	-- POST INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.postInit(deps)
-		mod.init()
-	end
-
-	--------------------------------------------------------------------------------
-	-- USED BY WELCOME MODULE:
-	--------------------------------------------------------------------------------
-	function plugin.enableHacksShortcuts()
-		return enableHacksShortcuts()
 	end
 
 return plugin

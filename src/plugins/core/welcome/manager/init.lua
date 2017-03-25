@@ -1,42 +1,40 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                     P R E F E R E N C E S   M A N A G E R                  --
+--                        W E L C O M E   S C R E E N                         --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.manager ===
+--- === core.welcome.manager ===
 ---
---- Manager for the CommandPost Preferences Panel.
+--- Manager for the CommandPost Welcome Screen.
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsManager")
+local log										= require("hs.logger").new("welcome")
 
 local application								= require("hs.application")
-local base64									= require("hs.base64")
-local console									= require("hs.console")
 local drawing									= require("hs.drawing")
 local geometry									= require("hs.geometry")
+local inspect									= require("hs.inspect")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
-local plugins									= require("cp.plugins")
+local config									= require("cp.config")
 local template									= require("cp.template")
 local tools										= require("cp.tools")
+
+local plugins									= require("cp.plugins")
 
 --------------------------------------------------------------------------------
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
-local PRIORITY 									= 8888889
-local WEBVIEW_LABEL								= "preferences"
+local WEBVIEW_LABEL								= "welcome"
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -46,21 +44,11 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- SETTINGS:
 	--------------------------------------------------------------------------------
-	mod.defaultWidth 		= 450
-	mod.defaultHeight 		= 420
-	mod.defaultTitle 		= i18n("preferences")
-	mod._panels				= {}
-
-	--------------------------------------------------------------------------------
-	-- GET LABEL:
-	--------------------------------------------------------------------------------
-	function mod.getLabel()
-		return WEBVIEW_LABEL
-	end
-
-	function mod.setPanelTemplatePath(path)
-		mod.panelTemplatePath = path
-	end
+	mod.defaultWidth 							= 900
+	mod.defaultHeight 							= 470
+	mod.defaultTitle 							= i18n("welcomeTitle")
+	mod.templatePath							= config.pluginPath .. "core/welcome/html/template.htm"
+	mod._panels									= {}
 
 	--------------------------------------------------------------------------------
 	-- HIGHEST PRIORITY ID:
@@ -77,12 +65,6 @@ local mod = {}
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
 	local function generateHTML()
-
-		local path = mod.panelTemplatePath
-		if not path then
-			log.ef("No panel template path provided.")
-			return ""
-		end
 
 		local env = template.defaultEnv()
 
@@ -102,12 +84,54 @@ local mod = {}
 
     	end
 
-		return template.compileFile(path, env)
+		env.content = env.content .. [[<p class="progress-dots"><span class="selected-dot">●</span>●●●●</h2>]]
+
+		return template.compileFile(mod.templatePath, env)
 
 	end
 
 	--------------------------------------------------------------------------------
-	-- NEW PREFERENCES PANEL:
+	-- SETUP THE USER INTERFACE ONCE WELCOME SCREEN IS COMPLETE:
+	--------------------------------------------------------------------------------
+	function mod.setupUserInterface(showNotification)
+
+		--------------------------------------------------------------------------------
+		-- Initialise Menu Manager:
+		--------------------------------------------------------------------------------
+		mod.menumanager.init()
+
+		--------------------------------------------------------------------------------
+		-- Initialise Shortcuts:
+		--------------------------------------------------------------------------------
+		mod.shortcuts.init()
+
+		--------------------------------------------------------------------------------
+		-- Notifications:
+		--------------------------------------------------------------------------------
+		if showNotification then
+			log.df("Successfully loaded.")
+			dialog.displayNotification(config.scriptName .. " (v" .. config.scriptVersion .. ") " .. i18n("hasLoaded"))
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CHECK IF WE NEED THE WELCOME SCREEN:
+	--------------------------------------------------------------------------------
+	function mod.init()
+		--------------------------------------------------------------------------------
+		-- Can we just skip the welcome screen?
+		--------------------------------------------------------------------------------
+		if hs.accessibilityState() and config.get("welcomeComplete", false) then
+			mod.setupUserInterface(true)
+		else
+			mod.new()
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- CREATE THE WELCOME SCREEN:
 	--------------------------------------------------------------------------------
 	function mod.new()
 
@@ -133,17 +157,10 @@ local mod = {}
 			end)
 
 		--------------------------------------------------------------------------------
-		-- Setup Tool Bar:
-		--------------------------------------------------------------------------------
-		mod.toolbar = toolbar.new(WEBVIEW_LABEL, mod._panels)
-			:canCustomize(true)
-			:autosaves(true)
-
-		--------------------------------------------------------------------------------
 		-- Setup Web View:
 		--------------------------------------------------------------------------------
 		local developerExtrasEnabled = {}
-		if metadata.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
 		mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
 			:windowStyle({"titled", "closable", "nonactivating"})
 			:shadow(true)
@@ -158,40 +175,16 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		mod.selectPanel(highestPriorityID())
 
-	end
-
-	--- core.preferences.manager.showPreferences() -> boolean
-	--- Function
-	--- Shows the Preferences Window
-	---
-	--- Parameters:
-	---  * None
-	---
-	--- Returns:
-	---  * True if successful or nil if an error occurred
-	---
-	function mod.show()
-
-		if mod.webview == nil then
-			mod.new()
-		end
-
-		if next(mod._panels) == nil then
-			dialog.displayMessage("There is no Preferences Panels to display.")
-			return nil
-		else
-			mod.webview:show()
-			timer.doAfter(0.1, function()
-				--log.df("Attempting to bring Preferences Panel to focus.")
-				mod.webview:hswindow():raise():focus()
-			end)
-			return true
-		end
+		--------------------------------------------------------------------------------
+		-- Show Welcome Screen:
+		--------------------------------------------------------------------------------
+		mod.webview:show()
+		timer.doAfter(0.1, function() mod.webview:hswindow():focus() end)
 
 	end
 
 	--------------------------------------------------------------------------------
-	-- INJECT SCRIPT
+	-- INJECT SCRIPT:
 	--------------------------------------------------------------------------------
 	function mod.injectScript(script)
 		if mod.webview then
@@ -204,7 +197,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	function mod.selectPanel(id)
 
-		-- log.df("Selecting Panel with ID: %s", id)
+		log.df("Selecting Panel with ID: %s", id)
 
 		local javascriptToInject = ""
 
@@ -221,25 +214,19 @@ local mod = {}
 		end
 
 		mod.webview:evaluateJavaScript(javascriptToInject)
-		mod.toolbar:selectedItem(id)
 
 	end
 
 	--------------------------------------------------------------------------------
 	-- ADD PANEL:
 	--------------------------------------------------------------------------------
-	function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+	function mod.addPanel(id, priority, contentFn, callbackFn)
 
-		--log.df("Adding Preferences Panel with ID: %s", id)
+		log.df("Adding Welcome Panel with ID: %s", id)
 
 		mod._panels[#mod._panels + 1] = {
 			id = id,
-			label = label,
-			image = image,
 			priority = priority,
-			tooltip = tooltip,
-			fn = function() mod.selectPanel(id) end,
-			selectable = true,
 			contentFn = contentFn,
 			callbackFn = callbackFn,
 		}
@@ -250,25 +237,33 @@ local mod = {}
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.manager",
+	id				= "core.welcome.manager",
 	group			= "core",
 	dependencies	= {
-		["core.menu.bottom"]	= "bottom",
+		["core.menu.manager"]			= "menumanager",
+		["finalcutpro.hacks.shortcuts"] = "shortcuts",
+		["finalcutpro.preferences.scanfinalcutpro"] = "scanfinalcutpro",
 	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
-
-	mod.setPanelTemplatePath(env:pathToAbsolute("html/panel.htm"))
-
-	deps.bottom:addItem(PRIORITY, function()
-		return { title = i18n("preferences") .. "...", fn = mod.show }
-	end)
-
+function plugin.init(deps)
 	return mod
+end
+
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit(deps)
+
+	mod.menumanager = deps.menumanager
+	mod.shortcuts = deps.shortcuts
+	mod.scanfinalcutpro = deps.scanfinalcutpro
+
+	return mod.init()
+
 end
 
 return plugin

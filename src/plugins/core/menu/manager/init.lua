@@ -121,7 +121,7 @@ local plugin = {
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init()
-		return manager.init()
+		return manager
 	end
 
 return plugin
