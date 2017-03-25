@@ -64,11 +64,6 @@ mod.pluginPaths			= {
 	mod.bundledPluginsPath,
 }
 
---- cp.config.customPluginPath
---- Constant
---- Path to Custom Plugins
-mod.customPluginPath	= "~/Library/Application Support/CommandPost/Plugins"
-
 if fs.pathToAbsolute("~/Library/Application Support/CommandPost/Extensions/cp/init.lua") then
 	-------------------------------------------------------------------------------
 	-- Use assets in ~/CommandPost directory:
