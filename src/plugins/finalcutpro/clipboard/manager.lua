@@ -7,7 +7,7 @@
 --------------------------------------------------------------------------------
 -- EXTENSIONS:
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("clipboardManager")
+local log										= require("hs.logger").new("clipmgr")
 
 local pasteboard 								= require("hs.pasteboard")
 local timer										= require("hs.timer")
@@ -395,20 +395,22 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.commands.fcpx"]	= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.clipboard.manager",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.commands"]	= "fcpxCmds",
 	}
+}
 
-	function plugin.init(deps)
-		--------------------------------------------------------------------------------
-		-- COMMANDS:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpCopyWithCustomLabel")
-			:whenActivated(mod.copyWithCustomClipName)
+function plugin.init(deps)
+	--------------------------------------------------------------------------------
+	-- COMMANDS:
+	--------------------------------------------------------------------------------
+	deps.fcpxCmds:add("cpCopyWithCustomLabel")
+		:whenActivated(mod.copyWithCustomClipName)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

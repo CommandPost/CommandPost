@@ -117,7 +117,7 @@ local mod = {}
 			return nil
 		end
 		
-		if info.instance ~= nil then
+		if info.status ~= mod.status.loaded or info.instance ~= nil then
 			-- we've already loaded it. Return the cache's instance.
 			return info.instance
 		end
@@ -134,7 +134,6 @@ local mod = {}
 		-- Ensure all dependencies are loaded
 		local dependencies = mod.loadDependencies(plugin)
 		if not dependencies then
-			log.ef("Unable to load all dependencies for plugin '%s'.", pluginId)
 			info.status = mod.status.error
 			return nil
 		end
@@ -353,19 +352,16 @@ local mod = {}
 		local cache = {}
 		local searchPath = pluginPath .. "/?.lua;" .. pluginPath .. "/?/init.lua"
 	
+		-- Alternate 'require' function that caches plugin resources locally.
 		local pluginRequire = function(name)
 			if cache[name] then
 				return cache[name]
 			end
 			local file = package.searchpath(name, searchPath)
 			if file then
-				local ok, result = pcall(dofile, file)
-				if ok then
-					cache[name] = result
-					return result
-				else
-					return nil
-				end
+				local result = dofile(file)
+				cache[name] = result
+				return result
 			end
 			return globalRequire(name)
 		end
@@ -373,10 +369,11 @@ local mod = {}
 		-- replace default 'require'
 		require = pluginRequire
 		
+		-- load the plugin
 		local result = mod.loadSimplePlugin(initFile)
 		result.rootPath = pluginPath
 		
-		-- Reset it to the global require
+		-- Reset 'require' to the global require
 		require = globalRequire
 		
 		return result

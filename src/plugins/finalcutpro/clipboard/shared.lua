@@ -383,52 +383,51 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- PLUGIN DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.clipboard.manager"]	= "manager",
-		["cp.plugins.finalcutpro.commands.fcpx"]		= "fcpxCmds",
-		["cp.plugins.finalcutpro.menu.clipboard"]		= "tools",
+local plugin = {
+	id				= "finalcutpro.clipboard.shared",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.clipboard.manager"]	= "manager",
+		["finalcutpro.commands"]			= "fcpxCmds",
+		["finalcutpro.menu.clipboard"]		= "menu",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Initialise Module:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	mod.init(deps.manager)
 
-		--------------------------------------------------------------------------------
-		-- Initialise Module:
-		--------------------------------------------------------------------------------
-		mod.init(deps.manager)
+	--------------------------------------------------------------------------------
+	-- Generate Menu Cache:
+	--------------------------------------------------------------------------------
+	mod.generateSharedClipboardMenu()
 
-		--------------------------------------------------------------------------------
-		-- Generate Menu Cache:
-		--------------------------------------------------------------------------------
-		mod.generateSharedClipboardMenu()
+	--------------------------------------------------------------------------------
+	-- Add menu items:
+	--------------------------------------------------------------------------------
+	local menu = deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
 
-		--------------------------------------------------------------------------------
-		-- Add menu items:
-		--------------------------------------------------------------------------------
-		local menu = deps.tools:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
+	:addItem(1000, function()
+		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled() and mod.validRootPath() }
+	end)
 
-		:addItem(1000, function()
-			return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled() and mod.validRootPath() }
-		end)
+	:addSeparator(2000)
 
-		:addSeparator(2000)
+	:addItems(3000, mod.generateSharedClipboardMenu)
 
-		:addItems(3000, mod.generateSharedClipboardMenu)
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	deps.fcpxCmds:add("cpCopyWithCustomLabelAndFolder")
+		:whenActivated(mod.copyWithCustomClipNameAndFolder)
 
-		--------------------------------------------------------------------------------
-		-- Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpCopyWithCustomLabelAndFolder")
-			:whenActivated(mod.copyWithCustomClipNameAndFolder)
-
-		return mod
-	end
+	return mod
+end
 
 return plugin
