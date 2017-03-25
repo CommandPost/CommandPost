@@ -28,24 +28,23 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.bottom"] = "bottom"
+local plugin = {
+	id				= "core.quit",
+	group			= "core",
+	dependencies	= {
+		["core.menu.bottom"] = "bottom",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
-			return { title = i18n("quit"),	fn = mod.quit }
-		end)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
+		return { title = i18n("quit"),	fn = mod.quit }
+	end)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin
