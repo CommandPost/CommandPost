@@ -32,7 +32,7 @@ if [ ! -d "$CP_PATH" ]; then
 fi
 
 echo "Copying GitHub source to CommandPost directory."
-cp -R src/ "$EXT_PATH"
-cp -R plugins/ "$PLUGIN_PATH"
+cp -R src/extensions/ "$EXT_PATH"
+cp -R src/plugins/ "$PLUGIN_PATH"
 
 echo "CommandPost has been installed successfully."

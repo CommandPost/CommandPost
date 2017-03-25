@@ -32,7 +32,7 @@ if [ ! -d "$CP_PATH" ]; then
 fi
 
 echo "Linking GitHub source to CommandPost directory."
-ln -sFfv "$PWD/src" "$EXT_PATH"
-ln -sFfv "$PWD/plugins" "$PLUGIN_PATH"
+ln -sFfv "$PWD/src/extensions" "$EXT_PATH"
+ln -sFfv "$PWD/src/plugins" "$PLUGIN_PATH"
 
 echo "GitHub Source has been linked to your CommandPost directory."
