@@ -85,33 +85,32 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.timeline"] = "timeline",
-		["cp.plugins.finalcutpro.commands.fcpx"] = "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.hacks.playbackrendering",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.timeline"]	= "menu",
+		["finalcutpro.commands"] 		= "fcpxCmds",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		deps.timeline:addItem(PRIORITY, function()
-			return { title = i18n("enableRenderingDuringPlayback"),	fn = mod.togglePerformTasksDuringPlayback, checked=mod.isEnabled() }
-		end)
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("enableRenderingDuringPlayback"),	fn = mod.togglePerformTasksDuringPlayback, checked=mod.isEnabled() }
+	end)
 
-		-- Commands
-		deps.fcpxCmds:add("cpAllowTasksDuringPlayback")
-			:groupedBy("hacks")
-			:activatedBy():ctrl():option():cmd("p")
-			:whenActivated(mod.togglePerformTasksDuringPlayback)
+	-- Commands
+	deps.fcpxCmds:add("cpAllowTasksDuringPlayback")
+		:groupedBy("hacks")
+		:activatedBy():ctrl():option():cmd("p")
+		:whenActivated(mod.togglePerformTasksDuringPlayback)
 
-		return mod
+	return mod
 
-	end
+end
 
 return plugin

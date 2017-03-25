@@ -94,33 +94,32 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.administrator.advancedfeatures"] = "advancedfeatures",
-		["cp.plugins.finalcutpro.commands.fcpx"]		= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.hacks.backupinterval",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.administrator.advancedfeatures"] = "menu",
+		["finalcutpro.commands"]							= "fcpxCmds",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		deps.advancedfeatures:addItem(PRIORITY, function()
-			return { title = i18n("changeBackupInterval") .. " (" .. tostring(mod.getPeriodicBackupInterval()) .. " " .. i18n("mins") .. ")",	fn = mod.changeBackupInterval }
-		end)
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("changeBackupInterval") .. " (" .. tostring(mod.getPeriodicBackupInterval()) .. " " .. i18n("mins") .. ")",	fn = mod.changeBackupInterval }
+	end)
 
-		-- Commands
-		deps.fcpxCmds:add("cpChangeBackupInterval")
-			:groupedBy("hacks")
-			:activatedBy():ctrl():option():cmd("b")
-			:whenActivated(mod.changeBackupInterval)
+	-- Commands
+	deps.fcpxCmds:add("cpChangeBackupInterval")
+		:groupedBy("hacks")
+		:activatedBy():ctrl():option():cmd("b")
+		:whenActivated(mod.changeBackupInterval)
 
-		return mod
+	return mod
 
-	end
+end
 
 return plugin

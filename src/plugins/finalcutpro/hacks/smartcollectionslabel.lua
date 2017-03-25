@@ -90,33 +90,32 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.administrator.advancedfeatures"] = "advancedfeatures",
-		["cp.plugins.finalcutpro.commands.fcpx"] = "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.hacks.smartcollectionslabel",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.administrator.advancedfeatures"]	= "advancedfeatures",
+		["finalcutpro.commands"] 							= "fcpxCmds",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+
+	deps.advancedfeatures:addItem(PRIORITY, function()
+		return { title = i18n("changeSmartCollectionLabel"),	fn = mod.changeSmartCollectionsLabel }
+	end)
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Commands:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	deps.fcpxCmds:add("cpChangeSmartCollectionsLabel")
+		:whenActivated(mod.changeSmartCollectionsLabel)
 
-		deps.advancedfeatures:addItem(PRIORITY, function()
-			return { title = i18n("changeSmartCollectionLabel"),	fn = mod.changeSmartCollectionsLabel }
-		end)
+	return mod
 
-		--------------------------------------------------------------------------------
-		-- Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpChangeSmartCollectionsLabel")
-			:whenActivated(mod.changeSmartCollectionsLabel)
-
-		return mod
-
-	end
+end
 
 return plugin

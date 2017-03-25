@@ -294,51 +294,50 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.manager"]				= "manager",
-		["cp.plugins.finalcutpro.menu.tools"]			= "prefs",
-		["cp.plugins.finalcutpro.commands.fcpx"]		= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.export.batch",
+	group			= "finalcutpro",
+	dependencies	= {
+		["core.menu.manager"]				= "manager",
+		["finalcutpro.menu.tools"]			= "prefs",
+		["finalcutpro.commands"]			= "fcpxCmds",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	local fcpxRunning = fcp:isRunning()
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Add a secton to the 'Preferences' menu:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		local fcpxRunning = fcp:isRunning()
+	local section = deps.prefs:addSection(PRIORITY)
+	mod.manager = deps.manager
 
-		--------------------------------------------------------------------------------
-		-- Add a secton to the 'Preferences' menu:
-		--------------------------------------------------------------------------------
-		local section = deps.prefs:addSection(PRIORITY)
-		mod.manager = deps.manager
+	local menu = section:addMenu(1000, function() return i18n("batchExport") end)
 
-		local menu = section:addMenu(1000, function() return i18n("batchExport") end)
+	menu:addItems(1, function()
+		return {
+			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
+			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
+			{ title = "-" },
+			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = metadata.get("batchExportReplaceExistingFiles") },
+		}
+	end)
 
-		menu:addItems(1, function()
-			return {
-				{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
-				{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
-				{ title = "-" },
-				{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = metadata.get("batchExportReplaceExistingFiles") },
-			}
-		end)
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	deps.fcpxCmds:add("cpBatchExportFromBrowser")
+		:activatedBy():ctrl():option():cmd("e")
+		:whenActivated(mod.batchExport)
 
-		--------------------------------------------------------------------------------
-		-- Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpBatchExportFromBrowser")
-			:activatedBy():ctrl():option():cmd("e")
-			:whenActivated(mod.batchExport)
-
-		--------------------------------------------------------------------------------
-		-- Return the module:
-		--------------------------------------------------------------------------------
-		return mod
-	end
+	--------------------------------------------------------------------------------
+	-- Return the module:
+	--------------------------------------------------------------------------------
+	return mod
+end
 
 return plugin

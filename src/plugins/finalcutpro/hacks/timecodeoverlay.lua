@@ -82,35 +82,34 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.timeline"] = "timeline",
-		["cp.plugins.finalcutpro.commands.fcpx"] = "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.hacks.timecodeoverlay",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.timeline"]	= "menu",
+		["finalcutpro.commands"] 		= "fcpxCmds",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("enableTimecodeOverlay"),	fn = mod.toggleTimecodeOverlay, checked=mod.isEnabled() }
+	end)
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Commands:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	deps.fcpxCmds:add("cpToggleTimecodeOverlays")
+		:groupedBy("hacks")
+		:activatedBy():ctrl():option():cmd("t")
+		:whenActivated(mod.toggleTimecodeOverlay)
 
-		deps.timeline:addItem(PRIORITY, function()
-			return { title = i18n("enableTimecodeOverlay"),	fn = mod.toggleTimecodeOverlay, checked=mod.isEnabled() }
-		end)
+	return mod
 
-		--------------------------------------------------------------------------------
-		-- Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpToggleTimecodeOverlays")
-			:groupedBy("hacks")
-			:activatedBy():ctrl():option():cmd("t")
-			:whenActivated(mod.toggleTimecodeOverlay)
-
-		return mod
-
-	end
+end
 
 return plugin

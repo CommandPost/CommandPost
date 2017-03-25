@@ -298,12 +298,14 @@ function mod.rightClickAction(index)
 end
 
 -- The Plugin
-local plugin = {}
-
-plugin.dependencies = {
-	["cp.plugins.finalcutpro.commands.fcpx"]	= "fcpxCmds",
-	["cp.plugins.core.actions.actionmanager"]	= "actionmanager",
-	["cp.plugins.finalcutpro.menu.tools"]		= "tools",
+local plugin = {
+	id				= "finalcutpro.console",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.commands"]		= "fcpxCmds",
+		["core.action.manager"]			= "actionmanager",
+		["finalcutpro.menu.tools"]		= "tools",
+	}
 }
 
 function plugin.init(deps)

@@ -279,18 +279,17 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.top"] 										= "top",
-		["cp.plugins.core.commands.global"]									= "globalCmds",
-		["cp.plugins.core.menu.helpandsupport"] 							= "helpandsupport",
-		["cp.plugins.finalcutpro.commands.fcpx"]							= "fcpxCmds",
-		["cp.plugins.core.preferences.panels.shortcuts"]					= "shortcuts",
+local plugin = {
+	id				= "finalcutpro.hacks.shortcuts",
+	group			= "finalcutpro",
+	dependencies	= {
+		["core.menu.top"] 							= "top",
+		["core.menu.helpandsupport"] 				= "helpandsupport",
+		["core.commands.global"]					= "globalCmds",
+		["finalcutpro.commands"]					= "fcpxCmds",
+		["core.preferences.panels.shortcuts"]		= "shortcuts",
 	}
+}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:

@@ -185,40 +185,39 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.timeline"] = "options",
+local plugin = {
+	id				= "finalcutpro.fullscreen.shortcuts",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.timeline"] = "menu",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	--------------------------------------------------------------------------------
+	-- Initialise the module:
+	--------------------------------------------------------------------------------
+	init()
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Watch for the full screen window:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		--------------------------------------------------------------------------------
-		-- Initialise the module:
-		--------------------------------------------------------------------------------
-		init()
+	fcp:fullScreenWindow():watch({
+		show	= mod.update,
+		hide	= mod.update,
+	})
 
-		--------------------------------------------------------------------------------
-		-- Watch for the full screen window:
-		--------------------------------------------------------------------------------
-		fcp:fullScreenWindow():watch({
-			show	= mod.update,
-			hide	= mod.update,
-		})
+	--------------------------------------------------------------------------------
+	-- Add the menu item:
+	--------------------------------------------------------------------------------
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = mod.toggleEnabled,		checked = mod.isEnabled() }
+	end)
 
-		--------------------------------------------------------------------------------
-		-- Add the menu item:
-		--------------------------------------------------------------------------------
-		deps.options:addItem(PRIORITY, function()
-			return { title = i18n("enableShortcutsDuringFullscreen"),	fn = mod.toggleEnabled,		checked = mod.isEnabled() }
-		end)
-
-		return mod
-	end
+	return mod
+end
 
 return plugin

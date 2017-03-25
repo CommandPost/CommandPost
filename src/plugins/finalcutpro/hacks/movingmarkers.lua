@@ -105,39 +105,41 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.administrator.advancedfeatures"] = "advancedfeatures",
-		["cp.plugins.finalcutpro.commands.fcpx"] = "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.hacks.movingmarkers",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.administrator.advancedfeatures"] = "menu",
+		["finalcutpro.commands"] 							= "fcpxCmds",
 	}
+}
 
-	function plugin.init(deps)
+function plugin.init(deps)
 
-		--------------------------------------------------------------------------------
-		-- Cache status on load:
-		--------------------------------------------------------------------------------
-		mod.isEnabled()
+	--------------------------------------------------------------------------------
+	-- Cache status on load:
+	--------------------------------------------------------------------------------
+	mod.isEnabled()
 
-		--------------------------------------------------------------------------------
-		-- Setup Menu:
-		--------------------------------------------------------------------------------
-		deps.advancedfeatures:addItem(PRIORITY, function()
-			return { title = i18n("enableMovingMarkers"),	fn = mod.toggleMovingMarkers, checked=mod.isEnabled() }
-		end)
+	--------------------------------------------------------------------------------
+	-- Setup Menu:
+	--------------------------------------------------------------------------------
+	deps.menu:addItem(PRIORITY, function()
+		return { title = i18n("enableMovingMarkers"),	fn = mod.toggleMovingMarkers, checked=mod.isEnabled() }
+	end)
 
-		:addSeparator(PRIORITY + 1)
+	:addSeparator(PRIORITY + 1)
 
-		--------------------------------------------------------------------------------
-		-- Setup Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpToggleMovingMarkers")
-			:groupedBy("hacks")
-			:activatedBy():ctrl():option():cmd("y")
-			:whenActivated(mod.toggleMovingMarkers)
+	--------------------------------------------------------------------------------
+	-- Setup Commands:
+	--------------------------------------------------------------------------------
+	deps.fcpxCmds:add("cpToggleMovingMarkers")
+		:groupedBy("hacks")
+		:activatedBy():ctrl():option():cmd("y")
+		:whenActivated(mod.toggleMovingMarkers)
 
-		return mod
+	return mod
 
-	end
+end
 
 return plugin
