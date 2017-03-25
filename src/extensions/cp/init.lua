@@ -190,7 +190,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Watch for Script Updates:
 		--------------------------------------------------------------------------------
-		scriptWatcher = pathwatcher.new(hs.configdir, function(files)
+		scriptWatcher = pathwatcher.new(fs.pathToAbsolute(metadata.scriptPath .. "/.." ) .. "/", function(files)
 			local doReload = false
 			for _,file in pairs(files) do
 				if file:sub(-4) == ".lua" or file:sub(-5) == ".html" or file:sub(-4) == ".htm" then

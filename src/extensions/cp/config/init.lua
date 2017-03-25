@@ -64,11 +64,11 @@ mod.pluginPaths			= {
 	mod.bundledPluginsPath,
 }
 
-if fs.pathToAbsolute("~/Library/Application Support/CommandPost/Extensions/cp/init.lua") then
+if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
 	-------------------------------------------------------------------------------
-	-- Use assets in ~/CommandPost directory:
+	-- Use assets in either the Developer or User Library directory:
 	-------------------------------------------------------------------------------
-	mod.scriptPath			= os.getenv("HOME") .. "/Library/Application Support/CommandPost/Extensions/"
+	mod.scriptPath			= hs.configdir .. "/"
 	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
 else
 	-------------------------------------------------------------------------------
