@@ -164,15 +164,14 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.mediaimport"] = "shortcuts",
-		["cp.plugins.finalcutpro.commands.fcpx"]	= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.import.preference",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.mediaimport"]	= "menu",
+		["finalcutpro.commands"]			= "fcpxCmds",
 	}
+}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
@@ -181,7 +180,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Menus:
 		--------------------------------------------------------------------------------
-		deps.shortcuts:addItems(PRIORITY, function()
+		deps.menu:addItems(PRIORITY, function()
 			local fcpxRunning = fcp:isRunning()
 
 			return {

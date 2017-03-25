@@ -263,38 +263,37 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- PLUGIN DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.tools"]			= "tools",
+local plugin = {
+	id				= "finalcutpro.sharing.xml",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.tools"]			= "menu",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Generate Files Menu for Cache:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	mod.update()
+	mod.listFilesMenu()
 
-		--------------------------------------------------------------------------------
-		-- Generate Files Menu for Cache:
-		--------------------------------------------------------------------------------
-		mod.update()
-		mod.listFilesMenu()
+	--------------------------------------------------------------------------------
+	-- Tools Menus:
+	--------------------------------------------------------------------------------
+	deps.menu:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
 
-		--------------------------------------------------------------------------------
-		-- Tools Menus:
-		--------------------------------------------------------------------------------
-		deps.tools:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
+		:addItem(1, function()
+			return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
+		end)
+		:addSeparator(2)
+		:addItems(3, mod.listFilesMenu)
 
-			:addItem(1, function()
-				return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
-			end)
-			:addSeparator(2)
-			:addItems(3, mod.listFilesMenu)
-
-		return mod
-	end
+	return mod
+end
 
 return plugin

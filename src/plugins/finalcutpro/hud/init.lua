@@ -643,7 +643,7 @@ local hud = {}
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
 	function hud.generateHTML()
-		return template.compileFile(metadata.scriptPath .. "/cp/plugins/finalcutpro/hud/html/hud.html", getEnv())
+		return template.compileFile(hud.htmlPath .. "/hud.html", getEnv())
 	end
 
 	--------------------------------------------------------------------------------
@@ -728,36 +728,36 @@ local hud = {}
 	--------------------------------------------------------------------------------
 	-- INITIALISE MODULE:
 	--------------------------------------------------------------------------------
-	function hud.init(xmlSharing, actionmanager)
-		hud.xmlSharing = xmlSharing
-		hud.actionmanager = actionmanager
+	function hud.init(xmlSharing, actionmanager, htmlPath)
+		hud.xmlSharing		= xmlSharing
+		hud.actionmanager	= actionmanager
+		hud.htmlPath		= htmlPath
 		return hud
 	end
 
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.sharing.xml"]				= "xmlSharing",
-		["cp.plugins.finalcutpro.menu.tools"]				= "tools",
-		["cp.plugins.finalcutpro.commands.fcpx"]			= "fcpxCmds",
-		["cp.plugins.core.actions.actionmanager"]			= "actionmanager",
+local plugin = {
+	id				= "finalcutpro.hud",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.sharing.xml"]			= "xmlSharing",
+		["finalcutpro.menu.tools"]			= "menu",
+		["finalcutpro.commands"]			= "fcpxCmds",
+		["core.action.manager"]				= "actionmanager",
 	}
+}
 
 	--------------------------------------------------------------------------------
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	function plugin.init(deps, env)
 
 		--------------------------------------------------------------------------------
 		-- Initialise Module:
 		--------------------------------------------------------------------------------
-		hud.init(deps.xmlSharing, deps.actionmanager)
+		hud.init(deps.xmlSharing, deps.actionmanager, env:pathToAbsolute("html"))
 
 		--------------------------------------------------------------------------------
 		-- Setup Watchers:
@@ -786,7 +786,7 @@ local plugin = {}
 		--------------------------------------------------------------------------------
 		-- Menus:
 		--------------------------------------------------------------------------------
-		local hudMenu = deps.tools:addMenu(PRIORITY, function() return i18n("hud") end)
+		local hudMenu = deps.menu:addMenu(PRIORITY, function() return i18n("hud") end)
 		hudMenu:addItem(1000, function()
 				return { title = i18n("enableHUD"),	fn = hud.toggleEnabled,		checked = hud.isEnabled()}
 			end)

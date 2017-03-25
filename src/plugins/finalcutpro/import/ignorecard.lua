@@ -121,29 +121,31 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.mediaimport"] = "options",
+local plugin = {
+	id				= "finalcutpro.import.ignorecard",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.mediaimport"] = "menu",
 	}
+}
 
-	function plugin.init(deps)
+function plugin.init(deps)
 
-		--------------------------------------------------------------------------------
-		-- Add the menu item:
-		--------------------------------------------------------------------------------
-		local section = deps.options:addSection(PRIORITY)
-		section:addItem(200, function()
-			return { title = i18n("ignoreInsertedCameraCards"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
-		end)
-		section:addSeparator(900)
+	--------------------------------------------------------------------------------
+	-- Add the menu item:
+	--------------------------------------------------------------------------------
+	local section = deps.menu:addSection(PRIORITY)
+	section:addItem(200, function()
+		return { title = i18n("ignoreInsertedCameraCards"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+	end)
+	section:addSeparator(900)
 
-		--------------------------------------------------------------------------------
-		-- Update the watcher status based on the settings:
-		--------------------------------------------------------------------------------
-		mod.update()
+	--------------------------------------------------------------------------------
+	-- Update the watcher status based on the settings:
+	--------------------------------------------------------------------------------
+	mod.update()
 
-		return mod
-	end
+	return mod
+end
 
 return plugin
