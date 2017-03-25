@@ -20,7 +20,6 @@ local tools			= require("cp.tools")
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 local PRIORITY 		= 5
-local ADVANCED_FEATURES_PRIORITY = 1
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -285,11 +284,12 @@ local plugin = {
 	id				= "finalcutpro.hacks.shortcuts",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.menu.top"] 							= "top",
-		["core.menu.helpandsupport"] 				= "helpandsupport",
-		["core.commands.global"]					= "globalCmds",
-		["finalcutpro.commands"]					= "fcpxCmds",
-		["core.preferences.panels.shortcuts"]		= "shortcuts",
+		["core.menu.top"] 									= "top",
+		["core.menu.helpandsupport"] 						= "helpandsupport",
+		["core.commands.global"]							= "globalCmds",
+		["finalcutpro.commands"]							= "fcpxCmds",
+		["core.preferences.panels.shortcuts"]				= "shortcuts",
+		["finalcutpro.preferences.panels.finalcutpro"]		= "finalcutpro",
 	}
 }
 
@@ -327,7 +327,14 @@ local plugin = {
 			:titled(i18n("openCommandEditor"))
 			:whenActivated(mod.editCommands)
 
-		deps.shortcuts:addCheckbox(ADVANCED_FEATURES_PRIORITY, function()
+		--------------------------------------------------------------------------------
+		-- Add Preferences:
+		--------------------------------------------------------------------------------
+		deps.finalcutpro:addHeading(50, function()
+			return { title = "<br />Keyboard Shortcuts:" }
+		end)
+
+		:addCheckbox(51, function()
 			return { title = i18n("enableHacksShortcuts"),	fn = function()
 				mod.toggleEditable()
 				mod._shortcuts.updateCustomShortcutsVisibility()

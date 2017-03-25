@@ -310,7 +310,6 @@ local plugin = {
 	dependencies	= {
 		["core.menu.manager"]						= "menumanager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",
-		["finalcutpro.preferences.scanfinalcutpro"] = "scanfinalcutpro",
 	}
 }
 
@@ -331,7 +330,6 @@ function plugin.postInit(deps)
 
 	mod.menumanager = deps.menumanager
 	mod.shortcuts = deps.shortcuts
-	mod.scanfinalcutpro = deps.scanfinalcutpro
 
 	return mod.init()
 
