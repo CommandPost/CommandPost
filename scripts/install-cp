@@ -1,26 +1,38 @@
 #!/bin/sh
 
-### This script will erase the existing ~/CommandPost directory and 
+### This script will erase the existing ~/CommandPost directory and
 ### copy in the contents of the src/ directory, thus updating it with the latest code.
 
-CP_PATH="$HOME/CommandPost"
+CP_PATH="$HOME/Library/Application Support/CommandPost"
+EXT_PATH="$CP_PATH/Extensions"
+PLUGIN_PATH="$CP_PATH/Plugins"
 
-if [ ! -d $CP_PATH ]; then
-	echo "Please install CommandPost: http://commandpost.io"
-	exit 1
+if [ -L "$EXT_PATH" ]; then
+	echo "Unlinking existing CommandPost extensions."
+	unlink "$EXT_PATH"
 fi
 
-if [ -L $CP_PATH ] ; then
-	echo "Unlinking existing CommandPost directory."
-	unlink "$CP_PATH"
+if [ -d "$EXT_PATH" ]; then
+	echo "Deleting existing CommandPost extensions."
+	rm -Rf "$EXT_PATH"
 fi
 
-if [ -d $CP_PATH ]; then
-	echo "Deleting existing CommandPost directory."
-	rm -Rf "$CP_PATH"
+if [ -L "$PLUGIN_PATH" ]; then
+	echo "Unlinking existing CommandPost plugins."
+	unlink "$PLUGIN_PATH"
+fi
+
+if [ -d "$PLUGIN_PATH" ]; then
+	echo "Deleting existing CommandPost plugins."
+	rm -Rf "$PLUGIN_PATH"
+fi
+
+if [ ! -d "$CP_PATH" ]; then
+	mkdir "$CP_PATH"
 fi
 
 echo "Copying GitHub source to CommandPost directory."
-cp -R src/ "$CP_PATH"
+cp -R src/extensions/ "$EXT_PATH"
+cp -R src/plugins/ "$PLUGIN_PATH"
 
 echo "CommandPost has been installed successfully."
