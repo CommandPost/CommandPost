@@ -91,6 +91,8 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function generateContent()
 
+		generate.setWebviewLabel(mod._webviewLabel)
+
 		local result = ""
 
 		table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
@@ -121,7 +123,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	function mod.init(deps)
 
-		generate.setWebviewLabel(deps.manager.getLabel())
+		mod._webviewLabel = deps.manager.getLabel()
 
 		local id 			= "general"
 		local label 		= "General"

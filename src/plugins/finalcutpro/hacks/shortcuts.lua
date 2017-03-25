@@ -32,6 +32,8 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function enableHacksShortcuts()
 
+		log.df("Enabling Hacks Shortcuts...")
+
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
 		local executeCommand = "cp -f '" .. metadata.scriptPath .. "cp/resources/plist/10.3/new/"
@@ -227,7 +229,7 @@ local mod = {}
 	end
 
 	function mod.enableHacksShortcuts()
-		enableHacksShortcuts()
+		return enableHacksShortcuts()
 	end
 
 	function mod.toggleEditable()

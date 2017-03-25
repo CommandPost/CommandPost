@@ -25,13 +25,6 @@ local log										= require("hs.logger").new("prefsGenerate")
 local mod = {}
 
 	--------------------------------------------------------------------------------
-	-- COUNTERS:
-	--------------------------------------------------------------------------------
-	mod._checkboxCount 							= 0
-	mod._buttonCount 							= 0
-	mod._dropdownCount 							= 0
-
-	--------------------------------------------------------------------------------
 	-- CONSTANTS:
 	--------------------------------------------------------------------------------
 	mod.UI_CHECKBOX								= 1
@@ -40,23 +33,46 @@ local mod = {}
 	mod.UI_DROPDOWN								= 4
 
 	--------------------------------------------------------------------------------
+	-- RANDOM STRING GENERATOR:
+	--------------------------------------------------------------------------------
+	local function randomLetter()
+		local str="abcdefghijklmnopqrstuvwxyz"
+ 		return string.char(str:byte(math.random(1, #str)))
+	end
+
+	--------------------------------------------------------------------------------
+	-- RANDOM WORD GENERATOR:
+	--------------------------------------------------------------------------------
+	local function randomWord(length)
+		local result = ""
+		for i=1, length do
+			result = result .. randomLetter()
+		end
+		return result
+	end
+
+	--------------------------------------------------------------------------------
 	-- SET WEBVIEW LABEL:
 	--------------------------------------------------------------------------------
 	function mod.setWebviewLabel(value)
+		log.df("setWebviewLabel to: %s", value)
 		mod._webviewLabel = value
 	end
 
 	--------------------------------------------------------------------------------
 	-- GENERATE CHECKBOX:
 	--------------------------------------------------------------------------------
-	function mod.checkbox(data)
+	function mod.checkbox(data, customTrigger)
+
+		local result = data["title"]
+		if customTrigger then result = customTrigger end
 
 		local isChecked = ""
 		if data["checked"] then
 			isChecked = " checked"
 		end
 
-		local id = "checkbox" .. mod._checkboxCount
+		local id = "checkbox" .. randomWord(20)
 
 		local result = [[<p class="uiItem"><input type="checkbox" id="]] .. id .. [[" value=""]] .. isChecked .. [[> ]] .. data["title"] .. [[</p>
 		<script>
@@ -64,7 +80,7 @@ local mod = {}
     		]] .. id .. [[.onchange = function (){
 				try {
 					var checked = document.getElementById("]] .. id .. [[").checked;
-					var result = ["]] .. data["title"] .. [[", checked];
+					var result = ["]] .. result .. [[", checked];
 					webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 				} catch(err) {
 					alert('An error has occurred. Does the controller exist yet?');
@@ -72,8 +88,6 @@ local mod = {}
     		}
 		</script>
 		]]
-
-		mod._checkboxCount = mod._checkboxCount + 1
 
 		return result
 
@@ -92,16 +106,19 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- GENERATE BUTTON:
 	--------------------------------------------------------------------------------
-	function mod.button(data)
+	function mod.button(data, customTrigger)
 
-		local id = "button" .. mod._buttonCount
+		local result = data["title"]
+		if customTrigger then result = customTrigger end
+
+		local id = "button" .. randomWord(20)
 
 		local result = [[<p class="uiItem"><a id="]] .. id ..  [[" class="button" href="#">]] .. data["title"] .. [[</a></p>
 		<script>
     		var ]] .. id .. [[=document.getElementById("]] .. id .. [[");
     		]] .. id .. [[.onclick = function (){
 				try {
-					var result = ["]] .. data["title"] .. [["];
+					var result = ["]] .. result .. [["];
 					webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 				} catch(err) {
 					alert('An error has occurred. Does the controller exist yet?');
@@ -110,8 +127,6 @@ local mod = {}
 		</script>
 		]]
 
-		mod._buttonCount = mod._buttonCount + 1
-
 		return result
 
 	end
@@ -119,9 +134,12 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- GENERATE DROPDOWN:
 	--------------------------------------------------------------------------------
-	function mod.dropdown(title, data)
+	function mod.dropdown(title, data, customTrigger)
 
-		local id = "dropdown" .. mod._dropdownCount
+		local result = title
+		if customTrigger then result = customTrigger end
+
+		local id = "dropdown" .. randomWord(20)
 
 		local options = ""
 
@@ -139,7 +157,7 @@ local mod = {}
     		]] .. id .. [[.onchange = function (){
 				try {
 					var dropdownResult = document.getElementById("]] .. id .. [[").value;
-					var result = ["]] .. title .. [[", dropdownResult];
+					var result = ["]] .. result .. [[", dropdownResult];
 					webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 				} catch(err) {
 					alert('An error has occurred. Does the controller exist yet?');
@@ -147,8 +165,6 @@ local mod = {}
     		}
 		</script>
 		]]
-
-		mod._dropdownCount = mod._dropdownCount + 1
 
 		return result
 

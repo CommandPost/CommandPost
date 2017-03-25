@@ -111,6 +111,8 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function generateContent()
 
+		generate.setWebviewLabel(mod._webviewLabel)
+
 		--------------------------------------------------------------------------------
 		-- Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
@@ -367,7 +369,6 @@ local mod = {}
 		mod._fcpx = deps.fcpx
 		mod._manager = deps.manager
 
-		generate.setWebviewLabel(deps.manager.getLabel())
 		mod._webviewLabel = deps.manager.getLabel()
 
 		local id 		= "shorcuts"

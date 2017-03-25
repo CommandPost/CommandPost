@@ -88,7 +88,7 @@ return {
 			welcomeTitle						=			"Welcome to CommandPost",
 			welcomeTagLine						=			"Workflow Toolkit for Professional Editors",
 			welcomeIntro						=			"Thank you for installing CommandPost. This guide will help you set things up.",
-			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> option in the Preferences menubar.",
+			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> button in the Preferences.",
 			scanFinalCutPro						=			"Scan Final Cut Pro",
 			finalCutProMissingHeading			=			"CommandPost requires Final Cut Pro 10.3 or later.",
 			finalCutProMissingText				=			"Unfortunately we couldn't detect a valid installation of Final Cut Pro installed.<br /><br />Please install the latest version of Final Cut Pro from the App Store<br />and try running CommandPost again.",
@@ -597,7 +597,7 @@ return {
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
-	
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN STATUSES:
 	--------------------------------------------------------------------------------
@@ -606,7 +606,7 @@ return {
 	plugin_status_active				=			"Active",
 	plugin_status_disabled				=			"Disabled",
 	plugin_status_error					=			"Failed",
-	
+
 	plugin_action_disable				=			"Disable",
 	plugin_action_enable				=			"Enable",
 	plugin_action_errorLog				=			"Error Log",

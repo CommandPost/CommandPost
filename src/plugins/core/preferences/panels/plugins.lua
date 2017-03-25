@@ -58,7 +58,8 @@ local mod = {}
 	-- CONTROLLER CALLBACK:
 	--------------------------------------------------------------------------------
 	local function controllerCallback(message)
-		log.df("plugins panel clicked: %s", hs.inspect(message))
+
+		--log.df("plugins panel clicked: %s", hs.inspect(message))
 
 		if message["body"][1] == "openErrorLog" then
 			hs.openConsole()
@@ -86,7 +87,7 @@ local mod = {}
 		elseif message["body"][2] == "enable" then
 			enablePlugin(message["body"][1])
 		else
-			log.df("Unrecognised action: ", hs.inspect(message))
+			--log.df("Unrecognised action: ", hs.inspect(message))
 		end
 
 	end
@@ -144,7 +145,7 @@ local mod = {}
 					<td class="rowStatus">]] .. i18n("plugin_status_"..status) .. [[</td>]]
 
 			local action = nil
-					
+
 			if status == plugins.status.error then
 				action = "errorLog"
 			elseif status == plugins.status.active then
@@ -291,12 +292,12 @@ local mod = {}
 					background-color: #006dd4;
 					color: white;
 				}
-				
+
 				.plugins .status-failed {
 					font-weight: bold;
 					color: red;
 				}
-				
+
 				.plugins .status-disabled {
 					font-weight: bold;
 				}

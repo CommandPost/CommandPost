@@ -47,8 +47,21 @@ local mod = {}
 	mod.defaultWidth 							= 900
 	mod.defaultHeight 							= 470
 	mod.defaultTitle 							= i18n("welcomeTitle")
-	mod.templatePath							= config.pluginPath .. "core/welcome/html/template.htm"
 	mod._panels									= {}
+
+	--------------------------------------------------------------------------------
+	-- SET PANEL TEMPLATE PATH:
+	--------------------------------------------------------------------------------
+	function mod.setPanelTemplatePath(path)
+		mod.panelTemplatePath = path
+	end
+
+	--------------------------------------------------------------------------------
+	-- GET LABEL:
+	--------------------------------------------------------------------------------
+	function mod.getLabel()
+		return WEBVIEW_LABEL
+	end
 
 	--------------------------------------------------------------------------------
 	-- HIGHEST PRIORITY ID:
@@ -84,9 +97,23 @@ local mod = {}
 
     	end
 
-		env.content = env.content .. [[<p class="progress-dots"><span class="selected-dot">●</span>●●●●</h2>]]
+		--------------------------------------------------------------------------------
+		-- Generate the Progress Dots:
+		--------------------------------------------------------------------------------
+		local progressDots = [[<p class="progress-dots">]]
+		for i, v in ipairs(mod._panels) do
 
-		return template.compileFile(mod.templatePath, env)
+			local class = ""
+			if v["id"] == highestPriorityID then class = "selected-dot" end
+
+			progressDots = progressDots .. [[<span id="dot]] .. v["id"] .. [[" class="]] .. class .. [[">●</span>]]
+
+		end
+		progressDots = progressDots .. "</h2>"
+
+		env.content = env.content .. progressDots
+
+		return template.compileFile(mod.panelTemplatePath, env)
 
 	end
 
@@ -184,12 +211,51 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
+	-- DELETE WEBVIEW:
+	--------------------------------------------------------------------------------
+	function mod.delete()
+		mod.webview:delete()
+	end
+
+	--------------------------------------------------------------------------------
 	-- INJECT SCRIPT:
 	--------------------------------------------------------------------------------
 	function mod.injectScript(script)
 		if mod.webview then
 			mod.webview:evaluateJavaScript(script)
 		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- NEXT PRIORITY ID:
+	--------------------------------------------------------------------------------
+	local function nextPriorityID(currentPanelPriority)
+
+		local sortedPanels = mod._panels
+		table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
+
+		for i, v in ipairs(sortedPanels) do
+			if v["priority"] > currentPanelPriority then
+				return v["id"]
+			end
+		end
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- NEXT PANEL:
+	--------------------------------------------------------------------------------
+	function mod.nextPanel(currentPanelPriority)
+
+		currentPanelPriority = currentPanelPriority + 0.0000000000001
+
+		local nextPanelID = nextPriorityID(currentPanelPriority)
+		if nextPanelID then
+			mod.selectPanel(nextPanelID)
+		else
+			log.ef("There is no next panel...")
+		end
+
 	end
 
 	--------------------------------------------------------------------------------
@@ -205,10 +271,12 @@ local mod = {}
 			if v["id"] == id then
 				javascriptToInject = javascriptToInject .. [[
 					document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
+					document.getElementById('dot]] .. v["id"] .. [[').className = 'selected-dot';
 				]]
 			else
 				javascriptToInject = javascriptToInject .. [[
 					document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
+					document.getElementById('dot]] .. v["id"] .. [[').className = '';
 				]]
 			end
 		end
@@ -240,8 +308,8 @@ local plugin = {
 	id				= "core.welcome.manager",
 	group			= "core",
 	dependencies	= {
-		["core.menu.manager"]			= "menumanager",
-		["finalcutpro.hacks.shortcuts"] = "shortcuts",
+		["core.menu.manager"]						= "menumanager",
+		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",
 		["finalcutpro.preferences.scanfinalcutpro"] = "scanfinalcutpro",
 	}
 }
@@ -249,7 +317,10 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+	mod.setPanelTemplatePath(env:pathToAbsolute("html/template.htm"))
+
 	return mod
 end
 
