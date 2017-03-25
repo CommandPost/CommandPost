@@ -14,20 +14,19 @@ local PRIORITY = 8888888
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.timeline"] = "automation"
+local plugin = {
+	id				= "finalcutpro.menu.timeline.assignshortcuts",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.timeline"] = "timeline",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
-		return dependencies.automation:addMenu(PRIORITY, function() return i18n("assignShortcuts") end)
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
+	return dependencies.timeline:addMenu(PRIORITY, function() return i18n("assignShortcuts") end)
+end
 
 return plugin

@@ -233,33 +233,32 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.commands.fcpx"]	= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.browser.keywords",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.commands"]	= "fcpxCmds",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		for i=1, 9 do
-			deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
-				:activatedBy():ctrl():option():cmd(tostring(i))
-				:titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
-				:whenActivated(function() mod.restore(i) end)
+	for i=1, 9 do
+		deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
+			:activatedBy():ctrl():option():cmd(tostring(i))
+			:titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
+			:whenActivated(function() mod.restore(i) end)
 
-			deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
-				:activatedBy():ctrl():option():shift():cmd(tostring(i))
-				:titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
-				:whenActivated(function() mod.save(i) end)
-		end
-
-		return mod
+		deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
+			:activatedBy():ctrl():option():shift():cmd(tostring(i))
+			:titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
+			:whenActivated(function() mod.save(i) end)
 	end
+
+	return mod
+end
 
 return plugin

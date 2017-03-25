@@ -244,24 +244,23 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.commands.fcpx"]	= "fcpxCmds",
+local plugin = {
+	id				= "finalcutpro.browser.addnote",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.commands"]	= "fcpxCmds",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		deps.fcpxCmds:add("cpAddNoteToSelectedClip")
-			:whenActivated(function() mod.addNoteToSelectedClip() end)
+	deps.fcpxCmds:add("cpAddNoteToSelectedClip")
+		:whenActivated(function() mod.addNoteToSelectedClip() end)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

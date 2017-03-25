@@ -178,73 +178,72 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.commands.fcpx"] 					= "fcpxCmds",
-		["cp.plugins.finalcutpro.menu.timeline.highlightplayhead"]	= "prefs",
+local plugin = {
+	id				= "finalcutpro.browser.playhead",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.commands"] 					= "fcpxCmds",
+		["finalcutpro.menu.timeline.highlightplayhead"]	= "prefs",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		-- Menus
-		local section = deps.prefs:addSection(PRIORITY)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	-- Menus
+	local section = deps.prefs:addSection(PRIORITY)
 
-		section:addSeparator(1000)
-			:addSeparator(9000)
+	section:addSeparator(1000)
+		:addSeparator(9000)
 
-		local highlightColor = section:addMenu(2000, function() return i18n("highlightPlayheadColour") end)
-		:addItems(1000, function()
-			local displayHighlightColour = mod.getHighlightColor()
-			return {
-				{ title = i18n("red"), 		fn = function() mod.changeHighlightColor("Red") end, 		checked = displayHighlightColour == "Red" },
-				{ title = i18n("blue"), 	fn = function() mod.changeHighlightColor("Blue") end,		checked = displayHighlightColour == "Blue" },
-				{ title = i18n("green"), 	fn = function() mod.changeHighlightColor("Green") end, 		checked = displayHighlightColour == "Green"	},
-				{ title = i18n("yellow"), 	fn = function() mod.changeHighlightColor("Yellow") end, 	checked = displayHighlightColour == "Yellow" },
-				{ title = "-" },
-				{ title = i18n("custom"), 	fn = function() mod.changeHighlightColor("Custom") end, 	checked = displayHighlightColour == "Custom" },
-			}
-		end)
+	local highlightColor = section:addMenu(2000, function() return i18n("highlightPlayheadColour") end)
+	:addItems(1000, function()
+		local displayHighlightColour = mod.getHighlightColor()
+		return {
+			{ title = i18n("red"), 		fn = function() mod.changeHighlightColor("Red") end, 		checked = displayHighlightColour == "Red" },
+			{ title = i18n("blue"), 	fn = function() mod.changeHighlightColor("Blue") end,		checked = displayHighlightColour == "Blue" },
+			{ title = i18n("green"), 	fn = function() mod.changeHighlightColor("Green") end, 		checked = displayHighlightColour == "Green"	},
+			{ title = i18n("yellow"), 	fn = function() mod.changeHighlightColor("Yellow") end, 	checked = displayHighlightColour == "Yellow" },
+			{ title = "-" },
+			{ title = i18n("custom"), 	fn = function() mod.changeHighlightColor("Custom") end, 	checked = displayHighlightColour == "Custom" },
+		}
+	end)
 
-		local highlightShape = section:addMenu(3000, function() return i18n("highlightPlayheadShape") end)
-		:addItems(1000, function()
-			local shape = mod.getHighlightShape()
-			return {
-				{ title = i18n("rectangle"),	fn = function() mod.setHighlightShape(SHAPE_RECTANGLE) end,	checked = shape == SHAPE_RECTANGLE	},
-				{ title = i18n("circle"), 		fn = function() mod.setHighlightShape(SHAPE_CIRCLE) end, 	checked = shape == SHAPE_CIRCLE		},
-				{ title = i18n("diamond"),		fn = function() mod.setHighlightShape(SHAPE_DIAMOND) end, 	checked = shape == SHAPE_DIAMOND	},
-			}
-		end)
+	local highlightShape = section:addMenu(3000, function() return i18n("highlightPlayheadShape") end)
+	:addItems(1000, function()
+		local shape = mod.getHighlightShape()
+		return {
+			{ title = i18n("rectangle"),	fn = function() mod.setHighlightShape(SHAPE_RECTANGLE) end,	checked = shape == SHAPE_RECTANGLE	},
+			{ title = i18n("circle"), 		fn = function() mod.setHighlightShape(SHAPE_CIRCLE) end, 	checked = shape == SHAPE_CIRCLE		},
+			{ title = i18n("diamond"),		fn = function() mod.setHighlightShape(SHAPE_DIAMOND) end, 	checked = shape == SHAPE_DIAMOND	},
+		}
+	end)
 
-		local highlightTime = section:addMenu(4000, function() return i18n("highlightPlayheadTime") end)
-		:addItems(1000, function()
-			local highlightPlayheadTime = mod.getHighlightTime()
-			return {
-				{ title = i18n("one") .. " " .. i18n("secs", {count=1}),	fn = function() mod.setHighlightTime(1) end, 	checked = highlightPlayheadTime == 1 },
-				{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(2) end, 	checked = highlightPlayheadTime == 2 },
-				{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(3) end, 	checked = highlightPlayheadTime == 3 },
-				{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(4) end, 	checked = highlightPlayheadTime == 4 },
-				{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(5) end, 	checked = highlightPlayheadTime == 5 },
-				{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(6) end, 	checked = highlightPlayheadTime == 6 },
-				{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(7) end, 	checked = highlightPlayheadTime == 7 },
-				{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(8) end, 	checked = highlightPlayheadTime == 8 },
-				{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(9) end, 	checked = highlightPlayheadTime == 9 },
-				{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(10) end,	checked = highlightPlayheadTime == 10 },
-			}
-		end)
+	local highlightTime = section:addMenu(4000, function() return i18n("highlightPlayheadTime") end)
+	:addItems(1000, function()
+		local highlightPlayheadTime = mod.getHighlightTime()
+		return {
+			{ title = i18n("one") .. " " .. i18n("secs", {count=1}),	fn = function() mod.setHighlightTime(1) end, 	checked = highlightPlayheadTime == 1 },
+			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(2) end, 	checked = highlightPlayheadTime == 2 },
+			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(3) end, 	checked = highlightPlayheadTime == 3 },
+			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(4) end, 	checked = highlightPlayheadTime == 4 },
+			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(5) end, 	checked = highlightPlayheadTime == 5 },
+			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(6) end, 	checked = highlightPlayheadTime == 6 },
+			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(7) end, 	checked = highlightPlayheadTime == 7 },
+			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(8) end, 	checked = highlightPlayheadTime == 8 },
+			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(9) end, 	checked = highlightPlayheadTime == 9 },
+			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(10) end,	checked = highlightPlayheadTime == 10 },
+		}
+	end)
 
-		-- Commands
-		deps.fcpxCmds:add("cpHighlightBrowserPlayhead")
-			:groupedBy("browser")
-			:activatedBy():cmd():option():ctrl("h")
-			:whenActivated(mod.highlight)
+	-- Commands
+	deps.fcpxCmds:add("cpHighlightBrowserPlayhead")
+		:groupedBy("browser")
+		:activatedBy():cmd():option():ctrl("h")
+		:whenActivated(mod.highlight)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

@@ -151,21 +151,20 @@ end
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.actions.actionmanager"] = "actionmanager",
+local plugin = {
+	id				= "finalcutpro.menu.menuaction",
+	group			= "finalcutpro",
+	dependencies	= {
+		["core.action.manager"]	= "actionmanager",
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		mod.init(deps.actionmanager)
-		return mod
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	mod.init(deps.actionmanager)
+	return mod
+end
 
 return plugin

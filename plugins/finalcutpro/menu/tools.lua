@@ -38,47 +38,46 @@ local SETTING 					= "menubarToolsEnabled"
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.core.menu.manager"] 				= "manager",
-		["cp.plugins.core.preferences.panels.menubar"]	= "menubar",
+local plugin = {
+	id				= "finalcutpro.menu.tools",
+	group			= "finalcutpro",
+	dependencies	= {
+		["core.menu.manager"] 				= "manager",
+		["core.preferences.panels.menubar"]	= "prefs",
 	}
+}
+
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Create the Tools section:
 	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
+	local shortcuts = dependencies.manager.addSection(PRIORITY)
 
-		--------------------------------------------------------------------------------
-		-- Create the Tools section:
-		--------------------------------------------------------------------------------
-		local shortcuts = dependencies.manager.addSection(PRIORITY)
+	--------------------------------------------------------------------------------
+	-- Disable the section if the Tools option is disabled:
+	--------------------------------------------------------------------------------
+	shortcuts:setDisabledFn(isSectionDisabled)
 
-		--------------------------------------------------------------------------------
-		-- Disable the section if the Tools option is disabled:
-		--------------------------------------------------------------------------------
-		shortcuts:setDisabledFn(isSectionDisabled)
-
-		--------------------------------------------------------------------------------
-		-- Add the separator and title for the section:
-		--------------------------------------------------------------------------------
-		shortcuts:addSeparator(0)
-			:addItem(1, function()
-				return { title = string.upper(i18n("tools")) .. ":", disabled = true }
-			end)
-
-		--------------------------------------------------------------------------------
-		-- Add to General Preferences Panel:
-		--------------------------------------------------------------------------------
-		dependencies.menubar:addCheckbox(PREFERENCES_PRIORITY, function()
-			return { title = i18n("showTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
+	--------------------------------------------------------------------------------
+	-- Add the separator and title for the section:
+	--------------------------------------------------------------------------------
+	shortcuts:addSeparator(0)
+		:addItem(1, function()
+			return { title = string.upper(i18n("tools")) .. ":", disabled = true }
 		end)
 
-		return shortcuts
-	end
+	--------------------------------------------------------------------------------
+	-- Add to General Preferences Panel:
+	--------------------------------------------------------------------------------
+	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY, function()
+		return { title = i18n("showTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
+	end)
+
+	return shortcuts
+end
 
 return plugin

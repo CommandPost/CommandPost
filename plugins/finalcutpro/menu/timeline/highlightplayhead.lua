@@ -14,20 +14,19 @@ local PRIORITY = 30000
 --------------------------------------------------------------------------------
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
-local plugin = {}
-
-	--------------------------------------------------------------------------------
-	-- DEPENDENCIES:
-	--------------------------------------------------------------------------------
-	plugin.dependencies = {
-		["cp.plugins.finalcutpro.menu.timeline"] = "timeline"
+local plugin = {
+	id				= "finalcutpro.menu.timeline.highlightplayhead",
+	group			= "finalcutpro",
+	dependencies	= {
+		["finalcutpro.menu.timeline"] = "timeline"
 	}
+}
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
-		return dependencies.timeline:addMenu(PRIORITY, function() return i18n("highlightPlayhead") end)
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
+	return dependencies.timeline:addMenu(PRIORITY, function() return i18n("highlightPlayhead") end)
+end
 
 return plugin
