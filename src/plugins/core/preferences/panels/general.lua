@@ -9,7 +9,9 @@
 --- General Preferences Panel
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsGeneral")
 
@@ -21,12 +23,16 @@ local webview									= require("hs.webview")
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -102,12 +108,14 @@ local mod = {}
 
 			local uiType = v["uiType"]
 
+
+
 			if uiType == generate.UI_CHECKBOX then
 				result = result .. "\n" .. generate.checkbox(data)
 			elseif uiType == generate.UI_HEADING then
 				result = result .. "\n" .. generate.heading(data)
 			elseif uiType == generate.UI_BUTTON then
-				result = result .. "\n" .. generate.button(data)
+				result = result .. "\n" .. generate.button(data, nil, v["customWidth"])
 			elseif uiType == generate.UI_DROPDOWN then
 				result = result .. "\n" .. generate.dropdown(v["title"], data)
 
@@ -178,7 +186,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	-- ADD BUTTON:
 	--------------------------------------------------------------------------------
-	function mod:addButton(priority, itemFn)
+	function mod:addButton(priority, itemFn, customWidth)
 
 		priority = priority or DEFAULT_PRIORITY
 
@@ -186,6 +194,7 @@ local mod = {}
 			priority = priority,
 			itemFn = itemFn,
 			uiType = generate.UI_BUTTON,
+			customWidth = customWidth,
 		}
 
 		return self
@@ -211,7 +220,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.preferences.panels.general",

@@ -9,7 +9,9 @@
 --- Command Set Panel Welcome Screen.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("commandset")
 
@@ -25,7 +27,9 @@ local generate									= require("cp.web.generate")
 local template									= require("cp.template")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -102,11 +106,13 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.welcome.panels.commandset",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",

@@ -5,25 +5,35 @@
 --------------------------------------------------------------------------------
 
 --- A `action` which will trigger an Final Cut Pro menu with a matching path, if available/enabled.
---- The plugin registers itself with the `cp.plugins.core.actions.actionmanager`.
+---------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+-------------------------------------------------------------------------------- registers itself with the `cp.plugins.core.actions.actionmanager`.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("menuaction")
 
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local fnutils			= require("hs.fnutils")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local ID				= "menu"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -67,7 +77,7 @@ end
 ---  * None
 ---
 function mod.setEnabled(value)
-	metadata.set("menuActionEnabled", value)
+	config.set("menuActionEnabled", value)
 	mod._manager.refresh()
 end
 
@@ -82,7 +92,7 @@ end
 ---  * None
 ---
 function mod.isEnabled()
-	return metadata.get("menuActionEnabled", true)
+	return config.get("menuActionEnabled", true)
 end
 
 --- cp.plugins.finalcutpro.menu.menuaction.toggleEnabled() -> none
@@ -149,7 +159,9 @@ function mod.execute(params)
 end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.menu.menuaction",

@@ -9,7 +9,9 @@
 --- Scan Final Cut Pro Panel Welcome Screen.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("scanfinalcutpro")
 
@@ -25,7 +27,9 @@ local template									= require("cp.template")
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -93,11 +97,13 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.welcome.panels.scanfinalcutpro",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",
 		["finalcutpro.preferences.scanfinalcutpro"] = "scanfinalcutproPrefs",

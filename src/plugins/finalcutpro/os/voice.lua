@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log									= require("hs.logger").new("voice")
 
@@ -14,15 +16,19 @@ local speech   								= require("hs.speech")
 
 local fcp									= require("cp.finalcutpro")
 local dialog 								= require("cp.dialog")
-local metadata								= require("cp.config")
+local config								= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY		= 6000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -30,11 +36,11 @@ local mod = {}
 	mod.commandsByTitle = {}
 
 	function mod.isEnabled()
-		return metadata.get("enableVoiceCommands", false)
+		return config.get("enableVoiceCommands", false)
 	end
 
 	function mod.setEnabled(value)
-		metadata.set("enableVoiceCommands", value)
+		config.set("enableVoiceCommands", value)
 		mod.update()
 	end
 
@@ -43,11 +49,11 @@ local mod = {}
 	end
 
 	function mod.isAnnouncementsEnabled()
-		return metadata.get("voiceCommandEnableAnnouncements", false)
+		return config.get("voiceCommandEnableAnnouncements", false)
 	end
 
 	function mod.setAnnouncementsEnabled(value)
-		metadata.set("voiceCommandEnableAnnouncements", value)
+		config.set("voiceCommandEnableAnnouncements", value)
 	end
 
 	function mod.toggleAnnouncementsEnabled()
@@ -55,11 +61,11 @@ local mod = {}
 	end
 
 	function mod.isVisualAlertsEnabled()
-		return metadata.get("voiceCommandEnableVisualAlerts", false)
+		return config.get("voiceCommandEnableVisualAlerts", false)
 	end
 
 	function mod.setVisualAlertsEnabled(value)
-		metadata.set("voiceCommandEnableVisualAlerts", value)
+		config.set("voiceCommandEnableVisualAlerts", value)
 	end
 
 	function mod.toggleVisualAlertsEnabled()
@@ -223,7 +229,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.os.voice",

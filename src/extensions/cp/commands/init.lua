@@ -1,11 +1,31 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                               C O M M A N D S                              --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.commands ===
+---
+--- Commands Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local command					= require("cp.commands.command")
 local timer						= require("hs.timer")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local commands = {}
 
 commands._groups = {}
 
---- hs.commands.groupIds() -> table
+--- cp.commands.groupIds() -> table
 --- Function
 --- Returns an array of IDs of command groups which have been created.
 ---
@@ -23,7 +43,7 @@ function commands.groupIds()
 	return ids
 end
 
---- hs.commands.group(id) -> cp.command or nil
+--- cp.commands.group(id) -> cp.command or nil
 --- Function
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 ---
@@ -37,7 +57,7 @@ function commands.group(id)
 	return commands._groups[id]
 end
 
---- hs.commands:new(id) -> cp.commands
+--- cp.commands:new(id) -> cp.commands
 --- Method
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 
@@ -58,7 +78,7 @@ function commands:new(id)
 	}
 	setmetatable(o, self)
 	self.__index = self
-	
+
 	commands._groups[id] = o
 	return o
 end

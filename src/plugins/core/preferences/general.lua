@@ -5,24 +5,30 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("preferences")
 
 local application		= require("hs.application")
 local console			= require("hs.console")
 
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -52,7 +58,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Trash all Script Settings:
 		--------------------------------------------------------------------------------
-		metadata.reset()
+		config.reset()
 
 		--------------------------------------------------------------------------------
 		-- Restart Final Cut Pro if running:
@@ -78,8 +84,8 @@ local mod = {}
 	-- TOGGLE DEVELOPER MODE:
 	--------------------------------------------------------------------------------
 	function mod.toggleDeveloperMode()
-		local debugMode = metadata.get("debugMode")
-		metadata.set("debugMode", not debugMode)
+		local debugMode = config.get("debugMode")
+		config.set("debugMode", not debugMode)
 		console.clearConsole()
 		hs.reload()
 	end
@@ -88,8 +94,8 @@ local mod = {}
 	-- TOGGLE DISPLAY MENUBAR AS ICON:
 	--------------------------------------------------------------------------------
 	function mod.toggleDisplayMenubarAsIcon()
-		local displayMenubarAsIcon = metadata.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-		metadata.set("displayMenubarAsIcon", not displayMenubarAsIcon)
+		local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+		config.set("displayMenubarAsIcon", not displayMenubarAsIcon)
 		mod.menuManager:updateMenubarIcon()
 	end
 
@@ -97,14 +103,14 @@ local mod = {}
 	-- GET DEVELOPER MODE VALUE:
 	--------------------------------------------------------------------------------
 	function mod.getDeveloperMode()
-		return metadata.get("debugMode")
+		return config.get("debugMode")
 	end
 
 	--------------------------------------------------------------------------------
 	-- GET DISPLAY MENUBAR AS ICON VALUE:
 	--------------------------------------------------------------------------------
 	function mod.getDisplayMenubarAsIcon()
-		return metadata.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+		return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
 	end
 
 	--------------------------------------------------------------------------------
@@ -116,7 +122,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
---- THE PLUGIN:
+--
+-- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.preferences.general",
@@ -160,11 +168,11 @@ local plugin = {
 
 		:addButton(52, function()
 			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
-		end)
+		end, 150)
 
 		:addButton(53, function()
 			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
-		end)
+		end, 150)
 
 		--------------------------------------------------------------------------------
 		-- Setup Menubar Preferences Panel:

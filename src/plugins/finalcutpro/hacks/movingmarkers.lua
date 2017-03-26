@@ -5,28 +5,34 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("movingmarkers")
 
 local application				= require("hs.application")
 local fs						= require("hs.fs")
 
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 local fcp						= require("cp.finalcutpro")
 local dialog					= require("cp.dialog")
 local plist						= require("cp.plist")
 local tools						= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 					= 5
 local DEFAULT_VALUE 			= false
 local EVENT_DESCRIPTION_PATH 	= "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -103,7 +109,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.hacks.movingmarkers",

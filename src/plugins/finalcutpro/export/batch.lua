@@ -5,21 +5,27 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local dialog		= require("cp.dialog")
 local fcp 			= require("cp.finalcutpro")
 local just			= require("cp.just")
-local metadata		= require("cp.config")
+local config		= require("cp.config")
 local tools			= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 2000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -151,13 +157,13 @@ local mod = {}
 			end
 		end
 
-		local batchExportDestinationPreset = metadata.get("batchExportDestinationPreset")
+		local batchExportDestinationPreset = config.get("batchExportDestinationPreset")
 		local defaultItems = {}
 		if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
 
 		local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
 		if result and #result > 0 then
-			metadata.set("batchExportDestinationPreset", result[1])
+			config.set("batchExportDestinationPreset", result[1])
 		end
 	end
 
@@ -168,7 +174,7 @@ local mod = {}
 		local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
 		if result == false then return end
 
-		metadata.set("batchExportDestinationFolder", result)
+		config.set("batchExportDestinationFolder", result)
 	end
 
 	--------------------------------------------------------------------------------
@@ -179,7 +185,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Set Custom Export Path (or Default to Desktop):
 		--------------------------------------------------------------------------------
-		local batchExportDestinationFolder = metadata.get("batchExportDestinationFolder")
+		local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
 		local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
 		local exportPath = "~/Desktop"
 		if batchExportDestinationFolder ~= nil then
@@ -195,7 +201,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Destination Preset:
 		--------------------------------------------------------------------------------
-		local destinationPreset = metadata.get("batchExportDestinationPreset")
+		local destinationPreset = config.get("batchExportDestinationPreset")
 		if destinationPreset == nil then
 
 			destinationPreset = fcp:menuBar():findMenuUI("File", "Share", function(menuItem)
@@ -219,7 +225,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Replace Existing Files Option:
 		--------------------------------------------------------------------------------
-		local replaceExisting = metadata.get("batchExportReplaceExistingFiles")
+		local replaceExisting = config.get("batchExportReplaceExistingFiles")
 
 		--------------------------------------------------------------------------------
 		-- Delete All Highlights:
@@ -287,12 +293,14 @@ local mod = {}
 	-- TOGGLE BATCH EXPORT REPLACE EXISTING FILES:
 	--------------------------------------------------------------------------------
 	function mod.toggleReplaceExistingFiles()
-		local batchExportReplaceExistingFiles = metadata.get("batchExportReplaceExistingFiles")
-		metadata.set("batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
+		local batchExportReplaceExistingFiles = config.get("batchExportReplaceExistingFiles")
+		config.set("batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.export.batch",
@@ -323,7 +331,7 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset,	disabled = not fcpxRunning },
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = metadata.get("batchExportReplaceExistingFiles") },
+			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = config.get("batchExportReplaceExistingFiles") },
 		}
 	end)
 

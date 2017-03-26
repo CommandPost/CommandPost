@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log			= require("hs.logger").new("shortcuts")
 
@@ -13,16 +15,20 @@ local fs			= require("hs.fs")
 
 local fcp			= require("cp.finalcutpro")
 local dialog		= require("cp.dialog")
-local metadata		= require("cp.config")
+local config		= require("cp.config")
 local tools			= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 		= 5
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -35,7 +41,7 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f '" .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
+		local executeCommand = "cp -f '" .. config.scriptPath .. "/cp/resources/plist/10.3/new/"
 
 		local executeStrings = {
 			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",
@@ -76,7 +82,7 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f '" .. metadata.scriptPath .. "/cp/resources/plist/10.3/old/"
+		local executeCommand = "cp -f '" .. config.scriptPath .. "/cp/resources/plist/10.3/old/"
 
 		local executeStrings = {
 			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",
@@ -207,16 +213,16 @@ local mod = {}
 	end
 
 	function mod.isEditable()
-		return metadata.get("enableHacksShortcutsInFinalCutPro", false)
+		return config.get("enableHacksShortcutsInFinalCutPro", false)
 	end
 
 	function mod.setEditable(enabled, skipFCPXupdate)
 		local editable = mod.isEditable()
 		if editable ~= enabled then
-			metadata.set("enableHacksShortcutsInFinalCutPro", enabled)
+			config.set("enableHacksShortcutsInFinalCutPro", enabled)
 			if not skipFCPXUpdate then
 				if not updateFCPXCommands(enabled) then
-					metadata.set("enableHacksShortcutsInFinalCutPro", not enabled)
+					config.set("enableHacksShortcutsInFinalCutPro", not enabled)
 				end
 			end
 		end
@@ -262,23 +268,25 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
 		--------------------------------------------------------------------------------
-		local lastVersion = metadata.get("lastScriptVersion")
+		local lastVersion = config.get("lastScriptVersion")
 		if lastVersion == nil then
 			mod.setEditable(false)
-		elseif tonumber(lastVersion) < tonumber(metadata.scriptVersion) then
+		elseif tonumber(lastVersion) < tonumber(config.scriptVersion) then
 			if mod.isEditable() then
 				dialog.displayMessage(i18n("newKeyboardShortcuts"))
 				updateFCPXCommands(true)
 			end
 		end
 
-		metadata.set("lastScriptVersion", metadata.scriptVersion)
+		config.set("lastScriptVersion", config.scriptVersion)
 
 		mod.update()
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.hacks.shortcuts",

@@ -43,11 +43,19 @@ function mod.getAutoRenderDelay()
 	return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 end
 
---- The module
+---------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 local PRIORITY = 2000
 
---- The Plugin
+---------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.preferences",
 	group = "finalcutpro",

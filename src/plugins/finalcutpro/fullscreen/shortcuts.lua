@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("fullscreenShortcuts")
 
@@ -13,18 +15,22 @@ local eventtap							= require("hs.eventtap")
 local timer								= require("hs.timer")
 
 local fcp								= require("cp.finalcutpro")
-local metadata							= require("cp.config")
+local config							= require("cp.config")
 local shortcut							= require("cp.commands.shortcut")
 local tools								= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 10000
 local FULLSCREEN_KEYS = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSelectionEnd", "AnchorWithSelectedMedia", "AnchorWithSelectedMediaAudioBacktimed", "InsertMedia", "AppendWithSelectedMedia" } -- Supported Full Screen Keys
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -32,14 +38,14 @@ local mod = {}
 	-- IS ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.isEnabled()
-		return metadata.get("enableShortcutsDuringFullscreenPlayback", false)
+		return config.get("enableShortcutsDuringFullscreenPlayback", false)
 	end
 
 	--------------------------------------------------------------------------------
 	-- SET ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.setEnabled(enabled)
-		metadata.set("enableShortcutsDuringFullscreenPlayback", enabled)
+		config.set("enableShortcutsDuringFullscreenPlayback", enabled)
 		mod.update()
 	end
 
@@ -183,7 +189,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.fullscreen.shortcuts",

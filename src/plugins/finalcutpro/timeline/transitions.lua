@@ -9,7 +9,7 @@ local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
 local log				= require("hs.logger").new("transitions")
 
@@ -31,12 +31,12 @@ function action.id()
 end
 
 function action.setEnabled(value)
-	metadata.set(action.id().."ActionEnabled", value)
+	config.set(action.id().."ActionEnabled", value)
 	action._manager.refresh()
 end
 
 function action.isEnabled()
-	return metadata.get(action.id().."ActionEnabled", true)
+	return config.get(action.id().."ActionEnabled", true)
 end
 
 function action.toggleEnabled()
@@ -80,21 +80,25 @@ function action.reset()
 	action._choices = nil
 end
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return metadata.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
+	return config.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	metadata.set(fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
+	config.set(fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
 end
 
 function mod.getTransitions()
-	return metadata.get(fcp:getCurrentLanguage() .. ".allTransitions")
+	return config.get(fcp:getCurrentLanguage() .. ".allTransitions")
 end
 
 --------------------------------------------------------------------------------
@@ -359,16 +363,20 @@ function mod.updateTransitionsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.set(currentLanguage .. ".allTransitions", allTransitions)
-	metadata.set(currentLanguage .. ".transitionsListUpdated", true)
+	config.set(currentLanguage .. ".allTransitions", allTransitions)
+	config.set(currentLanguage .. ".transitionsListUpdated", true)
 	action.reset()
 end
 
 function mod.isTransitionsListUpdated()
-	return metadata.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
+	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local PRIORITY = 2000
 
 local plugin = {

@@ -5,31 +5,37 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("iMessage")
 
 local messages									= require("hs.messages")
 
 local dialog									= require("cp.dialog")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 2000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
 	function mod.isEnabled()
-		return metadata.get("iMessageNotificationsEnabled", false)
+		return config.get("iMessageNotificationsEnabled", false)
 	end
 
 	function mod.setEnabled(value)
-		metadata.set("iMessageNotificationsEnabled", value)
+		config.set("iMessageNotificationsEnabled", value)
 		mod.update(true)
 	end
 
@@ -38,11 +44,11 @@ local mod = {}
 	end
 
 	function mod.getTarget()
-		return metadata.get("iMessageTarget", nil)
+		return config.get("iMessageTarget", nil)
 	end
 
 	function mod.setTarget(value)
-		metadata.set("iMessageTarget", value)
+		config.set("iMessageTarget", value)
 	end
 
 	function mod.sendNotification(message)
@@ -88,7 +94,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.notifications.imessage",

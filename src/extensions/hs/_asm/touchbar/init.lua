@@ -18,7 +18,11 @@ end
 
 -- if the userdata table was not created (i.e. we're on an unsupported machine), go ahead
 -- and stick the "wrapped" methods into an empty table... it will be garbage collected after
--- the module is loaded, so no big deal.
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+-------------------------------------------------------------------------------- is loaded, so no big deal.
 local objectMT     = hs.getObjectMetatable(USERDATA_TAG) or {}
 local mouse        = require("hs.mouse")
 local screen       = require("hs.screen")

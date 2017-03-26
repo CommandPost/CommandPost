@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("touchbar")
 
@@ -15,10 +17,12 @@ local touchbar 									= require("hs._asm.touchbar")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY				= 1000
 
@@ -29,7 +33,9 @@ local LOCATION_TIMELINE		= "TimelineTopCentre"
 local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -38,19 +44,19 @@ local mod = {}
 	end
 
 	function mod.getLastLocation()
-		metadata.get("lastTouchBarLocation")
+		config.get("lastTouchBarLocation")
 	end
 
 	function mod.setLastLocation(value)
-		metadata.set("lastTouchBarLocation", value)
+		config.set("lastTouchBarLocation", value)
 	end
 
 	function mod.getLocation()
-		return metadata.get("displayTouchBarLocation", DEFAULT_VALUE)
+		return config.get("displayTouchBarLocation", DEFAULT_VALUE)
 	end
 
 	function mod.setLocation(value)
-		metadata.set("displayTouchBarLocation", value)
+		config.set("displayTouchBarLocation", value)
 		mod.update()
 	end
 
@@ -101,11 +107,11 @@ local mod = {}
 	end
 
 	function mod.isEnabled()
-		return metadata.get("displayTouchBar", false)
+		return config.get("displayTouchBar", false)
 	end
 
 	function mod.setEnabled(value)
-		metadata.set("displayTouchBar", value)
+		config.set("displayTouchBar", value)
 		mod.update()
 	end
 
@@ -222,7 +228,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.os.touchbar",

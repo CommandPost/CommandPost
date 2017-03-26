@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("sharedClipboard")
 
@@ -17,11 +19,13 @@ local fs										= require("hs.fs")
 local fcp										= require("cp.finalcutpro")
 local dialog									= require("cp.dialog")
 local plist										= require("cp.plist")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local TOOLS_PRIORITY		= 2000
 local OPTIONS_PRIORITY		= 2000
@@ -29,7 +33,9 @@ local OPTIONS_PRIORITY		= 2000
 local HISTORY_EXTENSION		= ".sharedClipboard"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -41,14 +47,14 @@ local mod = {}
 	-- IS ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.isEnabled()
-		return metadata.get("enableSharedClipboard", false)
+		return config.get("enableSharedClipboard", false)
 	end
 
 	--------------------------------------------------------------------------------
 	-- SET ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.setEnabled(value)
-		metadata.set("enableSharedClipboard", value)
+		config.set("enableSharedClipboard", value)
 		mod.update()
 	end
 
@@ -63,14 +69,14 @@ local mod = {}
 	-- GET ROOT PATH:
 	--------------------------------------------------------------------------------
 	function mod.getRootPath()
-		return metadata.get("sharedClipboardPath", nil)
+		return config.get("sharedClipboardPath", nil)
 	end
 
 	--------------------------------------------------------------------------------
 	-- SET ROOT PATH:
 	--------------------------------------------------------------------------------
 	function mod.setRootPath(path)
-		metadata.set("sharedClipboardPath", path)
+		config.set("sharedClipboardPath", path)
 	end
 
 	--------------------------------------------------------------------------------
@@ -381,7 +387,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.clipboard.shared",

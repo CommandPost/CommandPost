@@ -8,7 +8,7 @@ local mouse						= require("hs.mouse")
 
 local dialog					= require("cp.dialog")
 local fcp						= require("cp.finalcutpro")
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 
 local log						= require("hs.logger").new("playhead")
 
@@ -16,16 +16,20 @@ local log						= require("hs.logger").new("playhead")
 
 local PRIORITY = 1000
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 local mod = {}
 
 function mod.isScrollingTimelineActive()
-	return metadata.get("scrollingTimelineActive", false)
+	return config.get("scrollingTimelineActive", false)
 end
 
 function mod.setScrollingTimelineActive(active)
-	metadata.set("scrollingTimelineActive", active)
+	config.set("scrollingTimelineActive", active)
 	mod.update()
 end
 
@@ -196,11 +200,11 @@ end
 --------------------------------------------------------------------------------
 
 function mod.isPlayheadLocked()
-	return metadata.get("lockTimelinePlayhead", false)
+	return config.get("lockTimelinePlayhead", false)
 end
 
 function mod.setPlayheadLocked(locked)
-	metadata.set("lockTimelinePlayhead", locked)
+	config.set("lockTimelinePlayhead", locked)
 	mod.update()
 end
 
@@ -227,7 +231,11 @@ function mod.togglePlayheadLock()
 	end
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.playhead",
 	group = "finalcutpro",

@@ -5,12 +5,16 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local dialog = {}
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("dialog")
 
@@ -25,7 +29,7 @@ local inspect									= require("hs.inspect")
 
 local fcp										= require("cp.finalcutpro")
 local tools										= require("cp.tools")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 
 --------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:
@@ -39,7 +43,7 @@ local function as(appleScript)
 		set okButton to "]] .. i18n("ok") .. [["
 		set cancelButton to "]] .. i18n("cancel") .. [["
 
-		set iconPath to ("]] .. metadata.iconPath .. [[" as POSIX file)
+		set iconPath to ("]] .. config.iconPath .. [[" as POSIX file)
 
 		set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [[\n\n"
 		set errorMessageEnd to "\n\n]] .. i18n("commonErrorMessageEnd") .. [["
@@ -264,7 +268,7 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 		set listOptions to ]] .. inspect(listOptions) .. "\n\n" .. [[
 		set defaultItems to ]] .. inspect(defaultItems) .. "\n\n" .. [[
 
-		return choose from list listOptions with title "]] .. metadata.scriptName .. [[" with prompt dialogPrompt default items defaultItems
+		return choose from list listOptions with title "]] .. config.scriptName .. [[" with prompt dialogPrompt default items defaultItems
 	]]
 
 	return as(appleScript)
