@@ -116,7 +116,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Keyboard Shortcuts:
 		--------------------------------------------------------------------------------
-		local result = [[<h3>Keyboard Shortcuts:</h3><div id="keyboardShortcuts">]]
+		local result = [[<div id="keyboardShortcuts">]]
 
 		table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
 		for i, v in ipairs(mod._uiItems) do

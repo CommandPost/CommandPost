@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.welcome.panels.complete  ===
+--- === finalcutpro.welcome.panels.complete  ===
 ---
 --- Welcome Screen Completion Screen.
 
@@ -99,7 +99,7 @@ local mod = {}
 -- THE PLUGIN:
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.welcome.panels.finalcutpromissing",
+	id				= "finalcutpro.welcome.panels.finalcutpromissing",
 	group			= "core",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",

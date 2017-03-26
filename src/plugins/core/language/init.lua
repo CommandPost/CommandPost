@@ -132,7 +132,11 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addDropdown(2, i18n("language"), getCommandPostLanguagesMenu)
+	deps.general:addHeading(40, function()
+			return { title = "<br />Language:" }
+		end)
+
+	:addDropdown(41, i18n("language"), getCommandPostLanguagesMenu)
 
 	return mod
 end
