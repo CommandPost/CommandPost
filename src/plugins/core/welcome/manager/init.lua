@@ -15,22 +15,13 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("welcome")
 
-local application								= require("hs.application")
-local drawing									= require("hs.drawing")
-local geometry									= require("hs.geometry")
-local inspect									= require("hs.inspect")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
-local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
-local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
 local template									= require("cp.template")
-local tools										= require("cp.tools")
-
-local plugins									= require("cp.plugins")
 
 --------------------------------------------------------------------------------
 --
