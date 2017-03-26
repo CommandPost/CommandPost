@@ -73,14 +73,25 @@ mod.status = {
 
 mod.SETTINGS_DISABLED 	= "plugins.disabled"
 
-local function cachePlugin(id, plugin, status)
-	if not mod.CACHE[id] then
-		local info = {plugin = plugin, status = status or mod.status.loaded}
+local function cachePlugin(id, plugin, status, scriptFile)
+	local existing = mod.CACHE[id]
+	if not existing then
+		local info = {
+			plugin		= plugin,
+			status		= status or mod.status.loaded,
+			scriptFile	= scriptFile,
+		}
 		mod.CACHE[id] = info
 		mod.PLUGINS[#mod.PLUGINS + 1] = plugin
 		mod.IDS[#mod.IDS + 1] = id
+		
+		log.df("Loaded plugin: %s", plugin.id)
 		return info
 	else
+		log.df([[Duplicate plugin with ID of '%s':
+				 			 existing: %s
+							duplicate: %s]], 
+				plugin.id, existing.scriptFile, scriptFile)
 		return nil
 	end
 end
@@ -408,12 +419,7 @@ function mod.loadSimplePlugin(pluginPath)
 				log.ef("The plugin at '%s' does not have an ID.", pluginPath)
 				return nil
 			else
-				local info = cachePlugin(plugin.id, plugin, mod.status.loaded)
-				if info then
-					log.df("Loaded plugin: %s", plugin.id)
-				else
-					log.df("Duplicate plugin for '%s': %s", plugin.id, pluginPath)
-				end
+				local info = cachePlugin(plugin.id, plugin, mod.status.loaded, pluginPath)
 				return info
 			end
 		end
