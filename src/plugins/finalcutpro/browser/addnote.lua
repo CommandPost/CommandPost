@@ -141,7 +141,7 @@ local mod = {}
 		-- If the 'Notes' column is missing then error:
 		--------------------------------------------------------------------------------
 		if notesFieldID == nil then
-			errorMessage(config.scriptName .. " could not find the Notes Column." .. errorFunction)
+			errorMessage(config.appName .. " could not find the Notes Column." .. errorFunction)
 			return
 		end
 

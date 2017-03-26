@@ -40,7 +40,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 mod.defaultWidth 		= 365
 mod.defaultHeight 		= 438
-mod.defaultTitle 		= config.scriptName .. " " .. i18n("feedback")
+mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
 mod.quitOnComplete		= false
 
 --------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ local function generateHTML()
 
 	env.i18n = i18n
 
-	env.scriptVersion = config.scriptVersion
+	env.appVersion = config.appVersion
 
 	env.defaultUserFullName = i18n("fullName")
 	env.defaultUserEmail = i18n("emailAddress")

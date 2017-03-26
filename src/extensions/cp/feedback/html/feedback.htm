@@ -116,7 +116,7 @@
 			<div class="user-details"><input id="fullname" type="text" name="name" value="{{ userFullName }}"> <input id="email" type="text" name="email" value="{{ userEmail }}"></div>
 			<div class="bottom-buttons"><a class="button" href="commandpost://feedback?action=cancel">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
 			<!-- Hidden Fields: -->
-			<input type="hidden" name="script-version" value="{{ scriptVersion }}">
+			<input type="hidden" name="script-version" value="{{ appVersion }}">
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
 			<div id="console-output" hidden>{{ consoleOutput }}</div>
 			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
