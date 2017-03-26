@@ -96,7 +96,7 @@ local plugin = {
 		["finalcutpro.timeline.generators"]			= "generators",
 		["finalcutpro.timeline.titles"]				= "titles",
 		["finalcutpro.timeline.transitions"]		= "transitions",
-		["core.preferences.panels.general"]			= "general",
+		["finalcutpro.preferences.panels.finalcutpro"]			= "finalcutpro",
 	}
 }
 
@@ -107,11 +107,11 @@ local plugin = {
 
 		mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-		deps.general:addHeading(30, function()
-			return { title = "<br />Scan Applications:" }
+		deps.finalcutpro:addHeading(10, function()
+			return { title = "Setup:" }
 		end)
 
-		:addButton(31, function()
+		:addButton(11, function()
 			return { title = i18n("scanFinalCutPro"),	fn = mod.scanFinalCutPro }
 		end)
 

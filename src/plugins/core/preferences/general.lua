@@ -20,7 +20,6 @@ local dialog			= require("cp.dialog")
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
-local DEFAULT_ENABLE_PROXY_MENU_ICON 	= false
 
 --------------------------------------------------------------------------------
 -- THE MODULE:
@@ -86,15 +85,6 @@ local mod = {}
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE ENABLE PROXY MENU ICON:
-	--------------------------------------------------------------------------------
-	function mod.toggleEnableProxyMenuIcon()
-		local enableProxyMenuIcon = metadata.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
-		metadata.set("enableProxyMenuIcon", not enableProxyMenuIcon)
-		mod.menuManager:updateMenubarIcon()
-	end
-
-	--------------------------------------------------------------------------------
 	-- TOGGLE DISPLAY MENUBAR AS ICON:
 	--------------------------------------------------------------------------------
 	function mod.toggleDisplayMenubarAsIcon()
@@ -108,13 +98,6 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	function mod.getDeveloperMode()
 		return metadata.get("debugMode")
-	end
-
-	--------------------------------------------------------------------------------
-	-- GET ENABLE PROXY MENU ICON VALUE:
-	--------------------------------------------------------------------------------
-	function mod.getEnableProxyMenuIcon()
-		return metadata.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 	end
 
 	--------------------------------------------------------------------------------
@@ -196,14 +179,6 @@ local plugin = {
 
 		:addHeading(24, function()
 			return { title = "<br />Sections:" }
-		end)
-
-		:addHeading(30, function()
-			return { title = "<br />Final Cut Pro:" }
-		end)
-
-		:addCheckbox(31, function()
-			return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
 		end)
 
 	end
