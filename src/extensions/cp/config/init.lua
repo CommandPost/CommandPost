@@ -90,15 +90,6 @@ end
 --- Path to where the Extensions & Plugins folders are stored.
 mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..") .. "/"
 
---- cp.config.pluginPath
---- Constant
---- Path to active Plugins Folder
-if fs.pathToAbsolute(mod.basePath .. "Plugins/") then
-	mod.pluginPath			= mod.basePath .. "Plugins/"
-else
-	mod.pluginPath			= mod.basePath .. "plugins/"
-end
-
 --- cp.config.iconPath
 --- Constant
 --- Path to the Application Icon
