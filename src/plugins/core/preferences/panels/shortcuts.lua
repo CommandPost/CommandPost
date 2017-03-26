@@ -22,7 +22,6 @@ local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
 local config									= require("cp.config")
-local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
 --
@@ -38,49 +37,76 @@ local DEFAULT_PRIORITY 							= 0
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod._uiItems = {}
+--------------------------------------------------------------------------------
+-- SPLIT STRING:
+--------------------------------------------------------------------------------
+local function split(str, pat)
+	local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+	local fpat = "(.-)" .. pat
+	local last_end = 1
+	local s, e, cap = str:find(fpat, 1)
+	while s do
+	  if s ~= 1 or cap ~= "" then
+		 table.insert(t,cap)
+	  end
+	  last_end = e+1
+	  s, e, cap = str:find(fpat, last_end)
+	end
+	if last_end <= #str then
+	  cap = str:sub(last_end)
+	  table.insert(t, cap)
+	end
+	return t
+end
 
 --------------------------------------------------------------------------------
 -- CONTROLLER CALLBACK:
 --------------------------------------------------------------------------------
 local function controllerCallback(message)
 
-	--log.df("Callback Result: %s", hs.inspect(message))
+	local action = message["body"][1]
 
-	local title = message["body"][1]
-	local result = message["body"][2]
+	if action == "updateShortcut" then
 
-	for i, v in ipairs(mod._uiItems) do
-		local data = v["itemFn"]()
-		if data["title"] == title then
-			if type(data["fn"]) == "function" then
-				--------------------------------------------------------------------------------
-				-- Trigger Function:
-				--------------------------------------------------------------------------------
-				data["fn"]()
-				return
-			else
-				log.df("Failed to trigger Callback Function.")
-				return
-			end
+		--------------------------------------------------------------------------------
+		-- Values from Callback:
+		--------------------------------------------------------------------------------
+		local commandFunction 	= message["body"][2]
+		local commandModifier 	= message["body"][3]
+		local commandShortcut 	= message["body"][4]
+		local commandGroup 		= message["body"][5]
+
+		local modifiers = split(commandModifier, ":")
+
+		--------------------------------------------------------------------------------
+		-- Setup Controller:
+		--------------------------------------------------------------------------------
+		local controller = nil
+		if commandGroup == "fcpx" then
+			controller = mod._fcpx
+		elseif commandGroup == "global" then
+			controller = mod._global
 		end
-	end
 
-	if result == "modifier" then
-		local commandFunction = message["body"][1]
-		local commandModifier = message["body"][3]
-		log.df("We should change the modifier for %s to %s.", commandFunction, commandModifier)
+		--------------------------------------------------------------------------------
+		-- Get the correct Command:
+		--------------------------------------------------------------------------------
+		local theCommand = controller:get(commandFunction)
 
-		-- TO DO: We need to work out where we actually save these "custom" shortcuts (as opposed to the default shortcuts hardcoded into each
-		--        plugin, and also the "Hacks Shortcuts" which are loaded from the Final Cut Pro plist files.
+		log.df("Title: %s", theCommand:getTitle())
 
-	elseif result == "shortcut" then
-		local commandFunction = message["body"][1]
-		local commandShortcut = message["body"][3]
-		log.df("We should change the shortcut for %s to %s.", commandFunction, commandShortcut)
+		--------------------------------------------------------------------------------
+		-- Clear Previous Shortcuts:
+		--------------------------------------------------------------------------------
+		theCommand:deleteShortcuts()
 
-		-- TO DO: We need to work out where we actually save these "custom" shortcuts (as opposed to the default shortcuts hardcoded into each
-		--        plugin, and also the "Hacks Shortcuts" which are loaded from the Final Cut Pro plist files.
+		--------------------------------------------------------------------------------
+		-- Setup New Shortcut:
+		--------------------------------------------------------------------------------
+		local id = string.gsub(commandModifier, ":", "") .. commandShortcut
+		if commandShortcut ~= "" then
+			theCommand:activatedBy(modifiers, commandShortcut)
+		end
 
 	end
 
@@ -155,37 +181,8 @@ end
 --------------------------------------------------------------------------------
 local function generateContent()
 
-	--------------------------------------------------------------------------------
-	-- Plugin Generated UI Items:
-	--------------------------------------------------------------------------------
-	generate.setWebviewLabel(mod._webviewLabel)
+	local result = ""
 
-	local result = [[<div id="keyboardShortcuts">]]
-
-	table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
-	for i, v in ipairs(mod._uiItems) do
-
-		local data = v["itemFn"]()
-
-		local uiType = v["uiType"]
-
-		if uiType == generate.UI_CHECKBOX then
-			result = result .. "\n" .. generate.checkbox(data)
-		elseif uiType == generate.UI_HEADING then
-			result = result .. "\n" .. generate.heading(data)
-		elseif uiType == generate.UI_BUTTON then
-			result = result .. "\n" .. generate.button(data)
-		elseif uiType == generate.UI_DROPDOWN then
-			result = result .. "\n" .. generate.dropdown(v["title"], data)
-		end
-
-	end
-
-	result = result .. "</div>"
-
-	--------------------------------------------------------------------------------
-	-- Customise Shortcuts List:
-	--------------------------------------------------------------------------------
 	local choices = mod._commandaction.choices()["_choices"]
 
 	table.sort(choices, function(a, b) return a.text < b.text end)
@@ -271,8 +268,9 @@ local function generateContent()
 				var modifier]] .. commandID .. [[=document.getElementById("modifier]] .. commandID .. [[");
 				modifier]] .. commandID .. [[.onchange = function (){
 					try {
-						var value = document.getElementById("modifier]] .. commandID .. [[").value;
-						var result = ["]] .. commandID .. [[", "modifier", value];
+						var modifierValue = document.getElementById("modifier]] .. commandID .. [[").value;
+						var shortcutValue = document.getElementById("shortcut]] .. commandID .. [[").value;
+						var result = ["updateShortcut", "]] .. commandID .. [[", modifierValue, shortcutValue, "]] .. commandGroup .. [["];
 						webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 					} catch(err) {
 						alert('An error has occurred. Does the controller exist yet?');
@@ -282,8 +280,9 @@ local function generateContent()
 				var shortcut]] .. commandID .. [[=document.getElementById("shortcut]] .. commandID .. [[");
 				shortcut]] .. commandID .. [[.onchange = function (){
 					try {
-						var value = document.getElementById("shortcut]] .. commandID .. [[").value;
-						var result = ["]] .. commandID .. [[", "shortcut", value];
+						var modifierValue = document.getElementById("modifier]] .. commandID .. [[").value;
+						var shortcutValue = document.getElementById("shortcut]] .. commandID .. [[").value;
+						var result = ["updateShortcut", "]] .. commandID .. [[", modifierValue, shortcutValue, "]] .. commandGroup .. [["];
 						webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
 					} catch(err) {
 						alert('An error has occurred. Does the controller exist yet?');
@@ -449,23 +448,6 @@ function mod.init(deps)
 	deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
 
 	return mod
-
-end
-
---------------------------------------------------------------------------------
--- ADD CHECKBOX:
---------------------------------------------------------------------------------
-function mod:addCheckbox(priority, itemFn)
-
-	priority = priority or DEFAULT_PRIORITY
-
-	mod._uiItems[#mod._uiItems + 1] = {
-		priority = priority,
-		itemFn = itemFn,
-		uiType = generate.UI_CHECKBOX,
-	}
-
-	return self
 
 end
 
