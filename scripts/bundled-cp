@@ -1,0 +1,7 @@
+#!/bin/sh
+
+### This script will instruct CommandPost to use the developer source directory as the location for extensions and plugins.
+
+defaults delete org.latenitefilms.CommandPost MJConfigFile
+
+echo "CommandPost will load extensions and plugins from the bundled sources."

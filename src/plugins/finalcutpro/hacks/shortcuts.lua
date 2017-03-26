@@ -36,7 +36,7 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f '" .. metadata.scriptPath .. "cp/resources/plist/10.3/new/"
+		local executeCommand = "cp -f '" .. metadata.scriptPath .. "/cp/resources/plist/10.3/new/"
 
 		local executeStrings = {
 			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",
@@ -77,7 +77,7 @@ local mod = {}
 
 		local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
 		local finalCutProLanguages = fcp:getSupportedLanguages()
-		local executeCommand = "cp -f '" .. metadata.scriptPath .. "cp/resources/plist/10.3/old/"
+		local executeCommand = "cp -f '" .. metadata.scriptPath .. "/cp/resources/plist/10.3/old/"
 
 		local executeStrings = {
 			executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'",

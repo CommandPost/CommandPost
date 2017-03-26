@@ -15,7 +15,7 @@ local metadata										= require("cp.config")
 
 local MenuBar = {}
 
-MenuBar.MENU_MAP_FILE								= metadata.scriptPath .. "cp/finalcutpro/menumap.json"
+MenuBar.MENU_MAP_FILE								= metadata.scriptPath .. "/cp/finalcutpro/menumap.json"
 MenuBar.ROLE										= "AXMenuBar"
 
 --- cp.finalcutpro.MenuBar:new(App) -> MenuBar
