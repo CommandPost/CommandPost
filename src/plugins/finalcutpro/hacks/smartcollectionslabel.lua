@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("movingmarkers")
 
@@ -13,20 +15,24 @@ local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.finalcutpro")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 local plist				= require("cp.plist")
 local tools				= require("cp.tools")
 
 local execute			= hs.execute
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 20
 local PLIST_PATH = "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -88,7 +94,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.hacks.smartcollectionslabel",

@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("addnote")
 
@@ -17,12 +19,14 @@ local eventtap							= require("hs.eventtap")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
 
-local metadata							= require("cp.config")
+local config							= require("cp.config")
 local fcp								= require("cp.finalcutpro")
 local axutils 							= require("cp.finalcutpro.axutils")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -137,7 +141,7 @@ local mod = {}
 		-- If the 'Notes' column is missing then error:
 		--------------------------------------------------------------------------------
 		if notesFieldID == nil then
-			errorMessage(metadata.scriptName .. " could not find the Notes Column." .. errorFunction)
+			errorMessage(config.scriptName .. " could not find the Notes Column." .. errorFunction)
 			return
 		end
 
@@ -164,14 +168,14 @@ local mod = {}
 
 				local selectedRow = mod.noteChooser:selectedRow()
 
-				local recentNotes = metadata.get("recentNotes", {})
+				local recentNotes = config.get("recentNotes", {})
 				if selectedRow == 1 then
 					table.insert(recentNotes, 1, result)
-					metadata.set("recentNotes", recentNotes)
+					config.set("recentNotes", recentNotes)
 				else
 					table.remove(recentNotes, selectedRow)
 					table.insert(recentNotes, 1, result)
-					metadata.set("recentNotes", recentNotes)
+					config.set("recentNotes", recentNotes)
 				end
 			end
 
@@ -185,7 +189,7 @@ local mod = {}
 			--------------------------------------------------------------------------------
 			-- Chooser Query Changed by User:
 			--------------------------------------------------------------------------------
-			local recentNotes = metadata.get("recentNotes", {})
+			local recentNotes = config.get("recentNotes", {})
 
 			local currentQuery = mod.noteChooser:query()
 
@@ -208,7 +212,7 @@ local mod = {}
 			local rightClickMenu = {
 				{ title = i18n("clearList"), fn = function()
 					log.df("Clearing List")
-					metadata.set("recentNotes", {})
+					config.set("recentNotes", {})
 					local currentQuery = mod.noteChooser:query()
 					local currentQueryTable = {
 						{
@@ -242,7 +246,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.browser.addnote",

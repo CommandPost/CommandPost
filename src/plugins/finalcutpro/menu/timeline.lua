@@ -7,12 +7,16 @@
 --- The TIMEILNE menu section.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 					= 2000
 local PREFERENCES_PRIORITY		= 28
@@ -22,7 +26,7 @@ local SETTING 					= "menubarTimelineEnabled"
 -- LOCAL FUNCTIONS:
 --------------------------------------------------------------------------------
 	local function isSectionDisabled()
-		local setting = metadata.get(SETTING)
+		local setting = config.get(SETTING)
 		if setting ~= nil then
 			return not setting
 		else
@@ -31,12 +35,14 @@ local SETTING 					= "menubarTimelineEnabled"
 	end
 
 	local function toggleSectionDisabled()
-		local menubarEnabled = metadata.get(SETTING)
-		metadata.set(SETTING, not menubarEnabled)
+		local menubarEnabled = config.get(SETTING)
+		config.set(SETTING, not menubarEnabled)
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.menu.timeline",

@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("addnote")
 
@@ -13,11 +15,13 @@ local ax 								= require("hs._asm.axuielement")
 
 local dialog 							= require("cp.dialog")
 local fcp								= require("cp.finalcutpro")
-local metadata							= require("cp.config")
+local config							= require("cp.config")
 local tools 							= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -99,7 +103,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Save Values to Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = metadata.get("savedKeywords")
+		local savedKeywords = config.get("savedKeywords")
 		if savedKeywords == nil then savedKeywords = {} end
 		for i=1, 9 do
 			if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
@@ -107,7 +111,7 @@ local mod = {}
 			end
 			savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
 		end
-		metadata.set("savedKeywords", savedKeywords)
+		config.set("savedKeywords", savedKeywords)
 
 		--------------------------------------------------------------------------------
 		-- Saved:
@@ -121,7 +125,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Get Values from Settings:
 		--------------------------------------------------------------------------------
-		local savedKeywords = metadata.get("savedKeywords")
+		local savedKeywords = config.get("savedKeywords")
 		local restoredKeywordValues = {}
 
 		if savedKeywords == nil then
@@ -231,7 +235,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.browser.keywords",

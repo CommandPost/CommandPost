@@ -1,12 +1,24 @@
 --- A `action` which will execute a command with matching group/id values.
---- The plugin registers itself with the `cp.plugins.actions.actionmanager`.
+---------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+-------------------------------------------------------------------------------- registers itself with the `cp.plugins.actions.actionmanager`.
 
--- Includes
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local commands			= require("cp.commands")
 local choices			= require("cp.choices")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
--- The Modules
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------s
 local mod = {}
 
 local ID	= "command"
@@ -21,12 +33,12 @@ function mod.id()
 end
 
 function mod.setEnabled(value)
-	metadata.set("commandActionEnabled", value)
+	config.set("commandActionEnabled", value)
 	mod._manager.refresh()
 end
 
 function mod.isEnabled()
-	return metadata.get("commandActionEnabled", true)
+	return config.get("commandActionEnabled", true)
 end
 
 function mod.toggleEnabled()
@@ -108,7 +120,11 @@ function mod.reset()
 	mod._choices = nil
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.commands.commandaction",
 	group			= "core",

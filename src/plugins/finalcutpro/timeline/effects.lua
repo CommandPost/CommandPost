@@ -10,7 +10,7 @@ local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
 local log				= require("hs.logger").new("effects")
 
@@ -32,12 +32,12 @@ function videoaction.id()
 end
 
 function videoaction.setEnabled(value)
-	metadata.set(videoaction.id().."ActionEnabled", value)
+	config.set(videoaction.id().."ActionEnabled", value)
 	videoaction._manager.refresh()
 end
 
 function videoaction.isEnabled()
-	return metadata.get(videoaction.id().."ActionEnabled", true)
+	return config.get(videoaction.id().."ActionEnabled", true)
 end
 
 function videoaction.toggleEnabled()
@@ -91,12 +91,12 @@ function audioaction.id()
 end
 
 function audioaction.setEnabled(value)
-	metadata.set(audioaction.id().."ActionEnabled", value)
+	config.set(audioaction.id().."ActionEnabled", value)
 	audioaction._manager.refresh()
 end
 
 function audioaction.isEnabled()
-	return metadata.get(audioaction.id().."ActionEnabled", true)
+	return config.get(audioaction.id().."ActionEnabled", true)
 end
 
 function audioaction.toggleEnabled()
@@ -139,25 +139,29 @@ function audioaction.reset()
 	audioaction._choices = nil
 end
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return metadata.get(fcp:getCurrentLanguage() .. ".effectsShortcuts", {})
+	return config.get(fcp:getCurrentLanguage() .. ".effectsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	metadata.set(fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
+	config.set(fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
 end
 
 function mod.getVideoEffects()
-	return metadata.get(fcp:getCurrentLanguage() .. ".allVideoEffects")
+	return config.get(fcp:getCurrentLanguage() .. ".allVideoEffects")
 end
 
 function mod.getAudioEffects()
-	return metadata.get(fcp:getCurrentLanguage() .. ".allAudioEffects")
+	return config.get(fcp:getCurrentLanguage() .. ".allAudioEffects")
 end
 
 --------------------------------------------------------------------------------
@@ -477,9 +481,9 @@ function mod.updateEffectsList()
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
 		local currentLanguage = fcp:getCurrentLanguage()
-		metadata.set(currentLanguage .. ".allVideoEffects", allVideoEffects)
-		metadata.set(currentLanguage .. ".allAudioEffects", allAudioEffects)
-		metadata.set(currentLanguage .. ".effectsListUpdated", true)
+		config.set(currentLanguage .. ".allVideoEffects", allVideoEffects)
+		config.set(currentLanguage .. ".allAudioEffects", allAudioEffects)
+		config.set(currentLanguage .. ".effectsListUpdated", true)
 		audioaction.reset()
 		videoaction.reset()
 	end
@@ -487,10 +491,14 @@ function mod.updateEffectsList()
 end
 
 function mod.isEffectsListUpdated()
-	return metadata.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
+	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local PRIORITY = 1000
 
 local plugin = {

@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("playhead")
 
@@ -15,10 +17,12 @@ local timer							= require("hs.timer")
 
 local fcp							= require("cp.finalcutpro")
 local dialog						= require("cp.dialog")
-local metadata						= require("cp.config")
+local config						= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 						= 10000
 local DEFAULT_TIME 					= 3
@@ -29,7 +33,9 @@ local SHAPE_CIRCLE					= "Circle"
 local SHAPE_DIAMOND					= "Diamond"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -37,19 +43,19 @@ local mod = {}
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
 	function mod.getHighlightColor()
-		return metadata.get("displayHighlightColour", DEFAULT_COLOR)
+		return config.get("displayHighlightColour", DEFAULT_COLOR)
 	end
 
 	function mod.setHighlightColor(value)
-		metadata.set("displayHighlightColour", value)
+		config.set("displayHighlightColour", value)
 	end
 
 	function mod.getHighlightCustomColor()
-		return metadata.get("displayHighlightCustomColour")
+		return config.get("displayHighlightCustomColour")
 	end
 
 	function mod.setHighlightCustomColor(value)
-		metadata.set("displayHighlightCustomColour", value)
+		config.set("displayHighlightCustomColour", value)
 	end
 
 	--------------------------------------------------------------------------------
@@ -66,25 +72,25 @@ local mod = {}
 	end
 
 	function mod.getHighlightShape()
-		return metadata.get("displayHighlightShape", SHAPE_RECTANGLE)
+		return config.get("displayHighlightShape", SHAPE_RECTANGLE)
 	end
 
 	--------------------------------------------------------------------------------
 	-- CHANGE HIGHLIGHT SHAPE:
 	--------------------------------------------------------------------------------
 	function mod.setHighlightShape(value)
-		metadata.set("displayHighlightShape", value)
+		config.set("displayHighlightShape", value)
 	end
 
 	--------------------------------------------------------------------------------
 	-- Get Highlight Playhead Time in seconds:
 	--------------------------------------------------------------------------------
 	function mod.getHighlightTime()
-		return metadata.get("highlightPlayheadTime", DEFAULT_TIME)
+		return config.get("highlightPlayheadTime", DEFAULT_TIME)
 	end
 
 	function mod.setHighlightTime(value)
-		metadata.set("highlightPlayheadTime", value)
+		config.set("highlightPlayheadTime", value)
 	end
 
 	--------------------------------------------------------------------------------
@@ -120,19 +126,19 @@ local mod = {}
 		-- Get Sizing Preferences:
 		--------------------------------------------------------------------------------
 		local displayHighlightShape = nil
-		displayHighlightShape = metadata.get("displayHighlightShape")
+		displayHighlightShape = config.get("displayHighlightShape")
 		if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
 		--------------------------------------------------------------------------------
 		-- Get Highlight Colour Preferences:
 		--------------------------------------------------------------------------------
-		local displayHighlightColour = metadata.get("displayHighlightColour", "Red")
+		local displayHighlightColour = config.get("displayHighlightColour", "Red")
 		if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
 		if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
 		if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
 		if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
 		if displayHighlightColour == "Custom" then
-			local displayHighlightCustomColour = metadata.get("displayHighlightCustomColour")
+			local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
 			displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
 		end
 
@@ -176,7 +182,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.browser.playhead",

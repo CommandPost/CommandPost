@@ -9,7 +9,9 @@
 --- Manager for the CommandPost Preferences Panel.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsManager")
 
@@ -26,20 +28,24 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 local plugins									= require("cp.plugins")
 local template									= require("cp.template")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 
 local PRIORITY 									= 8888889
 local WEBVIEW_LABEL								= "preferences"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -143,7 +149,7 @@ local mod = {}
 		-- Setup Web View:
 		--------------------------------------------------------------------------------
 		local developerExtrasEnabled = {}
-		if metadata.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
 		mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
 			:windowStyle({"titled", "closable", "nonactivating"})
 			:shadow(true)
@@ -247,7 +253,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.preferences.manager",

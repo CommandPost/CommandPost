@@ -1,31 +1,49 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                      B E N C H M A R K     T O O L                         --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.bench ===
+---
+--- Benchmarking Tool.
+---
+--- TIME FUNCTION EXECUTION:
+--- Use this to benchmark sections of code. Wrap them in a function inside this
+--- function call. Eg:
+---
+--- local _bench = require("hs.bench")
+---
+--- local foo = _bench("Foo Test", function()
+---     return do.somethingHere()
+--- end) --_bench
+---
+--- You can also benchmark all (or some) of the functions on a table in one hit
+--- by using the 'bench.press' function:
+---
+--- local mod = { ... }
+--- -- All functions are benchmarked
+--- mod = _bench.press("mymod", mod)
+--- -- Just the "foo" and "bar" functions are benchmarked.
+--- mod = _bench.press("mymod", mod, {"foo", "bar"})
 
 --------------------------------------------------------------------------------
--- TIME FUNCTION EXECUTION:
--- Use this to benchmark sections of code. Wrap them in a function inside this
--- function call. Eg:
 --
--- local _bench = require("hs.bench")
+-- EXTENSIONS:
 --
--- local foo = _bench("Foo Test", function()
---     return do.somethingHere()
--- end) --_bench
---
--- You can also benchmark all (or some) of the functions on a table in one hit
--- by using the 'bench.press' function:
---
--- local mod = { ... }
--- -- All functions are benchmarked
--- mod = _bench.press("mymod", mod)
--- -- Just the "foo" and "bar" functions are benchmarked.
--- mod = _bench.press("mymod", mod, {"foo", "bar"})
 --------------------------------------------------------------------------------
--- local clock = os.clock
 local log = require("hs.logger").new("bench")
 local clock = require("hs.timer").secondsSinceEpoch
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
 local _timeindent = 0
 local _timelog = {}
-
-local mod = {}
 
 function mod.mark(label, fn, ...)
 	loops = loops or 1

@@ -1,4 +1,8 @@
--- Includes
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local fcp								= require("cp.finalcutpro")
 local dialog							= require("cp.dialog")
 
@@ -6,7 +10,11 @@ local log								= require("hs.logger").new("selectalltimelineclips")
 
 -- Constants
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 function mod.selectAllTimelineClips(forwards)
@@ -33,7 +41,11 @@ function mod.selectAllTimelineClips(forwards)
 
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.selectalltimelineclips",
 	group = "finalcutpro",

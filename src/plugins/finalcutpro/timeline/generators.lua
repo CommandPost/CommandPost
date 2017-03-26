@@ -9,7 +9,7 @@ local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
 local log				= require("hs.logger").new("generators")
 
@@ -32,12 +32,12 @@ function action.id()
 end
 
 function action.setEnabled(value)
-	metadata.set(action.id().."ActionEnabled", value)
+	config.set(action.id().."ActionEnabled", value)
 	action._manager.refresh()
 end
 
 function action.isEnabled()
-	return metadata.get(action.id().."ActionEnabled", true)
+	return config.get(action.id().."ActionEnabled", true)
 end
 
 function action.toggleEnabled()
@@ -81,21 +81,25 @@ function action.reset()
 	action._choices = nil
 end
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return metadata.get(fcp:getCurrentLanguage() .. ".generatorsShortcuts", {})
+	return config.get(fcp:getCurrentLanguage() .. ".generatorsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	metadata.set(fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)
+	config.set(fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)
 end
 
 function mod.getGenerators()
-	return metadata.get(fcp:getCurrentLanguage() .. ".allGenerators")
+	return config.get(fcp:getCurrentLanguage() .. ".allGenerators")
 end
 
 --------------------------------------------------------------------------------
@@ -351,16 +355,20 @@ function mod.updateGeneratorsList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.set(currentLanguage .. ".allGenerators", allGenerators)
-	metadata.set(currentLanguage .. ".generatorsListUpdated", true)
+	config.set(currentLanguage .. ".allGenerators", allGenerators)
+	config.set(currentLanguage .. ".generatorsListUpdated", true)
 	action.reset()
 end
 
 function mod.isGeneratorsListUpdated()
-	return metadata.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
+	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.generators",
 	group = "finalcutpro",

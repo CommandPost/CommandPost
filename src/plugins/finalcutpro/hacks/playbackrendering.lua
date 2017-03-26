@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("playbackrendering")
 
@@ -13,19 +15,23 @@ local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.finalcutpro")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 local plist				= require("cp.plist")
 local tools				= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 			= 5500
 local DEFAULT_VALUE		= false
 local PREFERENCES_KEY 	= "FFSuspendBGOpsDuringPlay"
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -83,7 +89,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.hacks.playbackrendering",

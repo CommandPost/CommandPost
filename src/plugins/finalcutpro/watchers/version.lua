@@ -8,15 +8,19 @@
 -- If it has changed, watchers' `change` function is called.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 local fcp						= require("cp.finalcutpro")
 local watcher					= require("cp.watcher")
 
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -31,11 +35,11 @@ local mod = {}
 	end
 
 	function mod.getLastVersion()
-		return metadata.get("lastVersion")
+		return config.get("lastVersion")
 	end
 
 	function mod.setLastVersion(version)
-		return metadata.set("lastVersion", version)
+		return config.set("lastVersion", version)
 	end
 
 	function mod.getCurrentVersion()
@@ -43,7 +47,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.watchers.version",

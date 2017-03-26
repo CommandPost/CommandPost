@@ -11,7 +11,7 @@ local ax 				= require("hs._asm.axuielement")
 
 local plugins			= require("cp.plugins")
 local fcp				= require("cp.finalcutpro")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 
 local log				= require("hs.logger").new("console")
 
@@ -19,7 +19,11 @@ local log				= require("hs.logger").new("console")
 
 local PRIORITY = 11000
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 local mod = {}
 
@@ -29,11 +33,11 @@ mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
 
 function mod.isEnabled()
-	return metadata.get("consoleEnabled", true)
+	return config.get("consoleEnabled", true)
 end
 
 function mod.setEnabled(value)
-	metadata.set("consoleEnabled", value)
+	config.set("consoleEnabled", value)
 end
 
 function mod.toggleEnabled()
@@ -45,11 +49,11 @@ function mod.isReducedTransparency()
 end
 
 function mod.isLastQueryRemembered()
-	return metadata.get("consoleLastQueryRemembered", true)
+	return config.get("consoleLastQueryRemembered", true)
 end
 
 function mod.setLastQueryRemembered(value)
-	metadata.set("consoleLastQueryRemembered", value)
+	config.set("consoleLastQueryRemembered", value)
 end
 
 function mod.toggleLastQueryRemembered()
@@ -57,11 +61,11 @@ function mod.toggleLastQueryRemembered()
 end
 
 function mod.getLastQueryValue()
-	return metadata.get("consoleLastQueryValue", "")
+	return config.get("consoleLastQueryValue", "")
 end
 
 function mod.setLastQueryValue(value)
-	metadata.set("consoleLastQueryValue", value)
+	config.set("consoleLastQueryValue", value)
 end
 
 --------------------------------------------------------------------------------
@@ -297,7 +301,11 @@ function mod.rightClickAction(index)
 	mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.console",
 	group			= "finalcutpro",

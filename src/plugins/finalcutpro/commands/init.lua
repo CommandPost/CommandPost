@@ -8,7 +8,9 @@
 --- These are only active when FCPX is the active (ie. frontmost) application.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("fcpxCmds")
 
@@ -16,7 +18,9 @@ local commands					= require("cp.commands")
 local fcp						= require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.commands",

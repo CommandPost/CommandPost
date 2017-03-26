@@ -8,7 +8,7 @@ local inspect			= require("hs.inspect")
 local choices			= require("cp.choices")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
-local metadata			= require("cp.config")
+local config			= require("cp.config")
 local tools				= require("cp.tools")
 
 local log				= require("hs.logger").new("titles")
@@ -32,12 +32,12 @@ function action.id()
 end
 
 function action.setEnabled(value)
-	metadata.set(action.id().."ActionEnabled", value)
+	config.set(action.id().."ActionEnabled", value)
 	action._manager.refresh()
 end
 
 function action.isEnabled()
-	return metadata.get(action.id().."ActionEnabled", true)
+	return config.get(action.id().."ActionEnabled", true)
 end
 
 function action.toggleEnabled()
@@ -81,21 +81,25 @@ function action.reset()
 	action._choices = nil
 end
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return metadata.get(fcp:getCurrentLanguage() .. ".titlesShortcuts", {})
+	return config.get(fcp:getCurrentLanguage() .. ".titlesShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	metadata.set(fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
+	config.set(fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
 end
 
 function mod.getTitles()
-	return metadata.get(fcp:getCurrentLanguage() .. ".allTitles")
+	return config.get(fcp:getCurrentLanguage() .. ".allTitles")
 end
 
 --------------------------------------------------------------------------------
@@ -351,16 +355,20 @@ function mod.updateTitlesList()
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:getCurrentLanguage()
-	metadata.set(currentLanguage .. ".allTitles", allTitles)
-	metadata.set(currentLanguage .. ".titlesListUpdated", true)
+	config.set(currentLanguage .. ".allTitles", allTitles)
+	config.set(currentLanguage .. ".titlesListUpdated", true)
 	action.reset()
 end
 
 function mod.isTitlesListUpdated()
-	return metadata.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
+	return config.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.titles",
 	group = "finalcutpro",

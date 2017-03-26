@@ -1,4 +1,8 @@
--- Includes:
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------:
 local fcp								= require("cp.finalcutpro")
 
 local log								= require("hs.logger").new("multicam")
@@ -8,7 +12,11 @@ local log								= require("hs.logger").new("multicam")
 local MAX_ANGLES 						= 16
 local ANGLE_TYPES 						= {"Video", "Audio", "Both"}
 
--- The Module:
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------:
 
 local mod = {}
 
@@ -44,7 +52,11 @@ function mod.cutAndSwitchMulticam(whichMode, whichAngle)
 
 end
 
--- The Plugin:
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------:
 
 local plugin = {
 	id = "finalcutpro.timeline.multicam",

@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("ignorecard")
 
@@ -14,15 +16,19 @@ local application				= require("hs.application")
 local timer						= require("hs.timer")
 
 local fcp						= require("cp.finalcutpro")
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 20000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -30,14 +36,14 @@ local mod = {}
 	-- RETURNS THE CURRENT ENABLED STATUS
 	--------------------------------------------------------------------------------
 	function mod.isEnabled()
-		return metadata.get("enableMediaImportWatcher", false)
+		return config.get("enableMediaImportWatcher", false)
 	end
 
 	--------------------------------------------------------------------------------
 	-- SETS THE ENABLED STATUS AND UPDATES THE WATCHER APPROPRIATELY
 	--------------------------------------------------------------------------------
 	function mod.setEnabled(enabled)
-		metadata.set("enableMediaImportWatcher", enabled)
+		config.set("enableMediaImportWatcher", enabled)
 		mod.update()
 	end
 
@@ -119,7 +125,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.import.ignorecard",
