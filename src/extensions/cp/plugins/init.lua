@@ -68,13 +68,14 @@ mod.status = {
 mod.SETTINGS_DISABLED 	= "plugins.disabled"
 
 local function cachePlugin(id, plugin, status)
-	local info = nil
 	if not mod.CACHE[id] then
-		info = {plugin = plugin, status = status or mod.status.loaded}
+		local info = {plugin = plugin, status = status or mod.status.loaded}
 		mod.CACHE[id] = info
 		mod.IDS[#mod.IDS + 1] = id
+		return info
+	else
+		return nil
 	end
-	return info
 end
 
 function mod.getPluginIds()
@@ -283,6 +284,7 @@ end
 --- Returns:
 ---  * boolean - `true` if the path was loaded successfully, false if there were any issues.
 function mod.scanDirectory(directoryPath)
+	-- log.df("Scanning directory: %s", directoryPath)
 	local path = fs.pathToAbsolute(directoryPath)
 	if not path then
 		log.wf("The provided path does not exist: '%s'", directoryPath)
@@ -307,15 +309,17 @@ function mod.scanDirectory(directoryPath)
 	for i,file in ipairs(files) do
 		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
 			local filePath = fs.pathToAbsolute(path .. "/" .. file)
-			-- log.df("Scanning '%s'...", filePath)
-			attrs = fs.attributes(filePath)
+			-- log.df("Checking '%s'...", filePath)
 
+			attrs = fs.attributes(filePath)
 			if attrs.mode == "directory" then
 				-- log.df("It's a directory...")
-				success = success and mod.scanDirectory(filePath)
+				success = mod.scanDirectory(filePath) and success
 			elseif filePath:sub(-4) == ".lua" then
 				-- log.df("It's a file...")
-				success = success and mod.loadSimplePlugin(filePath) ~= nil
+				success = mod.loadSimplePlugin(filePath) ~= nil and success
+			else
+				-- log.df("It's something else. Ignoring it.")
 			end
 		end
 	end
@@ -336,7 +340,11 @@ function mod.loadSimplePlugin(pluginPath)
 				return nil
 			else
 				log.df("Loaded plugin: %s", plugin.id)
-				return cachePlugin(plugin.id, plugin, mod.status.loaded)
+				local info = cachePlugin(plugin.id, plugin, mod.status.loaded)
+				if not info then
+					log.df("Duplicate plugin for '%s': %s", plugin.id, pluginPath)
+				end
+				return info
 			end
 		end
 	else
@@ -378,7 +386,9 @@ function mod.loadComplexPlugin(pluginPath)
 
 	-- load the plugin
 	local result = mod.loadSimplePlugin(initFile)
-	result.rootPath = pluginPath
+	if result then
+		result.rootPath = pluginPath
+	end
 
 	-- Reset 'require' to the global require
 	require = globalRequire
