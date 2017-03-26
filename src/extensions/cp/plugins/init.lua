@@ -20,6 +20,7 @@ local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
 local fnutils						= require("hs.fnutils")
 
+
 local config						= require("cp.config")
 local tools							= require("cp.tools")
 
@@ -59,6 +60,7 @@ end
 local mod = {}
 
 mod.CACHE	= {}
+mod.PLUGINS	= {}
 mod.IDS		= {}
 
 mod.status = {
@@ -75,6 +77,7 @@ local function cachePlugin(id, plugin, status)
 	if not mod.CACHE[id] then
 		local info = {plugin = plugin, status = status or mod.status.loaded}
 		mod.CACHE[id] = info
+		mod.PLUGINS[#mod.PLUGINS + 1] = plugin
 		mod.IDS[#mod.IDS + 1] = id
 		return info
 	else
@@ -84,6 +87,14 @@ end
 
 function mod.getPluginIds()
 	return mod.IDS
+end
+
+function mod.getPluginInfos()
+	local infos = {}
+	for _,info in pairs(mod.CACHE) do
+		infos[#infos + 1] = info
+	end
+	return infos
 end
 
 function mod.getPluginGroup(id)
@@ -235,6 +246,52 @@ function mod.isDisabled(pluginPath)
 	return disabled[pluginPath] == true
 end
 
+function mod.postInitPlugins()
+	for _,id in pairs(mod.IDS) do
+		mod.postInitPlugin(id)
+	end
+end
+
+function mod.postInitPlugin(id)
+	local info = mod.CACHE[id]
+	if not info then
+		log.ef("Unable to post-initialise '%s': plugin not loaded", id)
+		return false
+	end
+	
+	-- Check it exists and is initialized and ready to post-init
+	if info.status == mod.status.active then
+		-- already post-intialised successfully
+		return true
+	elseif info.status == mod.status.initialized then
+		local plugin = info.plugin
+		if plugin.postInit then
+			-- ensure dependecies are post-initialised first
+			if plugin.dependencies then
+				for key,value in pairs(plugin.dependencies) do
+					local depId = key
+					if type(key) == "number" then
+						depId = value
+					end
+					if not mod.postInitPlugin(depId) then
+						log.ef("Unable to post-initialise '%s': dependency failed to post-init: %s", id, depId)
+						info.status = mod.status.error
+						return false
+					end
+				end
+			end
+			
+			plugin.postInit(info.dependencies, env.new(info.rootPath))
+		end
+		info.status = mod.status.active
+		return true
+	else
+		log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(info.status))
+		info.status = mod.status.error
+		return false
+	end
+end
+
 --- cp.plugins.init(pluginPaths) -> cp.plugins
 --- Function
 --- Initialises the plugin loader to look in the specified file paths for plugins.
@@ -265,17 +322,21 @@ function mod.init(pluginPaths)
 	mod.initPlugins()
 
 	-- notify them of a `postInit`
-	for _,info in pairs(mod.CACHE) do
-		if info.status == mod.status.initialized then
-			local plugin = info.plugin
-			if plugin.postInit then
-				plugin.postInit(info.dependencies, env.new(info.rootPath))
-			end
-			info.status = mod.status.active
-		end
-	end
+	mod.postInitPlugins()
+	
+	-- watch for future changes in the plugin paths.
+	mod.watchPluginPaths()
 
 	return mod
+end
+
+function mod.watchPluginPaths()
+	--------------------------------------------------------------------------------
+	-- Watch for Script Updates:
+	--------------------------------------------------------------------------------
+	for _,path in ipairs(mod.paths) do
+		config.sourceWatcher:watchPath(path)
+	end
 end
 
 --- cp.plugins.scanDirectory(directoryPath) -> cp.plugins

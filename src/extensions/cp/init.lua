@@ -25,8 +25,6 @@ local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
-local mouse                     = require("hs.mouse")
-local pathwatcher				= require("hs.pathwatcher")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
@@ -181,22 +179,6 @@ function mod.init()
 	-- Display the content that was displayed before loading...
 	--------------------------------------------------------------------------------
 	print(tools.trim(consoleLoadingContent))
-
-	--------------------------------------------------------------------------------
-	-- Watch for Script Updates:
-	--------------------------------------------------------------------------------
-	scriptWatcher = pathwatcher.new(config.basePath, function(files)
-		local doReload = false
-		for _,file in pairs(files) do
-			if file:sub(-4) == ".lua" or file:sub(-5) == ".html" or file:sub(-4) == ".htm" then
-				doReload = true
-			end
-		end
-		if doReload then
-			console.clearConsole()
-			hs.reload()
-		end
-	end):start()
 
 	--------------------------------------------------------------------------------
 	-- Load Plugins:

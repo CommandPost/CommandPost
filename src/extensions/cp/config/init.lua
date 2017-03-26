@@ -17,6 +17,7 @@ local application		= require("hs.application")
 local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
+local sourcewatcher		= require("cp.sourcewatcher")
 
 -------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -71,7 +72,10 @@ else
 	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
 end
 
-mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
+--- cp.config.basePath
+--- Constant
+--- Path to where assets such as images, plists, etc are stored.
+mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets"
 
 --- cp.config.basePath
 --- Constant
@@ -100,17 +104,27 @@ mod.pluginPaths			= {
 --- cp.config.iconPath
 --- Constant
 --- Path to the Application Icon
-mod.iconPath            = mod.assetsPath .. "CommandPost.icns"
+mod.iconPath            = mod.assetsPath .. "/CommandPost.icns"
 
 --- cp.config.menubarIconPath
 --- Constant
 --- Path to the Menubar Application Icon
-mod.menubarIconPath     = mod.assetsPath .. "CommandPost.png"
+mod.menubarIconPath     = mod.assetsPath .. "/CommandPost.png"
 
 --- cp.config.languagePath
 --- Constant
 --- Path to the Languages Folder
 mod.languagePath		= mod.scriptPath .. "/cp/resources/languages/"
+
+--- cp.config.sourceExtensions
+--- Constant
+--- Extensions for files which will trigger a reload when modified.
+mod.sourceExtensions	= { ".lua", ".html", ".htm" }
+
+--- cp.config.sourceWatcher
+--- Constant
+--- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
+mod.sourceWatcher		= sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
 
 --- cp.config.bundleID
 --- Constant
