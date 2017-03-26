@@ -224,7 +224,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.preferences.panels.finalcutpro",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.preferences.manager"]	= "manager",
 	}

@@ -112,7 +112,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.welcome.panels.commandset",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",

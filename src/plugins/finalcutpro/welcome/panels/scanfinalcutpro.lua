@@ -103,7 +103,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.welcome.panels.scanfinalcutpro",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",
 		["finalcutpro.preferences.scanfinalcutpro"] = "scanfinalcutproPrefs",

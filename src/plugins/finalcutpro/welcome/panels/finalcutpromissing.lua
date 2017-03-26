@@ -106,7 +106,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.welcome.panels.finalcutpromissing",
-	group			= "core",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.welcome.manager"]					= "manager",
 	}

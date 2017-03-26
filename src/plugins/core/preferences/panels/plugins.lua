@@ -131,6 +131,8 @@ local mod = {}
 
 		local listOfPlugins = plugins.getPluginIds()
 
+		table.sort(listOfPlugins, function(a, b) return a < b end)
+
 		local pluginRows = ""
 
 		local lastCategory = ""
