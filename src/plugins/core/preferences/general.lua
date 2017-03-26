@@ -160,11 +160,11 @@ local plugin = {
 
 		:addButton(52, function()
 			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
-		end)
+		end, 150)
 
 		:addButton(53, function()
 			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
-		end)
+		end, 150)
 
 		--------------------------------------------------------------------------------
 		-- Setup Menubar Preferences Panel:

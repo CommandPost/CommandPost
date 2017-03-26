@@ -136,7 +136,7 @@ function plugin.init(deps)
 			return { title = "<br />Language:" }
 		end)
 
-	:addDropdown(41, i18n("language"), getCommandPostLanguagesMenu)
+	:addDropdown(41, "", getCommandPostLanguagesMenu)
 
 	return mod
 end
