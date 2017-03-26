@@ -339,9 +339,10 @@ function mod.loadSimplePlugin(pluginPath)
 				log.ef("The plugin at '%s' does not have an ID.", pluginPath)
 				return nil
 			else
-				log.df("Loaded plugin: %s", plugin.id)
 				local info = cachePlugin(plugin.id, plugin, mod.status.loaded)
-				if not info then
+				if info then
+					log.df("Loaded plugin: %s", plugin.id)
+				else
 					log.df("Duplicate plugin for '%s': %s", plugin.id, pluginPath)
 				end
 				return info
