@@ -73,7 +73,7 @@ local plugin = {
 
 		deps.top:addItem(UPDATE_BANNER_PRIORITY, function()
 			if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
-				return { title = "UPDATE AVAILABLE!",	fn = mod.checkForUpdates }
+				return { title = i18n("updateAvailable"),	fn = mod.checkForUpdates }
 			end
 		end)
 		:addSeparator(2)
