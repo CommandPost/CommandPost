@@ -18,6 +18,8 @@ local dialog		= require("cp.dialog")
 local config		= require("cp.config")
 local tools			= require("cp.tools")
 
+local v				= require("semver")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -262,23 +264,21 @@ local mod = {}
 			applyCommandSetShortcuts()
 		end
 	end
-
+	
 	function mod.init()
 		log.df("Initialising shortcuts...")
 		--------------------------------------------------------------------------------
 		-- Check if we need to update the Final Cut Pro Shortcut Files:
 		--------------------------------------------------------------------------------
-		local lastVersion = config.get("lastScriptVersion")
-		if lastVersion == nil then
-			mod.setEditable(false)
-		elseif tonumber(lastVersion) < tonumber(config.scriptVersion) then
+		local lastVersion = config.get("lastAppVersion")
+		if lastVersion == nil or v(lastVersion) < v(config.appVersion) then
 			if mod.isEditable() then
 				dialog.displayMessage(i18n("newKeyboardShortcuts"))
 				updateFCPXCommands(true)
 			end
 		end
 
-		config.set("lastScriptVersion", config.scriptVersion)
+		config.set("lastAppVersion", config.appVersion)
 
 		mod.update()
 	end

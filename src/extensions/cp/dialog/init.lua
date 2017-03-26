@@ -268,7 +268,7 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 		set listOptions to ]] .. inspect(listOptions) .. "\n\n" .. [[
 		set defaultItems to ]] .. inspect(defaultItems) .. "\n\n" .. [[
 
-		return choose from list listOptions with title "]] .. config.scriptName .. [[" with prompt dialogPrompt default items defaultItems
+		return choose from list listOptions with title "]] .. config.appName .. [[" with prompt dialogPrompt default items defaultItems
 	]]
 
 	return as(appleScript)

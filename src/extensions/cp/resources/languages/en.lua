@@ -3,9 +3,9 @@ return {
 	en = {
 
 		--------------------------------------------------------------------------------
-		-- SCRIPT NAME:
+		-- APP NAME:
 		--------------------------------------------------------------------------------
-		scriptName								=			"CommandPost",
+		appName								=			"CommandPost",
 
 		--------------------------------------------------------------------------------
 		-- GENERIC:
@@ -429,7 +429,7 @@ return {
 			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
-			scriptVersion						=			"Script Version",
+			appVersion							=			"Version",
 
 			--------------------------------------------------------------------------------
 			-- Notification Platform:

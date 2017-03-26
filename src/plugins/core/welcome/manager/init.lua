@@ -134,7 +134,7 @@ function mod.setupUserInterface(showNotification)
 	--------------------------------------------------------------------------------
 	if showNotification then
 		log.df("Successfully loaded.")
-		dialog.displayNotification(config.scriptName .. " (v" .. config.scriptVersion .. ") " .. i18n("hasLoaded"))
+		dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
 	end
 
 end

@@ -60,7 +60,7 @@ function manager.init()
 	--------------------------------------------------------------------------------
 	-- Set Tool Tip:
 	--------------------------------------------------------------------------------
-	manager.menubar:setTooltip(config.scriptName .. " " .. i18n("version") .. " " .. config.scriptVersion)
+	manager.menubar:setTooltip(config.appName .. " " .. i18n("version") .. " " .. config.appVersion)
 
 	--------------------------------------------------------------------------------
 	-- Work out Menubar Display Mode:
@@ -85,7 +85,7 @@ function manager.updateMenubarIcon()
 
 	local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
 
-	local title = config.scriptName
+	local title = config.appName
 	local icon = nil
 
 	if displayMenubarAsIcon then
@@ -109,6 +109,8 @@ function manager.updateMenubarIcon()
 	title = title .. titleSuffix
 
 	manager.menubar:setIcon(icon)
+	-- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
+	manager.menubar:setTitle(" ")
 	manager.menubar:setTitle(title)
 
 end

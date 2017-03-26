@@ -65,7 +65,7 @@ local hud = {}
 	--------------------------------------------------------------------------------
 	-- VARIABLES:
 	--------------------------------------------------------------------------------
-	hud.title										= config.scriptName
+	hud.title										= config.appName
 	hud.width										= 350
 	hud.heightInspector								= 90
 	hud.heightDropTargets							= 85
@@ -158,8 +158,8 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- HUD Closed Window Watcher:
 		--------------------------------------------------------------------------------
-		hud.hudClosedFilter = windowfilter.new(config.scriptName)
-		:setAppFilter(config.scriptName, {allowRoles="*",allowTitles=hud.title})
+		hud.hudClosedFilter = windowfilter.new(config.appName)
+		:setAppFilter(config.appName, {allowRoles="*",allowTitles=hud.title})
 		:pause()
 
 		hud.hudClosedFilter:subscribe(windowfilter.windowDestroyed,
@@ -182,8 +182,8 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- CommandPost & Final Cut Pro Window Watcher:
 		--------------------------------------------------------------------------------
-		hud.hudFilter = windowfilter.new(config.scriptName)
-		:setAppFilter(config.scriptName, {allowRoles="*",allowTitles=hud.title})
+		hud.hudFilter = windowfilter.new(config.appName)
+		:setAppFilter(config.appName, {allowRoles="*",allowTitles=hud.title})
 		:pause()
 
 			--------------------------------------------------------------------------------

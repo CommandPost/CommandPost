@@ -18,6 +18,7 @@ local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
+local v					= require("semver")
 
 -------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -28,20 +29,20 @@ local sourcewatcher		= require("cp.sourcewatcher")
 -------------------------------------------------------------------------------
 local mod = {}
 
---- cp.config.scriptName
+--- cp.config.appName
 --- Constant
 --- The name of the Application
-mod.scriptName			= "CommandPost"
+mod.appName			= "CommandPost"
+
+--- cp.config.appVersion
+--- Constant
+--- Prefix used for Configuration Settings
+mod.appVersion       = hs.processInfo["version"]
 
 --- cp.config.configPrefix
 --- Constant
 --- Prefix used for Configuration Settings
 mod.configPrefix		= "cp"
-
---- cp.config.scriptVersion
---- Constant
---- Prefix used for Configuration Settings
-mod.scriptVersion       = hs.processInfo["version"]
 
 --- cp.config.bugReportEmail
 --- Constant

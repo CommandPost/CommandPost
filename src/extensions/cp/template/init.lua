@@ -5,24 +5,37 @@
 -- Takes a string with embedded Lua code and renders
 -- it based on the Lua code.
 --
---  All template blocks end with }}. Lua blocks start
---  with { + a modifier specifying the operation.
+--  All template blocks are surrounded by `{{ }}`.
 --
 -- Supports:
---  * {{ var }} for printing variables.
---  * {% func }} for running Lua functions.
+--  * `{{ var }}` for printing variables.
+--  * `{{% func }}` for running Lua functions.
 --
---  Use \{ to use a literal { in the template.
---  
---  Multi-line strings in Lua blocks are supported but
---  [[ is not allowed. Use [=[ or some other variation.
+-- Use `\{` to use a literal `{` in the template. This
+-- should only be required if you are attempting to
+-- output a '{' directly in front of an template block.
+-- 
+-- For example:
 --
---  Both compile and compileFile can take an optional
---  env table which when provided will be used as the
---  env for the Lua code in the template. This allows
---  a level of sandboxing. Note that any globals including
---  libraries that the template needs to access must be
---  provided by env if used.
+-- ```
+-- This is \{{{% 1 + 2 }}}.
+-- ```
+--
+-- ...will output:
+--
+-- ```
+-- This is {3}.
+-- ```
+-- 
+-- Multi-line strings in Lua blocks are supported but
+-- [[ is not allowed. Use [=[ or some other variation.
+--
+-- Both compile and compileFile can take an optional
+-- env table which when provided will be used as the
+-- env for the Lua code in the template. This allows
+-- a level of sandboxing. Note that any globals including
+-- libraries that the template needs to access must be
+-- provided by env if used.
  
 local mod = {}
  
@@ -56,16 +69,20 @@ local function runBlock(builder, text)
     tag = text:sub(1, 2)
  
     if tag == "{{" then
-        func = function(code)
-            return ('_ret[#_ret+1] = %s'):format(code)
-        end
-    elseif tag == "{%" then
-        func = function(code)
-            return code
-        end
+		if text:sub(3,3) == "%" then
+	        func = function(code)
+	            return code
+	        end
+			text = text:sub(4, #text-4)
+		else
+	        func = function(code)
+	            return ('_ret[#_ret+1] = %s'):format(code)
+	        end
+			text = text:sub(3, #text-3)
+		end
     end
     if func then
-        appender(builder, nil, func(text:sub(3, #text-3)))
+        appender(builder, nil, func(text))
     else
         appender(builder, text)
     end
@@ -96,7 +113,7 @@ function mod.compile(tmpl, env)
  
     while pos < #tmpl do
         -- Look for start of a Lua block.
-        b = tmpl:find("{", pos)
+        b = tmpl:find("{{", pos)
         if not b then
             break
         end

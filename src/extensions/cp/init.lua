@@ -135,7 +135,6 @@ function mod.init()
 	local fcpPath				= fcp:getPath()
 	local osVersion    			= tools.macOSVersion()
 	local fcpLanguage   		= fcp:getCurrentLanguage()
-	local hammerspoonVersion	= hs.processInfo["version"]
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -146,7 +145,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Welcome Message In The Console:
 	--------------------------------------------------------------------------------
-	console.printStyledtext(styledtext.new(config.scriptName .. " v" .. config.scriptVersion, {
+	console.printStyledtext(styledtext.new(config.appName .. " v" .. config.appVersion, {
 		color = drawing.color.definedCollections.hammerspoon["black"],
 		font = { name = "Helvetica", size = 18 },
 	}))
@@ -166,7 +165,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	console.printStyledtext("")
 	if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
-												writeToConsoleDebug(config.scriptName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
+												writeToConsoleDebug(config.appName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
 	if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end

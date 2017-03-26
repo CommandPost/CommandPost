@@ -15,12 +15,8 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("preferences")
 
-local application		= require("hs.application")
-local console			= require("hs.console")
-
 local config			= require("cp.config")
 local fcp				= require("cp.finalcutpro")
-local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
