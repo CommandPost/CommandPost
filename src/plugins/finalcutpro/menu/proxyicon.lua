@@ -15,12 +15,8 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("preferences")
 
-local application		= require("hs.application")
-local console			= require("hs.console")
-
 local config			= require("cp.config")
 local fcp				= require("cp.finalcutpro")
-local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -84,9 +80,9 @@ function mod.generateProxyTitle()
 	if mod.getEnableProxyMenuIcon() then
 		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
 		if FFPlayerQuality == mod.PROXY_QUALITY then
-			return " " .. mod.PROXY_ICON
+			return " " .. mod.PROXY_ICON .. "  "
 		else
-			return " " .. mod.ORIGINAL_ICON
+			return " " .. mod.ORIGINAL_ICON .. "  "
 		end
 	end
 
