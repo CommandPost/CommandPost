@@ -80,9 +80,9 @@ function mod.generateProxyTitle()
 	if mod.getEnableProxyMenuIcon() then
 		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
 		if FFPlayerQuality == mod.PROXY_QUALITY then
-			return " " .. mod.PROXY_ICON .. "  "
+			return " " .. mod.PROXY_ICON
 		else
-			return " " .. mod.ORIGINAL_ICON .. "  "
+			return " " .. mod.ORIGINAL_ICON
 		end
 	end
 

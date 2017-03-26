@@ -109,6 +109,8 @@ function manager.updateMenubarIcon()
 	title = title .. titleSuffix
 
 	manager.menubar:setIcon(icon)
+	-- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
+	manager.menubar:setTitle(" ")
 	manager.menubar:setTitle(title)
 
 end
