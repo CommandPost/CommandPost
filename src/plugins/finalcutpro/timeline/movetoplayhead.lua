@@ -1,10 +1,18 @@
--- Includes
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local fcp								= require("cp.finalcutpro")
 local log								= require("hs.logger").new("selectalltimelineclips")
 
 -- Constants
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 function mod.moveToPlayhead()
@@ -29,7 +37,11 @@ function mod.moveToPlayhead()
 
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.movetoplayhead",
 	group = "finalcutpro",

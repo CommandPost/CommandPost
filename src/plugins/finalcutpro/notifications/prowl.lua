@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local http										= require("hs.http")
 
@@ -13,16 +15,20 @@ local slaxdom 									= require("slaxml.slaxdom")
 
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 1000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -48,11 +54,11 @@ local mod = {}
 	end
 
 	function mod.isEnabled()
-		return metadata.get("prowlNotificationsEnabled", false)
+		return config.get("prowlNotificationsEnabled", false)
 	end
 
 	function mod.setEnabled(value)
-		metadata.set("prowlNotificationsEnabled", value)
+		config.set("prowlNotificationsEnabled", value)
 		mod.update(true)
 	end
 
@@ -61,11 +67,11 @@ local mod = {}
 	end
 
 	function mod.getAPIKey()
-		return metadata.get("prowlAPIKey", nil)
+		return config.get("prowlAPIKey", nil)
 	end
 
 	function mod.setAPIKey(value)
-		metadata.set("prowlAPIKey", value)
+		config.set("prowlAPIKey", value)
 	end
 
 	local function requestProwlAPIKey()
@@ -116,7 +122,7 @@ local mod = {}
 	end
 
 	function mod.sendNotification(message)
-		local prowlAPIKey = metadata.get("prowlAPIKey", nil)
+		local prowlAPIKey = config.get("prowlAPIKey", nil)
 		if prowlAPIKey ~= nil then
 			local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 			local prowlEvent = http.encodeForQuery("")
@@ -134,7 +140,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.notifications.prowl",

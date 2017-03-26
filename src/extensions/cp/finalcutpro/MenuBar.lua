@@ -11,11 +11,11 @@ local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
 local axutils										= require("cp.finalcutpro.axutils")
 local just											= require("cp.just")
-local metadata										= require("cp.config")
+local config										= require("cp.config")
 
 local MenuBar = {}
 
-MenuBar.MENU_MAP_FILE								= metadata.scriptPath .. "/cp/finalcutpro/menumap.json"
+MenuBar.MENU_MAP_FILE								= config.scriptPath .. "/cp/finalcutpro/menumap.json"
 MenuBar.ROLE										= "AXMenuBar"
 
 --- cp.finalcutpro.MenuBar:new(App) -> MenuBar

@@ -4,7 +4,11 @@ local log							= require("hs.logger").new("matchframe")
 local fcp							= require("cp.finalcutpro")
 local just							= require("cp.just")
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 --------------------------------------------------------------------------------
@@ -349,7 +353,11 @@ function mod.matchFrame(focus)
 	mod.browserPlayhead.highlight()
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id = "finalcutpro.timeline.matchframe",
 	group = "finalcutpro",

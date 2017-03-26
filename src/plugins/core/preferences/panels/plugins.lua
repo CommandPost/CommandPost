@@ -9,7 +9,9 @@
 --- Plugins Preferences Panel
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsPlugin")
 
@@ -21,12 +23,14 @@ local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 local tools										= require("cp.tools")
 local plugins									= require("cp.plugins")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -65,16 +69,16 @@ local mod = {}
 			hs.openConsole()
 		elseif message["body"][1] == "pluginsFolder" then
 
-			if not tools.doesDirectoryExist(metadata.userPluginsPath) then
+			if not tools.doesDirectoryExist(config.userPluginsPath) then
 				log.df("Creating Plugins directory.")
-				local status, err = fs.mkdir(metadata.userPluginsPath)
+				local status, err = fs.mkdir(config.userPluginsPath)
 				if not status then
 					log.ef("Failed to create Plugins directory: %s", err)
 					return
 				end
 			end
 
-			local pathToOpen = fs.pathToAbsolute(metadata.userPluginsPath)
+			local pathToOpen = fs.pathToAbsolute(config.userPluginsPath)
 			if pathToOpen then
 				local _, status = hs.execute('open "' .. pathToOpen .. '"')
 				if status then return end
@@ -385,7 +389,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.preferences.panels.plugins",

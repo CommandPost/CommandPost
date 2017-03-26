@@ -1,16 +1,36 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                               C O M M A N D S                              --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.commands.command ===
+---
+--- Commands Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log					= require("hs.logger").new("command")
+
 local keycodes				= require("hs.keycodes")
 local hotkey				= require("hs.hotkey")
 
 local shortcut				= require("cp.commands.shortcut")
 
-local log					= require("hs.logger").new("command")
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local command = {}
 
 -- Only show Hotkey Errors:
 hotkey.setLogLevel("error")
 
-local command = {}
-
---- hs.commands.command:new() -> command
+--- cp.commands.command:new() -> command
 --- Creates a new menu command, which can have items and sub-menus added to it.
 ---
 --- Parameters:
@@ -39,7 +59,7 @@ function command:parent()
 	return self._parent
 end
 
---- hs.commands.command:titled(title) -> command
+--- cp.commands.command:titled(title) -> command
 --- Applies the provided human-readable title to the command.
 ---
 --- Parameters:
@@ -83,7 +103,7 @@ function command:getGroup()
 	return self._group
 end
 
---- hs.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
+--- cp.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
 --- Specifies that the command is activated by pressing a key combination.
 --- This method can be called multiple times, and multiple key combinations will be registered for the command.
 --- To remove existing key combinations, call the `command:deleteShortcuts()` method.
@@ -130,7 +150,7 @@ function command:activatedBy(modifiers, keyCode)
 	end
 end
 
---- hs.commands.command:deleteShortcuts() -> command
+--- cp.commands.command:deleteShortcuts() -> command
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
@@ -155,7 +175,7 @@ function command:setShortcuts(shortcuts)
 	return self
 end
 
---- hs.commands.command:addShortcut() -> command
+--- cp.commands.command:addShortcut() -> command
 --- Adds the specified shortcut to the command.
 --- If the command is enabled, the shortcut will also be enabled.
 ---
@@ -179,7 +199,7 @@ function command:addShortcut(newShortcut)
 	return self
 end
 
---- hs.commands.command:getShortcuts() -> command
+--- cp.commands.command:getShortcuts() -> command
 --- Returns the set of shortcuts assigned to this command.
 ---
 --- Parameters:
@@ -191,7 +211,7 @@ function command:getShortcuts()
 	return self._shortcuts
 end
 
---- hs.commands.command:whenActivated(function) -> command
+--- cp.commands.command:whenActivated(function) -> command
 --- Sets the function that will be called when the command is activated.
 ---
 --- NOTE: This is a shortcut for calling `whenPressed(...)`
@@ -206,7 +226,7 @@ function command:whenActivated(activatedFn)
 	return self:whenPressed(activatedFn)
 end
 
---- hs.commands.command:whenPressed(function) -> command
+--- cp.commands.command:whenPressed(function) -> command
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
@@ -220,7 +240,7 @@ function command:whenPressed(pressedFn)
 	return self
 end
 
---- hs.commands.command:whenReleased(function) -> command
+--- cp.commands.command:whenReleased(function) -> command
 --- Sets the function that will be called when the command key combo is released.
 ---
 --- Parameters:
@@ -234,7 +254,7 @@ function command:whenReleased(releasedFn)
 	return self
 end
 
---- hs.commands.command:whenRepeated(function) -> command
+--- cp.commands.command:whenRepeated(function) -> command
 --- Sets the function that will be called when the command key combo is repeated.
 ---
 --- Parameters:
@@ -248,7 +268,7 @@ function command:whenRepeated(repeatedFn)
 	return self
 end
 
---- hs.commands.command:pressed() -> command
+--- cp.commands.command:pressed() -> command
 --- Executes the 'pressed' function, if present.
 ---
 --- Parameters:
@@ -262,7 +282,7 @@ function command:pressed()
 	return nil
 end
 
---- hs.commands.command:released() -> command
+--- cp.commands.command:released() -> command
 --- Executes the 'released' function, if present.
 ---
 --- Parameters:
@@ -276,7 +296,7 @@ function command:released()
 	return nil
 end
 
---- hs.commands.command:repeated(repeats) -> command
+--- cp.commands.command:repeated(repeats) -> command
 --- Executes the 'repeated' function, if present.
 ---
 --- Parameters:
@@ -300,7 +320,7 @@ function command:repeated(repeats)
 	return result
 end
 
---- hs.commands.command:activated(repeats) -> command
+--- cp.commands.command:activated(repeats) -> command
 --- Executes the 'pressed', then 'repeated', then 'released' functions, if present.
 ---
 --- Parameters:

@@ -1,9 +1,30 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                    S H O R T C U T   C O M M A N D S                       --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.commands.shortcut ===
+---
+--- Shortcut Commands
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("shortcut")
+
 local eventtap									= require("hs.eventtap")
 local hotkey									= require("hs.hotkey")
 local keycodes									= require("hs.keycodes")
 local englishKeyCodes							= require("cp.commands.englishKeyCodes")
 
-local log										= require("hs.logger").new("shortcut")
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 --- The shortcut class
 local shortcut = {}
@@ -33,7 +54,7 @@ function shortcut.textToKeyCode(input)
 	return result
 end
 
---- hs.commands.shortcut:new(command) -> shortcut
+--- cp.commands.shortcut:new(command) -> shortcut
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
 --- Parameters:
@@ -53,7 +74,7 @@ function shortcut:new(modifiers, keyCode)
 	return o
 end
 
---- hs.commands.shortcut:build(receiverFn) > hs.commands.shortcut.builder
+--- cp.commands.shortcut:build(receiverFn) > hs.commands.shortcut.builder
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
 --- shortcut. The result of that function will be returned to the next stage.
@@ -91,7 +112,7 @@ function shortcut:isEnabled()
 	return self._enabled
 end
 
---- hs.commands.shortcut:enable() - > shortcut
+--- cp.commands.shortcut:enable() - > shortcut
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
 ---
 --- Parameters:
@@ -107,7 +128,7 @@ function shortcut:enable()
 	return self
 end
 
---- hs.commands.shortcut:enable() - > shortcut
+--- cp.commands.shortcut:enable() - > shortcut
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
 ---
 --- Parameters:
@@ -123,7 +144,7 @@ function shortcut:disable()
 	return self
 end
 
---- hs.commands.shortcut:bind(pressedFn, releasedFn, repeatedFn) -> shortcut
+--- cp.commands.shortcut:bind(pressedFn, releasedFn, repeatedFn) -> shortcut
 --- This function binds the shortcut to a hotkey, with the specified callback functions for
 --- `pressedFn`, `releasedFn` and `repeatedFn`.
 ---
@@ -168,7 +189,7 @@ function shortcut:delete()
 	return self:unbind()
 end
 
---- hs.commands.shortcut:trigger() -> shortcut
+--- cp.commands.shortcut:trigger() -> shortcut
 --- This will trigger the keystroke specified in the shortcut.
 ---
 --- Parameters:
@@ -182,7 +203,7 @@ function shortcut:trigger()
 	return self
 end
 
---- hs.commands.shortcut.builder:new(receiverFn)
+--- cp.commands.shortcut.builder:new(receiverFn)
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
 --- shortcut. The result of that function will be returned to the next stage.
@@ -198,7 +219,7 @@ function builder:new(receiverFn)
 end
 
 
---- hs.commands.shortcut.builder:add(modifier, [keyCode]) -> shortcut/command
+--- cp.commands.shortcut.builder:add(modifier, [keyCode]) -> shortcut/command
 --- Adds the specified modifier to the set. If a `keyCode` is provided,
 --- no more modifiers can be added and the original `command` is returned instead.
 --- Otherwise, `self` is returned and further modifiers can be added.

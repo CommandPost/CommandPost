@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log			= require("hs.logger").new("lang")
 
@@ -16,16 +18,20 @@ local timer			= require("hs.timer")
 local fcp 			= require("cp.finalcutpro")
 local dialog		= require("cp.dialog")
 local tools			= require("cp.tools")
-local metadata		= require("cp.config")
+local config		= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY = 6
-local LANGUAGE_PATH = metadata.languagePath
+local LANGUAGE_PATH = config.languagePath
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -67,7 +73,7 @@ local mod = {}
 	-- GET COMMANDPOST LANGUAGES MENU:
 	--------------------------------------------------------------------------------
 	local function getCommandPostLanguagesMenu()
-		local userLocale = metadata.get("language", nil)
+		local userLocale = config.get("language", nil)
 
 		if mod._lastUserLocale ~= nil and mod._lastUserLocale == userLocale then
 			return mod._lastCPLanguageCache
@@ -91,11 +97,11 @@ local mod = {}
 				local checkedLanguage = (userLocale == language["id"] or basicUserLocale == language["id"])
 				if checkedLanguage then
 					--log.df("Setting CommandPost Language to: %s", language["id"])
-					metadata.set("language", language["id"])
+					config.set("language", language["id"])
 				end
 
 				settingsLanguage[i] = { title = language["language"], fn = function()
-					metadata.set("language", language["id"])
+					config.set("language", language["id"])
 					i18n.setLocale(language["id"])
 				end, checked = checkedLanguage, }
 
@@ -109,7 +115,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.language",

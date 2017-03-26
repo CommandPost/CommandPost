@@ -1,11 +1,19 @@
--- Includes
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local urlevent					= require("hs.urlevent")
 local fnutils					= require("hs.fnutils")
 local log						= require("hs.logger").new("actnmngr")
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 local timer						= require("hs.timer")
 
--- The Module
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {
 	_actions	= {},
 	_actionIds	= {},
@@ -144,14 +152,14 @@ end
 
 function mod.getHidden()
 	if not mod._hidden then
-		mod._hidden = metadata.get("actionHidden", {})
+		mod._hidden = config.get("actionHidden", {})
 	end
 	return mod._hidden
 end
 
 function mod.setHidden(value)
 	mod._hidden = value
-	metadata.set("actionHidden", value)
+	config.set("actionHidden", value)
 	-- Refresh the cache next time it's accessed.
 	mod.refresh()
 end
@@ -186,14 +194,14 @@ end
 
 function mod.getFavorites()
 	if not mod._favorites then
-		mod._favorites = metadata.get("actionFavorites", {})
+		mod._favorites = config.get("actionFavorites", {})
 	end
 	return mod._favorites
 end
 
 function mod.setFavorites(value)
 	mod._favorites = value
-	metadata.set("actionFavorites", value)
+	config.set("actionFavorites", value)
 	-- Sort it in a timer.
 	timer.doAfter(1.0, mod.sortChoices)
 end
@@ -221,14 +229,14 @@ end
 
 function mod.getPopularityIndex()
 	if not mod._popularityIndex then
-		mod._popularityIndex = metadata.get("actionPopularityIndex", {})
+		mod._popularityIndex = config.get("actionPopularityIndex", {})
 	end
 	return mod._popularityIndex
 end
 
 function mod.setPopularityIndex(value)
 	mod._popularityIndex = value
-	metadata.set("actionPopularityIndex", value)
+	config.set("actionPopularityIndex", value)
 end
 
 function mod.getPopularity(id)
@@ -360,7 +368,11 @@ function mod.refresh()
 	mod._allChoices = nil
 end
 
--- The Plugin
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.action.manager",
 	group			= "core",

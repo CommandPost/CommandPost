@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log 										= require("hs.logger").new("sharingxml")
 
@@ -16,18 +18,22 @@ local notify									= require("hs.notify")
 local pathwatcher								= require("hs.pathwatcher")
 
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 
 local dialog									= require("cp.dialog")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 									= 4000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -35,14 +41,14 @@ local mod = {}
 	-- IS ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.isEnabled()
-		return metadata.get("enableXMLSharing", false)
+		return config.get("enableXMLSharing", false)
 	end
 
 	--------------------------------------------------------------------------------
 	-- SET ENABLED:
 	--------------------------------------------------------------------------------
 	function mod.setEnabled(value)
-		metadata.set("enableXMLSharing", value)
+		config.set("enableXMLSharing", value)
 		if value then
 			mod:_notify('enable')
 		else
@@ -62,14 +68,14 @@ local mod = {}
 	-- GET SHARING PATH:
 	--------------------------------------------------------------------------------
 	function mod.getSharingPath()
-		return metadata.get("xmlSharingPath")
+		return config.get("xmlSharingPath")
 	end
 
 	--------------------------------------------------------------------------------
 	-- SET SHARING PATH:
 	--------------------------------------------------------------------------------
 	function mod.setSharingPath(value)
-		metadata.set("xmlSharingPath", value)
+		config.set("xmlSharingPath", value)
 	end
 
 	--------------------------------------------------------------------------------
@@ -170,10 +176,10 @@ local mod = {}
 					if host.localizedName() ~= editorName then
 						local xmlSharingPath = mod.getSharingPath()
 						sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
-							--:setIdImage(image.imageFromPath(metadata.iconPath))
+							--:setIdImage(image.imageFromPath(config.iconPath))
 							:title("Shared XML File Received")
 							:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
-							--:informativeText(metadata.scriptName .. " has received a new XML file.")
+							--:informativeText(config.scriptName .. " has received a new XML file.")
 							:hasActionButton(true)
 							:actionButtonTitle("Import XML")
 							:send()
@@ -261,7 +267,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.sharing.xml",

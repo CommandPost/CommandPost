@@ -5,21 +5,27 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log 									= require("hs.logger").new("clipboardHistory")
 
 local fcp									= require("cp.finalcutpro")
-local metadata								= require("cp.config")
+local config								= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local TOOLS_PRIORITY						= 1000
 local OPTIONS_PRIORITY						= 1000
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -27,11 +33,11 @@ local mod = {}
 	mod.log										= log
 
 	function mod.isEnabled()
-		return metadata.get("enableClipboardHistory", false)
+		return config.get("enableClipboardHistory", false)
 	end
 
 	function mod.setEnabled(value)
-		metadata.set("enableClipboardHistory", value == true)
+		config.set("enableClipboardHistory", value == true)
 		mod.update()
 	end
 
@@ -41,14 +47,14 @@ local mod = {}
 
 	function mod.getHistory()
 		if not mod._history then
-			mod._history = metadata.get("clipboardHistory", {})
+			mod._history = config.get("clipboardHistory", {})
 		end
 		return mod._history
 	end
 
 	function mod.setHistory(history)
 		mod._history = history
-		metadata.set("clipboardHistory", history)
+		config.set("clipboardHistory", history)
 	end
 
 	function mod.clearHistory()
@@ -114,7 +120,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.clipboard.history",

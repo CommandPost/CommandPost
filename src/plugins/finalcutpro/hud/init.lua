@@ -5,7 +5,9 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("hud")
 
@@ -33,13 +35,15 @@ local ax										= require("hs._asm.axuielement")
 local plugins									= require("cp.plugins")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 local tools										= require("cp.tools")
 local commands									= require("cp.commands")
 local template									= require("cp.template")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY									= 10000
 local PREFERENCES_KEY							= "enableHUD"
@@ -52,14 +56,16 @@ local ORIGINAL_PERFORMANCE						= 5		-- Original - Better Performance
 local PROXY										= 4		-- Proxy
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local hud = {}
 
 	--------------------------------------------------------------------------------
 	-- VARIABLES:
 	--------------------------------------------------------------------------------
-	hud.title										= metadata.scriptName
+	hud.title										= config.scriptName
 	hud.width										= 350
 	hud.heightInspector								= 90
 	hud.heightDropTargets							= 85
@@ -152,8 +158,8 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- HUD Closed Window Watcher:
 		--------------------------------------------------------------------------------
-		hud.hudClosedFilter = windowfilter.new(metadata.scriptName)
-		:setAppFilter(metadata.scriptName, {allowRoles="*",allowTitles=hud.title})
+		hud.hudClosedFilter = windowfilter.new(config.scriptName)
+		:setAppFilter(config.scriptName, {allowRoles="*",allowTitles=hud.title})
 		:pause()
 
 		hud.hudClosedFilter:subscribe(windowfilter.windowDestroyed,
@@ -176,8 +182,8 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- CommandPost & Final Cut Pro Window Watcher:
 		--------------------------------------------------------------------------------
-		hud.hudFilter = windowfilter.new(metadata.scriptName)
-		:setAppFilter(metadata.scriptName, {allowRoles="*",allowTitles=hud.title})
+		hud.hudFilter = windowfilter.new(config.scriptName)
+		:setAppFilter(config.scriptName, {allowRoles="*",allowTitles=hud.title})
 		:pause()
 
 			--------------------------------------------------------------------------------
@@ -209,11 +215,11 @@ local hud = {}
 	end
 
 	function hud.isEnabled()
-		return metadata.get(PREFERENCES_KEY, false)
+		return config.get(PREFERENCES_KEY, false)
 	end
 
 	function hud.setEnabled(value)
-		metadata.set(PREFERENCES_KEY, value)
+		config.set(PREFERENCES_KEY, value)
 	end
 
 	function hud.toggleEnabled()
@@ -227,16 +233,16 @@ local hud = {}
 	end
 
 	function hud.setOption(name, value)
-		metadata.set(name, value)
+		config.set(name, value)
 		if checkOptions() then
 			hud.refresh()
 		else
-			metadata.set(name, not value)
+			config.set(name, not value)
 		end
 	end
 
 	function hud.isInspectorShown()
-		return metadata.get("hudShowInspector", true)
+		return config.get("hudShowInspector", true)
 	end
 
 	function hud.setInspectorShown(value)
@@ -248,7 +254,7 @@ local hud = {}
 	end
 
 	function hud.isDropTargetsShown()
-		return metadata.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
+		return config.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
 	end
 
 	function hud.setDropTargetsShown(value)
@@ -260,7 +266,7 @@ local hud = {}
 	end
 
 	function hud.isButtonsShown()
-		return metadata.get("hudShowButtons", true)
+		return config.get("hudShowButtons", true)
 	end
 
 	function hud.setButtonsShown(value)
@@ -272,16 +278,16 @@ local hud = {}
 	end
 
 	function hud.getPosition()
-		return metadata.get("hudPosition", {})
+		return config.get("hudPosition", {})
 	end
 
 	function hud.setPosition(value)
-		metadata.set("hudPosition", value)
+		config.set("hudPosition", value)
 	end
 
 	function hud.getButton(index, defaultValue)
 		local currentLanguage = fcp:getCurrentLanguage()
-		return metadata.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
+		return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
 	end
 
 	function hud.getButtonCommand(index)
@@ -312,7 +318,7 @@ local hud = {}
 
 	function hud.setButton(index, value)
 		local currentLanguage = fcp:getCurrentLanguage()
-		metadata.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
+		config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 	end
 
 	function hud.isFrontmost()
@@ -367,7 +373,7 @@ local hud = {}
 			--------------------------------------------------------------------------------
 			-- Hide if FCPX and CommandPost aren't Frontmost:
 			--------------------------------------------------------------------------------
-			local cpFrontmost = metadata.isFrontmost()
+			local cpFrontmost = config.isFrontmost()
 			if not fcpFrontmost and not cpFrontmost then
 				--log.df("Hiding because neither FCPX nor CP is frontmost.")
 				hud.hide()
@@ -736,7 +742,9 @@ local hud = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.hud",

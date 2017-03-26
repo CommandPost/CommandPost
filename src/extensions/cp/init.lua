@@ -16,7 +16,9 @@ logger.defaultLogLevel 			= 'debug'
 local log						= require("hs.logger").new("cp")
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
@@ -110,7 +112,9 @@ local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 
 local mod = {}

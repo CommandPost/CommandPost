@@ -9,7 +9,9 @@
 --- Plugin Manager for CommandPost.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("plugins")
 
@@ -50,7 +52,9 @@ function env:pathToAbsolute(resourcePath)
 end
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -101,7 +105,11 @@ end
 --- cp.plugins.load(package) -> boolean
 --- Function
 --- Loads a specific plugin with the specified path.
---- The plugin will only be loaded once, and the result of its `init(...)` function
+---------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+-------------------------------------------------------------------------------- will only be loaded once, and the result of its `init(...)` function
 --- will be cached for future calls.
 ---
 --- Eg:

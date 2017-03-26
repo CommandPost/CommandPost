@@ -7,12 +7,16 @@
 --- The Media Import menu section.
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
-local metadata					= require("cp.config")
+local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local PRIORITY 					= 1000
 local PREFERENCES_PRIORITY		= 27
@@ -22,7 +26,7 @@ local SETTING 					= "menubarMediaImportEnabled"
 -- LOCAL FUNCTIONS:
 --------------------------------------------------------------------------------
 	local function isSectionDisabled()
-		local setting = metadata.get(SETTING)
+		local setting = config.get(SETTING)
 		if setting ~= nil then
 			return not setting
 		else
@@ -31,12 +35,14 @@ local SETTING 					= "menubarMediaImportEnabled"
 	end
 
 	local function toggleSectionDisabled()
-		local menubarEnabled = metadata.get(SETTING)
-		metadata.set(SETTING, not menubarEnabled)
+		local menubarEnabled = config.get(SETTING)
+		config.set(SETTING, not menubarEnabled)
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.menu.mediaimport",

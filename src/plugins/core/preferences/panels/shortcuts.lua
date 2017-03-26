@@ -9,7 +9,9 @@
 --- Shortcuts Preferences Panel
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
@@ -18,17 +20,21 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local metadata									= require("cp.config")
+local config									= require("cp.config")
 
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
+--
 -- CONSTANTS:
+--
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
 
 --------------------------------------------------------------------------------
+--
 -- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local mod = {}
 
@@ -229,7 +235,7 @@ local mod = {}
 
     	end
 
-		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
+		local enableHacksShortcutsInFinalCutPro = config.get("enableHacksShortcutsInFinalCutPro", false)
 		local customShortcutsEnabled = ""
 		if enableHacksShortcutsInFinalCutPro then
 			customShortcutsEnabled = [[ style="pointer-events: none; opacity: 0.4;" ]]
@@ -339,7 +345,7 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	function mod.updateCustomShortcutsVisibility()
 
-		local enableHacksShortcutsInFinalCutPro = metadata.get("enableHacksShortcutsInFinalCutPro", false)
+		local enableHacksShortcutsInFinalCutPro = config.get("enableHacksShortcutsInFinalCutPro", false)
 
 		if enableHacksShortcutsInFinalCutPro then
 			mod._manager.injectScript([[
@@ -403,7 +409,9 @@ local mod = {}
 	end
 
 --------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
+--
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.preferences.panels.shortcuts",
