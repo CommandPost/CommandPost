@@ -179,7 +179,7 @@ local mod = {}
 							--:setIdImage(image.imageFromPath(config.iconPath))
 							:title("Shared XML File Received")
 							:subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))
-							--:informativeText(config.scriptName .. " has received a new XML file.")
+							--:informativeText(config.appName .. " has received a new XML file.")
 							:hasActionButton(true)
 							:actionButtonTitle("Import XML")
 							:send()

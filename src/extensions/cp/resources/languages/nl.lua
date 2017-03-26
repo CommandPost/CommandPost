@@ -358,7 +358,7 @@ return {
 			trachFCPXHacksPreferences           =           "Verwijder FCPX Hacks Voorkeuren",
 			provideFeedback                     =           "Geef Respons",
 			createdBy                           =           "Gemaakt door",
-			scriptVersion                       =           "Script Versie",
+			appVersion                       	=           "Versie",
 
 			--------------------------------------------------------------------------------
 			-- Notification Platform:
