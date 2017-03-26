@@ -46,10 +46,36 @@ mod.bugReportEmail      = "chris@latenitefilms.com"
 --- URL used for checking Application Updates
 mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
 
+--- cp.config.scriptPath
+--- Constant
+--- Path to where Application Scripts are stored
+
+--- cp.config.assetsPath
+--- Constant
+--- Path to where Application Assets are stored
+if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
+	-------------------------------------------------------------------------------
+	-- Use assets in either the Developer or User Library directory:
+	-------------------------------------------------------------------------------
+	mod.scriptPath			= hs.configdir
+else
+	-------------------------------------------------------------------------------
+	-- Use assets within the Application Bundle:
+	-------------------------------------------------------------------------------
+	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
+end
+
+mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
+
+--- cp.config.basePath
+--- Constant
+--- Path to where the Extensions & Plugins folders are stored.
+mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..")
+
 --- cp.config.bundledPluginsPath
 --- Constant
 --- The path to bundled plugins
-mod.bundledPluginsPath	= hs.processInfo["resourcePath"] .. "/plugins"
+mod.bundledPluginsPath	= mod.basePath .. "/plugins"
 
 --- cp.config.userPluginsPath
 --- Constant
@@ -64,31 +90,6 @@ mod.pluginPaths			= {
 	mod.bundledPluginsPath,
 }
 
---- cp.config.scriptPath
---- Constant
---- Path to where Application Scripts are stored
-
---- cp.config.assetsPath
---- Constant
---- Path to where Application Assets are stored
-if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
-	-------------------------------------------------------------------------------
-	-- Use assets in either the Developer or User Library directory:
-	-------------------------------------------------------------------------------
-	mod.scriptPath			= hs.configdir .. "/"
-	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
-else
-	-------------------------------------------------------------------------------
-	-- Use assets within the Application Bundle:
-	-------------------------------------------------------------------------------
-	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions/"
-	mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets/"
-end
-
---- cp.config.basePath
---- Constant
---- Path to where the Extensions & Plugins folders are stored.
-mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..") .. "/"
 
 --- cp.config.iconPath
 --- Constant
