@@ -24,6 +24,8 @@ local fnutils						= require("hs.fnutils")
 local config						= require("cp.config")
 local tools							= require("cp.tools")
 
+local template						= require("resty.template")
+
 --------------------------------------------------------------------------------
 -- ENVIRONMENT:
 --------------------------------------------------------------------------------
@@ -33,9 +35,7 @@ function env.new(rootPath)
 	local o = {
 		rootPath = rootPath,
 	}
-	setmetatable(o, env)
-	env.__index = env
-	return o
+	return setmetatable(o, { __index = env })
 end
 
 function env:pathToAbsolute(resourcePath)
@@ -50,6 +50,56 @@ function env:pathToAbsolute(resourcePath)
 	end
 
 	return path
+end
+
+function env:readResource(resourcePath)
+	local name = self:pathToAbsolute(resourcePath)
+	if not name then
+		return nil, ("Unable to read resource file: '%s'"):format(resourcePath)
+	end
+	
+	local f, err = io.open(name, "rb")
+	if not f then
+	    return nil, err
+	end
+	local t = f:read("*all")
+	f:close()
+	return t
+end
+
+function env:compileTemplate(view, layout)
+	-- replace the load function to allow loading from the plugin
+	local oldLoader = template.load
+	local load_plugin = function(path)
+		local content, err = self:readResource(path)
+		if err then
+			log.df("Unable to load '%s': %s", path, err)
+			return path
+		else
+			return content
+		end
+	end
+	
+	template.load = load_plugin
+	local result, err = template.compile(view, layout)
+	if err then
+		log.ef("Error while compiling template at '%s':\n%s", view, err)
+		return result, err
+	end
+	template.load = oldLoader
+
+	-- replace the render function to replace the loader when rendering
+	return function(...)
+		local oldLoad = template.load
+		template.load = load_plugin
+		local content, err = result(...)
+		template.load = oldLoad
+		return content, err
+	end
+end
+
+function env:renderTemplate(view, model, layout)
+	return self:compileTemplate(view, layout)(model)
 end
 
 --------------------------------------------------------------------------------

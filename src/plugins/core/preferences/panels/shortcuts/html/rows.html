@@ -1,0 +1,47 @@
+{%
+	for _,item in ipairs(shortcuts) do
+%}
+			<tr>
+				<td class="rowGroup">{{ i18n(item.groupId .. "_command_group", {default = item.groupId}) }}</td>
+				<td class="rowLabel">{{ item.command:getTitle() }}</td>
+				<td class="rowModifier" style="text-align: center;">
+					<select id="modifiers_{{ item.shortcutId }}" style="width: 90px;">
+						<option value="none">{{ i18n("none", {default = "None"}) }}</option>
+						{* modifierOptions(item.shortcut) *}
+					</select>
+				</td>
+				<td class="rowShortcut" style="text-align: center;">
+					<select id="keyCode_{{ item.shortcutId }}" style="width: 50px;">
+						<option></option>
+						{* keyCodeOptions(item.shortcut) *}
+					</select>
+				</td>
+			</tr>
+			<script>
+			(function() {
+				var modifiers = document.getElementById("modifiers_{{ item.shortcutId }}");
+				var keyCode = document.getElementById("keyCode_{{ item.shortcutId }}");
+				var handler = function () {
+					console.log("modifiers.id: " + modifiers.id)
+					console.log("modifiers.value: " + modifiers.value)
+					try {
+						var result = {
+							action: "updateShortcut",
+							group: "{{ item.groupId }}",
+							command: "{{ item.command:id() }}",
+							shortcut: {{ (item.shortcutIndex or 0) }},
+							modifiers: modifiers.value,
+							keyCode: keyCode.value,
+						}
+						webkit.messageHandlers.{{ context.webviewLabel }}.postMessage(result);
+					} catch(err) {
+						alert('An error has occurred. Does the controller exist yet?');
+					}
+				}
+				modifiers.onchange = handler
+				keyCode.onchange = handler
+			})()
+			</script>
+{%
+	end -- shortcuts loop
+%}
