@@ -21,7 +21,6 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
-local template									= require("cp.template")
 
 --------------------------------------------------------------------------------
 --
@@ -49,8 +48,8 @@ mod._panels									= {}
 --------------------------------------------------------------------------------
 -- SET PANEL TEMPLATE PATH:
 --------------------------------------------------------------------------------
-function mod.setPanelTemplatePath(path)
-	mod.panelTemplatePath = path
+function mod.setPanelRenderer(renderer)
+	mod.renderPanel = renderer
 end
 
 --------------------------------------------------------------------------------
@@ -76,42 +75,18 @@ end
 --------------------------------------------------------------------------------
 local function generateHTML()
 
-	local env = template.defaultEnv()
+	local env = {}
 
-	env.i18n = i18n
+	env.panels = mod._panels
+	env.highestPriorityID = highestPriorityID()
 
-	env.content = ""
-
-	local highestPriorityID = highestPriorityID()
-	for i, v in ipairs(mod._panels) do
-		local display = "none"
-		if v["id"] == highestPriorityID then display = "block" end
-		env.content =  env.content .. [[
-			<div id="]] .. v["id"] .. [[" style="display: ]] .. display .. [[;">
-			]] .. v["contentFn"]() .. [[
-			</div>
-		]]
-
+	local result, err = mod.renderPanel(env)
+	if err then
+		log.ef("Error while rendering Welcome Panel: %s", err)
+		return err
+	else
+		return result
 	end
-
-	--------------------------------------------------------------------------------
-	-- Generate the Progress Dots:
-	--------------------------------------------------------------------------------
-	local progressDots = [[<p class="progress-dots">]]
-	for i, v in ipairs(mod._panels) do
-
-		local class = ""
-		if v["id"] == highestPriorityID then class = "selected-dot" end
-
-		progressDots = progressDots .. [[<span id="dot]] .. v["id"] .. [[" class="]] .. class .. [[">●</span>]]
-
-	end
-	progressDots = progressDots .. "</h2>"
-
-	env.content = env.content .. progressDots
-
-	return template.compileFile(mod.panelTemplatePath, env)
-
 end
 
 --------------------------------------------------------------------------------
@@ -321,7 +296,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.setPanelTemplatePath(env:pathToAbsolute("html/template.htm"))
+	mod.setPanelRenderer(env:compileTemplate("html/template.html"))
 
 	return mod
 end
