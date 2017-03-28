@@ -386,6 +386,9 @@ function mod.init(pluginPaths)
 
 	mod.paths = fnutils.copy(pluginPaths)
 
+	-- watch for future changes in the plugin paths.
+	mod.watchPluginPaths()
+
 	-- First, scan all plugin paths
 	for _,path in ipairs(mod.paths) do
 		mod.scanDirectory(path)
@@ -396,9 +399,6 @@ function mod.init(pluginPaths)
 
 	-- notify them of a `postInit`
 	mod.postInitPlugins()
-	
-	-- watch for future changes in the plugin paths.
-	mod.watchPluginPaths()
 
 	return mod
 end

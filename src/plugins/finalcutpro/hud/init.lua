@@ -37,7 +37,6 @@ local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
 local tools										= require("cp.tools")
 local commands									= require("cp.commands")
-local template									= require("cp.template")
 
 --------------------------------------------------------------------------------
 --
@@ -489,7 +488,8 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- Set up the template environment
 		--------------------------------------------------------------------------------
-		local env 		= template.defaultEnv()
+		local env 		= {}
+		
 		env.i18n		= i18n
 		env.hud			= hud
 		env.displayDiv	= displayDiv
@@ -648,7 +648,13 @@ local hud = {}
 	-- GENERATE HTML:
 	--------------------------------------------------------------------------------
 	function hud.generateHTML()
-		return template.compileFile(hud.htmlPath .. "/hud.html", getEnv())
+		local result, err = hud.renderTemplate(getEnv())
+		if err then
+			log.ef("Error while rendering HUD template: %s", err)
+			return err
+		else
+			return result
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -733,10 +739,10 @@ local hud = {}
 	--------------------------------------------------------------------------------
 	-- INITIALISE MODULE:
 	--------------------------------------------------------------------------------
-	function hud.init(xmlSharing, actionmanager, htmlPath)
+	function hud.init(xmlSharing, actionmanager, env)
 		hud.xmlSharing		= xmlSharing
 		hud.actionmanager	= actionmanager
-		hud.htmlPath		= htmlPath
+		hud.renderTemplate	= env:compileTemplate("html/hud.html")
 		return hud
 	end
 
@@ -764,7 +770,7 @@ local plugin = {
 		--------------------------------------------------------------------------------
 		-- Initialise Module:
 		--------------------------------------------------------------------------------
-		hud.init(deps.xmlSharing, deps.actionmanager, env:pathToAbsolute("html"))
+		hud.init(deps.xmlSharing, deps.actionmanager, env)
 
 		--------------------------------------------------------------------------------
 		-- Setup Watchers:
