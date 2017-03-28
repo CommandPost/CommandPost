@@ -174,7 +174,6 @@ local function iterateModifiers(list)
 end
 
 local allModifiers = iterateModifiers(baseModifiers)
-log.df("all modifiers: %s", hs.inspect(allModifiers))
 
 local function modifierOptions(shortcut)
 	local out = ""
