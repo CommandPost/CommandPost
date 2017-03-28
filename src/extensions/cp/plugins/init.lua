@@ -26,6 +26,9 @@ local tools							= require("cp.tools")
 
 local template						= require("resty.template")
 
+-- Disable template caching
+template.caching(false)
+
 --------------------------------------------------------------------------------
 -- ENVIRONMENT:
 --------------------------------------------------------------------------------
