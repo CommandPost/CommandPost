@@ -21,6 +21,7 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local task										= require("hs.task")
+local timer										= require("hs.timer")
 local windowfilter								= require("hs.window.filter")
 
 local plist										= require("cp.plist")
@@ -749,20 +750,36 @@ end
 ---
 --- Parameters:
 ---  * forceReload	- (optional) if true, a reload will be forced even if the file hasn't been modified.
+---  * preventMultipleReloads - (optional) if true, adds a 0.01 delay before reloading preferences (for use with the watcher)
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
 ---
-function App:getPreferences(forceReload)
+App._preferencesAlreadyUpdating = false
+function App:getPreferences(forceReload, preventMultipleReloads)
+	if preventMultipleReloads and App._preferencesAlreadyUpdating then
+		--log.df("Skipping Preferences Reload...")
+		return self._preferences
+	else
+		App._preferencesAlreadyUpdating = true
+	end
+
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		log.d("Reloading Final Cut Pro Preferences.")
+		timer.doAfter(0.01, function()
 
-		-- See: https://macmule.com/2014/02/07/mavericks-preference-caching/
-		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
+			log.df("Reloading Final Cut Pro Preferences...")
 
-		self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
-		self._preferencesModified = modified
+			-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
+			hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
+
+			self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
+			self._preferencesModified = modified
+
+			App._preferencesAlreadyUpdating = false
+
+		end)
+
 	 end
 	return self._preferences
 end
