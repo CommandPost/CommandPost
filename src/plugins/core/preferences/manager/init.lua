@@ -255,7 +255,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.setPanelRenderer(env:compileTemplate("html/panel.htm"))
+	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 
 	deps.bottom:addItem(PRIORITY, function()
 		return { title = i18n("preferences") .. "...", fn = mod.show }
