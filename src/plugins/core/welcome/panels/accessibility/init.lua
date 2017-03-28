@@ -59,15 +59,17 @@ local mod = {}
 	-- GENERATE CONTENT:
 	--------------------------------------------------------------------------------
 	local function generateContent()
-
-		local env = {}
-		env.generate = generate
 		
 		generate.setWebviewLabel(mod.webviewLabel)
+
+		local env = {
+			generate 	= generate,
+			iconPath	= mod.iconPath,
+		}
 		
 		local result, err = mod.renderPanel(env)
 		if err then
-			log.ef("Error while generating Accessibility Welcome Panel: %", eff)
+			log.ef("Error while generating Accessibility Welcome Panel: %", err)
 			return err
 		else
 			return result, mod.panelBaseURL
@@ -91,7 +93,8 @@ local mod = {}
 		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
 		
 		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.panelBaseUrl = env:pathToURL("html")
+		mod.panelBaseURL = env:pathToURL("html")
+		mod.iconPath = env:pathToAbsolute("html/accessibility_icon.png")
 
 		return mod
 
