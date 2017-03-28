@@ -14,8 +14,11 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("webapp")
 
-local httpserver		= require("hs.httpserver")
+local hsminweb			= require("hs.httpserver.hsminweb")
 local inspect			= require("hs.inspect")
+local timer				= require("hs.timer")
+
+local template			= require("cp.template")
 
 --------------------------------------------------------------------------------
 --
@@ -24,54 +27,11 @@ local inspect			= require("hs.inspect")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local function htmlInterface()
-	local html = [[
-		<!DOCTYPE html>
-		<html>
-			<body>
-
-			<div id="demo">
-				<h1>CommandPost</h1>
-				<button type="button" onclick="highlightBrowserPlayhead()">Highlight Browser Playhead</button>
-			</div>
-
-			<script>
-			function highlightBrowserPlayhead() {
-				var xhttp = new XMLHttpRequest();
-			  	xhttp.open("GET", "/action/cpHighlightBrowserPlayhead", true);
-			  	xhttp.send();
-			}
-			</script>
-
-			</body>
-		</html>
-		]]
-	return html
-end
-
-local function serverCallback(requestType, requestPath, requestHeaders, requestBody)
-
-	--[[
-	log.df("requestType: %s", inspect(requestType))
-	log.df("requestPath: %s", inspect(requestPath))
-	log.df("requestHeaders: %s", inspect(requestHeaders))
-	log.df("requestBody: %s", inspect(requestBody))
-	--]]
-
-	if string.sub(requestPath,1,8)  == "/action/" then
-		if string.sub(requestPath,9) == "cpHighlightBrowserPlayhead" then
-			mod.playhead.highlight()
-		end
+function webAppAction(value)
+	log.df("Action Recieved: %s", value)
+	if value == "cpHighlightBrowserPlayhead" then
+		mod.playhead.highlight()
 	end
-
-	local returnResponseCode = 200
-	local returnBody = htmlInterface()
-	local returnHeaders = {
-        ["Content-Type"]  = "text/html",
-    }
-
-	return returnBody, returnResponseCode, returnHeaders
-
 end
 
 function mod.start()
@@ -79,20 +39,19 @@ function mod.start()
 	if mod._server then
 		log.df("CommandPost WebApp Already Running")
 	else
-		mod._server = httpserver.new()
-			:setName("CommandPost Webapp")
-			:setPort(12345)
-			:setCallback(serverCallback)
+		mod._server = hsminweb.new()
+			:name("CommandPost Webapp")
+			:port(12345)
+			:cgiEnabled(true)
+			:documentRoot(mod.path)
+			:luaTemplateExtension("lp")
+			:directoryIndex({"index.lp"})
 			:start()
 		log.df("Started CommandPost WebApp.")
 	end
 
 	return mod
 
-end
-
-function mod.init()
-	mod.start()
 end
 
 --------------------------------------------------------------------------------
@@ -113,8 +72,12 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	mod.playhead = deps.playhead
-	mod.path = env:pathToAbsolute("")
-	return mod.init()
+	mod.path = env:pathToAbsolute("html")
+	return mod
+end
+
+function plugin.postInit()
+	timer.doAfter(0.1, mod.start)
 end
 
 return plugin
