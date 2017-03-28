@@ -32,7 +32,6 @@ local windowfilter								= require("hs.window.filter")
 
 local ax										= require("hs._asm.axuielement")
 
-local plugins									= require("cp.plugins")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")

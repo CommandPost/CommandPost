@@ -53,7 +53,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Remove Hacks Shortcut in Final Cut Pro:
 		--------------------------------------------------------------------------------
-		plugins("cp.plugins.finalcutpro.hacks.shortcuts").disableHacksShortcuts()
+		mod.fcpShortcuts.disableHacksShortcuts()
 
 		--------------------------------------------------------------------------------
 		-- Trash all Script Settings:
@@ -133,6 +133,7 @@ local plugin = {
 		["core.preferences.panels.general"]	= "general",
 		["core.preferences.panels.menubar"]	= "menubar",
 		["core.menu.manager"]				= "menuManager",
+		["finalcutpro.hacks.shortcuts"]		= "fcpShortcuts",
 	}
 }
 	--------------------------------------------------------------------------------
@@ -141,6 +142,7 @@ local plugin = {
 	function plugin.init(deps)
 
 		mod.menuManager = deps.menuManager
+		mod.fcpShortcuts = deps.fcpShortcuts
 
 		--------------------------------------------------------------------------------
 		-- Cache Auto Launch:
