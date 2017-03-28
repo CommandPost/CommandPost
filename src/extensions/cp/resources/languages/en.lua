@@ -706,8 +706,8 @@ return {
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
-	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Commandset",
-	finalcutpro_welcome_panels_finalcutpromissing_label		=	"Welcome: Final Cut Pro Missing",
+	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
+	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
 	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
 
 	--------------------------------------------------------------------------------
