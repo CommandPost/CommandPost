@@ -714,6 +714,9 @@ return {
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
 
+	fcpx_command_group										=	"FCPX",
+	global_command_group									=	"Global",
+
 		--------------------------------------------------------------------------------
 		-- Global:
 		--------------------------------------------------------------------------------
@@ -807,6 +810,16 @@ return {
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
+		
+		cpBatchExportFromBrowser_title							=	"Batch Export from Browser",
+		cpChangeSmartCollectionsLabel_title						=	"Change Smart Collections Label",
+		cpConsole_title											=	"Activate Console",
+		cpCopyWithCustomLabel_title								=	"Copy with Custom Label",
+		cpCopyWithCustomLabelAndFolder_title					=	"Copy with Custom Label and Folder",
+		cpHUD_title												=	"Toggle HUD",
+		cpSingleMatchFrameAndHighlight_title					=	"Single Match Frame and Highlight",
+		cpToggleTouchBar_title									=	"Toggle TouchBar",
+		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUTS HELP:
