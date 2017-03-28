@@ -81,11 +81,12 @@ end
 --- Parameters:
 ---  * data - Table containing the data you want to display on the Checkbox
 ---  * customTrigger - Custom label used for JavaScript Callback
+---  * customID - Custom ID used for the HTML objects
 ---
 --- Returns:
 ---  * String containing the HTML
 ---
-function mod.checkbox(data, customTrigger)
+function mod.checkbox(data, customTrigger, customID)
 
 	local result = data["title"]
 	if customTrigger then result = customTrigger end
@@ -96,6 +97,7 @@ function mod.checkbox(data, customTrigger)
 	end
 
 	local id = "checkbox" .. randomWord(20)
+	if customID then id = customID end
 
 	local result = [[<p class="uiItem"><input type="checkbox" id="]] .. id .. [[" value=""]] .. isChecked .. [[> ]] .. data["title"] .. [[</p>
 	<script>
@@ -231,7 +233,7 @@ function mod.imageBase64(pathToImage)
 		end
 		local data = f:read("*all")
 		f:close()
-		
+
 		return "data:image/jpeg;base64, "..base64.encode(data)
 	end
 	return ""

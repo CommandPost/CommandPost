@@ -2,7 +2,12 @@
 	for _,item in ipairs(shortcuts) do
 %}
 			<tr>
-				<td class="rowGroup">{{ i18n(item.groupId .. "_command_group", {default = item.groupId}) }}</td>
+				<td class="rowGroup">{%
+				currentRow = i18n(item.groupId .. "_command_group", {default = item.groupId})
+				if currentRow ~= lastRow then
+					%}{{currentRow}}{%
+				end
+				lastRow = currentRow %}</td>
 				<td class="rowLabel">{{ item.command:getTitle() }}</td>
 				<td class="rowModifier" style="text-align: center;">
 					<select id="modifiers_{{ item.shortcutId }}" style="width: 90px;">

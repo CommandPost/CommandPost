@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.preferences.panels.shortcuts ===
+--- === core.preferences.panels.shortcuts ===
 ---
 --- Shortcuts Preferences Panel
 
@@ -70,7 +70,7 @@ local function controllerCallback(message)
 	local body = message.body
 	local action = body.action
 
-	log.df("Callback message: %s", hs.inspect(message))
+	--log.df("Callback message: %s", hs.inspect(message))
 	if action == "updateShortcut" then
 		--------------------------------------------------------------------------------
 		-- Values from Callback:
@@ -102,7 +102,7 @@ local function controllerCallback(message)
 		else
 			log.wf("Unable to find command to update: %s:%s", group, command)
 		end
-	
+
 	end
 
 end
@@ -168,7 +168,7 @@ function _.reduceCombinations(list, f, state)
 end
 
 local function iterateModifiers(list)
-	return _.reduceCombinations(list, function(memo, v) 
+	return _.reduceCombinations(list, function(memo, v)
 		return { value = v.value .. ":" .. memo.value, label = v.label .. memo.label}
 	end)
 end
@@ -181,7 +181,7 @@ local function modifierOptions(shortcut)
 		local selected = shortcut and _.same(shortcut:getModifiers(), split(modifiers.value, ":")) and " selected" or ""
 		out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
 	end
-	return out	
+	return out
 end
 
 local function keyCodeOptions(shortcut)
@@ -219,15 +219,15 @@ local function getShortcutList()
 					shortcutIndex = 1,
 					shortcutId = ("%s_%s"):format(id, 1),
 				}
-				
+
 			end
 		end
-	end	
+	end
 	table.sort(shortcuts, function(a, b)
-		return a.groupId < b.groupId 
+		return a.groupId < b.groupId
 			or a.groupId == b.groupId and a.command:getTitle() < b.command:getTitle()
 	end)
-	
+
 	return shortcuts
 end
 
@@ -262,7 +262,7 @@ local function generateContent()
 	if config.get("enableHacksShortcutsInFinalCutPro", false) then
 		customShortcutsEnabled = [[ style="pointer-events: none; opacity: 0.4;" ]]
 	end
-	
+
 	local context = {
 		shortcuts 				= getShortcutList(),
 		modifierOptions 		= modifierOptions,
@@ -271,7 +271,7 @@ local function generateContent()
 		webviewLabel 			= mod._manager.getLabel(),
 		customShortcutsEnabled	= customShortcutsEnabled,
 	}
-	
+
 	return renderPanel(context)
 
 end
@@ -287,13 +287,13 @@ function mod.updateCustomShortcutsVisibility()
 		mod._manager.injectScript([[
 			document.getElementById("customiseShortcuts").style.opacity = 0.4;
 			document.getElementById("customiseShortcuts").style.pointerEvents = "none";
-			document.getElementById("keyboardShortcuts").children[0].children[0].checked = true;
+			document.getElementById("enableCustomShortcuts").checked = true;
 		]])
 	else
 		mod._manager.injectScript([[
 			document.getElementById("customiseShortcuts").style.opacity = 1;
 			document.getElementById("customiseShortcuts").style.pointerEvents = "auto";
-			document.getElementById("keyboardShortcuts").children[0].children[0].checked = false;
+			document.getElementById("enableCustomShortcuts").checked = false;
 		]])
 	end
 
@@ -311,13 +311,13 @@ function mod.init(deps, env)
 	mod._manager = deps.manager
 
 	mod._webviewLabel = deps.manager.getLabel()
-	
+
 	mod._env = env
-	
+
 	local id 		= "shorcuts"
 	local label 	= "Shortcuts"
 	local image		= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")
-	local priority	= 2
+	local priority	= 2010
 	local tooltip	= "Shortcuts Panel"
 	local contentFn	= generateContent
 	local callbackFn 	= controllerCallback
