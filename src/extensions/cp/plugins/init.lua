@@ -52,6 +52,15 @@ function env:pathToAbsolute(resourcePath)
 	return path
 end
 
+function env:pathToURL(resourcePath)
+	local path = self:pathToAbsolute(resourcePath)
+	if path then
+		return "file://" .. path
+	else
+		return nil
+	end
+end
+
 function env:readResource(resourcePath)
 	local name = self:pathToAbsolute(resourcePath)
 	if not name then
