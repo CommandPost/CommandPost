@@ -525,7 +525,7 @@ local hud = {}
 		if autoStartBGRender then
 			local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 			env.backgroundRender	= {
-				text	= string.format("%s (%d %s)", i18n("enabled"), autoRenderDelay, i18n("secs", {count=autoRenderDelay})),
+				text	= string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
 				class	= "good",
 			}
 		else
