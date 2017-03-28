@@ -15,16 +15,11 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("commandset")
 
-local image										= require("hs.image")
 local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
-local webview									= require("hs.webview")
 
 local config									= require("cp.config")
 local fcp										= require("cp.finalcutpro")
 local generate									= require("cp.web.generate")
-local generate									= require("cp.web.generate")
-local template									= require("cp.template")
 
 --------------------------------------------------------------------------------
 --

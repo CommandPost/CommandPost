@@ -15,15 +15,9 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("scanfinalcutpro")
 
-local image										= require("hs.image")
 local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
-local webview									= require("hs.webview")
 
 local config									= require("cp.config")
-local generate									= require("cp.web.generate")
-local template									= require("cp.template")
-
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------

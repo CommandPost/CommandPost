@@ -15,10 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("intro")
 
-local image										= require("hs.image")
 local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
-local webview									= require("hs.webview")
 
 local config									= require("cp.config")
 local generate									= require("cp.web.generate")
@@ -93,7 +90,6 @@ local mod = {}
 		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
 		
 		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.panelBaseURL = env:pathToURL("html")
 		mod.iconPath = env:pathToAbsolute("html/accessibility_icon.png")
 
 		return mod

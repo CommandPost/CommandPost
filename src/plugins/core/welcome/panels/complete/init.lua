@@ -15,14 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("intro")
 
-local image										= require("hs.image")
-local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
-local webview									= require("hs.webview")
-
 local config									= require("cp.config")
-local generate									= require("cp.web.generate")
-
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
@@ -59,10 +52,10 @@ local mod = {}
 
 		local result, err = mod.renderPanel(env)
 		if err then
-			log.ef("Error while generating Accessibility Welcome Panel: %", err)
+			log.ef("Error while generating Complete Welcome Panel: %", err)
 			return err
 		else
-			return result, mod.panelBaseURL
+			return result
 		end
 
 	end
@@ -84,7 +77,6 @@ local mod = {}
 		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
 
 		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.panelBaseURL = env:pathToURL("html")
 		mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
 
 		return mod
