@@ -810,7 +810,7 @@ return {
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
-		
+
 		cpBatchExportFromBrowser_title							=	"Batch Export from Browser",
 		cpChangeSmartCollectionsLabel_title						=	"Change Smart Collections Label",
 		cpConsole_title											=	"Activate Console",
@@ -820,62 +820,6 @@ return {
 		cpSingleMatchFrameAndHighlight_title					=	"Single Match Frame and Highlight",
 		cpToggleTouchBar_title									=	"Toggle TouchBar",
 		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
-
-	--------------------------------------------------------------------------------
-	-- SHORTCUTS HELP:
-	--------------------------------------------------------------------------------
-
-	defaultShortcutsDescription			=
-
-[[The default CommandPost Shortcut Keys are:
-
----------------------------------
-CONTROL+OPTION+COMMAND:
----------------------------------
-L = Launch Final Cut Pro (System Wide)
-
-A = Toggle HUD
-Z = Toggle Touch Bar
-
-W = Toggle Scrolling Timeline
-
-H = Highlight Browser Playhead
-F = Reveal in Browser & Highlight
-S = Single Match Frame & Highlight
-
-D = Reveal Multicam in Browser & Highlight
-G = Reveal Multicam in Angle Editor & Highlight
-
-E = Batch Export from Browser
-
-B = Change Backup Interval
-
-T = Toggle Timecode Overlays
-Y = Toggle Moving Markers
-P = Toggle Rendering During Playback
-
-M = Select Color Board Puck 1
-, = Select Color Board Puck 2
-. = Select Color Board Puck 3
-/ = Select Color Board Puck 4
-
-1-9 = Restore Keyword Preset
-
-+ = Increase Timeline Clip Height
-- = Decrease Timeline Clip Height
-
-Left Arrow = Select All Clips to Left
-Right Arrow = Select All Clips to Right
-
------------------------------------------
-CONTROL+OPTION+COMMAND+SHIFT:
------------------------------------------
-1-9 = Save Keyword Preset
-
------------------------------------------
-CONTROL+SHIFT:
------------------------------------------
-1-5 = Apply Effect]],
 
 	}
 }

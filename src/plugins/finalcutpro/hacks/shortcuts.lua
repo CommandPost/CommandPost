@@ -318,19 +318,6 @@ function mod.editCommands()
 	fcp:commandEditor():show()
 end
 
---- finalcutpro.hacks.shortcuts.displayShortcutList() -> none
---- Function
---- Display an alert showing all of the default shortcuts.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.displayShortcutList()
-	dialog.displayMessage(i18n("defaultShortcutsDescription"))
-end
-
 --- finalcutpro.hacks.shortcuts.update() -> none
 --- Function
 --- Read shortcut keys from the Final Cut Pro Preferences.
@@ -409,19 +396,9 @@ function plugin.init(deps)
 		return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
 	end)
 
-	deps.helpandsupport:addItem(1.1, function()
-		if not mod.isEditable() then
-			return { title = i18n("displayKeyboardShortcuts"), fn = mod.displayShortcutList }
-		end
-	end)
-
 	--------------------------------------------------------------------------------
 	-- Add Commands:
 	--------------------------------------------------------------------------------
-	deps.globalCmds:add("cpShowListOfShortcutKeys")
-		:activatedBy():ctrl():option():cmd("f1")
-		:whenActivated(mod.displayShortcutList)
-
 	deps.fcpxCmds:add("cpOpenCommandEditor")
 		:titled(i18n("openCommandEditor"))
 		:whenActivated(mod.editCommands)
