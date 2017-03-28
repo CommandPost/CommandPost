@@ -30,7 +30,6 @@ local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
 local plugins									= require("cp.plugins")
-local template									= require("cp.template")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
