@@ -64,6 +64,10 @@
 		</script>
 	</head>
 	<body>
-		{{ content }}
+{%	for i, panel in ipairs(panels) do %}
+		<div id="{{ panel.id }}" style="display: {{ panel.id == highestPriorityID and "block" or "none" }};">
+			{* panel.contentFn() *}
+		</div>
+{%	end %}
 	</body>
 </html>

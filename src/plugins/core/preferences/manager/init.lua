@@ -64,8 +64,8 @@ local mod = {}
 		return WEBVIEW_LABEL
 	end
 
-	function mod.setPanelTemplatePath(path)
-		mod.panelTemplatePath = path
+	function mod.setPanelRenderer(renderer)
+		mod._panelRenderer = renderer
 	end
 
 	--------------------------------------------------------------------------------
@@ -84,32 +84,17 @@ local mod = {}
 	--------------------------------------------------------------------------------
 	local function generateHTML()
 
-		local path = mod.panelTemplatePath
-		if not path then
-			log.ef("No panel template path provided.")
-			return ""
+		local env = {}
+		env.panels = mod._panels
+		env.highestPriorityID = highestPriorityID()
+
+		local result, err = mod._panelRenderer(env)
+		if err then
+			log.ef("Error rendering Preferences Panel Template: %s", err)
+			return err
+		else
+			return result
 		end
-
-		local env = template.defaultEnv()
-
-		env.i18n = i18n
-
-		env.content = ""
-
-		local highestPriorityID = highestPriorityID()
-		for i, v in ipairs(mod._panels) do
-			local display = "none"
-			if v["id"] == highestPriorityID then display = "block" end
-			env.content =  env.content .. [[
-				<div id="]] .. v["id"] .. [[" style="display: ]] .. display .. [[;">
-				]] .. v["contentFn"]() .. [[
-				</div>
-			]]
-
-    	end
-
-		return template.compileFile(path, env)
-
 	end
 
 	--------------------------------------------------------------------------------
@@ -270,7 +255,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.setPanelTemplatePath(env:pathToAbsolute("html/panel.htm"))
+	mod.setPanelRenderer(env:compileTemplate("html/panel.htm"))
 
 	deps.bottom:addItem(PRIORITY, function()
 		return { title = i18n("preferences") .. "...", fn = mod.show }
