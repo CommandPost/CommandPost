@@ -418,6 +418,16 @@ return {
     	userGuide								=			"User Guide",
 
 			--------------------------------------------------------------------------------
+			-- General:
+			--------------------------------------------------------------------------------
+	    	sendCrashData						=			"Send Crash Data (requires restart)",
+	    	general								=			"General",
+	    	advanced							=			"Advanced",
+			privacy								=			"Privacy",
+			appearance							=			"Appearance",
+			sections							=			"Sections",
+
+			--------------------------------------------------------------------------------
 			-- Preferences:
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
@@ -613,7 +623,6 @@ return {
 
 	plugin_group_core					=			"Core",
 	plugin_group_finalcutpro			=			"Final Cut Pro",
-
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUT GROUPS:
