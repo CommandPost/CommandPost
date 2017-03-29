@@ -1,24 +1,29 @@
---- A `action` which will execute a command with matching group/id values.
----------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
--------------------------------------------------------------------------------- registers itself with the `cp.plugins.actions.actionmanager`.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D      A C T I O N                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === core.commands.commandaction ===
+---
+--- An `action` which will execute a command with matching group/id values.
+--- Registers itself with the `core.action.manager`.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local commands			= require("cp.commands")
 local choices			= require("cp.choices")
+local commands			= require("cp.commands")
 local config			= require("cp.config")
+local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
---------------------------------------------------------------------------------s
+--------------------------------------------------------------------------------
 local mod = {}
 
 local ID	= "command"
@@ -45,7 +50,7 @@ function mod.toggleEnabled()
 	mod.setEnabled(not mod.isEnabled())
 end
 
---- cp.plugins.actions.commandaction.choices() -> table
+--- core.commands.commandaction.choices() -> table
 --- Function
 --- Returns an array of available choices
 function mod.choices()
@@ -80,7 +85,7 @@ function mod.getId(params)
 	return ID .. ":" .. string.format("%s:%s", params.group, params.id)
 end
 
---- cp.plugins.actions.commandaction.execute(params) -> boolean
+--- core.commands.commandaction.execute(params) -> boolean
 --- Function
 --- Executes the action with the provided parameters.
 ---
@@ -105,7 +110,7 @@ function mod.execute(params)
 			dialog.displayMessage(i18n("cmdDoesNotExistError"), {id = cmdId})
 			return false
 		end
-		
+
 		-- Ensure the command group is active
 		group:activate(
 			function() cmd:activated() end,
