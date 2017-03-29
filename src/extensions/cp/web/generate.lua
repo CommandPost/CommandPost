@@ -39,6 +39,7 @@ mod.UI_CHECKBOX								= 1
 mod.UI_HEADING								= 2
 mod.UI_BUTTON								= 3
 mod.UI_DROPDOWN								= 4
+mod.UI_TEXT									= 5
 
 --------------------------------------------------------------------------------
 -- RANDOM STRING GENERATOR:
@@ -125,6 +126,22 @@ end
 function mod.heading(data)
 
 	local result = "<h3>" .. data["title"] .. "</h3>\n"
+	return result
+
+end
+
+--- cp.web.generate.text() -> string
+--- Generates a blank HTML
+---
+--- Parameters:
+---  * data - Table containing the data you want to display.
+---
+--- Returns:
+---  * String containing the HTML
+---
+function mod.text(data)
+
+	local result = data["title"] .. "\n"
 	return result
 
 end

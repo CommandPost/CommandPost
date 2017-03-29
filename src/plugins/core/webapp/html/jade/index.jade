@@ -13,7 +13,7 @@ html
   body
     // Status bar overlay for fullscreen mode
     .statusbar-overlay
-
+      
     // Panels overlay
     .panel-overlay
     // Left panel with reveal effect
@@ -25,100 +25,66 @@ html
       .content-block
         p Right panel content goes here
 
-    // Views
-    .views
-      // Your main view, should have "view-main" class
-      .view.view-main
-        // Top Navbar
-        .navbar
-          // Navbar inner for Index page
-          .navbar-inner(data-page="index")
-            // We have home navbar without left link
-            .center.sliding Awesome App
-            .right
-              // Right link contains only icon - additional "icon-only" class
-              a(href="#").link.icon-only.open-panel 
-                i.icon.icon-bars
-          // Navbar inner for About page
-          .navbar-inner(data-page="about").cached
-            .left.sliding
-              a(href="#").back.link 
-                i.icon.icon-back
-                span Back
-            .center.sliding About Us
-          // Navbar inner for Services page
-          .navbar-inner(data-page="services").cached
-            .left.sliding
-              a(href="#").back.link 
-                i.icon.icon-back
-                span Back
-            .center.sliding Services
-          // Navbar inner for Form page
-          .navbar-inner(data-page="form").cached
-            .left.sliding
-              a(href="#").back.link 
-                i.icon.icon-back
-                span Back
-            .center.sliding Form
-        // Pages, because we need fixed-through navbar and toolbar, it has additional appropriate classes
-        .pages.navbar-through.toolbar-through
-          // Index Page
-          .page(data-page="index")
+    // Views, and they are tabs
+    // We need to set "toolbar-through" class on it to keep space for our tab bar
+    .views.tabs.toolbar-through
+      // Your first view, it is also a .tab and should have "active" class to make it visible by default
+      .view.view-main.tab.active#view-1
+        // Pages
+        .pages
+          // Page, data-page contains page name
+          .page(data-page="index-1")
             // Scrollable page content
             .page-content
-              .content-block-title Welcome To My Awesome App
+              .content-block-title Welcome
               .content-block
-                .content-block-inner
-                  p Couple of worlds here because my app is so awesome!
-                  p Duis sed erat ac eros ultrices pharetra id ut tellus. Praesent rhoncus enim ornare ipsum aliquet ultricies. Pellentesque sodales erat quis elementum sagittis.
-              
-              .content-block-title What about simple navigation?
+                p This is an example of tab bar application layout. The main point of such tabbed layout is that each tab contains independent view with its own routing and navigation.
+                p Each tab/view may have different layout, different navbar type (dynamic, fixed or static) or without navbar like this tab.
+                p And of course, your favorite panels are still here: 
+                  a(href="#").open-panel left
+                  |  and  
+                  a(href="#", data-panel="right").open-panel right
+                p Icons and their labels in tab bar below are just for example and don't related to their content.
+      // Second view (for second wrap)
+      .view.tab#view-2
+        // We can make with view with navigation, let's add Top Navbar
+        .navbar
+          .navbar-inner
+            .center.sliding Second View
+        .pages.navbar-through
+          .page(data-page="index-2")
+            .page-content
+              .content-block
+                p This is a second view. Lets, for example, have here some internal pages with navbar navigation
               .list-block
                 ul
                   li
-                    a(href="#about").item-link
+                    a(href="about.html").item-link
                       .item-content
                         .item-inner 
-                          .item-title About
+                          .item-title About Us
                   li
-                    a(href="#services").item-link
+                    a(href="services.html").item-link
                       .item-content 
                         .item-inner
                           .item-title Services
-                  li
-                    a(href="#form").item-link
-                      .item-content 
-                        .item-inner
-                          .item-title Form
-              .content-block-title Side panels
-              .content-block
-                .row
-                  .col-50
-                    a(href="#", data-panel="left").button.open-panel Left Panel
-                  .col-50
-                    a(href="#", data-panel="right").button.open-panel Right Panel
-          // About Page
-          .page(data-page="about").cached
+      .view.tab#view-3
+        .pages
+          .page(data-page="index-3")
             .page-content
+              .content-block-title Another plain static view
               .content-block
-                p You may go <a href="#" class="back">back</a> or load <a href="#services">Services</a> page.
                 p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vel commodo massa, eu adipiscing mi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus ultricies dictum neque, non varius tortor fermentum at. Curabitur auctor cursus imperdiet. Nam molestie nisi nec est lacinia volutpat in a purus. Maecenas consectetur condimentum viverra. Donec ultricies nec sem vel condimentum. Phasellus eu tincidunt enim, sit amet convallis orci. Vestibulum quis fringilla dolor.    
                 p Mauris commodo lacus at nisl lacinia, nec facilisis erat rhoncus. Sed eget pharetra nunc. Aenean vitae vehicula massa, sed sagittis ante. Quisque luctus nec velit dictum convallis. Nulla facilisi. Ut sed erat nisi. Donec non dolor massa. Mauris malesuada dolor velit, in suscipit leo consectetur vitae. Duis tempus ligula non eros pretium condimentum. Cras sed dolor odio.
-                p Suspendisse commodo adipiscing urna, a aliquet sem egestas in. Sed tincidunt dui a magna facilisis bibendum. Nunc euismod consectetur lorem vitae molestie. Proin mattis tellus libero, non hendrerit neque eleifend ac. Pellentesque interdum velit at lacus consectetur scelerisque et id dui. Praesent non fringilla dui, a elementum purus. Proin vitae lacus libero. Nunc eget lectus non mi iaculis interdum vel a velit. Nullam tincidunt purus id lacus ornare, at elementum turpis euismod. Cras mauris enim, congue eu nisl sit amet, pulvinar semper erat. Suspendisse sed mauris diam.
-                p Nam eu mauris leo. Pellentesque aliquam vehicula est, sed lobortis tellus malesuada facilisis. Fusce at hendrerit ligula. Donec eu nibh convallis, pulvinar enim quis, lacinia diam. Ut semper ac magna nec ornare. Integer placerat justo sed nunc suscipit facilisis. Vestibulum ac tincidunt augue. Duis eu aliquet mauris, vel luctus mauris. Nulla non augue nec diam pharetra posuere at in mauris.
-          // Services Page
-          .page(data-page="services").cached
-            .page-content
-              .content-block
-                p You may go <a href="#" class="back">back</a> or load <a href="#about">About</a> page.
                 p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vel commodo massa, eu adipiscing mi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus ultricies dictum neque, non varius tortor fermentum at. Curabitur auctor cursus imperdiet. Nam molestie nisi nec est lacinia volutpat in a purus. Maecenas consectetur condimentum viverra. Donec ultricies nec sem vel condimentum. Phasellus eu tincidunt enim, sit amet convallis orci. Vestibulum quis fringilla dolor.    
-                p Mauris commodo lacus at nisl lacinia, nec facilisis erat rhoncus. Sed eget pharetra nunc. Aenean vitae vehicula massa, sed sagittis ante. Quisque luctus nec velit dictum convallis. Nulla facilisi. Ut sed erat nisi. Donec non dolor massa. Mauris malesuada dolor velit, in suscipit leo consectetur vitae. Duis tempus ligula non eros pretium condimentum. Cras sed dolor odio.
-                p Suspendisse commodo adipiscing urna, a aliquet sem egestas in. Sed tincidunt dui a magna facilisis bibendum. Nunc euismod consectetur lorem vitae molestie. Proin mattis tellus libero, non hendrerit neque eleifend ac. Pellentesque interdum velit at lacus consectetur scelerisque et id dui. Praesent non fringilla dui, a elementum purus. Proin vitae lacus libero. Nunc eget lectus non mi iaculis interdum vel a velit. Nullam tincidunt purus id lacus ornare, at elementum turpis euismod. Cras mauris enim, congue eu nisl sit amet, pulvinar semper erat. Suspendisse sed mauris diam.
-                p Nam eu mauris leo. Pellentesque aliquam vehicula est, sed lobortis tellus malesuada facilisis. Fusce at hendrerit ligula. Donec eu nibh convallis, pulvinar enim quis, lacinia diam. Ut semper ac magna nec ornare. Integer placerat justo sed nunc suscipit facilisis. Vestibulum ac tincidunt augue. Duis eu aliquet mauris, vel luctus mauris. Nulla non augue nec diam pharetra posuere at in mauris.     
-          // Form Page
-          .page(data-page="form").cached
+
+      .view.tab#view-4
+        .pages.navbar-fixed
+          .page(data-page="index-4")
+            .navbar
+              .navbar-inner
+                .center Settings
             .page-content
-              .content-block-title Form Example
               .list-block
                 ul
                   li
@@ -198,81 +164,24 @@ html
                         .item-input
                           .range-slider
                             input(type="range", min="0", max="100", value="50", step="0.1")
-                  li.align-top
-                    .item-content
-                      .item-media
-                        i.icon.icon-form-comment
-                      .item-inner 
-                        .item-title.label Textarea
-                        .item-input
-                          textarea
               .content-block
-                .row
-                  .col-50
-                    a(href="#").button.button-big.button-fill.color-red Cancel
-                  .col-50
-                    input(type="submit", value="Submit").button.button-big.button-fill.color-green
-                  
-              .content-block-title Checkbox group
-              .list-block
-                ul
-                  li
-                    label.label-checkbox.item-content
-                      input(type="checkbox", name="ks-checkbox", value="Books", checked=true)
-                      .item-media
-                        i.icon.icon-form-checkbox
-                      .item-inner
-                        .item-title Books
-                  li
-                    label.label-checkbox.item-content
-                      input(type="checkbox", name="ks-checkbox", value="Movies")
-                      .item-media
-                        i.icon.icon-form-checkbox
-                      .item-inner
-                        .item-title Movies
-                  li
-                    label.label-checkbox.item-content
-                      input(type="checkbox", name="ks-checkbox", value="Food")
-                      .item-media
-                        i.icon.icon-form-checkbox
-                      .item-inner
-                        .item-title Food
-                  li
-                    label.label-checkbox.item-content
-                      input(type="checkbox", name="ks-checkbox", value="Drinks")
-                      .item-media
-                        i.icon.icon-form-checkbox
-                      .item-inner
-                        .item-title Drinks
-              .content-block-title Radio buttons group
-              .list-block
-                ul
-                  li
-                    label.label-radio.item-content
-                      input(type="radio", name="ks-radio", value="Books", checked=true)
-                      .item-inner
-                        .item-title Books
-                  li
-                    label.label-radio.item-content
-                      input(type="radio", name="ks-radio", value="Movies")
-                      .item-inner
-                        .item-title Movies
-                  li
-                    label.label-radio.item-content
-                      input(type="radio", name="ks-radio", value="Food")
-                      .item-inner
-                        .item-title Food
-                  li
-                    label.label-radio.item-content
-                      input(type="radio", name="ks-radio", value="Drinks")
-                      .item-inner
-                        .item-title Drinks
-          
-        // Bottom Toolbar
-        .toolbar
-          .toolbar-inner
-            a(href="#").link Link 1
-            a(href="#").link Link 2
+                p Mauris commodo lacus at nisl lacinia, nec facilisis erat rhoncus. Sed eget pharetra nunc. Aenean vitae vehicula massa, sed sagittis ante. Quisque luctus nec velit dictum convallis. Nulla facilisi. Ut sed erat nisi. Donec non dolor massa. Mauris malesuada dolor velit, in suscipit leo consectetur vitae. Duis tempus ligula non eros pretium condimentum. Cras sed dolor odio.
+      // Bottom Tabbar
+      .toolbar.tabbar.tabbar-labels
+        .toolbar-inner
+          a(href="#view-1").tab-link.active 
+            i.icon.tabbar-demo-icon-1
+            span.tabbar-label Information
+          a(href="#view-2").tab-link
+            i.icon.tabbar-demo-icon-2
+            span.tabbar-label Inbox
+          a(href="#view-3").tab-link 
+            i.icon.tabbar-demo-icon-3
+              span.badge.bg-red 4
+            span.tabbar-label Upload
+          a(href="#view-4").tab-link 
+            i.icon.tabbar-demo-icon-4
+            span.tabbar-label Photos
 
     // Path to Framework7 Library JS
     script(type="text/javascript", src="../../dist/js/framework7.min.js")
