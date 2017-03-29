@@ -14,19 +14,15 @@ local log										= require("hs.logger").new("welcome")
 local application								= require("hs.application")
 local console									= require("hs.console")
 local base64									= require("hs.base64")
-local drawing									= require("hs.drawing")
-local geometry									= require("hs.geometry")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
-local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
-local plugins									= require("cp.plugins")
-local template									= require("cp.template")
-local tools										= require("cp.tools")
+
+local template									= require("resty.template")
 
 --------------------------------------------------------------------------------
 --
@@ -69,9 +65,7 @@ end
 --------------------------------------------------------------------------------
 local function generateHTML()
 
-	local env = template.defaultEnv()
-
-	env.i18n = i18n
+	local env = {}
 
 	env.appVersion = config.appVersion
 
@@ -91,7 +85,7 @@ local function generateHTML()
 	--------------------------------------------------------------------------------
 	env.screenshots = getScreenshotsAsBase64()
 
-	return template.compileFile(config.scriptPath .. "/cp/feedback/html/feedback.htm", env)
+	return template.render(config.scriptPath .. "/cp/feedback/html/feedback.htm", env)
 
 end
 
