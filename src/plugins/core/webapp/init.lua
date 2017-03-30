@@ -33,14 +33,16 @@ mod.DEFAULT_PORT 			= 12345
 mod.DEFAULT_SETTING			= false
 mod.PREFERENCE_NAME 		= "enableWebApp"
 
-function webAppAction(value)
-	log.df("Action Recieved: %s", value)
-	if value == "cpHighlightBrowserPlayhead" then
-		mod.playhead.highlight()
-	end
+function webAppAction(group, action)
+	log.df("Action Recieved: %s %s", group, action)
+	mod.commandaction.execute({group = group, id = action})
 end
 
 function mod.start()
+
+	webviewEnvironment = {}
+	webviewEnvironment["commandaction"] = mod.commandaction
+
 	if mod._server then
 		log.df("CommandPost WebApp Already Running")
 	else
@@ -104,6 +106,7 @@ local plugin = {
 	dependencies	= {
 		["finalcutpro.browser.playhead"] 	= "playhead",
 		["core.preferences.panels.webapp"] 	= "webappPreferences",
+		["core.commands.commandaction"]		= "commandaction",
 	}
 }
 
@@ -116,6 +119,7 @@ function plugin.init(deps, env)
 	-- Setup Dependencies:
 	--------------------------------------------------------------------------------
 	mod.playhead = deps.playhead
+	mod.commandaction = deps.commandaction
 
 	--------------------------------------------------------------------------------
 	-- Get Hostname:
