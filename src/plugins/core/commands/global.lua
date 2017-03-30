@@ -4,14 +4,17 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- The 'global' command collection.
--- These are always active.
+--- === core.commands.global ===
+---
+--- The 'global' command collection.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log						= require("hs.logger").new("globalCmds")
+
 local commands					= require("cp.commands")
 
 --------------------------------------------------------------------------------
@@ -28,7 +31,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init()
-	return commands:new("global"):enable()
+	return commands:new("global")
 end
 
 return plugin

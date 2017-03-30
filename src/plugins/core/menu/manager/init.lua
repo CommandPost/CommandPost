@@ -72,6 +72,34 @@ function manager.init()
 	return manager
 end
 
+--- core.menu.manager.disable(priority) -> menubaritem
+--- Removes the menu from the system menu bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the menubaritem
+function manager.disable()
+	if manager.menubar then
+		return manager.menubar:removeFromMenuBar()
+	end
+end
+
+--- core.menu.manager.enable(priority) -> menubaritem
+--- Returns the previously removed menu back to the system menu bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the menubaritem
+function manager.enable()
+	if manager.menubar then
+		return manager.menubar:returnToMenuBar()
+	end
+end
+
 --- core.menu.manager.updateMenubarIcon(priority) -> none
 --- Updates the Menubar Icon
 ---

@@ -4,6 +4,8 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === finalcutpro.commands ===
+---
 --- The 'fcpx' command collection.
 --- These are only active when FCPX is the active (ie. frontmost) application.
 
