@@ -51,6 +51,7 @@ local mod = {}
 						mod.manager.nextPanel(mod._priority)
 						timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
 						accessibilityStateCheck:stop()
+						accessibilityStateCheck = nil
 					end
 				end)
 			end
