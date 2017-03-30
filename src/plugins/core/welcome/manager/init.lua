@@ -22,6 +22,7 @@ local webview									= require("hs.webview")
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
 local template									= require("cp.template")
+local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -151,8 +152,10 @@ function mod.disableUserInterface()
 
 	mod.menumanager.disable()
 
-	mod.finalCutProCommands:disable()
-	mod.globalCommands:disable()
+	local allGroups = commands.groupIds()
+	for i, v in ipairs(allGroups) do
+    	commands.group(v):disable()
+    end
 
 end
 
@@ -163,8 +166,10 @@ function mod.enableUserInterface()
 
 	mod.menumanager.enable()
 
-	mod.finalCutProCommands:enable()
-	mod.globalCommands:enable()
+	local allGroups = commands.groupIds()
+	for i, v in ipairs(allGroups) do
+    	commands.group(v):enable()
+    end
 
 end
 
@@ -349,8 +354,6 @@ local plugin = {
 	dependencies	= {
 		["core.menu.manager"]						= "menumanager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",
-		["finalcutpro.commands"]					= "finalCutProCommands",
-		["core.commands.global"]					= "globalCommands",
 	}
 }
 
@@ -366,9 +369,6 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
-
-	mod.finalCutProCommands = deps.finalCutProCommands
-	mod.globalCommands = deps.globalCommands
 
 	mod.menumanager = deps.menumanager
 	mod.shortcuts = deps.shortcuts
