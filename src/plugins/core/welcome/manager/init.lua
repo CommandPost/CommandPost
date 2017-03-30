@@ -130,12 +130,41 @@ function mod.setupUserInterface(showNotification)
 	mod.shortcuts.init()
 
 	--------------------------------------------------------------------------------
+	-- Enable Shortcuts:
+	--------------------------------------------------------------------------------
+	mod.enableUserInterface()
+
+	--------------------------------------------------------------------------------
 	-- Notifications:
 	--------------------------------------------------------------------------------
 	if showNotification then
 		log.df("Successfully loaded.")
 		dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
 	end
+
+end
+
+--------------------------------------------------------------------------------
+-- DISABLE THE USER INTERFACE:
+--------------------------------------------------------------------------------
+function mod.disableUserInterface()
+
+	mod.menumanager.disable()
+
+	mod.finalCutProCommands:disable()
+	mod.globalCommands:disable()
+
+end
+
+--------------------------------------------------------------------------------
+-- ENABLE THE USER INTERFACE:
+--------------------------------------------------------------------------------
+function mod.enableUserInterface()
+
+	mod.menumanager.enable()
+
+	mod.finalCutProCommands:enable()
+	mod.globalCommands:enable()
 
 end
 
@@ -151,7 +180,6 @@ function mod.init()
 	else
 		mod.new()
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -212,6 +240,7 @@ end
 --------------------------------------------------------------------------------
 function mod.delete()
 	mod.webview:delete()
+	mod.webview = nil
 end
 
 --------------------------------------------------------------------------------
@@ -299,12 +328,19 @@ function mod.addPanel(id, priority, contentFn, callbackFn)
 end
 
 --------------------------------------------------------------------------------
---
+-- ACCESSIBILITY STATE CALLBACK:
+--------------------------------------------------------------------------------
+function hs.accessibilityStateCallback()
+	--log.df("Accessibility State Changed.")
+	if not hs.accessibilityState() and config.get("welcomeComplete", false) and mod.webview == nil then
+		mod.disableUserInterface()
+		mod.new()
+	end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
---
---------------------------------------------------------------------------------
 --
 --------------------------------------------------------------------------------
 local plugin = {
@@ -313,6 +349,8 @@ local plugin = {
 	dependencies	= {
 		["core.menu.manager"]						= "menumanager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",
+		["finalcutpro.commands"]					= "finalCutProCommands",
+		["core.commands.global"]					= "globalCommands",
 	}
 }
 
@@ -320,9 +358,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
 	mod.setPanelTemplatePath(env:pathToAbsolute("html/template.htm"))
-
 	return mod
 end
 
@@ -330,6 +366,9 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
+
+	mod.finalCutProCommands = deps.finalCutProCommands
+	mod.globalCommands = deps.globalCommands
 
 	mod.menumanager = deps.menumanager
 	mod.shortcuts = deps.shortcuts

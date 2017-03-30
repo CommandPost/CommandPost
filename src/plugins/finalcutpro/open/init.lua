@@ -25,9 +25,9 @@ local PRIORITY = 3
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.openFinalCutPro()
-		fcp:launch()
-	end
+function mod.openFinalCutPro()
+	fcp:launch()
+end
 
 --------------------------------------------------------------------------------
 --
@@ -56,7 +56,7 @@ local plugin = {
 
 		global:add("cpLaunchFinalCutPro")
 			:activatedBy():ctrl():alt():cmd("l")
-			:whenPressed(openFcpx)
+			:whenPressed(mod.openFinalCutPro)
 
 		return mod
 	end
