@@ -440,7 +440,7 @@ function mod.init(deps)
 	local id 		= "shorcuts"
 	local label 	= "Shortcuts"
 	local image		= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")
-	local priority	= 2
+	local priority	= 2003
 	local tooltip	= "Shortcuts Panel"
 	local contentFn	= generateContent
 	local callbackFn 	= controllerCallback
