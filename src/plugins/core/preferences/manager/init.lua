@@ -141,6 +141,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Setup Tool Bar:
 		--------------------------------------------------------------------------------
+		table.sort(mod._panels, function(a, b) return a.priority < b.priority end)
 		mod.toolbar = toolbar.new(WEBVIEW_LABEL, mod._panels)
 			:canCustomize(true)
 			:autosaves(true)
