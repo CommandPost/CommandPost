@@ -33,16 +33,7 @@ mod.DEFAULT_PORT 			= 12345
 mod.DEFAULT_SETTING			= false
 mod.PREFERENCE_NAME 		= "enableWebApp"
 
-function webAppAction(group, action)
-	log.df("Action Recieved: %s %s", group, action)
-	mod.commandaction.execute({group = group, id = action})
-end
-
 function mod.start()
-
-	webviewEnvironment = {}
-	webviewEnvironment["commandaction"] = mod.commandaction
-
 	if mod._server then
 		log.df("CommandPost WebApp Already Running")
 	else
@@ -104,9 +95,7 @@ local plugin = {
 	id				= "core.webapp",
 	group			= "core",
 	dependencies	= {
-		["finalcutpro.browser.playhead"] 	= "playhead",
 		["core.preferences.panels.webapp"] 	= "webappPreferences",
-		["core.commands.commandaction"]		= "commandaction",
 	}
 }
 
@@ -114,12 +103,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-	--------------------------------------------------------------------------------
-	-- Setup Dependencies:
-	--------------------------------------------------------------------------------
-	mod.playhead = deps.playhead
-	mod.commandaction = deps.commandaction
 
 	--------------------------------------------------------------------------------
 	-- Get Hostname:

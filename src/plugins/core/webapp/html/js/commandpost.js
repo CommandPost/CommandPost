@@ -12,4 +12,12 @@ var view2 = myApp.addView('#view-2', {
 });
 var view3 = myApp.addView('#view-3');
 var view4 = myApp.addView('#view-4');
+var view5 = myApp.addView('#view-5');
 
+// Sortable toggler
+$$('.list-block.sortable').on('open', function () {
+	$$('.toggle-sortable').text('Done');
+});
+$$('.list-block.sortable').on('close', function () {
+	$$('.toggle-sortable').text('Sort');
+});
