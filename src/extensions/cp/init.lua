@@ -35,7 +35,9 @@ local plugins					= require("cp.plugins")
 --------------------------------------------------------------------------------
 -- SHUTDOWN CALLBACK:
 --------------------------------------------------------------------------------
+hs.shuttingDown = false
 function hs.shutdownCallback()
+	hs.shuttingDown = true
 	console.clearConsole()
 end
 
