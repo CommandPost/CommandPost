@@ -138,7 +138,9 @@ local hud = {}
 		--------------------------------------------------------------------------------
 		-- Setup Web View:
 		--------------------------------------------------------------------------------
-		hud.hudWebView = webview.new(getHUDRect(), {}, hud.hudWebViewController)
+		local developerExtrasEnabled = {}
+		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+		hud.hudWebView = webview.new(getHUDRect(), developerExtrasEnabled, hud.hudWebViewController)
 			:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
 			:shadow(true)
 			--:closeOnEscape(true)
@@ -567,6 +569,11 @@ local hud = {}
 				document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
 				document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
 				document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
+
+				document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
+				document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
+				document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
+				document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
 
 				document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
 				document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
