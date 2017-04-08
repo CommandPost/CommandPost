@@ -49,209 +49,209 @@ local WEBVIEW_LABEL								= "preferences"
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- SETTINGS:
-	--------------------------------------------------------------------------------
-	mod.defaultWidth 		= 450
-	mod.defaultHeight 		= 420
-	mod.defaultTitle 		= i18n("preferences")
-	mod._panels				= {}
+--------------------------------------------------------------------------------
+-- SETTINGS:
+--------------------------------------------------------------------------------
+mod.defaultWidth 		= 450
+mod.defaultHeight 		= 420
+mod.defaultTitle 		= i18n("preferences")
+mod._panels				= {}
 
-	--------------------------------------------------------------------------------
-	-- GET LABEL:
-	--------------------------------------------------------------------------------
-	function mod.getLabel()
-		return WEBVIEW_LABEL
+--------------------------------------------------------------------------------
+-- GET LABEL:
+--------------------------------------------------------------------------------
+function mod.getLabel()
+	return WEBVIEW_LABEL
+end
+
+function mod.setPanelTemplatePath(path)
+	mod.panelTemplatePath = path
+end
+
+--------------------------------------------------------------------------------
+-- HIGHEST PRIORITY ID:
+--------------------------------------------------------------------------------
+local function highestPriorityID()
+
+	local sortedPanels = mod._panels
+	table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
+	return mod._panels[1]["id"]
+
+end
+
+--------------------------------------------------------------------------------
+-- GENERATE HTML:
+--------------------------------------------------------------------------------
+local function generateHTML()
+
+	local path = mod.panelTemplatePath
+	if not path then
+		log.ef("No panel template path provided.")
+		return ""
 	end
 
-	function mod.setPanelTemplatePath(path)
-		mod.panelTemplatePath = path
-	end
+	local env = template.defaultEnv()
 
-	--------------------------------------------------------------------------------
-	-- HIGHEST PRIORITY ID:
-	--------------------------------------------------------------------------------
-	local function highestPriorityID()
+	env.i18n = i18n
 
-		local sortedPanels = mod._panels
-		table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
-		return mod._panels[1]["id"]
+	env.content = ""
 
-	end
-
-	--------------------------------------------------------------------------------
-	-- GENERATE HTML:
-	--------------------------------------------------------------------------------
-	local function generateHTML()
-
-		local path = mod.panelTemplatePath
-		if not path then
-			log.ef("No panel template path provided.")
-			return ""
-		end
-
-		local env = template.defaultEnv()
-
-		env.i18n = i18n
-
-		env.content = ""
-
-		local highestPriorityID = highestPriorityID()
-		for i, v in ipairs(mod._panels) do
-			local display = "none"
-			if v["id"] == highestPriorityID then display = "block" end
-			env.content =  env.content .. [[
-				<div id="]] .. v["id"] .. [[" style="display: ]] .. display .. [[;">
-				]] .. v["contentFn"]() .. [[
-				</div>
-			]]
-
-    	end
-
-		return template.compileFile(path, env)
+	local highestPriorityID = highestPriorityID()
+	for i, v in ipairs(mod._panels) do
+		local display = "none"
+		if v["id"] == highestPriorityID then display = "block" end
+		env.content =  env.content .. [[
+			<div id="]] .. v["id"] .. [[" style="display: ]] .. display .. [[;">
+			]] .. v["contentFn"]() .. [[
+			</div>
+		]]
 
 	end
 
-	--------------------------------------------------------------------------------
-	-- NEW PREFERENCES PANEL:
-	--------------------------------------------------------------------------------
-	function mod.new()
+	return template.compileFile(path, env)
 
-		--------------------------------------------------------------------------------
-		-- Centre on Screen:
-		--------------------------------------------------------------------------------
-		local screenFrame = screen.mainScreen():frame()
-		local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
 
-		--------------------------------------------------------------------------------
-		-- Setup Web View Controller:
-		--------------------------------------------------------------------------------
-		mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
-			:setCallback(function(message)
-				--------------------------------------------------------------------------------
-				-- Trigger Callbacks:
-				--------------------------------------------------------------------------------
-				for i, v in ipairs(mod._panels) do
-					if type(v["callbackFn"]) == "function" then
-						v["callbackFn"](message)
-					end
+--------------------------------------------------------------------------------
+-- NEW PREFERENCES PANEL:
+--------------------------------------------------------------------------------
+function mod.new()
+
+	--------------------------------------------------------------------------------
+	-- Centre on Screen:
+	--------------------------------------------------------------------------------
+	local screenFrame = screen.mainScreen():frame()
+	local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View Controller:
+	--------------------------------------------------------------------------------
+	mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
+		:setCallback(function(message)
+			--------------------------------------------------------------------------------
+			-- Trigger Callbacks:
+			--------------------------------------------------------------------------------
+			for i, v in ipairs(mod._panels) do
+				if type(v["callbackFn"]) == "function" then
+					v["callbackFn"](message)
 				end
-			end)
-
-		--------------------------------------------------------------------------------
-		-- Setup Tool Bar:
-		--------------------------------------------------------------------------------
-		table.sort(mod._panels, function(a, b) return a.priority < b.priority end)
-		mod.toolbar = toolbar.new(WEBVIEW_LABEL, mod._panels)
-			:canCustomize(true)
-			:autosaves(true)
-
-		--------------------------------------------------------------------------------
-		-- Setup Web View:
-		--------------------------------------------------------------------------------
-		local developerExtrasEnabled = {}
-		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
-		mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
-			:windowStyle({"titled", "closable", "nonactivating"})
-			:shadow(true)
-			:allowNewWindows(false)
-			:allowTextEntry(true)
-			:windowTitle(mod.defaultTitle)
-			:html(generateHTML())
-			:toolbar(mod.toolbar)
-
-		--------------------------------------------------------------------------------
-		-- Select Panel:
-		--------------------------------------------------------------------------------
-		mod.selectPanel(highestPriorityID())
-
-	end
-
-	--- core.preferences.manager.showPreferences() -> boolean
-	--- Function
-	--- Shows the Preferences Window
-	---
-	--- Parameters:
-	---  * None
-	---
-	--- Returns:
-	---  * True if successful or nil if an error occurred
-	---
-	function mod.show()
-
-		if mod.webview == nil then
-			mod.new()
-		end
-
-		if next(mod._panels) == nil then
-			dialog.displayMessage("There is no Preferences Panels to display.")
-			return nil
-		else
-			mod.webview:show()
-			timer.doAfter(0.1, function()
-				--log.df("Attempting to bring Preferences Panel to focus.")
-				mod.webview:hswindow():raise():focus()
-			end)
-			return true
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- INJECT SCRIPT
-	--------------------------------------------------------------------------------
-	function mod.injectScript(script)
-		if mod.webview then
-			mod.webview:evaluateJavaScript(script)
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- SELECT PANEL:
-	--------------------------------------------------------------------------------
-	function mod.selectPanel(id)
-
-		-- log.df("Selecting Panel with ID: %s", id)
-
-		local javascriptToInject = ""
-
-		for i, v in ipairs(mod._panels) do
-			if v["id"] == id then
-				javascriptToInject = javascriptToInject .. [[
-					document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
-				]]
-			else
-				javascriptToInject = javascriptToInject .. [[
-					document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
-				]]
 			end
+		end)
+
+	--------------------------------------------------------------------------------
+	-- Setup Tool Bar:
+	--------------------------------------------------------------------------------
+	table.sort(mod._panels, function(a, b) return a.priority < b.priority end)
+	mod.toolbar = toolbar.new(WEBVIEW_LABEL, mod._panels)
+		:canCustomize(true)
+		:autosaves(true)
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View:
+	--------------------------------------------------------------------------------
+	local developerExtrasEnabled = {}
+	if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+	mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
+		:windowStyle({"titled", "closable", "nonactivating"})
+		:shadow(true)
+		:allowNewWindows(false)
+		:allowTextEntry(true)
+		:windowTitle(mod.defaultTitle)
+		:html(generateHTML())
+		:toolbar(mod.toolbar)
+
+	--------------------------------------------------------------------------------
+	-- Select Panel:
+	--------------------------------------------------------------------------------
+	mod.selectPanel(highestPriorityID())
+
+end
+
+--- core.preferences.manager.show() -> boolean
+--- Function
+--- Shows the Preferences Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * True if successful or nil if an error occurred
+---
+function mod.show()
+
+	if mod.webview == nil then
+		mod.new()
+	end
+
+	if next(mod._panels) == nil then
+		dialog.displayMessage("There is no Preferences Panels to display.")
+		return nil
+	else
+		mod.webview:show()
+		timer.doAfter(0.1, function()
+			--log.df("Attempting to bring Preferences Panel to focus.")
+			mod.webview:hswindow():raise():focus()
+		end)
+		return true
+	end
+
+end
+
+--------------------------------------------------------------------------------
+-- INJECT SCRIPT
+--------------------------------------------------------------------------------
+function mod.injectScript(script)
+	if mod.webview then
+		mod.webview:evaluateJavaScript(script)
+	end
+end
+
+--------------------------------------------------------------------------------
+-- SELECT PANEL:
+--------------------------------------------------------------------------------
+function mod.selectPanel(id)
+
+	-- log.df("Selecting Panel with ID: %s", id)
+
+	local javascriptToInject = ""
+
+	for i, v in ipairs(mod._panels) do
+		if v["id"] == id then
+			javascriptToInject = javascriptToInject .. [[
+				document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
+			]]
+		else
+			javascriptToInject = javascriptToInject .. [[
+				document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
+			]]
 		end
-
-		mod.webview:evaluateJavaScript(javascriptToInject)
-		mod.toolbar:selectedItem(id)
-
 	end
 
-	--------------------------------------------------------------------------------
-	-- ADD PANEL:
-	--------------------------------------------------------------------------------
-	function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+	mod.webview:evaluateJavaScript(javascriptToInject)
+	mod.toolbar:selectedItem(id)
 
-		--log.df("Adding Preferences Panel with ID: %s", id)
+end
 
-		mod._panels[#mod._panels + 1] = {
-			id = id,
-			label = label,
-			image = image,
-			priority = priority,
-			tooltip = tooltip,
-			fn = function() mod.selectPanel(id) end,
-			selectable = true,
-			contentFn = contentFn,
-			callbackFn = callbackFn,
-		}
+--------------------------------------------------------------------------------
+-- ADD PANEL:
+--------------------------------------------------------------------------------
+function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
 
-	end
+	--log.df("Adding Preferences Panel with ID: %s", id)
+
+	mod._panels[#mod._panels + 1] = {
+		id = id,
+		label = label,
+		image = image,
+		priority = priority,
+		tooltip = tooltip,
+		fn = function() mod.selectPanel(id) end,
+		selectable = true,
+		contentFn = contentFn,
+		callbackFn = callbackFn,
+	}
+
+end
 
 --------------------------------------------------------------------------------
 --
