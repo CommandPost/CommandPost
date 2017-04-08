@@ -136,16 +136,18 @@ end
 ---  * data - Table containing the data you want to display on the Checkbox
 ---  * customTrigger - Custom label used for JavaScript Callback
 ---  * customWidth - Number to set the width of the button to
+---  * customID - Overrides the random HTML ID
 ---
 --- Returns:
 ---  * String containing the HTML
 ---
-function mod.button(data, customTrigger, customWidth)
+function mod.button(data, customTrigger, customWidth, customID)
 
 	local result = data["title"]
 	if customTrigger then result = customTrigger end
 
 	local id = "button" .. randomWord(20)
+	if customID then id = customID end
 
 	local style = ""
 	if customWidth then
