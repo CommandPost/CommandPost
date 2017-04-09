@@ -20,13 +20,11 @@ local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
 local v					= require("semver")
 
--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
--------------------------------------------------------------------------------
 local mod = {}
 
 --- cp.config.appName
@@ -49,18 +47,9 @@ mod.configPrefix		= "cp"
 --- Email address used for bug reports
 mod.bugReportEmail      = "chris@latenitefilms.com"
 
---- cp.config.checkUpdateURL
---- Constant
---- URL used for checking Application Updates
-mod.checkUpdateURL      = "https://api.github.com/repos/CommandPost/CommandPost/releases/latest"
-
 --- cp.config.scriptPath
 --- Constant
 --- Path to where Application Scripts are stored
-
---- cp.config.assetsPath
---- Constant
---- Path to where Application Assets are stored
 if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
 	-------------------------------------------------------------------------------
 	-- Use assets in either the Developer or User Library directory:
@@ -73,9 +62,9 @@ else
 	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
 end
 
---- cp.config.basePath
+--- cp.config.assetsPath
 --- Constant
---- Path to where assets such as images, plists, etc are stored.
+--- Path to where Application Assets are stored
 mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets"
 
 --- cp.config.basePath
@@ -100,7 +89,6 @@ mod.pluginPaths			= {
 	mod.userPluginsPath,
 	mod.bundledPluginsPath,
 }
-
 
 --- cp.config.iconPath
 --- Constant
