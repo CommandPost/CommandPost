@@ -19,6 +19,7 @@ local log						= logger.new("cp")
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
+local geometry					= require("hs.geometry")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local styledtext                = require("hs.styledtext")
@@ -125,7 +126,7 @@ function mod.init()
 		hs.openConsole()
 		local lastErrorLogFrame = config.get("lastErrorLogFrame", nil)
 		if lastErrorLogFrame then
-			local frame = hs.geometry.rect(lastErrorLogFrame["_x"], lastErrorLogFrame["_y"], lastErrorLogFrame["_w"], lastErrorLogFrame["_h"])
+			local frame = geometry.rect(lastErrorLogFrame["_x"], lastErrorLogFrame["_y"], lastErrorLogFrame["_w"], lastErrorLogFrame["_h"])
 			console.hswindow():setFrame(frame)
 		end
 	end
