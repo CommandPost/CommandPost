@@ -297,7 +297,16 @@
 	</head>
 	<body>
 		<section class="content">
-			{{ content }}
+		{%	for i, panel in ipairs(panels) do %}
+			<div id="{{ panel.id }}" style="display: {{ panel.id == highestPriorityID and 'block' or 'none' }};">
+				{* panel.contentFn() *}
+			</div>
+		{%	end %}
+			<p class="progress-dots">
+			{%	for i, panel in ipairs(panels) do %}
+				<span id="dot{{ panel.id }}" class="{{ panel.id == highestPriorityID and 'selected-dot' or '' }}">●</span>
+			{%	end %}
+			</p>
 		</section>
 	</body>
 </html>

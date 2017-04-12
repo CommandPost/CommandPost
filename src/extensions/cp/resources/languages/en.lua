@@ -418,14 +418,28 @@ return {
     	userGuide								=			"User Guide",
 
 			--------------------------------------------------------------------------------
+			-- Advanced:
+			--------------------------------------------------------------------------------
+			advanced							=			"Advanced",
+			install								=			"Install",
+			uninstall							=			"Uninstall",
+			developer							=			"Developer",
+			commandLineTool						=			"Command Line Tool",
+			enableDeveloperMode					=			"Enable Developer Mode",
+			trashPreferences					=			"Trash Preferences",
+			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
+			cliInstallError						=			"I'm sorry, but we ffailed to Install the Command Line Tool. Please try again.",
+			commandLineToolDescription			=			"When the Command Line Tool is installed, you can use <strong>cmdpost</strong> in Terminal to trigger Lua code. Please refer to the User Guide for more information.",
+
+			--------------------------------------------------------------------------------
 			-- General:
 			--------------------------------------------------------------------------------
 	    	sendCrashData						=			"Send Crash Data (requires restart)",
 	    	general								=			"General",
-	    	advanced							=			"Advanced",
 			privacy								=			"Privacy",
 			appearance							=			"Appearance",
 			sections							=			"Sections",
+			openPrivacyPolicy					=			"Open Privacy Policy",
 
 			--------------------------------------------------------------------------------
 			-- Preferences:
@@ -435,8 +449,6 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDeveloperMode					=			"Enable Developer Mode",
-			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			appVersion							=			"Version",
@@ -715,13 +727,16 @@ return {
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
-	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Commandset",
-	finalcutpro_welcome_panels_finalcutpromissing_label		=	"Welcome: Final Cut Pro Missing",
+	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
+	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
 	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
+
+	fcpx_command_group										=	"FCPX",
+	global_command_group									=	"Global",
 
 		--------------------------------------------------------------------------------
 		-- Global:
@@ -817,61 +832,15 @@ return {
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
 
-	--------------------------------------------------------------------------------
-	-- SHORTCUTS HELP:
-	--------------------------------------------------------------------------------
-
-	defaultShortcutsDescription			=
-
-[[The default CommandPost Shortcut Keys are:
-
----------------------------------
-CONTROL+OPTION+COMMAND:
----------------------------------
-L = Launch Final Cut Pro (System Wide)
-
-A = Toggle HUD
-Z = Toggle Touch Bar
-
-W = Toggle Scrolling Timeline
-
-H = Highlight Browser Playhead
-F = Reveal in Browser & Highlight
-S = Single Match Frame & Highlight
-
-D = Reveal Multicam in Browser & Highlight
-G = Reveal Multicam in Angle Editor & Highlight
-
-E = Batch Export from Browser
-
-B = Change Backup Interval
-
-T = Toggle Timecode Overlays
-Y = Toggle Moving Markers
-P = Toggle Rendering During Playback
-
-M = Select Color Board Puck 1
-, = Select Color Board Puck 2
-. = Select Color Board Puck 3
-/ = Select Color Board Puck 4
-
-1-9 = Restore Keyword Preset
-
-+ = Increase Timeline Clip Height
-- = Decrease Timeline Clip Height
-
-Left Arrow = Select All Clips to Left
-Right Arrow = Select All Clips to Right
-
------------------------------------------
-CONTROL+OPTION+COMMAND+SHIFT:
------------------------------------------
-1-9 = Save Keyword Preset
-
------------------------------------------
-CONTROL+SHIFT:
------------------------------------------
-1-5 = Apply Effect]],
+		cpBatchExportFromBrowser_title							=	"Batch Export from Browser",
+		cpChangeSmartCollectionsLabel_title						=	"Change Smart Collections Label",
+		cpConsole_title											=	"Activate Console",
+		cpCopyWithCustomLabel_title								=	"Copy with Custom Label",
+		cpCopyWithCustomLabelAndFolder_title					=	"Copy with Custom Label and Folder",
+		cpHUD_title												=	"Toggle HUD",
+		cpSingleMatchFrameAndHighlight_title					=	"Single Match Frame and Highlight",
+		cpToggleTouchBar_title									=	"Toggle TouchBar",
+		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
 
 	}
 }

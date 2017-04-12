@@ -77,7 +77,7 @@ function command:getTitle()
 	if self._title then
 		return self._title
 	else
-		return i18n(self:id() .. "_title")
+		return i18n(self:id() .. "_title", {default = self:id()})
 	end
 end
 

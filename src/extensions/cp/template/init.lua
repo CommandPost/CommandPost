@@ -18,7 +18,7 @@
 -- For example:
 --
 -- ```
--- This is \{{{% 1 + 2 }}}.
+-- This is \{{{ 1 + 2 }}}.
 -- ```
 --
 -- ...will output:
@@ -40,16 +40,24 @@
 local mod = {}
  
 -- Append text or code to the builder.
-local function appender(builder, text, code)
-    if code then
-        builder[#builder+1] = code
-    else
-        -- [[ has a \n immediately after it. Lua will strip
-        -- the first \n so we add one knowing it will be
-        -- removed to ensure that if text starts with a \n
-        -- it won't be lost.
-        builder[#builder+1] = "_ret[#_ret+1] = [[\n" .. text .. "]]"
-    end
+local function appender(builder, text)
+	builder[#builder+1] = text
+end
+
+local function appendText(builder, text)
+	-- [[ has a \n immediately after it. Lua will strip
+	-- the first \n so we add one knowing it will be
+	-- removed to ensure that if text starts with a \n
+	-- it won't be lost.
+	appender(builder, "_ret[#_ret+1] = [[\n" .. text .. "]]")
+end
+
+local function appendLuaOutput(builder, code)
+	appender(builder, ('_ret[#_ret+1] = %s'):format(code))
+end
+
+local function appendLuaCode(builder, code)
+	appender(builder, code)
 end
  
 --- Takes a string and determines what kind of block it
@@ -70,21 +78,14 @@ local function runBlock(builder, text)
  
     if tag == "{{" then
 		if text:sub(3,3) == "%" then
-	        func = function(code)
-	            return code
-	        end
 			text = text:sub(4, #text-4)
+			appendLuaCode(builder, text)
 		else
-	        func = function(code)
-	            return ('_ret[#_ret+1] = %s'):format(code)
-	        end
 			text = text:sub(3, #text-3)
+			appendLuaOutput(builder, text)
 		end
-    end
-    if func then
-        appender(builder, nil, func(text))
-    else
-        appender(builder, text)
+	else
+		appendText(builder, text)
     end
 end
  
@@ -120,16 +121,16 @@ function mod.compile(tmpl, env)
  
         -- Check if this is a block or escaped {.
         if tmpl:sub(b-1, b-1) == "\\" then
-            appender(builder, tmpl:sub(pos, b-2))
-            appender(builder, "{")
+            appendText(builder, tmpl:sub(pos, b-2))
+            appendText(builder, "{")
             pos = b+1
         else
             -- Add all text up until this block.
-            appender(builder, tmpl:sub(pos, b-1))
+            appendText(builder, tmpl:sub(pos, b-1))
             -- Find the end of the block.
             pos = tmpl:find("}}", b)
             if not pos then
-                appender(builder, "End tag ('}}') missing")
+                appendText(builder, "End tag ('}}') missing")
                 break
             end
             runBlock(builder, tmpl:sub(b, pos+2))
@@ -140,7 +141,7 @@ function mod.compile(tmpl, env)
     -- Add any text after the last block. Or all of it if there
     -- are no blocks.
     if pos then
-        appender(builder, tmpl:sub(pos, #tmpl-1))
+        appendText(builder, tmpl:sub(pos, #tmpl-1))
     end
  
     builder[#builder+1] = "return table.concat(_ret)"

@@ -14,6 +14,9 @@
 --
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsGenerate")
+local mimetypes									= require("mimetypes")
+local base64									= require("hs.base64")
+local fs										= require("hs.fs")
 
 --------------------------------------------------------------------------------
 --
@@ -79,11 +82,12 @@ end
 --- Parameters:
 ---  * data - Table containing the data you want to display on the Checkbox
 ---  * customTrigger - Custom label used for JavaScript Callback
+---  * customID - Custom ID used for the HTML objects
 ---
 --- Returns:
 ---  * String containing the HTML
 ---
-function mod.checkbox(data, customTrigger)
+function mod.checkbox(data, customTrigger, customID)
 
 	local result = data["title"]
 	if customTrigger then result = customTrigger end
@@ -94,6 +98,7 @@ function mod.checkbox(data, customTrigger)
 	end
 
 	local id = "checkbox" .. randomWord(20)
+	if customID then id = customID end
 
 	local result = [[<p class="uiItem"><input type="checkbox" id="]] .. id .. [[" value=""]] .. isChecked .. [[> ]] .. data["title"] .. [[</p>
 	<script>
@@ -153,16 +158,18 @@ end
 ---  * data - Table containing the data you want to display on the Checkbox
 ---  * customTrigger - Custom label used for JavaScript Callback
 ---  * customWidth - Number to set the width of the button to
+---  * customID - Overrides the random HTML ID
 ---
 --- Returns:
 ---  * String containing the HTML
 ---
-function mod.button(data, customTrigger, customWidth)
+function mod.button(data, customTrigger, customWidth, customID)
 
 	local result = data["title"]
 	if customTrigger then result = customTrigger end
 
 	local id = "button" .. randomWord(20)
+	if customID then id = customID end
 
 	local style = ""
 	if customWidth then
@@ -234,6 +241,21 @@ function mod.dropdown(title, data, customTrigger)
 
 	return result
 
+end
+
+function mod.imageBase64(pathToImage)
+	local type = mimetypes.guess(pathToImage)
+	if type and type:sub(1,6) == "image/" then
+		local f, err = io.open(fs.pathToAbsolute(pathToImage), "rb")
+		if not f then
+		    return nil, err
+		end
+		local data = f:read("*all")
+		f:close()
+
+		return "data:image/jpeg;base64, "..base64.encode(data)
+	end
+	return ""
 end
 
 --- cp.web.generate.init() -> none

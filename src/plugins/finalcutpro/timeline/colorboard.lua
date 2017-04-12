@@ -91,7 +91,7 @@ local mod = {}
 		--------------------------------------------------------------------------------
 		-- Delete any pre-existing highlights:
 		--------------------------------------------------------------------------------
-		--plugins("cp.plugins.finalcutpro.browser.playhead").deleteHighlight()
+		mod.playhead.deleteHighlight()
 
 		colorBoard = fcp:colorBoard()
 
@@ -117,6 +117,10 @@ local mod = {}
 			mod.colorPicker = nil
 		end
 	end
+	
+	function mod.init(playhead)
+		mod.playhead = playhead
+	end
 
 --------------------------------------------------------------------------------
 --
@@ -127,7 +131,8 @@ local plugin = {
 	id = "finalcutpro.timeline.colorboard",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.commands"]	= "fcpxCmds",
+		["finalcutpro.commands"]			= "fcpxCmds",
+		["finalcutpro.browser.playhead"]	= "playhead",
 	}
 }
 
@@ -135,6 +140,8 @@ local plugin = {
 	-- INITIALISE PLUGIN:
 	--------------------------------------------------------------------------------
 	function plugin.init(deps)
+		
+		mod.init(deps.playhead)
 
 		local colorFunction = {
 			[1] = "global",

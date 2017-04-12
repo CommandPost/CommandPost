@@ -9,20 +9,17 @@
 --- Core CommandPost functionality
 
 --------------------------------------------------------------------------------
--- SET UP LOGGER:
---------------------------------------------------------------------------------
-local logger					= require("hs.logger")
-logger.defaultLogLevel 			= 'debug'
-local log						= require("hs.logger").new("cp")
-
---------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
+local log						= logger.new("cp")
+
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
+local geometry					= require("hs.geometry")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local styledtext                = require("hs.styledtext")
@@ -31,24 +28,6 @@ local toolbar                   = require("hs.webview.toolbar")
 local config					= require("cp.config")
 local tools                     = require("cp.tools")
 local plugins					= require("cp.plugins")
-
---------------------------------------------------------------------------------
--- SHUTDOWN CALLBACK:
---------------------------------------------------------------------------------
-function hs.shutdownCallback()
-	console.clearConsole()
-end
-
---------------------------------------------------------------------------------
--- DEBUG MODE:
---------------------------------------------------------------------------------
-local debugMode 				= config.get("debugMode")
-if debugMode then
-    logger.defaultLogLevel = 'debug'
-	require("cp.developer")
-else
-	logger.defaultLogLevel = 'warning'
-end
 
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
@@ -67,41 +46,6 @@ else
 	userLocale = config.get("language")
 end
 i18n.setLocale(userLocale)
-
---------------------------------------------------------------------------------
--- ADD TOOLBAR TO ERROR LOG:
---------------------------------------------------------------------------------
-function consoleOnTopIcon()
-	if hs.consoleOnTop() then
-		return image.imageFromName("NSStatusAvailable")
-	else
-		return image.imageFromName("NSStatusUnavailable")
-	end
-end
-local toolbar = require("hs.webview.toolbar")
-errorLogToolbar = toolbar.new("myConsole", {
-		{ id = i18n("reload"), image = image.imageFromName("NSPreferencesGeneral"),
-			fn = function()
-				console.clearConsole()
-				print("Reloading CommandPost...")
-				hs.reload()
-			end
-		},
-		{ id = i18n("clearLog"), image = image.imageFromName("NSTrashFull"),
-			fn = function()
-				console.clearConsole()
-			end
-		},
-		{ id = i18n("alwaysOnTop"), image = consoleOnTopIcon(),
-			fn = function()
-				hs.consoleOnTop(not hs.consoleOnTop())
-				errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
-			end
-		},
-    })
-	:canCustomize(true)
-    :autosaves(true)
-console.toolbar(errorLogToolbar)
 
 --------------------------------------------------------------------------------
 -- EXTENSIONS (THAT REQUIRE i18N):
@@ -127,6 +71,129 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
+
+	--------------------------------------------------------------------------------
+	-- Debug Mode:
+	--------------------------------------------------------------------------------
+	local debugMode = config.get("debugMode")
+	if debugMode then
+		logger.defaultLogLevel = 'debug'
+		require("cp.developer")
+	else
+		logger.defaultLogLevel = 'warning'
+	end
+
+	--------------------------------------------------------------------------------
+	-- Add Toolbar To Error Log:
+	--------------------------------------------------------------------------------
+	function consoleOnTopIcon()
+		if hs.consoleOnTop() then
+			return image.imageFromName("NSStatusAvailable")
+		else
+			return image.imageFromName("NSStatusUnavailable")
+		end
+	end
+	local toolbar = require("hs.webview.toolbar")
+	errorLogToolbar = toolbar.new("myConsole", {
+			{ id = i18n("reload"), image = image.imageFromName("NSPreferencesGeneral"),
+				fn = function()
+					console.clearConsole()
+					print("Reloading CommandPost...")
+					hs.reload()
+				end
+			},
+			{ id = i18n("clearLog"), image = image.imageFromName("NSTrashFull"),
+				fn = function()
+					console.clearConsole()
+				end
+			},
+			{ id = i18n("alwaysOnTop"), image = consoleOnTopIcon(),
+				fn = function()
+					hs.consoleOnTop(not hs.consoleOnTop())
+					errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+				end
+			},
+		})
+		:canCustomize(true)
+		:autosaves(true)
+	console.toolbar(errorLogToolbar)
+
+	--------------------------------------------------------------------------------
+	-- Open Error Log:
+	--------------------------------------------------------------------------------
+	local errorLogOpenOnClose = config.get("errorLogOpenOnClose", false)
+	if errorLogOpenOnClose then
+		hs.openConsole()
+		local lastErrorLogFrame = config.get("lastErrorLogFrame", nil)
+		if lastErrorLogFrame then
+			local frame = geometry.rect(lastErrorLogFrame["_x"], lastErrorLogFrame["_y"], lastErrorLogFrame["_w"], lastErrorLogFrame["_h"])
+			if console.hswindow() and frame then
+				console.hswindow():setFrame(frame)
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Create CommandPost Shutdown Callback:
+	--------------------------------------------------------------------------------
+	hs.shuttingDown = false
+	config.shutdownCallback:new("cp", function()
+		hs.shuttingDown = true
+		if console.hswindow() then
+			config.set("errorLogOpenOnClose", true)
+			config.set("lastErrorLogFrame", console.hswindow():frame())
+		else
+			config.set("errorLogOpenOnClose", false)
+		end
+		console.clearConsole()
+	end)
+
+	--------------------------------------------------------------------------------
+	-- Setup Global Shutdown Callback:
+	--------------------------------------------------------------------------------
+	hs.shutdownCallback = function()
+		local shutdownCallbacks = config.shutdownCallback:getAll()
+		if shutdownCallbacks and type(shutdownCallbacks) == "table" then
+			for i, v in pairs(shutdownCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn()
+				end
+		    end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Setup Global Text Dropped to Dock Icon Callback:
+	--------------------------------------------------------------------------------
+	hs.textDroppedToDockIconCallback = function(value)
+		local textDroppedToDockIconCallbacks = config.textDroppedToDockIconCallback:getAll()
+		if textDroppedToDockIconCallbacks and type(textDroppedToDockIconCallbacks) == "table" then
+			for i, v in pairs(textDroppedToDockIconCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
+	end
+
+	config.fileDroppedToDockIconCallback:new("test", function(value) print("test: " .. value) end)
+
+	--------------------------------------------------------------------------------
+	-- Setup Global File Dropped to Dock Icon Callback:
+	--------------------------------------------------------------------------------
+	hs.fileDroppedToDockIconCallback = function(value)
+		local fileDroppedToDockIconCallbacks = config.fileDroppedToDockIconCallback:getAll()
+		if fileDroppedToDockIconCallbacks and type(fileDroppedToDockIconCallbacks) == "table" then
+			for i, v in pairs(fileDroppedToDockIconCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- Check Versions & Language:
