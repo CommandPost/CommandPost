@@ -88,10 +88,15 @@ mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..")
 --- The path to bundled plugins
 mod.bundledPluginsPath	= mod.basePath .. "/plugins"
 
+--- cp.config.userConfigRootPath
+--- Constant
+--- The path to user configuration folders
+mod.userConfigRootPath = os.getenv("HOME") .. "/Library/Application Support/CommandPost"
+
 --- cp.config.userPluginsPath
 --- Constant
 --- The path to user plugins
-mod.userPluginsPath		= os.getenv("HOME") .. "/Library/Application Support/CommandPost/Plugins"
+mod.userPluginsPath		= mod.userConfigRootPath .. "/Plugins"
 
 --- cp.config.pluginPaths
 --- Constant
