@@ -393,7 +393,7 @@ function mod.init(deps)
 	local id 			= "plugins"
 	local label 		= "Plugins"
 	local image			= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")
-	local priority		= 2010
+	local priority		= 2050
 	local tooltip		= "Plugins Panel"
 	local contentFn		= generateContent
 	local callbackFn 	= controllerCallback
