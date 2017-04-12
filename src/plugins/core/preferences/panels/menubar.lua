@@ -129,17 +129,7 @@ end
 --------------------------------------------------------------------------------
 function mod.init(deps)
 
-<<<<<<< HEAD
 	mod._webviewLabel = deps.manager.getLabel()
-=======
-		local id 			= "menubar"
-		local label 		= "Menubar"
-		local image			= image.imageFromPath("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")
-		local priority		= 2002
-		local tooltip		= "Menubar Preferences"
-		local contentFn		= generateContent
-		local callbackFn 	= controllerCallback
->>>>>>> develop
 
 	local id 			= "menubar"
 	local label 		= "Menubar"

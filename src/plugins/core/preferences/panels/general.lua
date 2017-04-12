@@ -131,17 +131,7 @@ end
 --------------------------------------------------------------------------------
 function mod.init(deps)
 
-<<<<<<< HEAD
 	mod._webviewLabel = deps.manager.getLabel()
-=======
-		local id 			= "general"
-		local label 		= "General"
-		local image			= image.imageFromName("NSPreferencesGeneral")
-		local priority		= 2001
-		local tooltip		= "General Preferences"
-		local contentFn		= generateContent
-		local callbackFn 	= controllerCallback
->>>>>>> develop
 
 	local id 			= "general"
 	local label 		= "General"

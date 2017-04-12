@@ -130,17 +130,7 @@ end
 --------------------------------------------------------------------------------
 function mod.init(deps)
 
-<<<<<<< HEAD
 	mod._webviewLabel = deps.manager.getLabel()
-=======
-		local id 			= "finalcutpro"
-		local label 		= "Final Cut Pro"
-		local image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")
-		local priority		= 2005
-		local tooltip		= "Final Cut Pro"
-		local contentFn		= generateContent
-		local callbackFn 	= controllerCallback
->>>>>>> develop
 
 	local id 			= "finalcutpro"
 	local label 		= "Final Cut Pro"

@@ -21,11 +21,6 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
-<<<<<<< HEAD
-=======
-local template									= require("cp.template")
-local commands									= require("cp.commands")
->>>>>>> develop
 
 --------------------------------------------------------------------------------
 --
@@ -340,13 +335,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-<<<<<<< HEAD
-
 	mod.setPanelRenderer(env:compileTemplate("html/template.html"))
-
-=======
-	mod.setPanelTemplatePath(env:pathToAbsolute("html/template.htm"))
->>>>>>> develop
 	return mod
 end
 
