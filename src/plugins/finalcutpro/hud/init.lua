@@ -892,7 +892,7 @@ end
 ---
 --- Returns:
 ---  * None
-function hud.init(xmlSharing, actionmanager, htmlPath)
+function hud.init(xmlSharing, actionmanager, env)
 	hud.xmlSharing		= xmlSharing
 	hud.actionmanager	= actionmanager
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
