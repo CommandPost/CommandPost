@@ -215,4 +215,93 @@ function mod.reset()
 	end
 end
 
+--------------------------------------------------------------------------------
+--
+-- SHUTDOWN CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+local shutdownCallback = {}
+shutdownCallback._items = {}
+
+mod.shutdownCallback = shutdownCallback
+
+--- cp.config.shutdownCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new Shutdown Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function shutdownCallback:new(id, callbackFn)
+
+	if shutdownCallback._items[id] ~= nil then
+		error("Duplicate Shutdown Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	shutdownCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.shutdownCallback:get(id) -> table
+--- Method
+--- Creates a new Shutdown Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function shutdownCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.shutdownCallback:getAll() -> table
+--- Method
+--- Returns all of the created Shutdown Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function shutdownCallback:getAll()
+	return self._items
+end
+
+--- cp.config.shutdownCallback:id() -> string
+--- Method
+--- Returns the ID of the current Shutdown Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current Shutdown Callback as a `string`
+function shutdownCallback:id()
+	return self._id
+end
+
+--- cp.config.shutdownCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Shutdown Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function shutdownCallback:callbackFn()
+	return self._callbackFn
+end
+
 return mod
