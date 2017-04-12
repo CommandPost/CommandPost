@@ -127,7 +127,9 @@ function mod.init()
 		local lastErrorLogFrame = config.get("lastErrorLogFrame", nil)
 		if lastErrorLogFrame then
 			local frame = geometry.rect(lastErrorLogFrame["_x"], lastErrorLogFrame["_y"], lastErrorLogFrame["_w"], lastErrorLogFrame["_h"])
-			console.hswindow():setFrame(frame)
+			if console.hswindow() and frame then
+				console.hswindow():setFrame(frame)
+			end
 		end
 	end
 
