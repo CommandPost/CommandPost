@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === finalcutpro.hud ===
+---
+--- Final Cut Pro HUD.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -28,7 +32,6 @@ local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 local window									= require("hs.window")
-local windowfilter								= require("hs.window.filter")
 
 local ax										= require("hs._asm.axuielement")
 
@@ -45,6 +48,7 @@ local commands									= require("cp.commands")
 --------------------------------------------------------------------------------
 local PRIORITY									= 10000
 local PREFERENCES_KEY							= "enableHUD"
+local PREFERENCES_KEY_POSITION					= "hudPosition"
 
 --------------------------------------------------------------------------------
 -- FFPlayerQuality CONSTANTS:
@@ -71,6 +75,7 @@ hud.heightButtons								= 85
 
 hud.fcpGreen 									= "#3f9253"
 hud.fcpRed 										= "#d1393e"
+<<<<<<< HEAD
 
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
@@ -106,6 +111,67 @@ end
 --------------------------------------------------------------------------------
 local function getHUDRect()
 
+=======
+
+hud.maxButtons									= 4
+hud.maxTextLength 								= 25
+
+--- finalcutpro.hud.getPosition() -> table
+--- Function
+--- Returns the last HUD frame saved in settings.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The last HUD frame or {}.
+function hud.getPosition()
+	return config.get(PREFERENCES_KEY_POSITION, {})
+end
+
+--- finalcutpro.hud.setPosition() -> none
+--- Function
+--- Saves the HUD position to settings.
+---
+--- Parameters:
+---  * value - Position as table
+---
+--- Returns:
+---  * None
+function hud.setPosition(value)
+	config.set(PREFERENCES_KEY_POSITION, value)
+end
+
+--------------------------------------------------------------------------------
+-- GET HUD HEIGHT:
+--------------------------------------------------------------------------------
+local function getHUDHeight()
+
+	local hudHeight = nil
+
+	local hudShowInspector 		= hud.isInspectorShown()
+	local hudShowDropTargets 	= hud.isDropTargetsShown()
+	local hudShowButtons 		= hud.isButtonsShown()
+
+	local hudHeight = 0
+	if hudShowInspector then hudHeight = hudHeight + hud.heightInspector end
+	if hudShowDropTargets then hudHeight = hudHeight + hud.heightDropTargets end
+	if hudShowButtons then hudHeight = hudHeight + hud.heightButtons end
+
+	if hudShowInspector and hudShowDropTargets and (not hudShowButtons) then hudHeight = hudHeight - 15 end
+	if hudShowInspector and (not hudShowDropTargets) and hudShowButtons then hudHeight = hudHeight - 20 end
+	if hudShowInspector and hudShowDropTargets and hudShowButtons then  hudHeight = hudHeight - 20 end
+
+	return hudHeight
+
+end
+
+--------------------------------------------------------------------------------
+-- GET HUD RECT:
+--------------------------------------------------------------------------------
+local function getHUDRect()
+
+>>>>>>> develop
 	local hudHeight = getHUDHeight()
 
 	--------------------------------------------------------------------------------
@@ -115,6 +181,7 @@ local function getHUDRect()
 	local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.width, h = hudHeight}
 	local hudPosition = hud.getPosition()
 	if next(hudPosition) ~= nil then
+<<<<<<< HEAD
 		defaultHUDRect = {x = hudPosition["_x"], y = hudPosition["_y"], w = hud.width, h = hudHeight}
 	end
 
@@ -296,11 +363,328 @@ function hud.getButtonCommand(index)
 			if group then
 				return group:get(button.action.id)
 			end
+=======
+		defaultHUDRect = {x = hudPosition["x"], y = hudPosition["y"], w = hud.width, h = hudHeight}
+	end
+
+	return defaultHUDRect
+
+end
+
+--------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			hud.setEnabled(false)
+			hud.webview = nil
+		end
+	elseif action == "frameChange" then
+		if frame then
+			hud.setPosition(frame)
+		end
+	end
+end
+
+--- finalcutpro.hud.new()
+--- Function
+--- Creates a new HUD
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.new()
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View Controller:
+	--------------------------------------------------------------------------------
+	if not hud.webviewController then
+		hud.webviewController = webview.usercontent.new("hud")
+			:setCallback(hud.javaScriptCallback)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Setup Web View:
+	--------------------------------------------------------------------------------
+	if not hud.webview then
+		local developerExtrasEnabled = {}
+		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
+		hud.webview = webview.new(getHUDRect(), developerExtrasEnabled, hud.webviewController)
+			:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
+			:shadow(true)
+			:closeOnEscape(true)
+			:html(hud.generateHTML())
+			:allowGestures(false)
+			:allowNewWindows(false)
+			:windowTitle(hud.title)
+			:level(drawing.windowLevels.floating)
+			:windowCallback(windowCallback)
+			:deleteOnClose(true)
+	end
+
+end
+
+--- finalcutpro.hud.delete()
+--- Function
+--- Deletes the existing HUD if it exists
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.delete()
+	if hud.webview then
+		hud.webview:delete()
+		hud.webview = nil
+	end
+end
+
+--- finalcutpro.hud.isEnabled() -> boolean
+--- Function
+--- Is the HUD enabled in the settings?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if enabled otherwise false
+function hud.isEnabled()
+	return config.get(PREFERENCES_KEY, false)
+end
+
+--- finalcutpro.hud.setEnabled() -> none
+--- Function
+--- Sets whether or not the HUD is enabled.
+---
+--- Parameters:
+---  * value - `true` if HUD should be enabled otherwise `false`
+---
+--- Returns:
+---  * `true` if enabled otherwise false
+function hud.setEnabled(value)
+	config.set(PREFERENCES_KEY, value)
+end
+
+--- finalcutpro.hud.toggleEnabled() -> none
+--- Function
+--- Toggles the HUD
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.toggleEnabled()
+
+	local hudEnabled = hud.isEnabled()
+	hud.setEnabled(not hudEnabled)
+
+	if hudEnabled then
+		hud.delete()
+	else
+		hud.new()
+		hud.updateVisibility()
+	end
+
+end
+
+--
+-- Check Options:
+--
+local function checkOptions()
+	return hud.isInspectorShown() or hud.isDropTargetsShown() or hud.isButtonsShown()
+end
+
+--- finalcutpro.hud.setOption() -> none
+--- Function
+--- Sets a HUD option
+---
+--- Parameters:
+---  * name - The name of the option
+---  * value - The value of the option
+---
+--- Returns:
+---  * None
+function hud.setOption(name, value)
+	config.set(name, value)
+	if checkOptions() then
+		hud.refresh()
+	else
+		config.set(name, not value)
+	end
+end
+
+--- finalcutpro.hud.isInspectorShown() -> boolean
+--- Function
+--- Should the Inspector in the HUD be shown?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
+function hud.isInspectorShown()
+	return config.get("hudShowInspector", true)
+end
+
+--- finalcutpro.hud.setInspectorShown() -> none
+--- Function
+--- Set whether or not the Inspector should be shown in the HUD.
+---
+--- Parameters:
+---  * value - `true` or `false`
+---
+--- Returns:
+---  * None
+function hud.setInspectorShown(value)
+	hud.setOption("hudShowInspector", value)
+end
+
+--- finalcutpro.hud.toggleInspectorShown() -> none
+--- Function
+--- Toggles whether or not the Inspector should be shown in the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.toggleInspectorShown()
+	hud.setInspectorShown(not hud.isInspectorShown())
+end
+
+--- finalcutpro.hud.isDropTargetsShown() -> boolean
+--- Function
+--- Should Drop Targets in the HUD be shown?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
+function hud.isDropTargetsShown()
+	return config.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
+end
+
+--- finalcutpro.hud.setDropTargetsShown() -> none
+--- Function
+--- Set whether or not Drop Targets should be shown in the HUD.
+---
+--- Parameters:
+---  * value - `true` or `false`
+---
+--- Returns:
+---  * None
+function hud.setDropTargetsShown(value)
+	hud.setOption("hudShowDropTargets", value)
+end
+
+--- finalcutpro.hud.toggleInspectorShown() -> none
+--- Function
+--- Toggles whether or not Drop Targets should be shown in the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.toggleDropTargetsShown()
+	hud.setDropTargetsShown(not hud.isDropTargetsShown())
+end
+
+--- finalcutpro.hud.isButtonsShown() -> boolean
+--- Function
+--- Should Buttons in the HUD be shown?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
+function hud.isButtonsShown()
+	return config.get("hudShowButtons", true)
+end
+
+--- finalcutpro.hud.setButtonsShown() -> none
+--- Function
+--- Set whether or not Buttons should be shown in the HUD.
+---
+--- Parameters:
+---  * value - `true` or `false`
+---
+--- Returns:
+---  * None
+function hud.setButtonsShown(value)
+	hud.setOption("hudShowButtons", value)
+end
+
+--- finalcutpro.hud.toggleInspectorShown() -> none
+--- Function
+--- Toggles whether or not Buttons should be shown in the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.toggleButtonsShown()
+	hud.setButtonsShown(not hud.isButtonsShown())
+end
+
+--- finalcutpro.hud.getButton() -> string
+--- Function
+--- Gets the button values from settings.
+---
+--- Parameters:
+---  * index - Index of the Button
+---  * defaultValue - Default Value of the Button
+---
+--- Returns:
+---  * Button value
+function hud.getButton(index, defaultValue)
+	local currentLanguage = fcp:getCurrentLanguage()
+	return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
+end
+
+--- finalcutpro.hud.getButtonCommand() -> string
+--- Function
+--- Gets the button command.
+---
+--- Parameters:
+---  * index - Index of the Button
+---
+--- Returns:
+---  * Button Command
+function hud.getButtonCommand(index)
+	local button = hud.getButton(index)
+	if button and button.action then
+		if button.action.type == "command" then
+			local group = commands.group(button.action.group)
+			if group then
+				return group:get(button.action.id)
+			end
+>>>>>>> develop
 		end
 	end
 	return nil
 end
 
+<<<<<<< HEAD
+=======
+--- finalcutpro.hud.getButtonText() -> string
+--- Function
+--- Gets the button text.
+---
+--- Parameters:
+---  * index - Index of the Button
+---
+--- Returns:
+---  * Button Label or Unassigned Value
+>>>>>>> develop
 function hud.getButtonText(index)
 	local button = hud.getButton(index)
 	if button and button.text then
@@ -310,15 +694,41 @@ function hud.getButtonText(index)
 	end
 end
 
+<<<<<<< HEAD
+=======
+--- finalcutpro.hud.getButtonURL() -> string
+--- Function
+--- Gets the button URL.
+---
+--- Parameters:
+---  * index - Index of the Button
+---
+--- Returns:
+---  * Button URL
+>>>>>>> develop
 function hud.getButtonURL(index)
 	return hud.actionmanager.getURL(hud.getButton(index))
 end
 
+<<<<<<< HEAD
+=======
+--- finalcutpro.hud.setButton() -> string
+--- Function
+--- Sets the button.
+---
+--- Parameters:
+---  * index - Index of the Button
+---  * value - Value you want to set the button to.
+---
+--- Returns:
+---  * None
+>>>>>>> develop
 function hud.setButton(index, value)
 	local currentLanguage = fcp:getCurrentLanguage()
 	config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 end
 
+<<<<<<< HEAD
 function hud.isFrontmost()
 	return window.focusedWindow() == hud.hudWebView:hswindow()
 end
@@ -448,9 +858,150 @@ function hud.show()
 		--------------------------------------------------------------------------------
 		hud.hudClosedFilter:resume()
 		hud.hudFilter:resume()
+=======
+--- finalcutpro.hud.updateVisibility() -> none
+--- Function
+--- Update the visibility of the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.updateVisibility()
+	if hud.isEnabled() then
+
+		local fcpRunning 	= fcp:isRunning()
+		local fcpFrontmost 	= fcp:isFrontmost()
+
+		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
+		local commandEditorShowing = fcp:commandEditor():isShowing()
+
+		if (fcpRunning and fcpFrontmost and not fullscreenWindowShowing and not commandEditorShowing) then
+			hud.show()
+		else
+			local frontmostWindowTitle = window.frontmostWindow():application():title()
+			if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "CommandPost" then
+				hud.hide()
+			end
+		end
 	end
 end
 
+--- finalcutpro.hud.show() -> none
+--- Function
+--- Show the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.show()
+	if not hud.webview then
+		hud.new()
+	end
+
+	hud.webview:show()
+	hud.refresh()
+end
+
+--- finalcutpro.hud.hide() -> none
+--- Function
+--- Hide the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.hide()
+	if hud.webview then
+		hud.webview:hide()
+	end
+end
+
+--- finalcutpro.hud.visible() -> none
+--- Function
+--- Is the HUD visible?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
+function hud.visible()
+	if hud.webview and hud.webview:hswindow() then return true end
+	return false
+end
+
+--------------------------------------------------------------------------------
+-- DISPLAY DIV VALUE:
+--------------------------------------------------------------------------------
+local function displayDiv(value)
+	if value then
+		return "block"
+	else
+		return "none"
+	end
+end
+
+--------------------------------------------------------------------------------
+-- SET UP TEMPLATE ENVIRONMENT:
+--------------------------------------------------------------------------------
+local function getEnv()
+	--------------------------------------------------------------------------------
+	-- Set up the template environment
+	--------------------------------------------------------------------------------
+	local env 		= template.defaultEnv()
+	env.i18n		= i18n
+	env.hud			= hud
+	env.displayDiv	= displayDiv
+
+	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
+
+	if playerQuality == PROXY then
+		env.media 	= {
+			text	= i18n("proxy"),
+			class	= "bad",
+		}
+	else
+		env.media	= {
+			text	= i18n("originalOptimised"),
+			class	= "good",
+		}
+	end
+
+	if playerQuality == ORIGINAL_QUALITY then
+		env.quality	= {
+			text	= i18n("betterQuality"),
+			class	= "good",
+		}
+	else
+		env.quality	= {
+			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
+			class	= "bad",
+		}
+	end
+
+	local autoStartBGRender	= fcp:getPreference("FFAutoStartBGRender", true)
+
+	if autoStartBGRender then
+		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
+		env.backgroundRender	= {
+			text	= string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
+			class	= "good",
+		}
+	else
+		env.backgroundRender	= {
+			text	= i18n("disabled"),
+			class	= "bad",
+		}
+>>>>>>> develop
+	end
+end
+
+<<<<<<< HEAD
 --------------------------------------------------------------------------------
 -- HIDE THE HUD:
 --------------------------------------------------------------------------------
@@ -552,6 +1103,33 @@ function hud.refresh()
 
 		local env = getEnv()
 
+=======
+	env.hudInspector 		= displayDiv( hud.isInspectorShown() )
+	env.hr1 				= displayDiv( hud.isInspectorShown() and (hud.isDropTargetsShown() or hud.isButtonsShown()) )
+	env.hudDropTargets		= displayDiv( hud.isDropTargetsShown() )
+	env.hr2					= displayDiv( (hud.isDropTargetsShown() and hud.isButtonsShown()) )
+	env.hudButtons			= displayDiv( hud.isButtonsShown() )
+
+	return env
+end
+
+--- finalcutpro.hud.refresh() -> none
+--- Function
+--- Refresh the HUD's content.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.refresh()
+
+	--------------------------------------------------------------------------------
+	-- Update HUD Content:
+	--------------------------------------------------------------------------------
+	if hud.webview then
+		local env = getEnv()
+>>>>>>> develop
 		local javascriptToInject = [[
 			document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
 			document.getElementById('media').className = "]] .. env.media.class .. [[";
@@ -566,6 +1144,14 @@ function hud.refresh()
 			document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
 			document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
 			document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
+<<<<<<< HEAD
+=======
+
+			document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
+			document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
+			document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
+			document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
+>>>>>>> develop
 
 			document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
 			document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
@@ -573,6 +1159,7 @@ function hud.refresh()
 			document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
 			document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
 		]]
+<<<<<<< HEAD
 
 		hud.hudWebView:evaluateJavaScript(javascriptToInject)
 
@@ -588,6 +1175,29 @@ end
 --------------------------------------------------------------------------------
 -- ASSIGN HUD BUTTON:
 --------------------------------------------------------------------------------
+=======
+		hud.webview:evaluateJavaScript(javascriptToInject)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Resize the HUD:
+	--------------------------------------------------------------------------------
+	if hud.visible() then
+		hud.webview:hswindow():setSize(geometry.size(hud.width, getHUDHeight()))
+	end
+
+end
+
+--- finalcutpro.hud.assignButton() -> none
+--- Function
+--- Assigns a HUD button.
+---
+--- Parameters:
+---  * button - which button you want to assign.
+---
+--- Returns:
+---  * None
+>>>>>>> develop
 function hud.assignButton(button)
 
 	--------------------------------------------------------------------------------
@@ -609,6 +1219,7 @@ function hud.assignButton(button)
 		--------------------------------------------------------------------------------
 		if result ~= nil then
 			hud.setButton(whichButton, result)
+<<<<<<< HEAD
 		end
 
 		--------------------------------------------------------------------------------
@@ -711,6 +1322,128 @@ function hud.shareXML(incomingXML)
 		local newXML = string.sub(incomingXML, startOfXML - 2, endOfXML + 8)
 
 		--------------------------------------------------------------------------------
+=======
+		end
+
+		--------------------------------------------------------------------------------
+		-- Put focus back in Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if hud.wasFinalCutProOpen then
+			fcp:launch()
+		end
+
+		--------------------------------------------------------------------------------
+		-- Refresh HUD:
+		--------------------------------------------------------------------------------
+		if hud.isEnabled() then
+			hud.refresh()
+		end
+	end
+
+	hudButtonChooser = chooser.new(chooserAction):bgDark(true)
+												  :fgColor(drawing.color.x11.snow)
+												  :subTextColor(drawing.color.x11.snow)
+												  :choices(hud.choices)
+												  :show()
+end
+
+--- finalcutpro.hud.choices() -> none
+--- Function
+--- Choices for the Assign HUD Button chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Table
+function hud.choices()
+	if hud.actionmanager then
+		return hud.actionmanager.choices()
+	else
+		return {}
+	end
+end
+
+--- finalcutpro.hud.generateHTML() -> none
+--- Function
+--- Generate the HTML for the HUD.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.generateHTML()
+	return template.compileFile(hud.htmlPath .. "/hud.html", getEnv())
+end
+
+--- finalcutpro.hud.javaScriptCallback() -> none
+--- Function
+--- Javascript Callback
+---
+--- Parameters:
+---  * message - the message for the callback
+---
+--- Returns:
+---  * None
+function hud.javaScriptCallback(message)
+	if message["body"] ~= nil then
+		if string.find(message["body"], "<!DOCTYPE fcpxml>") ~= nil then
+			hud.shareXML(message["body"])
+		else
+			dialog.displayMessage(i18n("hudDropZoneError"))
+		end
+	end
+end
+
+--- finalcutpro.hud.shareXML() -> none
+--- Function
+--- Share XML
+---
+--- Parameters:
+---  * incomingXML - XML data as string
+---
+--- Returns:
+---  * None
+function hud.shareXML(incomingXML)
+
+	local enableXMLSharing = hud.isEnabled()
+
+	if enableXMLSharing then
+
+		--------------------------------------------------------------------------------
+		-- Get Settings:
+		--------------------------------------------------------------------------------
+		local xmlSharingPath = hud.xmlSharing.getSharingPath()
+
+		--------------------------------------------------------------------------------
+		-- Get only the needed XML content:
+		--------------------------------------------------------------------------------
+		local startOfXML = string.find(incomingXML, "<?xml version=")
+		local endOfXML = string.find(incomingXML, "</fcpxml>")
+
+		--------------------------------------------------------------------------------
+		-- Error Detection:
+		--------------------------------------------------------------------------------
+		if startOfXML == nil or endOfXML == nil then
+			dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data you dropped. Please try again.\n\nError occurred in hud.shareXML().")
+			if incomingXML ~= nil then
+				log.d("Start of incomingXML.")
+				log.d(incomingXML)
+				log.d("End of incomingXML.")
+			else
+				log.e("incomingXML is nil.")
+			end
+			return "fail"
+		end
+
+		--------------------------------------------------------------------------------
+		-- New XML:
+		--------------------------------------------------------------------------------
+		local newXML = string.sub(incomingXML, startOfXML - 2, endOfXML + 8)
+
+		--------------------------------------------------------------------------------
+>>>>>>> develop
 		-- Display Text Box:
 		--------------------------------------------------------------------------------
 		local textboxResult = dialog.displayTextBoxMessage(i18n("hudXMLNameDialog"), i18n("hudXMLNameError"), "")
@@ -736,6 +1469,7 @@ function hud.shareXML(incomingXML)
 
 end
 
+<<<<<<< HEAD
 --------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
@@ -743,6 +1477,21 @@ function hud.init(xmlSharing, actionmanager, env)
 	hud.xmlSharing		= xmlSharing
 	hud.actionmanager	= actionmanager
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
+=======
+--- finalcutpro.hud.init() -> none
+--- Function
+--- Initialise HUD Module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.init(xmlSharing, actionmanager, htmlPath)
+	hud.xmlSharing		= xmlSharing
+	hud.actionmanager	= actionmanager
+	hud.htmlPath		= htmlPath
+>>>>>>> develop
 	return hud
 end
 
@@ -770,14 +1519,22 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Initialise Module:
 	--------------------------------------------------------------------------------
+<<<<<<< HEAD
 	hud.init(deps.xmlSharing, deps.actionmanager, env)
+=======
+	hud.init(deps.xmlSharing, deps.actionmanager, env:pathToAbsolute("html"))
+>>>>>>> develop
 
 	--------------------------------------------------------------------------------
 	-- Setup Watchers:
 	--------------------------------------------------------------------------------
 	fcp:watch({
 		active		= hud.updateVisibility,
+<<<<<<< HEAD
 		inactive	= function() hud.updateVisibility(true) end,
+=======
+		inactive	= hud.updateVisibility,
+>>>>>>> develop
 		preferences = hud.refresh,
 	})
 
@@ -785,12 +1542,21 @@ function plugin.init(deps, env)
 		show		= hud.updateVisibility,
 		hide		= hud.updateVisibility,
 	})
+<<<<<<< HEAD
 
 	fcp:commandEditor():watch({
 		show		= hud.updateVisibility,
 		hide		= hud.updateVisibility,
 	})
 
+=======
+
+	fcp:commandEditor():watch({
+		show		= hud.updateVisibility,
+		hide		= hud.updateVisibility,
+	})
+
+>>>>>>> develop
 	hud.xmlSharing:watch({
 		enable		= hud.updateVisibility,
 		disable		= hud.updateVisibility,
@@ -833,6 +1599,7 @@ function plugin.init(deps, env)
 
 	return hud
 end
+<<<<<<< HEAD
 
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
@@ -842,6 +1609,20 @@ function plugin.postInit(deps)
 	initHUDWebView()
 	initHUDWatchers()
 	hud.updateVisibility()
+
+end
+=======
+
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit(deps)
+
+	if hud.isEnabled() then
+		hud.new()
+		hud.updateVisibility()
+	end
+>>>>>>> develop
 
 end
 

@@ -390,6 +390,7 @@ function mod.init(deps)
 
 	mod._webviewLabel = deps.manager.getLabel()
 
+<<<<<<< HEAD
 	local id 			= "plugins"
 	local label 		= "Plugins"
 	local image			= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")
@@ -397,6 +398,15 @@ function mod.init(deps)
 	local tooltip		= "Plugins Panel"
 	local contentFn		= generateContent
 	local callbackFn 	= controllerCallback
+=======
+		local id 			= "plugins"
+		local label 		= "Plugins"
+		local image			= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")
+		local priority		= 2010
+		local tooltip		= "Plugins Panel"
+		local contentFn		= generateContent
+		local callbackFn 	= controllerCallback
+>>>>>>> develop
 
 	deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
 

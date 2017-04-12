@@ -418,6 +418,30 @@ return {
     	userGuide								=			"User Guide",
 
 			--------------------------------------------------------------------------------
+			-- Advanced:
+			--------------------------------------------------------------------------------
+			advanced							=			"Advanced",
+			install								=			"Install",
+			uninstall							=			"Uninstall",
+			developer							=			"Developer",
+			commandLineTool						=			"Command Line Tool",
+			enableDeveloperMode					=			"Enable Developer Mode",
+			trashPreferences					=			"Trash Preferences",
+			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
+			cliInstallError						=			"I'm sorry, but we ffailed to Install the Command Line Tool. Please try again.",
+			commandLineToolDescription			=			"When the Command Line Tool is installed, you can use <strong>cmdpost</strong> in Terminal to trigger Lua code. Please refer to the User Guide for more information.",
+
+			--------------------------------------------------------------------------------
+			-- General:
+			--------------------------------------------------------------------------------
+	    	sendCrashData						=			"Send Crash Data (requires restart)",
+	    	general								=			"General",
+			privacy								=			"Privacy",
+			appearance							=			"Appearance",
+			sections							=			"Sections",
+			openPrivacyPolicy					=			"Open Privacy Policy",
+
+			--------------------------------------------------------------------------------
 			-- Preferences:
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
@@ -425,8 +449,6 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			enableDeveloperMode					=			"Enable Developer Mode",
-			trashPreferences					=			"Trash Preferences",
 			provideFeedback						=			"Provide Feedback...",
 			createdBy							=			"Created by",
 			appVersion							=			"Version",
@@ -613,7 +635,6 @@ return {
 
 	plugin_group_core					=			"Core",
 	plugin_group_finalcutpro			=			"Final Cut Pro",
-
 
 	--------------------------------------------------------------------------------
 	-- SHORTCUT GROUPS:

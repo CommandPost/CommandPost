@@ -21,6 +21,11 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+<<<<<<< HEAD
+=======
+local template									= require("cp.template")
+local commands									= require("cp.commands")
+>>>>>>> develop
 
 --------------------------------------------------------------------------------
 --
@@ -105,12 +110,45 @@ function mod.setupUserInterface(showNotification)
 	mod.shortcuts.init()
 
 	--------------------------------------------------------------------------------
+	-- Enable Shortcuts:
+	--------------------------------------------------------------------------------
+	mod.enableUserInterface()
+
+	--------------------------------------------------------------------------------
 	-- Notifications:
 	--------------------------------------------------------------------------------
 	if showNotification then
 		log.df("Successfully loaded.")
 		dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
 	end
+
+end
+
+--------------------------------------------------------------------------------
+-- DISABLE THE USER INTERFACE:
+--------------------------------------------------------------------------------
+function mod.disableUserInterface()
+
+	mod.menumanager.disable()
+
+	local allGroups = commands.groupIds()
+	for i, v in ipairs(allGroups) do
+    	commands.group(v):disable()
+    end
+
+end
+
+--------------------------------------------------------------------------------
+-- ENABLE THE USER INTERFACE:
+--------------------------------------------------------------------------------
+function mod.enableUserInterface()
+
+	mod.menumanager.enable()
+
+	local allGroups = commands.groupIds()
+	for i, v in ipairs(allGroups) do
+    	commands.group(v):enable()
+    end
 
 end
 
@@ -126,7 +164,6 @@ function mod.init()
 	else
 		mod.new()
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -187,6 +224,7 @@ end
 --------------------------------------------------------------------------------
 function mod.delete()
 	mod.webview:delete()
+	mod.webview = nil
 end
 
 --------------------------------------------------------------------------------
@@ -274,12 +312,19 @@ function mod.addPanel(id, priority, contentFn, callbackFn)
 end
 
 --------------------------------------------------------------------------------
---
+-- ACCESSIBILITY STATE CALLBACK:
+--------------------------------------------------------------------------------
+function hs.accessibilityStateCallback()
+	--log.df("Accessibility State Changed.")
+	if not hs.accessibilityState() and config.get("welcomeComplete", false) and mod.webview == nil then
+		mod.disableUserInterface()
+		mod.new()
+	end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
---
---------------------------------------------------------------------------------
 --
 --------------------------------------------------------------------------------
 local plugin = {
@@ -295,9 +340,13 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+<<<<<<< HEAD
 
 	mod.setPanelRenderer(env:compileTemplate("html/template.html"))
 
+=======
+	mod.setPanelTemplatePath(env:pathToAbsolute("html/template.htm"))
+>>>>>>> develop
 	return mod
 end
 
