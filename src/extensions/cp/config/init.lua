@@ -220,4 +220,271 @@ function mod.reset()
 	end
 end
 
+--------------------------------------------------------------------------------
+--
+-- SHUTDOWN CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+local shutdownCallback = {}
+shutdownCallback._items = {}
+
+mod.shutdownCallback = shutdownCallback
+
+--- cp.config.shutdownCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new Shutdown Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function shutdownCallback:new(id, callbackFn)
+
+	if shutdownCallback._items[id] ~= nil then
+		error("Duplicate Shutdown Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	shutdownCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.shutdownCallback:get(id) -> table
+--- Method
+--- Creates a new Shutdown Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function shutdownCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.shutdownCallback:getAll() -> table
+--- Method
+--- Returns all of the created Shutdown Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function shutdownCallback:getAll()
+	return self._items
+end
+
+--- cp.config.shutdownCallback:id() -> string
+--- Method
+--- Returns the ID of the current Shutdown Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current Shutdown Callback as a `string`
+function shutdownCallback:id()
+	return self._id
+end
+
+--- cp.config.shutdownCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Shutdown Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function shutdownCallback:callbackFn()
+	return self._callbackFn
+end
+
+--------------------------------------------------------------------------------
+--
+-- TEXT DROPPED TO DOCK ICON CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+local textDroppedToDockIconCallback = {}
+textDroppedToDockIconCallback._items = {}
+
+mod.textDroppedToDockIconCallback = textDroppedToDockIconCallback
+
+--- cp.config.textDroppedToDockIconCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new Text Dropped to Dock Icon Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function textDroppedToDockIconCallback:new(id, callbackFn)
+
+	if textDroppedToDockIconCallback._items[id] ~= nil then
+		error("Duplicate Text Dropped to Dock Icon Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	textDroppedToDockIconCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.textDroppedToDockIconCallback:get(id) -> table
+--- Method
+--- Creates a new Text Dropped to Dock Icon Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function textDroppedToDockIconCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.textDroppedToDockIconCallback:getAll() -> table
+--- Method
+--- Returns all of the created Text Dropped to Dock Icon Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function textDroppedToDockIconCallback:getAll()
+	return self._items
+end
+
+--- cp.config.textDroppedToDockIconCallback:id() -> string
+--- Method
+--- Returns the ID of the current Text Dropped to Dock Icon Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current Shutdown Callback as a `string`
+function textDroppedToDockIconCallback:id()
+	return self._id
+end
+
+--- cp.config.textDroppedToDockIconCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Text Dropped to Dock Icon Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function textDroppedToDockIconCallback:callbackFn()
+	return self._callbackFn
+end
+
+--------------------------------------------------------------------------------
+--
+-- FILE DROPPED TO DOCK ICON CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+local fileDroppedToDockIconCallback = {}
+fileDroppedToDockIconCallback._items = {}
+
+mod.fileDroppedToDockIconCallback = fileDroppedToDockIconCallback
+
+--- cp.config.fileDroppedToDockIconCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new File Dropped to Dock Icon Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function fileDroppedToDockIconCallback:new(id, callbackFn)
+
+	if fileDroppedToDockIconCallback._items[id] ~= nil then
+		error("Duplicate File Dropped to Dock Icon Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	fileDroppedToDockIconCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.fileDroppedToDockIconCallback:get(id) -> table
+--- Method
+--- Creates a new File Dropped to Dock Icon Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function fileDroppedToDockIconCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.fileDroppedToDockIconCallback:getAll() -> table
+--- Method
+--- Returns all of the created File Dropped to Dock Icon Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function fileDroppedToDockIconCallback:getAll()
+	return self._items
+end
+
+--- cp.config.fileDroppedToDockIconCallback:id() -> string
+--- Method
+--- Returns the ID of the current Text Dropped to Dock Icon Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
+function fileDroppedToDockIconCallback:id()
+	return self._id
+end
+
+--- cp.config.fileDroppedToDockIconCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current File Dropped to Dock Icon Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function fileDroppedToDockIconCallback:callbackFn()
+	return self._callbackFn
+end
+
 return mod

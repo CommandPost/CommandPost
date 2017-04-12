@@ -134,10 +134,10 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Shutdown Callback:
+	-- Create CommandPost Shutdown Callback:
 	--------------------------------------------------------------------------------
 	hs.shuttingDown = false
-	hs.shutdownCallback = function()
+	config.shutdownCallback:new("cp", function()
 		hs.shuttingDown = true
 		if console.hswindow() then
 			config.set("errorLogOpenOnClose", true)
@@ -146,6 +146,53 @@ function mod.init()
 			config.set("errorLogOpenOnClose", false)
 		end
 		console.clearConsole()
+	end)
+
+	--------------------------------------------------------------------------------
+	-- Setup Global Shutdown Callback:
+	--------------------------------------------------------------------------------
+	hs.shutdownCallback = function()
+		local shutdownCallbacks = config.shutdownCallback:getAll()
+		if shutdownCallbacks and type(shutdownCallbacks) == "table" then
+			for i, v in pairs(shutdownCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn()
+				end
+		    end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Setup Global Text Dropped to Dock Icon Callback:
+	--------------------------------------------------------------------------------
+	hs.textDroppedToDockIconCallback = function(value)
+		local textDroppedToDockIconCallbacks = config.textDroppedToDockIconCallback:getAll()
+		if textDroppedToDockIconCallbacks and type(textDroppedToDockIconCallbacks) == "table" then
+			for i, v in pairs(textDroppedToDockIconCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
+	end
+
+	config.fileDroppedToDockIconCallback:new("test", function(value) print("test: " .. value) end)
+
+	--------------------------------------------------------------------------------
+	-- Setup Global File Dropped to Dock Icon Callback:
+	--------------------------------------------------------------------------------
+	hs.fileDroppedToDockIconCallback = function(value)
+		local fileDroppedToDockIconCallbacks = config.fileDroppedToDockIconCallback:getAll()
+		if fileDroppedToDockIconCallbacks and type(fileDroppedToDockIconCallbacks) == "table" then
+			for i, v in pairs(fileDroppedToDockIconCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
 	end
 
 	--------------------------------------------------------------------------------
