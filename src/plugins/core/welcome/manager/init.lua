@@ -105,11 +105,6 @@ function mod.setupUserInterface(showNotification)
 	mod.shortcuts.init()
 
 	--------------------------------------------------------------------------------
-	-- Enable Shortcuts:
-	--------------------------------------------------------------------------------
-	mod.enableUserInterface()
-
-	--------------------------------------------------------------------------------
 	-- Notifications:
 	--------------------------------------------------------------------------------
 	if showNotification then
@@ -129,20 +124,6 @@ function mod.disableUserInterface()
 	local allGroups = commands.groupIds()
 	for i, v in ipairs(allGroups) do
     	commands.group(v):disable()
-    end
-
-end
-
---------------------------------------------------------------------------------
--- ENABLE THE USER INTERFACE:
---------------------------------------------------------------------------------
-function mod.enableUserInterface()
-
-	mod.menumanager.enable()
-
-	local allGroups = commands.groupIds()
-	for i, v in ipairs(allGroups) do
-    	commands.group(v):enable()
     end
 
 end
