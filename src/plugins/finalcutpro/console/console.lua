@@ -9,7 +9,6 @@ local application		= require("hs.application")
 
 local ax 				= require("hs._asm.axuielement")
 
-local plugins			= require("cp.plugins")
 local fcp				= require("cp.finalcutpro")
 local config			= require("cp.config")
 

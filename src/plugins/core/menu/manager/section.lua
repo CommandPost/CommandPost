@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.menu.manager.section ===
+--- === core.menu.manager.section ===
 ---
 --- Controls sections for the CommandPost menu.
 

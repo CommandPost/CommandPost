@@ -117,7 +117,7 @@ local plugin = {
 		["core.preferences.panels.general"]	= "general",
 		["core.preferences.panels.menubar"]	= "menubar",
 		["core.menu.manager"]				= "menuManager",
-		["finalcutpro.hacks.shortcuts"] 	= "hacksShortcuts",
+		["finalcutpro.hacks.shortcuts"]		= "fcpShortcuts",
 	}
 }
 --------------------------------------------------------------------------------
