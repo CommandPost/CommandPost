@@ -27,74 +27,74 @@ local generate									= require("cp.web.generate")
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- CONTROLLER CALLBACK:
-	--------------------------------------------------------------------------------
-	local function controllerCallback(message)
+--------------------------------------------------------------------------------
+-- CONTROLLER CALLBACK:
+--------------------------------------------------------------------------------
+local function controllerCallback(message)
 
-		-- log.df("Intro Panel Callback Result: %s", hs.inspect(message))
+	-- log.df("Intro Panel Callback Result: %s", hs.inspect(message))
 
-		local result = message["body"][1]
-		if result == "accessibilityQuit" then
-			config.application():kill()
-		elseif result == "enableAccessibility" then
-			hs.accessibilityState(true)
-			if not accessibilityStateCheck then
-				accessibilityStateCheck = timer.doEvery(1, function()
-					if hs.accessibilityState() then
-						mod.manager.nextPanel(mod._priority)
-						timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
-						accessibilityStateCheck:stop()
-					end
-				end)
-			end
-		end
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- GENERATE CONTENT:
-	--------------------------------------------------------------------------------
-	local function generateContent()
-		
-		generate.setWebviewLabel(mod.webviewLabel)
-
-		local env = {
-			generate 	= generate,
-			iconPath	= mod.iconPath,
-		}
-		
-		local result, err = mod.renderPanel(env)
-		if err then
-			log.ef("Error while generating Accessibility Welcome Panel: %", err)
-			return err
-		else
-			return result, mod.panelBaseURL
+	local result = message["body"][1]
+	if result == "accessibilityQuit" then
+		config.application():kill()
+	elseif result == "enableAccessibility" then
+		hs.accessibilityState(true)
+		if not accessibilityStateCheck then
+			accessibilityStateCheck = timer.doEvery(1, function()
+				if hs.accessibilityState() then
+					mod.manager.nextPanel(mod._priority)
+					timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
+					accessibilityStateCheck:stop()
+				end
+			end)
 		end
 	end
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE MODULE:
-	--------------------------------------------------------------------------------
-	function mod.init(deps, env)
+end
 
-		mod.webviewLabel = deps.manager.getLabel()
+--------------------------------------------------------------------------------
+-- GENERATE CONTENT:
+--------------------------------------------------------------------------------
+local function generateContent()
 
-		mod._id 			= "accessibility"
-		mod._priority		= 30
-		mod._contentFn		= generateContent
-		mod._callbackFn 	= controllerCallback
+	generate.setWebviewLabel(mod.webviewLabel)
 
-		mod.manager = deps.manager
+	local env = {
+		generate 	= generate,
+		iconPath	= mod.iconPath,
+	}
 
-		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
-		
-		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.iconPath = env:pathToAbsolute("html/accessibility_icon.png")
-
-		return mod
-
+	local result, err = mod.renderPanel(env)
+	if err then
+		log.ef("Error while generating Accessibility Welcome Panel: %", err)
+		return err
+	else
+		return result, mod.panelBaseURL
 	end
+end
+
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
+function mod.init(deps, env)
+
+	mod.webviewLabel = deps.manager.getLabel()
+
+	mod._id 			= "accessibility"
+	mod._priority		= 30
+	mod._contentFn		= generateContent
+	mod._callbackFn 	= controllerCallback
+
+	mod.manager = deps.manager
+
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+
+	mod.renderPanel = env:compileTemplate("html/panel.html")
+	mod.iconPath = env:pathToAbsolute("html/accessibility_icon.png")
+
+	return mod
+
+end
 
 --------------------------------------------------------------------------------
 --

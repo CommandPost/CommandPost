@@ -32,94 +32,94 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- RESET SETTINGS:
-	--------------------------------------------------------------------------------
-	function mod.resetSettings()
+--------------------------------------------------------------------------------
+-- RESET SETTINGS:
+--------------------------------------------------------------------------------
+function mod.resetSettings()
 
-		local finalCutProRunning = fcp:isRunning()
+	local finalCutProRunning = fcp:isRunning()
 
-		local resetMessage = i18n("trashPreferences")
-		if finalCutProRunning then
-			resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequiredAndRestart")
-		else
-			resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequired")
+	local resetMessage = i18n("trashPreferences")
+	if finalCutProRunning then
+		resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequiredAndRestart")
+	else
+		resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequired")
+	end
+
+	if not dialog.displayYesNoQuestion(resetMessage) then
+		return
+	end
+
+	--------------------------------------------------------------------------------
+	-- Remove Hacks Shortcut in Final Cut Pro:
+	--------------------------------------------------------------------------------
+	mod.fcpShortcuts.disableHacksShortcuts()
+
+	--------------------------------------------------------------------------------
+	-- Trash all Script Settings:
+	--------------------------------------------------------------------------------
+	config.reset()
+
+	--------------------------------------------------------------------------------
+	-- Restart Final Cut Pro if running:
+	--------------------------------------------------------------------------------
+	if finalCutProRunning then
+		if not fcp:restart() then
+			--------------------------------------------------------------------------------
+			-- Failed to restart Final Cut Pro:
+			--------------------------------------------------------------------------------
+			dialog.displayMessage(i18n("restartFinalCutProFailed"))
 		end
-
-		if not dialog.displayYesNoQuestion(resetMessage) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Remove Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		mod.fcpShortcuts.disableHacksShortcuts()
-
-		--------------------------------------------------------------------------------
-		-- Trash all Script Settings:
-		--------------------------------------------------------------------------------
-		config.reset()
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro if running:
-		--------------------------------------------------------------------------------
-		if finalCutProRunning then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayMessage(i18n("restartFinalCutProFailed"))
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Reload Hammerspoon:
-		--------------------------------------------------------------------------------
-		console.clearConsole()
-		hs.reload()
-
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE DEVELOPER MODE:
+	-- Reload Hammerspoon:
 	--------------------------------------------------------------------------------
-	function mod.toggleDeveloperMode()
-		local debugMode = config.get("debugMode")
-		config.set("debugMode", not debugMode)
-		console.clearConsole()
-		hs.reload()
-	end
+	console.clearConsole()
+	hs.reload()
 
-	--------------------------------------------------------------------------------
-	-- TOGGLE DISPLAY MENUBAR AS ICON:
-	--------------------------------------------------------------------------------
-	function mod.toggleDisplayMenubarAsIcon()
-		local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-		config.set("displayMenubarAsIcon", not displayMenubarAsIcon)
-		mod.menuManager:updateMenubarIcon()
-	end
+end
 
-	--------------------------------------------------------------------------------
-	-- GET DEVELOPER MODE VALUE:
-	--------------------------------------------------------------------------------
-	function mod.getDeveloperMode()
-		return config.get("debugMode")
-	end
+--------------------------------------------------------------------------------
+-- TOGGLE DEVELOPER MODE:
+--------------------------------------------------------------------------------
+function mod.toggleDeveloperMode()
+	local debugMode = config.get("debugMode")
+	config.set("debugMode", not debugMode)
+	console.clearConsole()
+	hs.reload()
+end
 
-	--------------------------------------------------------------------------------
-	-- GET DISPLAY MENUBAR AS ICON VALUE:
-	--------------------------------------------------------------------------------
-	function mod.getDisplayMenubarAsIcon()
-		return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-	end
+--------------------------------------------------------------------------------
+-- TOGGLE DISPLAY MENUBAR AS ICON:
+--------------------------------------------------------------------------------
+function mod.toggleDisplayMenubarAsIcon()
+	local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+	config.set("displayMenubarAsIcon", not displayMenubarAsIcon)
+	mod.menuManager:updateMenubarIcon()
+end
 
-	--------------------------------------------------------------------------------
-	-- TOGGLE AUTO LAUNCH:
-	--------------------------------------------------------------------------------
-	function mod.toggleAutoLaunch()
-		hs.autoLaunch(not mod._autoLaunch)
-		mod._autoLaunch = not mod._autoLaunch
-	end
+--------------------------------------------------------------------------------
+-- GET DEVELOPER MODE VALUE:
+--------------------------------------------------------------------------------
+function mod.getDeveloperMode()
+	return config.get("debugMode")
+end
+
+--------------------------------------------------------------------------------
+-- GET DISPLAY MENUBAR AS ICON VALUE:
+--------------------------------------------------------------------------------
+function mod.getDisplayMenubarAsIcon()
+	return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE AUTO LAUNCH:
+--------------------------------------------------------------------------------
+function mod.toggleAutoLaunch()
+	hs.autoLaunch(not mod._autoLaunch)
+	mod._autoLaunch = not mod._autoLaunch
+end
 
 --------------------------------------------------------------------------------
 --
@@ -136,61 +136,61 @@ local plugin = {
 		["finalcutpro.hacks.shortcuts"]		= "fcpShortcuts",
 	}
 }
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+
+	mod.menuManager = deps.menuManager
+	mod.fcpShortcuts = deps.fcpShortcuts
+
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Cache Auto Launch:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+	mod._autoLaunch = hs.autoLaunch()
 
-		mod.menuManager = deps.menuManager
-		mod.fcpShortcuts = deps.fcpShortcuts
+	--------------------------------------------------------------------------------
+	-- Setup General Preferences Panel:
+	--------------------------------------------------------------------------------
+	deps.general:addHeading(1, function()
+		return { title = "General:" }
+	end)
 
-		--------------------------------------------------------------------------------
-		-- Cache Auto Launch:
-		--------------------------------------------------------------------------------
-		mod._autoLaunch = hs.autoLaunch()
+	:addCheckbox(3, function()
+		return { title = i18n("launchAtStartup"), fn = mod.toggleAutoLaunch, checked = mod._autoLaunch }
+	end)
 
-		--------------------------------------------------------------------------------
-		-- Setup General Preferences Panel:
-		--------------------------------------------------------------------------------
-		deps.general:addHeading(1, function()
-			return { title = "General:" }
-		end)
+	:addHeading(50, function()
+		return { title = "<br />Developer:" }
+	end)
 
-		:addCheckbox(3, function()
-			return { title = i18n("launchAtStartup"), fn = mod.toggleAutoLaunch, checked = mod._autoLaunch }
-		end)
+	:addCheckbox(51, function()
+		return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
+	end)
 
-		:addHeading(50, function()
-			return { title = "<br />Developer:" }
-		end)
+	:addButton(52, function()
+		return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
+	end, 150)
 
-		:addCheckbox(51, function()
-			return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
-		end)
+	:addButton(53, function()
+		return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
+	end, 150)
 
-		:addButton(52, function()
-			return { title = i18n("openErrorLog"),	fn = function() hs.openConsole() end }
-		end, 150)
+	--------------------------------------------------------------------------------
+	-- Setup Menubar Preferences Panel:
+	--------------------------------------------------------------------------------
+	deps.menubar:addHeading(20, function()
+		return { title = "Appearance:" }
+	end)
 
-		:addButton(53, function()
-			return { title = i18n("trashPreferences"),	fn = mod.resetSettings }
-		end, 150)
+	:addCheckbox(21, function()
+		return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
+	end)
 
-		--------------------------------------------------------------------------------
-		-- Setup Menubar Preferences Panel:
-		--------------------------------------------------------------------------------
-		deps.menubar:addHeading(20, function()
-			return { title = "Appearance:" }
-		end)
+	:addHeading(24, function()
+		return { title = "<br />Sections:" }
+	end)
 
-		:addCheckbox(21, function()
-			return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
-		end)
-
-		:addHeading(24, function()
-			return { title = "<br />Sections:" }
-		end)
-
-	end
+end
 
 return plugin
