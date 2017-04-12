@@ -29,8 +29,6 @@ local webview									= require("hs.webview")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
-local plugins									= require("cp.plugins")
-local template									= require("cp.template")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -38,7 +36,6 @@ local tools										= require("cp.tools")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-
 local PRIORITY 									= 8888889
 local WEBVIEW_LABEL								= "preferences"
 
@@ -64,8 +61,8 @@ function mod.getLabel()
 	return WEBVIEW_LABEL
 end
 
-function mod.setPanelTemplatePath(path)
-	mod.panelTemplatePath = path
+function mod.setPanelRenderer(renderer)
+	mod._panelRenderer = renderer
 end
 
 --------------------------------------------------------------------------------
@@ -84,32 +81,17 @@ end
 --------------------------------------------------------------------------------
 local function generateHTML()
 
-	local path = mod.panelTemplatePath
-	if not path then
-		log.ef("No panel template path provided.")
-		return ""
+	local env = {}
+	env.panels = mod._panels
+	env.highestPriorityID = highestPriorityID()
+
+	local result, err = mod._panelRenderer(env)
+	if err then
+		log.ef("Error rendering Preferences Panel Template: %s", err)
+		return err
+	else
+		return result
 	end
-
-	local env = template.defaultEnv()
-
-	env.i18n = i18n
-
-	env.content = ""
-
-	local highestPriorityID = highestPriorityID()
-	for i, v in ipairs(mod._panels) do
-		local display = "none"
-		if v["id"] == highestPriorityID then display = "block" end
-		env.content =  env.content .. [[
-			<div id="]] .. v["id"] .. [[" style="display: ]] .. display .. [[;">
-			]] .. v["contentFn"]() .. [[
-			</div>
-		]]
-
-	end
-
-	return template.compileFile(path, env)
-
 end
 
 --------------------------------------------------------------------------------
@@ -167,7 +149,7 @@ function mod.new()
 
 end
 
---- core.preferences.manager.show() -> boolean
+--- core.preferences.manager.showPreferences() -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
@@ -254,6 +236,27 @@ function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn
 end
 
 --------------------------------------------------------------------------------
+-- ADD PANEL:
+--------------------------------------------------------------------------------
+function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+
+	--log.df("Adding Preferences Panel with ID: %s", id)
+
+	mod._panels[#mod._panels + 1] = {
+		id = id,
+		label = label,
+		image = image,
+		priority = priority,
+		tooltip = tooltip,
+		fn = function() mod.selectPanel(id) end,
+		selectable = true,
+		contentFn = contentFn,
+		callbackFn = callbackFn,
+	}
+
+end
+
+--------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
 --
@@ -271,7 +274,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.setPanelTemplatePath(env:pathToAbsolute("html/panel.htm"))
+	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 
 	deps.bottom:addItem(PRIORITY, function()
 		return { title = i18n("preferences") .. "...", fn = mod.show }

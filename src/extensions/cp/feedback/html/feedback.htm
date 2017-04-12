@@ -120,15 +120,14 @@
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
 			<div id="console-output" hidden>{{ consoleOutput }}</div>
 			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
-			{{% for i, v in ipairs(screenshots) do }}
+			{% for i, v in ipairs(screenshots) do %}
 				<div id="screenshot{{ i }}" hidden>
 					<img id='base64image{{ i }}' src='data:image/jpeg;base64, {{ v }}' />
 				</div>
 				<textarea id="form-screenshot{{ i }}" name="form-screenshot{{ i }}" style="display:none"></textarea>
-			{{% end }}
+			{% end %}
 		</form>
 		<script>
-
 			/* SAVE DEFAULT VALUES: */
 			var defaultBugReportValue = document.getElementById("bugreport-comments").innerHTML;
 			var defaultFeatureRequestValue = document.getElementById("feature-request-comments").innerHTML;
@@ -194,9 +193,9 @@
 				};
 
 				if (document.getElementById("include-screnshots").checked) {
-					{{% for i, v in ipairs(screenshots) do }}
+					{% for i, v in ipairs(screenshots) do %}
 						document.getElementById("form-screenshot{{ i }}").value = document.getElementById("screenshot{{ i }}").innerHTML;
-					{{% end }}
+					{% end %}
 				}
 
 				document.getElementById("feedback-form").submit();

@@ -37,185 +37,187 @@ local DEFAULT_PRIORITY 							= 0
 --------------------------------------------------------------------------------
 local mod = {}
 
-	mod._uiItems 								= {}
+mod._uiItems 								= {}
 
-	--------------------------------------------------------------------------------
-	-- CONTROLLER CALLBACK:
-	--------------------------------------------------------------------------------
-	local function controllerCallback(message)
+--------------------------------------------------------------------------------
+-- CONTROLLER CALLBACK:
+--------------------------------------------------------------------------------
+local function controllerCallback(message)
 
-		--log.df("Callback Result: %s", hs.inspect(message))
+	--log.df("Callback Result: %s", hs.inspect(message))
 
-		local title = message["body"][1]
-		local result = message["body"][2]
+	local title = message["body"][1]
+	local result = message["body"][2]
 
-		for i, v in ipairs(mod._uiItems) do
-			--------------------------------------------------------------------------------
-			-- Dropdown Items:
-			--------------------------------------------------------------------------------
-			if v["uiType"] == generate.UI_DROPDOWN then
-				if v["title"] == title then
-					local data = v["itemFn"]()
-					for a, b in ipairs(data) do
-						if b["title"] == result then
-							if type(b["fn"]) == "function" then
-								--------------------------------------------------------------------------------
-								-- Trigger Function:
-								--------------------------------------------------------------------------------
-								b["fn"]()
-								return
-							else
-								log.df("Failed to trigger Dropdown Callback Function.")
-								return
-							end
+	for i, v in ipairs(mod._uiItems) do
+		--------------------------------------------------------------------------------
+		-- Dropdown Items:
+		--------------------------------------------------------------------------------
+		if v["uiType"] == generate.UI_DROPDOWN then
+			if v["title"] == title then
+				local data = v["itemFn"]()
+				for a, b in ipairs(data) do
+					if b["title"] == result then
+						if type(b["fn"]) == "function" then
+							--------------------------------------------------------------------------------
+							-- Trigger Function:
+							--------------------------------------------------------------------------------
+							b["fn"]()
+							return
+						else
+							log.df("Failed to trigger Dropdown Callback Function.")
+							return
 						end
 					end
 				end
-			else
-			--------------------------------------------------------------------------------
-			-- Everything Else:
-			--------------------------------------------------------------------------------
-				local data = v["itemFn"]()
-				if data["title"] == title then
-					if type(data["fn"]) == "function" then
-						--------------------------------------------------------------------------------
-						-- Trigger Function:
-						--------------------------------------------------------------------------------
-						data["fn"]()
-						return
-					else
-						log.df("Failed to trigger Callback Function.")
-						return
-					end
+			end
+		else
+		--------------------------------------------------------------------------------
+		-- Everything Else:
+		--------------------------------------------------------------------------------
+			local data = v["itemFn"]()
+			if data["title"] == title or title == v["customTrigger"] then
+				if type(data["fn"]) == "function" then
+					--------------------------------------------------------------------------------
+					-- Trigger Function:
+					--------------------------------------------------------------------------------
+					data["fn"]()
+					return
+				else
+					log.df("Failed to trigger Callback Function.")
+					return
 				end
 			end
 		end
-
 	end
 
-	--------------------------------------------------------------------------------
-	-- GENERATE CONTENT:
-	--------------------------------------------------------------------------------
-	local function generateContent()
+end
 
-		generate.setWebviewLabel(mod._webviewLabel)
+--------------------------------------------------------------------------------
+-- GENERATE CONTENT:
+--------------------------------------------------------------------------------
+local function generateContent()
 
-		local result = ""
+	generate.setWebviewLabel(mod._webviewLabel)
 
-		table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
-		for i, v in ipairs(mod._uiItems) do
+	local result = ""
 
-			local data = v["itemFn"]()
+	table.sort(mod._uiItems, function(a, b) return a.priority < b.priority end)
+	for i, v in ipairs(mod._uiItems) do
 
-			local uiType = v["uiType"]
+		local data = v["itemFn"]()
 
-			if uiType == generate.UI_CHECKBOX then
-				result = result .. "\n" .. generate.checkbox(data)
-			elseif uiType == generate.UI_HEADING then
-				result = result .. "\n" .. generate.heading(data)
-			elseif uiType == generate.UI_BUTTON then
-				result = result .. "\n" .. generate.button(data)
-			elseif uiType == generate.UI_DROPDOWN then
-				result = result .. "\n" .. generate.dropdown(v["title"], data)
+		local uiType = v["uiType"]
 
-			end
+		if uiType == generate.UI_CHECKBOX then
+			result = result .. "\n" .. generate.checkbox(data, v["customTrigger"], v["customID"])
+		elseif uiType == generate.UI_HEADING then
+			result = result .. "\n" .. generate.heading(data)
+		elseif uiType == generate.UI_BUTTON then
+			result = result .. "\n" .. generate.button(data)
+		elseif uiType == generate.UI_DROPDOWN then
+			result = result .. "\n" .. generate.dropdown(v["title"], data)
 
 		end
 
-		return result
 	end
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE MODULE:
-	--------------------------------------------------------------------------------
-	function mod.init(deps)
+	return result
+end
 
-		mod._webviewLabel = deps.manager.getLabel()
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
+function mod.init(deps)
 
-		local id 			= "finalcutpro"
-		local label 		= "Final Cut Pro"
-		local image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")
-		local priority		= 2005
-		local tooltip		= "Final Cut Pro"
-		local contentFn		= generateContent
-		local callbackFn 	= controllerCallback
+	mod._webviewLabel = deps.manager.getLabel()
 
-		deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+	local id 			= "finalcutpro"
+	local label 		= "Final Cut Pro"
+	local image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")
+	local priority		= 2040
+	local tooltip		= "Final Cut Pro"
+	local contentFn		= generateContent
+	local callbackFn 	= controllerCallback
 
-		return mod
+	deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
 
-	end
+	return mod
 
-	--------------------------------------------------------------------------------
-	-- ADD CHECKBOX:
-	--------------------------------------------------------------------------------
-	function mod:addCheckbox(priority, itemFn)
+end
 
-		--log.df("Adding Checkbox to General Preferences Panel: %s", itemFn)
+--------------------------------------------------------------------------------
+-- ADD CHECKBOX:
+--------------------------------------------------------------------------------
+function mod:addCheckbox(priority, itemFn, customTrigger, customID)
 
-		priority = priority or DEFAULT_PRIORITY
+	--log.df("Adding Checkbox to General Preferences Panel: %s", itemFn)
 
-		mod._uiItems[#mod._uiItems + 1] = {
-			priority = priority,
-			itemFn = itemFn,
-			uiType = generate.UI_CHECKBOX,
-		}
+	priority = priority or DEFAULT_PRIORITY
 
-		return self
+	mod._uiItems[#mod._uiItems + 1] = {
+		priority = priority,
+		itemFn = itemFn,
+		uiType = generate.UI_CHECKBOX,
+		customTrigger = customTrigger,
+		customID = customID,
+	}
 
-	end
+	return self
 
-	--------------------------------------------------------------------------------
-	-- ADD HEADING:
-	--------------------------------------------------------------------------------
-	function mod:addHeading(priority, itemFn)
+end
 
-		priority = priority or DEFAULT_PRIORITY
+--------------------------------------------------------------------------------
+-- ADD HEADING:
+--------------------------------------------------------------------------------
+function mod:addHeading(priority, itemFn)
 
-		mod._uiItems[#mod._uiItems + 1] = {
-			priority = priority,
-			itemFn = itemFn,
-			uiType = generate.UI_HEADING,
-		}
+	priority = priority or DEFAULT_PRIORITY
 
-		return self
+	mod._uiItems[#mod._uiItems + 1] = {
+		priority = priority,
+		itemFn = itemFn,
+		uiType = generate.UI_HEADING,
+	}
 
-	end
+	return self
 
-	--------------------------------------------------------------------------------
-	-- ADD BUTTON:
-	--------------------------------------------------------------------------------
-	function mod:addButton(priority, itemFn)
+end
 
-		priority = priority or DEFAULT_PRIORITY
+--------------------------------------------------------------------------------
+-- ADD BUTTON:
+--------------------------------------------------------------------------------
+function mod:addButton(priority, itemFn)
 
-		mod._uiItems[#mod._uiItems + 1] = {
-			priority = priority,
-			itemFn = itemFn,
-			uiType = generate.UI_BUTTON,
-		}
+	priority = priority or DEFAULT_PRIORITY
 
-		return self
+	mod._uiItems[#mod._uiItems + 1] = {
+		priority = priority,
+		itemFn = itemFn,
+		uiType = generate.UI_BUTTON,
+	}
 
-	end
+	return self
 
-	--------------------------------------------------------------------------------
-	-- ADD DROPDOWN:
-	--------------------------------------------------------------------------------
-	function mod:addDropdown(priority, title, itemFn)
+end
 
-		priority = priority or DEFAULT_PRIORITY
+--------------------------------------------------------------------------------
+-- ADD DROPDOWN:
+--------------------------------------------------------------------------------
+function mod:addDropdown(priority, title, itemFn)
 
-		mod._uiItems[#mod._uiItems + 1] = {
-			title = title,
-			priority = priority,
-			itemFn = itemFn,
-			uiType = generate.UI_DROPDOWN,
-		}
+	priority = priority or DEFAULT_PRIORITY
 
-		return self
+	mod._uiItems[#mod._uiItems + 1] = {
+		title = title,
+		priority = priority,
+		itemFn = itemFn,
+		uiType = generate.UI_DROPDOWN,
+	}
 
-	end
+	return self
+
+end
 
 --------------------------------------------------------------------------------
 --

@@ -14,7 +14,9 @@
 --
 --------------------------------------------------------------------------------
 local command					= require("cp.commands.command")
+local config					= require("cp.config")
 local timer						= require("hs.timer")
+local _							= require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -22,6 +24,8 @@ local timer						= require("hs.timer")
 --
 --------------------------------------------------------------------------------
 local commands = {}
+
+commands.defaultExtension = ".cpShortcuts"
 
 commands._groups = {}
 
@@ -159,7 +163,7 @@ function commands:activate(successFn, failureFn)
 	self:_notify('activate')
 	local count = 0
 	timer.waitUntil(
-		function() count = count + 1; return self:isEnabled() or count == 1000 end,
+		function() count = count + 1; return self:isEnabled() or count == 5000 end,
 		function()
 			if self:isEnabled() then
 				if successFn then
@@ -173,6 +177,90 @@ function commands:activate(successFn, failureFn)
 		end,
 		0.001
 	)
+end
+
+function commands:saveShortcuts()
+	local data = {}
+	
+	for id,command in pairs(self:getAll()) do
+		local commandData = {}
+		for i,shortcut in ipairs(command:getShortcuts()) do
+			commandData[#commandData + 1] = {
+				modifiers = _.clone(shortcut:getModifiers()),
+				keyCode = shortcut:getKeyCode(),
+			}
+		end
+		data[id] = commandData
+	end
+	return data
+end
+
+function commands:loadShortcuts(data)
+	self:deleteShortcuts()
+	for id,commandData in pairs(data) do
+		local command = self:get(id)
+		if command then
+			for i,shortcut in ipairs(commandData) do
+				command:activatedBy(shortcut.modifiers, shortcut.keyCode)
+			end
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- GET HISTORY PATH:
+--------------------------------------------------------------------------------
+function commands.getShortcutsPath(name)
+	shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
+	return shortcutsPath .. name .. commands.defaultExtension
+end
+
+--------------------------------------------------------------------------------
+-- GET HISTORY:
+--------------------------------------------------------------------------------
+function commands.loadFromFile(name)
+	local groupData = {}
+
+	-- load the file
+	local filePath = self.getShortcutsPath(name)
+	local file = io.open(filePath, "r")
+	if file then
+		local content = file:read("*all")
+		file:close()
+		groupData = json.decode(content)
+	else
+		return false
+	end
+	
+	-- apply the shortcuts
+	for groupId,shortcuts in pairs(groupData) do
+		local group = commands.group(groupId)
+		if group then
+			group:loadShortcuts(shortcuts)
+		end
+	end
+	return true
+end
+
+--------------------------------------------------------------------------------
+-- SET HISTORY:
+--------------------------------------------------------------------------------
+function commands.saveToFile(name)
+	-- get the shortcuts
+	local groupData = {}
+	for id,group in pairs(commands._groups) do
+		groupData[id] = group:saveShortcuts()
+	end
+	
+	-- save the file
+	local filePath = self.getShortcutsPath(name)
+	file = io.open(filePath, "w")
+	if file then
+		file:write(json.encode(groupData))
+		file:close()
+		return true
+	end
+	return false
 end
 
 return commands
