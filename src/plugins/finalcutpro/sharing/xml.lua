@@ -132,7 +132,13 @@ function mod.listFilesMenu()
 						if file:sub(-7) == ".fcpxml" then
 							emptySharedXMLFiles = false
 							local xmlPath = xmlSharingPath .. folder .. "/" .. file
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning})
+
+							local attributes = fs.attributes(xmlPath)
+
+							if attributes then
+								modification = attributes["modification"]
+							end
+							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning, modification = modification})
 						end
 					end
 
@@ -141,6 +147,7 @@ function mod.listFilesMenu()
 					end
 				end
 			end
+			--table.sort(menu)
 
 			if emptySharedXMLFiles then
 				--------------------------------------------------------------------------------
@@ -272,6 +279,7 @@ end
 ---
 --- Parameters:
 ---  * incomingXML - XML data as string
+---  * noErrors - Prevents error messages from being displayed.
 ---
 --- Returns:
 ---  * None
@@ -289,22 +297,25 @@ function mod.shareXML(incomingXML, noErrors)
 		--------------------------------------------------------------------------------
 		-- Get only the needed XML content:
 		--------------------------------------------------------------------------------
+		-- TODO: Replace this with a proper DOM validation:
 		local startOfXML = string.find(incomingXML, "<?xml version=")
 		local endOfXML = string.find(incomingXML, "</fcpxml>")
 
 		--------------------------------------------------------------------------------
 		-- Error Detection:
 		--------------------------------------------------------------------------------
-		if startOfXML == nil or endOfXML == nil then
-			dialog.displayErrorMessage(i18n("sharedXMLError"))
-			if incomingXML ~= nil then
-				log.d("Start of incomingXML.")
-				log.d(incomingXML)
-				log.d("End of incomingXML.")
-			else
-				log.e("incomingXML is nil.")
+		if not noErrors then
+			if startOfXML == nil or endOfXML == nil then
+				dialog.displayErrorMessage(i18n("sharedXMLError"))
+				if incomingXML ~= nil then
+					log.d("Start of incomingXML.")
+					log.d(incomingXML)
+					log.d("End of incomingXML.")
+				else
+					log.e("incomingXML is nil.")
+				end
+				return "fail"
 			end
-			return "fail"
 		end
 
 		--------------------------------------------------------------------------------
