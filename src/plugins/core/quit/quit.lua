@@ -28,7 +28,7 @@ local PRIORITY 			= 9999999
 local mod = {}
 
 function mod.quit()
-	application.applicationsForBundleID(hs.processInfo["bundleID"])[1]:kill()
+	config.application():kill()
 end
 
 --------------------------------------------------------------------------------
