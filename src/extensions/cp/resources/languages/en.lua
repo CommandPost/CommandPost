@@ -211,6 +211,8 @@ return {
 
 			voiceCommandsError 					= 			"Voice Commands could not be activated.\n\nPlease try again.",
 
+			sharedXMLError						=			"Something went wrong when attempting to translate the XML data you dropped. Please try again.",
+
 			--------------------------------------------------------------------------------
 			-- Yes/No Dialog Boxes:
 			--------------------------------------------------------------------------------

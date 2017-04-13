@@ -804,83 +804,11 @@ end
 function hud.javaScriptCallback(message)
 	if message["body"] ~= nil then
 		if string.find(message["body"], "<!DOCTYPE fcpxml>") ~= nil then
-			hud.shareXML(message["body"])
+			hud.xmlSharing.shareXML(message["body"])
 		else
 			dialog.displayMessage(i18n("hudDropZoneError"))
 		end
 	end
-end
-
---- finalcutpro.hud.shareXML() -> none
---- Function
---- Share XML
----
---- Parameters:
----  * incomingXML - XML data as string
----
---- Returns:
----  * None
-function hud.shareXML(incomingXML)
-
-	local enableXMLSharing = hud.isEnabled()
-
-	if enableXMLSharing then
-
-		--------------------------------------------------------------------------------
-		-- Get Settings:
-		--------------------------------------------------------------------------------
-		local xmlSharingPath = hud.xmlSharing.getSharingPath()
-
-		--------------------------------------------------------------------------------
-		-- Get only the needed XML content:
-		--------------------------------------------------------------------------------
-		local startOfXML = string.find(incomingXML, "<?xml version=")
-		local endOfXML = string.find(incomingXML, "</fcpxml>")
-
-		--------------------------------------------------------------------------------
-		-- Error Detection:
-		--------------------------------------------------------------------------------
-		if startOfXML == nil or endOfXML == nil then
-			dialog.displayErrorMessage("Something went wrong when attempting to translate the XML data you dropped. Please try again.\n\nError occurred in hud.shareXML().")
-			if incomingXML ~= nil then
-				log.d("Start of incomingXML.")
-				log.d(incomingXML)
-				log.d("End of incomingXML.")
-			else
-				log.e("incomingXML is nil.")
-			end
-			return "fail"
-		end
-
-		--------------------------------------------------------------------------------
-		-- New XML:
-		--------------------------------------------------------------------------------
-		local newXML = string.sub(incomingXML, startOfXML - 2, endOfXML + 8)
-
-		--------------------------------------------------------------------------------
-		-- Display Text Box:
-		--------------------------------------------------------------------------------
-		local textboxResult = dialog.displayTextBoxMessage(i18n("hudXMLNameDialog"), i18n("hudXMLNameError"), "")
-
-		if textboxResult then
-			--------------------------------------------------------------------------------
-			-- Save the XML content to the Shared XML Folder:
-			--------------------------------------------------------------------------------
-			local newXMLPath = xmlSharingPath .. host.localizedName() .. "/"
-
-			if not tools.doesDirectoryExist(newXMLPath) then
-				fs.mkdir(newXMLPath)
-			end
-
-			local file = io.open(newXMLPath .. textboxResult .. ".fcpxml", "w")
-			currentClipboardData = file:write(newXML)
-			file:close()
-		end
-
-	else
-		dialog.displayMessage(i18n("hudXMLSharingDisabled"))
-	end
-
 end
 
 --- finalcutpro.hud.init() -> none
