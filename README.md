@@ -14,4 +14,6 @@ You can access the User Guide [here](http://help.commandpost.io/).
 
 ## Developer Guide:
 
-You can access the Developer Guide [here](http://dev.commandpost.io/).
+You can access the Developer Guide [here](http://dev.commandpost.io/). This includes information on Installation & Usage.
+
+You can also read our Developer Code of Conduct [here](https://github.com/CommandPost/CommandPost/blob/develop/CODE_OF_CONDUCT.md).
