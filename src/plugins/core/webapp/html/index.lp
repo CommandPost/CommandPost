@@ -1,51 +1,85 @@
 <%
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                  C O M M A N D P O S T    W E B A P P                      --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-	local inspect = require("hs.inspect")
+-- The CommandPost Web App.
 
-	local commands = require("cp.commands")
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local eventtap 		= require("hs.eventtap")
+local inspect 		= require("hs.inspect")
+local pasteboard	= require("hs.pasteboard")
 
+local fcp 			= require("cp.finalcutpro")
+local commands 		= require("cp.commands")
 
-	local function getCommands()
+--------------------------------------------------------------------------------
+-- GET COMMANDS:
+--------------------------------------------------------------------------------
+local function getCommands()
 
-		local result = {}
+	local result = {}
 
-		for _,groupId in ipairs(commands.groupIds()) do
+	for _,groupId in ipairs(commands.groupIds()) do
 
-			local group = commands.group(groupId)
-			local cmds = group:getAll()
+		local group = commands.group(groupId)
+		local cmds = group:getAll()
 
-			for id,cmd in pairs(cmds) do
-				if cmd:getTitle() then
-					result[#result+1] = {
-						id = cmd:id(),
-						group = groupId,
-						text = cmd:getTitle()
-					}
-				end
+		for id,cmd in pairs(cmds) do
+			if cmd:getTitle() then
+				result[#result+1] = {
+					id = cmd:id(),
+					group = groupId,
+					text = cmd:getTitle()
+				}
 			end
-
 		end
 
-		table.sort(result, function(a, b) return a.text < b.text end)
-
-		return result
 	end
 
-	local queryString = {}
-	cgilua.urlcode.parsequery(hsminweb["CGIVariables"]["QUERY_STRING"], queryString)
+	table.sort(result, function(a, b) return a.text < b.text end)
 
-	if next(queryString) ~= nil then
-		if queryString["action"] and queryString["group"] then
+	return result
+end
 
-			hsminweb.log.df("Action Recieved: %s %s", queryString["group"], queryString["action"])
-			commands.group(queryString["group"]):get(queryString["action"]):pressed()
+local queryString = {}
+cgilua.urlcode.parsequery(hsminweb["CGIVariables"]["QUERY_STRING"], queryString)
 
-		elseif queryString["custom_marker"] then
-			hsminweb.log.df("CUSTOM MARKER: %s", queryString["custom_marker"])
+if next(queryString) ~= nil then
+	if queryString["action"] and queryString["group"] then
+
+		hsminweb.log.df("Action Recieved: %s %s", queryString["group"], queryString["action"])
+		commands.group(queryString["group"]):get(queryString["action"]):pressed()
+
+	elseif queryString["custom_marker"] then
+		local markerString = queryString["custom_marker"]
+
+		if fcp:isShowing() then
+
+			hsminweb.log.df("Adding Marker: %s", markerString)
+
+			fcp:selectMenu("Mark", "Markers", "Add Marker")
+			fcp:selectMenu("Mark", "Markers", "Add Marker")
+			local originalPasteboard = pasteboard.getContents()
+			pasteboard.setContents(markerString)
+			fcp:selectMenu("Edit", "Paste")
+			eventtap.keyStroke({}, "return")
+			pasteboard.setContents(originalPasteboard)
+
 		else
-			hsminweb.log.df("Unknown Query String: %s", queryString)
+			hsminweb.log.df("Final Cut Pro is not active.")
 		end
+
+	else
+		hsminweb.log.df("Unknown Query String: %s", queryString)
 	end
+end
 
 %>
 <!DOCTYPE html>
@@ -182,71 +216,6 @@
 									</script>
 									</li>
 								</ul>
-							</div>
-
-							<div class="content-block-title">Exposure</div>
-							<div class="list-block">
-							  <ul>
-
-								<!-- Slider (Range input) -->
-								<li>
-								  <div class="item-content">
-									<div class="item-media"><i class="icon f7-icons">filter</i></div>
-									<div class="item-inner">
-									  <div class="item-title label">Global</div>
-									  <div class="item-input">
-										<div class="range-slider">
-										  <input type="range" min="0" max="100" value="50" step="0.1">
-										</div>
-									  </div>
-									</div>
-								  </div>
-								</li>
-
-								<!-- Slider (Range input) -->
-								<li>
-								  <div class="item-content">
-									<div class="item-media"><i class="icon f7-icons">filter</i></div>
-									<div class="item-inner">
-									  <div class="item-title label">Shadows</div>
-									  <div class="item-input">
-										<div class="range-slider">
-										  <input type="range" min="0" max="100" value="50" step="0.1">
-										</div>
-									  </div>
-									</div>
-								  </div>
-								</li>
-
-								<!-- Slider (Range input) -->
-								<li>
-								  <div class="item-content">
-									<div class="item-media"><i class="icon f7-icons">filter</i></div>
-									<div class="item-inner">
-									  <div class="item-title label">Midtones</div>
-									  <div class="item-input">
-										<div class="range-slider">
-										  <input type="range" min="0" max="100" value="50" step="0.1">
-										</div>
-									  </div>
-									</div>
-								  </div>
-
-								<!-- Slider (Range input) -->
-								<li>
-								  <div class="item-content">
-									<div class="item-media"><i class="icon f7-icons">filter</i></div>
-									<div class="item-inner">
-									  <div class="item-title label">Highlights</div>
-									  <div class="item-input">
-										<div class="range-slider">
-										  <input type="range" min="0" max="100" value="50" step="0.1">
-										</div>
-									  </div>
-									</div>
-								  </div>
-
-							  </ul>
 							</div>
 						</div>
 					</div>

@@ -138,7 +138,7 @@ function mod.init(deps)
 	local id 			= "webapp"
 	local label 		= "WebApp"
 	local image			= image.imageFromName("NSNetwork")
-	local priority		= 1
+	local priority		= 2049
 	local tooltip		= "WebApp"
 	local contentFn		= generateContent
 	local callbackFn 	= controllerCallback
