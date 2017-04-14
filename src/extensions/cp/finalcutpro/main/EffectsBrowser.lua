@@ -297,6 +297,8 @@ function Browser:saveLayout()
 		layout.contents = self:contents():saveLayout()
 		layout.group = self:group():saveLayout()
 		layout.search = self:search():saveLayout()
+	else
+		layout.showing = false
 	end
 	return layout
 end
@@ -313,7 +315,7 @@ function Browser:loadLayout(layout)
 
 		self:search():loadLayout(layout.search)
 		self:contents():loadLayout(layout.contents)
-	else
+	elseif layout.showing == false then
 		self:hide()
 	end
 end
