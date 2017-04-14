@@ -1,7 +1,26 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Pop Up Button
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils						= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local PopUpButton = {}
 
+-- TODO: Add documentation
 function PopUpButton.matches(element)
 	return element:attributeValue("AXRole") == "AXPopUpButton"
 end
@@ -16,10 +35,12 @@ function PopUpButton:new(parent, finderFn)
 	return o
 end
 
+-- TODO: Add documentation
 function PopUpButton:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function PopUpButton:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
@@ -27,6 +48,7 @@ function PopUpButton:UI()
 	PopUpButton.matches)
 end
 
+-- TODO: Add documentation
 function PopUpButton:selectItem(index)
 	local ui = self:UI()
 	if ui then
@@ -43,11 +65,13 @@ function PopUpButton:selectItem(index)
 	return self
 end
 
+-- TODO: Add documentation
 function PopUpButton:getValue()
 	local ui = self:UI()
 	return ui and ui:value()
 end
 
+-- TODO: Add documentation
 function PopUpButton:setValue(value)
 	local ui = self:UI()
 	if ui and not ui:value() == value then
@@ -63,11 +87,13 @@ function PopUpButton:setValue(value)
 	return self
 end
 
+-- TODO: Add documentation
 function PopUpButton:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
+-- TODO: Add documentation
 function PopUpButton:press()
 	local ui = self:UI()
 	if ui then
@@ -76,12 +102,14 @@ function PopUpButton:press()
 	return self
 end
 
+-- TODO: Add documentation
 function PopUpButton:saveLayout()
 	local layout = {}
 	layout.value = self:getValue()
 	return layout
 end
 
+-- TODO: Add documentation
 function PopUpButton:loadLayout(layout)
 	if layout then
 		self:setValue(layout.value)

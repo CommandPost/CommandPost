@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Generators Browser:
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
@@ -15,10 +28,16 @@ local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local PopUpButton						= require("cp.finalcutpro.ui.PopUpButton")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local GeneratorsBrowser = {}
 
 GeneratorsBrowser.TITLE = "Titles and Generators"
 
+-- TODO: Add documentation
 function GeneratorsBrowser:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -26,19 +45,23 @@ function GeneratorsBrowser:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- GENERATORSBROWSER UI:
+--
 -----------------------------------------------------------------------
---- GeneratorsBrowser UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function GeneratorsBrowser:UI()
 	if self:isShowing() then
 		return axutils.cache(self, "_ui", function()
@@ -48,10 +71,12 @@ function GeneratorsBrowser:UI()
 	return nil
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:isShowing()
 	return self:parent():showGenerators():isChecked()
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:show()
 	local menuBar = self:app():menuBar()
 	-- Go there direct
@@ -60,17 +85,19 @@ function GeneratorsBrowser:show()
 	return self
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:hide()
 	self:parent():hide()
 	return self
 end
 
 -----------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Sections
------------------------------------------------------------------------------
+--
+-- SECTIONS:
+--
 -----------------------------------------------------------------------------
 
+-- TODO: Add documentation
 function GeneratorsBrowser:mainGroupUI()
 	return axutils.cache(self, "_mainGroup",
 	function()
@@ -79,6 +106,7 @@ function GeneratorsBrowser:mainGroupUI()
 	end)
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
@@ -88,6 +116,7 @@ function GeneratorsBrowser:sidebar()
 	return self._sidebar
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:contents()
 	if not self._contents then
 		self._contents = ScrollArea:new(self, function()
@@ -100,6 +129,7 @@ function GeneratorsBrowser:contents()
 	return self._contents
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:group()
 	if not self._group then
 		self._group = PopUpButton:new(self, function()
@@ -109,6 +139,7 @@ function GeneratorsBrowser:group()
 	return self._group
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:search()
 	if not self._search then
 		self._search = TextField:new(self, function()
@@ -118,26 +149,31 @@ function GeneratorsBrowser:search()
 	return self._search
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:showSidebar()
 	self:app():menuBar():checkMenu("Window", "Show in Workspace", "Sidebar")
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:topCategoriesUI()
 	return self:sidebar():rowsUI(function(row)
 		return row:attributeValue("AXDisclosureLevel") == 0
 	end)
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:showInstalledTitles()
 	self:group():selectItem(1)
 	return self
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:showInstalledGenerators()
 	self:showInstalledTitles()
 	return self
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:showAllTitles()
 	self:showSidebar()
 	local topCategories = self:topCategoriesUI()
@@ -147,6 +183,7 @@ function GeneratorsBrowser:showAllTitles()
 	return self
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:showAllGenerators()
 	self:showSidebar()
 	local topCategories = self:topCategoriesUI()
@@ -156,15 +193,17 @@ function GeneratorsBrowser:showAllGenerators()
 	return self
 end
 
-
+-- TODO: Add documentation
 function GeneratorsBrowser:currentItemsUI()
 	return self:contents():childrenUI()
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:selectedItemsUI()
 	return self:contents():selectedChildrenUI()
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:itemIsSelected(itemUI)
 	local selectedItems = self:selectedItemsUI()
 	if selectedItems and #selectedItems > 0 then
@@ -177,6 +216,7 @@ function GeneratorsBrowser:itemIsSelected(itemUI)
 	return false
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:applyItem(itemUI)
 	if itemUI then
 		self:contents():showChild(itemUI)
@@ -186,6 +226,7 @@ function GeneratorsBrowser:applyItem(itemUI)
 	return self
 end
 
+-- TODO: Add documentation
 --- Returns the list of titles for all effects/transitions currently visible
 function GeneratorsBrowser:getCurrentTitles()
 	local contents = self:contents():childrenUI()
@@ -197,8 +238,13 @@ function GeneratorsBrowser:getCurrentTitles()
 	return nil
 end
 
--------- Layouts ---------------
+--------------------------------------------------------------------------------
+--
+-- LAYOUTS:
+--
+--------------------------------------------------------------------------------
 
+-- TODO: Add documentation
 function GeneratorsBrowser:saveLayout()
 	local layout = {}
 	if self:isShowing() then
@@ -210,6 +256,7 @@ function GeneratorsBrowser:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function GeneratorsBrowser:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()

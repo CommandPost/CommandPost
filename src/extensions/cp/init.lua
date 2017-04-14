@@ -58,7 +58,6 @@ local fcp                       = require("cp.finalcutpro")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
 --- cp.init()

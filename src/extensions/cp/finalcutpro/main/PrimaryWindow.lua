@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Primary Window
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("primaryWindow")
 local inspect						= require("hs.inspect")
 
@@ -10,13 +23,19 @@ local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 local Inspector						= require("cp.finalcutpro.main.Inspector")
 local ColorBoard					= require("cp.finalcutpro.main.ColorBoard")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local PrimaryWindow = {}
 
+-- TODO: Add documentation
 function PrimaryWindow.matches(w)
 	return w and w:attributeValue("AXSubrole") == "AXStandardWindow"
 end
 
-
+-- TODO: Add documentation
 function PrimaryWindow:new(app)
 	o = {
 		_app = app
@@ -27,19 +46,23 @@ function PrimaryWindow:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:show()
 	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
 	return true
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:UI()
 	return axutils.cache(self, "_ui", function()
 		local ui = self:app():UI()
@@ -56,6 +79,7 @@ function PrimaryWindow:UI()
 	PrimaryWindow.matches)
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
 		if PrimaryWindow.matches(w) then return w end
@@ -63,17 +87,20 @@ function PrimaryWindow:_findWindowUI(windows)
 	return nil
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:isFullScreen()
 	local ui = self:UI()
 	return ui and ui:fullScreen()
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:setFullScreen(isFullScreen)
 	local ui = self:UI()
 	if ui then ui:setFullScreen(isFullScreen) end
 	return self
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:toggleFullScreen()
 	local ui = self:UI()
 	if ui then ui:setFullScreen(not self:isFullScreen()) end
@@ -81,11 +108,12 @@ function PrimaryWindow:toggleFullScreen()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
--- UI STRUCTURE
------------------------------------------------------------------------
+--
+-- UI STRUCTURE:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 -- The top AXSplitGroup contains the
 function PrimaryWindow:rootGroupUI()
 	return axutils.cache(self, "_rootGroup", function()
@@ -94,6 +122,7 @@ function PrimaryWindow:rootGroupUI()
 	end)
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:leftGroupUI()
 	local root = self:rootGroupUI()
 	if root then
@@ -107,6 +136,7 @@ function PrimaryWindow:leftGroupUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:rightGroupUI()
 	local root = self:rootGroupUI()
 	if root and #root == 2 then
@@ -119,6 +149,7 @@ function PrimaryWindow:rightGroupUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:topGroupUI()
 	local left = self:leftGroupUI()
 	if left then
@@ -146,6 +177,7 @@ function PrimaryWindow:topGroupUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:bottomGroupUI()
 	local left = self:leftGroupUI()
 	if left then
@@ -174,10 +206,12 @@ function PrimaryWindow:bottomGroupUI()
 end
 
 -----------------------------------------------------------------------
+--
+-- INSPECTOR:
+--
 -----------------------------------------------------------------------
--- INSPECTOR
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function PrimaryWindow:inspector()
 	if not self._inspector then
 		self._inspector = Inspector:new(self)
@@ -186,10 +220,12 @@ function PrimaryWindow:inspector()
 end
 
 -----------------------------------------------------------------------
+--
+-- COLOR BOARD:
+--
 -----------------------------------------------------------------------
--- INSPECTOR
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function PrimaryWindow:colorBoard()
 	if not self._colorBoard then
 		self._colorBoard = ColorBoard:new(self)
@@ -198,40 +234,46 @@ function PrimaryWindow:colorBoard()
 end
 
 -----------------------------------------------------------------------
+--
+-- VIEWER:
+--
 -----------------------------------------------------------------------
---- VIEWER
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function PrimaryWindow:viewerGroupUI()
 	return self:topGroupUI()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- TIMELINE GROUP UI
------------------------------------------------------------------------
+--
+-- TIMELINE GROUP UI:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 function PrimaryWindow:timelineGroupUI()
 	return self:bottomGroupUI()
 end
 
 -----------------------------------------------------------------------
+--
+-- BROWSER:
+--
 -----------------------------------------------------------------------
--- BROWSER
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function PrimaryWindow:browserGroupUI()
 	return self:topGroupUI()
 end
 
+-----------------------------------------------------------------------
+--
+-- WATCHERS:
+--
+-----------------------------------------------------------------------
 
------------------------------------------------------------------------
------------------------------------------------------------------------
---- WATCHERS
------------------------------------------------------------------------
------------------------------------------------------------------------
-
+--- cp.finalcutpro:main:PrimaryWindow:watch() -> string
+--- Method
 --- Watch for events that happen in the command editor
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
@@ -251,11 +293,11 @@ function PrimaryWindow:watch(events)
 	self._watcher:watch(events)
 end
 
+-- TODO: Add documentation
 function PrimaryWindow:unwatch(id)
 	if self._watcher then
 		self._watcher:unwatch(id)
 	end
 end
-
 
 return PrimaryWindow

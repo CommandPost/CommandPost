@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Table UI
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("Table")
 local inspect						= require("hs.inspect")
 local drawing						= require("hs.drawing")
@@ -7,8 +20,14 @@ local just							= require("cp.just")
 local axutils						= require("cp.finalcutpro.axutils")
 local tools							= require("cp.tools")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Table = {}
 
+-- TODO: Add documentation
 function Table.matches(element)
 	return element ~= nil
 end
@@ -23,15 +42,18 @@ function Table:new(parent, finder)
 	return o
 end
 
+-- TODO: Add documentation
 function Table:uncached()
 	self._uncached = true
 	return self
 end
 
+-- TODO: Add documentation
 function Table:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function Table:UI()
 	if not self._uncached then
 		return axutils.cache(self, "_ui", function()
@@ -43,6 +65,7 @@ function Table:UI()
 	end
 end
 
+-- TODO: Add documentation
 function Table:contentUI()
 	return axutils.cache(self, "_content", function()
 		local ui = self:UI()
@@ -51,6 +74,7 @@ function Table:contentUI()
 	Table.matchesContent)
 end
 
+-- TODO: Add documentation
 function Table.matchesContent(element)
 	if element then
 		local role = element:attributeValue("AXRole")
@@ -59,25 +83,30 @@ function Table.matchesContent(element)
 	return false
 end
 
+-- TODO: Add documentation
 function Table:verticalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+-- TODO: Add documentation
 function Table:horizontalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
+-- TODO: Add documentation
 function Table:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function Table:isFocused()
 	local ui = self:UI()
 	return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
 end
 
+-- TODO: Add documentation
 -- Returns the list of rows in the table
 -- An optional filter function may be provided. It will be passed a single `AXRow` element
 -- and should return `true` if the row should be included.
@@ -97,6 +126,7 @@ function Table:rowsUI(filterFn)
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:columnsUI()
 	local ui = self:contentUI()
 	if ui then
@@ -111,6 +141,7 @@ function Table:columnsUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:findColumnNumber(id)
 	local cols = self:columnsUI()
 	if cols then
@@ -123,6 +154,7 @@ function Table:findColumnNumber(id)
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:findCellUI(rowNumber, columnId)
 	local rows = self:rowsUI()
 	if rows and rowNumber >= 1 and rowNumber < #rows then
@@ -132,6 +164,7 @@ function Table:findCellUI(rowNumber, columnId)
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:selectedRowsUI()
 	local rows = self:rowsUI()
 	if rows then
@@ -146,6 +179,7 @@ function Table:selectedRowsUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:viewFrame()
 	local ui = self:UI()
 	if ui then
@@ -168,6 +202,7 @@ function Table:viewFrame()
 	return nil
 end
 
+-- TODO: Add documentation
 function Table:showRow(rowUI)
 	local ui = self:UI()
 	if ui and rowUI then
@@ -200,6 +235,7 @@ function Table:showRow(rowUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:showRowAt(index)
 	local rows = self:rowsUI()
 	if rows then
@@ -210,11 +246,13 @@ function Table:showRowAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:selectRow(rowUI)
 	rowUI:setAttributeValue("AXSelected", true)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:selectRowAt(index)
 	local ui = self:rowsUI()
 	if ui and #ui >= index then
@@ -223,11 +261,13 @@ function Table:selectRowAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:deselectRow(rowUI)
 	rowUI:setAttributeValue("AXSelected", false)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:deselectRowAt(index)
 	local ui = self:rowsUI()
 	if ui and #ui >= index then
@@ -236,6 +276,7 @@ function Table:deselectRowAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 -- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
 function Table:selectAll(rowsUI)
 	rowsUI = rowsUI or self:rowsUI()
@@ -246,6 +287,7 @@ function Table:selectAll(rowsUI)
 	return self
 end
 
+-- TODO: Add documentation
 -- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
 function Table:deselectAll(rowsUI)
 	rowsUI = rowsUI or self:selectedRowsUI()
@@ -257,6 +299,7 @@ function Table:deselectAll(rowsUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Table:saveLayout()
 	local layout = {}
 	local hScroll = self:horizontalScrollBarUI()
@@ -272,6 +315,7 @@ function Table:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function Table:loadLayout(layout)
 	if layout then
 		self:selectAll(layout.selectedRows)
@@ -285,4 +329,5 @@ function Table:loadLayout(layout)
 		end
 	end
 end
+
 return Table
