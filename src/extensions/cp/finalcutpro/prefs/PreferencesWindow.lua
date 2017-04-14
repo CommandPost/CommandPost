@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Preferences Window
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
@@ -7,10 +20,16 @@ local just							= require("cp.just")
 local PlaybackPanel					= require("cp.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("cp.finalcutpro.prefs.ImportPanel")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local PreferencesWindow = {}
 
 PreferencesWindow.GROUP						= "_NS:9"
 
+-- TODO: Add documentation
 function PreferencesWindow:new(app)
 	o = {_app = app}
 	setmetatable(o, self)
@@ -18,10 +37,12 @@ function PreferencesWindow:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:UI()
 	return axutils.cache(self, "_ui", function()
 		local windowsUI = self:app():windowsUI()
@@ -29,6 +50,7 @@ function PreferencesWindow:UI()
 	end)
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
 		if w:attributeValue("AXSubrole") == "AXDialog"
@@ -42,7 +64,7 @@ function PreferencesWindow:_findWindowUI(windows)
 	return nil
 end
 
-
+-- TODO: Add documentation
 -- Returns the UI for the AXToolbar containing this panel's buttons
 function PreferencesWindow:toolbarUI()
 	return axutils.cache(self, "_toolbar", function()
@@ -51,6 +73,7 @@ function PreferencesWindow:toolbarUI()
 	end)
 end
 
+-- TODO: Add documentation
 -- Returns the UI for the AXGroup containing this panel's elements
 function PreferencesWindow:groupUI()
 	return axutils.cache(self, "_group", function()
@@ -61,7 +84,7 @@ function PreferencesWindow:groupUI()
 	end)
 end
 
-
+-- TODO: Add documentation
 function PreferencesWindow:playbackPanel()
 	if not self._playbackPanel then
 		self._playbackPanel = PlaybackPanel:new(self)
@@ -69,6 +92,7 @@ function PreferencesWindow:playbackPanel()
 	return self._playbackPanel
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:importPanel()
 	if not self._importPanel then
 		self._importPanel = ImportPanel:new(self)
@@ -76,11 +100,13 @@ function PreferencesWindow:importPanel()
 	return self._importPanel
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:isShowing()
 	return self:UI() ~= nil
 end
 
---- Ensures the PreferencesWindow is showing
+-- TODO: Add documentation
+-- Ensures the PreferencesWindow is showing
 function PreferencesWindow:show()
 	if not self:isShowing() then
 		-- open the window
@@ -92,6 +118,7 @@ function PreferencesWindow:show()
 	return self
 end
 
+-- TODO: Add documentation
 function PreferencesWindow:hide()
 	local ax = self:UI()
 	if ax then

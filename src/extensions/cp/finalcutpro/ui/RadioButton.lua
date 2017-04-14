@@ -1,7 +1,26 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Radio Button UI
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils						= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local RadioButton = {}
 
+-- TODO: Add documentation
 function RadioButton.matches(element)
 	return element:attributeValue("AXRole") == "AXRadioButton"
 end
@@ -16,10 +35,12 @@ function RadioButton:new(parent, finderFn)
 	return o
 end
 
+-- TODO: Add documentation
 function RadioButton:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function RadioButton:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
@@ -27,11 +48,13 @@ function RadioButton:UI()
 	RadioButton.matches)
 end
 
+-- TODO: Add documentation
 function RadioButton:isChecked()
 	local ui = self:UI()
 	return ui and ui:value() == 1
 end
 
+-- TODO: Add documentation
 function RadioButton:check()
 	local ui = self:UI()
 	if ui and ui:value() == 0 then
@@ -40,6 +63,7 @@ function RadioButton:check()
 	return self
 end
 
+-- TODO: Add documentation
 function RadioButton:uncheck()
 	local ui = self:UI()
 	if ui and ui:value() == 1 then
@@ -48,6 +72,7 @@ function RadioButton:uncheck()
 	return self
 end
 
+-- TODO: Add documentation
 function RadioButton:toggle()
 	local ui = self:UI()
 	if ui then
@@ -56,11 +81,13 @@ function RadioButton:toggle()
 	return self
 end
 
+-- TODO: Add documentation
 function RadioButton:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
+-- TODO: Add documentation
 function RadioButton:press()
 	local ui = self:UI()
 	if ui then
@@ -69,12 +96,14 @@ function RadioButton:press()
 	return self
 end
 
+-- TODO: Add documentation
 function RadioButton:saveLayout()
 	return {
 		checked = self:isChecked()
 	}
 end
 
+-- TODO: Add documentation
 function RadioButton:loadLayout(layout)
 	if layout then
 		if layout.checked then

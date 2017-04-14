@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Media Browser
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("mediaBrowser")
 local inspect							= require("hs.inspect")
 
@@ -13,6 +26,11 @@ local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local PopUpButton						= require("cp.finalcutpro.ui.PopUpButton")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local MediaBrowser = {}
 
 MediaBrowser.TITLE = "Photos and Audio"
@@ -23,6 +41,7 @@ MediaBrowser.GARAGE_BAND = 2
 MediaBrowser.ITUNES = 3
 MediaBrowser.SOUND_EFFECTS = 4
 
+-- TODO: Add documentation
 function MediaBrowser:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -30,19 +49,23 @@ function MediaBrowser:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function MediaBrowser:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function MediaBrowser:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- MEDIABROWSER UI:
+--
 -----------------------------------------------------------------------
---- MediaBrowser UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function MediaBrowser:UI()
 	if self:isShowing() then
 		return axutils.cache(self, "_ui", function()
@@ -52,10 +75,12 @@ function MediaBrowser:UI()
 	return nil
 end
 
+-- TODO: Add documentation
 function MediaBrowser:isShowing()
 	return self:parent():showMedia():isChecked()
 end
 
+-- TODO: Add documentation
 function MediaBrowser:show()
 	local menuBar = self:app():menuBar()
 	-- Go there direct
@@ -64,17 +89,19 @@ function MediaBrowser:show()
 	return self
 end
 
+-- TODO: Add documentation
 function MediaBrowser:hide()
 	self:parent():hide()
 	return self
 end
 
 -----------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Sections
------------------------------------------------------------------------------
+--
+-- SECTIONS:
+--
 -----------------------------------------------------------------------------
 
+-- TODO: Add documentation
 function MediaBrowser:mainGroupUI()
 	return axutils.cache(self, "_mainGroup",
 	function()
@@ -83,6 +110,7 @@ function MediaBrowser:mainGroupUI()
 	end)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
@@ -92,6 +120,7 @@ function MediaBrowser:sidebar()
 	return self._sidebar
 end
 
+-- TODO: Add documentation
 function MediaBrowser:group()
 	if not self._group then
 		self._group = PopUpButton:new(self, function()
@@ -101,6 +130,7 @@ function MediaBrowser:group()
 	return self._group
 end
 
+-- TODO: Add documentation
 function MediaBrowser:search()
 	if not self._search then
 		self._search = TextField:new(self, function()
@@ -110,16 +140,19 @@ function MediaBrowser:search()
 	return self._search
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showSidebar()
 	self:app():menuBar():checkMenu("Window", "Show in Workspace", "Sidebar")
 end
 
+-- TODO: Add documentation
 function MediaBrowser:topCategoriesUI()
 	return self:sidebar():rowsUI(function(row)
 		return row:attributeValue("AXDisclosureLevel") == 0
 	end)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showSection(index)
 	self:showSidebar()
 	local topCategories = self:topCategoriesUI()
@@ -129,22 +162,27 @@ function MediaBrowser:showSection(index)
 	return self
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showPhotos()
 	return self:showSection(MediaBrowser.PHOTOS)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showGarageBand()
 	return self:showSection(MediaBrowser.GARAGE_BAND)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showITunes()
 	return self:showSection(MediaBrowser.ITUNES)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:showSoundEffects()
 	return self:showSection(MediaBrowser.SOUND_EFFECTS)
 end
 
+-- TODO: Add documentation
 function MediaBrowser:saveLayout()
 	local layout = {}
 	if self:isShowing() then
@@ -155,6 +193,7 @@ function MediaBrowser:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function MediaBrowser:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()

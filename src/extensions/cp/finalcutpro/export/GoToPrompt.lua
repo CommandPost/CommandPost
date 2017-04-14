@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Go To Prompt
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 local eventtap						= require("hs.eventtap")
@@ -5,8 +18,14 @@ local eventtap						= require("hs.eventtap")
 local axutils						= require("cp.finalcutpro.axutils")
 local just							= require("cp.just")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local GoToPrompt = {}
 
+-- TODO: Add documentation
 function GoToPrompt.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"			-- it's a sheet
@@ -16,6 +35,7 @@ function GoToPrompt.matches(element)
 	return false
 end
 
+-- TODO: Add documentation
 function GoToPrompt:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -23,14 +43,17 @@ function GoToPrompt:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function GoToPrompt:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function GoToPrompt:app()
 	return self:parent():app()
 end
 
+-- TODO: Add documentation
 function GoToPrompt:UI()
 	return axutils.cache(self, "_ui", function()
 		return axutils.childMatching(self:parent():UI(), GoToPrompt.matches)
@@ -38,6 +61,7 @@ function GoToPrompt:UI()
 	GoToPrompt.matches)
 end
 
+-- TODO: Add documentation
 function GoToPrompt:show()
 	if self:parent():isShowing() then
 		eventtap.keyStroke({"cmd", "shift"}, "g")
@@ -46,14 +70,17 @@ function GoToPrompt:show()
 	return self
 end
 
+-- TODO: Add documentation
 function GoToPrompt:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function GoToPrompt:hide()
 	self:pressCancel()
 end
 
+-- TODO: Add documentation
 function GoToPrompt:pressCancel()
 	local ui = self:UI()
 	if ui then
@@ -66,6 +93,7 @@ function GoToPrompt:pressCancel()
 	return self
 end
 
+-- TODO: Add documentation
 function GoToPrompt:setValue(value)
 	local textField = axutils.childWithRole(self:UI(), "AXTextField")
 	if textField then
@@ -79,6 +107,7 @@ function GoToPrompt:setValue(value)
 	return self
 end
 
+-- TODO: Add documentation
 function GoToPrompt:pressDefault()
 	local ui = self:UI()
 	if ui then
@@ -91,6 +120,7 @@ function GoToPrompt:pressDefault()
 	return self
 end
 
+-- TODO: Add documentation
 function GoToPrompt:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()

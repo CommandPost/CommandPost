@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
+local fs										= require("hs.fs")
 local image										= require("hs.image")
 local keycodes									= require("hs.keycodes")
 local timer										= require("hs.timer")
@@ -23,6 +24,8 @@ local webview									= require("hs.webview")
 
 local config									= require("cp.config")
 local commands									= require("cp.commands")
+local dialog									= require("cp.dialog")
+local generate									= require("cp.web.generate")
 
 local _											= require("moses")
 
@@ -32,6 +35,7 @@ local _											= require("moses")
 --
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
+local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 --------------------------------------------------------------------------------
 --
@@ -62,6 +66,19 @@ local function split(str, pat)
 	return t
 end
 
+local function resetShortcuts()
+	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
+		-- Deletes the DEFAULT_SHORTCUTS, if present.
+		local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
+		if shortcutsFile then
+			log.df("Removing shortcuts file: '%s'", shortcutsFile)
+			os.remove(shortcutsFile)
+			dialog.displayAlertMessage(i18n("shortcutsResetComplete"))
+			hs.reload()
+		end
+	end
+end
+
 --------------------------------------------------------------------------------
 -- CONTROLLER CALLBACK:
 --------------------------------------------------------------------------------
@@ -70,7 +87,7 @@ local function controllerCallback(message)
 	local body = message.body
 	local action = body.action
 
-	--log.df("Callback message: %s", hs.inspect(message))
+	-- log.df("Callback message: %s", hs.inspect(message))
 	if action == "updateShortcut" then
 		--------------------------------------------------------------------------------
 		-- Values from Callback:
@@ -99,12 +116,14 @@ local function controllerCallback(message)
 			if body.keyCode and body.keyCode ~= "" then
 				theCommand:activatedBy(modifiers, body.keyCode)
 			end
+			
+			commands.saveToFile(DEFAULT_SHORTCUTS)
 		else
 			log.wf("Unable to find command to update: %s:%s", group, command)
 		end
-
+	elseif body[1] == "resetShortcuts" then
+		resetShortcuts()
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -251,17 +270,14 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
+local function isHacksShortcutsEnabled()
+	return config.get("enableHacksShortcutsInFinalCutPro", false)
+end
+
 --------------------------------------------------------------------------------
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 local function generateContent()
-
-	local result = ""
-
-	local customShortcutsEnabled = ""
-	if config.get("enableHacksShortcutsInFinalCutPro", false) then
-		customShortcutsEnabled = [[ style="pointer-events: none; opacity: 0.4;" ]]
-	end
 
 	local context = {
 		shortcuts 				= getShortcutList(),
@@ -269,7 +285,8 @@ local function generateContent()
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
 		webviewLabel 			= mod._manager.getLabel(),
-		customShortcutsEnabled	= customShortcutsEnabled,
+		shortcutsEnabled		= not isHacksShortcutsEnabled(),
+		generate				= generate,
 	}
 
 	return renderPanel(context)
@@ -281,18 +298,16 @@ end
 --------------------------------------------------------------------------------
 function mod.updateCustomShortcutsVisibility()
 
-	local enableHacksShortcutsInFinalCutPro = config.get("enableHacksShortcutsInFinalCutPro", false)
+	local enableHacksShortcutsInFinalCutPro = isHacksShortcutsEnabled()
 
 	if enableHacksShortcutsInFinalCutPro then
 		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").style.opacity = 0.4;
-			document.getElementById("customiseShortcuts").style.pointerEvents = "none";
+			document.getElementById("customiseShortcuts").className = "disabled";
 			document.getElementById("enableCustomShortcuts").checked = true;
 		]])
 	else
 		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").style.opacity = 1;
-			document.getElementById("customiseShortcuts").style.pointerEvents = "auto";
+			document.getElementById("customiseShortcuts").className = "";
 			document.getElementById("enableCustomShortcuts").checked = false;
 		]])
 	end
@@ -309,12 +324,13 @@ function mod.init(deps, env)
 	mod.allKeyCodes = getAllKeyCodes()
 
 	mod._manager = deps.manager
+	mod._hacksShortcuts = deps.hacksShortcuts
 
 	mod._webviewLabel = deps.manager.getLabel()
 
 	mod._env = env
 
-	local id 		= "shorcuts"
+	local id 		= "shortcuts"
 	local label 	= "Shortcuts"
 	local image		= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")
 	local priority	= 2030
@@ -346,6 +362,10 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	return mod.init(deps, env)
+end
+
+function plugin.postInit(deps)
+	commands.loadFromFile(DEFAULT_SHORTCUTS)
 end
 
 return plugin

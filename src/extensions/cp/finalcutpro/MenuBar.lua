@@ -1,11 +1,18 @@
---- cp.finalcutpro.MenuBar
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.MenuBar ===
 ---
 --- Represents the Final Cut Pro X menu bar, providing functions that allow different tasks to be accomplished.
----
---- Author: David Peterson (david@randombits.org)
----
 
---- Standard Modules
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log											= require("hs.logger").new("menubar")
 local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
@@ -13,6 +20,11 @@ local axutils										= require("cp.finalcutpro.axutils")
 local just											= require("cp.just")
 local config										= require("cp.config")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local MenuBar = {}
 
 MenuBar.MENU_MAP_FILE								= config.scriptPath .. "/cp/finalcutpro/menumap.json"
@@ -37,10 +49,12 @@ function MenuBar:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function MenuBar:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function MenuBar:UI()
 	return axutils.cache(self, "_ui", function()
 		local appUI = self:app():UI()
@@ -48,6 +62,7 @@ function MenuBar:UI()
 	end)
 end
 
+-- TODO: Add documentation
 function MenuBar:getMenuMap()
 	if not MenuBar._menuMap then
 		local file = io.open(MenuBar.MENU_MAP_FILE, "r")
@@ -73,7 +88,6 @@ end
 ---
 --- Returns:
 ---  * `true` if the press was successful.
----
 function MenuBar:selectMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 
@@ -83,20 +97,24 @@ function MenuBar:selectMenu(...)
 	return false
 end
 
+-- TODO: Add documentation
 function MenuBar:isChecked(...)
 	local menuItemUI = self:findMenuUI(...)
 	return menuItemUI and self:_isMenuChecked(menuItemUI)
 end
 
+-- TODO: Add documentation
 function MenuBar:isEnabled(...)
 	local menuItemUI = self:findMenuUI(...)
 	return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
 
+-- TODO: Add documentation
 function MenuBar:_isMenuChecked(menu)
 	return menu:attributeValue("AXMenuItemMarkChar") ~= nil
 end
 
+-- TODO: Add documentation
 function MenuBar:checkMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
@@ -107,6 +125,7 @@ function MenuBar:checkMenu(...)
 	return false
 end
 
+-- TODO: Add documentation
 function MenuBar:uncheckMenu(...)
 	local menuItemUI = self:findMenuUI(...)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
@@ -117,8 +136,9 @@ function MenuBar:uncheckMenu(...)
 	return false
 end
 
---- Finds a specific Menu UI element for the provided path.
---- Eg `findMenuUI("Edit", "Copy")` returns the 'Copy' menu item in the 'Edit' menu.
+-- TODO: Add documentation
+-- Finds a specific Menu UI element for the provided path.
+-- Eg `findMenuUI("Edit", "Copy")` returns the 'Copy' menu item in the 'Edit' menu.
 function MenuBar:findMenuUI(...)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMenuMap()
@@ -166,8 +186,9 @@ function MenuBar:findMenuUI(...)
 	return menuItemUI
 end
 
---- Returns the set of menu items in the provided path. If the path contains a menu, the
---- actual children of that menu are returned, otherwise the menu item itself is returned.
+-- TODO: Add documentation
+-- Returns the set of menu items in the provided path. If the path contains a menu, the
+-- actual children of that menu are returned, otherwise the menu item itself is returned.
 function MenuBar:findMenuItemsUI(...)
 	local menu = self:findMenuUI(...)
 	if menu and #menu == 1 then
@@ -178,7 +199,7 @@ end
 
 --- cp.finalcutpro.MenuBar:visitMenuItems(visitFn[, startPath]) -> nil
 --- Method
---- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is, 
+--- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is,
 --- `AXMenuItem`s that don't have any sub-menus.
 ---
 --- The `visitFn` will be called on each menu item with the following parameters:
@@ -196,21 +217,21 @@ end
 ---
 --- Returns:
 ---  * True is successful otherwise Nil
----
 function MenuBar:visitMenuItems(visitFn, ...)
-	local menu = self:UI()
-	if not menu then
-		-- We don't have access to the MenuBar UI - no Accessibility permissions probably
-		return
-	end
+	local menu = nil
 	local path = table.pack(...) or {}
 	path.n = nil
 	if #path > 0 then
 		menu = self:findMenuUI(...)
+	else
+		menu = self:UI()
 	end
-	return self:_visitMenuItems(visitFn, path, menu)
+	if menu then
+		self:_visitMenuItems(visitFn, path, menu)
+	end
 end
 
+-- TODO: Add documentation
 function MenuBar:_visitMenuItems(visitFn, path, menu)
 	local title = menu:attributeValue("AXTitle")
 	if #menu > 0 then
@@ -233,7 +254,6 @@ end
 ---
 --- Returns:
 ---  * True is successful otherwise Nil
----
 function MenuBar:generateMenuMap()
 	local menuMap = self:_processMenuItems(self:UI()) or {}
 
@@ -249,6 +269,7 @@ function MenuBar:generateMenuMap()
 	return nil
 end
 
+-- TODO: Add documentation
 function MenuBar:_processMenuItems(menu)
 	local count = #menu
 	if count then
