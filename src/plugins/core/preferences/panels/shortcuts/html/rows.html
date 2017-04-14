@@ -10,13 +10,13 @@
 				lastRow = currentRow %}</td>
 				<td class="rowLabel">{{ item.command:getTitle() }}</td>
 				<td class="rowModifier" style="text-align: center;">
-					<select id="modifiers_{{ item.shortcutId }}" style="width: 90px;">
+					<select id="modifiers_{{ item.shortcutId }}">
 						<option value="none">{{ i18n("none", {default = "None"}) }}</option>
 						{* modifierOptions(item.shortcut) *}
 					</select>
 				</td>
 				<td class="rowShortcut" style="text-align: center;">
-					<select id="keyCode_{{ item.shortcutId }}" style="width: 50px;">
+					<select id="keyCode_{{ item.shortcutId }}">
 						<option></option>
 						{* keyCodeOptions(item.shortcut) *}
 					</select>

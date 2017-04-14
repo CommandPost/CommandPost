@@ -178,7 +178,7 @@ return {
 			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
 			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
 
-			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Tranistions Shortcuts via the CommandPost menu bar.",
+			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Transitions Shortcuts via the CommandPost menu bar.",
 			noEffectShortcut					=			"There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the CommandPost menu bar.",
 			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
 			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
@@ -402,6 +402,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
+			keyboardShortcuts					=			"Keyboard Shortcuts",
 			enableHacksShortcuts				=			"Control CommandPost Shortcuts within Final Cut Pro",
 			enableTimecodeOverlay				=			"Enable Timecode Overlay",
 			enableMovingMarkers					=			"Enable Moving Markers",
@@ -639,10 +640,19 @@ return {
 	plugin_group_finalcutpro			=			"Final Cut Pro",
 
 	--------------------------------------------------------------------------------
-	-- SHORTCUT GROUPS:
+	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
 	shortcut_group_global				=			"Global",
 	shortcut_group_fcpx					=			"FCPX",
+	
+	customiseShortcuts					=			"Customise Shortcuts",
+	shortcutsGroup						=			"Group",
+	shortcutsLabel						=			"Label",
+	shortcutsModifier					=			"Modifier",
+	shortcutsKey						=			"Key",
+	resetShortcuts						=			"Reset to Default Shortcuts",
+	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
+	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
