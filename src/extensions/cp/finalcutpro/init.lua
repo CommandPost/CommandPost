@@ -818,30 +818,15 @@ end
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
 ---
 App._preferencesAlreadyUpdating = false
-function App:getPreferences(forceReload, preventMultipleReloads)
-	if preventMultipleReloads and App._preferencesAlreadyUpdating then
-		--log.df("Skipping Preferences Reload...")
-		return self._preferences
-	else
-		App._preferencesAlreadyUpdating = true
-	end
-
+function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		timer.doAfter(0.01, function()
+		log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
+		-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
+		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
 
-			log.df("Reloading Final Cut Pro Preferences...")
-
-			-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
-			hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
-
-			self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
-			self._preferencesModified = modified
-
-			App._preferencesAlreadyUpdating = false
-
-		end)
-
+		self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
+		self._preferencesModified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	 end
 	return self._preferences
 end

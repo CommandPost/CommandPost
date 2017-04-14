@@ -33,8 +33,8 @@ local plugin = {
 		--------------------------------------------------------------------------------
 		fcp:watch({
 			preferences = function()
-				--log.df("Preferences file change detected. Forcing a reload.")
-				fcp:getPreferences(true, true)
+				--log.df("Preferences file change detected. Reload.")
+				fcp:getPreferences()
 			end,
 		})
 
