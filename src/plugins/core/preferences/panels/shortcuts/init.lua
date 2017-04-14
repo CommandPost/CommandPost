@@ -32,6 +32,7 @@ local _											= require("moses")
 --
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
+local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 --------------------------------------------------------------------------------
 --
@@ -99,6 +100,8 @@ local function controllerCallback(message)
 			if body.keyCode and body.keyCode ~= "" then
 				theCommand:activatedBy(modifiers, body.keyCode)
 			end
+			
+			commands.saveToFile(DEFAULT_SHORTCUTS)
 		else
 			log.wf("Unable to find command to update: %s:%s", group, command)
 		end
@@ -314,7 +317,7 @@ function mod.init(deps, env)
 
 	mod._env = env
 
-	local id 		= "shorcuts"
+	local id 		= "shortcuts"
 	local label 	= "Shortcuts"
 	local image		= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")
 	local priority	= 2030
@@ -346,6 +349,10 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	return mod.init(deps, env)
+end
+
+function plugin.postInit(deps)
+	commands.loadFromFile(DEFAULT_SHORTCUTS)
 end
 
 return plugin
