@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Secondary Window
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("secondaryWindow")
 local inspect						= require("hs.inspect")
 
@@ -7,8 +20,14 @@ local just							= require("cp.just")
 local Button						= require("cp.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local SecondaryWindow = {}
 
+-- TODO: Add documentation
 function SecondaryWindow.matches(element)
 	if element and element:attributeValue("AXSubrole") == "AXUnknown" then
 		local children = element:attributeValue("AXChildren")
@@ -17,6 +36,7 @@ function SecondaryWindow.matches(element)
 	return false
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:new(app)
 	o = {
 		_app = app
@@ -27,19 +47,23 @@ function SecondaryWindow:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:show()
 	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
 	return true
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:UI()
 	return axutils.cache(self, "_ui", function()
 		local ui = self:app():UI()
@@ -56,6 +80,7 @@ function SecondaryWindow:UI()
 	SecondaryWindow.matches)
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
 		if SecondaryWindow.matches(w) then return w end
@@ -63,6 +88,7 @@ function SecondaryWindow:_findWindowUI(windows)
 	return nil
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:isFullScreen()
 	local ui = self:rootGroupUI()
 	if ui then
@@ -81,12 +107,14 @@ function SecondaryWindow:isFullScreen()
 	return false
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:setFullScreen(isFullScreen)
 	local ui = self:UI()
 	if ui then ui:setFullScreen(isFullScreen) end
 	return self
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:toggleFullScreen()
 	local ui = self:UI()
 	if ui then ui:setFullScreen(not self:isFullScreen()) end
@@ -94,11 +122,12 @@ function SecondaryWindow:toggleFullScreen()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
--- UI STRUCTURE
------------------------------------------------------------------------
+--
+-- UI STRUCTURE:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 -- The top AXSplitGroup contains the
 function SecondaryWindow:rootGroupUI()
 	return axutils.cache(self, "_rootGroup", function()
@@ -108,20 +137,23 @@ function SecondaryWindow:rootGroupUI()
 end
 
 -----------------------------------------------------------------------
+--
+-- VIEWER UI:
+--
 -----------------------------------------------------------------------
---- VIEWER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function SecondaryWindow:viewerGroupUI()
 	return self:rootGroupUI()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- TIMELINE UI
------------------------------------------------------------------------
+--
+-- TIMELINE UI:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 function SecondaryWindow:timelineGroupUI()
 	return axutils.cache(self, "_timelineGroup", function()
 		-- for some reason, the Timeline is burried under three levels
@@ -133,20 +165,24 @@ function SecondaryWindow:timelineGroupUI()
 end
 
 -----------------------------------------------------------------------
+--
+-- BROWSER:
+--
 -----------------------------------------------------------------------
--- BROWSER
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function SecondaryWindow:browserGroupUI()
 	return self:rootGroupUI()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- WATCHERS
------------------------------------------------------------------------
+--
+-- WATCHERS:
+--
 -----------------------------------------------------------------------
 
+--- cp.finalcutpro:main:SecondaryWindow:watch() -> bool
+--- Method
 --- Watch for events that happen in the command editor
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
@@ -166,6 +202,7 @@ function SecondaryWindow:watch(events)
 	self._watcher:watch(events)
 end
 
+-- TODO: Add documentation
 function SecondaryWindow:unwatch(id)
 	if self._watcher then
 		self._watcher:unwatch(id)

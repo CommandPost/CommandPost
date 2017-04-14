@@ -1,14 +1,34 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Libraries Filmstrip
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils							= require("cp.finalcutpro.axutils")
 
 local tools								= require("cp.tools")
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Filmstrip = {}
 
+-- TODO: Add documentation
 function Filmstrip.matches(element)
 	return element and element:attributeValue("AXIdentifier") == "_NS:33"
 end
 
+-- TODO: Add documentation
 function Filmstrip:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -16,19 +36,23 @@ function Filmstrip:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function Filmstrip:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function Filmstrip:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- TIMELINE CONTENT UI:
+--
 -----------------------------------------------------------------------
---- TIMELINE CONTENT UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Filmstrip:UI()
 	return axutils.cache(self, "_ui", function()
 		local main = self:parent():mainGroupUI()
@@ -46,26 +70,30 @@ function Filmstrip:UI()
 	Filmstrip.matches)
 end
 
+-- TODO: Add documentation
 function Filmstrip:verticalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+-- TODO: Add documentation
 function Filmstrip:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function Filmstrip:contentsUI()
 	local ui = self:UI()
 	return ui and ui:contents()[1]
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- PLAYHEADS
------------------------------------------------------------------------
+--
+-- PLAYHEADS:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 function Filmstrip:playhead()
 	if not self._playhead then
 		self._playhead = Playhead:new(self, false, function()
@@ -75,6 +103,7 @@ function Filmstrip:playhead()
 	return self._playhead
 end
 
+-- TODO: Add documentation
 function Filmstrip:skimmingPlayhead()
 	if not self._skimmingPlayhead then
 		self._skimmingPlayhead = Playhead:new(self, true, function()
@@ -85,10 +114,12 @@ function Filmstrip:skimmingPlayhead()
 end
 
 -----------------------------------------------------------------------
+--
+-- CLIPS:
+--
 -----------------------------------------------------------------------
---- CLIPS
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Filmstrip.sortClips(a, b)
 	local aFrame = a:frame()
 	local bFrame = b:frame()
@@ -105,6 +136,7 @@ function Filmstrip.sortClips(a, b)
 	return false -- b is first
 end
 
+-- TODO: Add documentation
 function Filmstrip:clipsUI()
 	local ui = self:contentsUI()
 	if ui then
@@ -117,6 +149,7 @@ function Filmstrip:clipsUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function Filmstrip:selectedClipsUI()
 	local ui = self:contentsUI()
 	if ui then
@@ -131,6 +164,7 @@ function Filmstrip:selectedClipsUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function Filmstrip:showClip(clipUI)
 	local ui = self:UI()
 	if ui then
@@ -161,6 +195,7 @@ function Filmstrip:showClip(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Filmstrip:showClipAt(index)
 	local ui = self:clipsUI()
 	if ui and #ui >= index then
@@ -169,6 +204,7 @@ function Filmstrip:showClipAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function Filmstrip:selectClip(clipUI)
 	if axutils.isValid(clipUI) then
 		clipUI:parent():setSelectedChildren( { clipUI } )
@@ -176,6 +212,7 @@ function Filmstrip:selectClip(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Filmstrip:selectClipAt(index)
 	local ui = self:clipsUI()
 	if ui and #ui >= index then
@@ -184,6 +221,7 @@ function Filmstrip:selectClipAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function Filmstrip:selectAll(clipsUI)
 	clipsUI = clipsUI or self:clipsUI()
 	if clipsUI then
@@ -194,6 +232,7 @@ function Filmstrip:selectAll(clipsUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Filmstrip:deselectAll()
 	local contents = self:contentsUI()
 	if contents then

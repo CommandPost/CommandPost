@@ -1,13 +1,33 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Libraries List
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils							= require("cp.finalcutpro.axutils")
 local Table								= require("cp.finalcutpro.ui.Table")
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local List = {}
 
+-- TODO: Add documentation
 function List.matches(element)
 	return element and element:attributeValue("AXRole") == "AXSplitGroup"
 end
 
+-- TODO: Add documentation
 function List:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -15,19 +35,23 @@ function List:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function List:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function List:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- UI:
+--
 -----------------------------------------------------------------------
---- UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function List:UI()
 	return axutils.cache(self, "_ui", function()
 		local main = self:parent():mainGroupUI()
@@ -45,15 +69,18 @@ function List:UI()
 	List.matches)
 end
 
+-- TODO: Add documentation
 function List:isShowing()
 	return self:UI() ~= nil
 end
 
 -----------------------------------------------------------------------
+--
+-- PREVIEW PLAYER:
+--
 -----------------------------------------------------------------------
---- PREVIEW PLAYER
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function List:playerUI()
 	return axutils.cache(self, "_player", function()
 		local ui = self:UI()
@@ -61,7 +88,7 @@ function List:playerUI()
 	end)
 end
 
-
+-- TODO: Add documentation
 function List:playhead()
 	if not self._playhead then
 		self._playhead = Playhead:new(self, false, function()
@@ -71,6 +98,7 @@ function List:playhead()
 	return self._playhead
 end
 
+-- TODO: Add documentation
 function List:skimmingPlayhead()
 	if not self._skimmingPlayhead then
 		self._skimmingPlayhead = Playhead:new(self, true, function()
@@ -80,13 +108,13 @@ function List:skimmingPlayhead()
 	return self._skimmingPlayhead
 end
 
+-----------------------------------------------------------------------
+--
+-- LIBRARY CONTENT:
+--
+-----------------------------------------------------------------------
 
------------------------------------------------------------------------
------------------------------------------------------------------------
---- LIBRARY CONTENT
------------------------------------------------------------------------
------------------------------------------------------------------------
-
+-- TODO: Add documentation
 function List:contents()
 	if not self._content then
 		self._content = Table:new(self, function()
@@ -96,6 +124,7 @@ function List:contents()
 	return self._content
 end
 
+-- TODO: Add documentation
 function List:clipsUI()
 	local rowsUI = self:contents():rowsUI()
 	if rowsUI then
@@ -110,35 +139,42 @@ function List:clipsUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function List:selectedClipsUI()
 	return self:contents():selectedRowsUI()
 end
 
+-- TODO: Add documentation
 function List:showClip(clipUI)
 	self:contents():showRow(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function List:selectClip(clipUI)
 	self:contents():selectRow(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function List:selectClipAt(index)
 	self:contents():selectRowAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function List:selectAll(clipsUI)
 	self:contents():selectAll(clipsUI)
 	return self
 end
 
+-- TODO: Add documentation
 function List:deselectAll(clipsUI)
 	self:contents():deselectAll(clipsUI)
 	return self
 end
 
+-- TODO: Add documentation
 function List:isFocused()
 	local player = self:playerUI()
 	return self:contents():isFocused() or player and player:focused()

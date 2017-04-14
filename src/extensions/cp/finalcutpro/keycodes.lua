@@ -1,5 +1,23 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Keycodes Module
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local keycodes								= require("hs.keycodes")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 --- cp.finalcutpro.characterStringToKeyCode() -> string
@@ -11,7 +29,6 @@ local mod = {}
 ---
 --- Returns:
 ---  * Keycode as String or ""
----
 function mod.characterStringToKeyCode(input)
 
 	local result = tostring(input)
@@ -66,7 +83,6 @@ mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7",
 ---
 --- Returns:
 ---  * string or nil
----
 function mod.keypadCharacterToKeyCode(input)
 
 	local result = nil
@@ -87,7 +103,6 @@ end
 ---
 --- Returns:
 ---  * table
----
 function mod.fcpxModifiersToHsModifiers(input)
 
 	local result = {}
@@ -108,7 +123,6 @@ end
 ---
 --- Returns:
 ---  * table
----
 function mod.modifierMaskToModifiers(value)
 
 	local modifiers = {

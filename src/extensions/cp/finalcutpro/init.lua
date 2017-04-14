@@ -71,7 +71,9 @@
 --- ```
 
 --------------------------------------------------------------------------------
---- EXTENSIONS:
+--
+-- EXTENSIONS:
+--
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("finalcutpro")
 
@@ -108,7 +110,9 @@ local kc										= require("cp.finalcutpro.keycodes")
 local shortcut									= require("cp.commands.shortcut")
 
 --------------------------------------------------------------------------------
--- APP MODULE:
+--
+-- THE MODULE:
+--
 --------------------------------------------------------------------------------
 local App = {}
 
@@ -137,16 +141,15 @@ App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
---- doesDirectoryExist() -> boolean
---- Function
---- Returns true if Directory Exists else False
----
---- Parameters:
----  * None
----
---- Returns:
----  * True is Directory Exists otherwise False
----
+-- doesDirectoryExist() -> boolean
+-- Function
+-- Returns true if Directory Exists else False
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * True is Directory Exists otherwise False
 local function doesDirectoryExist(path)
     local attr = fs.attributes(path)
     return attr and attr.mode == 'directory'
@@ -161,7 +164,6 @@ end
 ---
 --- Returns:
 ---  * True is successful otherwise Nil
----
 function App:new()
 	o = {}
 	setmetatable(o, self)
@@ -178,7 +180,6 @@ end
 ---
 --- Returns:
 ---  * The hs.application, or nil if the application is not installed.
----
 function App:application()
 	local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
 	-- If there is at least one copy installed, return the first one
@@ -197,7 +198,6 @@ end
 ---
 --- Returns:
 ---  * A string of the Final Cut Pro Bundle ID
----
 function App:getBundleID()
 	return App.BUNDLE_ID
 end
@@ -211,7 +211,6 @@ end
 ---
 --- Returns:
 ---  * A string of the Final Cut Pro Pasteboard UTI
----
 function App:getPasteboardUTI()
 	return App.PASTEBOARD_UTI
 end
@@ -225,7 +224,6 @@ end
 ---
 --- Returns:
 ---  * A axuielementObject of Final Cut Pro
----
 function App:UI()
 	return axutils.cache(self, "_ui", function()
 		local fcp = self:application()
@@ -242,7 +240,6 @@ end
 ---
 --- Returns:
 ---  * True if Final Cut Pro is running otherwise False
----
 function App:isRunning()
 	local fcpx = self:application()
 	return fcpx and fcpx:isRunning()
@@ -257,7 +254,6 @@ end
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
----
 function App:launch()
 
 	local result = nil
@@ -289,7 +285,6 @@ end
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro X was running and restarted successfully.
----
 function App:restart()
 	local app = self:application()
 	if app then
@@ -314,7 +309,6 @@ end
 ---
 --- Returns:
 ---  * An cp.finalcutpro object otherwise nil
----
 function App:show()
 	local app = self:application()
 	if app then
@@ -337,7 +331,6 @@ end
 ---
 --- Returns:
 ---  * An cp.finalcutpro object otherwise nil
----
 function App:isShowing()
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
@@ -352,7 +345,6 @@ end
 ---
 --- Returns:
 ---  * An cp.finalcutpro object otherwise nil
----
 function App:hide()
 	local app = self:application()
 	if app then
@@ -370,7 +362,6 @@ end
 ---
 --- Returns:
 ---  * An cp.finalcutpro object otherwise nil
----
 function App:quit()
 	local app = self:application()
 	if app then
@@ -388,7 +379,6 @@ end
 ---
 --- Returns:
 ---  * A string containing Final Cut Pro's filesystem path, or nil if the bundle identifier could not be located
----
 function App:getPath()
 	return application.pathForBundleID(App.BUNDLE_ID)
 end
@@ -402,7 +392,6 @@ end
 ---
 --- Returns:
 ---  * `true` if a version of FCPX is installed.
----
 function App:isInstalled()
 	local path = self:getPath()
 	return doesDirectoryExist(path)
@@ -417,7 +406,6 @@ end
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro is Frontmost.
----
 function App:isFrontmost()
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
@@ -432,13 +420,8 @@ end
 ---
 --- Returns:
 ---  * Version as string or nil if an error occurred
----
 function App:getVersion()
-	local version = nil
-	if self:isInstalled() then
-		ok,version = osascript.applescript('return version of application id "'..App.BUNDLE_ID..'"')
-	end
-	return version or nil
+	return application.infoForBundleID(App.BUNDLE_ID)["CFBundleShortVersionString"]
 end
 
 ----------------------------------------------------------------------------------------
@@ -458,7 +441,6 @@ end
 ---
 --- Returns:
 ---  * A menuBar object
----
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
@@ -476,7 +458,6 @@ end
 ---
 --- Returns:
 ---  * `true` if the press was successful.
----
 function App:selectMenu(...)
 	return self:menuBar():selectMenu(...)
 end
@@ -498,7 +479,6 @@ end
 ---
 --- Returns:
 ---  * The Preferences Window
----
 function App:preferencesWindow()
 	if not self._preferencesWindow then
 		self._preferencesWindow = PreferencesWindow:new(self)
@@ -515,7 +495,6 @@ end
 ---
 --- Returns:
 ---  * The Primary Window
----
 function App:primaryWindow()
 	if not self._primaryWindow then
 		self._primaryWindow = PrimaryWindow:new(self)
@@ -532,7 +511,6 @@ end
 ---
 --- Returns:
 ---  * The Secondary Window
----
 function App:secondaryWindow()
 	if not self._secondaryWindow then
 		self._secondaryWindow = SecondaryWindow:new(self)
@@ -549,7 +527,6 @@ end
 ---
 --- Returns:
 ---  * The Full Screen Playback Window
----
 function App:fullScreenWindow()
 	if not self._fullScreenWindow then
 		self._fullScreenWindow = FullScreenWindow:new(self)
@@ -566,7 +543,6 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Command Editor
----
 function App:commandEditor()
 	if not self._commandEditor then
 		self._commandEditor = CommandEditor:new(self)
@@ -583,7 +559,6 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Media Import Window
----
 function App:mediaImport()
 	if not self._mediaImport then
 		self._mediaImport = MediaImport:new(self)
@@ -600,7 +575,6 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Export Dialog Box
----
 function App:exportDialog()
 	if not self._exportDialog then
 		self._exportDialog = ExportDialog:new(self)
@@ -617,7 +591,6 @@ end
 ---
 --- Returns:
 ---  * The axuielement, or nil if the application is not running.
----
 function App:windowsUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXWindows")
@@ -640,7 +613,6 @@ end
 ---
 --- Returns:
 ---  * the Timeline
----
 function App:timeline()
 	if not self._timeline then
 		self._timeline = Timeline:new(self)
@@ -657,7 +629,6 @@ end
 ---
 --- Returns:
 ---  * the Viewer
----
 function App:viewer()
 	if not self._viewer then
 		self._viewer = Viewer:new(self, false)
@@ -674,7 +645,6 @@ end
 ---
 --- Returns:
 ---  * the Event Viewer
----
 function App:eventViewer()
 	if not self._eventViewer then
 		self._eventViewer = Viewer:new(self, true)
@@ -691,7 +661,6 @@ end
 ---
 --- Returns:
 ---  * the Browser
----
 function App:browser()
 	if not self._browser then
 		self._browser = Browser:new(self)
@@ -708,7 +677,6 @@ end
 ---
 --- Returns:
 ---  * the LibrariesBrowser
----
 function App:libraries()
 	return self:browser():libraries()
 end
@@ -722,7 +690,6 @@ end
 ---
 --- Returns:
 ---  * the MediaBrowser
----
 function App:media()
 	return self:browser():media()
 end
@@ -736,7 +703,6 @@ end
 ---
 --- Returns:
 ---  * the GeneratorsBrowser
----
 function App:generators()
 	return self:browser():generators()
 end
@@ -750,7 +716,6 @@ end
 ---
 --- Returns:
 ---  * the EffectsBrowser
----
 function App:effects()
 	return self:timeline():effects()
 end
@@ -764,7 +729,6 @@ end
 ---
 --- Returns:
 ---  * the TransitionsBrowser
----
 function App:transitions()
 	return self:timeline():transitions()
 end
@@ -778,7 +742,6 @@ end
 ---
 --- Returns:
 ---  * the Inspector
----
 function App:inspector()
 	return self:primaryWindow():inspector()
 end
@@ -792,7 +755,6 @@ end
 ---
 --- Returns:
 ---  * the ColorBoard
----
 function App:colorBoard()
 	return self:primaryWindow():colorBoard()
 end
@@ -816,7 +778,6 @@ end
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
----
 App._preferencesAlreadyUpdating = false
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
@@ -842,7 +803,6 @@ end
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
----
 function App:getPreference(value, default, forceReload)
 	local result = nil
 	local preferencesTable = self:getPreferences(forceReload)
@@ -867,7 +827,6 @@ end
 ---
 --- Returns:
 ---  * True if executed successfully otherwise False
----
 function App:setPreference(key, value)
 	local executeStatus
 	local preferenceType = nil
@@ -909,7 +868,6 @@ end
 ---
 --- Returns:
 ---  * A boolean value indicating whether the AppleScript succeeded or not
----
 function App:importXML(path)
 	if self:isRunning() then
 		local appleScript = [[
@@ -941,7 +899,6 @@ end
 ---
 --- Returns:
 ---  * The 'Active Command Set' value, or the 'Default' command set if none is set.
----
 function App:getActiveCommandSetPath()
 	local result = self:getPreference("Active Command Set") or nil
 	if result == nil then
@@ -960,7 +917,6 @@ end
 ---
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
----
 function App:getDefaultCommandSetPath(language)
 	language = language or self:getCurrentLanguage()
 	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
@@ -975,7 +931,6 @@ end
 ---
 --- Returns:
 ---  * The Command Set as a table, or `nil` if there was a problem.
----
 function App:getCommandSet(path)
 	if fs.attributes(path) ~= nil then
 		return plist.fileToTable(path)
@@ -992,7 +947,6 @@ end
 ---
 --- Returns:
 ---  * A table of the Active Command Set's contents, or `nil` if an error occurred
----
 function App:getActiveCommandSet(forceReload)
 
 	if forceReload or not self._activeCommandSet then
@@ -1017,7 +971,6 @@ end
 ---
 --- Returns:
 ---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
----
 function App:getCommandShortcuts(id)
 	local activeCommands = self._activeCommands
 	if not activeCommands then
@@ -1082,7 +1035,6 @@ end
 ---
 --- Returns:
 ---  * true if successful otherwise false
----
 function App:performShortcut(whichShortcut)
 	self:launch()
 	local activeCommandSet = self:getActiveCommandSet()
@@ -1122,7 +1074,6 @@ App.fileMenuTitle = {
 ---
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
----
 function App:getCurrentLanguage(forceReload, forceLanguage)
 
 	--------------------------------------------------------------------------------
@@ -1251,7 +1202,6 @@ end
 ---
 --- Returns:
 ---  * A table of languages Final Cut Pro supports
----
 function App:getSupportedLanguages()
 	return App.SUPPORTED_LANGUAGES
 end
@@ -1265,7 +1215,6 @@ end
 ---
 --- Returns:
 ---  * A table of languages Final Cut Pro supports
----
 function App:getFlexoLanguages()
 	return App.FLEXO_LANGUAGES
 end
@@ -1276,6 +1225,8 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- cp.finalcutpro:watch() -> string
+--- Method
 --- Watch for events that happen in the application.
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
@@ -1307,6 +1258,8 @@ function App:watch(events)
 	return id
 end
 
+--- cp.finalcutpro:unwatch() -> boolean
+--- Method
 --- Stop watching for events that happen in the application for the specified ID.
 ---
 --- Parameters:
@@ -1420,7 +1373,6 @@ end
 ---
 --- Returns:
 ---  * True is successful otherwise Nil
----
 function App:_generateMenuMap()
 	return self:menuBar():generateMenuMap()
 end

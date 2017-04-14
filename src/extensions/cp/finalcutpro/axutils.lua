@@ -1,9 +1,28 @@
---- Utility functions to support 'axuielement'
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Utility functions to support 'axuielement'
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 
 local fnutils					= require("hs.fnutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+
 local axutils = {}
 
+-- TODO: Add documentation
 function axutils.hasAttribute(element, name, value)
 	return element and element:attributeValue(name) == value
 end
@@ -23,10 +42,12 @@ function axutils.childWith(element, name, value)
 	return axutils.childMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
 end
 
+-- TODO: Add documentation
 function axutils.childWithID(element, value)
 	return axutils.childWith(element, "AXIdentifier", value)
 end
 
+-- TODO: Add documentation
 function axutils.childWithRole(element, value)
 	return axutils.childWith(element, "AXRole", value)
 end
@@ -67,10 +88,10 @@ function axutils.childrenWith(element, name, value)
 	return axutils.childrenMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
 end
 
+-- TODO: Add documentation
 function axutils.childrenWithRole(element, value)
 	return axutils.childrenWith(element, "AXRole", value)
 end
-
 
 --- cp.finalcutpro.axutil.childrenMatching(axuielement, function) -> {axuielement}
 --- Function:
@@ -88,7 +109,6 @@ function axutils.childrenMatching(element, matcherFn)
 	end
 	return nil
 end
-
 
 --- cp.finalcutpro.axutil.isValid(axuielement) -> boolean
 --- Function:

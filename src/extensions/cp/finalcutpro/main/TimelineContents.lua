@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Timeline Contents
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timelineContents")
 local inspect							= require("hs.inspect")
 local geometry							= require("hs.geometry")
@@ -8,8 +21,14 @@ local axutils							= require("cp.finalcutpro.axutils")
 
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local TimelineContents = {}
 
+-- TODO: Add documentation
 function TimelineContents.matches(element)
 	return element
 	    and element:attributeValue("AXIdentifier") == "_NS:16" or element:attributeValue("AXIdentifier") == "_NS:363"
@@ -17,6 +36,7 @@ function TimelineContents.matches(element)
 		and element:attributeValueCount("AXAuditIssues") < 1
 end
 
+-- TODO: Add documentation
 function TimelineContents:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -24,19 +44,23 @@ function TimelineContents:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function TimelineContents:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function TimelineContents:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- TIMELINE CONTENT UI:
+--
 -----------------------------------------------------------------------
---- TIMELINE CONTENT UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function TimelineContents:UI()
 	return axutils.cache(self, "_ui", function()
 		local scrollArea = self:scrollAreaUI()
@@ -48,6 +72,7 @@ function TimelineContents:UI()
 	TimelineContents.matches)
 end
 
+-- TODO: Add documentation
 function TimelineContents:scrollAreaUI()
 	local main = self:parent():mainUI()
 	if main then
@@ -61,25 +86,30 @@ function TimelineContents:scrollAreaUI()
 	return nil
 end
 
+-- TODO: Add documentation
 function TimelineContents:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function TimelineContents:show()
 	self:parent():show()
 	return self
 end
 
+-- TODO: Add documentation
 function TimelineContents:hide()
 	self:parent():hide()
 	return self
 end
 
 -----------------------------------------------------------------------
+--
+-- PLAYHEAD:
+--
 -----------------------------------------------------------------------
---- PLAYHEAD
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function TimelineContents:playhead()
 	if not self._playhead then
 		self._playhead = Playhead:new(self, false, function()
@@ -89,6 +119,7 @@ function TimelineContents:playhead()
 	return self._playhead
 end
 
+-- TODO: Add documentation
 function TimelineContents:skimmingPlayhead()
 	if not self._skimmingPlayhead then
 		self._skimmingPlayhead = Playhead:new(self, true)
@@ -96,16 +127,19 @@ function TimelineContents:skimmingPlayhead()
 	return self._skimmingPlayhead
 end
 
+-- TODO: Add documentation
 function TimelineContents:horizontalScrollBarUI()
 	local ui = self:scrollAreaUI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
+-- TODO: Add documentation
 function TimelineContents:verticalScrollBarUI()
 	local ui = self:scrollAreaUI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+-- TODO: Add documentation
 function TimelineContents:viewFrame()
 	local ui = self:scrollAreaUI()
 
@@ -126,11 +160,13 @@ function TimelineContents:viewFrame()
 	return frame
 end
 
+-- TODO: Add documentation
 function TimelineContents:timelineFrame()
 	local ui = self:UI()
 	return ui and ui:frame()
 end
 
+-- TODO: Add documentation
 function TimelineContents:scrollHorizontalBy(shift)
 	local ui = self:horizontalScrollBarUI()
 	if ui then
@@ -140,6 +176,7 @@ function TimelineContents:scrollHorizontalBy(shift)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:scrollHorizontalTo(value)
 	local ui = self:horizontalScrollBarUI()
 	if ui then
@@ -151,11 +188,13 @@ function TimelineContents:scrollHorizontalTo(value)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:getScrollHorizontal()
 	local ui = self:horizontalScrollBarUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
+-- TODO: Add documentation
 function TimelineContents:scrollVerticalBy(shift)
 	local ui = self:verticalScrollBarUI()
 	if ui then
@@ -165,6 +204,7 @@ function TimelineContents:scrollVerticalBy(shift)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:scrollVerticalTo(value)
 	local ui = self:verticalScrollBarUI()
 	if ui then
@@ -176,15 +216,16 @@ function TimelineContents:scrollVerticalTo(value)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:getScrollVertical()
 	local ui = self:verticalScrollBarUI()
 	return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- CLIPS
------------------------------------------------------------------------
+--
+-- CLIPS:
+--
 -----------------------------------------------------------------------
 
 --- cp.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
@@ -202,7 +243,6 @@ end
 ---
 --- Returns:
 ---  * The table of selected axuielements that match the conditions
----
 function TimelineContents:selectedClipsUI(expandGroups, filterFn)
 	local ui = self:UI()
 	if ui then
@@ -227,7 +267,6 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
----
 function TimelineContents:clipsUI(expandGroups, filterFn)
 	local ui = self:UI()
 	if ui then
@@ -256,7 +295,6 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
----
 function TimelineContents:playheadClipsUI(expandGroups, filterFn)
 	local playheadPosition = self:playhead():getPosition()
 	local clips = self:clipsUI(expandGroups, function(clip)
@@ -268,6 +306,7 @@ function TimelineContents:playheadClipsUI(expandGroups, filterFn)
 	return clips
 end
 
+-- TODO: Add documentation
 function TimelineContents:_filterClips(clips, expandGroups, filterFn)
 	if expandGroups then
 		return self:_expandClips(clips, filterFn)
@@ -278,6 +317,7 @@ function TimelineContents:_filterClips(clips, expandGroups, filterFn)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:_expandClips(clips, filterFn)
 	return fnutils.mapCat(clips, function(child)
 		local role = child:attributeValue("AXRole")
@@ -292,6 +332,7 @@ function TimelineContents:_expandClips(clips, filterFn)
 	end)
 end
 
+-- TODO: Add documentation
 function TimelineContents:selectClips(clipsUI)
 	local ui = self:UI()
 	if ui then
@@ -304,20 +345,23 @@ function TimelineContents:selectClips(clipsUI)
 	return self
 end
 
+-- TODO: Add documentation
 function TimelineContents:selectClip(clipUI)
 	return self:selectClips({clipUI})
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- MULTICAM ANGLE EDITOR
------------------------------------------------------------------------
+--
+-- MULTICAM ANGLE EDITOR:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 function TimelineContents:anglesUI()
 	return self:clipsUI()
 end
 
+-- TODO: Add documentation
 function TimelineContents:angleButtonsUI(angleNumber)
 	local angles = self:anglesUI()
 	if angles then
@@ -329,6 +373,7 @@ function TimelineContents:angleButtonsUI(angleNumber)
 	return nil
 end
 
+-- TODO: Add documentation
 function TimelineContents:monitorVideoInAngle(angleNumber)
 	local buttons = self:angleButtonsUI(angleNumber)
 	if buttons and buttons[1] then
@@ -336,6 +381,7 @@ function TimelineContents:monitorVideoInAngle(angleNumber)
 	end
 end
 
+-- TODO: Add documentation
 function TimelineContents:toggleAudioInAngle(angleNumber)
 	local buttons = self:angleButtonsUI(angleNumber)
 	if buttons and buttons[2] then
@@ -343,6 +389,7 @@ function TimelineContents:toggleAudioInAngle(angleNumber)
 	end
 end
 
+-- TODO: Add documentation
 -- Selects the clip under the playhead in the specified angle.
 -- NOTE: This will only work in multicam clips
 function TimelineContents:selectClipInAngle(angleNumber)

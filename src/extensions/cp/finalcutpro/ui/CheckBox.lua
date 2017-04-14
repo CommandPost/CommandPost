@@ -1,7 +1,26 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Check Box UI
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils						= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local CheckBox = {}
 
+-- TODO: Add documentation
 function CheckBox.matches(element)
 	return element:attributeValue("AXRole") == "AXCheckBox"
 end
@@ -16,10 +35,12 @@ function CheckBox:new(parent, finderFn)
 	return o
 end
 
+-- TODO: Add documentation
 function CheckBox:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function CheckBox:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
@@ -27,11 +48,13 @@ function CheckBox:UI()
 	CheckBox.matches)
 end
 
+-- TODO: Add documentation
 function CheckBox:isChecked()
 	local ui = self:UI()
 	return ui and ui:value() == 1
 end
 
+-- TODO: Add documentation
 function CheckBox:check()
 	local ui = self:UI()
 	if ui and ui:value() == 0 then
@@ -40,6 +63,7 @@ function CheckBox:check()
 	return self
 end
 
+-- TODO: Add documentation
 function CheckBox:uncheck()
 	local ui = self:UI()
 	if ui and ui:value() == 1 then
@@ -48,6 +72,7 @@ function CheckBox:uncheck()
 	return self
 end
 
+-- TODO: Add documentation
 function CheckBox:toggle()
 	local ui = self:UI()
 	if ui then
@@ -56,11 +81,13 @@ function CheckBox:toggle()
 	return self
 end
 
+-- TODO: Add documentation
 function CheckBox:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
+-- TODO: Add documentation
 function CheckBox:press()
 	local ui = self:UI()
 	if ui then
@@ -69,12 +96,14 @@ function CheckBox:press()
 	return self
 end
 
+-- TODO: Add documentation
 function CheckBox:saveLayout()
 	return {
 		checked = self:isChecked()
 	}
 end
 
+-- TODO: Add documentation
 function CheckBox:loadLayout(layout)
 	if layout then
 		if layout.checked then

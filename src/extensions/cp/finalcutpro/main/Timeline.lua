@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Timeline Module
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timeline")
 local inspect							= require("hs.inspect")
 local timer								= require("hs.timer")
@@ -11,13 +24,20 @@ local PrimaryWindow						= require("cp.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.finalcutpro.main.SecondaryWindow")
 local EffectsBrowser					= require("cp.finalcutpro.main.EffectsBrowser")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Timeline = {}
 
+-- TODO: Add documentation
 function Timeline.matches(element)
 	return element:attributeValue("AXRole") == "AXGroup"
 	   and axutils.childWith(element, "AXIdentifier", "_NS:237") ~= nil
 end
 
+-- TODO: Add documentation
 function Timeline:new(app)
 	o = {_app = app}
 	setmetatable(o, self)
@@ -25,25 +45,30 @@ function Timeline:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function Timeline:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function Timeline:isOnSecondary()
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
 end
 
+-- TODO: Add documentation
 function Timeline:isOnPrimary()
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
+--
+-- TIMELINE UI:
+--
 -----------------------------------------------------------------------
---- TIMELINE UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:UI()
 	return axutils.cache(self, "_ui", function()
 		local app = self:app()
@@ -52,6 +77,7 @@ function Timeline:UI()
 	Timeline.matches)
 end
 
+-- TODO: Add documentation
 function Timeline._findTimeline(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
@@ -66,17 +92,20 @@ function Timeline._findTimeline(...)
 	return nil
 end
 
+-- TODO: Add documentation
 function Timeline:isShowing()
 	local ui = self:UI()
 	return ui ~= nil and #ui > 0
 end
 
+-- TODO: Add documentation
 function Timeline:show()
 	if not self:isShowing() then
 		self:showOnPrimary()
 	end
 end
 
+-- TODO: Add documentation
 function Timeline:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
@@ -88,6 +117,7 @@ function Timeline:showOnPrimary()
 	return self
 end
 
+-- TODO: Add documentation
 function Timeline:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
@@ -97,7 +127,7 @@ function Timeline:showOnSecondary()
 	return self
 end
 
-
+-- TODO: Add documentation
 function Timeline:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace
@@ -107,12 +137,14 @@ function Timeline:hide()
 end
 
 -----------------------------------------------------------------------
+--
+-- MAIN UI
+-- The Canvas is the main body of the timeline, containing the
+-- Timeline Index, the canvas, and the Effects/Transitions panels.
+--
 -----------------------------------------------------------------------
---- MAIN UI
---- The Canvas is the main body of the timeline, containing the
---- Timeline Index, the canvas, and the Effects/Transitions panels.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:mainUI()
 	return axutils.cache(self, "_main", function()
 		local ui = self:UI()
@@ -121,17 +153,20 @@ function Timeline:mainUI()
 	Timeline.matchesMain)
 end
 
+-- TODO: Add documentation
 function Timeline.matchesMain(element)
 	return element:attributeValue("AXIdentifier") == "_NS:237"
 end
 
 -----------------------------------------------------------------------
+--
+-- CONTENT:
+-- The Content is the main body of the timeline, containing the
+-- Timeline Index, the Content, and the Effects/Transitions panels.
+--
 -----------------------------------------------------------------------
---- CONTENT
---- The Content is the main body of the timeline, containing the
---- Timeline Index, the Content, and the Effects/Transitions panels.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:contents()
 	if not self._content then
 		self._content = TimelineContent:new(self)
@@ -139,13 +174,14 @@ function Timeline:contents()
 	return self._content
 end
 
+-----------------------------------------------------------------------
+--
+-- EFFECT BROWSER:
+-- The (sometimes hidden) Effect Browser.
+--
+-----------------------------------------------------------------------
 
------------------------------------------------------------------------
------------------------------------------------------------------------
---- EFFECT BROWSER
---- The (sometimes hidden) Effect Browser.
------------------------------------------------------------------------
------------------------------------------------------------------------
+-- TODO: Add documentation
 function Timeline:effects()
 	if not self._effects then
 		self._effects = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
@@ -154,11 +190,13 @@ function Timeline:effects()
 end
 
 -----------------------------------------------------------------------
+--
+-- TRANSITIONS BROWSER:
+-- The (sometimes hidden) Transitions Browser.
+--
 -----------------------------------------------------------------------
---- TRANSITIONS BROWSER
---- The (sometimes hidden) Transitions Browser.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:transitions()
 	if not self._transitions then
 		self._transitions = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
@@ -167,31 +205,37 @@ function Timeline:transitions()
 end
 
 -----------------------------------------------------------------------
+--
+-- PLAYHEAD:
+-- The timeline Playhead.
+--
 -----------------------------------------------------------------------
---- PLAYHEAD
---- The timeline Playhead.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:playhead()
 	return self:contents():playhead()
 end
 
 -----------------------------------------------------------------------
+--
+-- PLAYHEAD:
+-- The Playhead that tracks under the mouse while skimming.
+--
 -----------------------------------------------------------------------
---- PLAYHEAD
---- The Playhead that tracks under the mouse while skimming.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:skimmingPlayhead()
 	return self:contents():skimmingPlayhead()
 end
 
 -----------------------------------------------------------------------
+--
+-- TOOLBAR:
+-- The bar at the top of the timeline.
+--
 -----------------------------------------------------------------------
---- TOOLBAR
---- The bar at the top of the timeline.
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Timeline:toolbar()
 	if not self._toolbar then
 		self._toolbar = TimelineToolbar:new(self)
@@ -200,22 +244,25 @@ function Timeline:toolbar()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- PLAYHEAD LOCKING
---- If the playhead is locked, it will be kept as close to the middle
---- of the timeline view panel as possible at all times.
------------------------------------------------------------------------
+--
+-- PLAYHEAD LOCKING:
+-- If the playhead is locked, it will be kept as close to the middle
+-- of the timeline view panel as possible at all times.
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 Timeline.lockActive = 0.01
 Timeline.lockInactive = 0.1
 Timeline.stopThreshold = 15
 
+-- TODO: Add documentation
 Timeline.STOPPED = 1
 Timeline.TRACKING = 2
 Timeline.DEADZONE = 3
 Timeline.INVISIBLE = 4
 
+-- TODO: Add documentation
 function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	if self._locked then
 		-- already locked.
@@ -335,12 +382,14 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	return self
 end
 
+-- TODO: Add documentation
 function Timeline:unlockPlayhead()
 	self._locked = false
 
 	return self
 end
 
+-- TODO: Add documentation
 function Timeline:isLockedPlayhead()
 	return self._locked
 end

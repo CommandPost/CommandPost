@@ -1,3 +1,16 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Effects Browser
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 
@@ -14,10 +27,15 @@ local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local PopUpButton						= require("cp.finalcutpro.ui.PopUpButton")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
-local Browser = {}
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local Browser 							= {}
 
-Browser.EFFECTS = "Effects"
-Browser.TRANSITIONS = "Transitions"
+Browser.EFFECTS 						= "Effects"
+Browser.TRANSITIONS 					= "Transitions"
 
 function Browser.matches(element)
 	return element and element:attributeValue("AXRole") == "AXGroup"
@@ -44,9 +62,9 @@ function Browser:type()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- Browser UI
------------------------------------------------------------------------
+--
+-- BROWSER UI:
+--
 -----------------------------------------------------------------------
 function Browser:UI()
 	if self:isShowing() then
@@ -92,9 +110,9 @@ function Browser:hide()
 end
 
 -----------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Actions
------------------------------------------------------------------------------
+--
+-- ACTIONS:
+--
 -----------------------------------------------------------------------------
 
 function Browser:showSidebar()
@@ -226,9 +244,9 @@ function Browser:getCurrentTitles()
 end
 
 -----------------------------------------------------------------------------
------------------------------------------------------------------------------
--- UI Sections
------------------------------------------------------------------------------
+--
+-- UI SECTIONS:
+--
 -----------------------------------------------------------------------------
 
 function Browser:mainGroupUI()
@@ -242,6 +260,9 @@ end
 function Browser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
+			-----------------------------------------------------------------------------
+			-- _NS:66 is correct for both Final Cut Pro 10.3.2 and 10.3.3
+			-----------------------------------------------------------------------------
 			return axutils.childWithID(self:mainGroupUI(), "_NS:66")
 		end):uncached()
 	end
@@ -251,7 +272,14 @@ end
 function Browser:contents()
 	if not self._contents then
 		self._contents = ScrollArea:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			-----------------------------------------------------------------------------
+			-- _NS:9 is for Final Cut Pro 10.3.2 and _NS:52 is for 10.3.3
+			-----------------------------------------------------------------------------
+			if axutils.childWithID(self:mainGroupUI(), "_NS:52") and axutils.childWithID(self:mainGroupUI(), "_NS:52"):attributeValue("AXRole") == "AXScrollArea" then
+				return axutils.childWithID(self:mainGroupUI(), "_NS:52")
+			else
+				return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			end
 		end)
 	end
 	return self._contents
