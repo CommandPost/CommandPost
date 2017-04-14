@@ -270,17 +270,14 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
+local function isHacksShortcutsEnabled()
+	return config.get("enableHacksShortcutsInFinalCutPro", false)
+end
+
 --------------------------------------------------------------------------------
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 local function generateContent()
-
-	local result = ""
-
-	local customShortcutsEnabled = ""
-	if config.get("enableHacksShortcutsInFinalCutPro", false) then
-		customShortcutsEnabled = [[ style="pointer-events: none; opacity: 0.4;" ]]
-	end
 
 	local context = {
 		shortcuts 				= getShortcutList(),
@@ -288,7 +285,7 @@ local function generateContent()
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
 		webviewLabel 			= mod._manager.getLabel(),
-		customShortcutsEnabled	= customShortcutsEnabled,
+		shortcutsEnabled		= not isHacksShortcutsEnabled(),
 		generate				= generate,
 	}
 
@@ -301,18 +298,16 @@ end
 --------------------------------------------------------------------------------
 function mod.updateCustomShortcutsVisibility()
 
-	local enableHacksShortcutsInFinalCutPro = config.get("enableHacksShortcutsInFinalCutPro", false)
+	local enableHacksShortcutsInFinalCutPro = isHacksShortcutsEnabled()
 
 	if enableHacksShortcutsInFinalCutPro then
 		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").style.opacity = 0.4;
-			document.getElementById("customiseShortcuts").style.pointerEvents = "none";
+			document.getElementById("customiseShortcuts").className = "disabled";
 			document.getElementById("enableCustomShortcuts").checked = true;
 		]])
 	else
 		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").style.opacity = 1;
-			document.getElementById("customiseShortcuts").style.pointerEvents = "auto";
+			document.getElementById("customiseShortcuts").className = "";
 			document.getElementById("enableCustomShortcuts").checked = false;
 		]])
 	end
@@ -329,6 +324,7 @@ function mod.init(deps, env)
 	mod.allKeyCodes = getAllKeyCodes()
 
 	mod._manager = deps.manager
+	mod._hacksShortcuts = deps.hacksShortcuts
 
 	mod._webviewLabel = deps.manager.getLabel()
 

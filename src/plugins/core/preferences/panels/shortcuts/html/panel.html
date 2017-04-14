@@ -1,4 +1,8 @@
 <style>
+	#customiseShortcuts.disabled {
+		pointer-events: none; opacity: 0.4;
+	}
+
 	.shortcuts {
 		table-layout: fixed;
 		width: 100%;
@@ -9,7 +13,7 @@
 		background-color: #ffffff;
 		text-align: left;
 	}
-
+	
 	.shortcuts td {
 	  white-space: nowrap;
 	  overflow: hidden;
@@ -87,7 +91,7 @@
 	}
 </style>
 <h3>{{ i18n "customiseShortcuts" }}</h3>
-<div id="customiseShortcuts" {{ customShortcutsEnabled }}>
+<div id="customiseShortcuts" class="{{ shortcutsEnabled and '' or 'disabled' }}">
 	<table class="shortcuts">
 		<thead>
 			<tr>

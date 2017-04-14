@@ -407,7 +407,7 @@ function plugin.init(deps)
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
 	deps.finalcutpro:addHeading(50, function()
-		return { title = "<br />Keyboard Shortcuts:" }
+		return { title = "<br />".. i18n("keyboardShortcuts") .. ":" }
 	end)
 
 	:addCheckbox(51, function()

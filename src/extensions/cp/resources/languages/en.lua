@@ -402,6 +402,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
+			keyboardShortcuts					=			"Keyboard Shortcuts",
 			enableHacksShortcuts				=			"Control CommandPost Shortcuts within Final Cut Pro",
 			enableTimecodeOverlay				=			"Enable Timecode Overlay",
 			enableMovingMarkers					=			"Enable Moving Markers",
