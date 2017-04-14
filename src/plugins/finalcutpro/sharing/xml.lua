@@ -136,18 +136,23 @@ function mod.listFilesMenu()
 							local attributes = fs.attributes(xmlPath)
 
 							if attributes then
-								modification = attributes["modification"]
+								creation = attributes["creation"]
 							end
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning, modification = modification})
+							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning, creation = creation})
 						end
 					end
+
+					-- Sort table by creation date:
+					table.sort(submenu, function(a, b) return a.creation > b.creation end)
 
 					if next(submenu) ~= nil then
 						table.insert(menu, {title = folder, menu = submenu})
 					end
 				end
 			end
-			--table.sort(menu)
+
+			-- Sort table by title:
+			table.sort(menu, function(a, b) return a.title < b.title end)
 
 			if emptySharedXMLFiles then
 				--------------------------------------------------------------------------------
