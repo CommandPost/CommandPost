@@ -198,17 +198,17 @@ end
 ---  * True is successful otherwise Nil
 ---
 function MenuBar:visitMenuItems(visitFn, ...)
-	local menu = self:UI()
-	if not menu then
-		-- We don't have access to the MenuBar UI - no Accessibility permissions probably
-		return
-	end
+	local menu = nil
 	local path = table.pack(...) or {}
 	path.n = nil
 	if #path > 0 then
 		menu = self:findMenuUI(...)
+	else
+		menu = self:UI()
 	end
-	return self:_visitMenuItems(visitFn, path, menu)
+	if menu then
+		self:_visitMenuItems(visitFn, path, menu)
+	end
 end
 
 function MenuBar:_visitMenuItems(visitFn, path, menu)
