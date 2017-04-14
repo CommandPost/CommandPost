@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
+local fs										= require("hs.fs")
 local image										= require("hs.image")
 local keycodes									= require("hs.keycodes")
 local timer										= require("hs.timer")
@@ -23,6 +24,8 @@ local webview									= require("hs.webview")
 
 local config									= require("cp.config")
 local commands									= require("cp.commands")
+local dialog									= require("cp.dialog")
+local generate									= require("cp.web.generate")
 
 local _											= require("moses")
 
@@ -63,6 +66,19 @@ local function split(str, pat)
 	return t
 end
 
+local function resetShortcuts()
+	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
+		-- Deletes the DEFAULT_SHORTCUTS, if present.
+		local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
+		if shortcutsFile then
+			log.df("Removing shortcuts file: '%s'", shortcutsFile)
+			os.remove(shortcutsFile)
+			dialog.displayAlertMessage(i18n("shortcutsResetComplete"))
+			hs.reload()
+		end
+	end
+end
+
 --------------------------------------------------------------------------------
 -- CONTROLLER CALLBACK:
 --------------------------------------------------------------------------------
@@ -71,7 +87,7 @@ local function controllerCallback(message)
 	local body = message.body
 	local action = body.action
 
-	--log.df("Callback message: %s", hs.inspect(message))
+	-- log.df("Callback message: %s", hs.inspect(message))
 	if action == "updateShortcut" then
 		--------------------------------------------------------------------------------
 		-- Values from Callback:
@@ -105,9 +121,9 @@ local function controllerCallback(message)
 		else
 			log.wf("Unable to find command to update: %s:%s", group, command)
 		end
-
+	elseif body[1] == "resetShortcuts" then
+		resetShortcuts()
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -273,6 +289,7 @@ local function generateContent()
 		checkModifier 			= checkModifier,
 		webviewLabel 			= mod._manager.getLabel(),
 		customShortcutsEnabled	= customShortcutsEnabled,
+		generate				= generate,
 	}
 
 	return renderPanel(context)
