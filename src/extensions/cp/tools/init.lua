@@ -69,6 +69,7 @@ end
 -- DOES FILE EXIST:
 --------------------------------------------------------------------------------
 function tools.doesFileExist(path)
+	if path == nil then return nil end
     local attr = fs.attributes(path)
     if type(attr) == "table" then
     	return true
