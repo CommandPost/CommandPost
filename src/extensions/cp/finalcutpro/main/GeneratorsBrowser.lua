@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Generators Browser:
+--- === cp.finalcutpro.main.GeneratorsBrowser ===
+---
+--- Generators Browser Module.
 
 --------------------------------------------------------------------------------
 --
@@ -227,7 +229,7 @@ function GeneratorsBrowser:applyItem(itemUI)
 end
 
 -- TODO: Add documentation
---- Returns the list of titles for all effects/transitions currently visible
+-- Returns the list of titles for all effects/transitions currently visible
 function GeneratorsBrowser:getCurrentTitles()
 	local contents = self:contents():childrenUI()
 	if contents ~= nil then

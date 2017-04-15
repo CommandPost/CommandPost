@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Text Field UI
+--- === cp.finalcutpro.ui.TextField ===
+---
+--- Text Field Module.
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,7 @@ function TextField.matches(element)
 end
 
 --- cp.finalcutpro.ui.TextField:new(axuielement, function) -> TextField
---- Function:
+--- Function
 --- Creates a new TextField
 function TextField:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

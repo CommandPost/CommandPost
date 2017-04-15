@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Pop Up Button
+--- === cp.finalcutpro.ui.PopUpButton ===
+---
+--- Pop Up Button Module.
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,7 @@ function PopUpButton.matches(element)
 end
 
 --- cp.finalcutpro.ui.PopUpButton:new(axuielement, function) -> PopUpButton
---- Function:
+--- Function
 --- Creates a new PopUpButton
 function PopUpButton:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

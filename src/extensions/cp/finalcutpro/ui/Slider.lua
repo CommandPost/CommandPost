@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Slider UI
+--- === cp.finalcutpro.ui.Slider ===
+---
+--- Slider Module.
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,7 @@ function Slider.matches(element)
 end
 
 --- cp.finalcutpro.ui.Slider:new(axuielement, function) -> Slider
---- Function:
+--- Function
 --- Creates a new Slider
 function Slider:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

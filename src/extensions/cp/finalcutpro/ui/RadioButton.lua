@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Radio Button UI
+--- === cp.finalcutpro.ui.RadioButton ===
+---
+--- Radio Button Module.
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,7 @@ function RadioButton.matches(element)
 end
 
 --- cp.finalcutpro.ui.RadioButton:new(axuielement, function) -> RadioButton
---- Function:
+--- Function
 --- Creates a new RadioButton
 function RadioButton:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

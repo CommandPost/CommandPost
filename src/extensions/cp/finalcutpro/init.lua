@@ -1364,15 +1364,15 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- cp.finalcutpro._generateMenuMap() -> Table
---- Function
---- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
----
---- Parameters:
----  * N/A
----
---- Returns:
----  * True is successful otherwise Nil
+-- cp.finalcutpro._generateMenuMap() -> Table
+-- Function
+-- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
+--
+-- Parameters:
+--  * N/A
+--
+-- Returns:
+--  * `true` if successful otherwise `nil`
 function App:_generateMenuMap()
 	return self:menuBar():generateMenuMap()
 end

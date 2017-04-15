@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Check Box UI
+--- === cp.finalcutpro.ui.CheckBox ===
+---
+--- Check Box UI Module.
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,7 @@ function CheckBox.matches(element)
 end
 
 --- cp.finalcutpro.ui.CheckBox:new(axuielement, function) -> CheckBox
---- Function:
+--- Function
 --- Creates a new CheckBox
 function CheckBox:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

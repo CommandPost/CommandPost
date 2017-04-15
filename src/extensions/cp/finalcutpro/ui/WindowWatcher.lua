@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Window Watcher
+--- === cp.finalcutpro.ui.WindowWatcher ===
+---
+--- Window Watcher Module.
 
 --------------------------------------------------------------------------------
 --
@@ -46,12 +48,12 @@ end
 --- is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(window)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function WindowWatcher:watch(events)
 	local startWatching = false
 	if not self._watchers then
@@ -119,10 +121,10 @@ end
 --- Removes the watch with the specified ID
 ---
 --- Parameters:
---- * `id` - The ID returned from `watch` that wants to be removed.
+---  * `id` - The ID returned from `watch` that wants to be removed.
 ---
 --- Returns:
---- * None
+---  * None
 function WindowWatcher:unwatch(id)
 	local watchers = self._watchers
 	if id and id.id and watchers and watchers[id.id] then

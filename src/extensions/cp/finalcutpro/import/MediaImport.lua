@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Media Import
+--- === cp.finalcutpro.import.MediaImport ===
+---
+--- Media Import
 
 --------------------------------------------------------------------------------
 --
@@ -122,19 +124,17 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.finalcutpro:import:MediaImport:watch() -> bool
+--- cp.finalcutpro.import.MediaImport:watch() -> bool
 --- Method
---- Watch for events that happen in the command editor
---- The optional functions will be called when the window
---- is shown or hidden, respectively.
+--- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function MediaImport:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)

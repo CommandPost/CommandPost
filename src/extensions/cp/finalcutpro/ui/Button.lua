@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Buton
+--- === cp.finalcutpro.ui.Button ===
+---
+--- Button Module.
 
 --------------------------------------------------------------------------------
 --
@@ -29,7 +31,7 @@ function Button.matches(element)
 end
 
 --- cp.finalcutpro.ui.Button:new(axuielement, table) -> Button
---- Function:
+--- Function
 --- Creates a new Button
 function Button:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}

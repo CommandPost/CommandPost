@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Table UI
+--- === cp.finalcutpro.ui.Table ===
+---
+--- Table Module.
 
 --------------------------------------------------------------------------------
 --
@@ -33,7 +35,7 @@ function Table.matches(element)
 end
 
 --- cp.finalcutpro.ui.Table:new(axuielement, table) -> Table
---- Function:
+--- Function
 --- Creates a new Table
 function Table:new(parent, finder)
 	o = {_parent = parent, _finder = finder}

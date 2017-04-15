@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Effects Browser
+--- === cp.finalcutpro.main.EffectsBrowser ===
+---
+--- Effects Browser Module.
 
 --------------------------------------------------------------------------------
 --
@@ -232,7 +234,7 @@ function Browser:applyItem(itemUI)
 	return self
 end
 
---- Returns the list of titles for all effects/transitions currently visible
+-- Returns the list of titles for all effects/transitions currently visible
 function Browser:getCurrentTitles()
 	local contents = self:contents():childrenUI()
 	if contents ~= nil then

@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Keycodes Module
+--- === cp.finalcutpro.keycodes ===
+---
+--- Keycodes Module
 
 --------------------------------------------------------------------------------
 --
@@ -20,7 +22,7 @@ local keycodes								= require("hs.keycodes")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.finalcutpro.characterStringToKeyCode() -> string
+--- cp.finalcutpro.keycodes.characterStringToKeyCode() -> string
 --- Function
 --- Translate Keyboard Character Strings from Command Set Format into Hammerspoon Format.
 ---
@@ -74,7 +76,7 @@ end
 
 mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "enter" }
 
---- cp.finalcutpro.keypadCharacterToKeyCode() -> string
+--- cp.finalcutpro.keycodes.keypadCharacterToKeyCode() -> string
 --- Function
 --- Translate Keyboard Keypad Character Strings from Command Set Format into Hammerspoon Format.
 ---
@@ -94,7 +96,7 @@ function mod.keypadCharacterToKeyCode(input)
 
 end
 
---- cp.finalcutpro.fcpxModifiersToHsModifiers() -> table
+--- cp.finalcutpro.keycodes.fcpxModifiersToHsModifiers() -> table
 --- Function
 --- Translate Keyboard Modifiers from Command Set Format into Hammerspoon Format
 ---
@@ -114,7 +116,7 @@ function mod.fcpxModifiersToHsModifiers(input)
 
 end
 
---- cp.finalcutpro.modifierMaskToModifiers() -> table
+--- cp.finalcutpro.keycodes.modifierMaskToModifiers() -> table
 --- Function
 --- Translate Keyboard Modifiers from Command Set Format into Hammerspoon Format
 ---

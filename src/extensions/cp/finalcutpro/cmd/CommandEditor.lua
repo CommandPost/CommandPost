@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- Command Editor
+--- === cp.finalcutpro.cmd.CommandEditor ===
+---
+--- Command Editor Module.
 
 --------------------------------------------------------------------------------
 --
@@ -116,17 +118,17 @@ function CommandEditor:getTitle()
 	return ui and ui:title()
 end
 
---- cp.finalcutpro.cmd:watch() -> bool
+--- cp.finalcutpro.cmd.CommandEditor:watch() -> bool
 --- Method
 --- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function CommandEditor:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)
