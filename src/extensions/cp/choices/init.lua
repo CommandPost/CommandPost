@@ -4,18 +4,19 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.choices ===
+--- === cp.choices.builder ===
 ---
---- Choices Module.
+--- Choices Builder Module.
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
 local builder = {}
 
---- cp.chooser.choices.builder.new(choiceType) -> builder
+--- cp.choices.builder.new(choiceType) -> builder
 --- Function
 --- Creates a new choice builder instance.
 ---
@@ -33,7 +34,7 @@ function builder.new(choice)
 	return o
 end
 
---- cp.chooser.choices.builder:text(value) -> builder
+--- cp.choices.builder:text(value) -> builder
 --- Method
 --- Specifies the text value for the choice being built.
 ---
@@ -47,7 +48,7 @@ function builder:text(value)
 	return self
 end
 
---- cp.chooser.choices.builder:subText(value) -> builder
+--- cp.choices.builder:subText(value) -> builder
 --- Method
 --- Specifies the `subText` value for the choice being built.
 ---
@@ -61,7 +62,7 @@ function builder:subText(value)
 	return self
 end
 
---- cp.chooser.choices.builder:id(value) -> builder
+--- cp.choices.builder:id(value) -> builder
 --- Method
 --- Indicates the choice is a favorite.
 ---
@@ -75,7 +76,7 @@ function builder:id(value)
 	return self
 end
 
---- cp.chooser.choices.builder:params(value) -> builder
+--- cp.choices.builder:params(value) -> builder
 --- Method
 --- Specifies a table of parameter values for the choice. These
 --- values need to be simple - text, numbers, booleans, or tables.
@@ -90,11 +91,21 @@ function builder:params(value)
 	return self
 end
 
+--- === cp.choices ===
+---
+--- Choices Module.
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+
 local mod = {}
 
 mod.builder = builder
 
---- cp.chooser.choices.new(choiceType) -> choices
+--- cp.choices.new(choiceType) -> choices
 --- Function
 --- Creates a new `cp.plugin.chooser.choices` instance for the specified type.
 ---
@@ -113,7 +124,7 @@ function mod.new(type)
 	return o
 end
 
---- cp.chooser.choices:new(choiceType) -> choices.builder
+--- cp.choices:new(choiceType) -> choices.builder
 --- Method
 --- Adds a new choice with the specified. Additional settings
 --- can be set using the returned builder instance. E.g.:
@@ -128,10 +139,10 @@ end
 --- ```
 ---
 --- Parameters:
---- * `text`	- The text title for the choice.
+---  * `text`	- The text title for the choice.
 ---
 --- Returns:
---- * The choice builder, added to the choices set.
+---  * The choice builder, added to the choices set.
 function mod:add(text)
 	local choice = {
 		type	= self._type
@@ -141,7 +152,7 @@ function mod:add(text)
 	return bldr
 end
 
---- cp.chooser.choices:setStatic(value) -> choices
+--- cp.choices:setStatic(value) -> choices
 --- Method
 --- By default, choices are considered to be dynamic, and should be
 --- reloaded each time the list is required. If the options are not
@@ -149,37 +160,37 @@ end
 --- and the results can be cached for future calls.
 ---
 --- Parameters:
---- * N/A
+---  * None
 ---
 --- Returns:
---- * The `choices` instance.
+---  * The `choices` instance.
 function mod:makeStatic()
 	self._static = true
 	return self
 end
 
---- cp.chooser.choices:isStatic() -> boolean
+--- cp.choices:isStatic() -> boolean
 --- Method
 --- Returns `true` if the choices set is static.
 ---
 --- Parameters:
---- * N/A
+---  * None
 ---
 --- Returns:
---- * `true` if the choices set is static.
+---  * `true` if the choices set is static.
 function mod:isStatic()
 	return self._static == true
 end
 
---- cp.chooser.choices:getChoices() -> array of choices
+--- cp.choices:getChoices() -> array of choices
 --- Method
 --- Returns the array of choices that have been added to this instance.
 ---
 --- Parameters:
---- * N/A
+---  * None
 ---
 --- Returns:
---- * The array of choices.
+---  * The array of choices.
 function mod:getChoices()
 	return self._choices
 end

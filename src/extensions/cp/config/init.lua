@@ -226,6 +226,10 @@ end
 --
 --------------------------------------------------------------------------------
 
+--- === cp.config.shutdownCallback ===
+---
+--- Shutdown Callback Module.
+
 local shutdownCallback = {}
 shutdownCallback._items = {}
 
@@ -315,6 +319,10 @@ end
 --
 --------------------------------------------------------------------------------
 
+--- === cp.config.textDroppedToDockIconCallback ===
+---
+--- Text Dropped to Dock Icon Callback
+
 local textDroppedToDockIconCallback = {}
 textDroppedToDockIconCallback._items = {}
 
@@ -403,6 +411,10 @@ end
 -- FILE DROPPED TO DOCK ICON CALLBACK:
 --
 --------------------------------------------------------------------------------
+
+--- === cp.config.fileDroppedToDockIconCallback ===
+---
+--- File Dropped to Dock Icon Callback
 
 local fileDroppedToDockIconCallback = {}
 fileDroppedToDockIconCallback._items = {}

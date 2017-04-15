@@ -26,23 +26,21 @@ local englishKeyCodes							= require("cp.commands.englishKeyCodes")
 --
 --------------------------------------------------------------------------------
 
---- The shortcut class
+-- The shortcut class
 local shortcut = {}
 
 -- The shortcut builder class
 local builder = {}
 
-
---- shortcut.textToKeyCode() -> string
---- Function
---- Translates string into a key code.
----
---- Parameters:
----  * input - string
----
---- Returns:
----  * Keycode as String or ""
----
+-- shortcut.textToKeyCode() -> string
+-- Function
+-- Translates string into a key code.
+--
+-- Parameters:
+--  * input - string
+--
+-- Returns:
+--  * Keycode as String or ""
 function shortcut.textToKeyCode(input)
 	local result = englishKeyCodes[input]
 	if not result then
@@ -63,7 +61,6 @@ end
 ---
 --- Returns:
 ---  * shortcut - The shortcut that was created.
----
 function shortcut:new(modifiers, keyCode)
 	o = {
 		_modifiers = modifiers or {},
@@ -100,14 +97,17 @@ function shortcut:build(receiverFn)
 	return builder:new(receiverFn)
 end
 
+-- TODO: Add documentation
 function shortcut:getModifiers()
 	return self._modifiers
 end
 
+-- TODO: Add documentation
 function shortcut:getKeyCode()
 	return self._keyCode
 end
 
+-- TODO: Add documentation
 function shortcut:isEnabled()
 	return self._enabled
 end
@@ -175,6 +175,7 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 	return self
 end
 
+-- TODO: Add documentation
 function shortcut:unbind()
 	local hotkey = self._hotkey
 	if hotkey then
@@ -185,6 +186,7 @@ function shortcut:unbind()
 	return self
 end
 
+-- TODO: Add documentation
 function shortcut:delete()
 	return self:unbind()
 end
@@ -203,6 +205,10 @@ function shortcut:trigger()
 	return self
 end
 
+--- === cp.commands.shortcut.builder ===
+---
+--- Shortcut Commands Builder Module.
+
 --- cp.commands.shortcut.builder:new(receiverFn)
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
@@ -218,7 +224,6 @@ function builder:new(receiverFn)
 	return o
 end
 
-
 --- cp.commands.shortcut.builder:add(modifier, [keyCode]) -> shortcut/command
 --- Adds the specified modifier to the set. If a `keyCode` is provided,
 --- no more modifiers can be added and the original `command` is returned instead.
@@ -227,6 +232,7 @@ end
 --- Parameters:
 ---  * modifier - (optional) The modifier that was added.
 ---  * keyCode	- (optional) The key code being modified.
+---
 --- Returns:
 ---  * `self` if no `keyCode` is provided, or the original `command`.
 function builder:add(modifier, keyCode)
@@ -246,30 +252,37 @@ function builder:add(modifier, keyCode)
 	end
 end
 
+-- TODO: Add documentation
 function builder:control(keyCode)
 	return self:add("control", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:ctrl(keyCode)
 	return self:control(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:option(keyCode)
 	return self:add("option", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:alt(keyCode)
 	return self:option(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:command(keyCode)
 	return self:add("command", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:cmd(keyCode)
 	return self:command(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:shift(keyCode)
 	return self:add("shift", keyCode)
 end
