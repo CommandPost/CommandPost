@@ -236,7 +236,6 @@ function mod.init()
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-												writeToConsoleDebug("Loaded from Bundle:             " .. tostring(not hs.hasinitfile))
 												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
 	console.printStyledtext("")
 
