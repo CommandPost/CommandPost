@@ -20,23 +20,13 @@ local fs										= require("hs.fs")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- None
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
 --------------------------------------------------------------------------------
---
 -- CONSTANTS:
---
 --------------------------------------------------------------------------------
 mod.UI_CHECKBOX								= 1
 mod.UI_HEADING								= 2
@@ -64,6 +54,7 @@ local function randomWord(length)
 end
 
 --- cp.web.generate.setWebviewLabel() -> none
+--- Function
 --- Sets the WebView Label
 ---
 --- Parameters:
@@ -71,12 +62,12 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.setWebviewLabel(value)
 	mod._webviewLabel = value
 end
 
 --- cp.web.generate.checkbox() -> string
+--- Function
 --- Generates a HTML Checkbox
 ---
 --- Parameters:
@@ -86,7 +77,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.checkbox(data, customTrigger, customID)
 
 	local result = data["title"]
@@ -120,6 +110,7 @@ function mod.checkbox(data, customTrigger, customID)
 end
 
 --- cp.web.generate.heading() -> string
+--- Function
 --- Generates a HTML Heading
 ---
 --- Parameters:
@@ -127,7 +118,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.heading(data)
 
 	local result = "<h3>" .. data["title"] .. "</h3>\n"
@@ -136,6 +126,7 @@ function mod.heading(data)
 end
 
 --- cp.web.generate.text() -> string
+--- Function
 --- Generates a blank HTML
 ---
 --- Parameters:
@@ -143,7 +134,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.text(data)
 
 	local result = data["title"] .. "\n"
@@ -152,6 +142,7 @@ function mod.text(data)
 end
 
 --- cp.web.generate.button() -> string
+--- Function
 --- Generates a HTML Button
 ---
 --- Parameters:
@@ -162,7 +153,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.button(data, customTrigger, customWidth, customID)
 
 	local result = data["title"]
@@ -195,6 +185,7 @@ function mod.button(data, customTrigger, customWidth, customID)
 end
 
 --- cp.web.generate.dropdown() -> string
+--- Function
 --- Generates a HTML Dropdown
 ---
 --- Parameters:
@@ -204,7 +195,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.dropdown(title, data, customTrigger)
 
 	local result = title
@@ -259,6 +249,7 @@ function mod.imageBase64(pathToImage)
 end
 
 --- cp.web.generate.init() -> none
+--- Function
 --- Initialises the module
 ---
 --- Parameters:
@@ -266,7 +257,6 @@ end
 ---
 --- Returns:
 ---  * Table containing the module
----
 function mod.init()
 	return mod
 end

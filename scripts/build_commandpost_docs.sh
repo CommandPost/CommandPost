@@ -1,9 +1,27 @@
 #!/bin/bash
 
+# ---------------------------------------------------------
+#  Shell Script will exit immediately on a failed command:
+# ---------------------------------------------------------
+set -e
+
+# -----------------------------
+#  Go to CommandPost-App Path:
+# -----------------------------
 cd ../CommandPost-App/
 
-scripts/docs/bin/build_docs.py -o ../CommandPost-Releases/Docs/cp.finalcutpro/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/finalcutpro/
-scripts/docs/bin/build_docs.py -o ../CommandPost-Releases/Docs/cp.just/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/just/
-scripts/docs/bin/build_docs.py -o ../CommandPost-Releases/Docs/cp.bench/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/bench/
-scripts/docs/bin/build_docs.py -o ../CommandPost-Releases/Docs/cp.choices/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/choices/
-scripts/docs/bin/build_docs.py -o ../CommandPost-Releases/Docs/cp.commands/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/commands/
+# --------------------------------------
+#  Build CommandPost-App Documentation:
+# --------------------------------------
+scripts/docs/bin/build_docs.py -o build/CommandPost-Docs/hs/ --markdown Hammerspoon/ extensions/
+rm -R ../CommandPost-DeveloperGuide/api/hs/
+mkdir ../CommandPost-DeveloperGuide/api/hs/
+cp build/CommandPost-Docs/hs/markdown/* ../CommandPost-DeveloperGuide/api/hs/
+
+# ----------------------------------
+#  Build CommandPost Documentation:
+# ----------------------------------
+scripts/docs/bin/build_docs.py -o build/CommandPost-Docs/cp/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/
+rm -R ../CommandPost-DeveloperGuide/api/cp/
+mkdir ../CommandPost-DeveloperGuide/api/cp/
+cp build/CommandPost-Docs/cp/markdown/* ../CommandPost-DeveloperGuide/api/cp/
