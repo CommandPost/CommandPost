@@ -43,18 +43,21 @@ local type			= type
 local block = {}
 block.__index = block
 
--- Handles content, converting it to a string.
-local function handleContent(content)
-	if type(content) == "table" then
+-- Evalutates the content, converting it to a string.
+local function evaluate(content)
+	local contentType = type(content)
+	if contentType == "table" then
 		if #content > 0 then
 			local result = ""
 			for _,item in ipairs(content) do
-				result = result .. handleContent(item)
+				result = result .. evaluate(item)
 			end
 			return result
 		elseif getmetatable(content) == block then
 			return tostring(content)
 		end
+	elseif contentType == "function" then
+		return evaluate(content())
 	end
 	
 	if content then
@@ -71,7 +74,7 @@ function block:__tostring()
 	local r, a = {}, {}
 
 	if #metadata.pre > 0 then
-		r[#r + 1] = handleContent(metadata.pre)
+		r[#r + 1] = evaluate(metadata.pre)
 	end
 
 	if name then
@@ -80,12 +83,12 @@ function block:__tostring()
 	    if attr then
 	        for k, v in pairs(attr) do
 	            if type(k) == "number" then
-					local value = escape(v)
+					local value = evaluate(v)
 					if value and value ~= "" then
 						a[#a + 1] = value
 					end
 	            else
-	                a[#a + 1] = k .. '="' .. escape(v) .. '"'
+	                a[#a + 1] = k .. '="' .. evaluate(v) .. '"'
 	            end
 	        end
 	        if #a > 0 then
@@ -99,7 +102,7 @@ function block:__tostring()
 			r[#r + 1] = ">"
 		end
 		
-		r[#r + 1] = handleContent(content)
+		r[#r + 1] = evaluate(content)
 		
 		if name then
 	        r[#r + 1] = "</"
@@ -111,7 +114,7 @@ function block:__tostring()
     end
 	
 	if #metadata.post > 0 then
-		r[#r + 1] = handleContent(metadata.post)
+		r[#r + 1] = evaluate(metadata.post)
 	end
 	
     return concat(r)
