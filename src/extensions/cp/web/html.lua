@@ -67,6 +67,10 @@ local function evaluate(content)
 	end
 end
 
+function block:evaluate()
+	return block:__tostring()
+end
+
 -- Implements the 'tostring' metamethod, converting the block to a string.
 function block:__tostring()
 	local metadata = self._metadata
