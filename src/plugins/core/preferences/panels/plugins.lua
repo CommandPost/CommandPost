@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.panels.plugins ===
+--- === plugins.core.preferences.panels.plugins ===
 ---
 --- Plugins Preferences Panel
 
@@ -34,7 +34,7 @@ local plugins									= require("cp.plugins")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- core.preferences.panels.plugins.SETTINGS_DISABLED
+--- plugins.core.preferences.panels.plugins.SETTINGS_DISABLED
 --- Constant
 --- Plugins Disabled
 mod.SETTINGS_DISABLED = "plugins.disabled"
@@ -377,7 +377,7 @@ local function generateContent()
 	return result
 end
 
---- core.preferences.panels.plugins() -> none
+--- plugins.core.preferences.panels.plugins() -> none
 --- Function
 --- Initialises the module.
 ---

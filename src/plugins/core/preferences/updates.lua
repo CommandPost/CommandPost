@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.preferences.updates ===
+---
+--- Updates Module.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -32,19 +36,37 @@ local CHECK_FOR_UPDATES_INTERVAL 		= 15 * 60
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.toggleCheckForUpdates()
-		local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
-		hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
-		mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
+--- plugins.core.preferences.updates.toggleCheckForUpdates() -> nil
+--- Function
+--- Toggles 'Check For Updates'
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggleCheckForUpdates()
+	local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
+	hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
+	mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
 
-		if not automaticallyCheckForUpdates then
-			hs.checkForUpdates(true)
-		end
+	if not automaticallyCheckForUpdates then
+		hs.checkForUpdates(true)
 	end
+end
 
-	function mod.checkForUpdates()
-		hs.checkForUpdates()
-	end
+--- plugins.core.preferences.updates.checkForUpdates() -> boolean
+--- Function
+--- Returns the 'Check for Updates' status
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
+function mod.checkForUpdates()
+	hs.checkForUpdates()
+end
 
 --------------------------------------------------------------------------------
 --
@@ -60,30 +82,30 @@ local plugin = {
 	}
 }
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
+	mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
 
-		if hs.automaticallyCheckForUpdates() then
-			hs.checkForUpdates(true)
-		end
-
-		deps.top:addItem(UPDATE_BANNER_PRIORITY, function()
-			if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
-				return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",	fn = mod.checkForUpdates }
-			end
-		end)
-		:addSeparator(2)
-
-		deps.general:addCheckbox(3, function()
-			if hs.canCheckForUpdates() then
-				return { title = i18n("checkForUpdates"),	fn = mod.toggleCheckForUpdates, checked = mod.automaticallyCheckForUpdates }
-			end
-		end)
-
+	if hs.automaticallyCheckForUpdates() then
+		hs.checkForUpdates(true)
 	end
+
+	deps.top:addItem(UPDATE_BANNER_PRIORITY, function()
+		if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
+			return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",	fn = mod.checkForUpdates }
+		end
+	end)
+	:addSeparator(2)
+
+	deps.general:addCheckbox(3, function()
+		if hs.canCheckForUpdates() then
+			return { title = i18n("checkForUpdates"),	fn = mod.toggleCheckForUpdates, checked = mod.automaticallyCheckForUpdates }
+		end
+	end)
+
+end
 
 return plugin

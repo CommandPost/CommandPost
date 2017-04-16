@@ -1,4 +1,14 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.core.action.manager ===
+---
+--- Action Manager Module.
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
@@ -76,6 +86,7 @@ local function thawParams(params)
 	return thawed
 end
 
+-- TODO: Add documentation
 function mod.init()
 	-- Unknown command handler
 	urlevent.bind(UNDEFINED, function()
@@ -83,6 +94,7 @@ function mod.init()
 	end)
 end
 
+-- TODO: Add documentation
 function mod.getURL(choice)
 	if choice and choice.type then
 		-- log.df("getURL: command = %s", hs.inspect(command))
@@ -93,14 +105,17 @@ function mod.getURL(choice)
 	end
 end
 
+-- TODO: Add documentation
 function mod.getActionIds()
 	return mod._actionsIds
 end
 
+-- TODO: Add documentation
 function mod.getActions()
 	return mod._actions
 end
 
+-- TODO: Add documentation
 function mod.addAction(action)
 	-- log.df("adding action: %s", hs.inspect(action))
 	local id = action.id()
@@ -118,10 +133,12 @@ function mod.addAction(action)
 	end)
 end
 
+-- TODO: Add documentation
 function mod.getAction(id)
 	return mod._actions[id]
 end
 
+-- TODO: Add documentation
 function mod.toggleActionEnabled(id)
 	local action = mod.getAction(id)
 	if action and action.toggleEnabled then
@@ -129,18 +146,21 @@ function mod.toggleActionEnabled(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.enableAllActions()
 	for _,action in pairs(mod._actions) do
 		action.setEnabled(true)
 	end
 end
 
+-- TODO: Add documentation
 function mod.disableAllActions()
 	for _,action in pairs(mod._actions) do
 		action.setEnabled(false)
 	end
 end
 
+-- TODO: Add documentation
 function mod.getOptions(actionId, params)
 	local action = mod.getAction(actionId)
 	if action.options then
@@ -150,6 +170,7 @@ function mod.getOptions(actionId, params)
 	end
 end
 
+-- TODO: Add documentation
 function mod.getHidden()
 	if not mod._hidden then
 		mod._hidden = config.get("actionHidden", {})
@@ -157,6 +178,7 @@ function mod.getHidden()
 	return mod._hidden
 end
 
+-- TODO: Add documentation
 function mod.setHidden(value)
 	mod._hidden = value
 	config.set("actionHidden", value)
@@ -164,6 +186,7 @@ function mod.setHidden(value)
 	mod.refresh()
 end
 
+-- TODO: Add documentation
 function mod.hide(id)
 	if id then
 		local hidden = mod.getHidden()
@@ -172,6 +195,7 @@ function mod.hide(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.unhide(id)
 	if id then
 		local hidden = mod.getHidden()
@@ -180,10 +204,12 @@ function mod.unhide(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.isHidden(id)
 	return mod.getHidden()[id] == true
 end
 
+-- TODO: Add documentation
 function mod.toggleHidden(id)
 	if id then
 		local hidden = mod.getHidden()
@@ -192,6 +218,7 @@ function mod.toggleHidden(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.getFavorites()
 	if not mod._favorites then
 		mod._favorites = config.get("actionFavorites", {})
@@ -199,6 +226,7 @@ function mod.getFavorites()
 	return mod._favorites
 end
 
+-- TODO: Add documentation
 function mod.setFavorites(value)
 	mod._favorites = value
 	config.set("actionFavorites", value)
@@ -206,11 +234,13 @@ function mod.setFavorites(value)
 	timer.doAfter(1.0, mod.sortChoices)
 end
 
+-- TODO: Add documentation
 function mod.isFavorite(id)
 	local favorites = mod.getFavorites()
 	return id and favorites and favorites[id] == true
 end
 
+-- TODO: Add documentation
 function mod.favorite(id)
 	if id then
 		local favorites = mod.getFavorites()
@@ -219,6 +249,7 @@ function mod.favorite(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.unfavorite(id)
 	if id then
 		local favorites = mod.getFavorites()
@@ -227,6 +258,7 @@ function mod.unfavorite(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.getPopularityIndex()
 	if not mod._popularityIndex then
 		mod._popularityIndex = config.get("actionPopularityIndex", {})
@@ -234,11 +266,13 @@ function mod.getPopularityIndex()
 	return mod._popularityIndex
 end
 
+-- TODO: Add documentation
 function mod.setPopularityIndex(value)
 	mod._popularityIndex = value
 	config.set("actionPopularityIndex", value)
 end
 
+-- TODO: Add documentation
 function mod.getPopularity(id)
 	if id then
 		local index = mod.getPopularityIndex()
@@ -247,6 +281,7 @@ function mod.getPopularity(id)
 	return 0
 end
 
+-- TODO: Add documentation
 function mod.incPopularity(id)
 	if id then
 		local index = mod.getPopularityIndex()
@@ -258,6 +293,7 @@ function mod.incPopularity(id)
 	end
 end
 
+-- TODO: Add documentation
 function mod.execute(actionId, params)
 	local action = mod.getAction(actionId)
 	if action then
@@ -275,10 +311,12 @@ function mod.execute(actionId, params)
 	return false
 end
 
+-- TODO: Add documentation
 function mod.executeChoice(choice)
 	return mod.execute(choice.type, choice.params)
 end
 
+-- TODO: Add documentation
 local function compareChoice(a, b)
 	-- Favorites get first priority
 	local afav = mod.isFavorite(a.id)
@@ -311,10 +349,12 @@ local function compareChoice(a, b)
 	return asub < bsub
 end
 
+-- TODO: Add documentation
 function mod.sortChoices()
 	return table.sort(mod._choices, compareChoice)
 end
 
+-- TODO: Add documentation
 function mod.addChoices(choices)
 	local result = mod._choices or {}
 	fnutils.concat(result, choices:getChoices())
@@ -322,6 +362,7 @@ function mod.addChoices(choices)
 	mod.sortChoices()
 end
 
+-- TODO: Add documentation
 function mod.allChoices()
 	if not mod._allChoices then
 		mod._findChoices()
@@ -329,6 +370,7 @@ function mod.allChoices()
 	return mod._allChoices
 end
 
+-- TODO: Add documentation
 function mod.choices()
 	if not mod._choices then
 		mod._findChoices()
@@ -336,6 +378,7 @@ function mod.choices()
 	return mod._choices
 end
 
+-- TODO: Add documentation
 function mod._findChoices()
 	local result = {}
 	for type,action in pairs(mod._actions) do
@@ -363,6 +406,7 @@ function mod._findChoices()
 	mod.sortChoices()
 end
 
+-- TODO: Add documentation
 function mod.refresh()
 	mod._choices = nil
 	mod._allChoices = nil

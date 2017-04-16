@@ -4,6 +4,8 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.menu.mediaimport ===
+---
 --- The Media Import menu section.
 
 --------------------------------------------------------------------------------
@@ -25,19 +27,19 @@ local SETTING 					= "menubarMediaImportEnabled"
 --------------------------------------------------------------------------------
 -- LOCAL FUNCTIONS:
 --------------------------------------------------------------------------------
-	local function isSectionDisabled()
-		local setting = config.get(SETTING)
-		if setting ~= nil then
-			return not setting
-		else
-			return false
-		end
+local function isSectionDisabled()
+	local setting = config.get(SETTING)
+	if setting ~= nil then
+		return not setting
+	else
+		return false
 	end
+end
 
-	local function toggleSectionDisabled()
-		local menubarEnabled = config.get(SETTING)
-		config.set(SETTING, not menubarEnabled)
-	end
+local function toggleSectionDisabled()
+	local menubarEnabled = config.get(SETTING)
+	config.set(SETTING, not menubarEnabled)
+end
 
 --------------------------------------------------------------------------------
 --

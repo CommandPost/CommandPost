@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.welcome.panels.accessibility  ===
+--- === plugins.core.welcome.panels.accessibility  ===
 ---
 --- Accessibility Panel Welcome Screen.
 

@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.helpandsupport.feedback ===
+---
+--- Feedback Menu Item.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -26,9 +30,18 @@ local PRIORITY 			= 2
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.showFeedback()
-		feedback.showFeedback()
-	end
+--- plugins.core.helpandsupport.feedback.showFeedback() -> nil
+--- Function
+--- Opens CommandPost Credits Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.show()
+	feedback.showFeedback()
+end
 
 --------------------------------------------------------------------------------
 --
@@ -48,7 +61,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("provideFeedback"),	fn = mod.showFeedback }
+		return { title = i18n("provideFeedback"),	fn = mod.show }
 	end)
 
 	return mod

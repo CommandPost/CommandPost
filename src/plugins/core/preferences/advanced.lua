@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.advanced ===
+--- === plugins.core.preferences.advanced ===
 ---
 --- Advanced Preferences Panel.
 
@@ -29,7 +29,7 @@ local dialog			= require("cp.dialog")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- core.preferences.advanced.resetSettings() -> none
+--- plugins.core.preferences.advanced.resetSettings() -> none
 --- Function
 --- Resets all of the CommandPost Preferences to their default values.
 ---
@@ -83,7 +83,7 @@ function mod.resetSettings()
 
 end
 
---- core.preferences.advanced.toggleDeveloperMode() -> none
+--- plugins.core.preferences.advanced.toggleDeveloperMode() -> none
 --- Function
 --- Toggles the Developer Mode.
 ---
@@ -99,7 +99,7 @@ function mod.toggleDeveloperMode()
 	hs.reload()
 end
 
---- core.preferences.advanced.getDeveloperMode() -> boolean
+--- plugins.core.preferences.advanced.getDeveloperMode() -> boolean
 --- Function
 --- Returns the Developer Mode status.
 ---
@@ -112,7 +112,7 @@ function mod.getDeveloperMode()
 	return config.get("debugMode")
 end
 
---- core.preferences.advanced.openErrorLog() -> none
+--- plugins.core.preferences.advanced.openErrorLog() -> none
 --- Function
 --- Opens the Error Log
 ---
@@ -137,7 +137,7 @@ local function getCommandLineToolTitle()
 	end
 end
 
---- core.preferences.advanced.toggleCommandLineTool() -> none
+--- plugins.core.preferences.advanced.toggleCommandLineTool() -> none
 --- Function
 --- Toggles the Command Line Tool
 ---

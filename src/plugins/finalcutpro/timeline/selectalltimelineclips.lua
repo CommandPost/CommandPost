@@ -1,14 +1,22 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.selectalltimelineclips ===
+---
+--- Select All Timeline Clips
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp								= require("cp.finalcutpro")
-local dialog							= require("cp.dialog")
-
 local log								= require("hs.logger").new("selectalltimelineclips")
 
--- Constants
+local fcp								= require("cp.finalcutpro")
+local dialog							= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -17,6 +25,15 @@ local log								= require("hs.logger").new("selectalltimelineclips")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.selectalltimelineclips(forwards) -> nil
+--- Function
+--- Selects all timeline clips to the left or right of the timeline playhead in Final Cut Pro.
+---
+--- Parameters:
+---  * forwards - `true` if you want to select forwards
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.selectAllTimelineClips(forwards)
 
 	local content = fcp:timeline():contents()
@@ -54,6 +71,9 @@ local plugin = {
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
 	deps.fcpxCmds:add("cpSelectForward")

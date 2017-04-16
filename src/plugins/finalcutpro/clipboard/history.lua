@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.clipboard.history ===
+---
+--- Clipboard History
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -29,95 +33,95 @@ local OPTIONS_PRIORITY						= 1000
 --------------------------------------------------------------------------------
 local mod = {}
 
-	mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
-	mod.log										= log
+mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
+mod.log										= log
 
-	function mod.isEnabled()
-		return config.get("enableClipboardHistory", false)
+function mod.isEnabled()
+	return config.get("enableClipboardHistory", false)
+end
+
+function mod.setEnabled(value)
+	config.set("enableClipboardHistory", value == true)
+	mod.update()
+end
+
+function mod.toggleEnabled()
+	mod.setEnabled(not mod.isEnabled())
+end
+
+function mod.getHistory()
+	if not mod._history then
+		mod._history = config.get("clipboardHistory", {})
 	end
+	return mod._history
+end
 
-	function mod.setEnabled(value)
-		config.set("enableClipboardHistory", value == true)
-		mod.update()
+function mod.setHistory(history)
+	mod._history = history
+	config.set("clipboardHistory", history)
+end
+
+function mod.clearHistory()
+	mod.setHistory({})
+end
+
+function mod.addHistoryItem(data, label)
+	local history = mod.getHistory()
+	local item = {data, label}
+	-- drop old history items
+	while (#(history) >= mod._historyMaximumSize) do
+		table.remove(history,1)
 	end
+	table.insert(history, item)
+	mod.setHistory(history)
+end
 
-	function mod.toggleEnabled()
-		mod.setEnabled(not mod.isEnabled())
-	end
+function mod.pasteHistoryItem(index)
+	local item = mod.getHistory()[index]
+	if item then
+		--------------------------------------------------------------------------------
+		-- Put item back in the clipboard quietly.
+		--------------------------------------------------------------------------------
+		mod._manager.writeFCPXData(item[1], true)
 
-	function mod.getHistory()
-		if not mod._history then
-			mod._history = config.get("clipboardHistory", {})
-		end
-		return mod._history
-	end
-
-	function mod.setHistory(history)
-		mod._history = history
-		config.set("clipboardHistory", history)
-	end
-
-	function mod.clearHistory()
-		mod.setHistory({})
-	end
-
-	function mod.addHistoryItem(data, label)
-		local history = mod.getHistory()
-		local item = {data, label}
-		-- drop old history items
-		while (#(history) >= mod._historyMaximumSize) do
-			table.remove(history,1)
-		end
-		table.insert(history, item)
-		mod.setHistory(history)
-	end
-
-	function mod.pasteHistoryItem(index)
-		local item = mod.getHistory()[index]
-		if item then
-			--------------------------------------------------------------------------------
-			-- Put item back in the clipboard quietly.
-			--------------------------------------------------------------------------------
-			mod._manager.writeFCPXData(item[1], true)
-
-			--------------------------------------------------------------------------------
-			-- Paste in FCPX:
-			--------------------------------------------------------------------------------
-			fcp:launch()
-			if fcp:performShortcut("Paste") then
-				return true
-			else
-				log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in clipboard.history.pasteHistoryItem().")
-			end
-		end
-		return false
-	end
-
-	local function watchUpdate(data, name)
-		log.df("Clipboard updated. Adding '%s' to history.", name)
-		mod.addHistoryItem(data, name)
-	end
-
-	function mod.update()
-		if mod.isEnabled() then
-			if not mod._watcherId then
-				mod._watcherId = mod._manager.watch({
-					update	= watchUpdate,
-				})
-			end
+		--------------------------------------------------------------------------------
+		-- Paste in FCPX:
+		--------------------------------------------------------------------------------
+		fcp:launch()
+		if fcp:performShortcut("Paste") then
+			return true
 		else
-			if mod._watcherId then
-				mod._manager.unwatch(mod._watcherId)
-				mod._watcherId = nil
-			end
+			log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in clipboard.history.pasteHistoryItem().")
 		end
 	end
+	return false
+end
 
-	function mod.init(manager)
-		mod._manager = manager
-		mod.update()
-		return self
+local function watchUpdate(data, name)
+	log.df("Clipboard updated. Adding '%s' to history.", name)
+	mod.addHistoryItem(data, name)
+end
+
+function mod.update()
+	if mod.isEnabled() then
+		if not mod._watcherId then
+			mod._watcherId = mod._manager.watch({
+				update	= watchUpdate,
+			})
+		end
+	else
+		if mod._watcherId then
+			mod._manager.unwatch(mod._watcherId)
+			mod._watcherId = nil
+		end
 	end
+end
+
+function mod.init(manager)
+	mod._manager = manager
+	mod.update()
+	return self
+end
 
 --------------------------------------------------------------------------------
 --
@@ -130,7 +134,7 @@ local plugin = {
 	dependencies	= {
 		["finalcutpro.clipboard.manager"]	= "manager",
 		["finalcutpro.menu.clipboard"]		= "menu",
-		
+
 	}
 }
 

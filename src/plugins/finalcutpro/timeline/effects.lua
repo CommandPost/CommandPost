@@ -1,4 +1,19 @@
--- Imports
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.effects ===
+---
+--- Controls Final Cut Pro's Effects.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log				= require("hs.logger").new("effects")
 
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
@@ -12,15 +27,22 @@ local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
 
-local log				= require("hs.logger").new("effects")
-
--- Constants
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 local MAX_SHORTCUTS = 5
 
--- Effects Action
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
 local videoaction = {}
 local audioaction = {}
-local mod = {}
 
 function videoaction.init(videoactionmanager)
 	videoaction._manager = videoactionmanager

@@ -4,12 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.menu.menuaction ===
+---
 --- A `action` which will trigger an Final Cut Pro menu with a matching path, if available/enabled.
----------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
--------------------------------------------------------------------------------- registers itself with the `cp.plugins.core.actions.actionmanager`.
+--- Registers itself with the `plugins.core.actions.actionmanager`.
 
 --------------------------------------------------------------------------------
 --
@@ -37,7 +35,7 @@ local ID				= "menu"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
+--- plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
 --- Function
 --- Initialises the Menu Action plugin
 ---
@@ -46,13 +44,12 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
----
 function mod.init(actionmanager)
 	mod._manager = actionmanager
 	mod._manager.addAction(mod)
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.id() -> none
+--- plugins.finalcutpro.menu.menuaction.id() -> none
 --- Function
 --- Returns the menu ID
 ---
@@ -61,12 +58,11 @@ end
 ---
 --- Returns:
 ---  * a string contains the menu ID
----
 function mod.id()
 	return ID
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.setEnabled() -> none
+--- plugins.finalcutpro.menu.menuaction.setEnabled() -> none
 --- Function
 --- Sets
 ---
@@ -75,13 +71,12 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.setEnabled(value)
 	config.set("menuActionEnabled", value)
 	mod._manager.refresh()
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.isEnabled() -> none
+--- plugins.finalcutpro.menu.menuaction.isEnabled() -> none
 --- Function
 --- Enabled the Menu Action
 ---
@@ -90,12 +85,11 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.isEnabled()
 	return config.get("menuActionEnabled", true)
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.toggleEnabled() -> none
+--- plugins.finalcutpro.menu.menuaction.toggleEnabled() -> none
 --- Function
 --- Toggles whether or not a menu action is enabled.
 ---
@@ -104,12 +98,11 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.toggleEnabled()
 	mod.setEnabled(not mod.isEnabled())
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.choices() -> table
+--- plugins.finalcutpro.menu.menuaction.choices() -> table
 --- Function
 --- Returns an array of available choices
 function mod.choices()
@@ -138,7 +131,7 @@ function mod.getId(params)
 	return ID .. ":" .. table.concat(params.path, "||")
 end
 
---- cp.plugins.finalcutpro.menu.menuaction.execute(params) -> boolean
+--- plugins.finalcutpro.menu.menuaction.execute(params) -> boolean
 --- Function
 --- Executes the action with the provided parameters.
 ---

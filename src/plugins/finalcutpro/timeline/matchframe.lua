@@ -1,4 +1,18 @@
--- Imports
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.matchframe ===
+---
+--- Match Frame Tools for Final Cut Pro.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("matchframe")
 
 local fcp							= require("cp.finalcutpro")
@@ -88,10 +102,16 @@ local function ninjaPasteboardCopy()
 
 end
 
---------------------------------------------------------------------------------
--- PERFORM MULTICAM MATCH FRAME:
---------------------------------------------------------------------------------
-function mod.multicamMatchFrame(goBackToTimeline) -- True or False
+--- plugins.finalcutpro.timeline.matchframe.multicamMatchFrame(goBackToTimeline) -> boolean
+--- Function
+--- Multicam Match Frame
+---
+--- Parameters:
+---  * goBackToTimeline - `true` if you want to go back to the timeline after opening the clip in the Multicam Editor
+---
+--- Returns:
+---  * None
+function mod.multicamMatchFrame(goBackToTimeline)
 
 	local errorFunction = "\n\nError occurred in multicamMatchFrame()."
 
@@ -193,9 +213,15 @@ function mod.multicamMatchFrame(goBackToTimeline) -- True or False
 
 end
 
---------------------------------------------------------------------------------
--- GET MULTICAM ANGLE FROM SELECTED CLIP:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.matchframe.getMulticamAngleFromSelectedClip() -> nil
+--- Function
+--- Get Multicam Angle From Selected Clip
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Angle or `false` on error
 function mod.getMulticamAngleFromSelectedClip()
 
 	local errorFunction = "\n\nError occurred in getMulticamAngleFromSelectedClip()."
@@ -267,11 +293,15 @@ function mod.getMulticamAngleFromSelectedClip()
 	return false
 end
 
---------------------------------------------------------------------------------
--- FCPX SINGLE MATCH FRAME:
--- Parameters:
---  * `focus`	- If set to `true`, the library will search for the matched clip title
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.matchframe.matchFrame() -> nil
+--- Function
+--- Performs a Single Match Frame.
+---
+--- Parameters:
+---  * `focus`	- If set to `true`, the library will search for the matched clip title
+---
+--- Returns:
+---  * None
 function mod.matchFrame(focus)
 
 	--------------------------------------------------------------------------------

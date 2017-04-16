@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.welcome.panels.intro  ===
+--- === plugins.core.welcome.panels.intro  ===
 ---
 --- Intro Panel Welcome Screen.
 
@@ -28,66 +28,65 @@ local generate									= require("cp.web.generate")
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- CONTROLLER CALLBACK:
-	--------------------------------------------------------------------------------
-	local function controllerCallback(message)
+--------------------------------------------------------------------------------
+-- CONTROLLER CALLBACK:
+--------------------------------------------------------------------------------
+local function controllerCallback(message)
 
-		local result = message["body"][1]
+	local result = message["body"][1]
 
-		if result == "introQuit" then
-			config.application():kill()
-		elseif result == "introContinue" then
-			mod.manager.nextPanel(mod._priority)
-		end
-
+	if result == "introQuit" then
+		config.application():kill()
+	elseif result == "introContinue" then
+		mod.manager.nextPanel(mod._priority)
 	end
 
+end
 
-	--------------------------------------------------------------------------------
-	-- GENERATE CONTENT:
-	--------------------------------------------------------------------------------
-	local function generateContent()
+--------------------------------------------------------------------------------
+-- GENERATE CONTENT:
+--------------------------------------------------------------------------------
+local function generateContent()
 
-		generate.setWebviewLabel(mod.webviewLabel)
+	generate.setWebviewLabel(mod.webviewLabel)
 
-		local env = {
-			appName		= config.appName,
-			generate 	= generate,
-			iconPath	= mod.iconPath,
-		}
+	local env = {
+		appName		= config.appName,
+		generate 	= generate,
+		iconPath	= mod.iconPath,
+	}
 
-		local result, err = mod.renderPanel(env)
-		if err then
-			log.ef("Error while generating Intro Welcome Panel: %", err)
-			return err
-		else
-			return result, mod.panelBaseURL
-		end
-
+	local result, err = mod.renderPanel(env)
+	if err then
+		log.ef("Error while generating Intro Welcome Panel: %", err)
+		return err
+	else
+		return result, mod.panelBaseURL
 	end
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE MODULE:
-	--------------------------------------------------------------------------------
-	function mod.init(deps, env)
-		mod.webviewLabel = deps.manager.getLabel()
+end
 
-		mod._id 			= "intro"
-		mod._priority		= 20
-		mod._contentFn		= generateContent
-		mod._callbackFn 	= controllerCallback
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
+function mod.init(deps, env)
+	mod.webviewLabel = deps.manager.getLabel()
 
-		mod.manager = deps.manager
+	mod._id 			= "intro"
+	mod._priority		= 20
+	mod._contentFn		= generateContent
+	mod._callbackFn 	= controllerCallback
 
-		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
-		
-		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
-		
-		return mod
+	mod.manager = deps.manager
 
-	end
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+
+	mod.renderPanel = env:compileTemplate("html/panel.html")
+	mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
+
+	return mod
+
+end
 
 --------------------------------------------------------------------------------
 --

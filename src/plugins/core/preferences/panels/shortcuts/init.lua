@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.panels.shortcuts ===
+--- === plugins.core.preferences.panels.shortcuts ===
 ---
 --- Shortcuts Preferences Panel
 

@@ -1,4 +1,14 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.lanes ===
+---
+--- Controls Final Cut Pro's Lanes.
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
@@ -8,8 +18,12 @@ local tools								= require("cp.tools")
 
 local log								= require("hs.logger").new("lanes")
 
--- Constants
-local MAX_LANES = 10
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local MAX_LANES 						= 10
 
 --------------------------------------------------------------------------------
 --
@@ -18,9 +32,15 @@ local MAX_LANES = 10
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- SELECT CLIP AT LANE:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.lanes.selectClipAtLane() -> nil
+--- Function
+--- Select Clip at Lane in Final Cut Pro
+---
+--- Parameters:
+---  * whichLane - Lane Number
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.selectClipAtLane(whichLane)
 	local content = fcp:timeline():contents()
 	local playheadX = content:playhead():getPosition()

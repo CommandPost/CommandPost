@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === finalcutpro.preferences.panels.finalcutpro ===
+--- === plugins.finalcutpro.preferences.panels.finalcutpro ===
 ---
 --- Final Cut Pro Preferences Panel
 

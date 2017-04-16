@@ -1,25 +1,48 @@
--- Imports
-local chooser			= require("hs.chooser")
-local screen			= require("hs.screen")
-local drawing			= require("hs.drawing")
-local timer				= require("hs.timer")
-local inspect			= require("hs.inspect")
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-local choices			= require("cp.choices")
-local fcp				= require("cp.finalcutpro")
-local dialog			= require("cp.dialog")
-local tools				= require("cp.tools")
-local config			= require("cp.config")
+--- === plugins.finalcutpro.timeline.transitions ===
+---
+--- Controls Final Cut Pro's Transitions.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("transitions")
 
--- Constants
-local MAX_SHORTCUTS = 5
+local chooser			= require("hs.chooser")
+local drawing			= require("hs.drawing")
+local inspect			= require("hs.inspect")
+local screen			= require("hs.screen")
+local timer				= require("hs.timer")
 
+local choices			= require("cp.choices")
+local config			= require("cp.config")
+local dialog			= require("cp.dialog")
+local fcp				= require("cp.finalcutpro")
+local tools				= require("cp.tools")
 
--- Effects Action
-local action = {}
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local PRIORITY 			= 2000
+local MAX_SHORTCUTS 	= 5
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
+
+local action = {}
 
 function action.init(actionmanager)
 	action._manager = actionmanager
@@ -79,12 +102,6 @@ end
 function action.reset()
 	action._choices = nil
 end
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 
 function mod.getShortcuts()
 	return config.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
@@ -377,8 +394,6 @@ end
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 2000
-
 local plugin = {
 	id = "finalcutpro.timeline.transitions",
 	group = "finalcutpro",
@@ -390,6 +405,9 @@ local plugin = {
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 	local fcpxRunning = fcp:isRunning()
 	mod.touchbar = deps.touchbar

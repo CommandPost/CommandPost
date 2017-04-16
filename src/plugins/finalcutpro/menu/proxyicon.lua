@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === finalcutpro.menu.proxyicon ===
+--- === plugins.finalcutpro.menu.proxyicon ===
 ---
 --- Final Cut Pro Proxy Icon Plugin.
 
@@ -38,7 +38,8 @@ mod.PROXY_ICON			= "🔴"
 mod.ORIGINAL_QUALITY	= 5
 mod.ORIGINAL_ICON		= "🔵"
 
---- finalcutpro.menu.proxyicon.toggleEnableProxyMenuIcon() -> none
+--- plugins.finalcutpro.menu.proxyicon.toggleEnableProxyMenuIcon() -> none
+--- Function
 --- Toggles the Enable Proxy Menu Icon
 ---
 --- Parameters:
@@ -46,14 +47,14 @@ mod.ORIGINAL_ICON		= "🔵"
 ---
 --- Returns:
 ---  * None
----
 function mod.toggleEnableProxyMenuIcon()
 	local enableProxyMenuIcon = config.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 	config.set("enableProxyMenuIcon", not enableProxyMenuIcon)
 	mod.menuManager:updateMenubarIcon()
 end
 
---- finalcutpro.menu.proxyicon.getEnableProxyMenuIcon() -> string
+--- plugins.finalcutpro.menu.proxyicon.getEnableProxyMenuIcon() -> string
+--- Function
 --- Generates the Proxy Title
 ---
 --- Parameters:
@@ -61,12 +62,12 @@ end
 ---
 --- Returns:
 ---  * String containing the Proxy Title
----
 function mod.getEnableProxyMenuIcon()
 	return config.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 end
 
---- finalcutpro.menu.proxyicon.generateProxyTitle() -> string
+--- plugins.finalcutpro.menu.proxyicon.generateProxyTitle() -> string
+--- Function
 --- Generates the Proxy Title
 ---
 --- Parameters:
@@ -74,7 +75,6 @@ end
 ---
 --- Returns:
 ---  * String containing the Proxy Title
----
 function mod.generateProxyTitle()
 
 	if mod.getEnableProxyMenuIcon() then
@@ -92,11 +92,7 @@ end
 
 --------------------------------------------------------------------------------
 --
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
---
---------------------------------------------------------------------------------
 --
 --------------------------------------------------------------------------------
 local plugin = {

@@ -1,14 +1,27 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.multicam ===
+---
+--- Multicam Tools.
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp								= require("cp.finalcutpro")
-
 local log								= require("hs.logger").new("multicam")
 
--- Constants:
+local fcp								= require("cp.finalcutpro")
 
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 local MAX_ANGLES 						= 16
 local ANGLE_TYPES 						= {"Video", "Audio", "Both"}
 
@@ -17,9 +30,18 @@ local ANGLE_TYPES 						= {"Video", "Audio", "Both"}
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
+--- plugins.finalcutpro.timeline.multicam.cutAndSwitchMulticam(whichMode, whichAngle) -> boolean
+--- Function
+--- Cut & Switch Multicam.
+---
+--- Parameters:
+---  * whichMode - "Audio", "Video" or "Both" as string
+---  * whichAngle - Number of Angle
+---
+--- Returns:
+---  * None
 function mod.cutAndSwitchMulticam(whichMode, whichAngle)
 
 	if whichMode == "Audio" then

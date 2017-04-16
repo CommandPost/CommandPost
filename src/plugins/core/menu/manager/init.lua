@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.menu.manager ===
+--- === plugins.core.menu.manager ===
 ---
 --- Menu Manager Plugin.
 
@@ -42,7 +42,8 @@ manager.rootSection = section:new()
 
 manager.titleSuffix	= {}
 
---- core.menu.manager.init() -> none
+--- plugins.core.menu.manager.init() -> none
+--- Function
 --- Initialises the module.
 ---
 --- Parameters:
@@ -50,7 +51,6 @@ manager.titleSuffix	= {}
 ---
 --- Returns:
 ---  * None
----
 function manager.init()
 	-------------------------------------------------------------------------------
 	-- Set up Menubar:
@@ -72,7 +72,8 @@ function manager.init()
 	return manager
 end
 
---- core.menu.manager.disable(priority) -> menubaritem
+--- plugins.core.menu.manager.disable(priority) -> menubaritem
+--- Function
 --- Removes the menu from the system menu bar.
 ---
 --- Parameters:
@@ -86,7 +87,8 @@ function manager.disable()
 	end
 end
 
---- core.menu.manager.enable(priority) -> menubaritem
+--- plugins.core.menu.manager.enable(priority) -> menubaritem
+--- Function
 --- Returns the previously removed menu back to the system menu bar.
 ---
 --- Parameters:
@@ -100,7 +102,8 @@ function manager.enable()
 	end
 end
 
---- core.menu.manager.updateMenubarIcon(priority) -> none
+--- plugins.core.menu.manager.updateMenubarIcon(priority) -> none
+--- Function
 --- Updates the Menubar Icon
 ---
 --- Parameters:
@@ -108,7 +111,6 @@ end
 ---
 --- Returns:
 ---  * None
----
 function manager.updateMenubarIcon()
 
 	local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
@@ -143,7 +145,8 @@ function manager.updateMenubarIcon()
 
 end
 
---- core.menu.manager.addSection(priority) -> section
+--- plugins.core.menu.manager.addSection(priority) -> section
+--- Function
 --- Creates a new menu section, which can have items and sub-menus added to it.
 ---
 --- Parameters:
@@ -151,12 +154,12 @@ end
 ---
 --- Returns:
 ---  * section - The section that was created.
----
 function manager.addSection(priority)
 	return manager.rootSection:addSection(priority)
 end
 
---- core.menu.manager.addTitleSuffix(fnTitleSuffix)
+--- plugins.core.menu.manager.addTitleSuffix(fnTitleSuffix)
+--- Function
 --- Allows you to add a custom Suffix to the Menubar Title
 ---
 --- Parameters:
@@ -164,14 +167,14 @@ end
 ---
 --- Returns:
 ---  * None
----
 function manager.addTitleSuffix(fnTitleSuffix)
 
 	manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
 
 end
 
---- core.menu.manager.generateMenuTable()
+--- plugins.core.menu.manager.generateMenuTable()
+--- Function
 --- Generates the Menu Table
 ---
 --- Parameters:
@@ -179,18 +182,13 @@ end
 ---
 --- Returns:
 ---  * The Menu Table
----
 function manager.generateMenuTable()
 	return manager.rootSection:generateMenuTable()
 end
 
 --------------------------------------------------------------------------------
 --
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
---
---------------------------------------------------------------------------------
 --
 --------------------------------------------------------------------------------
 local plugin = {

@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.sharing.xml ===
+---
+--- Shared XML Plugin.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -278,7 +282,7 @@ function mod:_notify(type, ...)
 	end
 end
 
---- finalcutpro.sharing.xml.shareXML() -> none
+--- plugins.finalcutpro.sharing.xml.shareXML() -> none
 --- Function
 --- Share XML
 ---

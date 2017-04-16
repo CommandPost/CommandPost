@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.console ===
+---
+--- CommandPost Console
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local chooser			= require("hs.chooser")
 local drawing 			= require("hs.drawing")
 local fnutils 			= require("hs.fnutils")
@@ -14,8 +29,11 @@ local config			= require("cp.config")
 
 local log				= require("hs.logger").new("console")
 
--- Constants
-
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 local PRIORITY = 11000
 
 --------------------------------------------------------------------------------
@@ -23,7 +41,6 @@ local PRIORITY = 11000
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
 mod.mainChooser			= nil 		-- the actual hs.chooser
@@ -163,9 +180,9 @@ function mod.showChooser(chooser)
 	if not mod.isEnabled() then
 		return false
 	end
-	
+
 	mod.hide()
-	
+
 	mod._frontApp = application.frontmostApplication()
 
 	--------------------------------------------------------------------------------
@@ -195,7 +212,7 @@ function mod.showChooser(chooser)
 	-- Show Console:
 	--------------------------------------------------------------------------------
 	chooser:show()
-	
+
 	return true
 end
 
@@ -247,7 +264,7 @@ end
 -- CHOOSER RIGHT CLICK:
 --------------------------------------------------------------------------------
 function mod.rightClickAction(index)
-	
+
 	local chooser = mod.activeChooser
 
 	--------------------------------------------------------------------------------
@@ -264,7 +281,7 @@ function mod.rightClickAction(index)
 
 	if choice then
 		local isFavorite = mod.actionmanager.isFavorite(choice.id)
-		
+
 		choiceMenu[#choiceMenu + 1] = { title = string.upper(i18n("highlightedItem")) .. ":", disabled = true }
 		if isFavorite then
 			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceUnfavorite"), fn = function()
@@ -279,7 +296,7 @@ function mod.rightClickAction(index)
 				chooser:show()
 			end }
 		end
-		
+
 		local isHidden = mod.actionmanager.isHidden(choice.id)
 		if isHidden then
 			choiceMenu[#choiceMenu + 1] = { title = i18n("consoleChoiceUnhide"), fn = function()
@@ -324,16 +341,16 @@ function plugin.init(deps)
 		:groupedBy("commandPost")
 		:whenActivated(function() mod.show() end)
 		:activatedBy():ctrl("space")
-		
+
 	-- Add the 'Console' menu items
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
-	
+
 	menu:addItem(1000, function()
 		return { title = i18n("enableConsole"),	fn = mod.toggleEnabled, checked = mod.isEnabled() }
 	end)
-	
+
 	menu:addSeparator(2000)
-	
+
 	menu:addItems(3000, function()
 		return {
 			{ title = i18n("rememberLastQuery"),	fn=mod.toggleLastQueryRemembered, checked = mod.isLastQueryRemembered(),  },
@@ -341,39 +358,39 @@ function plugin.init(deps)
 			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}
 	end)
-	
+
 	-- The 'Sections' menu
 	local sections = menu:addMenu(5000, function() return i18n("consoleSections") end)
-	
+
 	sections:addItems(2000, function()
 		local actionItems = {}
 		local allEnabled = true
 		local allDisabled = true
-		
+
 		for id,action in pairs(deps.actionmanager.getActions()) do
 			local enabled = action.isEnabled()
 			allEnabled = allEnabled and enabled
 			allDisabled = allDisabled and not enabled
-			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,	
+			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,
 				fn=function()
 					action.toggleEnabled()
 					deps.actionmanager.refresh()
 				end,
 				checked = enabled, }
 		end
-		
+
 		table.sort(actionItems, function(a, b) return a.title < b.title end)
-		
+
 		local allItems = {
 			{ title = i18n("consoleSectionsShowAll"), fn = mod.actionmanager.enableAllActions, disabled = allEnabled },
 			{ title = i18n("consoleSectionsHideAll"), fn = mod.actionmanager.disableAllActions, disabled = allDisabled },
 			{ title = "-" }
 		}
 		fnutils.concat(allItems, actionItems)
-		
+
 		return allItems
 	end)
-	
+
 	return mod
 
 end

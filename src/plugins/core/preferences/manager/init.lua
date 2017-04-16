@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.manager ===
+--- === plugins.core.preferences.manager ===
 ---
 --- Manager for the CommandPost Preferences Panel.
 
@@ -149,7 +149,7 @@ function mod.new()
 
 end
 
---- core.preferences.manager.showPreferences() -> boolean
+--- plugins.core.preferences.manager.showPreferences() -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
@@ -158,7 +158,6 @@ end
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
----
 function mod.show()
 
 	if mod.webview == nil then

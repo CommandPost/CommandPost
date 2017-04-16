@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.general ===
+--- === plugins.core.preferences.general ===
 ---
 --- General Preferences Panel.
 
@@ -36,7 +36,7 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 --------------------------------------------------------------------------------
 local mod = {}
 
---- core.preferences.general.toggleDisplayMenubarAsIcon() -> none
+--- plugins.core.preferences.general.toggleDisplayMenubarAsIcon() -> none
 --- Function
 --- Toggles the menubar display icon from icon to text value and vice versa.
 ---
@@ -51,7 +51,7 @@ function mod.toggleDisplayMenubarAsIcon()
 	mod.menuManager:updateMenubarIcon()
 end
 
---- core.preferences.general.getDisplayMenubarAsIcon() -> boolean
+--- plugins.core.preferences.general.getDisplayMenubarAsIcon() -> boolean
 --- Function
 --- Returns whether the menubar is display as an icon or not.
 ---
@@ -64,7 +64,7 @@ function mod.getDisplayMenubarAsIcon()
 	return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
 end
 
---- core.preferences.general.toggleAutoLaunch() -> boolean
+--- plugins.core.preferences.general.toggleAutoLaunch() -> boolean
 --- Function
 --- Toggles the "Launch on Login" status for CommandPost.
 ---
@@ -78,7 +78,7 @@ function mod.toggleAutoLaunch()
 	mod._autoLaunch = not mod._autoLaunch
 end
 
---- core.preferences.general.toggleUploadCrashData() -> boolean
+--- plugins.core.preferences.general.toggleUploadCrashData() -> boolean
 --- Function
 --- Toggles the "Upload Crash Data" status for CommandPost.
 ---
@@ -92,7 +92,7 @@ function mod.toggleUploadCrashData()
 	mod._uploadCrashData = not mod._uploadCrashData
 end
 
---- core.preferences.general.openPrivacyPolicy() -> none
+--- plugins.core.preferences.general.openPrivacyPolicy() -> none
 --- Function
 --- Opens the CommandPost Privacy Policy in your browser.
 ---
