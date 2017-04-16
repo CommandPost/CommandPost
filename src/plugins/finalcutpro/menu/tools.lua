@@ -79,9 +79,13 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY, function()
-		return { title = i18n("showTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
-	end)
+	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+		{
+			label = i18n("showTools"),
+			onchange = toggleSectionDisabled,
+			checked = function() return not isSectionDisabled() end
+		}
+	)
 
 	return shortcuts
 end

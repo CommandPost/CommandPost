@@ -406,16 +406,18 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
-	deps.finalcutpro:addHeading(50, function()
-		return { title = "<br />".. i18n("keyboardShortcuts") .. ":" }
-	end)
+	deps.finalcutpro:addHeading(50, i18n("keyboardShortcuts") .. ":")
 
-	:addCheckbox(51, function()
-		return { title = i18n("enableHacksShortcuts"),	fn = function()
-			mod.toggleEditable()
-			mod._shortcuts.updateCustomShortcutsVisibility()
-		end, checked=mod.isEditable() }
-	end, "enableCustomShortcuts", "enableCustomShortcuts")
+	:addCheckbox(51,
+		{
+			label		= i18n("enableHacksShortcuts"),
+			onchange	= function()
+				mod.toggleEditable()
+				mod._shortcuts.updateCustomShortcutsVisibility()
+			end,
+			checked=mod.isEditable
+		}
+	)
 
 	return mod
 

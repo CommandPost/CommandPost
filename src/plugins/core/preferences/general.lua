@@ -46,8 +46,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.toggleDisplayMenubarAsIcon()
-	local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-	config.set("displayMenubarAsIcon", not displayMenubarAsIcon)
+	config.set("displayMenubarAsIcon", not mod.getDisplayMenubarAsIcon())
 	mod.menuManager:updateMenubarIcon()
 end
 
@@ -62,34 +61,6 @@ end
 ---  * `true` if set to display the menubar as an icon other `false` if displaying menubar as text.
 function mod.getDisplayMenubarAsIcon()
 	return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-end
-
---- core.preferences.general.toggleAutoLaunch() -> boolean
---- Function
---- Toggles the "Launch on Login" status for CommandPost.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleAutoLaunch()
-	hs.autoLaunch(not mod._autoLaunch)
-	mod._autoLaunch = not mod._autoLaunch
-end
-
---- core.preferences.general.toggleUploadCrashData() -> boolean
---- Function
---- Toggles the "Upload Crash Data" status for CommandPost.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleUploadCrashData()
-	hs.uploadCrashData(not mod._uploadCrashData)
-	mod._uploadCrashData = not mod._uploadCrashData
 end
 
 --- core.preferences.general.openPrivacyPolicy() -> none
@@ -117,7 +88,6 @@ local plugin = {
 		["core.preferences.panels.general"]	= "general",
 		["core.preferences.panels.menubar"]	= "menubar",
 		["core.menu.manager"]				= "menuManager",
-		["finalcutpro.hacks.shortcuts"]		= "fcpShortcuts",
 	}
 }
 --------------------------------------------------------------------------------
@@ -129,7 +99,6 @@ function plugin.init(deps)
 	-- Setup Dependencies:
 	--------------------------------------------------------------------------------
 	mod.menuManager 		= deps.menuManager
-	mod.hacksShortcuts 		= deps.hacksShortcuts
 
 	--------------------------------------------------------------------------------
 	-- Cache Values:
@@ -140,40 +109,50 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(1, function()
-		return { title = i18n("general") .. ":" }
-	end)
+	deps.general:addHeading(1, i18n("general") .. ":")
 
-	:addCheckbox(3, function()
-		return { title = i18n("launchAtStartup"), fn = mod.toggleAutoLaunch, checked = mod._autoLaunch }
-	end)
+	:addCheckbox(3,
+		{ 
+			label		= i18n("launchAtStartup"),
+			checked		= hs.autoLaunch,
+			onchange	= function(id, params) hs.autoLaunch(params.checked) end,
+		}
+	)
 
-	:addHeading(50, function()
-		return { title = "<br />" .. i18n("privacy") .. ":" }
-	end)
+	:addHeading(50, i18n("privacy") .. ":" )
 
-	:addCheckbox(51, function()
-		return { title = i18n("sendCrashData"),	fn = mod.toggleUploadCrashData, checked = mod._uploadCrashData }
-	end)
+	:addCheckbox(51,
+		{
+			label		= i18n("sendCrashData"),	
+			checked		= hs.uploadCrashData,
+			onchange	= function(id, params) hs.uploadCrashData(params.checked) end,
+		}
+	)
 
-	:addButton(52, function()
-		return { title = i18n("openPrivacyPolicy"),	fn = mod.openPrivacyPolicy }
-	end, 150)
+	:addButton(52,
+		{
+			label 		= i18n("openPrivacyPolicy"),
+			width		= 150,
+			onclick		= mod.openPrivacyPolicy,
+		}
+	)
 
-	--------------------------------------------------------------------------------
-	-- Setup Menubar Preferences Panel:
-	--------------------------------------------------------------------------------
-	deps.menubar:addHeading(20, function()
-		return { title = i18n("appearance") .. ":" }
-	end)
+	-- --------------------------------------------------------------------------------
+	-- -- Setup Menubar Preferences Panel:
+	-- --------------------------------------------------------------------------------
+	deps.menubar:addHeading(20, i18n("appearance") .. ":")
 
-	:addCheckbox(21, function()
-		return { title = i18n("displayThisMenuAsIcon"),	fn = mod.toggleDisplayMenubarAsIcon, checked = mod.getDisplayMenubarAsIcon() }
-	end)
+	:addCheckbox(21,
+		{
+			label = i18n("displayThisMenuAsIcon"),	
+			onchange = mod.toggleDisplayMenubarAsIcon,
+			checked = mod.getDisplayMenubarAsIcon,
+		}
+	)
 
-	:addHeading(24, function()
-		return { title = "<br />" .. i18n("sections") .. ":" }
-	end)
+	:addHeading(24, i18n("sections") .. ":")
+	
+	return mod
 
 end
 

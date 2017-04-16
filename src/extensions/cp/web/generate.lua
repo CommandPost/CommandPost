@@ -94,8 +94,7 @@ end
 ---
 function mod.checkbox(data, customTrigger, customID)
 
-	local result = data.title
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or data.title
 
 	local isChecked = data.checked and "checked" or ""
 
@@ -109,13 +108,13 @@ function mod.checkbox(data, customTrigger, customID)
 		checkbox.onchange = function (){
 			try {
 				var checked = checkbox.checked;
-				var result = ["{{ result }}", checked];
+				var result = ["{{ value }}", checked];
 				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	]], { id = id, result = result, name = mod._webviewLabel })
+	]], { id = id, value = value, name = mod._webviewLabel })
 
 	return result
 
@@ -165,8 +164,7 @@ end
 ---  * String containing the HTML
 function mod.button(data, customTrigger, customWidth, customID)
 
-	local result = data.title
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or data.title
 
 	local id = "button" .. randomWord(20)
 	if customID then id = customID end
@@ -182,13 +180,13 @@ function mod.button(data, customTrigger, customWidth, customID)
 		var button = document.getElementById("{{ id }}");
 		button.onclick = function (){
 			try {
-				var result = ["{{ result }}"];
+				var result = ["{{ value }}"];
 				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	]], { id=id, result=result, name=mod._webviewLabel})
+	]], { id=id, value=value, name=mod._webviewLabel})
 
 	return result
 
@@ -207,8 +205,7 @@ end
 ---
 function mod.dropdown(title, data, customTrigger)
 
-	local result = title
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or title
 
 	if title ~= "" then title = title .. ": " end
 
@@ -230,13 +227,13 @@ function mod.dropdown(title, data, customTrigger)
 		dropdown.onchange = function (){
 			try {
 				var dropdownResult = document.getElementById("{{ id }}").value;
-				var result = ["{{ result }}", dropdownResult];
+				var result = ["{{ value }}", dropdownResult];
 				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	]], { id=id, result=result, name=mod._webviewLabel })
+	]], { id=id, value=value, name=mod._webviewLabel })
 
 	return result
 

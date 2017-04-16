@@ -31,6 +31,10 @@
 --- ```
 ---
 --- Any tag name can be generated, along with any attribute. The results are correctly escaped.
+--- There are three 'special' tag names:
+---  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content
+---  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment
+---  * `_`		- (single underscore) will generate a plain text block.
 
 local log			= require "hs.logger" .new "html"
 local template 		= require "resty.template"
@@ -43,6 +47,10 @@ local type			= type
 local block = {}
 block.__index = block
 
+local function isBlock(value)
+	return value and type(value) == "table" and getmetatable(value) == block
+end
+
 -- Evalutates the content, converting it to a string.
 local function evaluate(content)
 	local contentType = type(content)
@@ -53,11 +61,11 @@ local function evaluate(content)
 				result = result .. evaluate(item)
 			end
 			return result
-		elseif getmetatable(content) == block then
+		elseif isBlock(content) then
 			return tostring(content)
 		end
 	elseif contentType == "function" then
-		return evaluate(content())
+		return tostring(content())
 	end
 	
 	if content then
@@ -67,7 +75,7 @@ local function evaluate(content)
 	end
 end
 
-function block:evaluate()
+function block:tostring()
 	return block:__tostring()
 end
 
@@ -81,7 +89,9 @@ function block:__tostring()
 		r[#r + 1] = evaluate(metadata.pre)
 	end
 
-	if name then
+	if metadata.open then
+		r[#r + 1] = metadata.open
+	else
 	    r[#r + 1] = "<"
 	    r[#r + 1] = name
 	    if attr then
@@ -100,21 +110,22 @@ function block:__tostring()
 	            r[#r + 1] = concat(a, " ")
 	        end
 	    end
+		if content then
+			r[#r + 1] = ">"
+		else
+			r[#r + 1] = " />"
+		end
 	end
     if content then
-		if name then
-			r[#r + 1] = ">"
-		end
-		
 		r[#r + 1] = evaluate(content)
 		
-		if name then
+		if metadata.close then
+			r[#r + 1] = metadata.close
+		else
 	        r[#r + 1] = "</"
 	        r[#r + 1] = name
 	        r[#r + 1] = ">"
 		end
-	elseif name then
-        r[#r + 1] = " />"
     end
 	
 	if #metadata.post > 0 then
@@ -148,7 +159,7 @@ end
 
 -- Concatonates the block with another chunk of content.
 function block.__concat(left, right)
-	if type(left) == "table" and getmetatable(left) == block then
+	if isBlock(left) then
 		local post = left._metadata.post
 		post[#post+1] = right
 		return left
@@ -161,11 +172,37 @@ end
 
 block.__call = block.append
 
+local function openTag(name)
+	if name == "CDATA" then
+		return "<![CDATA["
+	elseif name == "__" then
+		return "<!-- "
+	elseif name == "_" then
+		return ""
+	else
+		return nil
+	end
+end
+
+local function closeTag(name)
+	if name == "CDATA" then
+		return "]]>"
+	elseif name == "__" then
+		return " -->"
+	elseif name == "_" then
+		return ""
+	else
+		return nil
+	end
+end
+
 -- Creates a new block.
 function block.new(name, attr)
 	local o = {
 		_metadata	= {
 			name	=	name,
+			open	=	openTag(name),
+			close	=	closeTag(name),
 			attr	=	attr,
 			pre		=	{},
 			post	=	{},
@@ -174,16 +211,21 @@ function block.new(name, attr)
 	return setmetatable(o, block)
 end
 
-local html = { __index = function(_, name)
+local html = {}
+html.__index = function(_, name)
     return function(param)
 		local pType = type(param)
-        if pType ~= "table" or type(param) == "table" and getmetatable(param) == block then
+        if pType ~= "table" or isBlock(param) then
 			-- it's content, not attributes
 			return block.new(name)(param)
 		else
             return block.new(name, param)
         end
     end
-end }
+end
+
+html.__call = function(_, content)
+	return isBlock(content) and content or block.new("_")(content)
+end
 
 return setmetatable(html, html)

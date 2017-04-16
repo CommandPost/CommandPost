@@ -25,19 +25,19 @@ local SETTING 					= "menubarTimelineEnabled"
 --------------------------------------------------------------------------------
 -- LOCAL FUNCTIONS:
 --------------------------------------------------------------------------------
-	local function isSectionDisabled()
-		local setting = config.get(SETTING)
-		if setting ~= nil then
-			return not setting
-		else
-			return false
-		end
+local function isSectionDisabled()
+	local setting = config.get(SETTING)
+	if setting ~= nil then
+		return not setting
+	else
+		return false
 	end
+end
 
-	local function toggleSectionDisabled()
-		local menubarEnabled = config.get(SETTING)
-		config.set(SETTING, not menubarEnabled)
-	end
+local function toggleSectionDisabled()
+	local menubarEnabled = config.get(SETTING)
+	config.set(SETTING, not menubarEnabled)
+end
 
 --------------------------------------------------------------------------------
 --
@@ -79,9 +79,13 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY, function()
-		return { title = i18n("show") .. " " .. i18n("timeline"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
-	end)
+	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+		{
+			label = i18n("show") .. " " .. i18n("timeline"),
+			onchange = toggleSectionDisabled,
+			checked = function() return not isSectionDisabled() end,
+		}
+	)
 
 	return shortcuts
 end

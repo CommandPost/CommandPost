@@ -27,16 +27,19 @@
 				var modifiers = document.getElementById("modifiers_{{ item.shortcutId }}");
 				var keyCode = document.getElementById("keyCode_{{ item.shortcutId }}");
 				var handler = function () {
-					console.log("modifiers.id: " + modifiers.id)
-					console.log("modifiers.value: " + modifiers.value)
+					console.log("modifiers.id: " + modifiers.id);
+					console.log("modifiers.value: " + modifiers.value);
+					console.log("keyCode.value: " + keyCode.value);
 					try {
 						var result = {
-							action: "updateShortcut",
-							group: "{{ item.groupId }}",
-							command: "{{ item.command:id() }}",
-							shortcut: {{ (item.shortcutIndex or 0) }},
-							modifiers: modifiers.value,
-							keyCode: keyCode.value,
+							id: {{ "updateShortcut" }},
+							params: {
+								group: "{{ item.groupId }}",
+								command: "{{ item.command:id() }}",
+								shortcut: {{ (item.shortcutIndex or 0) }},
+								modifiers: modifiers.value,
+								keyCode: keyCode.value,
+							}
 						}
 						webkit.messageHandlers.{{ context.webviewLabel }}.postMessage(result);
 					} catch(err) {

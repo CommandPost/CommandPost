@@ -122,13 +122,15 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.menubar:addHeading(30, function()
-		return { title = "<br />Menubar:" }
-	end)
+	deps.menubar:addHeading(30, i18n("menubarHeading"))
 
-	:addCheckbox(31, function()
-		return { title = i18n("displayProxyOriginalIcon"),	fn = mod.toggleEnableProxyMenuIcon, checked = mod.getEnableProxyMenuIcon() }
-	end)
+	:addCheckbox(31,
+		{
+			label = i18n("displayProxyOriginalIcon"),
+			onchange = mod.toggleEnableProxyMenuIcon,
+			checked = mod.getEnableProxyMenuIcon,
+		}
+	)
 
 end
 

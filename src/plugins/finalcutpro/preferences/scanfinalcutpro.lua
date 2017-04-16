@@ -100,11 +100,11 @@ local plugin = {
 	id = "finalcutpro.preferences.scanfinalcutpro",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.timeline.effects"]			= "effects",
-		["finalcutpro.timeline.generators"]			= "generators",
-		["finalcutpro.timeline.titles"]				= "titles",
-		["finalcutpro.timeline.transitions"]		= "transitions",
-		["finalcutpro.preferences.panels.finalcutpro"]			= "finalcutpro",
+		["finalcutpro.timeline.effects"]				= "effects",
+		["finalcutpro.timeline.generators"]				= "generators",
+		["finalcutpro.timeline.titles"]					= "titles",
+		["finalcutpro.timeline.transitions"]			= "transitions",
+		["finalcutpro.preferences.panels.finalcutpro"]	= "finalcutpro",
 	}
 }
 
@@ -115,13 +115,14 @@ local plugin = {
 
 		mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-		deps.finalcutpro:addHeading(10, function()
-			return { title = "Setup:" }
-		end)
+		deps.finalcutpro:addHeading(10, i18n("setupHeading") .. ":" )
 
-		:addButton(11, function()
-			return { title = i18n("scanFinalCutPro"),	fn = mod.scanFinalCutPro }
-		end)
+		:addButton(11,
+			{
+				label = i18n("scanFinalCutPro"),
+				onclick = mod.scanFinalCutPro,
+			}
+		)
 
 		return mod
 	end

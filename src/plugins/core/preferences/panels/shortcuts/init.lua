@@ -26,6 +26,7 @@ local config									= require("cp.config")
 local commands									= require("cp.commands")
 local dialog									= require("cp.dialog")
 local generate									= require("cp.web.generate")
+local html										= require("cp.web.html")
 
 local _											= require("moses")
 
@@ -124,6 +125,42 @@ local function controllerCallback(message)
 	elseif body[1] == "resetShortcuts" then
 		resetShortcuts()
 	end
+end
+
+local function updateShortcut(id, params)
+	--------------------------------------------------------------------------------
+	-- Values from Callback:
+	--------------------------------------------------------------------------------
+	local modifiers = split(params.modifiers, ":")
+
+	--------------------------------------------------------------------------------
+	-- Setup Controller:
+	--------------------------------------------------------------------------------
+	local group = commands.group(params.group)
+
+	--------------------------------------------------------------------------------
+	-- Get the correct Command:
+	--------------------------------------------------------------------------------
+	local theCommand = group:get(params.command)
+
+	if theCommand then
+		--------------------------------------------------------------------------------
+		-- Clear Previous Shortcuts:
+		--------------------------------------------------------------------------------
+		theCommand:deleteShortcuts()
+
+		--------------------------------------------------------------------------------
+		-- Setup New Shortcut:
+		--------------------------------------------------------------------------------
+		if body.keyCode and body.keyCode ~= "" then
+			theCommand:activatedBy(modifiers, params.keyCode)
+		end
+		
+		commands.saveToFile(DEFAULT_SHORTCUTS)
+	else
+		log.wf("Unable to find command to update: %s:%s", params.group, params.command)
+	end
+	
 end
 
 --------------------------------------------------------------------------------
@@ -321,24 +358,26 @@ end
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
 
-	mod.allKeyCodes = getAllKeyCodes()
+	mod.allKeyCodes		= getAllKeyCodes()
 
-	mod._manager = deps.manager
-	mod._hacksShortcuts = deps.hacksShortcuts
+	mod._manager		= deps.manager
+	mod._hacksShortcuts	= deps.hacksShortcuts
 
-	mod._webviewLabel = deps.manager.getLabel()
+	mod._webviewLabel	= deps.manager.getLabel()
 
-	mod._env = env
+	mod._env			= env
 
-	local id 		= "shortcuts"
-	local label 	= "Shortcuts"
-	local image		= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")
-	local priority	= 2030
-	local tooltip	= "Shortcuts Panel"
-	local contentFn	= generateContent
-	local callbackFn 	= controllerCallback
-
-	deps.manager.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+	mod._panel 			=  deps.manager.addPanel({
+		priority 		= 2030,
+		id				= "shortcuts",
+		label			= i18n("shortcutsPanelLabel"),
+		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
+		tooltip			= i18n("shortcutsPanelTooltip"),
+	})
+	
+	mod._panel:addContent(10, html(generateContent))
+	
+	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 
 	return mod
 

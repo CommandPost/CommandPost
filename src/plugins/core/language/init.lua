@@ -35,84 +35,104 @@ local LANGUAGE_PATH = config.languagePath
 --------------------------------------------------------------------------------
 local mod = {}
 
-	mod.installedLanguages = {}
+mod.installedLanguages = {}
 
-	--------------------------------------------------------------------------------
-	-- LOAD LANGUAGES:
-	--------------------------------------------------------------------------------
-	function mod.loadCommandPostLanguages()
-		--log.df("Loading CommandPost Languages")
-		for file in fs.dir(LANGUAGE_PATH) do
-			if file:sub(-4) == ".lua" then
-				local languageFile = io.open(LANGUAGE_PATH .. file, "r")
-				if languageFile ~= nil then
-					local languageFileData = languageFile:read("*all")
-					if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
-						local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
-						local languageID = string.sub(file, 1, -5)
-						mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
-					end
-					languageFile:close()
+--------------------------------------------------------------------------------
+-- LOAD LANGUAGES:
+--------------------------------------------------------------------------------
+function mod.loadCommandPostLanguages()
+	--log.df("Loading CommandPost Languages")
+	for file in fs.dir(LANGUAGE_PATH) do
+		if file:sub(-4) == ".lua" then
+			local languageFile = io.open(LANGUAGE_PATH .. file, "r")
+			if languageFile ~= nil then
+				local languageFileData = languageFile:read("*all")
+				if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
+					local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
+					local languageID = string.sub(file, 1, -5)
+					mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
 				end
+				languageFile:close()
 			end
 		end
-		table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
 	end
+	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
+end
 
-	--------------------------------------------------------------------------------
-	-- GET LANGUAGES:
-	--------------------------------------------------------------------------------
-	function mod.getCommandPostLanguages()
-		if #mod.installedLanguages == 0 then
-			mod.loadCommandPostLanguages()
-		end
-		return mod.installedLanguages
+--------------------------------------------------------------------------------
+-- GET LANGUAGES:
+--------------------------------------------------------------------------------
+function mod.getCommandPostLanguages()
+	if #mod.installedLanguages == 0 then
+		mod.loadCommandPostLanguages()
 	end
+	return mod.installedLanguages
+end
 
-	--------------------------------------------------------------------------------
-	-- GET COMMANDPOST LANGUAGES MENU:
-	--------------------------------------------------------------------------------
-	local function getCommandPostLanguagesMenu()
-		local userLocale = config.get("language", nil)
+function mod.getUserLocale()
+	local userLocale = config.get("language", tools.userLocale())
+	if string.find(userLocale, "_") ~= nil then
+		userLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+	end
+	return userLocale
+end
 
-		if mod._lastUserLocale ~= nil and mod._lastUserLocale == userLocale then
-			return mod._lastCPLanguageCache
+--------------------------------------------------------------------------------
+-- GET COMMANDPOST LANGUAGES MENU:
+--------------------------------------------------------------------------------
+local function getCommandPostLanguagesMenu()
+	local userLocale = config.get("language", nil)
+
+	if mod._lastUserLocale ~= nil and mod._lastUserLocale == userLocale then
+		return mod._lastCPLanguageCache
+	else
+		--log.df("Not using CommandPost Language Menu Cache")
+
+		if userLocale == nil then userLocale = tools.userLocale() end
+
+		local basicUserLocale = nil
+		if string.find(userLocale, "_") ~= nil then
+			basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
 		else
-			--log.df("Not using CommandPost Language Menu Cache")
-
-			if userLocale == nil then userLocale = tools.userLocale() end
-
-			local basicUserLocale = nil
-			if string.find(userLocale, "_") ~= nil then
-				basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
-			else
-				basicUserLocale = userLocale
-			end
-
-			local selectedLanguage = nil
-			local settingsLanguage = {}
-			local commandPostLanguages = mod.getCommandPostLanguages()
-			for i,language in ipairs(commandPostLanguages) do
-
-				local checkedLanguage = (userLocale == language["id"] or basicUserLocale == language["id"])
-				if checkedLanguage then
-					--log.df("Setting CommandPost Language to: %s", language["id"])
-					config.set("language", language["id"])
-				end
-
-				settingsLanguage[i] = { title = language["language"], fn = function()
-					config.set("language", language["id"])
-					i18n.setLocale(language["id"])
-				end, checked = checkedLanguage, }
-
-			end
-
-			mod._lastUserLocale = userLocale
-			mod._lastCPLanguageCache = settingsLanguage
-
-			return settingsLanguage
+			basicUserLocale = userLocale
 		end
+
+		local selectedLanguage = nil
+		local settingsLanguage = {}
+		local commandPostLanguages = mod.getCommandPostLanguages()
+		for i,language in ipairs(commandPostLanguages) do
+
+			local checkedLanguage = (userLocale == language["id"] or basicUserLocale == language["id"])
+			if checkedLanguage then
+				--log.df("Setting CommandPost Language to: %s", language["id"])
+				config.set("language", language["id"])
+			end
+
+			settingsLanguage[i] = { title = language["language"], fn = function()
+				config.set("language", language["id"])
+				i18n.setLocale(language["id"])
+			end, checked = checkedLanguage, }
+
+		end
+
+		mod._lastUserLocale = userLocale
+		mod._lastCPLanguageCache = settingsLanguage
+
+		return settingsLanguage
 	end
+end
+
+local function getLanguageOptions()
+	local options = {}
+	local languages = mod.getCommandPostLanguages()
+	for _,language in ipairs(languages) do
+		options[#options+1] = {
+			value = language.id,
+			label = language.language,
+		}
+	end
+	return options
+end
 
 --------------------------------------------------------------------------------
 --
@@ -140,11 +160,16 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(40, function()
-			return { title = "<br />Language:" }
-		end)
+	deps.general:addHeading(40, i18n("languageHeading") .. ":")
 
-	:addDropdown(41, "", getCommandPostLanguagesMenu)
+	:addSelect(41, 
+		{ 
+			label		= i18n("commandPostLanguage"),
+			value		= mod.getUserLocale,
+			options		= getLanguageOptions,
+			required	= true,
+		}
+	)
 
 	return mod
 end
