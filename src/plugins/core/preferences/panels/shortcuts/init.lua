@@ -379,6 +379,7 @@ function mod.init(deps, env)
 		{
 			label		= i18n("resetShortcuts"),
 			onclick		= resetShortcuts,
+			class		= "buttons",
 		}
 	)
 	

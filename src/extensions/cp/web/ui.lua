@@ -139,8 +139,18 @@ function ui.button(params)
 	if params.width then
 		style = "width: " .. params.width .. "px;"
 	end
+	local class = "button"
+	if params.class then
+		class = class .. " " .. params.class
+	end
 
-	local result = html.a { id=params.id, style=style, class="button", href="#", value=params.value } (params.label)
+	local result = html.a {
+		id=params.id, 
+		style=style, 
+		class=class, 
+		href="#", 
+		value=params.value
+	} (params.label)
 
 	return result
 end
@@ -188,47 +198,11 @@ function ui.select(params)
 	end
 	
 	-- create the 
-	return html.select { id = params.id, name = params.id } (optionGenerator, true)
-end
-
-function ui.dropdown(data, id)
-	local generateFn = function(data, id)
-		local title = evaluate(data.title) or ""
-		local value = evaluate(data.value) or title
-		
-		local opts = evaluate(data.options) or {}
-
-		if title ~= "" then title = title .. ": " end
-
-		local options = ""
-
-		for i, v in ipairs(opts) do
-			local selected = v.value == value and "selected" or ""
-			options = options .. html.option { value=v.value, selected } (v.title)
-		end
-
-		local result = title .. html.select { id=id } (options)
-		
-		if data.changeFn and data.handlerId then
-			local handlerId = evaluate(data.handlerId)
-			mod.javascript([[
-				var dropdown = document.getElementById("{{ id }}");
-				dropdown.onchange = function (){
-					try {
-						var dropdownResult = document.getElementById("{{ id }}").value;
-						var result = ["{{ result }}", dropdownResult];
-						webkit.messageHandlers.{{ name }}.postMessage(result);
-					} catch(err) {
-						alert('An error has occurred. Does the controller exist yet?');
-					}
-				}
-			]], { id=id, result=result, name=handlerId })
-		end
-
-		return result	
-	end
-	
-	return ui.new(data, generateFn, id)
+	return html.select {
+		id 		= params.id,
+		name	= params.id,
+		class	= params.class,
+	} (optionGenerator, true)
 end
 
 function ui:id()

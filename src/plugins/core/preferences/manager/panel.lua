@@ -96,6 +96,14 @@ function panel:generateContent()
 	return result
 end
 
+local function getClass(params)
+	local class = "uiItem"
+	if params.class then
+		class = class .. " " .. params.class
+	end
+	return class
+end
+
 --- plugins.core.preferences.manager.panel:addContent(priority, content) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
@@ -151,8 +159,8 @@ function panel:addHandler(event, id, handlerFn, keys)
 	self.manager.addHandler(id, handlerFn)
 end
 
-function panel:addParagraph(priority, content, unescaped)
-	return self:addContent(priority, html.p { class="uiItem" } (content, unescaped))
+function panel:addParagraph(priority, content, unescaped, class)
+	return self:addContent(priority, html.p { class=getClass({class=class}) } (content, unescaped))
 end
 
 --- plugins.core.preferences.manager.panel:addCheckbox(priority, params) -> panel
@@ -183,7 +191,7 @@ function panel:addCheckbox(priority, params)
 		checkbox = html.label ( checkbox .. " " .. label )
 	end
 
-	local content = html.p { class="uiItem" } (	checkbox )
+	local content = html.p { class=getClass(params) } (	checkbox )
 
 	if params.onchange then
 		self:addHandler("onchange", params.id, params.onchange, { "value", "checked" })
@@ -210,7 +218,7 @@ function panel:addButton(priority, params, itemFn, customWidth)
 		self:addHandler("onclick", params.id, params.onclick, { "value" })
 	end
 
-	local content = html.p { class="uiItem" } (ui.button(params))
+	local content = html.p { class=getClass(params) } (ui.button(params))
 
 	return self:addContent( priority, content )
 end
@@ -221,7 +229,7 @@ function panel:addSelect(priority, params)
 	params.id = params.id or uuid()
 
 	-- created the select
-	local select = html.p { class="uiItem" } (
+	local select = html.p { class=getClass(params) } (
 		html(params.label) .. ": " .. ui.select(params)
 	)
 
