@@ -118,7 +118,7 @@
 			<!-- Hidden Fields: -->
 			<input type="hidden" name="script-version" value="{{ appVersion }}">
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
-			<div id="console-output" hidden>{{ consoleOutput }}</div>
+			<div id="console-output" hidden>{* consoleOutput *}</div>
 			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
 			{% for i, v in ipairs(screenshots) do %}
 				<div id="screenshot{{ i }}" hidden>
