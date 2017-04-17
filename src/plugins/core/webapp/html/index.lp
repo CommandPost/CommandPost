@@ -12,12 +12,62 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log 			= hsminweb.log
+
 local eventtap 		= require("hs.eventtap")
 local inspect 		= require("hs.inspect")
 local pasteboard	= require("hs.pasteboard")
 
 local fcp 			= require("cp.finalcutpro")
 local commands 		= require("cp.commands")
+local config 		= require("cp.config")
+local uuid			= require("cp.uuid")
+
+local ARRAY_DELIM = "||"
+local UNDEFINED = "_undefined"
+
+--------------------------------------------------------------------------------
+--
+-- FUNCTIONS:
+--
+--------------------------------------------------------------------------------
+
+local function split(str, pat)
+   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pat
+   local last_end = 1
+   local s, e, cap = str:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+         table.insert(t,cap)
+      end
+      last_end = e+1
+      s, e, cap = str:find(fpat, last_end)
+   end
+   if last_end <= #str then
+      cap = str:sub(last_end)
+      table.insert(t, cap)
+   end
+   return t
+end
+
+local function isNumberString(value)
+	return value:match("^[0-9\\.\\-]$") ~= nil
+end
+
+local function thawParams(params)
+	-- defrost any arrays
+	local thawed = {}
+	for key,value in pairs(params) do
+		if value:find(ARRAY_DELIM) then
+			value = split(value, ARRAY_DELIM)
+		elseif isNumberString(value) then
+			value = tonumber(value)
+		end
+		thawed[key] = value
+	end
+	return thawed
+end
 
 --------------------------------------------------------------------------------
 -- GET COMMANDS:
@@ -62,7 +112,7 @@ if next(queryString) ~= nil then
 
 		if fcp:isShowing() then
 
-			hsminweb.log.df("Adding Marker: %s", markerString)
+			log.df("Adding Marker: %s", markerString)
 
 			fcp:selectMenu("Mark", "Markers", "Add Marker")
 			fcp:selectMenu("Mark", "Markers", "Add Marker")
@@ -73,11 +123,34 @@ if next(queryString) ~= nil then
 			pasteboard.setContents(originalPasteboard)
 
 		else
-			hsminweb.log.df("Final Cut Pro is not active.")
+			log.df("Final Cut Pro is not active.")
+		end
+	elseif queryString["menupath"] then
+		local menupath = queryString["menupath"]
+		if fcp:isShowing() then
+			log.df("Triggering Menu Item: %s", menupath)
+			fcp:selectMenu(table.unpack(thawParams({menupath})[1]))
+		else
+			log.df("Final Cut Pro is not active.")
+		end
+	elseif queryString["keyword"] then
+		local keyword = queryString["keyword"]
+		log.df("Adding Keyword: %s", keyword)
+
+		local keywordEditorOpen = fcp:menuBar():isEnabled("Mark", "Hide Keyword Editor")
+
+		if not keywordEditorOpen then
+			fcp:selectMenu("Mark", "Show Keyword Editor")
 		end
 
+		local originalPasteboard = pasteboard.getContents()
+		pasteboard.setContents(keyword)
+		fcp:selectMenu("Edit", "Paste")
+		eventtap.keyStroke({}, "return")
+		pasteboard.setContents(originalPasteboard)
+
 	else
-		hsminweb.log.df("Unknown Query String: %s", queryString)
+		log.df("Unknown Query String: %s", queryString)
 	end
 end
 
@@ -196,26 +269,40 @@ end
 					<div data-page="index-2" class="page">
 						<div class="page-content">
 
-							<div class="content-block-title">Controls</div>
+							<div class="content-block-title">Playback</div>
 							<div class="list-block">
+								<%
+								local controls = {
+									["Play"]					= "View||Playback||Play",
+									["Play Around"] 			= "View||Playback||Play%20Around",
+									["Play from Beginning"]		= "View||Playback||Play%20from%20Beginning",
+									["Play to End"]				= "View||Playback||Play%20to%20End",
+									["Play Full Screen"]			= "View||Playback||Play%20Full%20Screen",
+									["Loop Playback"]			= "View||Playback||Loop%20Playback",
+								}
+
+						    	for i, v in pairs(controls) do
+						    		local id = string.gsub(uuid(), "-", "")
+								%>
 								<ul>
 									<li>
-										<a href="#" class="item-link" onclick="controls_play()">
-										<div class="item-content">
-											<div class="item-inner">
-												<div class="item-title">Play</div>
+										<a href="#" class="item-link" onclick="c<%= id %>()">
+											<div class="item-content">
+												<div class="item-inner">
+													<div class="item-title"><%= i %></div>
+												</div>
 											</div>
-										</div>
-									</a>
-									<script>
-										function controls_play() {
-											var xhttp = new XMLHttpRequest();
-											xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?group=fcpx&action=cpPlay", true);
-											xhttp.send();
-										}
-									</script>
+										</a>
+										<script>
+											function c<%= id %>() {
+												var xhttp = new XMLHttpRequest();
+												xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?menupath=<%= v %>", true);
+												xhttp.send();
+											}
+										</script>
 									</li>
 								</ul>
+								<% end %>
 							</div>
 						</div>
 					</div>
@@ -228,7 +315,7 @@ end
 				<!-- We can make with view with navigation, let's add Top Navbar-->
 				<div class="navbar">
 					<div class="navbar-inner">
-						<div class="left"><a href="#" class="link">Add</a></div>
+						<div class="left"><a href="#" class="link addMarkerButton">Add</a></div>
 						<div class="center sliding">Markers</div>
 				        <div class="right"><a href="#" class="link toggle-sortable icon-only">Sort</a></div>
 					</div>
@@ -236,30 +323,34 @@ end
 
 				<div class="pages navbar-through">
 					<div data-page="index-3" class="page">
-						<div class="page-content">
+						<div class="page-content pull-to-refresh-content" data-ptr-distance="55">
+							<!-- Default pull to refresh layer-->
+							<div class="pull-to-refresh-layer">
+								<div class="preloader"></div>
+								<div class="pull-to-refresh-arrow"></div>
+							</div>
 							<div class="content-block-title">Markers</div>
 
 							<!-- Sortable list  -->
 							<div class="list-block sortable">
 								<ul>
-
 									<%
-									local customMarkers = {}
-									customMarkers[#customMarkers + 1] = "This is a test"
-									customMarkers[#customMarkers + 1] = "Another Test"
-									customMarkers[#customMarkers + 1] = "Yet Another Test"
-
+									local customMarkers = config.get("customMarkers", {"Good Take", "Interior", "Exterior"})
 									table.sort(customMarkers, function(a, b) return a < b end)
 
 									for i, v in pairs(customMarkers) do
 									%>
 
-								  	<li>
+								  	<li class="swipeout">
 										<a href="#" class="item-link" onclick="markers_<%= tostring(i) %>()">
-											<div class="item-content">
+											<div class="swipeout-content item-content">
 												<div class="item-inner">
 													<div class="item-title"><%= v %></div>
 												</div>
+											</div>
+											<div class="swipeout-actions-right">
+												<a href="#" class="action1">Rename</a>
+												<a href="#" class="swipeout-delete" data-confirm="Are you sure want to delete this item?" data-confirm-title="Delete?" data-close-on-cancel="true">Delete</a>
 											</div>
 										</a>
 										<script>
@@ -278,40 +369,38 @@ end
 									%>
 								</ul>
 							</div>
-
-
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<!-- TAGS VIEW: -->
+			<!-- KEYWORDS VIEW: -->
 			<div id="view-4" class="view tab">
 				<!-- We can make with view with navigation, let's add Top Navbar-->
 				<div class="navbar">
 					<div class="navbar-inner">
-						<div class="center sliding">Tags</div>
+						<div class="center sliding">Keywords</div>
 					</div>
 				</div>
 
 				<div class="pages navbar-through">
 					<div data-page="index-4" class="page">
 						<div class="page-content">
-							<div class="content-block-title">Tags</div>
+							<div class="content-block-title">Keywords</div>
 							<div class="list-block">
 								<ul>
 									<li>
 										<a href="#" class="item-link" onclick="tags_example()">
 											<div class="item-content">
 												<div class="item-inner">
-													<div class="item-title">Example Tag</div>
+													<div class="item-title">Good Take</div>
 												</div>
 											</div>
 										</a>
 										<script>
 											function tags_example() {
 												var xhttp = new XMLHttpRequest();
-												xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?group=fcpx&action=cpHighlightBrowserPlayhead", true);
+												xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?keyword=Good%20Take", true);
 												xhttp.send();
 											}
 										</script>
@@ -358,7 +447,7 @@ end
 					</a>
 					<a href="#view-4" class="tab-link">
 						<i class="f7-icons">tags</i>
-						<span class="tabbar-label">Tags</span>
+						<span class="tabbar-label">Keywords</span>
 					</a>
 					<a href="#view-5" class="tab-link">
 						<i class="f7-icons">gear_fill</i>
@@ -369,11 +458,56 @@ end
 
 		</div>
 
-		<!-- Path to Framework7 Library JS-->
+		<!-- Framework7 Library: -->
 		<script type="text/javascript" src="js/framework7.min.js"></script>
 
-		<!-- Path to your app js-->
-		<script type="text/javascript" src="js/commandpost.js"></script>
+		<script type="text/javascript">
+
+			// Initialise WebApp:
+			var myApp = new Framework7();
+
+			// Export selectors engine:
+			var $$ = Dom7;
+
+			// Pull to refresh content
+			var ptrContent = $$('.pull-to-refresh-content');
+
+			// Add 'refresh' listener on it
+			ptrContent.on('ptr:refresh', function (e) {
+				location.reload();
+			});
+
+			// Add views
+			var view1 = myApp.addView('#view-1');
+			var view2 = myApp.addView('#view-2', {
+				// Because we use fixed-through navbar we can enable dynamic navbar
+				dynamicNavbar: true
+			});
+			var view3 = myApp.addView('#view-3');
+			var view4 = myApp.addView('#view-4');
+			var view5 = myApp.addView('#view-5');
+
+			// Sortable Toggler:
+			$$('.list-block.sortable').on('open', function () {
+				$$('.toggle-sortable').text('Done');
+			});
+			$$('.list-block.sortable').on('close', function () {
+				$$('.toggle-sortable').text('Sort');
+			});
+
+			$$('.addMarkerButton').on('click', function () {
+			  myApp.alert('The Add Marker Button is under construction.');
+			});
+
+			$$('.action1').on('click', function () {
+			  myApp.alert('The Rename Marker Button is under construction.');
+			});
+
+			$$('.swipeout').on('swipeout:deleted', function (e) {
+			  myApp.alert('The Delete Marker Button is under construction. This item will come back to life on browser refresh.');
+			});
+
+		</script>
 
 	</body>
 </html>
