@@ -146,9 +146,9 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
-	local developerExtrasEnabled = {}
-	if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
-	mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
+	local prefs = {}
+	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	mod.webview = webview.new(defaultRect, prefs, mod.controller)
 		:windowStyle({"titled", "closable", "nonactivating"})
 		:shadow(true)
 		:allowNewWindows(false)
