@@ -52,7 +52,7 @@ function mod.scanFinalCutPro()
 		end, 10, 1)
 
 		if not didFinalCutProLoad then
-			dialog.display(i18n("loadFinalCutProFailed"))
+			dialog.displayMessage(i18n("loadFinalCutProFailed"))
 			return false
 		end
 		--log.d("Final Cut Pro has loaded.")
