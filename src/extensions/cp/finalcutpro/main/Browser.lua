@@ -218,23 +218,30 @@ function Browser:saveLayout()
 		layout.libraries = self:libraries():saveLayout()
 		layout.media = self:media():saveLayout()
 		layout.generators = self:generators():saveLayout()
+	else
+		layout.showing = false
 	end
 	return layout
 end
 
 -- TODO: Add documentation
 function Browser:loadLayout(layout)
-	if layout and layout.showing then
-		if layout.onPrimary then self:showOnPrimary() end
-		if layout.onSecondary then self:showOnSecondary() end
+	log.df("layout: %s", hs.inspect(layout))
+	if layout then
+		if layout.showing then
+			if layout.onPrimary then self:showOnPrimary() end
+			if layout.onSecondary then self:showOnSecondary() end
 
-		self:generators():loadLayout(layout.generators)
-		self:media():loadLayout(layout.media)
-		self:libraries():loadLayout(layout.libraries)
+			self:generators():loadLayout(layout.generators)
+			self:media():loadLayout(layout.media)
+			self:libraries():loadLayout(layout.libraries)
 
-		self:showGenerators():loadLayout(layout.showGenerators)
-		self:showMedia():loadLayout(layout.showMedia)
-		self:showLibraries():loadLayout(layout.showLibraries)
+			self:showGenerators():loadLayout(layout.showGenerators)
+			self:showMedia():loadLayout(layout.showMedia)
+			self:showLibraries():loadLayout(layout.showLibraries)
+		elseif layout.showing == false then
+			self:hide()
+		end
 	end
 end
 

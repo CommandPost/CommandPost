@@ -153,9 +153,6 @@ function mod.apply(shortcut)
 	-- Get Generators Browser:
 	--------------------------------------------------------------------------------
 	local generators = fcp:generators()
-	local generatorsShowing = generators:isShowing()
-	local generatorsLayout = generators:saveLayout()
-
 
 	--------------------------------------------------------------------------------
 	-- Make sure FCPX is at the front.
@@ -225,10 +222,7 @@ function mod.apply(shortcut)
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
 		mod.touchbar.show()
-
-		generators:loadLayout(generatorsLayout)
-		if browserLayout then browser:loadLayout(browserLayout) end
-		if not generatorsShowing then generators:hide() end
+		browser:loadLayout(browserLayout)
 	end)
 
 end
