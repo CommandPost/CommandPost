@@ -95,10 +95,13 @@ end
 --- Returns:
 ---  * None
 function mod.toggleDeveloperMode()
-	local debugMode = config.get("debugMode")
-	config.set("debugMode", not debugMode)
-	console.clearConsole()
-	hs.reload()
+	local result = dialog.displayMessage(i18n("togglingDeveloperMode"), {"Yes", "No"})
+	if result == "Yes" then
+		local debugMode = config.get("debugMode")
+		config.set("debugMode", not debugMode)
+		console.clearConsole()
+		hs.reload()
+	end
 end
 
 --- plugins.core.preferences.advanced.getDeveloperMode() -> boolean
