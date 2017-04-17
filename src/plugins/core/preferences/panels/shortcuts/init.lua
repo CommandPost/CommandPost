@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.panels.shortcuts ===
+--- === plugins.core.preferences.panels.shortcuts ===
 ---
 --- Shortcuts Preferences Panel
 
@@ -74,9 +74,9 @@ local function resetShortcuts()
 		if shortcutsFile then
 			log.df("Removing shortcuts file: '%s'", shortcutsFile)
 			os.remove(shortcutsFile)
-			dialog.displayAlertMessage(i18n("shortcutsResetComplete"))
-			hs.reload()
 		end
+		dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
+		hs.reload()
 	end
 end
 
@@ -117,7 +117,7 @@ local function controllerCallback(message)
 			if body.keyCode and body.keyCode ~= "" then
 				theCommand:activatedBy(modifiers, body.keyCode)
 			end
-			
+
 			commands.saveToFile(DEFAULT_SHORTCUTS)
 		else
 			log.wf("Unable to find command to update: %s:%s", group, command)
@@ -375,7 +375,7 @@ function mod.init(deps, env)
 		tooltip			= i18n("shortcutsPanelTooltip"),
 	})
 	
-	mod._panel:addContent(10, html(generateContent))
+	mod._panel:addContent(10, generateContent, true)
 	
 	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 

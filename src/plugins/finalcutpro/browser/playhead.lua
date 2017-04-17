@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.browser.playhead ===
+---
+--- Browser Playhead Plugin.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -39,147 +43,147 @@ local SHAPE_DIAMOND					= "Diamond"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--------------------------------------------------------------------------------
+-- Get Highlight Colour Preferences:
+--------------------------------------------------------------------------------
+function mod.getHighlightColor()
+	return config.get("displayHighlightColour", DEFAULT_COLOR)
+end
+
+function mod.setHighlightColor(value)
+	config.set("displayHighlightColour", value)
+end
+
+function mod.getHighlightCustomColor()
+	return config.get("displayHighlightCustomColour")
+end
+
+function mod.setHighlightCustomColor(value)
+	config.set("displayHighlightCustomColour", value)
+end
+
+--------------------------------------------------------------------------------
+-- CHANGE HIGHLIGHT COLOUR:
+--------------------------------------------------------------------------------
+function mod.changeHighlightColor(value)
+	if value=="Custom" then
+		local customColor = mod.getHighlightCustomColor()
+		local result = dialog.displayColorPicker(customColor)
+		if result == nil then return nil end
+		mod.setHighlightCustomColor(result)
+	end
+	mod.setHighlightColor(value)
+end
+
+function mod.getHighlightShape()
+	return config.get("displayHighlightShape", SHAPE_RECTANGLE)
+end
+
+--------------------------------------------------------------------------------
+-- CHANGE HIGHLIGHT SHAPE:
+--------------------------------------------------------------------------------
+function mod.setHighlightShape(value)
+	config.set("displayHighlightShape", value)
+end
+
+--------------------------------------------------------------------------------
+-- Get Highlight Playhead Time in seconds:
+--------------------------------------------------------------------------------
+function mod.getHighlightTime()
+	return config.get("highlightPlayheadTime", DEFAULT_TIME)
+end
+
+function mod.setHighlightTime(value)
+	config.set("highlightPlayheadTime", value)
+end
+
+--------------------------------------------------------------------------------
+-- HIGHLIGHT FINAL CUT PRO BROWSER PLAYHEAD:
+--------------------------------------------------------------------------------
+function mod.highlight()
+
+	--------------------------------------------------------------------------------
+	-- Delete any pre-existing highlights:
+	--------------------------------------------------------------------------------
+	mod.deleteHighlight()
+
+	--------------------------------------------------------------------------------
+	-- Get Browser Persistent Playhead:
+	--------------------------------------------------------------------------------
+	local playhead = fcp:libraries():playhead()
+	if playhead:isShowing() then
+		mod.highlightFrame(playhead:getFrame())
+	end
+end
+
+--------------------------------------------------------------------------------
+-- HIGHLIGHT MOUSE IN FCPX:
+--------------------------------------------------------------------------------
+function mod.highlightFrame(frame)
+
+	--------------------------------------------------------------------------------
+	-- Delete Previous Highlights:
+	--------------------------------------------------------------------------------
+	mod.deleteHighlight()
+
+	--------------------------------------------------------------------------------
+	-- Get Sizing Preferences:
+	--------------------------------------------------------------------------------
+	local displayHighlightShape = nil
+	displayHighlightShape = config.get("displayHighlightShape")
+	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
+
 	--------------------------------------------------------------------------------
 	-- Get Highlight Colour Preferences:
 	--------------------------------------------------------------------------------
-	function mod.getHighlightColor()
-		return config.get("displayHighlightColour", DEFAULT_COLOR)
-	end
-
-	function mod.setHighlightColor(value)
-		config.set("displayHighlightColour", value)
-	end
-
-	function mod.getHighlightCustomColor()
-		return config.get("displayHighlightCustomColour")
-	end
-
-	function mod.setHighlightCustomColor(value)
-		config.set("displayHighlightCustomColour", value)
+	local displayHighlightColour = config.get("displayHighlightColour", "Red")
+	if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
+	if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
+	if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
+	if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
+	if displayHighlightColour == "Custom" then
+		local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
+		displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
 	end
 
 	--------------------------------------------------------------------------------
-	-- CHANGE HIGHLIGHT COLOUR:
+	-- Highlight the FCPX Browser Playhead:
 	--------------------------------------------------------------------------------
-	function mod.changeHighlightColor(value)
-		if value=="Custom" then
-			local customColor = mod.getHighlightCustomColor()
-			local result = dialog.displayColorPicker(customColor)
-			if result == nil then return nil end
-			mod.setHighlightCustomColor(result)
-		end
-		mod.setHighlightColor(value)
+	if displayHighlightShape == "Rectangle" then
+		mod.browserHighlight = drawing.rectangle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
 	end
-
-	function mod.getHighlightShape()
-		return config.get("displayHighlightShape", SHAPE_RECTANGLE)
+	if displayHighlightShape == "Circle" then
+		mod.browserHighlight = drawing.circle(geometry.rect((frame.x-(frame.h/2)+10), frame.y, frame.h-12,frame.h-12))
 	end
-
-	--------------------------------------------------------------------------------
-	-- CHANGE HIGHLIGHT SHAPE:
-	--------------------------------------------------------------------------------
-	function mod.setHighlightShape(value)
-		config.set("displayHighlightShape", value)
+	if displayHighlightShape == "Diamond" then
+		mod.browserHighlight = drawing.circle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
 	end
+	mod.browserHighlight:setStrokeColor(displayHighlightColour)
+						:setFill(false)
+						:setStrokeWidth(5)
+						:bringToFront(true)
+						:show()
 
 	--------------------------------------------------------------------------------
-	-- Get Highlight Playhead Time in seconds:
+	-- Set a timer to delete the circle after the configured time:
 	--------------------------------------------------------------------------------
-	function mod.getHighlightTime()
-		return config.get("highlightPlayheadTime", DEFAULT_TIME)
-	end
+	mod.browserHighlightTimer = timer.doAfter(mod.getHighlightTime(), mod.deleteHighlight)
 
-	function mod.setHighlightTime(value)
-		config.set("highlightPlayheadTime", value)
-	end
+end
 
-	--------------------------------------------------------------------------------
-	-- HIGHLIGHT FINAL CUT PRO BROWSER PLAYHEAD:
-	--------------------------------------------------------------------------------
-	function mod.highlight()
-
-		--------------------------------------------------------------------------------
-		-- Delete any pre-existing highlights:
-		--------------------------------------------------------------------------------
-		mod.deleteHighlight()
-
-		--------------------------------------------------------------------------------
-		-- Get Browser Persistent Playhead:
-		--------------------------------------------------------------------------------
-		local playhead = fcp:libraries():playhead()
-		if playhead:isShowing() then
-			mod.highlightFrame(playhead:getFrame())
+--------------------------------------------------------------------------------
+-- DELETE ALL HIGHLIGHTS:
+--------------------------------------------------------------------------------
+function mod.deleteHighlight()
+	if mod.browserHighlight ~= nil then
+		mod.browserHighlight:delete()
+		mod.browserHighlight = nil
+		if mod.browserHighlightTimer then
+			mod.browserHighlightTimer:stop()
+			mod.browserHighlightTimer = nil
 		end
 	end
-
-	--------------------------------------------------------------------------------
-	-- HIGHLIGHT MOUSE IN FCPX:
-	--------------------------------------------------------------------------------
-	function mod.highlightFrame(frame)
-
-		--------------------------------------------------------------------------------
-		-- Delete Previous Highlights:
-		--------------------------------------------------------------------------------
-		mod.deleteHighlight()
-
-		--------------------------------------------------------------------------------
-		-- Get Sizing Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightShape = nil
-		displayHighlightShape = config.get("displayHighlightShape")
-		if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
-
-		--------------------------------------------------------------------------------
-		-- Get Highlight Colour Preferences:
-		--------------------------------------------------------------------------------
-		local displayHighlightColour = config.get("displayHighlightColour", "Red")
-		if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
-		if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
-		if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
-		if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
-		if displayHighlightColour == "Custom" then
-			local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
-			displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
-		end
-
-		--------------------------------------------------------------------------------
-		-- Highlight the FCPX Browser Playhead:
-		--------------------------------------------------------------------------------
-		if displayHighlightShape == "Rectangle" then
-			mod.browserHighlight = drawing.rectangle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
-		end
-		if displayHighlightShape == "Circle" then
-			mod.browserHighlight = drawing.circle(geometry.rect((frame.x-(frame.h/2)+10), frame.y, frame.h-12,frame.h-12))
-		end
-		if displayHighlightShape == "Diamond" then
-			mod.browserHighlight = drawing.circle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
-		end
-		mod.browserHighlight:setStrokeColor(displayHighlightColour)
-							:setFill(false)
-							:setStrokeWidth(5)
-							:bringToFront(true)
-							:show()
-
-		--------------------------------------------------------------------------------
-		-- Set a timer to delete the circle after the configured time:
-		--------------------------------------------------------------------------------
-		mod.browserHighlightTimer = timer.doAfter(mod.getHighlightTime(), mod.deleteHighlight)
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- DELETE ALL HIGHLIGHTS:
-	--------------------------------------------------------------------------------
-	function mod.deleteHighlight()
-		if mod.browserHighlight ~= nil then
-			mod.browserHighlight:delete()
-			mod.browserHighlight = nil
-			if mod.browserHighlightTimer then
-				mod.browserHighlightTimer:stop()
-				mod.browserHighlightTimer = nil
-			end
-		end
-	end
+end
 
 --------------------------------------------------------------------------------
 --

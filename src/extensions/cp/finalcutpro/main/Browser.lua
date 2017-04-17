@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.Browser ===
+---
+--- Browser Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
@@ -11,13 +26,20 @@ local MediaBrowser						= require("cp.finalcutpro.main.MediaBrowser")
 local GeneratorsBrowser					= require("cp.finalcutpro.main.GeneratorsBrowser")
 local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Browser = {}
 
+-- TODO: Add documentation
 function Browser.matches(element)
 	local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
 	return checkBoxes and #checkBoxes == 3
 end
 
+-- TODO: Add documentation
 function Browser:new(app)
 	o = {_app = app}
 	setmetatable(o, self)
@@ -25,25 +47,30 @@ function Browser:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function Browser:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function Browser:isOnSecondary()
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
 end
 
+-- TODO: Add documentation
 function Browser:isOnPrimary()
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
+--
+-- BROWSER UI:
+--
 -----------------------------------------------------------------------
---- BROWSER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Browser:UI()
 	return axutils.cache(self, "_ui", function()
 		local app = self:app()
@@ -52,6 +79,7 @@ function Browser:UI()
 	Browser.matches)
 end
 
+-- TODO: Add documentation
 function Browser._findBrowser(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
@@ -66,10 +94,12 @@ function Browser._findBrowser(...)
 	return nil
 end
 
+-- TODO: Add documentation
 function Browser:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function Browser:showOnPrimary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
@@ -81,6 +111,7 @@ function Browser:showOnPrimary()
 	return self
 end
 
+-- TODO: Add documentation
 function Browser:showOnSecondary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
@@ -89,7 +120,7 @@ function Browser:showOnSecondary()
 	return self
 end
 
-
+-- TODO: Add documentation
 function Browser:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the workspace
@@ -97,13 +128,13 @@ function Browser:hide()
 	return self
 end
 
+-----------------------------------------------------------------------
+--
+-- SECTIONS:
+--
+-----------------------------------------------------------------------
 
------------------------------------------------------------------------
------------------------------------------------------------------------
---- Sections
------------------------------------------------------------------------
------------------------------------------------------------------------
-
+-- TODO: Add documentation
 function Browser:showLibraries()
 	if not self._showLibraries then
 		self._showLibraries = CheckBox:new(self, function()
@@ -118,6 +149,7 @@ function Browser:showLibraries()
 	return self._showLibraries
 end
 
+-- TODO: Add documentation
 function Browser:showMedia()
 	if not self._showMedia then
 		self._showMedia = CheckBox:new(self, function()
@@ -132,6 +164,7 @@ function Browser:showMedia()
 	return self._showMedia
 end
 
+-- TODO: Add documentation
 function Browser:showGenerators()
 	if not self._showGenerators then
 		self._showGenerators = CheckBox:new(self, function()
@@ -146,6 +179,7 @@ function Browser:showGenerators()
 	return self._showGenerators
 end
 
+-- TODO: Add documentation
 function Browser:libraries()
 	if not self._libraries then
 		self._libraries = LibrariesBrowser:new(self)
@@ -153,6 +187,7 @@ function Browser:libraries()
 	return self._libraries
 end
 
+-- TODO: Add documentation
 function Browser:media()
 	if not self._media then
 		self._media = MediaBrowser:new(self)
@@ -160,6 +195,7 @@ function Browser:media()
 	return self._media
 end
 
+-- TODO: Add documentation
 function Browser:generators()
 	if not self._generators then
 		self._generators = GeneratorsBrowser:new(self)
@@ -167,6 +203,7 @@ function Browser:generators()
 	return self._generators
 end
 
+-- TODO: Add documentation
 function Browser:saveLayout()
 	local layout = {}
 	if self:isShowing() then
@@ -185,6 +222,7 @@ function Browser:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function Browser:loadLayout(layout)
 	if layout and layout.showing then
 		if layout.onPrimary then self:showOnPrimary() end

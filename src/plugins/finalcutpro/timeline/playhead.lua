@@ -1,6 +1,19 @@
--- Manages features relating to the Timeline Playhead
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
--- Imports
+--- === plugins.finalcutpro.timeline.playhead ===
+---
+--- Manages features relating to the Timeline Playhead.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log						= require("hs.logger").new("playhead")
 
 local geometry					= require("hs.geometry")
 local eventtap					= require("hs.eventtap")
@@ -10,18 +23,19 @@ local dialog					= require("cp.dialog")
 local fcp						= require("cp.finalcutpro")
 local config					= require("cp.config")
 
-local log						= require("hs.logger").new("playhead")
-
--- Constants
-
-local PRIORITY = 1000
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local PRIORITY 					= 1000
+local SPACEBAR_KEYCODE 			= 49
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
 function mod.isScrollingTimelineActive()
@@ -112,8 +126,6 @@ end
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE WATCHER:
 --------------------------------------------------------------------------------
-local SPACEBAR_KEYCODE = 49
-
 function mod.getScrollingTimelineWatcher()
 	if not mod._scrollingTimelineWatcher then
 		mod._scrollingTimelineWatcher = eventtap.new(
@@ -194,11 +206,8 @@ function mod.checkScrollingTimeline()
 end
 
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 -- PLAYHEAD LOCK:
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 function mod.isPlayheadLocked()
 	return config.get("lockTimelinePlayhead", false)
 end
@@ -245,6 +254,9 @@ local plugin = {
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 	local section = deps.options:addSection(PRIORITY)
 

@@ -41,7 +41,6 @@ commands._groups = {}
 ---
 --- Returns:
 ---  * `table` - The array of group IDs.
----
 function commands.groupIds()
 	local ids = {}
 	for id,_ in pairs(commands._groups) do
@@ -59,7 +58,6 @@ end
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
----
 function commands.group(id)
 	return commands._groups[id]
 end
@@ -67,13 +65,12 @@ end
 --- cp.commands:new(id) -> cp.commands
 --- Method
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
-
+---
 --- Parameters:
---- * `id`		- The unique ID for this command group.
+---  * `id`		- The unique ID for this command group.
 ---
 --- Returns:
 ---  * cp.commands - The commands group that was created.
----
 function commands:new(id)
 	if commands.group(id) ~= nil then
 		error("Duplicate command group ID: "..id)
@@ -90,10 +87,12 @@ function commands:new(id)
 	return o
 end
 
+-- TODO: Add documentation
 function commands:id()
 	return self._id
 end
 
+-- TODO: Add documentation
 function commands:add(commandId)
 	local cmd = command:new(commandId, self)
 	self._commands[commandId] = cmd
@@ -102,20 +101,24 @@ function commands:add(commandId)
 	return cmd
 end
 
+-- TODO: Add documentation
 function commands:get(commandId)
 	return self._commands[commandId]
 end
 
+-- TODO: Add documentation
 function commands:getAll()
 	return self._commands
 end
 
+-- TODO: Add documentation
 function commands:clear()
 	self:deleteShortcuts()
 	self._commands = {}
 	return self
 end
 
+-- TODO: Add documentation
 function commands:deleteShortcuts()
 	for _,command in pairs(self._commands) do
 		command:deleteShortcuts()
@@ -123,6 +126,7 @@ function commands:deleteShortcuts()
 	return self
 end
 
+-- TODO: Add documentation
 function commands:enable()
 	self._enabled = true
 	for _,command in pairs(self._commands) do
@@ -132,6 +136,7 @@ function commands:enable()
 	return self
 end
 
+-- TODO: Add documentation
 function commands:disable()
 	for _,command in pairs(self._commands) do
 		command:disable()
@@ -141,10 +146,12 @@ function commands:disable()
 	return self
 end
 
+-- TODO: Add documentation
 function commands:isEnabled()
 	return self._enabled
 end
 
+-- TODO: Add documentation
 function commands:watch(events)
 	if not self.watchers then
 		self.watchers = {}
@@ -152,6 +159,7 @@ function commands:watch(events)
 	self.watchers[#self.watchers + 1] = events
 end
 
+-- TODO: Add documentation
 function commands:_notify(type, ...)
 	if self.watchers then
 		for _,watcher in ipairs(self.watchers) do
@@ -162,6 +170,7 @@ function commands:_notify(type, ...)
 	end
 end
 
+-- TODO: Add documentation
 function commands:activate(successFn, failureFn)
 	self:_notify('activate')
 	local count = 0
@@ -182,9 +191,10 @@ function commands:activate(successFn, failureFn)
 	)
 end
 
+-- TODO: Add documentation
 function commands:saveShortcuts()
 	local data = {}
-	
+
 	for id,command in pairs(self:getAll()) do
 		local commandData = {}
 		for i,shortcut in ipairs(command:getShortcuts()) do
@@ -198,6 +208,7 @@ function commands:saveShortcuts()
 	return data
 end
 
+-- TODO: Add documentation
 function commands:loadShortcuts(data)
 	self:deleteShortcuts()
 	for id,commandData in pairs(data) do
@@ -213,6 +224,8 @@ end
 --------------------------------------------------------------------------------
 -- GET HISTORY PATH:
 --------------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function commands.getShortcutsPath(name)
 	shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
 	return shortcutsPath .. name .. commands.defaultExtension
@@ -221,6 +234,8 @@ end
 --------------------------------------------------------------------------------
 -- GET HISTORY:
 --------------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function commands.loadFromFile(name)
 	local groupData = {}
 
@@ -241,7 +256,7 @@ function commands.loadFromFile(name)
 		log.df("Unable to load shortcuts: '%s'", filePath)
 		return false
 	end
-	
+
 	-- apply the shortcuts
 	for groupId,shortcuts in pairs(groupData) do
 		local group = commands.group(groupId)
@@ -255,13 +270,15 @@ end
 --------------------------------------------------------------------------------
 -- SET HISTORY:
 --------------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function commands.saveToFile(name)
 	-- get the shortcuts
 	local groupData = {}
 	for id,group in pairs(commands._groups) do
 		groupData[id] = group:saveShortcuts()
 	end
-	
+
 	-- save the file
 	local filePath = commands.getShortcutsPath(name)
 	file = io.open(filePath, "w")

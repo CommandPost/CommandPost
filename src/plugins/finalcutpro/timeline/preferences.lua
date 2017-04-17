@@ -1,10 +1,43 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.preferences ===
+---
+--- Final Cut Pro Timeline Preferences.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local fcp			= require("cp.finalcutpro")
 
-local mod = {}
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local PRIORITY 		= 2000
 
 --------------------------------------------------------------------------------
--- TOGGLE BACKGROUND RENDER:
+--
+-- THE MODULE:
+--
 --------------------------------------------------------------------------------
+local mod = {}
+
+--- plugins.finalcutpro.timeline.preferences.toggleBackgroundRender(optionalValue) -> nil
+--- Function
+--- Toggles Background Render in Final Cut Pro.
+---
+--- Parameters:
+---  * optionalValue - Set the Background Render to `true` or `false`
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.toggleBackgroundRender(optionalValue)
 
 	--------------------------------------------------------------------------------
@@ -16,7 +49,7 @@ function mod.toggleBackgroundRender(optionalValue)
 	-- If we're setting rather than toggling...
 	--------------------------------------------------------------------------------
 	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFAutoStartBGRender", true) then
-		return
+		return true
 	end
 
 	--------------------------------------------------------------------------------
@@ -29,27 +62,29 @@ function mod.toggleBackgroundRender(optionalValue)
 	--------------------------------------------------------------------------------
 	if not prefs:playbackPanel():toggleAutoStartBGRender() then
 		dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in toggleBackgroundRender().")
-		return "Failed"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Close the Preferences window:
 	--------------------------------------------------------------------------------
 	prefs:hide()
+	return true
 
 end
 
+--- plugins.finalcutpro.timeline.preferences.getAutoRenderDelay() -> number
+--- Function
+--- Gets the 'FFAutoRenderDelay' value from the Final Cut Pro Preferences file.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * 'FFAutoRenderDelay' value as number.
 function mod.getAutoRenderDelay()
 	return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 end
-
----------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-
-local PRIORITY = 2000
 
 ---------------------------------------------------------------------------------
 --
@@ -65,6 +100,9 @@ local plugin = {
 	}
 }
 
+---------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+---------------------------------------------------------------------------------
 function plugin.init(deps)
 	deps.shortcuts:addItems(PRIORITY, function()
 		local fcpxRunning = fcp:isRunning()

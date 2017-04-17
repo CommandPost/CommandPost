@@ -98,17 +98,18 @@ end
 --- Parameters:
 --- * `priority`		- the priority order of the content.
 --- * `content`			- a value that can be converted to a string.
+--- * `unescaped`		- if `true`, the content will not be escaped. Defaults to true.
 ---
 --- Returns:
 --- * The panel.
-function panel:addContent(priority, content)
+function panel:addContent(priority, content, unescaped)
 	-- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
 	priority = priority or DEFAULT_PRIORITY
 	
 	local items = self._uiItems
 	items[#items+1] = {
 		priority = priority,
-		html = content,
+		html = html(content, unescaped),
 	}
 	return self
 end
@@ -140,6 +141,10 @@ function panel:addHandler(event, id, handlerFn, keys)
 	
 	-- register the handler function
 	self.manager.addHandler(id, handlerFn)
+end
+
+function panel:addParagraph(priority, content, unescaped)
+	return self:addContent(priority, html.p { class="uiItem" } (content, unescaped))
 end
 
 --- core.preferences.manager.panel:addCheckbox(priority, params) -> panel

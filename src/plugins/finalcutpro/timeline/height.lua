@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === finalcutpro.timeline.height ===
+--- === plugins.finalcutpro.timeline.height ===
 ---
 --- Shortcut for changing Final Cut Pro's Timeline Height
 
@@ -62,7 +62,7 @@ local function changeTimelineClipHeightRelease()
 	fcp:timeline():toolbar():appearance():hide()
 end
 
---- finalcutpro.timeline.height.changeTimelineClipHeight(direction) -> none
+--- plugins.finalcutpro.timeline.height.changeTimelineClipHeight(direction) -> none
 --- Function
 --- Change the Timeline Clip Height
 ---
@@ -71,7 +71,6 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.changeTimelineClipHeight(direction)
 
 	--------------------------------------------------------------------------------

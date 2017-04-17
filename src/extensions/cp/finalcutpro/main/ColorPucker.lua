@@ -1,13 +1,34 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.ColorPucker ===
+---
+--- Color Pucker Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local mouse									= require("hs.mouse")
 local geometry								= require("hs.geometry")
 local drawing								= require("hs.drawing")
 local timer									= require("hs.timer")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Pucker = {}
 
 Pucker.naturalLength = 20
 Pucker.elasticity = Pucker.naturalLength/10
 
+-- TODO: Add documentation
 function Pucker:new(colorBoard, aspect, property)
 	o = {
 		colorBoard = colorBoard,
@@ -21,27 +42,29 @@ function Pucker:new(colorBoard, aspect, property)
 	return o
 end
 
+-- TODO: Add documentation
 function Pucker:start()
 	-- find the percent and angle UIs
 	self.pctUI		= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'pct')
 	self.angleUI	= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'angle')
-	
+
 	-- disable skimming while the pucker is running
 	self.menuBar = self.colorBoard:app():menuBar()
 	self.skimming = self.menuBar:isChecked("View", "Skimming")
 	self.menuBar:uncheckMenu("View", "Skimming")
-	
+
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
-	
+
 	self:drawMarker()
-	
+
 	-- start the timer
 	self.running = true
 	Pucker.loop(self)
 	return self
 end
 
+-- TODO: Add documentation
 function Pucker:getBrightness()
 	if self.property == "global" then
 		return 0.25
@@ -56,6 +79,7 @@ function Pucker:getBrightness()
 	end
 end
 
+-- TODO: Add documentation
 function Pucker:getArc()
 	if self.angleUI then
 		return 135, 315
@@ -66,10 +90,11 @@ function Pucker:getArc()
 	end
 end
 
+-- TODO: Add documentation
 function Pucker:drawMarker()
 	local d = Pucker.naturalLength*2
 	local oFrame = geometry.rect(self.origin.x-d/2, self.origin.y-d/2, d, d)
-	
+
 	local brightness = self:getBrightness()
 	local color = {hue=0, saturation=0, brightness=brightness, alpha=1}
 
@@ -77,13 +102,13 @@ function Pucker:drawMarker()
 		:setStrokeColor(color)
 		:setFill(true)
 		:setStrokeWidth(1)
-	
+
 	aStart, aEnd = self:getArc()
 	self.arc = drawing.arc(self.origin, d/2, aStart, aEnd)
 		:setStrokeColor(color)
 		:setFillColor(color)
 		:setFill(true)
-	
+
 	local rFrame = geometry.rect(self.origin.x-d/4, self.origin.y-d/8, d/2, d/4)
 	self.negative = drawing.rectangle(rFrame)
 		:setStrokeColor({white=1, alpha=0.75})
@@ -92,10 +117,11 @@ function Pucker:drawMarker()
 		:setFill(true)
 end
 
+-- TODO: Add documentation
 function Pucker:colorMarker(pct, angle)
 	local solidColor = nil
 	local fillColor = nil
-	
+
 	if angle then
 		solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
 		fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
@@ -103,17 +129,17 @@ function Pucker:colorMarker(pct, angle)
 		brightness = pct >= 0 and 1 or 0
 		fillColor = {hue = 0, saturation = 0, brightness = brightness, alpha = math.abs(pct/100)}
 	end
-	
+
 	if solidColor then
 		self.circle:setStrokeColor(solidColor)
 		self.arc:setStrokeColor(solidColor)
 			:setFillColor(solidColor)
 	end
-	
+
 	self.circle:setFillColor(fillColor):show()
-		
+
 	self.arc:show()
-		
+
 	if angle and pct < 0 then
 		self.negative:show()
 	else
@@ -121,10 +147,12 @@ function Pucker:colorMarker(pct, angle)
 	end
 end
 
+-- TODO: Add documentation
 function Pucker:stop()
 	self.running = false
 end
 
+-- TODO: Add documentation
 function Pucker:cleanup()
 	self.running = false
 	if self.circle then
@@ -149,6 +177,7 @@ function Pucker:cleanup()
 	self.colorBoard.pucker = nil
 end
 
+-- TODO: Add documentation
 function Pucker:accumulate(xShift, yShift)
 	if xShift < 1 and xShift > -1 then
 		self.xShift = self.xShift + xShift
@@ -171,34 +200,36 @@ function Pucker:accumulate(xShift, yShift)
 	return xShift, yShift
 end
 
+-- TODO: Add documentation
 function Pucker.loop(pucker)
 	if not pucker.running then
 		pucker:cleanup()
 		return
 	end
-	
+
 	local pctUI = pucker.pctUI
 	local angleUI = pucker.angleUI
-	
+
 	local current = mouse.getAbsolutePosition()
 	local xDiff = current.x - pucker.origin.x
 	local yDiff = pucker.origin.y - current.y
-	
+
 	local xShift = Pucker.tension(xDiff)
 	local yShift = Pucker.tension(yDiff)
-	
+
 	xShift, yShift = pucker:accumulate(xShift, yShift)
-	
+
 	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
 	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
 	pucker:colorMarker(pctValue, angleValue)
-	
+
 	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
 	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
-	
+
 	timer.doAfter(0.01, function() Pucker.loop(pucker) end)
 end
 
+-- TODO: Add documentation
 function Pucker.tension(diff)
 	local factor = diff < 0 and -1 or 1
 	local tension = Pucker.elasticity * (diff*factor-Pucker.naturalLength) / Pucker.naturalLength

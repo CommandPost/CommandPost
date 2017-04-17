@@ -26,23 +26,21 @@ local englishKeyCodes							= require("cp.commands.englishKeyCodes")
 --
 --------------------------------------------------------------------------------
 
---- The shortcut class
+-- The shortcut class
 local shortcut = {}
 
 -- The shortcut builder class
 local builder = {}
 
-
---- shortcut.textToKeyCode() -> string
---- Function
---- Translates string into a key code.
----
---- Parameters:
----  * input - string
----
---- Returns:
----  * Keycode as String or ""
----
+-- shortcut.textToKeyCode() -> string
+-- Function
+-- Translates string into a key code.
+--
+-- Parameters:
+--  * input - string
+--
+-- Returns:
+--  * Keycode as String or ""
 function shortcut.textToKeyCode(input)
 	local result = englishKeyCodes[input]
 	if not result then
@@ -55,6 +53,7 @@ function shortcut.textToKeyCode(input)
 end
 
 --- cp.commands.shortcut:new(command) -> shortcut
+--- Method
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
 --- Parameters:
@@ -63,7 +62,6 @@ end
 ---
 --- Returns:
 ---  * shortcut - The shortcut that was created.
----
 function shortcut:new(modifiers, keyCode)
 	o = {
 		_modifiers = modifiers or {},
@@ -74,45 +72,52 @@ function shortcut:new(modifiers, keyCode)
 	return o
 end
 
---- cp.commands.shortcut:build(receiverFn) > hs.commands.shortcut.builder
---- Creates a new shortcut builder. If provided, the receiver function
---- will be called when the shortcut has been configured, and passed the new
---- shortcut. The result of that function will be returned to the next stage.
---- If no `receiverFn` is provided, the shortcut will be returned directly.
----
---- The builder is additive. You can create a complex keystroke combo by
---- chaining the shortcut names together.
----
---- For example:
----
---- `local myShortcut = shortcut:build():cmd():alt("x")`
----
---- Alternately, provide a `receiver` function and it will get passed the shortcut instead:
----
---- `shortcut:build(function(shortcut) self._myShortcut = shortcut end):cmd():alt("x")`
+--- cp.commands.shortcut:build(receiverFn) -> cp.commands.shortcut.builder
+--- Method
+--- Creates a new shortcut builder.
 ---
 --- Parameters:
 ---  * `receiverFn`		- (optional) a function which will get passed the shortcut when the build is complete.
 ---
 --- Returns:
 ---  * `shortcut.builder` which can be used to create the shortcut.
+---
+--- Notes:
+--- * If provided, the receiver function will be called when the shortcut has been configured, and passed the new
+---   shortcut. The result of that function will be returned to the next stage.
+---   If no `receiverFn` is provided, the shortcut will be returned directly.
+---
+---   The builder is additive. You can create a complex keystroke combo by
+---   chaining the shortcut names together.
+---
+---   For example:
+---
+---     `local myShortcut = shortcut:build():cmd():alt("x")`
+---
+---   Alternately, provide a `receiver` function and it will get passed the shortcut instead:
+---
+---     `shortcut:build(function(shortcut) self._myShortcut = shortcut end):cmd():alt("x")`
 function shortcut:build(receiverFn)
 	return builder:new(receiverFn)
 end
 
+-- TODO: Add documentation
 function shortcut:getModifiers()
 	return self._modifiers
 end
 
+-- TODO: Add documentation
 function shortcut:getKeyCode()
 	return self._keyCode
 end
 
+-- TODO: Add documentation
 function shortcut:isEnabled()
 	return self._enabled
 end
 
 --- cp.commands.shortcut:enable() - > shortcut
+--- Method
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
 ---
 --- Parameters:
@@ -129,10 +134,11 @@ function shortcut:enable()
 end
 
 --- cp.commands.shortcut:enable() - > shortcut
+--- Method
 --- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * `self`
@@ -145,10 +151,8 @@ function shortcut:disable()
 end
 
 --- cp.commands.shortcut:bind(pressedFn, releasedFn, repeatedFn) -> shortcut
---- This function binds the shortcut to a hotkey, with the specified callback functions for
---- `pressedFn`, `releasedFn` and `repeatedFn`.
----
---- If the shortcut is enabled, the hotkey will also be enabled at this point.
+--- Method
+--- This function binds the shortcut to a hotkey, with the specified callback functions for `pressedFn`, `releasedFn` and `repeatedFn`.
 ---
 --- Parameters:
 ---  * `pressedFn`	- (optional) If present, this is called when the shortcut combo is pressed.
@@ -157,6 +161,9 @@ end
 ---
 --- Returns:
 ---  * `self`
+---
+--- Notes:
+---  * If the shortcut is enabled, the hotkey will also be enabled at this point.
 function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 	-- Unbind any existing hotkey
 	self:unbind()
@@ -175,6 +182,7 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 	return self
 end
 
+-- TODO: Add documentation
 function shortcut:unbind()
 	local hotkey = self._hotkey
 	if hotkey then
@@ -185,11 +193,13 @@ function shortcut:unbind()
 	return self
 end
 
+-- TODO: Add documentation
 function shortcut:delete()
 	return self:unbind()
 end
 
 --- cp.commands.shortcut:trigger() -> shortcut
+--- Method
 --- This will trigger the keystroke specified in the shortcut.
 ---
 --- Parameters:
@@ -203,11 +213,22 @@ function shortcut:trigger()
 	return self
 end
 
+--- === cp.commands.shortcut.builder ===
+---
+--- Shortcut Commands Builder Module.
+
 --- cp.commands.shortcut.builder:new(receiverFn)
+--- Method
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
 --- shortcut. The result of that function will be returned to the next stage.
 --- If no `receiverFn` is provided, the shortcut will be returned directly.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function builder:new(receiverFn)
 	o = {
 		_receiver	= receiverFn,
@@ -218,8 +239,8 @@ function builder:new(receiverFn)
 	return o
 end
 
-
 --- cp.commands.shortcut.builder:add(modifier, [keyCode]) -> shortcut/command
+--- Method
 --- Adds the specified modifier to the set. If a `keyCode` is provided,
 --- no more modifiers can be added and the original `command` is returned instead.
 --- Otherwise, `self` is returned and further modifiers can be added.
@@ -227,6 +248,7 @@ end
 --- Parameters:
 ---  * modifier - (optional) The modifier that was added.
 ---  * keyCode	- (optional) The key code being modified.
+---
 --- Returns:
 ---  * `self` if no `keyCode` is provided, or the original `command`.
 function builder:add(modifier, keyCode)
@@ -246,30 +268,37 @@ function builder:add(modifier, keyCode)
 	end
 end
 
+-- TODO: Add documentation
 function builder:control(keyCode)
 	return self:add("control", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:ctrl(keyCode)
 	return self:control(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:option(keyCode)
 	return self:add("option", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:alt(keyCode)
 	return self:option(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:command(keyCode)
 	return self:add("command", keyCode)
 end
 
+-- TODO: Add documentation
 function builder:cmd(keyCode)
 	return self:command(keyCode)
 end
 
+-- TODO: Add documentation
 function builder:shift(keyCode)
 	return self:add("shift", keyCode)
 end

@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.ColorBoard ===
+---
+--- Color Board Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 local geometry							= require("hs.geometry")
@@ -8,8 +23,14 @@ local tools								= require("cp.tools")
 
 local Pucker							= require("cp.finalcutpro.main.ColorPucker")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local ColorBoard = {}
 
+-- TODO: Add documentation
 ColorBoard.aspect						= {}
 ColorBoard.aspect.color					= {
 	id 									= 1,
@@ -37,6 +58,7 @@ ColorBoard.aspect.exposure				= {
 }
 ColorBoard.currentAspect = "*"
 
+-- TODO: Add documentation
 function ColorBoard.isColorBoard(element)
 	for i,child in ipairs(element) do
 		if axutils.childWith(child, "AXIdentifier", "_NS:180") then
@@ -46,6 +68,7 @@ function ColorBoard.isColorBoard(element)
 	return false
 end
 
+-- TODO: Add documentation
 function ColorBoard:new(parent)
 	o = {
 		_parent = parent,
@@ -56,19 +79,23 @@ function ColorBoard:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function ColorBoard:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function ColorBoard:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- COLORBOARD UI:
+--
 -----------------------------------------------------------------------
---- ColorBoard UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function ColorBoard:UI()
 	return axutils.cache(self, "_ui",
 	function()
@@ -93,14 +120,17 @@ function ColorBoard:UI()
 	function(element) return ColorBoard:isColorBoard(element) end)
 end
 
+-- TODO: Add documentation
 function ColorBoard:_findUI()
 end
 
+-- TODO: Add documentation
 function ColorBoard:isShowing()
 	local ui = self:UI()
 	return ui ~= nil and ui:attributeValue("AXSize").w > 0
 end
 
+-- TODO: Add documentation
 function ColorBoard:show()
 	if not self:isShowing() then
 		self:app():menuBar():selectMenu("Window", "Go To", "Color Board")
@@ -108,14 +138,14 @@ function ColorBoard:show()
 	return self
 end
 
-
+-- TODO: Add documentation
 function ColorBoard:hide()
 	local ui = self:showInspectorUI()
 	if ui then ui:doPress() end
 	return self
 end
 
-
+-- TODO: Add documentation
 function ColorBoard:childUI(id)
 	return axutils.cache(self._child, id, function()
 		local ui = self:UI()
@@ -123,6 +153,7 @@ function ColorBoard:childUI(id)
 	end)
 end
 
+-- TODO: Add documentation
 function ColorBoard:topToolbarUI()
 	return axutils.cache(self, "_topToolbar", function()
 		local ui = self:UI()
@@ -137,6 +168,7 @@ function ColorBoard:topToolbarUI()
 	end)
 end
 
+-- TODO: Add documentation
 function ColorBoard:showInspectorUI()
 	return axutils.cache(self, "_showInspector", function()
 		local ui = self:topToolbarUI()
@@ -147,18 +179,19 @@ function ColorBoard:showInspectorUI()
 	end)
 end
 
+-- TODO: Add documentation
 function ColorBoard:isActive()
 	local ui = self:colorSatExpUI()
 	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", "_NS:128")
 end
 
+-----------------------------------------------------------------------
+--
+-- COLOR CORRECTION PANELS:
+--
+-----------------------------------------------------------------------
 
------------------------------------------------------------------------
------------------------------------------------------------------------
---- Color Correction Panels
------------------------------------------------------------------------
------------------------------------------------------------------------
-
+-- TODO: Add documentation
 function ColorBoard:colorSatExpUI()
 	return axutils.cache(self, "_colorSatExp", function()
 		local ui = self:UI()
@@ -166,6 +199,7 @@ function ColorBoard:colorSatExpUI()
 	end)
 end
 
+-- TODO: Add documentation
 function ColorBoard:getAspect(aspect, property)
 	local panel = nil
 	if type(aspect) == "string" then
@@ -192,14 +226,15 @@ function ColorBoard:getAspect(aspect, property)
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- Panel Controls
----
---- These methds are passed the aspect (color, saturation, exposure)
---- and sometimes a property (id, global, shadows, midtones, highlights)
------------------------------------------------------------------------
+--
+-- PANEL CONTROLS:
+--
+-- These methds are passed the aspect (color, saturation, exposure)
+-- and sometimes a property (id, global, shadows, midtones, highlights)
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 function ColorBoard:showPanel(aspect)
 	self:show()
 	aspect = self:getAspect(aspect)
@@ -210,6 +245,7 @@ function ColorBoard:showPanel(aspect)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:reset(aspect)
 	aspect = self:getAspect(aspect)
 	self:showPanel(aspect)
@@ -223,11 +259,13 @@ function ColorBoard:reset(aspect)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:puckUI(aspect, property)
 	local details = self:getAspect(aspect, property)
 	return self:childUI(details.puck)
 end
 
+-- TODO: Add documentation
 function ColorBoard:selectPuck(aspect, property)
 	self:showPanel(aspect)
 	local puckUI = self:puckUI(aspect, property)
@@ -239,10 +277,10 @@ function ColorBoard:selectPuck(aspect, property)
 	return self
 end
 
-
---- Ensures that the specified aspect/property (eg 'color/global')
---- 'edit' panel is visible and returns the specified value type UI
---- (eg. 'pct' or 'angle')
+-- TODO: Add documentation
+-- Ensures that the specified aspect/property (eg 'color/global')
+-- 'edit' panel is visible and returns the specified value type UI
+-- (eg. 'pct' or 'angle')
 function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
 	if not self:isShowing() then
 		return nil
@@ -261,6 +299,7 @@ function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
 	return ui
 end
 
+-- TODO: Add documentation
 function ColorBoard:applyPercentage(aspect, property, value)
 	local pctUI = self:aspectPropertyPanelUI(aspect, property, 'pct')
 	if pctUI then
@@ -270,6 +309,7 @@ function ColorBoard:applyPercentage(aspect, property, value)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:shiftPercentage(aspect, property, shift)
 	local ui = self:aspectPropertyPanelUI(aspect, property, 'pct')
 	if ui then
@@ -280,6 +320,7 @@ function ColorBoard:shiftPercentage(aspect, property, shift)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:getPercentage(aspect, property)
 	local pctUI = self:aspectPropertyPanelUI(aspect, property, 'pct')
 	if pctUI then
@@ -288,6 +329,7 @@ function ColorBoard:getPercentage(aspect, property)
 	return nil
 end
 
+-- TODO: Add documentation
 function ColorBoard:applyAngle(aspect, property, value)
 	local angleUI = self:aspectPropertyPanelUI(aspect, property, 'angle')
 	if angleUI then
@@ -297,6 +339,7 @@ function ColorBoard:applyAngle(aspect, property, value)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:shiftAngle(aspect, property, shift)
 	local ui = self:aspectPropertyPanelUI(aspect, property, 'angle')
 	if ui then
@@ -309,6 +352,7 @@ function ColorBoard:shiftAngle(aspect, property, shift)
 	return self
 end
 
+-- TODO: Add documentation
 function ColorBoard:getAngle(aspect, property, value)
 	local angleUI = self:aspectPropertyPanelUI(aspect, property, 'angle')
 	if angleUI then
@@ -318,6 +362,7 @@ function ColorBoard:getAngle(aspect, property, value)
 	return nil
 end
 
+-- TODO: Add documentation
 function ColorBoard:startPucker(aspect, property)
 	if self.pucker then
 		self.pucker:cleanup()

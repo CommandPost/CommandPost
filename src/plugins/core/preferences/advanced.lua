@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.advanced ===
+--- === plugins.core.preferences.advanced ===
 ---
 --- Advanced Preferences Panel.
 
@@ -31,7 +31,7 @@ local html				= require("cp.web.html")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- core.preferences.advanced.resetSettings() -> none
+--- plugins.core.preferences.advanced.resetSettings() -> none
 --- Function
 --- Resets all of the CommandPost Preferences to their default values.
 ---
@@ -85,7 +85,7 @@ function mod.resetSettings()
 
 end
 
---- core.preferences.advanced.toggleDeveloperMode() -> none
+--- plugins.core.preferences.advanced.toggleDeveloperMode() -> none
 --- Function
 --- Toggles the Developer Mode.
 ---
@@ -101,7 +101,7 @@ function mod.toggleDeveloperMode()
 	hs.reload()
 end
 
---- core.preferences.advanced.getDeveloperMode() -> boolean
+--- plugins.core.preferences.advanced.getDeveloperMode() -> boolean
 --- Function
 --- Returns the Developer Mode status.
 ---
@@ -114,7 +114,7 @@ function mod.getDeveloperMode()
 	return config.get("debugMode")
 end
 
---- core.preferences.advanced.openErrorLog() -> none
+--- plugins.core.preferences.advanced.openErrorLog() -> none
 --- Function
 --- Opens the Error Log
 ---
@@ -139,7 +139,7 @@ local function getCommandLineToolTitle()
 	end
 end
 
---- core.preferences.advanced.toggleCommandLineTool() -> none
+--- plugins.core.preferences.advanced.toggleCommandLineTool() -> none
 --- Function
 --- Toggles the Command Line Tool
 ---
@@ -226,7 +226,7 @@ function plugin.init(deps)
 	)
 
 	:addHeading(70, i18n("commandLineTool") .. ":")
-	:addContent(71, html.p { class="uiItem" } (function() return i18n("commandLineToolDescription") end))
+	:addParagraph(71, i18n("commandLineToolDescription"), true)
 
 	:addButton(75,
 		{

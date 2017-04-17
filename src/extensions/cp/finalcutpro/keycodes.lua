@@ -1,8 +1,28 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.keycodes ===
+---
+--- Keycodes Module
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local keycodes								= require("hs.keycodes")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
---- cp.finalcutpro.characterStringToKeyCode() -> string
+--- cp.finalcutpro.keycodes.characterStringToKeyCode() -> string
 --- Function
 --- Translate Keyboard Character Strings from Command Set Format into Hammerspoon Format.
 ---
@@ -11,7 +31,6 @@ local mod = {}
 ---
 --- Returns:
 ---  * Keycode as String or ""
----
 function mod.characterStringToKeyCode(input)
 
 	local result = tostring(input)
@@ -57,7 +76,7 @@ end
 
 mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "enter" }
 
---- cp.finalcutpro.keypadCharacterToKeyCode() -> string
+--- cp.finalcutpro.keycodes.keypadCharacterToKeyCode() -> string
 --- Function
 --- Translate Keyboard Keypad Character Strings from Command Set Format into Hammerspoon Format.
 ---
@@ -66,7 +85,6 @@ mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7",
 ---
 --- Returns:
 ---  * string or nil
----
 function mod.keypadCharacterToKeyCode(input)
 
 	local result = nil
@@ -78,7 +96,7 @@ function mod.keypadCharacterToKeyCode(input)
 
 end
 
---- cp.finalcutpro.fcpxModifiersToHsModifiers() -> table
+--- cp.finalcutpro.keycodes.fcpxModifiersToHsModifiers() -> table
 --- Function
 --- Translate Keyboard Modifiers from Command Set Format into Hammerspoon Format
 ---
@@ -87,7 +105,6 @@ end
 ---
 --- Returns:
 ---  * table
----
 function mod.fcpxModifiersToHsModifiers(input)
 
 	local result = {}
@@ -99,7 +116,7 @@ function mod.fcpxModifiersToHsModifiers(input)
 
 end
 
---- cp.finalcutpro.modifierMaskToModifiers() -> table
+--- cp.finalcutpro.keycodes.modifierMaskToModifiers() -> table
 --- Function
 --- Translate Keyboard Modifiers from Command Set Format into Hammerspoon Format
 ---
@@ -108,7 +125,6 @@ end
 ---
 --- Returns:
 ---  * table
----
 function mod.modifierMaskToModifiers(value)
 
 	local modifiers = {

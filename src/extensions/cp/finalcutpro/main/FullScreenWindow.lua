@@ -1,9 +1,30 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.FullScreenWindow ===
+---
+--- Full Screen Window
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils						= require("cp.finalcutpro.axutils")
 local just							= require("cp.just")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local FullScreenWindow = {}
 
+-- TODO: Add documentation
 function FullScreenWindow.matches(element)
 	if element and element:attributeValue("AXSubrole") == "AXUnknown"
 	and element:attributeValue("AXTitle") == "" then
@@ -13,6 +34,7 @@ function FullScreenWindow.matches(element)
 	return false
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:new(app)
 	o = {
 		_app = app
@@ -23,19 +45,23 @@ function FullScreenWindow:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:show()
 	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
 	return true
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:UI()
 	return axutils.cache(self, "_ui", function()
 		local ui = self:app():UI()
@@ -52,6 +78,7 @@ function FullScreenWindow:UI()
 	FullScreenWindow.matches)
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
 		if FullScreenWindow.matches(w) then return w end
@@ -59,6 +86,7 @@ function FullScreenWindow:_findWindowUI(windows)
 	return nil
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:isFullScreen()
 	local ui = self:rootGroupUI()
 	if ui then
@@ -77,12 +105,14 @@ function FullScreenWindow:isFullScreen()
 	return false
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:setFullScreen(isFullScreen)
 	local ui = self:UI()
 	if ui then ui:setFullScreen(isFullScreen) end
 	return self
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:toggleFullScreen()
 	local ui = self:UI()
 	if ui then ui:setFullScreen(not self:isFullScreen()) end
@@ -90,11 +120,12 @@ function FullScreenWindow:toggleFullScreen()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
--- UI STRUCTURE
------------------------------------------------------------------------
+--
+-- UI STRUCTURE:
+--
 -----------------------------------------------------------------------
 
+-- TODO: Add documentation
 -- The top AXSplitGroup contains the
 function FullScreenWindow:rootGroupUI()
 	return axutils.cache(self, "_rootGroup", function()
@@ -104,10 +135,12 @@ function FullScreenWindow:rootGroupUI()
 end
 
 -----------------------------------------------------------------------
+--
+-- VIEWER UI:
+--
 -----------------------------------------------------------------------
---- VIEWER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function FullScreenWindow:viewerGroupUI()
 	local ui = self:rootGroupUI()
 	if ui then
@@ -125,22 +158,24 @@ function FullScreenWindow:viewerGroupUI()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- WATCHERS
------------------------------------------------------------------------
+--
+-- WATCHERS:
+--
 -----------------------------------------------------------------------
 
+--- cp.finalcutpro.main.FullScreenWindow:watch() -> bool
+--- Method
 --- Watch for events that happen in the command editor
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function FullScreenWindow:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)
@@ -149,6 +184,7 @@ function FullScreenWindow:watch(events)
 	self._watcher:watch(events)
 end
 
+-- TODO: Add documentation
 function FullScreenWindow:unwatch(id)
 	if self._watcher then
 		self._watcher:unwatch(id)

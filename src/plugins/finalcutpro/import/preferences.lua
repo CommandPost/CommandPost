@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.import.preferences ===
+---
+--- Import Preferences
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -25,147 +29,147 @@ local PRIORITY 		= 1000
 --------------------------------------------------------------------------------
 local mod = {}
 
+--------------------------------------------------------------------------------
+-- TOGGLE CREATE OPTIMIZED MEDIA:
+--------------------------------------------------------------------------------
+function mod.toggleCreateOptimizedMedia(optionalValue)
+
 	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE OPTIMIZED MEDIA:
+	-- Make sure it's active:
 	--------------------------------------------------------------------------------
-	function mod.toggleCreateOptimizedMedia(optionalValue)
+	fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateOptimizeMedia", false) then
+		return
+	end
 
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateOptimizeMedia", false) then
-			return
-		end
+	local prefs = fcp:preferencesWindow()
 
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateOptimizedMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in toggleCreateOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+	--------------------------------------------------------------------------------
+	-- Toggle the checkbox:
+	--------------------------------------------------------------------------------
+	if not prefs:importPanel():toggleCreateOptimizedMedia() then
+		dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in toggleCreateOptimizedMedia().")
+		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
+	-- Close the Preferences window:
 	--------------------------------------------------------------------------------
-	function mod.toggleCreateMulticamOptimizedMedia(optionalValue)
+	prefs:hide()
+end
 
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
+--------------------------------------------------------------------------------
+-- TOGGLE CREATE MULTI-CAM OPTIMISED MEDIA:
+--------------------------------------------------------------------------------
+function mod.toggleCreateMulticamOptimizedMedia(optionalValue)
 
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
-			return
-		end
+	--------------------------------------------------------------------------------
+	-- Make sure it's active:
+	--------------------------------------------------------------------------------
+	fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:playbackPanel():toggleCreateOptimizedMediaForMulticamClips() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media for Multicam Clips'.\n\nError occurred in toggleCreateMulticamOptimizedMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFCreateOptimizedMediaForMulticamClips", true) then
+		return
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE CREATE PROXY MEDIA:
+	-- Define FCPX:
 	--------------------------------------------------------------------------------
-	function mod.toggleCreateProxyMedia(optionalValue)
+	local prefs = fcp:preferencesWindow()
 
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
-
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateProxyMedia", false) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCreateProxyMedia() then
-			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in toggleCreateProxyMedia().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
+	--------------------------------------------------------------------------------
+	-- Toggle the checkbox:
+	--------------------------------------------------------------------------------
+	if not prefs:playbackPanel():toggleCreateOptimizedMediaForMulticamClips() then
+		dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media for Multicam Clips'.\n\nError occurred in toggleCreateMulticamOptimizedMedia().")
+		return "Failed"
 	end
 
 	--------------------------------------------------------------------------------
-	-- TOGGLE LEAVE IN PLACE ON IMPORT:
+	-- Close the Preferences window:
 	--------------------------------------------------------------------------------
-	function mod.toggleLeaveInPlace(optionalValue)
+	prefs:hide()
+end
 
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
+--------------------------------------------------------------------------------
+-- TOGGLE CREATE PROXY MEDIA:
+--------------------------------------------------------------------------------
+function mod.toggleCreateProxyMedia(optionalValue)
 
-		--------------------------------------------------------------------------------
-		-- If we're setting rather than toggling...
-		--------------------------------------------------------------------------------
-		if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCopyToMediaFolder", true) then
-			return
-		end
+	--------------------------------------------------------------------------------
+	-- Make sure it's active:
+	--------------------------------------------------------------------------------
+	fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local prefs = fcp:preferencesWindow()
-
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if not prefs:importPanel():toggleCopyToMediaFolder() then
-			dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in toggleLeaveInPlace().")
-			return "Failed"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		prefs:hide()
-
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCreateProxyMedia", false) then
+		return
 	end
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local prefs = fcp:preferencesWindow()
+
+	--------------------------------------------------------------------------------
+	-- Toggle the checkbox:
+	--------------------------------------------------------------------------------
+	if not prefs:importPanel():toggleCreateProxyMedia() then
+		dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in toggleCreateProxyMedia().")
+		return "Failed"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Close the Preferences window:
+	--------------------------------------------------------------------------------
+	prefs:hide()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE LEAVE IN PLACE ON IMPORT:
+--------------------------------------------------------------------------------
+function mod.toggleLeaveInPlace(optionalValue)
+
+	--------------------------------------------------------------------------------
+	-- Make sure it's active:
+	--------------------------------------------------------------------------------
+	fcp:launch()
+
+	--------------------------------------------------------------------------------
+	-- If we're setting rather than toggling...
+	--------------------------------------------------------------------------------
+	if optionalValue ~= nil and optionalValue == fcp:getPreference("FFImportCopyToMediaFolder", true) then
+		return
+	end
+
+	--------------------------------------------------------------------------------
+	-- Define FCPX:
+	--------------------------------------------------------------------------------
+	local prefs = fcp:preferencesWindow()
+
+	--------------------------------------------------------------------------------
+	-- Toggle the checkbox:
+	--------------------------------------------------------------------------------
+	if not prefs:importPanel():toggleCopyToMediaFolder() then
+		dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in toggleLeaveInPlace().")
+		return "Failed"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Close the Preferences window:
+	--------------------------------------------------------------------------------
+	prefs:hide()
+
+end
 
 --------------------------------------------------------------------------------
 --

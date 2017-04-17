@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- The AUTOMATION menu section.
+--- === plugins.finalcutpro.menu.administrator ===
+---
+--- Administrator Menu.
 
 --------------------------------------------------------------------------------
 --
@@ -23,21 +25,23 @@ local PREFERENCES_PRIORITY		= 25
 local SETTING 					= "menubarAdministratorEnabled"
 
 --------------------------------------------------------------------------------
--- LOCAL FUNCTIONS:
+--
+-- THE MODULE:
+--
 --------------------------------------------------------------------------------
-	local function isSectionDisabled()
-		local setting = config.get(SETTING)
-		if setting ~= nil then
-			return not setting
-		else
-			return false
-		end
+local function isSectionDisabled()
+	local setting = config.get(SETTING)
+	if setting ~= nil then
+		return not setting
+	else
+		return false
 	end
+end
 
-	local function toggleSectionDisabled()
-		local menubarEnabled = config.get(SETTING)
-		config.set(SETTING, not menubarEnabled)
-	end
+local function toggleSectionDisabled()
+	local menubarEnabled = config.get(SETTING)
+	config.set(SETTING, not menubarEnabled)
+end
 
 --------------------------------------------------------------------------------
 --

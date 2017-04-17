@@ -24,28 +24,19 @@ local compile									= template.compile
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- None
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
 --------------------------------------------------------------------------------
---
 -- CONSTANTS:
---
 --------------------------------------------------------------------------------
 mod.UI_CHECKBOX								= 1
 mod.UI_HEADING								= 2
 mod.UI_BUTTON								= 3
 mod.UI_DROPDOWN								= 4
+mod.UI_TEXT									= 5
 
 --------------------------------------------------------------------------------
 -- RANDOM STRING GENERATOR:
@@ -75,7 +66,6 @@ end
 ---
 --- Returns:
 ---  * None
----
 function mod.setWebviewLabel(value)
 	mod._webviewLabel = value
 end
@@ -91,7 +81,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.checkbox(data, customTrigger, customID)
 
 	local value = customTrigger or data.title
@@ -138,6 +127,7 @@ function mod.javascript(script, context)
 end
 
 --- cp.web.generate.heading() -> string
+--- Function
 --- Generates a HTML Heading
 ---
 --- Parameters:
@@ -145,9 +135,23 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.heading(data)
 	return html.h3 {} ( data.title )
+end
+
+--- cp.web.generate.text() -> string
+--- Function
+--- Generates a blank HTML
+---
+--- Parameters:
+---  * data - Table containing the data you want to display.
+---
+--- Returns:
+---  * String containing the HTML
+function mod.text(data)
+
+	return html(data.title) .. "\n"
+
 end
 
 --- cp.web.generate.button() -> string
@@ -193,6 +197,7 @@ function mod.button(data, customTrigger, customWidth, customID)
 end
 
 --- cp.web.generate.dropdown() -> string
+--- Function
 --- Generates a HTML Dropdown
 ---
 --- Parameters:
@@ -202,7 +207,6 @@ end
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.dropdown(title, data, customTrigger)
 
 	local value = customTrigger or title

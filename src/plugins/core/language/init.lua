@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.language ===
+---
+--- Language Module.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -37,9 +41,15 @@ local mod = {}
 
 mod.installedLanguages = {}
 
---------------------------------------------------------------------------------
--- LOAD LANGUAGES:
---------------------------------------------------------------------------------
+--- plugins.core.language.loadCommandPostLanguages() -> nil
+--- Function
+--- Loads Command Post Languages
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.loadCommandPostLanguages()
 	--log.df("Loading CommandPost Languages")
 	for file in fs.dir(LANGUAGE_PATH) do
@@ -59,9 +69,15 @@ function mod.loadCommandPostLanguages()
 	table.sort(mod.installedLanguages, function(a, b) return a.language < b.language end)
 end
 
---------------------------------------------------------------------------------
--- GET LANGUAGES:
---------------------------------------------------------------------------------
+--- plugins.core.language.getCommandPostLanguages() -> table
+--- Function
+--- Gets CommandPost Languages in Table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * installedLanguages - table of Installed Languages
 function mod.getCommandPostLanguages()
 	if #mod.installedLanguages == 0 then
 		mod.loadCommandPostLanguages()
@@ -77,9 +93,15 @@ function mod.getUserLocale()
 	return userLocale
 end
 
---------------------------------------------------------------------------------
--- GET COMMANDPOST LANGUAGES MENU:
---------------------------------------------------------------------------------
+--- plugins.core.language.getCommandPostLanguagesMenu() -> nil
+--- Function
+--- Gets a table for the Menubar creation of all the supported CommandPost Languages
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * settingsLanguage - table of Supported Languages for CommandPost's Menubar
 local function getCommandPostLanguagesMenu()
 	local userLocale = config.get("language", nil)
 

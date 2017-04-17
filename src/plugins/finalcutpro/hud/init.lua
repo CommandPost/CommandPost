@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === finalcutpro.hud ===
+--- === plugins.finalcutpro.hud ===
 ---
 --- Final Cut Pro HUD.
 
@@ -79,7 +79,7 @@ hud.fcpRed 										= "#d1393e"
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
 
---- finalcutpro.hud.getPosition() -> table
+--- plugins.finalcutpro.hud.getPosition() -> table
 --- Function
 --- Returns the last HUD frame saved in settings.
 ---
@@ -92,7 +92,7 @@ function hud.getPosition()
 	return config.get(PREFERENCES_KEY_POSITION, {})
 end
 
---- finalcutpro.hud.setPosition() -> none
+--- plugins.finalcutpro.hud.setPosition() -> none
 --- Function
 --- Saves the HUD position to settings.
 ---
@@ -166,7 +166,7 @@ local function windowCallback(action, webview, frame)
 	end
 end
 
---- finalcutpro.hud.new()
+--- plugins.finalcutpro.hud.new()
 --- Function
 --- Creates a new HUD
 ---
@@ -206,7 +206,7 @@ function hud.new()
 
 end
 
---- finalcutpro.hud.delete()
+--- plugins.finalcutpro.hud.delete()
 --- Function
 --- Deletes the existing HUD if it exists
 ---
@@ -222,7 +222,7 @@ function hud.delete()
 	end
 end
 
---- finalcutpro.hud.isEnabled() -> boolean
+--- plugins.finalcutpro.hud.isEnabled() -> boolean
 --- Function
 --- Is the HUD enabled in the settings?
 ---
@@ -235,7 +235,7 @@ function hud.isEnabled()
 	return config.get(PREFERENCES_KEY, false)
 end
 
---- finalcutpro.hud.setEnabled() -> none
+--- plugins.finalcutpro.hud.setEnabled() -> none
 --- Function
 --- Sets whether or not the HUD is enabled.
 ---
@@ -248,7 +248,7 @@ function hud.setEnabled(value)
 	config.set(PREFERENCES_KEY, value)
 end
 
---- finalcutpro.hud.toggleEnabled() -> none
+--- plugins.finalcutpro.hud.toggleEnabled() -> none
 --- Function
 --- Toggles the HUD
 ---
@@ -278,7 +278,7 @@ local function checkOptions()
 	return hud.isInspectorShown() or hud.isDropTargetsShown() or hud.isButtonsShown()
 end
 
---- finalcutpro.hud.setOption() -> none
+--- plugins.finalcutpro.hud.setOption() -> none
 --- Function
 --- Sets a HUD option
 ---
@@ -297,7 +297,7 @@ function hud.setOption(name, value)
 	end
 end
 
---- finalcutpro.hud.isInspectorShown() -> boolean
+--- plugins.finalcutpro.hud.isInspectorShown() -> boolean
 --- Function
 --- Should the Inspector in the HUD be shown?
 ---
@@ -310,7 +310,7 @@ function hud.isInspectorShown()
 	return config.get("hudShowInspector", true)
 end
 
---- finalcutpro.hud.setInspectorShown() -> none
+--- plugins.finalcutpro.hud.setInspectorShown() -> none
 --- Function
 --- Set whether or not the Inspector should be shown in the HUD.
 ---
@@ -323,7 +323,7 @@ function hud.setInspectorShown(value)
 	hud.setOption("hudShowInspector", value)
 end
 
---- finalcutpro.hud.toggleInspectorShown() -> none
+--- plugins.finalcutpro.hud.toggleInspectorShown() -> none
 --- Function
 --- Toggles whether or not the Inspector should be shown in the HUD.
 ---
@@ -336,7 +336,7 @@ function hud.toggleInspectorShown()
 	hud.setInspectorShown(not hud.isInspectorShown())
 end
 
---- finalcutpro.hud.isDropTargetsShown() -> boolean
+--- plugins.finalcutpro.hud.isDropTargetsShown() -> boolean
 --- Function
 --- Should Drop Targets in the HUD be shown?
 ---
@@ -349,7 +349,7 @@ function hud.isDropTargetsShown()
 	return config.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
 end
 
---- finalcutpro.hud.setDropTargetsShown() -> none
+--- plugins.finalcutpro.hud.setDropTargetsShown() -> none
 --- Function
 --- Set whether or not Drop Targets should be shown in the HUD.
 ---
@@ -362,7 +362,7 @@ function hud.setDropTargetsShown(value)
 	hud.setOption("hudShowDropTargets", value)
 end
 
---- finalcutpro.hud.toggleInspectorShown() -> none
+--- plugins.finalcutpro.hud.toggleInspectorShown() -> none
 --- Function
 --- Toggles whether or not Drop Targets should be shown in the HUD.
 ---
@@ -375,7 +375,7 @@ function hud.toggleDropTargetsShown()
 	hud.setDropTargetsShown(not hud.isDropTargetsShown())
 end
 
---- finalcutpro.hud.isButtonsShown() -> boolean
+--- plugins.finalcutpro.hud.isButtonsShown() -> boolean
 --- Function
 --- Should Buttons in the HUD be shown?
 ---
@@ -388,7 +388,7 @@ function hud.isButtonsShown()
 	return config.get("hudShowButtons", true)
 end
 
---- finalcutpro.hud.setButtonsShown() -> none
+--- plugins.finalcutpro.hud.setButtonsShown() -> none
 --- Function
 --- Set whether or not Buttons should be shown in the HUD.
 ---
@@ -401,7 +401,7 @@ function hud.setButtonsShown(value)
 	hud.setOption("hudShowButtons", value)
 end
 
---- finalcutpro.hud.toggleInspectorShown() -> none
+--- plugins.finalcutpro.hud.toggleInspectorShown() -> none
 --- Function
 --- Toggles whether or not Buttons should be shown in the HUD.
 ---
@@ -414,7 +414,7 @@ function hud.toggleButtonsShown()
 	hud.setButtonsShown(not hud.isButtonsShown())
 end
 
---- finalcutpro.hud.getButton() -> string
+--- plugins.finalcutpro.hud.getButton() -> string
 --- Function
 --- Gets the button values from settings.
 ---
@@ -429,7 +429,7 @@ function hud.getButton(index, defaultValue)
 	return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
 end
 
---- finalcutpro.hud.getButtonCommand() -> string
+--- plugins.finalcutpro.hud.getButtonCommand() -> string
 --- Function
 --- Gets the button command.
 ---
@@ -451,7 +451,7 @@ function hud.getButtonCommand(index)
 	return nil
 end
 
---- finalcutpro.hud.getButtonText() -> string
+--- plugins.finalcutpro.hud.getButtonText() -> string
 --- Function
 --- Gets the button text.
 ---
@@ -469,7 +469,7 @@ function hud.getButtonText(index)
 	end
 end
 
---- finalcutpro.hud.getButtonURL() -> string
+--- plugins.finalcutpro.hud.getButtonURL() -> string
 --- Function
 --- Gets the button URL.
 ---
@@ -482,7 +482,7 @@ function hud.getButtonURL(index)
 	return hud.actionmanager.getURL(hud.getButton(index))
 end
 
---- finalcutpro.hud.setButton() -> string
+--- plugins.finalcutpro.hud.setButton() -> string
 --- Function
 --- Sets the button.
 ---
@@ -497,7 +497,7 @@ function hud.setButton(index, value)
 	config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 end
 
---- finalcutpro.hud.updateVisibility() -> none
+--- plugins.finalcutpro.hud.updateVisibility() -> none
 --- Function
 --- Update the visibility of the HUD.
 ---
@@ -526,7 +526,7 @@ function hud.updateVisibility()
 	end
 end
 
---- finalcutpro.hud.show() -> none
+--- plugins.finalcutpro.hud.show() -> none
 --- Function
 --- Show the HUD.
 ---
@@ -544,7 +544,7 @@ function hud.show()
 	hud.refresh()
 end
 
---- finalcutpro.hud.hide() -> none
+--- plugins.finalcutpro.hud.hide() -> none
 --- Function
 --- Hide the HUD.
 ---
@@ -559,7 +559,7 @@ function hud.hide()
 	end
 end
 
---- finalcutpro.hud.visible() -> none
+--- plugins.finalcutpro.hud.visible() -> none
 --- Function
 --- Is the HUD visible?
 ---
@@ -647,7 +647,7 @@ local function getEnv()
 	return env
 end
 
---- finalcutpro.hud.refresh() -> none
+--- plugins.finalcutpro.hud.refresh() -> none
 --- Function
 --- Refresh the HUD's content.
 ---
@@ -701,7 +701,7 @@ function hud.refresh()
 
 end
 
---- finalcutpro.hud.assignButton() -> none
+--- plugins.finalcutpro.hud.assignButton() -> none
 --- Function
 --- Assigns a HUD button.
 ---
@@ -755,7 +755,7 @@ function hud.assignButton(button)
 												  :show()
 end
 
---- finalcutpro.hud.choices() -> none
+--- plugins.finalcutpro.hud.choices() -> none
 --- Function
 --- Choices for the Assign HUD Button chooser.
 ---
@@ -772,7 +772,7 @@ function hud.choices()
 	end
 end
 
---- finalcutpro.hud.generateHTML() -> none
+--- plugins.finalcutpro.hud.generateHTML() -> none
 --- Function
 --- Generate the HTML for the HUD.
 ---
@@ -792,7 +792,7 @@ function hud.generateHTML()
 
 end
 
---- finalcutpro.hud.javaScriptCallback() -> none
+--- plugins.finalcutpro.hud.javaScriptCallback() -> none
 --- Function
 --- Javascript Callback
 ---
@@ -811,7 +811,7 @@ function hud.javaScriptCallback(message)
 	end
 end
 
---- finalcutpro.hud.init() -> none
+--- plugins.finalcutpro.hud.init() -> none
 --- Function
 --- Initialise HUD Module.
 ---

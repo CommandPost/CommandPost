@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.welcome.panels.complete  ===
+--- === plugins.core.welcome.panels.complete  ===
 ---
 --- Welcome Screen Completion Screen.
 
@@ -25,63 +25,63 @@ local generate									= require("cp.web.generate")
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- CONTROLLER CALLBACK:
-	--------------------------------------------------------------------------------
-	local function controllerCallback(message)
+--------------------------------------------------------------------------------
+-- CONTROLLER CALLBACK:
+--------------------------------------------------------------------------------
+local function controllerCallback(message)
 
-		local result = message["body"][1]
-		if result == "complete" then
-			mod.manager.delete()
-			mod.manager.setupUserInterface(false)
-		end
-
+	local result = message["body"][1]
+	if result == "complete" then
+		mod.manager.delete()
+		mod.manager.setupUserInterface(false)
 	end
 
-	--------------------------------------------------------------------------------
-	-- GENERATE CONTENT:
-	--------------------------------------------------------------------------------
-	local function generateContent()
+end
 
-		generate.setWebviewLabel(mod.webviewLabel)
+--------------------------------------------------------------------------------
+-- GENERATE CONTENT:
+--------------------------------------------------------------------------------
+local function generateContent()
 
-		local env = {
-			generate 	= generate,
-			iconPath	= mod.iconPath,
-		}
+	generate.setWebviewLabel(mod.webviewLabel)
 
-		local result, err = mod.renderPanel(env)
-		if err then
-			log.ef("Error while generating Complete Welcome Panel: %", err)
-			return err
-		else
-			return result
-		end
+	local env = {
+		generate 	= generate,
+		iconPath	= mod.iconPath,
+	}
 
+	local result, err = mod.renderPanel(env)
+	if err then
+		log.ef("Error while generating Complete Welcome Panel: %", err)
+		return err
+	else
+		return result
 	end
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE MODULE:
-	--------------------------------------------------------------------------------
-	function mod.init(deps, env)
+end
 
-		mod.webviewLabel = deps.manager.getLabel()
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
+function mod.init(deps, env)
 
-		mod._id 			= "complete"
-		mod._priority		= 60
-		mod._contentFn		= generateContent
-		mod._callbackFn 	= controllerCallback
+	mod.webviewLabel = deps.manager.getLabel()
 
-		mod.manager = deps.manager
+	mod._id 			= "complete"
+	mod._priority		= 60
+	mod._contentFn		= generateContent
+	mod._callbackFn 	= controllerCallback
 
-		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+	mod.manager = deps.manager
 
-		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
 
-		return mod
+	mod.renderPanel = env:compileTemplate("html/panel.html")
+	mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
 
-	end
+	return mod
+
+end
 
 --------------------------------------------------------------------------------
 --

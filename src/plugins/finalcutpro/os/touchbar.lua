@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.os.touchbar ===
+---
+--- Virtual Touch Bar Plugin.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -39,193 +43,193 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.isSupported()
-		return touchbar.supported()
-	end
+function mod.isSupported()
+	return touchbar.supported()
+end
 
-	function mod.getLastLocation()
-		config.get("lastTouchBarLocation")
-	end
+function mod.getLastLocation()
+	config.get("lastTouchBarLocation")
+end
 
-	function mod.setLastLocation(value)
-		config.set("lastTouchBarLocation", value)
-	end
+function mod.setLastLocation(value)
+	config.set("lastTouchBarLocation", value)
+end
 
-	function mod.getLocation()
-		return config.get("displayTouchBarLocation", DEFAULT_VALUE)
-	end
+function mod.getLocation()
+	return config.get("displayTouchBarLocation", DEFAULT_VALUE)
+end
 
-	function mod.setLocation(value)
-		config.set("displayTouchBarLocation", value)
-		mod.update()
+function mod.setLocation(value)
+	config.set("displayTouchBarLocation", value)
+	mod.update()
+end
+
+--------------------------------------------------------------------------------
+-- SET TOUCH BAR LOCATION:
+--------------------------------------------------------------------------------
+function mod.updateLocation()
+
+	--------------------------------------------------------------------------------
+	-- Get Settings:
+	--------------------------------------------------------------------------------
+	local displayTouchBarLocation = mod.getLocation()
+
+	--------------------------------------------------------------------------------
+	-- Put it back to last known position:
+	--------------------------------------------------------------------------------
+	local lastLocation = mod.getLastLocation()
+	if lastLocation then
+		mod.touchBarWindow:topLeft(lastLocation)
 	end
 
 	--------------------------------------------------------------------------------
-	-- SET TOUCH BAR LOCATION:
+	-- Show Touch Bar at Top Centre of Timeline:
 	--------------------------------------------------------------------------------
-	function mod.updateLocation()
-
+	local timeline = fcp:timeline()
+	if displayTouchBarLocation == LOCATION_TIMELINE and timeline:isShowing() then
 		--------------------------------------------------------------------------------
-		-- Get Settings:
+		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 		--------------------------------------------------------------------------------
-		local displayTouchBarLocation = mod.getLocation()
-
-		--------------------------------------------------------------------------------
-		-- Put it back to last known position:
-		--------------------------------------------------------------------------------
-		local lastLocation = mod.getLastLocation()
-		if lastLocation then
-			mod.touchBarWindow:topLeft(lastLocation)
+		local viewFrame = timeline:contents():viewFrame()
+		if viewFrame then
+			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
+			mod.touchBarWindow:topLeft(topLeft)
 		end
+	elseif displayTouchBarLocation == LOCATION_MOUSE then
 
 		--------------------------------------------------------------------------------
-		-- Show Touch Bar at Top Centre of Timeline:
+		-- Position Touch Bar to Mouse Pointer Location:
 		--------------------------------------------------------------------------------
-		local timeline = fcp:timeline()
-		if displayTouchBarLocation == LOCATION_TIMELINE and timeline:isShowing() then
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
-			--------------------------------------------------------------------------------
-			local viewFrame = timeline:contents():viewFrame()
-			if viewFrame then
-				local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
-				mod.touchBarWindow:topLeft(topLeft)
-			end
-		elseif displayTouchBarLocation == LOCATION_MOUSE then
+		mod.touchBarWindow:atMousePosition()
 
-			--------------------------------------------------------------------------------
-			-- Position Touch Bar to Mouse Pointer Location:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:atMousePosition()
+	end
 
-		end
+	--------------------------------------------------------------------------------
+	-- Save last Touch Bar Location to Settings:
+	--------------------------------------------------------------------------------
+	mod.setLastLocation(mod.touchBarWindow:topLeft())
+end
+
+function mod.isEnabled()
+	return config.get("displayTouchBar", false)
+end
+
+function mod.setEnabled(value)
+	config.set("displayTouchBar", value)
+	mod.update()
+end
+
+--------------------------------------------------------------------------------
+-- TOGGLE TOUCH BAR:
+--------------------------------------------------------------------------------
+function mod.toggleEnabled()
+
+	--------------------------------------------------------------------------------
+	-- Check for compatibility:
+	--------------------------------------------------------------------------------
+	if not mod.isSupported() then
+		dialog.displayMessage(i18n("touchBarError"))
+		return "Fail"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get Settings:
+	--------------------------------------------------------------------------------
+	mod.setEnabled(not mod.isEnabled())
+
+	--------------------------------------------------------------------------------
+	-- Toggle Touch Bar:
+	--------------------------------------------------------------------------------
+	mod.update()
+end
+
+function mod.update()
+	if mod.isEnabled() then
+		mod.show()
+	else
+		mod.hide()
+	end
+end
+
+--------------------------------------------------------------------------------
+-- SHOW TOUCH BAR:
+--------------------------------------------------------------------------------
+function mod.show()
+	--------------------------------------------------------------------------------
+	-- Check if we need to show the Touch Bar:
+	--------------------------------------------------------------------------------
+	if fcp:isFrontmost() and mod.isSupported() and mod.isEnabled() then
+		mod.updateLocation()
+		mod.touchBarWindow:show()
+	end
+end
+
+--------------------------------------------------------------------------------
+-- HIDE TOUCH BAR:
+--------------------------------------------------------------------------------
+function mod.hide()
+	if mod.isSupported() then mod.touchBarWindow:hide() end
+end
+
+--------------------------------------------------------------------------------
+-- TOUCH BAR WATCHER:
+--------------------------------------------------------------------------------
+local function touchbarWatcher(obj, message)
+	if message == "didEnter" then
+		mod.mouseInsideTouchbar = true
+	elseif message == "didExit" then
+		mod.mouseInsideTouchbar = false
 
 		--------------------------------------------------------------------------------
-		-- Save last Touch Bar Location to Settings:
+		-- Just in case we got here before the eventtap returned the Touch Bar to normal:
 		--------------------------------------------------------------------------------
+		mod.touchBarWindow:movable(false)
+		mod.touchBarWindow:acceptsMouseEvents(true)
 		mod.setLastLocation(mod.touchBarWindow:topLeft())
 	end
+end
 
-	function mod.isEnabled()
-		return config.get("displayTouchBar", false)
-	end
-
-	function mod.setEnabled(value)
-		config.set("displayTouchBar", value)
-		mod.update()
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOGGLE TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function mod.toggleEnabled()
+function mod.init()
+	if mod.isSupported() then
+		--------------------------------------------------------------------------------
+		-- New Touch Bar:
+		--------------------------------------------------------------------------------
+		mod.touchBarWindow = touchbar.new()
 
 		--------------------------------------------------------------------------------
-		-- Check for compatibility:
+		-- Touch Bar Watcher:
 		--------------------------------------------------------------------------------
-		if not mod.isSupported() then
-			dialog.displayMessage(i18n("touchBarError"))
-			return "Fail"
-		end
+		mod.touchBarWindow:setCallback(touchbarWatcher)
 
 		--------------------------------------------------------------------------------
-		-- Get Settings:
+		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
-		mod.setEnabled(not mod.isEnabled())
+		local lastTouchBarLocation = mod.getLastLocation()
+		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
-		-- Toggle Touch Bar:
+		-- Draggable Touch Bar:
 		--------------------------------------------------------------------------------
-		mod.update()
-	end
-
-	function mod.update()
-		if mod.isEnabled() then
-			mod.show()
-		else
-			mod.hide()
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- SHOW TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function mod.show()
-		--------------------------------------------------------------------------------
-		-- Check if we need to show the Touch Bar:
-		--------------------------------------------------------------------------------
-		if fcp:isFrontmost() and mod.isSupported() and mod.isEnabled() then
-			mod.updateLocation()
-			mod.touchBarWindow:show()
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- HIDE TOUCH BAR:
-	--------------------------------------------------------------------------------
-	function mod.hide()
-		if mod.isSupported() then mod.touchBarWindow:hide() end
-	end
-
-	--------------------------------------------------------------------------------
-	-- TOUCH BAR WATCHER:
-	--------------------------------------------------------------------------------
-	local function touchbarWatcher(obj, message)
-		if message == "didEnter" then
-			mod.mouseInsideTouchbar = true
-		elseif message == "didExit" then
-			mod.mouseInsideTouchbar = false
-
-			--------------------------------------------------------------------------------
-			-- Just in case we got here before the eventtap returned the Touch Bar to normal:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:movable(false)
-			mod.touchBarWindow:acceptsMouseEvents(true)
-			mod.setLastLocation(mod.touchBarWindow:topLeft())
-		end
-	end
-
-	function mod.init()
-		if mod.isSupported() then
-			--------------------------------------------------------------------------------
-			-- New Touch Bar:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow = touchbar.new()
-
-			--------------------------------------------------------------------------------
-			-- Touch Bar Watcher:
-			--------------------------------------------------------------------------------
-			mod.touchBarWindow:setCallback(touchbarWatcher)
-
-			--------------------------------------------------------------------------------
-			-- Get last Touch Bar Location from Settings:
-			--------------------------------------------------------------------------------
-			local lastTouchBarLocation = mod.getLastLocation()
-			if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
-
-			--------------------------------------------------------------------------------
-			-- Draggable Touch Bar:
-			--------------------------------------------------------------------------------
-			local events = eventtap.event.types
-			touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-				if mod.mouseInsideTouchbar and mod.getLocation() == LOCATION_DRAGGABLE then
-					if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-						mod.touchBarWindow:backgroundColor{ red = 1 }
-										:movable(true)
-										:acceptsMouseEvents(false)
-					elseif ev:getType() ~= events.leftMouseDown then
-						mod.touchBarWindow:backgroundColor{ white = 0 }
-									  :movable(false)
-									  :acceptsMouseEvents(true)
-						mod.setLastLocation(mod.touchBarWindow:topLeft())
-					end
+		local events = eventtap.event.types
+		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
+			if mod.mouseInsideTouchbar and mod.getLocation() == LOCATION_DRAGGABLE then
+				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
+					mod.touchBarWindow:backgroundColor{ red = 1 }
+									:movable(true)
+									:acceptsMouseEvents(false)
+				elseif ev:getType() ~= events.leftMouseDown then
+					mod.touchBarWindow:backgroundColor{ white = 0 }
+								  :movable(false)
+								  :acceptsMouseEvents(true)
+					mod.setLastLocation(mod.touchBarWindow:topLeft())
 				end
-				return false
-			end):start()
+			end
+			return false
+		end):start()
 
-			mod.update()
-		end
+		mod.update()
 	end
+end
 
 --------------------------------------------------------------------------------
 --
@@ -241,58 +245,58 @@ local plugin = {
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+	mod.init()
+
 	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
+	-- Disable/Enable the Touchbar when the Command Editor/etc is open:
 	--------------------------------------------------------------------------------
-	function plugin.init(deps)
-		mod.init()
+	fcp:commandEditor():watch({
+		show		= function() mod.hide() end,
+		hide		= function() mod.show() end,
+	})
+	fcp:mediaImport():watch({
+		show		= function() mod.hide() end,
+		hide		= function() mod.show() end,
+	})
+	fcp:watch({
+		active		= function() mod.show() end,
+		inactive	= function() mod.hide() end,
+		move		= function() mod.update() end,
+	})
 
-		--------------------------------------------------------------------------------
-		-- Disable/Enable the Touchbar when the Command Editor/etc is open:
-		--------------------------------------------------------------------------------
-		fcp:commandEditor():watch({
-			show		= function() mod.hide() end,
-			hide		= function() mod.show() end,
-		})
-		fcp:mediaImport():watch({
-			show		= function() mod.hide() end,
-			hide		= function() mod.show() end,
-		})
-		fcp:watch({
-			active		= function() mod.show() end,
-			inactive	= function() mod.hide() end,
-			move		= function() mod.update() end,
-		})
+	--------------------------------------------------------------------------------
+	-- Menu items:
+	--------------------------------------------------------------------------------
+	local section = deps.prefs:addSection(PRIORITY)
 
-		--------------------------------------------------------------------------------
-		-- Menu items:
-		--------------------------------------------------------------------------------
-		local section = deps.prefs:addSection(PRIORITY)
+	section:addMenu(2000, function() return i18n("touchBar") end)
+		:addItems(1000, function()
+			local location = mod.getLocation()
+			return {
+				{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 									checked = mod.isEnabled(),					disabled = not mod.isSupported() },
+				{ title = "-" },
+				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
+				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
+				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
+				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.isSupported() },
+				{ title = "-" },
+				{ title = i18n("touchBarTipOne"), 		disabled = true },
+				{ title = i18n("touchBarTipTwo"), 		disabled = true },
+			}
+		end)
 
-		section:addMenu(2000, function() return i18n("touchBar") end)
-			:addItems(1000, function()
-				local location = mod.getLocation()
-				return {
-					{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 									checked = mod.isEnabled(),					disabled = not mod.isSupported() },
-					{ title = "-" },
-					{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
-					{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
-					{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
-					{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.isSupported() },
-					{ title = "-" },
-					{ title = i18n("touchBarTipOne"), 		disabled = true },
-					{ title = i18n("touchBarTipTwo"), 		disabled = true },
-				}
-			end)
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	deps.fcpxCmds:add("cpToggleTouchBar")
+		:activatedBy():ctrl():option():cmd("z")
+		:whenActivated(function() mod.toggleEnabled() end)
 
-		--------------------------------------------------------------------------------
-		-- Commands:
-		--------------------------------------------------------------------------------
-		deps.fcpxCmds:add("cpToggleTouchBar")
-			:activatedBy():ctrl():option():cmd("z")
-			:whenActivated(function() mod.toggleEnabled() end)
-
-		return mod
-	end
+	return mod
+end
 
 return plugin

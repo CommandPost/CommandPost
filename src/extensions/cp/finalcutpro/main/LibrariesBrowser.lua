@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.LibrariesBrowser ===
+---
+--- Libraries Browser Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("librariesBrowser")
 local inspect							= require("hs.inspect")
 
@@ -13,8 +28,14 @@ local Button							= require("cp.finalcutpro.ui.Button")
 local Table								= require("cp.finalcutpro.ui.Table")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Libraries = {}
 
+-- TODO: Add documentation
 function Libraries:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -22,19 +43,23 @@ function Libraries:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function Libraries:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function Libraries:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- BROWSER UI:
+--
 -----------------------------------------------------------------------
---- BROWSER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Libraries:UI()
 	if self:isShowing() then
 		return axutils.cache(self, "_ui", function()
@@ -44,10 +69,12 @@ function Libraries:UI()
 	return nil
 end
 
+-- TODO: Add documentation
 function Libraries:isShowing()
 	return self:parent():isShowing() and self:parent():showLibraries():isChecked()
 end
 
+-- TODO: Add documentation
 function Libraries:show()
 	local browser = self:parent()
 	if browser then
@@ -59,18 +86,19 @@ function Libraries:show()
 	return self
 end
 
+-- TODO: Add documentation
 function Libraries:hide()
 	self:parent():hide()
 	return self
 end
 
+-----------------------------------------------------------------------------
+--
+-- PLAYHEADS:
+--
+-----------------------------------------------------------------------------
 
------------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Playheads
------------------------------------------------------------------------------
------------------------------------------------------------------------------
-
+-- TODO: Add documentation
 function Libraries:playhead()
 	if self:list():isShowing() then
 		return self:list():playhead()
@@ -79,6 +107,7 @@ function Libraries:playhead()
 	end
 end
 
+-- TODO: Add documentation
 function Libraries:skimmingPlayhead()
 	if self:list():isShowing() then
 		return self:list():skimmingPlayhead()
@@ -87,13 +116,13 @@ function Libraries:skimmingPlayhead()
 	end
 end
 
+-----------------------------------------------------------------------------
+--
+-- BUTTONS:
+--
+-----------------------------------------------------------------------------
 
------------------------------------------------------------------------------
------------------------------------------------------------------------------
--- Buttons
------------------------------------------------------------------------------
------------------------------------------------------------------------------
-
+-- TODO: Add documentation
 function Libraries:toggleViewMode()
 	if not self._viewMode then
 		self._viewMode = Button:new(self, function()
@@ -103,6 +132,7 @@ function Libraries:toggleViewMode()
 	return self._viewMode
 end
 
+-- TODO: Add documentation
 function Libraries:appearanceAndFiltering()
 	if not self._appearanceAndFiltering then
 		self._appearanceAndFiltering = Button:new(self, function()
@@ -112,6 +142,7 @@ function Libraries:appearanceAndFiltering()
 	return self._appearanceAndFiltering
 end
 
+-- TODO: Add documentation
 function Libraries:searchToggle()
 	if not self._searchToggle then
 		self._searchToggle = Button:new(self, function()
@@ -121,6 +152,7 @@ function Libraries:searchToggle()
 	return self._searchToggle
 end
 
+-- TODO: Add documentation
 function Libraries:search()
 	if not self._search then
 		self._search = TextField:new(self, function()
@@ -130,6 +162,7 @@ function Libraries:search()
 	return self._search
 end
 
+-- TODO: Add documentation
 function Libraries:filterToggle()
 	if not self._filterToggle then
 		self._filterToggle = Button:new(self, function()
@@ -142,6 +175,7 @@ function Libraries:filterToggle()
 	return self._filterToggle
 end
 
+-- TODO: Add documentation
 Libraries.ALL_CLIPS = 1
 Libraries.HIDE_REJECTED = 2
 Libraries.NO_RATINGS_OR_KEYWORDS = 3
@@ -149,6 +183,7 @@ Libraries.FAVORITES = 4
 Libraries.REJECTED = 5
 Libraries.UNUSED = 6
 
+-- TODO: Add documentation
 function Libraries:selectClipFiltering(filterType)
 	local ui = self:UI()
 	if ui then
@@ -168,6 +203,7 @@ function Libraries:selectClipFiltering(filterType)
 	return self
 end
 
+-- TODO: Add documentation
 function Libraries:mainGroupUI()
 	return axutils.cache(self, "_mainGroup",
 	function()
@@ -176,6 +212,7 @@ function Libraries:mainGroupUI()
 	end)
 end
 
+-- TODO: Add documentation
 function Libraries:filmstrip()
 	if not self._filmstrip then
 		self._filmstrip = LibrariesFilmstrip:new(self)
@@ -183,6 +220,7 @@ function Libraries:filmstrip()
 	return self._filmstrip
 end
 
+-- TODO: Add documentation
 function Libraries:list()
 	if not self._list then
 		self._list = LibrariesList:new(self)
@@ -190,6 +228,7 @@ function Libraries:list()
 	return self._list
 end
 
+-- TODO: Add documentation
 function Libraries:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
@@ -199,19 +238,23 @@ function Libraries:sidebar()
 	return self._sidebar
 end
 
+-- TODO: Add documentation
 function Libraries.matchesSidebar(element)
 	return element and element:attributeValue("AXRole") == "AXScrollArea"
 		and element:attributeValue("AXIdentifier") == "_NS:9"
 end
 
+-- TODO: Add documentation
 function Libraries:isListView()
 	return self:list():isShowing()
 end
 
+-- TODO: Add documentation
 function Libraries:isFilmstripView()
 	return self:filmstrip():isShowing()
 end
 
+-- TODO: Add documentation
 function Libraries:clipsUI()
 	if self:isListView() then
 		return self:list():clipsUI()
@@ -222,6 +265,7 @@ function Libraries:clipsUI()
 	end
 end
 
+-- TODO: Add documentation
 function Libraries:selectedClipsUI()
 	if self:isListView() then
 		return self:list():selectedClipsUI()
@@ -232,6 +276,7 @@ function Libraries:selectedClipsUI()
 	end
 end
 
+-- TODO: Add documentation
 function Libraries:showClip(clipUI)
 	if self:isListView() then
 		self:list():showClip(clipUI)
@@ -241,6 +286,7 @@ function Libraries:showClip(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Libraries:selectClip(clipUI)
 	if self:isListView() then
 		self:list():selectClip(clipUI)
@@ -252,6 +298,7 @@ function Libraries:selectClip(clipUI)
 	return self
 end
 
+-- TODO: Add documentation
 function Libraries:selectClipAt(index)
 	if self:isListView() then
 		self:list():selectClipAt(index)
@@ -261,6 +308,7 @@ function Libraries:selectClipAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function Libraries:selectAll(clipsUI)
 	if self:isListView() then
 		self:list():selectAll(clipsUI)
@@ -269,6 +317,7 @@ function Libraries:selectAll(clipsUI)
 	end
 end
 
+-- TODO: Add documentation
 function Libraries:deselectAll()
 	if self:isListView() then
 		self:list():deselectAll()
@@ -277,11 +326,13 @@ function Libraries:deselectAll()
 	end
 end
 
+-- TODO: Add documentation
 function Libraries:isFocused()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
 end
 
+-- TODO: Add documentation
 function Libraries:saveLayout()
 	local layout = {}
 	if self:isShowing() then
@@ -292,6 +343,7 @@ function Libraries:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function Libraries:loadLayout(layout)
 	if layout and layout.showing then
 		self:show()

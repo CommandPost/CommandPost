@@ -1,15 +1,32 @@
--- Imports
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.ui.WindowWatcher ===
+---
+--- Window Watcher Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log							= require("hs.logger").new("windowWatcher")
+
 local windowfilter					= require("hs.window.filter")
 local axuielement					= require("hs._asm.axuielement")
 
-local log							= require("hs.logger").new("windowWatcher")
-
--- The Class
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local WindowWatcher = {}
 
-
 --- cp.finalcutpro.ui.WindowWatcher:new(windowFn) -> WindowWatcher
---- Function:
+--- Method
 --- Creates a new WindowWatcher
 ---
 --- Parameters:
@@ -24,17 +41,19 @@ function WindowWatcher:new(window)
 	return o
 end
 
+--- cp.finalcutpro.ui.WindowWatcher:watch() -> bool
+--- Method
 --- Watch for events that happen in the window
 --- The optional functions will be called when the window
 --- is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(window)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function WindowWatcher:watch(events)
 	local startWatching = false
 	if not self._watchers then
@@ -97,13 +116,15 @@ function WindowWatcher:watch(events)
 	return id
 end
 
+--- cp.finalcutpro.ui.WindowWatcher:unwatch() -> bool
+--- Method
 --- Removes the watch with the specified ID
 ---
 --- Parameters:
---- * `id` - The ID returned from `watch` that wants to be removed.
+---  * `id` - The ID returned from `watch` that wants to be removed.
 ---
 --- Returns:
---- * N/A
+---  * None
 function WindowWatcher:unwatch(id)
 	local watchers = self._watchers
 	if id and id.id and watchers and watchers[id.id] then

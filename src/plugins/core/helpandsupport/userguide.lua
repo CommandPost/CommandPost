@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.helpandsupport.userguide ===
+---
+--- User Guide Menu Item.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -25,7 +29,16 @@ local PRIORITY 			= 1
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.openUserGuide()
+--- plugins.core.helpandsupport.userguide.show() -> nil
+--- Function
+--- Opens the CommandPost User Guide in your default Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.show()
 	os.execute('open "http://help.commandpost.io/"')
 end
 
@@ -47,7 +60,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("userGuide"),	fn = mod.openUserGuide }
+		return { title = i18n("userGuide"),	fn = mod.show }
 	end)
 	return mod
 end

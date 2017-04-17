@@ -44,13 +44,6 @@ local concat		= table.concat
 local pairs			= pairs
 local type			= type
 
-local block = {}
-block.__index = block
-
-local function isBlock(value)
-	return value and type(value) == "table" and getmetatable(value) == block
-end
-
 -- Evalutates the content, converting it to a string.
 local function evaluate(content)
 	local contentType = type(content)
@@ -61,18 +54,35 @@ local function evaluate(content)
 				result = result .. evaluate(item)
 			end
 			return result
-		elseif isBlock(content) then
-			return tostring(content)
 		end
 	elseif contentType == "function" then
-		return tostring(content())
+		content = content()
 	end
 	
 	if content then
-		return escape(tostring(content))
+		return tostring(content)
 	else
 		return ""
 	end
+end
+
+local escaped = {}
+escaped.__index = escaped
+
+function escaped.new(content)
+	local o = { content = content }
+	return setmetatable(o, escaped)
+end
+
+function escaped:__tostring()
+	return self.content and escape(evaluate(self.content)) or ""
+end
+
+local block = {}
+block.__index = block
+
+local function isBlock(value)
+	return value and type(value) == "table" and getmetatable(value) == block
 end
 
 function block:tostring()
@@ -136,22 +146,28 @@ function block:__tostring()
 end
 
 -- Prepends the content inside the block.
-function block:prepend(newContent)
+function block:prepend(newContent, unescaped)
 	local content = self._metadata.content
 	if not content then
 		content = {}
 		self._metadata.content = content
+	end
+	if not isBlock(newContent) and not unescaped then
+		newContent = escaped.new(newContent)
 	end
 	table.insert(content, 1, newContent)
 	return self
 end
 
 -- Appends the content inside the block.
-function block:append(newContent)
+function block:append(newContent, unescaped)
 	local content = self._metadata.content
 	if not content then
 		content = {}
 		self._metadata.content = content
+	end
+	if not isBlock(newContent) and not unescaped then
+		newContent = escaped.new(newContent)
 	end
 	table.insert(content, newContent)
 	return self
@@ -213,19 +229,19 @@ end
 
 local html = {}
 html.__index = function(_, name)
-    return function(param)
+    return function(param, ...)
 		local pType = type(param)
         if pType ~= "table" or isBlock(param) then
 			-- it's content, not attributes
-			return block.new(name)(param)
+			return block.new(name)(param, ...)
 		else
             return block.new(name, param)
         end
     end
 end
 
-html.__call = function(_, content)
-	return isBlock(content) and content or block.new("_")(content)
+html.__call = function(_, content, ...)
+	return isBlock(content) and content or block.new("_")(content, ...)
 end
 
 return setmetatable(html, html)

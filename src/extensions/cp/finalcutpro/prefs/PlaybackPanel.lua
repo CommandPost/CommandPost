@@ -1,9 +1,29 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.prefs.PlaybackPanel ===
+---
+--- Playback Panel Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("playbackPanel")
 local inspect							= require("hs.inspect")
 
 local axutils							= require("cp.finalcutpro.axutils")
 local just								= require("cp.just")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local PlaybackPanel = {}
 
 PlaybackPanel.ID = 3
@@ -11,6 +31,7 @@ PlaybackPanel.ID = 3
 PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = "_NS:145"
 PlaybackPanel.AUTO_START_BG_RENDER = "_NS:15"
 
+-- TODO: Add documentation
 function PlaybackPanel:new(preferencesDialog)
 	o = {_parent = preferencesDialog}
 	setmetatable(o, self)
@@ -18,10 +39,12 @@ function PlaybackPanel:new(preferencesDialog)
 	return o
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:UI()
 	return axutils.cache(self, "_ui", function()
 		local toolbarUI = self:parent():toolbarUI()
@@ -29,6 +52,7 @@ function PlaybackPanel:UI()
 	end)
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:isShowing()
 	if self:parent():isShowing() then
 		local toolbar = self:parent():toolbarUI()
@@ -40,6 +64,7 @@ function PlaybackPanel:isShowing()
 	return false
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:show()
 	local parent = self:parent()
 	-- show the parent.
@@ -54,6 +79,7 @@ function PlaybackPanel:show()
 	return false
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:toggleCheckBox(identifier)
 	if self:show() then
 		local group = self:parent():groupUI()
@@ -66,10 +92,12 @@ function PlaybackPanel:toggleCheckBox(identifier)
 	return false
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:toggleCreateOptimizedMediaForMulticamClips()
 	return self:toggleCheckBox(PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS)
 end
 
+-- TODO: Add documentation
 function PlaybackPanel:toggleAutoStartBGRender()
 	return self:toggleCheckBox(PlaybackPanel.AUTO_START_BG_RENDER)
 end

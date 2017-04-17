@@ -1,3 +1,11 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                            P L I S T    T O O L S                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.plist.archiver ===
+---
 --- Supports 'defrosting' a table which is made up from an 'NSKeyArchiver' record.
 
 local mod = {}
@@ -91,26 +99,29 @@ local function get(data, objects, cache, defrostFn)
 end
 
 --- cp.plist.archiver.unarchive(archive) -> table
+--- Function
 --- Unarchives a LUA table which was archived into a plist using the NSKeyedArchiver.
 ---
---- A 'defrost' function can be provided, which will be called whenever a table with a '$class'
---- structure is present. It will receive the table and the classname and should either return a modified value
---- if the class was handled, or `nil` if it was unable to handle the class. Eg:
----
---- ```
---- local result = archiver.unarchive(archiveData, function(frozen, classname)
---- 	if classname == "XXMyClass" then
---- 		return MyClass:new(frozen.foo, frozen.bar)
---- 	end
----		return nil
---- end)
---- ```
----
 --- Parameters:
---- * `archive`		- the table containing the archive plist as a table
---- * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
+---  * `archive`		- the table containing the archive plist as a table
+---  * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
+---
 --- Returns:
---- * The unarchived
+---  * The unarchived
+---
+--- Notes:
+---  * A 'defrost' function can be provided, which will be called whenever a table with a '$class'
+---    structure is present. It will receive the table and the classname and should either return a modified value
+---    if the class was handled, or `nil` if it was unable to handle the class. Eg:
+---
+---    ```
+---    local result = archiver.unarchive(archiveData, function(frozen, classname)
+--- 	   if classname == "XXMyClass" then
+--- 		   return MyClass:new(frozen.foo, frozen.bar)
+--- 	   end
+---		   return nil
+---    end)
+---    ```
 function mod.unarchive(archive, defrostFn)
 	if checkArchiver(archive) then
 		-- root = root or mod.ROOT_KEY

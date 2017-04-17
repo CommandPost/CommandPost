@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.helpandsupport.credits ===
+---
+--- Credits Menu Item.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -25,9 +29,18 @@ local PRIORITY 			= 3
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.openCredits()
-		hs.openAbout()
-	end
+--- plugins.core.helpandsupport.credits.openCredits() -> nil
+--- Function
+--- Opens CommandPost Credits Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.show()
+	hs.openAbout()
+end
 
 --------------------------------------------------------------------------------
 --
@@ -48,7 +61,7 @@ local plugin = {
 function plugin.init(deps)
 
 	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("credits"),	fn = mod.openCredits }
+		return { title = i18n("credits"),	fn = mod.show }
 	end)
 	return mod
 

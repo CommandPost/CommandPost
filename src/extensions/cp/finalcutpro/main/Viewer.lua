@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.Viewer ===
+---
+--- Viewer Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("viewer")
 local inspect							= require("hs.inspect")
 
@@ -7,9 +22,14 @@ local axutils							= require("cp.finalcutpro.axutils")
 local PrimaryWindow						= require("cp.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.finalcutpro.main.SecondaryWindow")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Viewer = {}
 
-
+-- TODO: Add documentation
 function Viewer.matches(element)
 	-- Viewers have a single 'AXContents' element
 	local contents = element:attributeValue("AXContents")
@@ -18,6 +38,7 @@ function Viewer.matches(element)
 	   and #(contents[1]) > 0
 end
 
+-- TODO: Add documentation
 function Viewer:new(app, eventViewer)
 	o = {
 		_app = app,
@@ -28,33 +49,40 @@ function Viewer:new(app, eventViewer)
 	return o
 end
 
+-- TODO: Add documentation
 function Viewer:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function Viewer:isEventViewer()
 	return self._eventViewer
 end
 
+-- TODO: Add documentation
 function Viewer:isMainViewer()
 	return not self._eventViewer
 end
 
+-- TODO: Add documentation
 function Viewer:isOnSecondary()
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
 end
 
+-- TODO: Add documentation
 function Viewer:isOnPrimary()
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
+--
+-- BROWSER UI:
+--
 -----------------------------------------------------------------------
---- BROWSER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Viewer:UI()
 	return axutils.cache(self, "_ui", function()
 		local app = self:app()
@@ -68,10 +96,12 @@ function Viewer:UI()
 end
 
 -----------------------------------------------------------------------
+--
+-- VIEWER UI:
+--
 -----------------------------------------------------------------------
---- VIEWER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Viewer:findViewerUI(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
@@ -96,10 +126,12 @@ function Viewer:findViewerUI(...)
 end
 
 -----------------------------------------------------------------------
+--
+-- EVENT VIEWER UI:
+--
 -----------------------------------------------------------------------
---- EVENT VIEWER UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Viewer:findEventViewerUI(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
@@ -128,11 +160,12 @@ function Viewer:findEventViewerUI(...)
 	return nil
 end
 
-
+-- TODO: Add documentation
 function Viewer:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function Viewer:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
@@ -147,6 +180,7 @@ function Viewer:showOnPrimary()
 	return self
 end
 
+-- TODO: Add documentation
 function Viewer:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
@@ -160,7 +194,7 @@ function Viewer:showOnSecondary()
 	return self
 end
 
-
+-- TODO: Add documentation
 function Viewer:hide()
 	local menuBar = self:app():menuBar()
 
@@ -174,6 +208,7 @@ function Viewer:hide()
 	return self
 end
 
+-- TODO: Add documentation
 function Viewer:topToolbarUI()
 	return axutils.cache(self, "_topToolbar", function()
 		local ui = self:UI()
@@ -188,6 +223,7 @@ function Viewer:topToolbarUI()
 	end)
 end
 
+-- TODO: Add documentation
 function Viewer:bottomToolbarUI()
 	return axutils.cache(self, "_bottomToolbar", function()
 		local ui = self:UI()
@@ -202,10 +238,12 @@ function Viewer:bottomToolbarUI()
 	end)
 end
 
+-- TODO: Add documentation
 function Viewer:hasPlayerControls()
 	return self:bottomToolbarUI() ~= nil
 end
 
+-- TODO: Add documentation
 function Viewer:formatUI()
 	return axutils.cache(self, "_format", function()
 		local ui = self:topToolbarUI()
@@ -213,17 +251,20 @@ function Viewer:formatUI()
 	end)
 end
 
+-- TODO: Add documentation
 function Viewer:getFormat()
 	local format = self:formatUI()
 	return format and format:value()
 end
 
+-- TODO: Add documentation
 function Viewer:getFramerate()
 	local format = self:getFormat()
 	local framerate = format and string.match(format, ' %d%d%.?%d?%d?[pi]')
 	return framerate and tonumber(string.sub(framerate, 1,-2))
 end
 
+-- TODO: Add documentation
 function Viewer:getTitle()
 	local titleText = axutils.childWithID(self:topToolbarUI(), "_NS:16")
 	return titleText and titleText:value()

@@ -1,16 +1,38 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.main.Inspector ===
+---
+--- Inspector
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Inspector = {}
 
+-- TODO: Add documentation
 function Inspector.matches(element)
 	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
 		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
 end
 
+-- TODO: Add documentation
 function Inspector:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -18,19 +40,23 @@ function Inspector:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function Inspector:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function Inspector:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- INSPECTOR UI:
+--
 -----------------------------------------------------------------------
---- Inspector UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function Inspector:UI()
 	return axutils.cache(self, "_ui",
 	function()
@@ -55,10 +81,12 @@ function Inspector:UI()
 	Inspector.matches)
 end
 
+-- TODO: Add documentation
 function Inspector:isShowing()
 	return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
 end
 
+-- TODO: Add documentation
 function Inspector:show()
 	local parent = self:parent()
 	-- show the parent.
@@ -70,7 +98,7 @@ function Inspector:show()
 	return self
 end
 
-
+-- TODO: Add documentation
 function Inspector:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace

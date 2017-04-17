@@ -4,7 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- The AUTOMATION > 'Options' > 'Mobile Notifications' menu section
+--- === plugins.finalcutpro.menu.tools.notifications ===
+---
+--- The AUTOMATION > 'Options' > 'Mobile Notifications' menu section.
 
 --------------------------------------------------------------------------------
 --

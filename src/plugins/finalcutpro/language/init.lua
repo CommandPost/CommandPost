@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.language ===
+---
+--- Final Cut Pro Language Plugin.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -34,74 +38,74 @@ local PRIORITY 		= 6
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- CHANGE FINAL CUT PRO LANGUAGE:
-	--------------------------------------------------------------------------------
-	function mod.changeFinalCutProLanguage(language)
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update Final Cut Pro's settings::
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference("AppleLanguages", {language})
-		if not result then
-			dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
-		end
-
-		--------------------------------------------------------------------------------
-		-- Change Language:
-		--------------------------------------------------------------------------------
-		fcp:getCurrentLanguage(true, language)
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
-	end
+--------------------------------------------------------------------------------
+-- CHANGE FINAL CUT PRO LANGUAGE:
+--------------------------------------------------------------------------------
+function mod.changeFinalCutProLanguage(language)
 
 	--------------------------------------------------------------------------------
-	-- GET FINAL CUT PRO LANGUAGES MENU:
+	-- If Final Cut Pro is running...
 	--------------------------------------------------------------------------------
-	local function getFinalCutProLanguagesMenu()
-		local currentLanguage = fcp:getCurrentLanguage()
-		if mod._lastFCPXLanguage ~= nil and mod._lastFCPXLanguage == currentLanguage and mod._lastFCPXLanguageCache ~= nil then
-			--log.df("Using FCPX Language Menu Cache")
-			return mod._lastFCPXLanguageCache
+	local restartStatus = false
+	if fcp:isRunning() then
+		if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
+			restartStatus = true
 		else
-			--log.df("Not using FCPX Language Menu Cache")
-			local result = {
-				{ title = i18n("german"),			fn = function() mod.changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
-				{ title = i18n("english"), 			fn = function() mod.changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
-				{ title = i18n("spanish"), 			fn = function() mod.changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
-				{ title = i18n("french"), 			fn = function() mod.changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
-				{ title = i18n("japanese"), 		fn = function() mod.changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
-				{ title = i18n("chineseChina"),		fn = function() mod.changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
-			}
-			mod._lastFCPXLanguage = currentLanguage
-			mod._lastFCPXLanguageCache = result
-			return result
+			return "Done"
 		end
 	end
+
+	--------------------------------------------------------------------------------
+	-- Update Final Cut Pro's settings::
+	--------------------------------------------------------------------------------
+	local result = fcp:setPreference("AppleLanguages", {language})
+	if not result then
+		dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
+	end
+
+	--------------------------------------------------------------------------------
+	-- Change Language:
+	--------------------------------------------------------------------------------
+	fcp:getCurrentLanguage(true, language)
+
+	--------------------------------------------------------------------------------
+	-- Restart Final Cut Pro:
+	--------------------------------------------------------------------------------
+	if restartStatus then
+		if not fcp:restart() then
+			--------------------------------------------------------------------------------
+			-- Failed to restart Final Cut Pro:
+			--------------------------------------------------------------------------------
+			dialog.displayErrorMessage(i18n("failedToRestart"))
+			return "Failed"
+		end
+	end
+
+end
+
+--------------------------------------------------------------------------------
+-- GET FINAL CUT PRO LANGUAGES MENU:
+--------------------------------------------------------------------------------
+local function getFinalCutProLanguagesMenu()
+	local currentLanguage = fcp:getCurrentLanguage()
+	if mod._lastFCPXLanguage ~= nil and mod._lastFCPXLanguage == currentLanguage and mod._lastFCPXLanguageCache ~= nil then
+		--log.df("Using FCPX Language Menu Cache")
+		return mod._lastFCPXLanguageCache
+	else
+		--log.df("Not using FCPX Language Menu Cache")
+		local result = {
+			{ title = i18n("german"),			fn = function() mod.changeFinalCutProLanguage("de") end, 				checked = currentLanguage == "de"},
+			{ title = i18n("english"), 			fn = function() mod.changeFinalCutProLanguage("en") end, 				checked = currentLanguage == "en"},
+			{ title = i18n("spanish"), 			fn = function() mod.changeFinalCutProLanguage("es") end, 				checked = currentLanguage == "es"},
+			{ title = i18n("french"), 			fn = function() mod.changeFinalCutProLanguage("fr") end, 				checked = currentLanguage == "fr"},
+			{ title = i18n("japanese"), 		fn = function() mod.changeFinalCutProLanguage("ja") end, 				checked = currentLanguage == "ja"},
+			{ title = i18n("chineseChina"),		fn = function() mod.changeFinalCutProLanguage("zh_CN") end, 			checked = currentLanguage == "zh_CN"},
+		}
+		mod._lastFCPXLanguage = currentLanguage
+		mod._lastFCPXLanguageCache = result
+		return result
+	end
+end
 
 --------------------------------------------------------------------------------
 --
@@ -116,28 +120,28 @@ local plugin = {
 	}
 }
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		-------------------------------------------------------------------------------
-		-- Cache Languages on Load:
-		-------------------------------------------------------------------------------
-		getFinalCutProLanguagesMenu()
+	-------------------------------------------------------------------------------
+	-- Cache Languages on Load:
+	-------------------------------------------------------------------------------
+	getFinalCutProLanguagesMenu()
 
-		-------------------------------------------------------------------------------
-		-- New Menu Section:
-		-------------------------------------------------------------------------------
-		local section = deps.top:addSection(PRIORITY)
+	-------------------------------------------------------------------------------
+	-- New Menu Section:
+	-------------------------------------------------------------------------------
+	local section = deps.top:addSection(PRIORITY)
 
-		-------------------------------------------------------------------------------
-		-- The FCPX Languages Menu:
-		-------------------------------------------------------------------------------
-		local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
-		fcpxLangs:addItems(1, getFinalCutProLanguagesMenu)
+	-------------------------------------------------------------------------------
+	-- The FCPX Languages Menu:
+	-------------------------------------------------------------------------------
+	local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
+	fcpxLangs:addItems(1, getFinalCutProLanguagesMenu)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

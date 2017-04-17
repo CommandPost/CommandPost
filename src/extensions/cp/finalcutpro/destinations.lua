@@ -1,22 +1,43 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.destinations ===
+---
 --- Utility class to process custom User Destinations
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 
 local fs								= require("hs.fs")
 local plist								= require("cp.plist")
 local archiver							= require("cp.plist.archiver")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+
 local mod = {}
 
-mod.USER_DESTINATIONS_PATH = "~/Library/Preferences/com.apple.FinalCut.UserDestinations.plist"
-mod.DESTINATIONS_KEY = "FFShareDestinationsKey"
+mod.USER_DESTINATIONS_PATH 				= "~/Library/Preferences/com.apple.FinalCut.UserDestinations.plist"
+mod.DESTINATIONS_KEY 					= "FFShareDestinationsKey"
 
 --- cp.finalcutpro.destinations.getUserDestinationsAsTable() -> table
---- Function:
+--- Function
 --- Loads the 'UserDestinations' plist and returns a basic table containing the structure.
 ---
---- Params:
---- * N/A
+--- Parameters:
+---  * None
+---
 --- Returns:
---- The plist as a table.
+---  * The plist as a table.
 function mod.getUserDestinationsAsTable()
 	local destinations = plist.fileToTable(mod.USER_DESTINATIONS_PATH)
 	if destinations then

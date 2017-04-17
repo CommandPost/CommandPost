@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.hacks.smartcollectionslabel ===
+---
+--- Smart Collections Label.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -36,62 +40,62 @@ local PLIST_PATH = "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.changeSmartCollectionsLabel()
+function mod.changeSmartCollectionsLabel()
 
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		local FFOrganizerSmartCollections = ""
-		local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp:getPath() .. PLIST_PATH .. "'")
-		if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
+	--------------------------------------------------------------------------------
+	-- Get existing value:
+	--------------------------------------------------------------------------------
+	local FFOrganizerSmartCollections = ""
+	local executeResult,executeStatus = execute("/usr/libexec/PlistBuddy -c \"Print :FFOrganizerSmartCollections\" '" .. fcp:getPath() .. PLIST_PATH .. "'")
+	if tools.trim(executeResult) ~= "" then FFOrganizerSmartCollections = executeResult end
 
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
+	--------------------------------------------------------------------------------
+	-- If Final Cut Pro is running...
+	--------------------------------------------------------------------------------
+	local restartStatus = false
+	if fcp:isRunning() then
+		if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel") .. "\n\n" .. i18n("doYouWantToContinue")) then
+			restartStatus = true
+		else
+			return "Done"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Ask user what to set the backup interval to:
-		--------------------------------------------------------------------------------
-		local userSelectedSmartCollectionsLabel = dialog.displayTextBoxMessage(i18n("smartCollectionsLabelTextbox"), i18n("smartCollectionsLabelError"), tools.trim(FFOrganizerSmartCollections))
-		if not userSelectedSmartCollectionsLabel then
-			return "Cancel"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist for every Flexo language:
-		--------------------------------------------------------------------------------
-		local executeCommands = {}
-		for k, v in pairs(fcp:getFlexoLanguages()) do
-			local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp:getFlexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
-			executeCommands[#executeCommands + 1] = executeCommand
-		end
-		local result = tools.executeWithAdministratorPrivileges(executeCommands)
-		if type(result) == "string" then
-			dialog.displayErrorMessage(result)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
 	end
+
+	--------------------------------------------------------------------------------
+	-- Ask user what to set the backup interval to:
+	--------------------------------------------------------------------------------
+	local userSelectedSmartCollectionsLabel = dialog.displayTextBoxMessage(i18n("smartCollectionsLabelTextbox"), i18n("smartCollectionsLabelError"), tools.trim(FFOrganizerSmartCollections))
+	if not userSelectedSmartCollectionsLabel then
+		return "Cancel"
+	end
+
+	--------------------------------------------------------------------------------
+	-- Update plist for every Flexo language:
+	--------------------------------------------------------------------------------
+	local executeCommands = {}
+	for k, v in pairs(fcp:getFlexoLanguages()) do
+		local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp:getFlexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
+		executeCommands[#executeCommands + 1] = executeCommand
+	end
+	local result = tools.executeWithAdministratorPrivileges(executeCommands)
+	if type(result) == "string" then
+		dialog.displayErrorMessage(result)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Restart Final Cut Pro:
+	--------------------------------------------------------------------------------
+	if restartStatus then
+		if not fcp:restart() then
+			--------------------------------------------------------------------------------
+			-- Failed to restart Final Cut Pro:
+			--------------------------------------------------------------------------------
+			dialog.displayErrorMessage(i18n("failedToRestart"))
+			return "Failed"
+		end
+	end
+
+end
 
 --------------------------------------------------------------------------------
 --

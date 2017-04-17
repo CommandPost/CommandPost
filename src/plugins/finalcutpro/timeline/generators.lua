@@ -1,4 +1,20 @@
--- Imports
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.generators ===
+---
+--- Controls Final Cut Pro's Generators.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log				= require("hs.logger").new("generators")
+
 local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
@@ -11,16 +27,22 @@ local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
 
-local log				= require("hs.logger").new("generators")
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local PRIORITY 			= 4000
+local MAX_SHORTCUTS 	= 5
 
--- Constants
-local PRIORITY = 4000
-
-local MAX_SHORTCUTS = 5
-
--- Effects Action
-local action = {}
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
+
+local action = {}
 
 function action.init(actionmanager)
 	action._manager = actionmanager

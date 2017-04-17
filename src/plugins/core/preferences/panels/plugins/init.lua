@@ -209,7 +209,7 @@ function mod.init(deps, env)
 		tooltip		= i18n("pluginsPanelTooltip"),
 	})
 	
-	mod.panel:addContent(10, html(generateContent))
+	mod.panel:addContent(10, generateContent, true)
 
 	return mod
 end

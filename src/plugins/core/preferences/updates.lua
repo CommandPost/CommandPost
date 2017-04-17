@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.core.preferences.updates ===
+---
+--- Updates Module.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -32,6 +36,15 @@ local CHECK_FOR_UPDATES_INTERVAL 		= 15 * 60
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.updates.toggleCheckForUpdates() -> nil
+--- Function
+--- Toggles 'Check For Updates'
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.toggleCheckForUpdates()
 	local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
 	hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
@@ -42,6 +55,15 @@ function mod.toggleCheckForUpdates()
 	end
 end
 
+--- plugins.core.preferences.updates.checkForUpdates() -> boolean
+--- Function
+--- Returns the 'Check for Updates' status
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` or `false`
 function mod.checkForUpdates()
 	hs.checkForUpdates()
 end

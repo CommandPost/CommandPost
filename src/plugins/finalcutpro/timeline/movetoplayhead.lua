@@ -1,12 +1,21 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.timeline.movetoplayhead ===
+---
+--- Move To Playhead.
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp								= require("cp.finalcutpro")
 local log								= require("hs.logger").new("selectalltimelineclips")
 
--- Constants
+local fcp								= require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -15,6 +24,15 @@ local log								= require("hs.logger").new("selectalltimelineclips")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.movetoplayhead.moveToPlayhead() -> nil
+--- Function
+--- Move to Playhead
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.moveToPlayhead()
 
 	local clipboardManager = plugins("cp.plugins.clipboard.manager")

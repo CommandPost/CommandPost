@@ -1,21 +1,32 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                            P L I S T    T O O L S                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 --- === cp.plist ===
 ---
 --- Reads & Writes plist data.
----
---- Thrown together by:
----   David Peterson (https://github.com/randomeizer)
----   Chris Hocking (https://github.com/latenitefilms)
----
 
-local plist = {}
-
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log			= require("hs.logger").new("plist")
 local plistParse 	= require("cp.plist.plistParse")
 local fs			= require("hs.fs")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local plist = {}
+
 plist.log = log
 
---- hs.plist.base64ToTable(base64Data) -> table or nil
+--- cp.plist.base64ToTable(base64Data) -> table or nil
 --- Function
 --- Converts base64 Data into a LUA Table.
 ---
@@ -58,7 +69,7 @@ function plist.base64ToTable(base64Data)
 
 end
 
---- hs.plist.binaryToTable(binaryData) -> table or nil
+--- cp.plist.binaryToTable(binaryData) -> table or nil
 --- Function
 --- Converts Binary Data into a LUA Table.
 ---
@@ -95,7 +106,7 @@ function plist.binaryToTable(binaryData)
 
 end
 
---- hs.plist.binaryFileToTable(plistFileName) -> table or nil
+--- cp.plist.binaryFileToTable(plistFileName) -> table or nil
 --- Function
 --- Converts the data from a Binary File into a LUA Table.
 ---
@@ -136,7 +147,7 @@ function plist.binaryFileToTable(plistFileName)
 
 end
 
---- hs.plist.binaryFileToXML(plistFileName) -> string | nil
+--- cp.plist.binaryFileToXML(plistFileName) -> string | nil
 --- Function
 --- Converts the data from a Binary plist File into XML as a string.
 ---
@@ -169,7 +180,7 @@ function plist.binaryFileToXML(plistFileName)
 
 end
 
---- hs.plist.xmlFileToTable(plistFileName) -> table or nil
+--- cp.plist.xmlFileToTable(plistFileName) -> table or nil
 --- Function
 --- Converts XML data from a file into a LUA Table.
 ---
@@ -208,12 +219,12 @@ function plist.xmlFileToTable(plistFileName)
 
 end
 
---- hs.plist.fileToTable(plistFileName) -> table or nil
+--- cp.plist.fileToTable(plistFileName) -> table or nil
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
 --- It will check the file prior to loading to determine which type it is.
 --- If you know which type of file you're dealing with in advance, you can use
---- hs.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
+--- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
 --- (small) file read
 ---
 --- Parameters:

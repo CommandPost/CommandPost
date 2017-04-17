@@ -31,6 +31,7 @@ local command = {}
 hotkey.setLogLevel("error")
 
 --- cp.commands.command:new() -> command
+--- Method
 --- Creates a new menu command, which can have items and sub-menus added to it.
 ---
 --- Parameters:
@@ -60,6 +61,7 @@ function command:parent()
 end
 
 --- cp.commands.command:titled(title) -> command
+--- Method
 --- Applies the provided human-readable title to the command.
 ---
 --- Parameters:
@@ -104,6 +106,7 @@ function command:getGroup()
 end
 
 --- cp.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
+--- Method
 --- Specifies that the command is activated by pressing a key combination.
 --- This method can be called multiple times, and multiple key combinations will be registered for the command.
 --- To remove existing key combinations, call the `command:deleteShortcuts()` method.
@@ -151,6 +154,7 @@ function command:activatedBy(modifiers, keyCode)
 end
 
 --- cp.commands.command:deleteShortcuts() -> command
+--- Method
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
@@ -176,6 +180,7 @@ function command:setShortcuts(shortcuts)
 end
 
 --- cp.commands.command:addShortcut() -> command
+--- Method
 --- Adds the specified shortcut to the command.
 --- If the command is enabled, the shortcut will also be enabled.
 ---
@@ -200,6 +205,7 @@ function command:addShortcut(newShortcut)
 end
 
 --- cp.commands.command:getShortcuts() -> command
+--- Method
 --- Returns the set of shortcuts assigned to this command.
 ---
 --- Parameters:
@@ -212,6 +218,7 @@ function command:getShortcuts()
 end
 
 --- cp.commands.command:whenActivated(function) -> command
+--- Method
 --- Sets the function that will be called when the command is activated.
 ---
 --- NOTE: This is a shortcut for calling `whenPressed(...)`
@@ -227,6 +234,7 @@ function command:whenActivated(activatedFn)
 end
 
 --- cp.commands.command:whenPressed(function) -> command
+--- Method
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
@@ -241,6 +249,7 @@ function command:whenPressed(pressedFn)
 end
 
 --- cp.commands.command:whenReleased(function) -> command
+--- Method
 --- Sets the function that will be called when the command key combo is released.
 ---
 --- Parameters:
@@ -255,6 +264,7 @@ function command:whenReleased(releasedFn)
 end
 
 --- cp.commands.command:whenRepeated(function) -> command
+--- Method
 --- Sets the function that will be called when the command key combo is repeated.
 ---
 --- Parameters:
@@ -269,6 +279,7 @@ function command:whenRepeated(repeatedFn)
 end
 
 --- cp.commands.command:pressed() -> command
+--- Method
 --- Executes the 'pressed' function, if present.
 ---
 --- Parameters:
@@ -283,6 +294,7 @@ function command:pressed()
 end
 
 --- cp.commands.command:released() -> command
+--- Method
 --- Executes the 'released' function, if present.
 ---
 --- Parameters:
@@ -297,6 +309,7 @@ function command:released()
 end
 
 --- cp.commands.command:repeated(repeats) -> command
+--- Method
 --- Executes the 'repeated' function, if present.
 ---
 --- Parameters:
@@ -321,6 +334,7 @@ function command:repeated(repeats)
 end
 
 --- cp.commands.command:activated(repeats) -> command
+--- Method
 --- Executes the 'pressed', then 'repeated', then 'released' functions, if present.
 ---
 --- Parameters:

@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.export.SaveSheet ===
+---
+--- Save Sheet
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 local windowfilter					= require("hs.window.filter")
@@ -9,8 +24,14 @@ local ReplaceAlert					= require("cp.finalcutpro.export.ReplaceAlert")
 local GoToPrompt					= require("cp.finalcutpro.export.GoToPrompt")
 local TextField						= require("cp.finalcutpro.ui.TextField")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local SaveSheet = {}
 
+-- TODO: Add documentation
 function SaveSheet.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"
@@ -18,7 +39,7 @@ function SaveSheet.matches(element)
 	return false
 end
 
-
+-- TODO: Add documentation
 function SaveSheet:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -26,14 +47,17 @@ function SaveSheet:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function SaveSheet:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function SaveSheet:app()
 	return self:parent():app()
 end
 
+-- TODO: Add documentation
 function SaveSheet:UI()
 	return axutils.cache(self, "_ui", function()
 		return axutils.childMatching(self:parent():UI(), SaveSheet.matches)
@@ -41,14 +65,17 @@ function SaveSheet:UI()
 	SaveSheet.matches)
 end
 
+-- TODO: Add documentation
 function SaveSheet:isShowing()
 	return self:UI() ~= nil or self:replaceAlert():isShowing()
 end
 
+-- TODO: Add documentation
 function SaveSheet:hide()
 	self:pressCancel()
 end
 
+-- TODO: Add documentation
 function SaveSheet:pressCancel()
 	local ui = self:UI()
 	if ui then
@@ -60,6 +87,7 @@ function SaveSheet:pressCancel()
 	return self
 end
 
+-- TODO: Add documentation
 function SaveSheet:pressSave()
 	local ui = self:UI()
 	if ui then
@@ -71,11 +99,13 @@ function SaveSheet:pressSave()
 	return self
 end
 
+-- TODO: Add documentation
 function SaveSheet:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()
 end
 
+-- TODO: Add documentation
 function SaveSheet:filename()
 	if not self._filename then
 		self._filename = TextField:new(self, function()
@@ -85,6 +115,7 @@ function SaveSheet:filename()
 	return self._filename
 end
 
+-- TODO: Add documentation
 function SaveSheet:setPath(path)
 	if self:isShowing() then
 		-- Display the 'Go To' prompt
@@ -93,6 +124,7 @@ function SaveSheet:setPath(path)
 	return self
 end
 
+-- TODO: Add documentation
 function SaveSheet:replaceAlert()
 	if not self._replaceAlert then
 		self._replaceAlert = ReplaceAlert:new(self)
@@ -100,12 +132,12 @@ function SaveSheet:replaceAlert()
 	return self._replaceAlert
 end
 
+-- TODO: Add documentation
 function SaveSheet:goToPrompt()
 	if not self._goToPrompt then
 		self._goToPrompt = GoToPrompt:new(self)
 	end
 	return self._goToPrompt
 end
-
 
 return SaveSheet

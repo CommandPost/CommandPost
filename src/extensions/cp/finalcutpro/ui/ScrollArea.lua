@@ -1,11 +1,33 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.ui.ScrollArea ===
+---
+--- Scroll Area Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils							= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local ScrollArea = {}
 
+-- TODO: Add documentation
 function ScrollArea.matches(element)
 	return element and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
+-- TODO: Add documentation
 function ScrollArea:new(parent, finderFn)
 	o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
@@ -13,19 +35,23 @@ function ScrollArea:new(parent, finderFn)
 	return o
 end
 
+-- TODO: Add documentation
 function ScrollArea:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function ScrollArea:app()
 	return self:parent():app()
 end
 
 -----------------------------------------------------------------------
+--
+-- CONTENT UI:
+--
 -----------------------------------------------------------------------
---- CONTENT UI
------------------------------------------------------------------------
------------------------------------------------------------------------
+
+-- TODO: Add documentation
 function ScrollArea:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
@@ -33,25 +59,30 @@ function ScrollArea:UI()
 	ScrollArea.matches)
 end
 
+-- TODO: Add documentation
 function ScrollArea:verticalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+-- TODO: Add documentation
 function ScrollArea:horizontalScrollBarUI()
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
+-- TODO: Add documentation
 function ScrollArea:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function ScrollArea:contentsUI()
 	local ui = self:UI()
 	return ui and ui:contents()[1]
 end
 
+-- TODO: Add documentation
 function ScrollArea:childrenUI(filterFn)
 	local ui = self:contentsUI()
 	if ui then
@@ -85,12 +116,13 @@ function ScrollArea:childrenUI(filterFn)
 	return nil
 end
 
+-- TODO: Add documentation
 function ScrollArea:selectedChildrenUI()
 	local ui = self:contentsUI()
 	return ui and ui:selectedChildren()
 end
 
-
+-- TODO: Add documentation
 function ScrollArea:viewFrame()
 	local ui = self:UI()
 	local hScroll = self:horizontalScrollBarUI()
@@ -108,6 +140,7 @@ function ScrollArea:viewFrame()
 	return frame
 end
 
+-- TODO: Add documentation
 function ScrollArea:showChild(childUI)
 	local ui = self:UI()
 	if ui and childUI then
@@ -137,6 +170,7 @@ function ScrollArea:showChild(childUI)
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:showChildAt(index)
 	local ui = self:childrenUI()
 	if ui and #ui >= index then
@@ -145,6 +179,7 @@ function ScrollArea:showChildAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:selectChild(childUI)
 	if childUI then
 		childUI:parent():setAttributeValue("AXSelectedChildren", { childUI } )
@@ -152,6 +187,7 @@ function ScrollArea:selectChild(childUI)
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:selectChildAt(index)
 	local ui = self:childrenUI()
 	if ui and #ui >= index then
@@ -160,6 +196,7 @@ function ScrollArea:selectChildAt(index)
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:selectAll(childrenUI)
 	childrenUI = childrenUI or self:childrenUI()
 	if childrenUI then
@@ -170,6 +207,7 @@ function ScrollArea:selectAll(childrenUI)
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:deselectAll()
 	local contents = self:contentsUI()
 	if contents then
@@ -178,6 +216,7 @@ function ScrollArea:deselectAll()
 	return self
 end
 
+-- TODO: Add documentation
 function ScrollArea:saveLayout()
 	local layout = {}
 	local hScroll = self:horizontalScrollBarUI()
@@ -193,6 +232,7 @@ function ScrollArea:saveLayout()
 	return layout
 end
 
+-- TODO: Add documentation
 function ScrollArea:loadLayout(layout)
 	if layout then
 		self:selectAll(layout.selectedChildren)

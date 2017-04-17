@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.preferences.scanfinalcutpro ===
+---
+--- Scan Final Cut Pro.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -33,63 +37,63 @@ local PRIORITY = 1
 --------------------------------------------------------------------------------
 local mod = {}
 
-	--------------------------------------------------------------------------------
-	-- SCAN FINAL CUT PRO:
-	--------------------------------------------------------------------------------
-	function mod.scanFinalCutPro()
+--------------------------------------------------------------------------------
+-- SCAN FINAL CUT PRO:
+--------------------------------------------------------------------------------
+function mod.scanFinalCutPro()
 
-		if not fcp:isRunning() then
-			--log.d("Launching Final Cut Pro.")
-			fcp:launch()
+	if not fcp:isRunning() then
+		--log.d("Launching Final Cut Pro.")
+		fcp:launch()
 
-			local didFinalCutProLoad = just.doUntil(function()
-				--log.d("Checking if Final Cut Pro has loaded.")
-				return fcp:primaryWindow():isShowing()
-			end, 10, 1)
+		local didFinalCutProLoad = just.doUntil(function()
+			--log.d("Checking if Final Cut Pro has loaded.")
+			return fcp:primaryWindow():isShowing()
+		end, 10, 1)
 
-			if not didFinalCutProLoad then
-				dialog.display(i18n("loadFinalCutProFailed"))
-				return false
-			end
-			--log.d("Final Cut Pro has loaded.")
-		else
-			--log.d("Final Cut Pro is already running.")
+		if not didFinalCutProLoad then
+			dialog.display(i18n("loadFinalCutProFailed"))
+			return false
 		end
-
-		--------------------------------------------------------------------------------
-		-- Warning message:
-		--------------------------------------------------------------------------------
-		dialog.displayMessage(i18n("scanFinalCutProWarning"))
-
-		local result
-
-		result = mod.effects.updateEffectsList()
-		if result == "Fail" then return false end
-
-		result = mod.titles.updateTitlesList()
-		if result == "Fail" then return false end
-
-		result = mod.generators.updateGeneratorsList()
-		if result == "Fail" then return false end
-
-		result = mod.transitions.updateTransitionsList()
-		if result == "Fail" then return false end
-
-		dialog.displayMessage(i18n("scanFinalCutProDone"))
-
-		return true
-
+		--log.d("Final Cut Pro has loaded.")
+	else
+		--log.d("Final Cut Pro is already running.")
 	end
 
 	--------------------------------------------------------------------------------
-	-- INITIALISE MODULE:
+	-- Warning message:
 	--------------------------------------------------------------------------------
-	function mod.init(effects, generators, titles, transitions)
-		mod.effects = effects
-		mod.generators = generators
-		mod.titles = titles
-		mod.transitions = transitions
-	end
+	dialog.displayMessage(i18n("scanFinalCutProWarning"))
+
+	local result
+
+	result = mod.effects.updateEffectsList()
+	if result == "Fail" then return false end
+
+	result = mod.transitions.updateTransitionsList()
+	if result == "Fail" then return false end
+
+	result = mod.titles.updateTitlesList()
+	if result == "Fail" then return false end
+
+	result = mod.generators.updateGeneratorsList()
+	if result == "Fail" then return false end
+
+	dialog.displayMessage(i18n("scanFinalCutProDone"))
+
+	return true
+
+end
+
+--------------------------------------------------------------------------------
+-- INITIALISE MODULE:
+--------------------------------------------------------------------------------
+function mod.init(effects, generators, titles, transitions)
+	mod.effects = effects
+	mod.generators = generators
+	mod.titles = titles
+	mod.transitions = transitions
+end
 
 --------------------------------------------------------------------------------
 --
@@ -100,20 +104,20 @@ local plugin = {
 	id = "finalcutpro.preferences.scanfinalcutpro",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.timeline.effects"]				= "effects",
-		["finalcutpro.timeline.generators"]				= "generators",
-		["finalcutpro.timeline.titles"]					= "titles",
-		["finalcutpro.timeline.transitions"]			= "transitions",
-		["finalcutpro.preferences.panels.finalcutpro"]	= "finalcutpro",
+		["finalcutpro.timeline.effects"]					= "effects",
+		["finalcutpro.timeline.generators"]					= "generators",
+		["finalcutpro.timeline.titles"]						= "titles",
+		["finalcutpro.timeline.transitions"]				= "transitions",
+		["finalcutpro.preferences.panels.finalcutpro"]		= "finalcutpro",
 	}
 }
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
 
-		mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
+	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
 		deps.finalcutpro:addHeading(10, i18n("setupHeading") .. ":" )
 
@@ -124,7 +128,7 @@ local plugin = {
 			}
 		)
 
-		return mod
-	end
+	return mod
+end
 
 return plugin

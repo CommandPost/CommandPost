@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.export.ExportDialog ===
+---
+--- Export Dialog Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
@@ -7,8 +22,14 @@ local just							= require("cp.just")
 local SaveSheet						= require("cp.finalcutpro.export.SaveSheet")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local ExportDialog = {}
 
+-- TODO: Add documentation
 function ExportDialog.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
@@ -18,6 +39,7 @@ function ExportDialog.matches(element)
 	return false
 end
 
+-- TODO: Add documentation
 function ExportDialog:new(app)
 	o = {_app = app}
 	setmetatable(o, self)
@@ -25,10 +47,12 @@ function ExportDialog:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function ExportDialog:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function ExportDialog:UI()
 	return axutils.cache(self, "_ui", function()
 		local windowsUI = self:app():windowsUI()
@@ -37,6 +61,7 @@ function ExportDialog:UI()
 	ExportDialog.matches)
 end
 
+-- TODO: Add documentation
 function ExportDialog:_findWindowUI(windows)
 	for i,window in ipairs(windows) do
 		if ExportDialog.matches(window) then return window end
@@ -44,11 +69,12 @@ function ExportDialog:_findWindowUI(windows)
 	return nil
 end
 
+-- TODO: Add documentation
 function ExportDialog:isShowing()
 	return self:UI() ~= nil
 end
 
---- Ensures the ExportDialog is showing
+-- Ensures the ExportDialog is showing
 function ExportDialog:show()
 	if not self:isShowing() then
 		-- open the window
@@ -60,10 +86,12 @@ function ExportDialog:show()
 	return self
 end
 
+-- TODO: Add documentation
 function ExportDialog:hide()
 	self:pressCancel()
 end
 
+-- TODO: Add documentation
 function ExportDialog:pressCancel()
 	local ui = self:UI()
 	if ui then
@@ -75,11 +103,13 @@ function ExportDialog:pressCancel()
 	return self
 end
 
+-- TODO: Add documentation
 function ExportDialog:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()
 end
 
+-- TODO: Add documentation
 function ExportDialog:pressNext()
 	local ui = self:UI()
 	if ui then
@@ -91,6 +121,7 @@ function ExportDialog:pressNext()
 	return self
 end
 
+-- TODO: Add documentation
 function ExportDialog:saveSheet()
 	if not self._saveSheet then
 		self._saveSheet = SaveSheet:new(self)
@@ -99,22 +130,22 @@ function ExportDialog:saveSheet()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- WATCHERS
------------------------------------------------------------------------
+--
+-- WATCHERS:
+--
 -----------------------------------------------------------------------
 
---- Watch for events that happen in the command editor
---- The optional functions will be called when the window
---- is shown or hidden, respectively.
+--- cp.finalcutpro.export.ExportDialog:watch() -> string
+--- Method
+--- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function ExportDialog:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)
@@ -123,6 +154,7 @@ function ExportDialog:watch(events)
 	self._watcher:watch(events)
 end
 
+-- TODO: Add documentation
 function ExportDialog:unwatch(id)
 	if self._watcher then
 		self._watcher:unwatch(id)

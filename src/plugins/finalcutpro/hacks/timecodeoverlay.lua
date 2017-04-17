@@ -4,6 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === plugins.finalcutpro.hacks.timecodeoverlay ===
+---
+--- Timecode Overlay.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -33,57 +37,57 @@ local PREFERENCES_KEY 	= "FFEnableGuards"
 --------------------------------------------------------------------------------
 local mod = {}
 
-	function mod.isEnabled()
-		local FFEnableGuards = DEFAULT_VALUE
-		local preferences = fcp:getPreferences()
-		if preferences and preferences[PREFERENCES_KEY] then
-			FFEnableGuards = preferences[PREFERENCES_KEY]
+function mod.isEnabled()
+	local FFEnableGuards = DEFAULT_VALUE
+	local preferences = fcp:getPreferences()
+	if preferences and preferences[PREFERENCES_KEY] then
+		FFEnableGuards = preferences[PREFERENCES_KEY]
+	end
+	return FFEnableGuards
+end
+
+function mod.toggleTimecodeOverlay()
+
+	--------------------------------------------------------------------------------
+	-- Get existing value:
+	--------------------------------------------------------------------------------
+	local FFEnableGuards = mod.isEnabled()
+
+	--------------------------------------------------------------------------------
+	-- If Final Cut Pro is running...
+	--------------------------------------------------------------------------------
+	local restartStatus = false
+	if fcp:isRunning() then
+		if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+			restartStatus = true
+		else
+			return "Done"
 		end
-		return FFEnableGuards
 	end
 
-	function mod.toggleTimecodeOverlay()
+	--------------------------------------------------------------------------------
+	-- Update plist:
+	--------------------------------------------------------------------------------
+	local result = fcp:setPreference(PREFERENCES_KEY, not FFEnableGuards)
+	if result == nil then
+		dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+		return "Failed"
+	end
 
-		--------------------------------------------------------------------------------
-		-- Get existing value:
-		--------------------------------------------------------------------------------
-		local FFEnableGuards = mod.isEnabled()
-
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local restartStatus = false
-		if fcp:isRunning() then
-			if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-				restartStatus = true
-			else
-				return "Done"
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		local result = fcp:setPreference(PREFERENCES_KEY, not FFEnableGuards)
-		if result == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+	--------------------------------------------------------------------------------
+	-- Restart Final Cut Pro:
+	--------------------------------------------------------------------------------
+	if restartStatus then
+		if not fcp:restart() then
+			--------------------------------------------------------------------------------
+			-- Failed to restart Final Cut Pro:
+			--------------------------------------------------------------------------------
+			dialog.displayErrorMessage(i18n("failedToRestart"))
 			return "Failed"
 		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if restartStatus then
-			if not fcp:restart() then
-				--------------------------------------------------------------------------------
-				-- Failed to restart Final Cut Pro:
-				--------------------------------------------------------------------------------
-				dialog.displayErrorMessage(i18n("failedToRestart"))
-				return "Failed"
-			end
-		end
-
 	end
+
+end
 
 --------------------------------------------------------------------------------
 --

@@ -1,3 +1,18 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.import.MediaImport ===
+---
+--- Media Import
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 local windowfilter					= require("hs.window.filter")
@@ -7,8 +22,14 @@ local just							= require("cp.just")
 
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local MediaImport = {}
 
+-- TODO: Add documentation
 function MediaImport.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
@@ -19,6 +40,7 @@ function MediaImport.matches(element)
 	return false
 end
 
+-- TODO: Add documentation
 function MediaImport:new(app)
 	o = {_app = app}
 	setmetatable(o, self)
@@ -26,10 +48,12 @@ function MediaImport:new(app)
 	return o
 end
 
+-- TODO: Add documentation
 function MediaImport:app()
 	return self._app
 end
 
+-- TODO: Add documentation
 function MediaImport:UI()
 	return axutils.cache(self, "_ui", function()
 		local windowsUI = self:app():windowsUI()
@@ -38,6 +62,7 @@ function MediaImport:UI()
 	MediaImport.matches)
 end
 
+-- TODO: Add documentation
 function MediaImport:_findWindowUI(windows)
 	for i,window in ipairs(windows) do
 		if MediaImport.matches(window) then return window end
@@ -45,11 +70,13 @@ function MediaImport:_findWindowUI(windows)
 	return nil
 end
 
+-- TODO: Add documentation
 function MediaImport:isShowing()
 	return self:UI() ~= nil
 end
 
---- Ensures the MediaImport is showing
+-- TODO: Add documentation
+-- Ensures the MediaImport is showing
 function MediaImport:show()
 	if not self:isShowing() then
 		-- open the window
@@ -61,6 +88,7 @@ function MediaImport:show()
 	return self
 end
 
+-- TODO: Add documentation
 function MediaImport:hide()
 	local ui = self:UI()
 	if ui then
@@ -72,6 +100,7 @@ function MediaImport:hide()
 	return self
 end
 
+-- TODO: Add documentation
 function MediaImport:importAll()
 	local ui = self:UI()
 	if ui then
@@ -83,28 +112,29 @@ function MediaImport:importAll()
 	return self
 end
 
+-- TODO: Add documentation
 function MediaImport:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()
 end
 
 -----------------------------------------------------------------------
------------------------------------------------------------------------
---- WATCHERS
------------------------------------------------------------------------
+--
+-- WATCHERS
+--
 -----------------------------------------------------------------------
 
---- Watch for events that happen in the command editor
---- The optional functions will be called when the window
---- is shown or hidden, respectively.
+--- cp.finalcutpro.import.MediaImport:watch() -> bool
+--- Method
+--- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
---- 	* `show(CommandEditor)` - Triggered when the window is shown.
---- 	* `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * `events` - A table of functions with to watch. These may be:
+---    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function MediaImport:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)

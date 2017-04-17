@@ -553,7 +553,22 @@ return {
 			
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
-
+			
+			webappPanelLabel					=			"WebApp",
+			webappPanelTooltip					=			"WebApp Preferences",
+			
+			webappIntroduction					=			"Introduction",
+			
+			webappInstructions					=			[[
+			The <strong>WebApp</strong> is a very easy way to control CommandPost via your mobile phone or tablet.<br /><br />
+			All you need to do is connect your device to the same network as this machine, enable the WebApp below, then access the WebApp via your devices browser by entering URL below.
+			]],
+			
+			webappSettings						=			"Settings",
+			webappEnable						=			"Enable WebApp",
+			webappHostname						=			"Hostname",
+			webappUnresolvedHostname			=			"Failed to Resolve Hostname!",
+			
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------

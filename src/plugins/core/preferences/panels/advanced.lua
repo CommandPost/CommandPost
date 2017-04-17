@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.plugins.core.preferences.panels.advanced ===
+--- === plugins.core.preferences.panels.advanced ===
 ---
 --- Advanced Preferences Panel
 

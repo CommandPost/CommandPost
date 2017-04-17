@@ -1,7 +1,28 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.finalcutpro.ui.Alert ===
+---
+--- Alert UI Module.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local axutils						= require("cp.finalcutpro.axutils")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Alert = {}
 
+-- TODO: Add documentation
 function Alert.matches(element)
 	if element then
 		return element:attributeValue("AXRole") == "AXSheet"
@@ -9,7 +30,7 @@ function Alert.matches(element)
 	return false
 end
 
-
+-- TODO: Add documentation
 function Alert:new(parent)
 	o = {_parent = parent}
 	setmetatable(o, self)
@@ -17,14 +38,17 @@ function Alert:new(parent)
 	return o
 end
 
+-- TODO: Add documentation
 function Alert:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function Alert:app()
 	return self:parent():app()
 end
 
+-- TODO: Add documentation
 function Alert:UI()
 	return axutils.cache(self, "_ui", function()
 		axutils.childMatching(self:parent():UI(), Alert.matches)
@@ -32,14 +56,17 @@ function Alert:UI()
 	Alert.matches)
 end
 
+-- TODO: Add documentation
 function Alert:isShowing()
 	return self:UI() ~= nil
 end
 
+-- TODO: Add documentation
 function Alert:hide()
 	self:pressCancel()
 end
 
+-- TODO: Add documentation
 function Alert:pressCancel()
 	local ui = self:UI()
 	if ui then
@@ -51,6 +78,7 @@ function Alert:pressCancel()
 	return self
 end
 
+-- TODO: Add documentation
 function Alert:pressDefault()
 	local ui = self:UI()
 	if ui then
@@ -62,6 +90,7 @@ function Alert:pressDefault()
 	return self
 end
 
+-- TODO: Add documentation
 function Alert:getTitle()
 	local ui = self:UI()
 	return ui and ui:title()

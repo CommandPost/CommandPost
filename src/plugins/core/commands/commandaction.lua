@@ -1,10 +1,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D      A C T I O N                     --
+--                     C  O  M  M  A  N  D      A C T I O N                   --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.commands.commandaction ===
+--- === plugins.core.commands.commandaction ===
 ---
 --- An `action` which will execute a command with matching group/id values.
 --- Registers itself with the `core.action.manager`.
@@ -28,29 +28,34 @@ local mod = {}
 
 local ID	= "command"
 
+-- TODO: Add documentation
 function mod.init(actionmanager)
 	mod._manager = actionmanager
 	mod._manager.addAction(mod)
 end
 
+-- TODO: Add documentation
 function mod.id()
 	return ID
 end
 
+-- TODO: Add documentation
 function mod.setEnabled(value)
 	config.set("commandActionEnabled", value)
 	mod._manager.refresh()
 end
 
+-- TODO: Add documentation
 function mod.isEnabled()
 	return config.get("commandActionEnabled", true)
 end
 
+-- TODO: Add documentation
 function mod.toggleEnabled()
 	mod.setEnabled(not mod.isEnabled())
 end
 
---- core.commands.commandaction.choices() -> table
+--- plugins.core.commands.commandaction.choices() -> table
 --- Function
 --- Returns an array of available choices
 function mod.choices()
@@ -81,11 +86,12 @@ function mod.choices()
 	return mod._choices
 end
 
+-- TODO: Add documentation
 function mod.getId(params)
 	return ID .. ":" .. string.format("%s:%s", params.group, params.id)
 end
 
---- core.commands.commandaction.execute(params) -> boolean
+--- plugins.core.commands.commandaction.execute(params) -> boolean
 --- Function
 --- Executes the action with the provided parameters.
 ---
@@ -121,6 +127,7 @@ function mod.execute(params)
 	return false
 end
 
+-- TODO: Add documentation
 function mod.reset()
 	mod._choices = nil
 end
