@@ -18,6 +18,8 @@ local axutils							= require("cp.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+local id								= require("cp.finalcutpro.ids") "Filmstrip"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -27,7 +29,7 @@ local Filmstrip = {}
 
 -- TODO: Add documentation
 function Filmstrip.matches(element)
-	return element and element:attributeValue("AXIdentifier") == "_NS:33"
+	return element and element:attributeValue("AXIdentifier") == id("Content")
 end
 
 -- TODO: Add documentation

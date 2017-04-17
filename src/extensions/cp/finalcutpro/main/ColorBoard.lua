@@ -23,6 +23,8 @@ local tools								= require("cp.tools")
 
 local Pucker							= require("cp.finalcutpro.main.ColorPucker")
 
+local id								= require("cp.finalcutpro.ids") "ColorBoard"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -33,35 +35,35 @@ local ColorBoard = {}
 -- TODO: Add documentation
 ColorBoard.aspect						= {}
 ColorBoard.aspect.color					= {
-	id 									= 1,
-	reset 								= "_NS:288",
-	global 								= { puck = "_NS:278", pct = "_NS:70", angle = "_NS:98"},
-	shadows 							= { puck = "_NS:273", pct = "_NS:77", angle = "_NS:104"},
-	midtones 							= { puck = "_NS:268", pct = "_NS:84", angle = "_NS:110"},
-	highlights 							= { puck = "_NS:258", pct = "_NS:91", angle = "_NS:116"}
+	id 						= 1,
+	reset 					= id "ColorReset",
+	global 					= { puck = id "ColorGlobalPuck", pct = id "ColorGlobalPct", angle = id "ColorGlobalAngle"},
+	shadows 				= { puck = id "ColorShadowsPuck", pct = id "ColorShadowsPct", angle = id "ColorShadowsAngle"},
+	midtones 				= { puck = id "ColorMidtonesPuck", pct = id "ColorMidtonesPct", angle = id "ColorMidtonesAngle"},
+	highlights 				= { puck = id "ColorHighlightsPuck", pct = id "ColorHighlightsPct", angle = id "ColorHighlightsAngle"}
 }
 ColorBoard.aspect.saturation			= {
-	id 									= 2,
-	reset 								= "_NS:538",
-	global 								= { puck = "_NS:529", pct = "_NS:42"},
-	shadows 							= { puck = "_NS:524", pct = "_NS:49"},
-	midtones 							= { puck = "_NS:519", pct = "_NS:56"},
-	highlights 							= { puck = "_NS:514", pct = "_NS:63"}
+	id 						= 2,
+	reset 					= id "SatReset",
+	global 					= { puck = id "SatGlobalPuck", pct = id "SatGlobalPct"},
+	shadows 				= { puck = id "SatShadowsPuck", pct = id "SatShadowsPct"},
+	midtones 				= { puck = id "SatMidtonesPuck", pct = id "SatMidtonesPct"},
+	highlights 				= { puck = id "SatHighlightsPuck", pct = id "SatHighlightsPct"}
 }
 ColorBoard.aspect.exposure				= {
 	id									= 3,
-	reset								= "_NS:412",
-	global								= { puck = "_NS:403", pct = "_NS:9"},
-	shadows 							= { puck = "_NS:398", pct = "_NS:21"},
-	midtones							= { puck = "_NS:393", pct = "_NS:28"},
-	highlights							= { puck = "_NS:388", pct = "_NS:35"}
+	reset								= id "ExpReset",
+	global								= { puck = id "ExpGlobalPuck", pct = id "ExpGlobalPct"},
+	shadows 							= { puck = id "ExpShadowsPuck", pct = id "ExpShadowsPct"},
+	midtones							= { puck = id "ExpMidtonesPuck", pct = id "ExpMidtonesPct"},
+	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlighsPct"}
 }
 ColorBoard.currentAspect = "*"
 
 -- TODO: Add documentation
 function ColorBoard.isColorBoard(element)
 	for i,child in ipairs(element) do
-		if axutils.childWith(child, "AXIdentifier", "_NS:180") then
+		if axutils.childWith(child, "AXIdentifier", id "BackButton") then
 			return true
 		end
 	end
@@ -159,7 +161,7 @@ function ColorBoard:topToolbarUI()
 		local ui = self:UI()
 		if ui then
 			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", "_NS:180") then
+				if axutils.childWith(child, "AXIdentifier", id "BackButton") then
 					return child
 				end
 			end
@@ -173,7 +175,7 @@ function ColorBoard:showInspectorUI()
 	return axutils.cache(self, "_showInspector", function()
 		local ui = self:topToolbarUI()
 		if ui then
-			return axutils.childWith(ui, "AXIdentifier", "_NS:180")
+			return axutils.childWith(ui, "AXIdentifier", id "BackButton")
 		end
 		return nil
 	end)
@@ -182,7 +184,7 @@ end
 -- TODO: Add documentation
 function ColorBoard:isActive()
 	local ui = self:colorSatExpUI()
-	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", "_NS:128")
+	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
 end
 
 -----------------------------------------------------------------------
@@ -195,7 +197,7 @@ end
 function ColorBoard:colorSatExpUI()
 	return axutils.cache(self, "_colorSatExp", function()
 		local ui = self:UI()
-		return ui and axutils.childWith(ui, "AXIdentifier", "_NS:128")
+		return ui and axutils.childWith(ui, "AXIdentifier", id "ColorSatExp")
 	end)
 end
 

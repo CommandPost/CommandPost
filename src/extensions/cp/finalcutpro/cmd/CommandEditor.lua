@@ -21,6 +21,8 @@ local just							= require("cp.just")
 
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+local id							= require("cp.finalcutpro.ids").current("CommandEditor")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -28,14 +30,12 @@ local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 --------------------------------------------------------------------------------
 local CommandEditor = {}
 
-CommandEditor.GROUP					= "_NS:9"
-
 -- TODO: Add documentation
 function CommandEditor.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
 		   and element:attributeValue("AXModal")
-		   and axutils.childWith(element, "AXIdentifier", "_NS:273") ~= nil
+		   and axutils.childWith(element, "AXIdentifier", id "KeyDetailPanel") ~= nil
 	end
 	return false
 end
@@ -104,7 +104,7 @@ end
 function CommandEditor:save()
 	local ui = self:UI()
 	if ui then
-		local saveBtn = axutils.childWith(ui, "AXIdentifier", "_NS:50")
+		local saveBtn = axutils.childWith(ui, "AXIdentifier", id "SaveButton")
 		if saveBtn and saveBtn:enabled() then
 			saveBtn:doPress()
 		end

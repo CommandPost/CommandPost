@@ -22,6 +22,8 @@ local just							= require("cp.just")
 local SaveSheet						= require("cp.finalcutpro.export.SaveSheet")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+local id							= require "cp.finalcutpro.ids" "ExportDialog"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -34,7 +36,7 @@ function ExportDialog.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
 		   and element:attributeValue("AXModal")
-		   and axutils.childWithID(element, "_NS:17") ~= nil
+		   and axutils.childWithID(element, id "BackgroundImage") ~= nil
 	end
 	return false
 end

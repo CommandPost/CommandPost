@@ -30,6 +30,8 @@ local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local PopUpButton						= require("cp.finalcutpro.ui.PopUpButton")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+local id								= require("cp.finalcutpro.ids") "GeneratorsBrowser"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -112,7 +114,7 @@ end
 function GeneratorsBrowser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
 		end):uncached()
 	end
 	return self._sidebar

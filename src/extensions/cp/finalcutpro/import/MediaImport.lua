@@ -22,6 +22,8 @@ local just							= require("cp.just")
 
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+local id							= require("cp.finalcutpro.ids") "MediaImporter"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -35,7 +37,7 @@ function MediaImport.matches(element)
 		return element:attributeValue("AXSubrole") == "AXDialog"
 		   and element:attributeValue("AXMain")
 		   and element:attributeValue("AXModal")
-		   and axutils.childWith(element, "AXIdentifier", "_NS:39") ~= nil
+		   and axutils.childWith(element, "AXIdentifier", id "MainPanel") ~= nil
 	end
 	return false
 end

@@ -19,6 +19,8 @@ local inspect							= require("hs.inspect")
 local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
 
+local id								= require("cp.finalcutpro.ids") "Inspector"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -28,8 +30,8 @@ local Inspector = {}
 
 -- TODO: Add documentation
 function Inspector.matches(element)
-	return axutils.childWith(element, "AXIdentifier", "_NS:112") ~= nil -- is inspecting
-		or axutils.childWith(element, "AXIdentifier", "_NS:53") ~= nil 	-- nothing to inspect
+	return axutils.childWith(element, "AXIdentifier", id "DetailsPanel") ~= nil -- is inspecting
+		or axutils.childWith(element, "AXIdentifier", id "NothingToInspect") ~= nil 	-- nothing to inspect
 end
 
 -- TODO: Add documentation
