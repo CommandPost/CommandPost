@@ -32,7 +32,7 @@
 					console.log("keyCode.value: " + keyCode.value);
 					try {
 						var result = {
-							id: {{ "updateShortcut" }},
+							id: "updateShortcut",
 							params: {
 								group: "{{ item.groupId }}",
 								command: "{{ item.command:id() }}",
@@ -43,6 +43,7 @@
 						}
 						webkit.messageHandlers.{{ context.webviewLabel }}.postMessage(result);
 					} catch(err) {
+						console.log("Error: " + err)
 						alert('An error has occurred. Does the controller exist yet?');
 					}
 				}

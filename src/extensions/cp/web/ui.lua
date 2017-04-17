@@ -59,9 +59,7 @@ end
 function ui.javascript(script, context)
 	local t = compile(script, "no-cache", true)
 	return html.script { type = "text/javascript" } (
-		function()
-			return "(function(){\n" .. t(context) .. "\n})();"
-		end
+		"(function(){\n" .. t(context) .. "\n})();", true
 	)
 end
 

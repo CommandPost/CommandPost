@@ -152,7 +152,7 @@ local function updateShortcut(id, params)
 		--------------------------------------------------------------------------------
 		-- Setup New Shortcut:
 		--------------------------------------------------------------------------------
-		if body.keyCode and body.keyCode ~= "" then
+		if params.keyCode and params.keyCode ~= "" then
 			theCommand:activatedBy(modifiers, params.keyCode)
 		end
 		
@@ -376,6 +376,13 @@ function mod.init(deps, env)
 	})
 	
 	mod._panel:addContent(10, generateContent, true)
+	
+	mod._panel:addButton(20,
+		{
+			label		= i18n("resetShortcuts"),
+			onclick		= resetShortcuts,
+		}
+	)
 	
 	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 
