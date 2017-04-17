@@ -44,7 +44,7 @@ local function controllerCallback(message)
 
 		local result = mod.shortcuts.enableHacksShortcuts()
 
-		log.df("enableHacksShortcuts result: %s", result)
+		--log.df("enableHacksShortcuts result: %s", result)
 
 		if result then
 			if fcp:isRunning() then fcp:restart() end
@@ -80,6 +80,13 @@ local function generateContent()
 end
 
 --------------------------------------------------------------------------------
+-- PANEL ENABLED:
+--------------------------------------------------------------------------------
+local function panelEnabled()
+	return not config.get("enableHacksShortcutsInFinalCutPro", false)
+end
+
+--------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
@@ -90,11 +97,12 @@ function mod.init(deps, env)
 	mod._priority		= 50
 	mod._contentFn		= generateContent
 	mod._callbackFn 	= controllerCallback
+	mod._enabledFn		= panelEnabled
 
 	mod.manager = deps.manager
 	mod.shortcuts = deps.shortcuts
 
-	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")

@@ -86,6 +86,8 @@ end
 local function generateHTML()
 	-- log.df("generateHTML: called")
 	local env = {}
+
+	env.debugMode = config.get("debugMode", false)
 	env.panels = mod._panels
 	env.highestPriorityID = highestPriorityID()
 

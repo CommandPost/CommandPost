@@ -21,6 +21,7 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -76,6 +77,8 @@ end
 local function generateHTML()
 
 	local env = {}
+
+	env.debugMode = config.get("debugMode", false)
 
 	env.panels = mod._panels
 	env.highestPriorityID = highestPriorityID()
@@ -222,9 +225,47 @@ local function nextPriorityID(currentPanelPriority)
 
 	for i, v in ipairs(sortedPanels) do
 		if v["priority"] > currentPanelPriority then
-			return v["id"]
+			if v["enabledFn"] and type(v["enabledFn"]) == "function" then
+				if v["enabledFn"]() then
+					return v["id"]
+				end
+			else
+				return v["id"]
+			end
 		end
 	end
+
+	log.ef("There is no next Welcome Panel. This shouldn't ever happen.")
+	return nil
+
+end
+
+--------------------------------------------------------------------------------
+-- GET PANEL:
+--------------------------------------------------------------------------------
+function mod.getPanel(id)
+	for i, v in ipairs(mod._panels) do
+		if v["id"] == id then
+			return mod._panels[i]
+		end
+	end
+	return nil
+end
+
+--------------------------------------------------------------------------------
+-- IS PANEL ENABLED:
+--------------------------------------------------------------------------------
+function mod.isPanelEnabled(id)
+
+	for i, v in ipairs(mod._panels) do
+		if v["id"] == id then
+			if v["enabledFn"] and type(v["enabledFn"]) == "function" then
+				log.df(v["id"] .. " has a enabledFn.")
+				return v["enabledFn"]()
+			end
+		end
+	end
+	return true
 
 end
 
@@ -236,10 +277,12 @@ function mod.nextPanel(currentPanelPriority)
 	currentPanelPriority = currentPanelPriority + 0.0000000000001
 
 	local nextPanelID = nextPriorityID(currentPanelPriority)
+
 	if nextPanelID then
 		mod.selectPanel(nextPanelID)
 	else
-		log.ef("There is no next panel...")
+		log.ef("There is no next Welcome Panel. This shouldn't ever happen.")
+		return nil
 	end
 
 end
@@ -256,13 +299,21 @@ function mod.selectPanel(id)
 	for i, v in ipairs(mod._panels) do
 		if v["id"] == id then
 			javascriptToInject = javascriptToInject .. [[
-				document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
-				document.getElementById('dot]] .. v["id"] .. [[').className = 'selected-dot';
+				if (document.getElementById(']] .. v["id"] .. [[')) {
+					document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
+				};
+				if (document.getElementById('dot]] .. v["id"] .. [[')) {
+					document.getElementById('dot]] .. v["id"] .. [[').className = 'selected-dot';
+				};
 			]]
 		else
 			javascriptToInject = javascriptToInject .. [[
-				document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
-				document.getElementById('dot]] .. v["id"] .. [[').className = '';
+				if (document.getElementById(']] .. v["id"] .. [[')) {
+					document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
+				};
+				if (document.getElementById('dot]] .. v["id"] .. [[')) {
+					document.getElementById('dot]] .. v["id"] .. [[').className = '';
+				};
 			]]
 		end
 	end
@@ -274,7 +325,7 @@ end
 --------------------------------------------------------------------------------
 -- ADD PANEL:
 --------------------------------------------------------------------------------
-function mod.addPanel(id, priority, contentFn, callbackFn)
+function mod.addPanel(id, priority, contentFn, callbackFn, enabledFn)
 
 	--log.df("Adding Welcome Panel with ID: %s", id)
 
@@ -283,6 +334,7 @@ function mod.addPanel(id, priority, contentFn, callbackFn)
 		priority = priority,
 		contentFn = contentFn,
 		callbackFn = callbackFn,
+		enabledFn = enabledFn,
 	}
 
 end
@@ -291,7 +343,7 @@ end
 -- ACCESSIBILITY STATE CALLBACK:
 --------------------------------------------------------------------------------
 function hs.accessibilityStateCallback()
-	--log.df("Accessibility State Changed.")
+	log.df("Accessibility State Changed.")
 	if not hs.accessibilityState() and config.get("welcomeComplete", false) and mod.webview == nil then
 		mod.disableUserInterface()
 		mod.new()

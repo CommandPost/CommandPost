@@ -597,6 +597,8 @@ local function getEnv()
 	env.hud			= hud
 	env.displayDiv	= displayDiv
 
+	env.debugMode	= config.get("debugMode", false)
+
 	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
 
 	if playerQuality == PROXY then

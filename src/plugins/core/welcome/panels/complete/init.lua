@@ -32,6 +32,7 @@ local function controllerCallback(message)
 
 	local result = message["body"][1]
 	if result == "complete" then
+		config.set("welcomeComplete", true)
 		mod.manager.delete()
 		mod.manager.setupUserInterface(false)
 	end
