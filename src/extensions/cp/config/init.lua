@@ -47,6 +47,11 @@ mod.configPrefix		= "cp"
 --- Email address used for bug reports
 mod.bugReportEmail      = "chris@latenitefilms.com"
 
+--- cp.config.privacyPolicyURL
+--- Constant
+--- URL for Privacy Policy
+mod.privacyPolicyURL      = "https://help.commandpost.io/getting_started/privacy_policy/"
+
 --- cp.config.scriptPath
 --- Constant
 --- Path to where Application Scripts are stored

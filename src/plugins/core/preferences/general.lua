@@ -101,7 +101,7 @@ end
 --- Returns:
 ---  * None
 function mod.openPrivacyPolicy()
-	hs.execute("open 'https://help.commandpost.io/privacy-policy.html'")
+	hs.execute("open '" .. config.privacyPolicyURL .. "'")
 end
 
 --------------------------------------------------------------------------------
