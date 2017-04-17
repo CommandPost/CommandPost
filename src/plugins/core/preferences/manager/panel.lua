@@ -125,15 +125,18 @@ function panel:addHandler(event, id, handlerFn, keys)
 
 	-- create the script
 	local script = ui.javascript([[
-		var element = document.getElementById("{{ id }}");
-		if (element == null) return;
-		element.{{ event }} = function (){
+		var e = document.getElementById("{{ id }}");
+		if (e == null) return;
+		e.{{ event }} = function (){
 			try {
-				var params = {};
+				var p = {};
 				{% for _,key in ipairs(keys) do %}
-				params["{{ key }}"] = element.getAttribute("{{ key }}") || element.dataset["{{ key }}"];
+				var key = "{{ key }}";
+				p[key] = e[key];
+				p[key] = p[key] != undefined ? p[key] : e.getAttribute(key);
+				p[key] = p[key] != undefined ? p[key] : e.dataset[key];
 				{% end %}
-				var result = { id: "{{ id }}", params: params };
+				var result = { id: "{{ id }}", params: p };
 				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
