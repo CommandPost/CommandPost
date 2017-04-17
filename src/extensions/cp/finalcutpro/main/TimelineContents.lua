@@ -23,6 +23,8 @@ local axutils							= require("cp.finalcutpro.axutils")
 
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+local id								= require("cp.finalcutpro.ids") "TimelineContents"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -33,7 +35,7 @@ local TimelineContents = {}
 -- TODO: Add documentation
 function TimelineContents.matches(element)
 	return element
-	    and element:attributeValue("AXIdentifier") == "_NS:16" or element:attributeValue("AXIdentifier") == "_NS:363"
+	    and element:attributeValue("AXIdentifier") == id "Contents"
 		and element:attributeValue("AXRole") == "AXLayoutArea"
 		and element:attributeValueCount("AXAuditIssues") < 1
 end
@@ -79,7 +81,7 @@ function TimelineContents:scrollAreaUI()
 	local main = self:parent():mainUI()
 	if main then
 		return axutils.childMatching(main, function(child)
-			if child:attributeValue("AXIdentifier") == "_NS:9" or child:attributeValue("AXIdentifier") == "_NS:357" and child:attributeValue("AXRole") == "AXScrollArea" then
+			if child:attributeValue("AXIdentifier") == id "ScrollArea" and child:attributeValue("AXRole") == "AXScrollArea" then
 				return axutils.childMatching(child:attributeValue("AXContents"), TimelineContents.matches) ~= nil
 			end
 			return false

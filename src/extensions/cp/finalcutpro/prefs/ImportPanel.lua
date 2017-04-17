@@ -19,6 +19,8 @@ local inspect							= require("hs.inspect")
 local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
 
+local id								= require("cp.finalcutpro.ids") "ImportPanel"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -28,9 +30,9 @@ local ImportPanel = {}
 
 ImportPanel.ID = 4
 
-ImportPanel.CREATE_PROXY_MEDIA 			= "_NS:177"
-ImportPanel.CREATE_OPTIMIZED_MEDIA 		= "_NS:15"
-ImportPanel.COPY_TO_MEDIA_FOLDER 		= "_NS:84"
+ImportPanel.CREATE_PROXY_MEDIA 			= id "CreateProxyMedia"
+ImportPanel.CREATE_OPTIMIZED_MEDIA 		= id "CreateOptimizedMedia"
+ImportPanel.COPY_TO_MEDIA_FOLDER 		= id "CopyToMediaFolder"
 
 -- TODO: Add documentation
 function ImportPanel:new(preferencesDialog)

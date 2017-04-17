@@ -19,6 +19,8 @@ local inspect							= require("hs.inspect")
 local axutils							= require("cp.finalcutpro.axutils")
 local just								= require("cp.just")
 
+local id								= require("cp.finalcutpro.ids") "PlaybackPanel"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -28,8 +30,8 @@ local PlaybackPanel = {}
 
 PlaybackPanel.ID = 3
 
-PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = "_NS:145"
-PlaybackPanel.AUTO_START_BG_RENDER = "_NS:15"
+PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = id "CreateMulticamOptimizedMedia"
+PlaybackPanel.AUTO_START_BG_RENDER = id "BackgroundRender"
 
 -- TODO: Add documentation
 function PlaybackPanel:new(preferencesDialog)

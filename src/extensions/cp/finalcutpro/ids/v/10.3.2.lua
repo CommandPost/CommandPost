@@ -67,6 +67,47 @@ return {
 		Sidebar					= "_NS:9",
 	},
 	LibrariesFilmstrip = {
-		Content				=  "_NS:33",
+		Content					=  "_NS:33",
+	},
+	LibrariesList = {
+		Player					= "_NS:590",
+		ContentsTable			= "_NS:9",
+		RowIcon					= "_NS:11",
+	},
+	MediaBrowser = {
+		Sidebar					= "_NS:9",
+	},
+	Timeline = {
+		Contents				= "_NS:237",
+	},
+	TimelineAppearance = {
+		Toggle					= "_NS:154",
+		ClipHeight				= "_NS:104",
+	},
+	TimelineContents = {
+		Contents				= "_NS:16",
+		ScrollArea				= "_NS:9",
+	},
+	TimelineToolbar = {
+		ID						= "_NS:237",
+		SkimmingGroup			= "_NS:178",
+		EffectsGroup			= "_NS:165",
+	},
+	Viewer = {
+		Title					= "_NS:16",
+		Timecode				= "_NS:31",
+		Format					= "_NS:274",
+	},
+	ImportPanel = {
+		CreateProxyMedia		= "_NS:177",
+		CreateOptimizedMedia	= "_NS:15",
+		CopyToMediaFolder		= "_NS:84",
+	},
+	PlaybackPanel = {
+		CreateMulticamOptimizedMedia		= "_NS:145",
+		BackgroundRender		= "_NS:15",
+	},
+	PreferencesWindow = {
+		Group					= "_NS:9"
 	},
 }

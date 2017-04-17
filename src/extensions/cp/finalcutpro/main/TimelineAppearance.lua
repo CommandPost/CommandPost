@@ -57,7 +57,7 @@ end
 -- TODO: Add documentation
 function TimelineAppearance:toggleUI()
 	return axutils.cache(self, "_toggleUI", function()
-		return axutils.childWithID(self:parent():UI(), "_NS:154")
+		return axutils.childWithID(self:parent():UI(), id "Toggle")
 	end)
 end
 
@@ -111,7 +111,7 @@ end
 function TimelineAppearance:clipHeight()
 	if not self._clipHeight then
 		self._clipHeight = Slider:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:104")
+			return axutils.childWithID(self:UI(), id "ClipHeight")
 		end)
 	end
 	return self._clipHeight

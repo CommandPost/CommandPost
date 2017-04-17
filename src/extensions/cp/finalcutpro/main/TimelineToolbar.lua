@@ -20,6 +20,8 @@ local RadioButton						= require("cp.finalcutpro.ui.RadioButton")
 
 local TimelineAppearance				= require("cp.finalcutpro.main.TimelineAppearance")
 
+local id								= require("cp.finalcutpro.ids") "TimelineToolbar"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -29,10 +31,7 @@ local TimelineToolbar = {}
 
 -- TODO: Add documentation
 function TimelineToolbar.matches(element)
-	-----------------------------------------------------------------------
-	-- NOTE: _NS:237 is correct for both 10.3.2 and 10.3.3:
-	-----------------------------------------------------------------------
-	return element and element:attributeValue("AXIdentifier") ~= "_NS:237"
+	return element and element:attributeValue("AXIdentifier") ~= id "ID"
 end
 
 -- TODO: Add documentation
@@ -76,20 +75,14 @@ end
 -- Contains buttons relating to mouse skimming behaviour:
 function TimelineToolbar:skimmingGroupUI()
 	return axutils.cache(self, "_skimmingGroup", function()
-		-----------------------------------------------------------------------
-		-- _NS:178 is for 10.3.2 and _NS:179 is for 10.3.3:
-		-----------------------------------------------------------------------
-		return axutils.childWithID(self:UI(), "_NS:178") or axutils.childWithID(self:UI(), "_NS:179")
+		return axutils.childWithID(self:UI(), id "SkimmingGroup")
 	end)
 end
 
 -- TODO: Add documentation
 function TimelineToolbar:effectsGroupUI()
 	return axutils.cache(self, "_effectsGroup", function()
-		-----------------------------------------------------------------------
-		-- NOTE: _NS:165 is for FCPX 10.3.2 and _NS:166 is for 10.3.3:
-		-----------------------------------------------------------------------
-		return axutils.childWithID(self:UI(), "_NS:165") or axutils.childWithID(self:UI(), "_NS:166")
+		return axutils.childWithID(self:UI(), id "SkimmingGroup")
 	end)
 end
 

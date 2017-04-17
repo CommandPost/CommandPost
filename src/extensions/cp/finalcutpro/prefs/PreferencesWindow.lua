@@ -22,6 +22,8 @@ local just							= require("cp.just")
 local PlaybackPanel					= require("cp.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("cp.finalcutpro.prefs.ImportPanel")
 
+local id							= require("cp.finalcutpro.ids") "PreferencesWindow"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -29,7 +31,7 @@ local ImportPanel					= require("cp.finalcutpro.prefs.ImportPanel")
 --------------------------------------------------------------------------------
 local PreferencesWindow = {}
 
-PreferencesWindow.GROUP						= "_NS:9"
+PreferencesWindow.GROUP						= id "Group"
 
 -- TODO: Add documentation
 function PreferencesWindow:new(app)

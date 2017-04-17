@@ -26,6 +26,8 @@ local PrimaryWindow						= require("cp.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.finalcutpro.main.SecondaryWindow")
 local EffectsBrowser					= require("cp.finalcutpro.main.EffectsBrowser")
 
+local id								= require("cp.finalcutpro.ids") "Timeline"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -36,7 +38,7 @@ local Timeline = {}
 -- TODO: Add documentation
 function Timeline.matches(element)
 	return element:attributeValue("AXRole") == "AXGroup"
-	   and axutils.childWith(element, "AXIdentifier", "_NS:237") ~= nil
+	   and axutils.childWith(element, "AXIdentifier", id "Contents") ~= nil
 end
 
 -- TODO: Add documentation
@@ -157,7 +159,7 @@ end
 
 -- TODO: Add documentation
 function Timeline.matchesMain(element)
-	return element:attributeValue("AXIdentifier") == "_NS:237"
+	return element:attributeValue("AXIdentifier") == id "Contents"
 end
 
 -----------------------------------------------------------------------
