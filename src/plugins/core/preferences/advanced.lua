@@ -31,7 +31,7 @@ local html				= require("cp.web.html")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.advanced.resetSettings() -> none
+--- plugins.core.preferences.advanced.trashPreferences() -> none
 --- Function
 --- Resets all of the CommandPost Preferences to their default values.
 ---
@@ -40,7 +40,7 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
-function mod.resetSettings()
+function mod.trashPreferences()
 
 	local finalCutProRunning = fcp:isRunning()
 
@@ -185,6 +185,7 @@ local plugin = {
 	dependencies	= {
 		["core.preferences.panels.advanced"]	= "advanced",
 		["core.preferences.manager"]			= "manager",
+		["finalcutpro.hacks.shortcuts"]			= "hacksShortcuts",
 	}
 }
 --------------------------------------------------------------------------------
@@ -192,6 +193,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
+	mod.hacksShortcuts = deps.hacksShortcuts
 	mod.manager = deps.manager
 
 	--------------------------------------------------------------------------------
@@ -221,7 +223,7 @@ function plugin.init(deps)
 		{
 			label	= i18n("trashPreferences"),
 			width	= 150,
-			onclick	= mod.resetSettings,
+			onclick	= mod.trashPreferences,
 		}
 	)
 
