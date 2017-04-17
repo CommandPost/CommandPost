@@ -100,7 +100,7 @@ local function generateHTML()
 	end
 end
 
---- core.preferenes.manager.init() -> nothing
+--- plugins.core.preferences.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
 ---
@@ -126,7 +126,7 @@ function mod.init()
 			local body = message.body
 			local id = body.id
 			local params = body.params
-			
+
 			local handler = mod.getHandler(id)
 			if handler then
 				return handler(id, params)
@@ -228,7 +228,7 @@ local function comparePriorities(a, b)
 	return a.priority < b.priority
 end
 
---- core.preferences.manager.addPanel(params) -> core.preferences.manager.panel
+--- plugins.core.preferences.manager.addPanel(params) -> plugins.core.preferences.manager.panel
 --- Function
 --- Adds a new panel with the specified `params` to the preferences manager.
 ---
@@ -249,10 +249,10 @@ function mod.addPanel(params)
 
 	--log.df("Adding Preferences Panel with ID: %s", id)
 	local newPanel = panel.new(params, mod)
-	
+
 	local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
 	table.insert(mod._panels, index, newPanel)
-	
+
 	if mod.toolbar then
 		local toolbar = mod.toolbar
 		local item = newPanel:getToolbarItem()
@@ -263,7 +263,7 @@ function mod.addPanel(params)
 			toolbar:selectedItem(item.id)
 		end
 	end
-	
+
 	return newPanel
 end
 

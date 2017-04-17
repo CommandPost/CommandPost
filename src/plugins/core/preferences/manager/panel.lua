@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === core.preferences.manager.panel ===
+--- === plugins.core.preferences.manager.panel ===
 ---
 --- CommandPost Preferences Panel.
 
@@ -19,12 +19,12 @@ local html										= require("cp.web.html")
 local ui										= require("cp.web.ui")
 local uuid										= require("cp.uuid")
 
---- core.preferences.manager.panel.DEFAULT_PRIORITY
+--- plugins.core.preferences.manager.panel.DEFAULT_PRIORITY
 --- Constant
 --- The default priority for panels.
 local DEFAULT_PRIORITY 							= 0
 
---- core.preferences.manager.panel.HANDLER_PRIORITY
+--- plugins.core.preferences.manager.panel.HANDLER_PRIORITY
 --- Constant
 --- The default priority for handler scripts.
 local HANDLER_PRIORITY							= 1000000
@@ -36,7 +36,7 @@ local HANDLER_PRIORITY							= 1000000
 --------------------------------------------------------------------------------
 local panel = {}
 
---- cp.core.preferences.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel
+--- plugins.core.preferences.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
@@ -90,7 +90,7 @@ function panel:generateContent()
 	return result
 end
 
---- core.preferences.manager.panel:addContent(priority, content) -> panel
+--- plugins.core.preferences.manager.panel:addContent(priority, content) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
@@ -104,7 +104,7 @@ end
 function panel:addContent(priority, content, unescaped)
 	-- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
 	priority = priority or DEFAULT_PRIORITY
-	
+
 	local items = self._uiItems
 	items[#items+1] = {
 		priority = priority,
@@ -116,7 +116,7 @@ end
 function panel:addHandler(event, id, handlerFn, keys)
 	-- initialise the keys
 	keys = keys or {}
-	
+
 	-- create the script
 	local script = ui.javascript([[
 		var element = document.getElementById("{{ id }}");
@@ -126,7 +126,7 @@ function panel:addHandler(event, id, handlerFn, keys)
 				var params = {};
 				{% for _,key in ipairs(keys) do %}
 				params["{{ key }}"] = element.getAttribute("{{ key }}") || element.dataset["{{ key }}"];
-				{% end %} 
+				{% end %}
 				var result = { id: "{{ id }}", params: params };
 				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
@@ -134,10 +134,10 @@ function panel:addHandler(event, id, handlerFn, keys)
 			}
 		}
 	]], { event=event, id=id, keys=keys, name=self.manager:getLabel() })
-	
+
 	-- add the script to the panel.
 	self:addContent(HANDLER_PRIORITY, script)
-	
+
 	-- register the handler function
 	self.manager.addHandler(id, handlerFn)
 end
@@ -146,7 +146,7 @@ function panel:addParagraph(priority, content, unescaped)
 	return self:addContent(priority, html.p { class="uiItem" } (content, unescaped))
 end
 
---- core.preferences.manager.panel:addCheckbox(priority, params) -> panel
+--- plugins.core.preferences.manager.panel:addCheckbox(priority, params) -> panel
 --- Method
 --- Adds a checkbox to the panel with the specified `priority` and `params`.
 ---
@@ -166,20 +166,20 @@ end
 function panel:addCheckbox(priority, params)
 
 	params.id = evaluate(params.id) or uuid()
-	
+
 	local checkbox = ui.checkbox(params)
-	
+
 	if params.label then
 		local label = html (params.label)
 		checkbox = html.label ( checkbox .. " " .. label )
 	end
-	
+
 	local content = html.p { class="uiItem" } (	checkbox )
-	
+
 	if params.onchange then
 		self:addHandler("onchange", params.id, params.onchange, { "value", "checked" })
 	end
-	
+
 	return self:addContent(priority, content)
 
 end
@@ -196,11 +196,11 @@ end
 --------------------------------------------------------------------------------
 function panel:addButton(priority, params, itemFn, customWidth)
 	params.id = params.id or uuid()
-	
+
 	if params.onclick then
 		self:addHandler("onclick", params.id, params.onclick, { "value" })
 	end
-	
+
 	local content = html.p { class="uiItem" } (ui.button(params))
 
 	return self:addContent( priority, content )
@@ -210,18 +210,18 @@ function panel:addSelect(priority, params)
 
 	-- set up default values
 	params.id = params.id or uuid()
-	
+
 	-- created the select
 	local select = html.p { class="uiItem" } (
 		html(params.label) .. ": " .. ui.select(params)
 	)
-	
+
 	if params.onchange then
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
 
 	return self:addContent(priority, select)
-	
+
 end
 
 return panel

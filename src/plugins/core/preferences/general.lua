@@ -140,7 +140,7 @@ function plugin.init(deps)
 	deps.general:addHeading(1, i18n("general") .. ":")
 
 	:addCheckbox(3,
-		{ 
+		{
 			label		= i18n("launchAtStartup"),
 			checked		= hs.autoLaunch,
 			onchange	= function(id, params) hs.autoLaunch(params.checked) end,
@@ -151,7 +151,7 @@ function plugin.init(deps)
 
 	:addCheckbox(51,
 		{
-			label		= i18n("sendCrashData"),	
+			label		= i18n("sendCrashData"),
 			checked		= hs.uploadCrashData,
 			onchange	= function(id, params) hs.uploadCrashData(params.checked) end,
 		}
@@ -165,21 +165,21 @@ function plugin.init(deps)
 		}
 	)
 
-	-- --------------------------------------------------------------------------------
-	-- -- Setup Menubar Preferences Panel:
-	-- --------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
+	-- Setup Menubar Preferences Panel:
+	--------------------------------------------------------------------------------
 	deps.menubar:addHeading(20, i18n("appearance") .. ":")
 
 	:addCheckbox(21,
 		{
-			label = i18n("displayThisMenuAsIcon"),	
+			label = i18n("displayThisMenuAsIcon"),
 			onchange = mod.toggleDisplayMenubarAsIcon,
 			checked = mod.getDisplayMenubarAsIcon,
 		}
 	)
 
 	:addHeading(24, i18n("sections") .. ":")
-	
+
 	return mod
 
 end
