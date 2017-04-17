@@ -39,15 +39,16 @@ local function controllerCallback(message)
 		config.application():kill()
 	elseif result == "enableAccessibility" then
 		hs.accessibilityState(true)
-		if not accessibilityStateCheck then
-			accessibilityStateCheck = timer.doEvery(1, function()
-				if hs.accessibilityState() then
-					mod.manager.nextPanel(mod._priority)
-					timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
-					accessibilityStateCheck:stop()
-				end
-			end)
+		if accessibilityStateCheck then
+			accessibilityStateCheck = nil
 		end
+		accessibilityStateCheck = timer.doEvery(0.1, function()
+			if hs.accessibilityState() then
+				mod.manager.nextPanel(mod._priority)
+				timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
+				accessibilityStateCheck:stop()
+			end
+		end)
 	end
 
 end
@@ -74,6 +75,13 @@ local function generateContent()
 end
 
 --------------------------------------------------------------------------------
+-- PANEL ENABLED:
+--------------------------------------------------------------------------------
+local function panelEnabled()
+	return not hs.accessibilityState(false)
+end
+
+--------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
@@ -84,10 +92,11 @@ function mod.init(deps, env)
 	mod._priority		= 30
 	mod._contentFn		= generateContent
 	mod._callbackFn 	= controllerCallback
+	mod._enabledFn		= panelEnabled
 
 	mod.manager = deps.manager
 
-	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")
 	mod.iconPath = env:pathToAbsolute("html/accessibility_icon.png")

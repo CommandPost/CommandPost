@@ -38,6 +38,18 @@ local PRIORITY = 1
 local mod = {}
 
 --------------------------------------------------------------------------------
+-- HAS FINAL CUT PRO BEEN SCANNED?
+--------------------------------------------------------------------------------
+function mod.isScanned()
+
+	if mod.effects.isEffectsListUpdated() and mod.generators.isGeneratorsListUpdated() and mod.titles.isTitlesListUpdated() and mod.transitions.isTransitionsListUpdated() then
+		return true
+	end
+	return false
+
+end
+
+--------------------------------------------------------------------------------
 -- SCAN FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function mod.scanFinalCutPro()

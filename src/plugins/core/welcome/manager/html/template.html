@@ -294,6 +294,14 @@
 			}
 
 		</style>
+		{% if not debugMode then %}
+		<script>
+			// Disable Right Clicking:
+			document.addEventListener("contextmenu", function(e){
+			    e.preventDefault();
+			}, false);
+		</script>
+		{% end %}
 	</head>
 	<body>
 		<section class="content">
@@ -303,9 +311,17 @@
 			</div>
 		{%	end %}
 			<p class="progress-dots">
-			{%	for i, panel in ipairs(panels) do %}
+			{%	for i, panel in ipairs(panels) do
+					local enableDot = true
+					if panel["enabledFn"] then
+						enableDot = panel["enabledFn"]()
+					end
+					if enableDot then
+			%}
 				<span id="dot{{ panel.id }}" class="{{ panel.id == highestPriorityID and 'selected-dot' or '' }}">●</span>
-			{%	end %}
+			{%		end
+				end
+			%}
 			</p>
 		</section>
 	</body>

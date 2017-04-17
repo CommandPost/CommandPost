@@ -47,7 +47,6 @@ local function controllerCallback(message)
 
 end
 
-
 --------------------------------------------------------------------------------
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
@@ -70,9 +69,20 @@ local function generateContent()
 end
 
 --------------------------------------------------------------------------------
+-- PANEL ENABLED:
+--------------------------------------------------------------------------------
+local function panelEnabled()
+	log.df("Scan Final Cut Pro Panel Enabled: %s", not mod.scanfinalcutpro.isScanned())
+	return not mod.scanfinalcutpro.isScanned()
+end
+
+--------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
+
+	mod.manager = deps.manager
+	mod.scanfinalcutpro = deps.scanfinalcutproPrefs
 
 	mod.webviewLabel = deps.manager.getLabel()
 
@@ -80,11 +90,9 @@ function mod.init(deps, env)
 	mod._priority		= 40
 	mod._contentFn		= generateContent
 	mod._callbackFn 	= controllerCallback
+	mod._enabledFn		= panelEnabled
 
-	mod.manager = deps.manager
-	mod.scanfinalcutpro = deps.scanfinalcutproPrefs
-
-	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")
 	mod.iconPath = env:pathToAbsolute("html/fcp_icon.png")
