@@ -60,6 +60,9 @@ local function getScreenshotsAsBase64()
 
 end
 
+-- The reusable template rendering function.
+local renderTemplate = template.compile(config.scriptPath .. "/cp/feedback/html/feedback.htm")
+
 --------------------------------------------------------------------------------
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
@@ -85,8 +88,13 @@ local function generateHTML()
 	--------------------------------------------------------------------------------
 	env.screenshots = getScreenshotsAsBase64()
 
-	return template.render(config.scriptPath .. "/cp/feedback/html/feedback.htm", env)
-
+	local result, err = renderTemplate(env)
+	if err then
+		log.ef("Error while rendering the 'feedback.htm' form")
+		return ""
+	else
+		return result
+	end
 end
 
 local function urlQueryStringDecode(s)
@@ -139,9 +147,9 @@ function mod.showFeedback(quitOnComplete)
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
-	local developerExtrasEnabled = {}
-	if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
-	mod.feedbackWebView = webview.new(defaultRect, developerExtrasEnabled, mod.feedbackWebViewController)
+	local prefs = {}
+	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	mod.feedbackWebView = webview.new(defaultRect, prefs, mod.feedbackWebViewController)
 		--:navigationCallback(feedbackWebViewNavigationWatcher)
 		:windowStyle({"titled"})
 		:shadow(true)
