@@ -56,7 +56,7 @@ local function evaluate(content)
 			return result
 		end
 	elseif contentType == "function" then
-		content = content()
+		content = evaluate(content())
 	end
 	
 	if content then

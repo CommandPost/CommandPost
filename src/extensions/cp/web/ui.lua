@@ -1,3 +1,5 @@
+local log				= require("hs.logger").new("webui")
+
 local uuid				= require("cp.uuid")
 local html				= require("cp.web.html")
 local _					= require("moses")
@@ -178,16 +180,15 @@ function ui.select(params)
 			for _,opt in ipairs(opts) do
 				local optValue = evaluate(opt.value)
 				local label = evaluate(opt.label) or optValue
-				local checked = optValue == value and "checked" or nil
-				options = options .. html.option { value = optValue, checked } (label)
+				local selected = optValue == value and "selected" or nil
+				options = options .. html.option { value = optValue, selected } (label)
 			end
 		end
-		
 		return options
 	end
 	
 	-- create the 
-	return html.select { id = params.id, name = params.id } (optionGenerator)
+	return html.select { id = params.id, name = params.id } (optionGenerator, true)
 end
 
 function ui.dropdown(data, id)

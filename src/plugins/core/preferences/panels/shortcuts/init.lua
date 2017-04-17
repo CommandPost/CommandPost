@@ -25,7 +25,6 @@ local webview									= require("hs.webview")
 local config									= require("cp.config")
 local commands									= require("cp.commands")
 local dialog									= require("cp.dialog")
-local generate									= require("cp.web.generate")
 local html										= require("cp.web.html")
 
 local _											= require("moses")
@@ -323,7 +322,6 @@ local function generateContent()
 		checkModifier 			= checkModifier,
 		webviewLabel 			= mod._manager.getLabel(),
 		shortcutsEnabled		= not isHacksShortcutsEnabled(),
-		generate				= generate,
 	}
 
 	return renderPanel(context)

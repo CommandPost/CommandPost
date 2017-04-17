@@ -15,7 +15,6 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefPanel")
 
-local generate									= require("cp.web.generate")
 local html										= require("cp.web.html")
 local ui										= require("cp.web.ui")
 local uuid										= require("cp.uuid")
