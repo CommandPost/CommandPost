@@ -82,6 +82,8 @@ end
 local function generateHTML()
 
 	local env = {}
+
+	env.debugMode = config.get("debugMode", false)
 	env.panels = mod._panels
 	env.highestPriorityID = highestPriorityID()
 

@@ -74,12 +74,16 @@
 		</style>
 
 		<!-- Javascript: -->
+		{% if not debugMode then %}
 		<script>
-
 			// Disable Right Clicking:
 			document.addEventListener("contextmenu", function(e){
 			    e.preventDefault();
 			}, false);
+		</script>
+		{% end %}
+
+		<script>
 
 			// Something has been dropped onto our Dropbox:
 			function dropboxAction() {
