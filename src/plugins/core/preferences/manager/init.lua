@@ -13,23 +13,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsManager")
+local log										= require("hs.logger").new("prefsMgr")
 
-local application								= require("hs.application")
-local base64									= require("hs.base64")
-local console									= require("hs.console")
-local drawing									= require("hs.drawing")
-local geometry									= require("hs.geometry")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
-local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
-local fcp										= require("cp.finalcutpro")
 local config									= require("cp.config")
-local tools										= require("cp.tools")
+
+local panel										= require("panel")
+
+local _											= require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -53,12 +49,21 @@ mod.defaultWidth 		= 450
 mod.defaultHeight 		= 420
 mod.defaultTitle 		= i18n("preferences")
 mod._panels				= {}
+mod._handlers			= {}
 
 --------------------------------------------------------------------------------
 -- GET LABEL:
 --------------------------------------------------------------------------------
 function mod.getLabel()
 	return WEBVIEW_LABEL
+end
+
+function mod.addHandler(id, handlerFn)
+	mod._handlers[id] = handlerFn
+end
+
+function mod.getHandler(id)
+	return mod._handlers[id]
 end
 
 function mod.setPanelRenderer(renderer)
@@ -71,8 +76,7 @@ end
 local function highestPriorityID()
 
 	local sortedPanels = mod._panels
-	table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
-	return mod._panels[1]["id"]
+	return #mod._panels > 0 and mod._panels[1].id or nil
 
 end
 
@@ -80,7 +84,7 @@ end
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML()
-
+	-- log.df("generateHTML: called")
 	local env = {}
 
 	env.debugMode = config.get("debugMode", false)
@@ -96,52 +100,60 @@ local function generateHTML()
 	end
 end
 
---------------------------------------------------------------------------------
--- NEW PREFERENCES PANEL:
---------------------------------------------------------------------------------
-function mod.new()
+--- plugins.core.preferences.manager.init() -> nothing
+--- Function
+--- Initialises the preferences panel.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing
+function mod.init()
 
 	--------------------------------------------------------------------------------
 	-- Centre on Screen:
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
-	local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
 	--------------------------------------------------------------------------------
 	mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
 		:setCallback(function(message)
-			--------------------------------------------------------------------------------
-			-- Trigger Callbacks:
-			--------------------------------------------------------------------------------
-			for i, v in ipairs(mod._panels) do
-				if type(v["callbackFn"]) == "function" then
-					v["callbackFn"](message)
-				end
+			-- log.df("webview callback called: %s", hs.inspect(message))
+			local body = message.body
+			local id = body.id
+			local params = body.params
+
+			local handler = mod.getHandler(id)
+			if handler then
+				return handler(id, params)
 			end
 		end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Tool Bar:
 	--------------------------------------------------------------------------------
-	table.sort(mod._panels, function(a, b) return a.priority < b.priority end)
-	mod.toolbar = toolbar.new(WEBVIEW_LABEL, mod._panels)
+	mod.toolbar = toolbar.new(WEBVIEW_LABEL)
 		:canCustomize(true)
 		:autosaves(true)
+		:setCallback(function(toolbar, webview, id)
+			mod.selectPanel(id)
+		end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
-	local developerExtrasEnabled = {}
-	if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
-	mod.webview = webview.new(defaultRect, developerExtrasEnabled, mod.controller)
+	local prefs = {}
+	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	mod.webview = webview.new(defaultRect, prefs, mod.controller)
 		:windowStyle({"titled", "closable", "nonactivating"})
 		:shadow(true)
 		:allowNewWindows(false)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
-		:html(generateHTML())
 		:toolbar(mod.toolbar)
 
 	--------------------------------------------------------------------------------
@@ -149,6 +161,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	mod.selectPanel(highestPriorityID())
 
+	return mod
 end
 
 --- plugins.core.preferences.manager.showPreferences() -> boolean
@@ -163,13 +176,14 @@ end
 function mod.show()
 
 	if mod.webview == nil then
-		mod.new()
+		mod.init()
 	end
 
 	if next(mod._panels) == nil then
-		dialog.displayMessage("There is no Preferences Panels to display.")
+		dialog.displayMessage("There are no Preferences Panels to display.")
 		return nil
 	else
+		mod.webview:html(generateHTML())
 		mod.webview:show()
 		timer.doAfter(0.1, function()
 			--log.df("Attempting to bring Preferences Panel to focus.")
@@ -196,65 +210,61 @@ function mod.selectPanel(id)
 
 	-- log.df("Selecting Panel with ID: %s", id)
 
-	local javascriptToInject = ""
+	local js = ""
 
 	for i, v in ipairs(mod._panels) do
-		if v["id"] == id then
-			javascriptToInject = javascriptToInject .. [[
-				document.getElementById(']] .. v["id"] .. [[').style.display = 'block';
-			]]
-		else
-			javascriptToInject = javascriptToInject .. [[
-				document.getElementById(']] .. v["id"] .. [[').style.display = 'none';
-			]]
-		end
+		local style = v.id == id and "block" or "none"
+		js = js .. [[
+			document.getElementById(']] .. v.id .. [[').style.display = ']] .. style .. [[';
+		]]
 	end
 
-	mod.webview:evaluateJavaScript(javascriptToInject)
+	mod.webview:evaluateJavaScript(js)
 	mod.toolbar:selectedItem(id)
 
 end
 
---------------------------------------------------------------------------------
--- ADD PANEL:
---------------------------------------------------------------------------------
-function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
-
-	--log.df("Adding Preferences Panel with ID: %s", id)
-
-	mod._panels[#mod._panels + 1] = {
-		id = id,
-		label = label,
-		image = image,
-		priority = priority,
-		tooltip = tooltip,
-		fn = function() mod.selectPanel(id) end,
-		selectable = true,
-		contentFn = contentFn,
-		callbackFn = callbackFn,
-	}
-
+local function comparePriorities(a, b)
+	return a.priority < b.priority
 end
 
---------------------------------------------------------------------------------
--- ADD PANEL:
---------------------------------------------------------------------------------
-function mod.addPanel(id, label, image, priority, tooltip, contentFn, callbackFn)
+--- plugins.core.preferences.manager.addPanel(params) -> plugins.core.preferences.manager.panel
+--- Function
+--- Adds a new panel with the specified `params` to the preferences manager.
+---
+--- Parameters:
+---  * `params`	- The parameters table. Details below.
+---
+--- Returns:
+---  * The new `panel` instance.
+---
+--- Notes:
+---  * The `params` can have the following properties. The `priority` and `id` and properties are **required**.
+---  ** `priority`		- An integer value specifying the priority of the panel compared to others.
+---  ** `id`			- A string containing the unique ID of the panel.
+---  ** `label`			- The human-readable label for the panel icon.
+---	 ** `image`			- The `hs.image` for the panel icon.
+---  ** `tooltip`		- The human-readable details for the toolbar icon when the mouse is hovering over it.
+function mod.addPanel(params)
 
 	--log.df("Adding Preferences Panel with ID: %s", id)
+	local newPanel = panel.new(params, mod)
 
-	mod._panels[#mod._panels + 1] = {
-		id = id,
-		label = label,
-		image = image,
-		priority = priority,
-		tooltip = tooltip,
-		fn = function() mod.selectPanel(id) end,
-		selectable = true,
-		contentFn = contentFn,
-		callbackFn = callbackFn,
-	}
+	local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
+	table.insert(mod._panels, index, newPanel)
 
+	if mod.toolbar then
+		local toolbar = mod.toolbar
+		local item = newPanel:getToolbarItem()
+
+		toolbar:addItems(item)
+		toolbar:insertItem(item.id, index)
+		if not toolbar:selectedItem() then
+			toolbar:selectedItem(item.id)
+		end
+	end
+
+	return newPanel
 end
 
 --------------------------------------------------------------------------------
@@ -281,7 +291,7 @@ function plugin.init(deps, env)
 		return { title = i18n("preferences") .. "...", fn = mod.show }
 	end)
 
-	return mod
+	return mod.init()
 end
 
 return plugin

@@ -547,11 +547,12 @@ function mod.postInitPlugin(id)
 		end
 		info.status = mod.status.active
 		return true
-	else
+	elseif info.status ~= mod.status.disabled then
 		log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(info.status))
 		info.status = mod.status.error
 		return false
 	end
+	return true
 end
 
 --- cp.plugins.init(ids) -> cp.plugins

@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log						= require("hs.logger").new("adminMenu")
+
 local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
@@ -29,18 +31,16 @@ local SETTING 					= "menubarAdministratorEnabled"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local function isSectionDisabled()
-	local setting = config.get(SETTING)
-	if setting ~= nil then
-		return not setting
-	else
-		return false
-	end
+local function isSectionEnabled()
+	return config.get(SETTING, true)
 end
 
-local function toggleSectionDisabled()
-	local menubarEnabled = config.get(SETTING)
-	config.set(SETTING, not menubarEnabled)
+local function setSectionEnabled(value)
+	config.set(SETTING, value)
+end
+
+local function toggleSectionEnabled()
+	setSectionEnabled(not isSectionEnabled())
 end
 
 --------------------------------------------------------------------------------
@@ -70,7 +70,9 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Disable the section if the Administrator option is disabled
 	--------------------------------------------------------------------------------
-	shortcuts:setDisabledFn(isSectionDisabled)
+	shortcuts:setDisabledFn(function()
+		return not isSectionEnabled()
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Add the separator and title for the section.
@@ -83,9 +85,16 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY, function()
-		return { title = i18n("showAdminTools"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
-	end)
+	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+		{
+			label = i18n("showAdminTools"),
+			onchange = function(id, params)
+				log.df("params: %s", hs.inspect(params))
+				setSectionEnabled(params.checked)
+			end,
+			checked = isSectionEnabled,
+		}
+	)
 
 	return shortcuts
 end

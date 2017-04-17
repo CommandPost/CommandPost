@@ -77,7 +77,7 @@ local plugin = {
 	id				= "core.preferences.updates",
 	group			= "core",
 	dependencies	= {
-		["core.menu.top"] 					= "top",
+		["core.menu.top"] 					= "menu",
 		["core.preferences.panels.general"]	= "general",
 	}
 }
@@ -93,18 +93,22 @@ function plugin.init(deps)
 		hs.checkForUpdates(true)
 	end
 
-	deps.top:addItem(UPDATE_BANNER_PRIORITY, function()
+	deps.menu:addItem(UPDATE_BANNER_PRIORITY, function()
 		if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
 			return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",	fn = mod.checkForUpdates }
 		end
 	end)
 	:addSeparator(2)
 
-	deps.general:addCheckbox(3, function()
-		if hs.canCheckForUpdates() then
-			return { title = i18n("checkForUpdates"),	fn = mod.toggleCheckForUpdates, checked = mod.automaticallyCheckForUpdates }
-		end
-	end)
+	if hs.canCheckForUpdates() then
+		deps.general:addCheckbox(3,
+			{
+				label = i18n("checkForUpdates"),
+				onchange = mod.toggleCheckForUpdates,
+				checked = hs.automaticallyCheckForUpdates,
+			}
+		)
+	end
 
 end
 

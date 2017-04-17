@@ -17,6 +17,10 @@ local log										= require("hs.logger").new("prefsGenerate")
 local mimetypes									= require("mimetypes")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
+local template									= require("resty.template")
+local html										= require("cp.web.html")
+
+local compile									= template.compile
 
 --------------------------------------------------------------------------------
 --
@@ -79,34 +83,47 @@ end
 ---  * String containing the HTML
 function mod.checkbox(data, customTrigger, customID)
 
-	local result = data["title"]
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or data.title
 
-	local isChecked = ""
-	if data["checked"] then
-		isChecked = " checked"
-	end
+	local isChecked = data.checked and "checked" or ""
 
 	local id = "checkbox" .. randomWord(20)
 	if customID then id = customID end
 
-	local result = [[<p class="uiItem"><input type="checkbox" id="]] .. id .. [[" value=""]] .. isChecked .. [[> ]] .. data["title"] .. [[</p>
-	<script>
-		var ]] .. id .. [[=document.getElementById("]] .. id .. [[");
-		]] .. id .. [[.onchange = function (){
+	local result = html.p { class = "uiItem" } (
+		html.input { type = "checkbox", id = id, value = "", isChecked } .. data.title
+	) .. mod.javascript([[
+		var checkbox = document.getElementById("{{ id }}");
+		checkbox.onchange = function (){
 			try {
-				var checked = document.getElementById("]] .. id .. [[").checked;
-				var result = ["]] .. result .. [[", checked];
-				webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+				var checked = checkbox.checked;
+				var result = ["{{ value }}", checked];
+				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	</script>
-	]]
+	]], { id = id, value = value, name = mod._webviewLabel })
 
 	return result
 
+end
+
+--- cp.web.generate.javascript(script, context) -> cp.web.html.block
+--- Function
+--- Generates a HTML Heading
+---
+--- Parameters:
+---  * data - Table containing the data you want to display on the Checkbox
+---
+--- Returns:
+---  * String containing the HTML
+---
+function mod.javascript(script, context)
+	local t = compile(script, "no-cache", true)
+	return html.script { type = "text/javascript" } (
+		"(function(){\n" .. t(context) .. "\n})();"
+	)
 end
 
 --- cp.web.generate.heading() -> string
@@ -119,10 +136,7 @@ end
 --- Returns:
 ---  * String containing the HTML
 function mod.heading(data)
-
-	local result = "<h3>" .. data["title"] .. "</h3>\n"
-	return result
-
+	return html.h3 {} ( data.title )
 end
 
 --- cp.web.generate.text() -> string
@@ -136,8 +150,7 @@ end
 ---  * String containing the HTML
 function mod.text(data)
 
-	local result = data["title"] .. "\n"
-	return result
+	return html(data.title) .. "\n"
 
 end
 
@@ -155,30 +168,29 @@ end
 ---  * String containing the HTML
 function mod.button(data, customTrigger, customWidth, customID)
 
-	local result = data["title"]
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or data.title
 
 	local id = "button" .. randomWord(20)
 	if customID then id = customID end
 
-	local style = ""
+	local style = nil
 	if customWidth then
-		style = [[ style="width: ]] .. customWidth .. [[px;" ]]
+		style = "width: " .. customWidth .. "px;"
 	end
 
-	local result = [[<p class="uiItem"><a id="]] .. id ..  [[" ]] .. style .. [[class="button" href="#">]] .. data["title"] .. [[</a></p>
-	<script>
-		var ]] .. id .. [[=document.getElementById("]] .. id .. [[");
-		]] .. id .. [[.onclick = function (){
+	local result = html.p { class="uiItem" } (
+		html.a { id=id, style=style, class="button", href="#" } (data.title)
+	) .. mod.javascript([[
+		var button = document.getElementById("{{ id }}");
+		button.onclick = function (){
 			try {
-				var result = ["]] .. result .. [["];
-				webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+				var result = ["{{ value }}"];
+				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	</script>
-	]]
+	]], { id=id, value=value, name=mod._webviewLabel})
 
 	return result
 
@@ -197,8 +209,7 @@ end
 ---  * String containing the HTML
 function mod.dropdown(title, data, customTrigger)
 
-	local result = title
-	if customTrigger then result = customTrigger end
+	local value = customTrigger or title
 
 	if title ~= "" then title = title .. ": " end
 
@@ -207,27 +218,26 @@ function mod.dropdown(title, data, customTrigger)
 	local options = ""
 
 	for i, v in ipairs(data) do
-		local selected = ""
-		if v["checked"] then selected = [[ selected="selected" ]] end
+		local selected = nil
+		if v.checked then selected = "selected" end
 
-		options = options .. [[<option value="]] .. v["title"] .. [["]] .. selected .. [[>]] .. v["title"] .. [[</option>]]
-
+		options = options .. html.option { value=v.title, selected } (v.title)
 	end
 
-	local result = [[<p class="uiItem">]] .. title .. [[<select id="]] .. id .. [[">]] .. options .. [[</select></p>
-	<script>
-		var ]] .. id .. [[=document.getElementById("]] .. id .. [[");
-		]] .. id .. [[.onchange = function (){
+	local result = html.p { class="uiItem" } (
+		title .. html.select { id=id } (options)
+	) .. mod.javascript([[
+		var dropdown = document.getElementById("{{ id }}");
+		dropdown.onchange = function (){
 			try {
-				var dropdownResult = document.getElementById("]] .. id .. [[").value;
-				var result = ["]] .. result .. [[", dropdownResult];
-				webkit.messageHandlers.]] .. mod._webviewLabel .. [[.postMessage(result);
+				var dropdownResult = document.getElementById("{{ id }}").value;
+				var result = ["{{ value }}", dropdownResult];
+				webkit.messageHandlers.{{ name }}.postMessage(result);
 			} catch(err) {
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 		}
-	</script>
-	]]
+	]], { id=id, value=value, name=mod._webviewLabel })
 
 	return result
 
@@ -248,17 +258,4 @@ function mod.imageBase64(pathToImage)
 	return ""
 end
 
---- cp.web.generate.init() -> none
---- Function
---- Initialises the module
----
---- Parameters:
----  * None
----
---- Returns:
----  * Table containing the module
-function mod.init()
-	return mod
-end
-
-return mod.init()
+return mod

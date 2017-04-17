@@ -53,20 +53,25 @@
 				margin-right: 0px;
 				margin-left: 0px;
 			}
+
+			h3.uiItem {
+				padding-top: 12pt;
+				padding-bottom: 3pt;
+			}
 		</style>
+		{% if not debugMode then %}
 		<script>
 			// Disable Right Clicking:
-			/*
 			document.addEventListener("contextmenu", function(e){
 			    e.preventDefault();
 			}, false);
-			*/
 		</script>
+		{% end %}
 	</head>
 	<body>
 {%	for i, panel in ipairs(panels) do %}
 		<div id="{{ panel.id }}" style="display: {{ panel.id == highestPriorityID and "block" or "none" }};">
-			{* panel.contentFn() *}
+			{* panel:generateContent() *}
 		</div>
 {%	end %}
 	</body>

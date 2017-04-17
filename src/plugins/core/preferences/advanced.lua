@@ -22,6 +22,8 @@ local config			= require("cp.config")
 local fcp				= require("cp.finalcutpro")
 local dialog			= require("cp.dialog")
 
+local html				= require("cp.web.html")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -93,10 +95,13 @@ end
 --- Returns:
 ---  * None
 function mod.toggleDeveloperMode()
-	local debugMode = config.get("debugMode")
-	config.set("debugMode", not debugMode)
-	console.clearConsole()
-	hs.reload()
+	local result = dialog.displayMessage(i18n("togglingDeveloperMode"), {"Yes", "No"})
+	if result == "Yes" then
+		local debugMode = config.get("debugMode")
+		config.set("debugMode", not debugMode)
+		console.clearConsole()
+		hs.reload()
+	end
 end
 
 --- plugins.core.preferences.advanced.getDeveloperMode() -> boolean
@@ -197,35 +202,44 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.advanced:addHeading(60, function()
-		return { title = i18n("developer") .. ":" }
-	end)
+	deps.advanced:addHeading(60, i18n("developer") .. ":")
 
-	:addCheckbox(61, function()
-		return { title = i18n("enableDeveloperMode"),	fn = mod.toggleDeveloperMode, checked = mod.getDeveloperMode() }
-	end)
+	:addCheckbox(61,
+		{
+			label = i18n("enableDeveloperMode"),
+			onchange = mod.toggleDeveloperMode,
+			checked = mod.getDeveloperMode
+		}
+	)
 
-	:addHeading(62, function()
-		return { title = "<br />" .. i18n("advanced") .. ":" }
-	end)
+	:addHeading(62, i18n("advanced") .. ":")
 
-	:addButton(63, function()
-		return { title = i18n("openErrorLog"),	fn = mod.openErrorLog }
-	end, 150)
+	:addButton(63,
+		{
+			label = i18n("openErrorLog"),
+			width = 150,
+			onclick = mod.openErrorLog,
+		}
+	)
 
-	:addButton(64, function()
-		return { title = i18n("trashPreferences"),	fn = mod.trashPreferences }
-	end, 150)
+	:addButton(64,
+		{
+			label	= i18n("trashPreferences"),
+			width	= 150,
+			onclick	= mod.trashPreferences,
+		}
+	)
 
-	:addHeading(70, function()
-		return { title = "<br />" .. i18n("commandLineTool") .. [[:</h3>
-			<p>]] .. i18n("commandLineToolDescription") .. [[</p><h3>
-		]] }
-	end)
+	:addHeading(70, i18n("commandLineTool") .. ":")
+	:addParagraph(71, i18n("commandLineToolDescription"), true)
 
-	:addButton(75, function()
-		return { title = getCommandLineToolTitle(),	fn = mod.toggleCommandLineTool }
-	end, 150, "commandLineTool", "commandLineTool")
+	:addButton(75,
+		{
+			label	= getCommandLineToolTitle(),
+			width	= 150,
+			onclick	= mod.toggleCommandLineTool,
+		}
+	)
 
 end
 

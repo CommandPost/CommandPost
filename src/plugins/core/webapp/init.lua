@@ -108,7 +108,7 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Get Hostname:
 	--------------------------------------------------------------------------------
-	mod.hostname = getHostname() or "Failed to Resolve Hostname!"
+	mod.hostname = getHostname() or i18n("webappUnresolvedHostname")
 
 	--------------------------------------------------------------------------------
 	-- Get Path:
@@ -118,25 +118,28 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup Preferences:
 	--------------------------------------------------------------------------------
-	deps.webappPreferences:addHeading(10, function()
-		return { title = "Introduction:" }
-	end)
+	deps.webappPreferences:addHeading(10, i18n ("webappIntroduction") .. ":")
 
-	:addText(15, function()
-		return { title = "<p>The <span style='font-weight: bold;'>WebApp</span> is a very easy way to control CommandPost via your mobile phone or tablet.</p><p>All you need to do is connect your device to the same network as this machine, enable the WebApp below, then access the WebApp via your devices browser by entering the below URL:</p><p style='font-size: 15px; font-weight:bold;'>" .. mod.hostname .. "</p>"}
-	end)
+	:addParagraph(15, i18n("webappInstructions"), true)
 
-	:addButton(20, function()
-		return { title = "Copy Link to Clipboard",	fn = mod.copyLinkToClipboard }
-	end)
+	:addHeading(25, i18n("webappSettings") .. ":" )
+	:addCheckbox(30, 
+		{
+			label = i18n("webappEnable"),
+			onchange = mod.toggleEnableWebApp, 
+			checked = mod.getEnableWebApp,
+		}
+	)
+	
+	:addHeading(40, i18n("webappHostname") .. ":" )
+	:addParagraph(45, mod.hostname)
+	:addButton(50,
+		{
+			label = "Copy Link to Clipboard",
+			onclick = mod.copyLinkToClipboard
+		}
+	)
 
-	deps.webappPreferences:addHeading(25, function()
-		return { title = "<br />Settings:" }
-	end)
-
-	:addCheckbox(30, function()
-		return { title = "Enable WebApp",	fn = mod.toggleEnableWebApp, checked = mod.getEnableWebApp() }
-	end)
 
 	return mod
 end

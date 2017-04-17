@@ -429,6 +429,7 @@ return {
 			developer							=			"Developer",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
+			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.\n\nDo you want to continue?",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we ffailed to Install the Command Line Tool. Please try again.",
@@ -517,6 +518,57 @@ return {
 			rectangle							= 			"Rectangle",
 			circle								=			"Circle",
 			diamond								=			"Diamond",
+
+			--------------------------------------------------------------------------------
+			-- Preference Panels:
+			--------------------------------------------------------------------------------
+			generalPanelLabel					=			"General",
+			generalPanelTooltip					=			"General Preferences",
+
+			menubarPanelLabel					=			"Menubar",
+			menubarPanelTooltip					=			"Menubar Preferences",
+
+			advancedPanelLabel					=			"Advanced",
+			advancedPanelTooltip				=			"Advanced Preferences",
+
+			finalCutProPanelLabel				=			"Final Cut Pro",
+			finalCutProPanelTooltip				=			"Final Cut Pro Preferences",
+
+			pluginsPanelLabel					=			"Plugins",
+			pluginsPanelTooltip					=			"Plugins Preferences",
+
+			pluginsManagerLabel					=			"Plugins Manager",
+			pluginCategory						=			"Category",
+			pluginName							=			"Plugin Name",
+			pluginStatus						=			"Status",
+			pluginAction						=			"Action",
+
+			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
+			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
+
+			setupHeading						=			"Setup",
+			menubarHeading						=			"Menubar",
+
+			languageHeading						=			"Language",
+			commandPostLanguage					=			"CommandPost Language",
+
+			shortcutsPanelLabel					=			"Shortcuts",
+			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
+
+			webappPanelLabel					=			"WebApp",
+			webappPanelTooltip					=			"WebApp Preferences",
+
+			webappIntroduction					=			"Introduction",
+
+			webappInstructions					=			[[
+			The <strong>WebApp</strong> is a very easy way to control CommandPost via your mobile phone or tablet.<br /><br />
+			All you need to do is connect your device to the same network as this machine, enable the WebApp below, then access the WebApp via your devices browser by entering URL below.
+			]],
+
+			webappSettings						=			"Settings",
+			webappEnable						=			"Enable WebApp",
+			webappHostname						=			"Hostname",
+			webappUnresolvedHostname			=			"Failed to Resolve Hostname!",
 
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
@@ -644,7 +696,7 @@ return {
 	--------------------------------------------------------------------------------
 	shortcut_group_global				=			"Global",
 	shortcut_group_fcpx					=			"FCPX",
-	
+
 	customiseShortcuts					=			"Customise Shortcuts",
 	shortcutsGroup						=			"Group",
 	shortcutsLabel						=			"Label",
@@ -677,6 +729,8 @@ return {
 	core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 	core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
 	core_preferences_updates_label							=	"Preferences: Updates",
+	core_preferences_advanced_label							=	"Preferences - Advanced",
+	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
 	core_quit_label											=	"Quit Command",
 	core_welcome_manager_label								= 	"Welcome Manager",
 	core_welcome_panels_accessibility_label					=	"Welcome: Accessibility",

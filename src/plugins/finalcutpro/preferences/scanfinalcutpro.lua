@@ -131,13 +131,14 @@ function plugin.init(deps)
 
 	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-	deps.finalcutpro:addHeading(10, function()
-		return { title = "Setup:" }
-	end)
+		deps.finalcutpro:addHeading(10, i18n("setupHeading") .. ":" )
 
-	:addButton(11, function()
-		return { title = i18n("scanFinalCutPro"),	fn = mod.scanFinalCutPro }
-	end)
+		:addButton(11,
+			{
+				label = i18n("scanFinalCutPro"),
+				onclick = mod.scanFinalCutPro,
+			}
+		)
 
 	return mod
 end

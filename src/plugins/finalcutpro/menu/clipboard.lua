@@ -29,18 +29,16 @@ local SETTING 					= "menubarClipboardEnabled"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local function isSectionDisabled()
-	local setting = config.get(SETTING)
-	if setting ~= nil then
-		return not setting
-	else
-		return false
-	end
+local function isSectionEnabled()
+	return config.get(SETTING, true)
 end
 
-local function toggleSectionDisabled()
-	local menubarEnabled = config.get(SETTING)
-	config.set(SETTING, not menubarEnabled)
+local function setSectionEnabled(value)
+	config.set(SETTING, value)
+end
+
+local function toggleSectionEnabled()
+	setSectionEnabled(not isSectionEnabled())
 end
 
 --------------------------------------------------------------------------------
@@ -70,7 +68,7 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Disable the section if the Clipboard option is disabled:
 	--------------------------------------------------------------------------------
-	shortcuts:setDisabledFn(isSectionDisabled)
+	shortcuts:setDisabledFn(function() return not isSectionEnabled() end)
 
 	--------------------------------------------------------------------------------
 	-- Add the separator and title for the section:
@@ -83,9 +81,13 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY, function()
-		return { title = i18n("show") .. " " .. i18n("clipboard"),	fn = toggleSectionDisabled, checked = not isSectionDisabled()}
-	end)
+	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+		{
+			label = i18n("show") .. " " .. i18n("clipboard"),
+			onchange = function(id, params) setSectionEnabled(params.checked) end,
+			checked = isSectionEnabled,
+		}
+	)
 
 	return shortcuts
 end

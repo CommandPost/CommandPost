@@ -85,6 +85,14 @@ function mod.getCommandPostLanguages()
 	return mod.installedLanguages
 end
 
+function mod.getUserLocale()
+	local userLocale = config.get("language", tools.userLocale())
+	if string.find(userLocale, "_") ~= nil then
+		userLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
+	end
+	return userLocale
+end
+
 --- plugins.core.language.getCommandPostLanguagesMenu() -> nil
 --- Function
 --- Gets a table for the Menubar creation of all the supported CommandPost Languages
@@ -136,6 +144,18 @@ local function getCommandPostLanguagesMenu()
 	end
 end
 
+local function getLanguageOptions()
+	local options = {}
+	local languages = mod.getCommandPostLanguages()
+	for _,language in ipairs(languages) do
+		options[#options+1] = {
+			value = language.id,
+			label = language.language,
+		}
+	end
+	return options
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -162,11 +182,16 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(40, function()
-			return { title = "<br />Language:" }
-		end)
+	deps.general:addHeading(40, i18n("languageHeading") .. ":")
 
-	:addDropdown(41, "", getCommandPostLanguagesMenu)
+	:addSelect(41, 
+		{ 
+			label		= i18n("commandPostLanguage"),
+			value		= mod.getUserLocale,
+			options		= getLanguageOptions,
+			required	= true,
+		}
+	)
 
 	return mod
 end
