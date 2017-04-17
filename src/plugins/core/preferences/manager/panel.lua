@@ -19,6 +19,12 @@ local html										= require("cp.web.html")
 local ui										= require("cp.web.ui")
 local uuid										= require("cp.uuid")
 
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
 --- plugins.core.preferences.manager.panel.DEFAULT_PRIORITY
 --- Constant
 --- The default priority for panels.
