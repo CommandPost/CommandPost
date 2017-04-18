@@ -220,6 +220,14 @@ local function run()
 		ok(not appearance:isShowing())
 		ok(not appearance:clipHeight():isShowing())
 	end)
+	
+	test("Timeline Contents", function()
+		reset()
+		local contents = fcp:timeline():contents()
+		
+		ok(contents:isShowing())
+		ok(contents:scrollAreaUI() ~= nil)
+	end)
 end
 
 return run
