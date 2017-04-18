@@ -167,8 +167,6 @@ function mod.init()
 		end
 	end
 
-	config.fileDroppedToDockIconCallback:new("test", function(value) print("test: " .. value) end)
-
 	--------------------------------------------------------------------------------
 	-- Setup Global File Dropped to Dock Icon Callback:
 	--------------------------------------------------------------------------------

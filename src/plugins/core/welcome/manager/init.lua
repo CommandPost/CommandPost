@@ -108,6 +108,14 @@ function mod.setupUserInterface(showNotification)
 	mod.shortcuts.init()
 
 	--------------------------------------------------------------------------------
+	-- Enable Commands:
+	--------------------------------------------------------------------------------
+	local allGroups = commands.groupIds()
+	for i, v in ipairs(allGroups) do
+    	commands.group(v):enable()
+    end
+
+	--------------------------------------------------------------------------------
 	-- Notifications:
 	--------------------------------------------------------------------------------
 	if showNotification then
