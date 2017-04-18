@@ -231,7 +231,7 @@ function Viewer:bottomToolbarUI()
 		local ui = self:UI()
 		if ui then
 			for i,child in ipairs(ui) do
-				if _highlight(axutils.childWith(child, "AXIdentifier", id "Timecode")) then
+				if axutils.childWith(child, "AXIdentifier", id "Timecode") then
 					return child
 				end
 			end

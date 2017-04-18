@@ -2,6 +2,7 @@ local test		= require("cp.test")
 local log		= require("hs.logger").new("testfcpids")
 
 local fcp		= require("cp.finalcutpro")
+local ids		= require("cp.finalcutpro.ids")
 local just		= require("cp.just")
 
 local function reset()
@@ -227,6 +228,31 @@ local function run()
 		
 		ok(contents:isShowing())
 		ok(contents:scrollAreaUI() ~= nil)
+	end)
+	
+	test("Timeline Toolbar", function()
+		reset()
+		local toolbar = fcp:timeline():toolbar()
+		
+		ok(toolbar:isShowing())
+		ok(toolbar:skimmingGroupUI() ~= nil)
+		ok(toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "SkimmingGroup")
+		
+		ok(toolbar:effectsGroupUI() ~= nil)
+		ok(toolbar:effectsGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "EffectsGroup")
+		
+	end)
+	
+	test("Viewer", function()
+		reset()
+		local viewer = fcp:viewer()
+		
+		ok(viewer:isShowing())
+		ok(viewer:topToolbarUI() ~= nil)
+		ok(viewer:bottomToolbarUI() ~= nil)
+		ok(viewer:formatUI() ~= nil)
+		ok(viewer:getFramerate() ~= nil)
+		ok(viewer:getTitle() ~= nil)
 	end)
 end
 
