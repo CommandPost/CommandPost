@@ -275,6 +275,24 @@ local function run()
 		panel:hide()
 		ok(not panel:isShowing())
 	end)
+	
+	test("PlaybackPanel", function()
+		reset()
+		local panel = fcp:preferencesWindow():playbackPanel()
+		
+		-- Make sure the preferences window is hidden
+		fcp:preferencesWindow():hide()
+		ok(not panel:isShowing())
+		
+		-- Show the import preferences panel
+		panel:show()
+		ok(panel:isShowing())
+		ok(panel:createOptimizedMediaForMulticamClips():isShowing())
+		ok(panel:autoStartBGRender():isShowing())
+		
+		panel:hide()
+		ok(not panel:isShowing())
+	end)
 end
 
 return run
