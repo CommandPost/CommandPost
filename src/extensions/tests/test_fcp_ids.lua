@@ -147,6 +147,15 @@ local function run()
 		ok(libraries:appearanceAndFiltering():isShowing())
 		ok(libraries:sidebar():isShowing())
 		
+		-- Check Filmstrip/List view
+		libraries:filmstrip():show()
+		ok(libraries:filmstrip():isShowing())
+		ok(not libraries:list():isShowing())
+		
+		libraries:list():show()
+		ok(libraries:list():isShowing())
+		ok(not libraries:filmstrip():isShowing())
+		
 		ok(libraries:searchToggle():isShowing())
 		-- Show the search field
 		if not libraries:search():isShowing() then

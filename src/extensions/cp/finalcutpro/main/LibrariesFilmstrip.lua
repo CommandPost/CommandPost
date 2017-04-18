@@ -18,7 +18,7 @@ local axutils							= require("cp.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
-local id								= require("cp.finalcutpro.ids") "Filmstrip"
+local id								= require("cp.finalcutpro.ids") "LibrariesFilmstrip"
 
 --------------------------------------------------------------------------------
 --
@@ -80,9 +80,15 @@ function Filmstrip:verticalScrollBarUI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+function Filmstrip:show()
+	if not self:isShowing() and self:parent():show():isShowing() then
+		self:parent():toggleViewMode():press()
+	end
+end
+
 -- TODO: Add documentation
 function Filmstrip:isShowing()
-	return self:UI() ~= nil
+	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -- TODO: Add documentation

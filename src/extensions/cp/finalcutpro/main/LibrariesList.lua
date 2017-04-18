@@ -73,9 +73,15 @@ function List:UI()
 	List.matches)
 end
 
+function List:show()
+	if not self:isShowing() and self:parent():show():isShowing() then
+		self:parent():toggleViewMode():press()
+	end
+end
+
 -- TODO: Add documentation
 function List:isShowing()
-	return self:UI() ~= nil
+	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -----------------------------------------------------------------------
