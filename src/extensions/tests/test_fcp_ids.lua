@@ -194,6 +194,32 @@ local function run()
 		ok(list:contents():isShowing())
 		ok(list:clipsUI() ~= nil)
 	end)
+	
+	test("Timeline", function()
+		reset()
+		local timeline = fcp:timeline()
+		
+		ok(timeline:isShowing())
+		timeline:hide()
+		ok(not timeline:isShowing())
+	end)
+	
+	test("Timeline Appearance", function()
+		reset()
+		local appearance = fcp:timeline():toolbar():appearance()
+		
+		ok(appearance:toggle():isShowing())
+		ok(not appearance:isShowing())
+		ok(not appearance:clipHeight():isShowing())
+		
+		appearance:show()
+		ok(appearance:isShowing())
+		ok(appearance:clipHeight():isShowing())
+		
+		appearance:hide()
+		ok(not appearance:isShowing())
+		ok(not appearance:clipHeight():isShowing())
+	end)
 end
 
 return run

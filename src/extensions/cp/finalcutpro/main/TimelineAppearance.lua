@@ -13,10 +13,13 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
 
 local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local Slider							= require("cp.finalcutpro.ui.Slider")
+
+local id								= require("cp.finalcutpro.ids") "TimelineAppearance"
 
 --------------------------------------------------------------------------------
 --
@@ -64,7 +67,7 @@ end
 -- TODO: Add documentation
 function TimelineAppearance:toggle()
 	if not self._toggle then
-		self._toggle = CheckBox:new(self, function()
+		self._toggle = CheckBox:new(self:parent(), function()
 			return self:toggleUI()
 		end)
 	end
@@ -93,6 +96,7 @@ function TimelineAppearance:hide()
 	if ui then
 		ui:doCancel()
 	end
+	just.doWhile(function() return self:isShowing() end)
 	return self
 end
 

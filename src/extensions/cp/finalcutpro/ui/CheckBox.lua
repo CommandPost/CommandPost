@@ -42,6 +42,10 @@ function CheckBox:parent()
 	return self._parent
 end
 
+function CheckBox:isShowing()
+	return self:UI() ~= nil and self:parent():isShowing()
+end
+
 -- TODO: Add documentation
 function CheckBox:UI()
 	return axutils.cache(self, "_ui", function()
