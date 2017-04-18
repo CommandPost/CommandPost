@@ -81,7 +81,8 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:isShowing()
-	return self:parent():showMedia():isChecked()
+	local parent = self:parent()
+	return parent:isShowing() and parent:showMedia():isChecked()
 end
 
 -- TODO: Add documentation

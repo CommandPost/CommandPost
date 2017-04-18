@@ -77,7 +77,8 @@ end
 
 -- TODO: Add documentation
 function GeneratorsBrowser:isShowing()
-	return self:parent():showGenerators():isChecked()
+	local parent = self:parent()
+	return parent:isShowing() and parent:showGenerators():isChecked()
 end
 
 -- TODO: Add documentation
@@ -92,6 +93,7 @@ end
 -- TODO: Add documentation
 function GeneratorsBrowser:hide()
 	self:parent():hide()
+	just.doWhile(function() return self:isShowing() end)
 	return self
 end
 

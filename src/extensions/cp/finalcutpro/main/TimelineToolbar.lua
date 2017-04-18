@@ -82,7 +82,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:effectsGroupUI()
 	return axutils.cache(self, "_effectsGroup", function()
-		return axutils.childWithID(self:UI(), id "SkimmingGroup")
+		return axutils.childWithID(self:UI(), id "EffectsGroup")
 	end)
 end
 

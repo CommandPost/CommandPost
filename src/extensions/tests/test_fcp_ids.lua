@@ -55,14 +55,54 @@ function run()
 	
 	test("Media Importer", function()
 		-- Media Importer
-		assert(not fcp:mediaImport():isShowing(), "Media Import should not be showing yet")
+		ok(not fcp:mediaImport():isShowing(), "Media Import should not be showing yet")
 		fcp:mediaImport():show()
-		assert(fcp:mediaImport():isShowing(), "Media Import should be showing")
+		ok(fcp:mediaImport():isShowing(), "Media Import should be showing")
 		fcp:mediaImport():hide()
 		-- The window takes a moment to close sometimes, give it a second.
 		just.doWhile(function() return fcp:mediaImport():isShowing() end, 1.0)
-		assert(not fcp:mediaImport():isShowing(), "Media Import should not be showing now")
+		ok(not fcp:mediaImport():isShowing(), "Media Import should not be showing now")
 	end)
+	
+	test("Effects Browser", function()
+		local browser = fcp:effects()
+		browser:show()
+		ok(browser:isShowing())
+		ok(browser:sidebar():isShowing())
+		ok(browser:contents():isShowing())
+		browser:hide()
+		ok(not browser:isShowing())
+	end)
+	
+	test("Transitions Browser", function()
+		local browser = fcp:transitions()
+		browser:show()
+		ok(browser:isShowing())
+		ok(browser:sidebar():isShowing())
+		ok(browser:contents():isShowing())
+		browser:hide()
+		ok(not browser:isShowing())
+	end)
+
+	test("Media Browser", function()
+		local browser = fcp:media()
+		browser:show()
+		ok(browser:isShowing())
+		ok(browser:sidebar():isShowing())
+		browser:hide()
+		ok(not browser:isShowing())
+	end)
+
+	test("Generators Browser", function()
+		local browser = fcp:generators()
+		browser:show()
+		ok(browser:isShowing())
+		ok(browser:sidebar():isShowing())
+		ok(browser:contents():isShowing())
+		browser:hide()
+		ok(not browser:isShowing())
+	end)
+	
 end
 
 return run
