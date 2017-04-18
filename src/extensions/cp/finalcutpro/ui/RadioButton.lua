@@ -42,6 +42,10 @@ function RadioButton:parent()
 	return self._parent
 end
 
+function RadioButton:isShowing()
+	return self:UI() ~= nil and self:parent():isShowing()
+end
+
 -- TODO: Add documentation
 function RadioButton:UI()
 	return axutils.cache(self, "_ui", function()

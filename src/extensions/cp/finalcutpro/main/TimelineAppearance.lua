@@ -13,10 +13,13 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
 
 local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local Slider							= require("cp.finalcutpro.ui.Slider")
+
+local id								= require("cp.finalcutpro.ids") "TimelineAppearance"
 
 --------------------------------------------------------------------------------
 --
@@ -57,14 +60,14 @@ end
 -- TODO: Add documentation
 function TimelineAppearance:toggleUI()
 	return axutils.cache(self, "_toggleUI", function()
-		return axutils.childWithID(self:parent():UI(), "_NS:154")
+		return axutils.childWithID(self:parent():UI(), id "Toggle")
 	end)
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:toggle()
 	if not self._toggle then
-		self._toggle = CheckBox:new(self, function()
+		self._toggle = CheckBox:new(self:parent(), function()
 			return self:toggleUI()
 		end)
 	end
@@ -93,6 +96,7 @@ function TimelineAppearance:hide()
 	if ui then
 		ui:doCancel()
 	end
+	just.doWhile(function() return self:isShowing() end)
 	return self
 end
 
@@ -111,7 +115,7 @@ end
 function TimelineAppearance:clipHeight()
 	if not self._clipHeight then
 		self._clipHeight = Slider:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:104")
+			return axutils.childWithID(self:UI(), id "ClipHeight")
 		end)
 	end
 	return self._clipHeight

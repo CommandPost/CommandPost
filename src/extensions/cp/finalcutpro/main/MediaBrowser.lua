@@ -28,6 +28,8 @@ local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
 local PopUpButton						= require("cp.finalcutpro.ui.PopUpButton")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+local id								= require("cp.finalcutpro.ids") "MediaBrowser"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -79,7 +81,8 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:isShowing()
-	return self:parent():showMedia():isChecked()
+	local parent = self:parent()
+	return parent:isShowing() and parent:showMedia():isChecked()
 end
 
 -- TODO: Add documentation
@@ -116,7 +119,7 @@ end
 function MediaBrowser:sidebar()
 	if not self._sidebar then
 		self._sidebar = Table:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:9")
+			return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
 		end)
 	end
 	return self._sidebar

@@ -18,6 +18,9 @@ local inspect							= require("hs.inspect")
 
 local axutils							= require("cp.finalcutpro.axutils")
 local just								= require("cp.just")
+local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
+
+local id								= require("cp.finalcutpro.ids") "PlaybackPanel"
 
 --------------------------------------------------------------------------------
 --
@@ -28,8 +31,8 @@ local PlaybackPanel = {}
 
 PlaybackPanel.ID = 3
 
-PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = "_NS:145"
-PlaybackPanel.AUTO_START_BG_RENDER = "_NS:15"
+PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = id "CreateMulticamOptimizedMedia"
+PlaybackPanel.AUTO_START_BG_RENDER = id "BackgroundRender"
 
 -- TODO: Add documentation
 function PlaybackPanel:new(preferencesDialog)
@@ -79,6 +82,10 @@ function PlaybackPanel:show()
 	return false
 end
 
+function PlaybackPanel:hide()
+	return self:parent():hide()
+end
+
 -- TODO: Add documentation
 function PlaybackPanel:toggleCheckBox(identifier)
 	if self:show() then
@@ -92,14 +99,42 @@ function PlaybackPanel:toggleCheckBox(identifier)
 	return false
 end
 
+function PlaybackPanel:createOptimizedMediaForMulticamClips()
+	if not self._createOptimizedMedia then
+		self._createOptimizedMedia = CheckBox:new(self, function()
+			return axutils.childWith(self:parent():groupUI(), id "CreateMulticamOptimizedMedia")
+		end)
+	end
+	return self._createOptimizedMedia
+end
+
 -- TODO: Add documentation
 function PlaybackPanel:toggleCreateOptimizedMediaForMulticamClips()
-	return self:toggleCheckBox(PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS)
+	local checkBox = self:createOptimizedMediaForMulticamClips()
+	if self:show() and checkBox:isShowing() then
+		checkBox:toggle()
+		return true
+	end
+	return false
+end
+
+function PlaybackPanel:autoStartBGRender()
+	if not self._autoStartBGRender then
+		self._autoStartBGRender = CheckBox:new(self, function()
+			return axutils.childWith(self:parent():groupUI(), id "BackgroundRender")
+		end)
+	end
+	return self._autoStartBGRender
 end
 
 -- TODO: Add documentation
 function PlaybackPanel:toggleAutoStartBGRender()
-	return self:toggleCheckBox(PlaybackPanel.AUTO_START_BG_RENDER)
+	local checkBox = self:autoStartBGRender()
+	if self:show() and checkBox:isShowing() then
+		checkBox:toggle()
+		return true
+	end
+	return false
 end
 
 return PlaybackPanel

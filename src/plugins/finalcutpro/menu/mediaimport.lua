@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local config					= require("cp.config")
+local fcp						= require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -66,7 +67,7 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Disable the section if the Media Import option is disabled:
 	--------------------------------------------------------------------------------
-	shortcuts:setDisabledFn(function() return not isSectionEnabled() end)
+	shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not isSectionEnabled() end)
 
 	--------------------------------------------------------------------------------
 	-- Add the separator and title for the section:

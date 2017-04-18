@@ -151,7 +151,7 @@ App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms"
 -- Returns:
 --  * True is Directory Exists otherwise False
 local function doesDirectoryExist(path)
-    local attr = fs.attributes(path)
+    local attr = path and fs.attributes(path)
     return attr and attr.mode == 'directory'
 end
 
@@ -421,7 +421,8 @@ end
 --- Returns:
 ---  * Version as string or nil if an error occurred
 function App:getVersion()
-	return application.infoForBundleID(App.BUNDLE_ID)["CFBundleShortVersionString"]
+	local app = self:application()
+	return app and app["CFBundleShortVersionString"] or nil
 end
 
 ----------------------------------------------------------------------------------------

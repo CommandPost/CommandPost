@@ -64,7 +64,9 @@ function plugin.init(deps)
 	local global	= deps.global
 
 	top:addItem(PRIORITY + 1, function()
-		return { title = i18n("open") .. " Final Cut Pro",	fn = mod.openFinalCutPro }
+		if fcp:isInstalled() then
+			return { title = i18n("open") .. " Final Cut Pro",	fn = mod.openFinalCutPro }
+		end
 	end)
 
 	global:add("cpLaunchFinalCutPro")

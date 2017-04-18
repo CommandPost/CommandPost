@@ -22,6 +22,8 @@ local just							= require("cp.just")
 local SaveSheet						= require("cp.finalcutpro.export.SaveSheet")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
+local id							= require "cp.finalcutpro.ids" "ExportDialog"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -34,7 +36,7 @@ function ExportDialog.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
 		   and element:attributeValue("AXModal")
-		   and axutils.childWithID(element, "_NS:17") ~= nil
+		   and axutils.childWithID(element, id "BackgroundImage") ~= nil
 	end
 	return false
 end
@@ -78,8 +80,8 @@ end
 function ExportDialog:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled("Final Cut Pro", "Commands", "Customize…") then
-			self:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+		if self:app():menuBar():isEnabled("File", "Share", "Master File…") then
+			self:app():menuBar():selectMenu("File", "Share", "Master File…")
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end

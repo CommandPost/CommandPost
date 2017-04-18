@@ -28,6 +28,8 @@ local Button							= require("cp.finalcutpro.ui.Button")
 local Table								= require("cp.finalcutpro.ui.Table")
 local TextField							= require("cp.finalcutpro.ui.TextField")
 
+local id								= require("cp.finalcutpro.ids") "LibrariesBrowser"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -126,7 +128,7 @@ end
 function Libraries:toggleViewMode()
 	if not self._viewMode then
 		self._viewMode = Button:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:82")
+			return axutils.childWithID(self:UI(), id "ToggleViewMode")
 		end)
 	end
 	return self._viewMode
@@ -136,7 +138,7 @@ end
 function Libraries:appearanceAndFiltering()
 	if not self._appearanceAndFiltering then
 		self._appearanceAndFiltering = Button:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:68")
+			return axutils.childWithID(self:UI(), id "AppearanceAndFiltering")
 		end)
 	end
 	return self._appearanceAndFiltering
@@ -146,7 +148,7 @@ end
 function Libraries:searchToggle()
 	if not self._searchToggle then
 		self._searchToggle = Button:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:92")
+			return axutils.childWithID(self:UI(), id "SearchToggle")
 		end)
 	end
 	return self._searchToggle
@@ -156,7 +158,7 @@ end
 function Libraries:search()
 	if not self._search then
 		self._search = TextField:new(self, function()
-			return axutils.childWithID(self:mainGroupUI(), "_NS:34")
+			return axutils.childWithID(self:mainGroupUI(), id "Search")
 		end)
 	end
 	return self._search
@@ -167,7 +169,7 @@ function Libraries:filterToggle()
 	if not self._filterToggle then
 		self._filterToggle = Button:new(self, function()
 			return axutils.childMatching(self:mainGroupUI(), function(child)
-				return child:attributeValue("AXIdentifier") == "_NS:9"
+				return child:attributeValue("AXIdentifier") == id "FilterButton"
 				   and child:attributeValue("AXRole") == "AXButton"
 			end)
 		end)
@@ -187,7 +189,7 @@ Libraries.UNUSED = 6
 function Libraries:selectClipFiltering(filterType)
 	local ui = self:UI()
 	if ui then
-		button = axutils.childWithID(ui, "_NS:9")
+		button = axutils.childWithID(ui, id "FilterButton")
 		if button then
 			local menu = button[1]
 			if not menu then
@@ -241,7 +243,7 @@ end
 -- TODO: Add documentation
 function Libraries.matchesSidebar(element)
 	return element and element:attributeValue("AXRole") == "AXScrollArea"
-		and element:attributeValue("AXIdentifier") == "_NS:9"
+		and element:attributeValue("AXIdentifier") == id "Sidebar"
 end
 
 -- TODO: Add documentation

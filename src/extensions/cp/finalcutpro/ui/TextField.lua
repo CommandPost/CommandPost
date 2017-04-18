@@ -52,7 +52,7 @@ end
 
 -- TODO: Add documentation
 function TextField:isShowing()
-	return self:UI() ~= nil
+	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -- TODO: Add documentation

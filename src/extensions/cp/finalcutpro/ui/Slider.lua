@@ -42,6 +42,10 @@ function Slider:parent()
 	return self._parent
 end
 
+function Slider:isShowing()
+	return self:UI() ~= nil and self:parent():isShowing()
+end
+
 -- TODO: Add documentation
 function Slider:UI()
 	return axutils.cache(self, "_ui", function()

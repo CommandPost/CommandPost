@@ -22,6 +22,8 @@ local axutils							= require("cp.finalcutpro.axutils")
 local PrimaryWindow						= require("cp.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.finalcutpro.main.SecondaryWindow")
 
+local id								= require("cp.finalcutpro.ids") "Viewer"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -214,7 +216,7 @@ function Viewer:topToolbarUI()
 		local ui = self:UI()
 		if ui then
 			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", "_NS:16") then
+				if axutils.childWith(child, "AXIdentifier", id "Title") then
 					return child
 				end
 			end
@@ -229,7 +231,7 @@ function Viewer:bottomToolbarUI()
 		local ui = self:UI()
 		if ui then
 			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", "_NS:31") then
+				if axutils.childWith(child, "AXIdentifier", id "Timecode") then
 					return child
 				end
 			end
@@ -247,7 +249,7 @@ end
 function Viewer:formatUI()
 	return axutils.cache(self, "_format", function()
 		local ui = self:topToolbarUI()
-		return ui and axutils.childWith(ui, "AXIdentifier", "_NS:274")
+		return ui and axutils.childWith(ui, "AXIdentifier", id "Format")
 	end)
 end
 
@@ -266,7 +268,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:getTitle()
-	local titleText = axutils.childWithID(self:topToolbarUI(), "_NS:16")
+	local titleText = axutils.childWithID(self:topToolbarUI(), id "Title")
 	return titleText and titleText:value()
 end
 

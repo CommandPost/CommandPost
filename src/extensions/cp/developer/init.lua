@@ -91,7 +91,7 @@ end
 -- INSPECT ELEMENT:
 --------------------------------------------------------------------------------
 function _inspectElement(e, options, i)
-    _highlightElement(e)
+    _highlight(e)
 
     i = i or 0
     local depth = options and options.depth or 1
@@ -113,9 +113,9 @@ end
 --------------------------------------------------------------------------------
 -- HIGHLIGHT ELEMENT:
 --------------------------------------------------------------------------------
-function _highlightElement(e)
-    if not e.frame then
-        return
+function _highlight(e)
+    if not e or not e.frame then
+        return e
     end
 
     local eFrame = geometry.rect(e:frame())
@@ -139,6 +139,7 @@ function _highlightElement(e)
         highlight:delete()
         highlightTimer = nil
     end)
+	return e
 end
 
 --------------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 local log						= require("hs.logger").new("adminMenu")
 
 local config					= require("cp.config")
+local fcp						= require("cp.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -71,7 +72,7 @@ function plugin.init(dependencies)
 	-- Disable the section if the Administrator option is disabled
 	--------------------------------------------------------------------------------
 	shortcuts:setDisabledFn(function()
-		return not isSectionEnabled()
+		return not fcp:isInstalled() or not isSectionEnabled()
 	end)
 
 	--------------------------------------------------------------------------------

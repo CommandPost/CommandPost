@@ -159,7 +159,7 @@ function mod.toggleLeaveInPlace(optionalValue)
 	--------------------------------------------------------------------------------
 	-- Toggle the checkbox:
 	--------------------------------------------------------------------------------
-	if not prefs:importPanel():toggleCopyToMediaFolder() then
+	if not prefs:importPanel():toggleMediaLocation() then
 		dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in toggleLeaveInPlace().")
 		return "Failed"
 	end

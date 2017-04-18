@@ -138,7 +138,11 @@ function plugin.init(deps)
 	-------------------------------------------------------------------------------
 	-- The FCPX Languages Menu:
 	-------------------------------------------------------------------------------
-	local fcpxLangs = section:addMenu(100, function() return i18n("finalCutProLanguage") end)
+	local fcpxLangs = section:addMenu(100, function()
+		if fcp:isInstalled() then
+			return i18n("finalCutProLanguage")
+		end
+	end)
 	fcpxLangs:addItems(1, getFinalCutProLanguagesMenu)
 
 	return mod

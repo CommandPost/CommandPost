@@ -17,6 +17,8 @@ local axutils							= require("cp.finalcutpro.axutils")
 local Table								= require("cp.finalcutpro.ui.Table")
 local Playhead							= require("cp.finalcutpro.main.Playhead")
 
+local id								= require("cp.finalcutpro.ids") "LibrariesList"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -71,9 +73,15 @@ function List:UI()
 	List.matches)
 end
 
+function List:show()
+	if not self:isShowing() and self:parent():show():isShowing() then
+		self:parent():toggleViewMode():press()
+	end
+end
+
 -- TODO: Add documentation
 function List:isShowing()
-	return self:UI() ~= nil
+	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -----------------------------------------------------------------------
@@ -85,8 +93,7 @@ end
 -- TODO: Add documentation
 function List:playerUI()
 	return axutils.cache(self, "_player", function()
-		local ui = self:UI()
-		return ui and axutils.childWithID(ui, "_NS:590")
+		return axutils.childWithID(self:UI(), id "Player")
 	end)
 end
 
@@ -120,7 +127,7 @@ end
 function List:contents()
 	if not self._content then
 		self._content = Table:new(self, function()
-			return axutils.childWithID(self:UI(), "_NS:9")
+			return axutils.childWithID(self:UI(), id "ContentsTable")
 		end)
 	end
 	return self._content
@@ -131,9 +138,9 @@ function List:clipsUI()
 	local rowsUI = self:contents():rowsUI()
 	if rowsUI then
 		local level = 0
-		-- if the first row has no icon (_NS:11), it's a group
+		-- if the first row has no icon, it's a group
 		local firstCell = self:contents():findCellUI(1, "filmlist name col")
-		if firstCell and axutils.childWithID(firstCell, "_NS:11") == nil then
+		if firstCell and axutils.childWithID(firstCell, id "RowIcon") == nil then
 			level = 1
 		end
 		return axutils.childrenWith(rowsUI, "AXDisclosureLevel", level)

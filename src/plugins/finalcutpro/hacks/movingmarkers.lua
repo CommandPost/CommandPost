@@ -45,20 +45,23 @@ local mod = {}
 --------------------------------------------------------------------------------
 function mod.isEnabled(forceReload)
 
-	local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
-	local modified = fs.attributes(eventDescriptionsPath, "modification")
-	if forceReload or modified ~= mod._allowMovingMarkersModified then
-		local allowMovingMarkers = DEFAULT_VALUE
-		local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
-		if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
-			allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+	if fcp:application() then
+		local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
+		local modified = fs.attributes(eventDescriptionsPath, "modification")
+		if forceReload or modified ~= mod._allowMovingMarkersModified then
+			local allowMovingMarkers = DEFAULT_VALUE
+			local eventDescriptions = plist.binaryFileToTable(eventDescriptionsPath)
+			if eventDescriptions and eventDescriptions["TLKMarkerHandler"] and eventDescriptions["TLKMarkerHandler"]["Configuration"] and eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"] and type(eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]) == "boolean" then
+				allowMovingMarkers = eventDescriptions["TLKMarkerHandler"]["Configuration"]["Allow Moving Markers"]
+			end
+
+			mod._allowMovingMarkers = allowMovingMarkers
+			mod._allowMovingMarkersModified = modified
 		end
 
-		mod._allowMovingMarkers = allowMovingMarkers
-		mod._allowMovingMarkersModified = modified
+		return _allowMovingMarkers
 	end
-
-	return _allowMovingMarkers
+	return false
 end
 
 --------------------------------------------------------------------------------

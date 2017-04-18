@@ -35,13 +35,19 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return deps.manager.addPanel({
-		priority 	= 2040,
-		id			= "finalcutpro",
-		label		= i18n("finalCutProPanelLabel"),
-		image		= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
-		tooltip		= i18n("finalCutProPanelTooltip"),
-	})
+	local mod = {}
+	
+	if fcp:application() then
+		mod.panel = deps.manager.addPanel({
+			priority 	= 2040,
+			id			= "finalcutpro",
+			label		= i18n("finalCutProPanelLabel"),
+			image		= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
+			tooltip		= i18n("finalCutProPanelTooltip"),
+		})
+	end
+	
+	return mod
 end
 
 return plugin
