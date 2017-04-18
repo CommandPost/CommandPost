@@ -19,6 +19,7 @@ local inspect						= require("hs.inspect")
 local axutils						= require("cp.finalcutpro.axutils")
 local just							= require("cp.just")
 
+local Button						= require("cp.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.finalcutpro.ui.WindowWatcher")
 
 local id							= require("cp.finalcutpro.ids").current("CommandEditor")
@@ -98,6 +99,15 @@ function CommandEditor:hide()
 		end
 	end
 	return self
+end
+
+function CommandEditor:saveButton()
+	if not self._saveButton then
+		self._saveButton = Button:new(self, function()
+			return axutils.childWithID(self:UI(), id "SaveButton")
+		end)
+	end
+	return self._saveButton
 end
 
 -- TODO: Add documentation

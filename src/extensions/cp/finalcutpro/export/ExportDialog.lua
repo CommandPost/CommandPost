@@ -80,8 +80,8 @@ end
 function ExportDialog:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled("Final Cut Pro", "Commands", "Customize…") then
-			self:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+		if self:app():menuBar():isEnabled("File", "Share", "Master File…") then
+			self:app():menuBar():selectMenu("File", "Share", "Master File…")
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end
