@@ -146,30 +146,19 @@ local function run()
 		ok(libraries:toggleViewMode():isShowing())
 		ok(libraries:appearanceAndFiltering():isShowing())
 		ok(libraries:sidebar():isShowing())
-		
-		-- Check Filmstrip/List view
-		libraries:filmstrip():show()
-		ok(libraries:filmstrip():isShowing())
-		ok(not libraries:list():isShowing())
-		
-		libraries:list():show()
-		ok(libraries:list():isShowing())
-		ok(not libraries:filmstrip():isShowing())
-		
+				
+		-- Check the search UI
 		ok(libraries:searchToggle():isShowing())
-		-- Show the search field
+		-- Show the search field if necessary
 		if not libraries:search():isShowing() then
-			log.df("search hidden; showing now")
 			libraries:searchToggle():press()
 		end
-		-- the UI is delayed sometimes.
-		ok(just.doUntil(function() return libraries:search():isShowing() end))
-		ok(just.doUntil(function() return libraries:filterToggle():isShowing() end))
+		ok(libraries:search():isShowing())
+		ok(libraries:filterToggle():isShowing())
 		-- turn it back off
 		libraries:searchToggle():press()
-		-- the UI is delayed sometimes.
-		ok(just.doUntil(function() return not libraries:search():isShowing() end))
-		ok(just.doUntil(function() return not libraries:filterToggle():isShowing() end))
+		ok(not libraries:search():isShowing())
+		ok(not libraries:filterToggle():isShowing())
 
 		-- Check that it hides
 		libraries:hide()
@@ -179,6 +168,31 @@ local function run()
 		ok(not libraries:searchToggle():isShowing())
 		ok(not libraries:search():isShowing())
 		ok(not libraries:filterToggle():isShowing())
+	end)
+	
+	test("Libraries Filmstrip", function()
+		reset()
+		local libraries = fcp:libraries()
+	
+		-- Check Filmstrip/List view
+		libraries:filmstrip():show()
+		ok(libraries:filmstrip():isShowing())
+		ok(not libraries:list():isShowing())
+	end)
+	
+	test("Libraries List", function()
+		reset()
+		local libraries = fcp:libraries()
+		local list		= libraries:list()
+		
+		list:show()
+		ok(list:isShowing())
+		ok(not libraries:filmstrip():isShowing())
+		
+		-- Check the sub-components are available.
+		ok(list:playerUI() ~= nil)
+		ok(list:contents():isShowing())
+		ok(list:clipsUI() ~= nil)
 	end)
 end
 
