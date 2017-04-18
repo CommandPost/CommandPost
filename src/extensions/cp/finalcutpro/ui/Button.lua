@@ -45,6 +45,10 @@ function Button:parent()
 	return self._parent
 end
 
+function Button:isShowing()
+	return self:UI() ~= nil and self:parent():isShowing()
+end
+
 -- TODO: Add documentation
 function Button:UI()
 	return axutils.cache(self, "_ui", function()

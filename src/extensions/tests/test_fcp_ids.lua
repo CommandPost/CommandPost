@@ -1,9 +1,15 @@
 local test		= require("cp.test")
+local log		= require("hs.logger").new("testfcpids")
 
 local fcp		= require("cp.finalcutpro")
 local just		= require("cp.just")
 
-function run()
+local function reset()
+	fcp:launch()
+	fcp:selectMenu("Window", "Workspaces", "Default")
+end
+
+local function run()
 	test("Launch FCP", function()
 		-- Launch FCP
 		fcp:launch()
@@ -12,7 +18,7 @@ function run()
 
 	test("Check FCP Primary Components", function()
 		-- Reset to the default workspace
-		fcp:selectMenu("Window", "Workspaces", "Default")
+		reset()
 
 		-- Test that various UI elements are able to be found.
 		ok(fcp:primaryWindow():isShowing(), "Primary Window not showing")
@@ -25,7 +31,8 @@ function run()
 	
 	test("Check Event Viewer", function()
 		-- Reset to default workspace
-		fcp:selectMenu("Window", "Workspaces", "Default")
+		reset()
+		
 		-- Turn it on and off.
 		ok(not fcp:eventViewer():isShowing(), "Event Viewer is initially not showing")
 		fcp:eventViewer():showOnPrimary()
@@ -35,6 +42,8 @@ function run()
 	end)
 	
 	test("Command Editor", function()
+		reset()
+		
 		-- The Command Editor.
 		ok(not fcp:commandEditor():isShowing(), "Command Editor is not showing")
 		fcp:commandEditor():show()
@@ -45,6 +54,8 @@ function run()
 	end)
 	
 	test("Export Dialog", function()
+		reset()
+		
 		-- Export Dialog
 		ok(not fcp:exportDialog():isShowing(), "Export Dialog is not showing")
 		fcp:exportDialog():show()
@@ -54,6 +65,8 @@ function run()
 	end)
 	
 	test("Media Importer", function()
+		reset()
+		
 		-- Media Importer
 		ok(not fcp:mediaImport():isShowing(), "Media Import should not be showing yet")
 		fcp:mediaImport():show()
@@ -65,6 +78,8 @@ function run()
 	end)
 	
 	test("Effects Browser", function()
+		reset()
+		
 		local browser = fcp:effects()
 		browser:show()
 		ok(browser:isShowing())
@@ -75,6 +90,8 @@ function run()
 	end)
 	
 	test("Transitions Browser", function()
+		reset()
+		
 		local browser = fcp:transitions()
 		browser:show()
 		ok(browser:isShowing())
@@ -85,6 +102,8 @@ function run()
 	end)
 
 	test("Media Browser", function()
+		reset()
+		
 		local browser = fcp:media()
 		browser:show()
 		ok(browser:isShowing())
@@ -94,6 +113,8 @@ function run()
 	end)
 
 	test("Generators Browser", function()
+		reset()
+		
 		local browser = fcp:generators()
 		browser:show()
 		ok(browser:isShowing())
@@ -103,6 +124,53 @@ function run()
 		ok(not browser:isShowing())
 	end)
 	
+	test("Inspector", function()
+		reset()
+		
+		local inspector = fcp:inspector()
+		inspector:show()
+		ok(inspector:isShowing())
+		inspector:hide()
+		ok(not inspector:isShowing())
+	end)
+	
+	test("Libraries Browser", function()
+		reset()
+		
+		-- Show it
+		local libraries = fcp:libraries()
+		libraries:show()
+		
+		-- Check UI elements
+		ok(libraries:isShowing())
+		ok(libraries:toggleViewMode():isShowing())
+		ok(libraries:appearanceAndFiltering():isShowing())
+		ok(libraries:sidebar():isShowing())
+		
+		ok(libraries:searchToggle():isShowing())
+		-- Show the search field
+		if not libraries:search():isShowing() then
+			log.df("search hidden; showing now")
+			libraries:searchToggle():press()
+		end
+		-- the UI is delayed sometimes.
+		ok(just.doUntil(function() return libraries:search():isShowing() end))
+		ok(just.doUntil(function() return libraries:filterToggle():isShowing() end))
+		-- turn it back off
+		libraries:searchToggle():press()
+		-- the UI is delayed sometimes.
+		ok(just.doUntil(function() return not libraries:search():isShowing() end))
+		ok(just.doUntil(function() return not libraries:filterToggle():isShowing() end))
+
+		-- Check that it hides
+		libraries:hide()
+		ok(not libraries:isShowing())
+		ok(not libraries:toggleViewMode():isShowing())
+		ok(not libraries:appearanceAndFiltering():isShowing())
+		ok(not libraries:searchToggle():isShowing())
+		ok(not libraries:search():isShowing())
+		ok(not libraries:filterToggle():isShowing())
+	end)
 end
 
 return run

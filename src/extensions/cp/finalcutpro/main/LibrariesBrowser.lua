@@ -169,7 +169,7 @@ function Libraries:filterToggle()
 	if not self._filterToggle then
 		self._filterToggle = Button:new(self, function()
 			return axutils.childMatching(self:mainGroupUI(), function(child)
-				return child:attributeValue("AXIdentifier") == id("FilterButton")
+				return child:attributeValue("AXIdentifier") == id "FilterButton"
 				   and child:attributeValue("AXRole") == "AXButton"
 			end)
 		end)
