@@ -121,16 +121,7 @@ function mod.init()
 	-- Open Error Log:
 	--------------------------------------------------------------------------------
 	local errorLogOpenOnClose = config.get("errorLogOpenOnClose", false)
-	if errorLogOpenOnClose then
-		hs.openConsole()
-		local lastErrorLogFrame = config.get("lastErrorLogFrame", nil)
-		if lastErrorLogFrame then
-			local frame = geometry.rect(lastErrorLogFrame["_x"], lastErrorLogFrame["_y"], lastErrorLogFrame["_w"], lastErrorLogFrame["_h"])
-			if console.hswindow() and frame then
-				console.hswindow():setFrame(frame)
-			end
-		end
-	end
+	if errorLogOpenOnClose then hs.openConsole() end
 
 	--------------------------------------------------------------------------------
 	-- Create CommandPost Shutdown Callback:
@@ -140,7 +131,6 @@ function mod.init()
 		hs.shuttingDown = true
 		if console.hswindow() then
 			config.set("errorLogOpenOnClose", true)
-			config.set("lastErrorLogFrame", console.hswindow():frame())
 		else
 			config.set("errorLogOpenOnClose", false)
 		end
