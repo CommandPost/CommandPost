@@ -19,7 +19,7 @@ local config									= require("cp.config")
 local generate									= require("cp.web.generate")
 local fcp										= require("cp.finalcutpro")
 
-local semver									= require("semver")
+local v											= require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -70,7 +70,7 @@ function mod.init(deps, env)
 	-- Check Final Cut Pro Version:
 	--------------------------------------------------------------------------------
 	local fcpVersion = fcp:getVersion()
-	if fcpVersion:sub(1,4) ~= "10.3" then
+	if not fcpVersion or v(fcpVersion) < v("10.3") then
 
 		mod.webviewLabel = deps.manager.getLabel()
 

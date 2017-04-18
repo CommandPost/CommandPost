@@ -9,7 +9,8 @@ mod.cache = {}
 
 local function currentVersion()
 	if not mod._currentVersion then
-		mod._currentVersion = application.infoForBundleID("com.apple.FinalCut")["CFBundleShortVersionString"]
+		local app = application.infoForBundleID("com.apple.FinalCut")
+		mod._currentVersion = app and app["CFBundleShortVersionString"] or nil
 	end
 	return mod._currentVersion
 end
@@ -33,6 +34,10 @@ local function deepextend(target, ...)
 end
 
 function mod.load(version)
+	if not version then
+		return {}
+	end
+	
 	-- Make sure we're working with a semver version
 	version = type(version) == "string" and v(version) or version
 	

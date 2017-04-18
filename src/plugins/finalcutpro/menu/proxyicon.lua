@@ -99,7 +99,7 @@ local plugin = {
 	id				= "finalcutpro.menu.proxyicon",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.preferences.panels.finalcutpro"]	= "menubar",
+		["finalcutpro.preferences.panels.finalcutpro"]	= "prefs",
 		["core.menu.manager"]							= "menuManager",
 	}
 }
@@ -118,15 +118,17 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.menubar:addHeading(30, i18n("menubarHeading"))
+	if deps.prefs.panel then
+		deps.prefs:addHeading(30, i18n("menubarHeading"))
 
-	:addCheckbox(31,
-		{
-			label = i18n("displayProxyOriginalIcon"),
-			onchange = mod.toggleEnableProxyMenuIcon,
-			checked = mod.getEnableProxyMenuIcon,
-		}
-	)
+		:addCheckbox(31,
+			{
+				label = i18n("displayProxyOriginalIcon"),
+				onchange = mod.toggleEnableProxyMenuIcon,
+				checked = mod.getEnableProxyMenuIcon,
+			}
+		)
+	end
 
 end
 

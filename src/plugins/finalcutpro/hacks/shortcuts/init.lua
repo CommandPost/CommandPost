@@ -290,28 +290,30 @@ end
 ---  * `true` if Hacks Shortcuts are enabled otherwise `false`
 function mod.enabled()
 
-	local searchString = "<key>cpToggleMovingMarkers</key>"
-	local filePathNSProCommands = fcp:getPath() .. "/Contents/Resources/NSProCommands.plist"
+	if fcp:application() then
+		local searchString = "<key>cpToggleMovingMarkers</key>"
+		local filePathNSProCommands = fcp:getPath() .. "/Contents/Resources/NSProCommands.plist"
 
-	if tools.doesFileExist(filePathNSProCommands) then
+		if tools.doesFileExist(filePathNSProCommands) then
 
-		local file = io.open(filePathNSProCommands, "r")
-		if file then
+			local file = io.open(filePathNSProCommands, "r")
+			if file then
 
-			io.input(file)
-			local fileContents = io.read("*a")
-			io.close(file)
+				io.input(file)
+				local fileContents = io.read("*a")
+				io.close(file)
 
-			local result = string.find(fileContents, searchString) ~= nil
+				local result = string.find(fileContents, searchString) ~= nil
 
-			config.set("enableHacksShortcutsInFinalCutPro", result)
-			return result
+				config.set("enableHacksShortcutsInFinalCutPro", result)
+				return result
 
+			end
 		end
-	end
 
-	log.ef("Could not find NSProCommands.plist. This shouldn't ever happen.")
-	config.set("enableHacksShortcutsInFinalCutPro", false)
+		log.ef("Could not find NSProCommands.plist. This shouldn't ever happen.")
+		config.set("enableHacksShortcutsInFinalCutPro", false)
+	end
 	return false
 
 end
@@ -448,7 +450,7 @@ local plugin = {
 		["core.commands.global"]							= "globalCmds",
 		["finalcutpro.commands"]							= "fcpxCmds",
 		["core.preferences.panels.shortcuts"]				= "shortcuts",
-		["finalcutpro.preferences.panels.finalcutpro"]		= "finalcutpro",
+		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
 	}
 }
 
@@ -481,18 +483,20 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
-	deps.finalcutpro:addHeading(50, i18n("keyboardShortcuts") .. ":")
+	if deps.prefs.panel then
+		deps.prefs.panel:addHeading(50, i18n("keyboardShortcuts") .. ":")
 
-	:addCheckbox(51,
-		{
-			label		= i18n("enableHacksShortcuts"),
-			onchange	= function()
-				mod.toggleEditable()
-				mod._shortcuts.updateCustomShortcutsVisibility()
-			end,
-			checked=mod.isEditable
-		}
-	)
+		:addCheckbox(51,
+			{
+				label		= i18n("enableHacksShortcuts"),
+				onchange	= function()
+					mod.toggleEditable()
+					mod._shortcuts.updateCustomShortcutsVisibility()
+				end,
+				checked=mod.isEditable
+			}
+		)
+	end
 
 	return mod
 

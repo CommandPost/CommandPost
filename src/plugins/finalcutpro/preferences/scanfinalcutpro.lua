@@ -120,7 +120,7 @@ local plugin = {
 		["finalcutpro.timeline.generators"]					= "generators",
 		["finalcutpro.timeline.titles"]						= "titles",
 		["finalcutpro.timeline.transitions"]				= "transitions",
-		["finalcutpro.preferences.panels.finalcutpro"]		= "finalcutpro",
+		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
 	}
 }
 
@@ -131,7 +131,8 @@ function plugin.init(deps)
 
 	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
-		deps.finalcutpro:addHeading(10, i18n("setupHeading") .. ":" )
+	if deps.prefs.panel then
+		deps.prefs.panel:addHeading(10, i18n("setupHeading") .. ":" )
 
 		:addButton(11,
 			{
@@ -139,6 +140,7 @@ function plugin.init(deps)
 				onclick = mod.scanFinalCutPro,
 			}
 		)
+	end
 
 	return mod
 end
