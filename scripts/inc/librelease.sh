@@ -20,7 +20,7 @@ function assert() {
   assert_codesign_authority_token && CODESIGN_AUTHORITY_TOKEN="$(cat "${CODESIGN_AUTHORITY_TOKEN_FILE}")"
   # shellcheck source=../token-crashlytics disable=SC1091
   assert_fabric_token && source "${FABRIC_TOKEN_FILE}"
-  #assert_version_in_xcode
+  assert_version_in_xcode
   #assert_version_in_git_tags
   #assert_version_not_in_github_releases
   #assert_docs_bundle_complete
@@ -125,7 +125,7 @@ function assert_fabric_token() {
 
 function assert_version_in_xcode() {
   echo "Checking Xcode build version..."
-  XCODEVER="$(defaults read "${HAMMERSPOON_HOME}/Hammerspoon/Hammerspoon-Info" CFBundleVersion)"
+  XCODEVER="$(defaults read "${HAMMERSPOON_HOME}/Hammerspoon/CommandPost-Info" CFBundleVersion)"
 
   if [ "$VERSION" != "$XCODEVER" ]; then
       fail "You asked for $VERSION to be released, but Xcode will build $XCODEVER"
@@ -248,6 +248,11 @@ function build_dmgcanvas() {
 
 function generate_appcast() {
 
+  echo "Remove Old Files..."
+  rm -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
+  rm -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
+
+  echo "Generating AppCast Content..."
   export SPARKLE_DSA_SIGNATURE
 
   SPARKLE_DSA_SIGNATURE="$(../CommandPost/scripts/inc/sign_update "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "../dsa_priv.pem")"
