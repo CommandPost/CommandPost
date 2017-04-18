@@ -122,7 +122,7 @@ end
 function mod.javascript(script, context)
 	local t = compile(script, "no-cache", true)
 	return html.script { type = "text/javascript" } (
-		"(function(){\n" .. t(context) .. "\n})();"
+		"(function(){\n" .. t(context) .. "\n})();", true
 	)
 end
 
