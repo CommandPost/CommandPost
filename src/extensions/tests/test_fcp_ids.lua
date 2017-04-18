@@ -22,12 +22,12 @@ local function run()
 		reset()
 
 		-- Test that various UI elements are able to be found.
-		ok(fcp:primaryWindow():isShowing(), "Primary Window not showing")
-		ok(fcp:browser():isShowing(), "Browser is showing")
-		ok(fcp:timeline():isShowing(), "Timeline is showing")
-		ok(fcp:inspector():isShowing(), "Inspector is showing")
-		ok(fcp:viewer():isShowing(), "Viewer is showing")
-		ok(not fcp:eventViewer():isShowing(), "Event Viewer is not showing")
+		ok(fcp:primaryWindow():isShowing())
+		ok(fcp:browser():isShowing())
+		ok(fcp:timeline():isShowing())
+		ok(fcp:inspector():isShowing())
+		ok(fcp:viewer():isShowing())
+		ok(not fcp:eventViewer():isShowing())
 	end)
 	
 	test("Check Event Viewer", function()
@@ -35,47 +35,47 @@ local function run()
 		reset()
 		
 		-- Turn it on and off.
-		ok(not fcp:eventViewer():isShowing(), "Event Viewer is initially not showing")
+		ok(not fcp:eventViewer():isShowing())
 		fcp:eventViewer():showOnPrimary()
-		ok(fcp:eventViewer():isShowing(), "Event Viewer displays after showing")
+		ok(fcp:eventViewer():isShowing())
 		fcp:eventViewer():hide()
-		ok(not fcp:eventViewer():isShowing(), "Event Viewer does not display after hiding")
+		ok(not fcp:eventViewer():isShowing())
 	end)
 	
 	test("Command Editor", function()
 		reset()
 		
 		-- The Command Editor.
-		ok(not fcp:commandEditor():isShowing(), "Command Editor is not showing")
+		ok(not fcp:commandEditor():isShowing())
 		fcp:commandEditor():show()
-		ok(fcp:commandEditor():isShowing(), "Command Editor is showing")
-		ok(fcp:commandEditor():saveButton():UI() ~= nil, "Command Editor 'Save' button found")
+		ok(fcp:commandEditor():isShowing())
+		ok(fcp:commandEditor():saveButton():UI() ~= nil)
 		fcp:commandEditor():hide()
-		ok(not fcp:commandEditor():isShowing(), "Command Editor is not showing")
+		ok(not fcp:commandEditor():isShowing())
 	end)
 	
 	test("Export Dialog", function()
 		reset()
 		
 		-- Export Dialog
-		ok(not fcp:exportDialog():isShowing(), "Export Dialog is not showing")
+		ok(not fcp:exportDialog():isShowing())
 		fcp:exportDialog():show()
-		ok(fcp:exportDialog():isShowing(), "Export Dialog is showing")
+		ok(fcp:exportDialog():isShowing())
 		fcp:exportDialog():hide()
-		ok(not fcp:exportDialog():isShowing(), "Export Dialog is closed")
+		ok(not fcp:exportDialog():isShowing())
 	end)
 	
 	test("Media Importer", function()
 		reset()
 		
 		-- Media Importer
-		ok(not fcp:mediaImport():isShowing(), "Media Import should not be showing yet")
+		ok(not fcp:mediaImport():isShowing())
 		fcp:mediaImport():show()
-		ok(fcp:mediaImport():isShowing(), "Media Import should be showing")
+		ok(fcp:mediaImport():isShowing())
 		fcp:mediaImport():hide()
 		-- The window takes a moment to close sometimes, give it a second.
 		just.doWhile(function() return fcp:mediaImport():isShowing() end, 1.0)
-		ok(not fcp:mediaImport():isShowing(), "Media Import should not be showing now")
+		ok(not fcp:mediaImport():isShowing())
 	end)
 	
 	test("Effects Browser", function()
