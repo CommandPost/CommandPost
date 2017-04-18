@@ -99,9 +99,12 @@ return {
 		Format					= "_NS:274",
 	},
 	ImportPanel = {
+		ID						= 4,
 		CreateProxyMedia		= "_NS:177",
 		CreateOptimizedMedia	= "_NS:15",
-		CopyToMediaFolder		= "_NS:84",
+		MediaLocationGroup		= "_NS:84",
+		CopyToMediaFolder		= 1,
+		LeaveInPlace			= 2,
 	},
 	PlaybackPanel = {
 		CreateMulticamOptimizedMedia		= "_NS:145",

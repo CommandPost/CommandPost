@@ -254,6 +254,27 @@ local function run()
 		ok(viewer:getFramerate() ~= nil)
 		ok(viewer:getTitle() ~= nil)
 	end)
+	
+	test("ImportPanel", function()
+		reset()
+		local panel = fcp:preferencesWindow():importPanel()
+		
+		-- Make sure the preferences window is hidden
+		fcp:preferencesWindow():hide()
+		ok(not panel:isShowing())
+		
+		-- Show the import preferences panel
+		panel:show()
+		ok(panel:isShowing())
+		ok(panel:createProxyMedia():isShowing())
+		ok(panel:createOptimizedMedia():isShowing())
+		ok(panel:copyToMediaFolder():isShowing())
+		ok(panel:leaveInPlace():isShowing())
+		ok(panel:copyToMediaFolder():isChecked() or panel:leaveInPlace():isChecked())
+		
+		panel:hide()
+		ok(not panel:isShowing())
+	end)
 end
 
 return run

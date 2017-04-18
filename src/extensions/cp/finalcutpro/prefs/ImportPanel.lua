@@ -18,6 +18,8 @@ local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local axutils							= require("cp.finalcutpro.axutils")
+local CheckBox							= require("cp.finalcutpro.ui.CheckBox")
+local RadioButton						= require("cp.finalcutpro.ui.RadioButton")
 
 local id								= require("cp.finalcutpro.ids") "ImportPanel"
 
@@ -27,12 +29,6 @@ local id								= require("cp.finalcutpro.ids") "ImportPanel"
 --
 --------------------------------------------------------------------------------
 local ImportPanel = {}
-
-ImportPanel.ID = 4
-
-ImportPanel.CREATE_PROXY_MEDIA 			= id "CreateProxyMedia"
-ImportPanel.CREATE_OPTIMIZED_MEDIA 		= id "CreateOptimizedMedia"
-ImportPanel.COPY_TO_MEDIA_FOLDER 		= id "CopyToMediaFolder"
 
 -- TODO: Add documentation
 function ImportPanel:new(preferencesDialog)
@@ -51,7 +47,7 @@ end
 function ImportPanel:UI()
 	return axutils.cache(self, "_ui", function()
 		local toolbarUI = self:parent():toolbarUI()
-		return toolbarUI and toolbarUI[ImportPanel.ID]
+		return toolbarUI and toolbarUI[id "ID"]
 	end)
 end
 
@@ -61,7 +57,7 @@ function ImportPanel:isShowing()
 		local toolbar = self:parent():toolbarUI()
 		if toolbar then
 			local selected = toolbar:selectedChildren()
-			return #selected == 1 and selected[1] == toolbar[ImportPanel.ID]
+			return #selected == 1 and selected[1] == toolbar[id "ID"]
 		end
 	end
 	return false
@@ -82,46 +78,79 @@ function ImportPanel:show()
 	return false
 end
 
--- TODO: Add documentation
-function ImportPanel:toggleCheckBox(identifier)
-	if self:show() then
-		local group = self:parent():groupUI()
-		if group then
-			local checkbox = axutils.childWith(group, "AXIdentifier", identifier)
-			if checkbox then
-				checkbox:doPress()
-				return true
-			end
-		end
+function ImportPanel:hide()
+	return self:parent():hide()
+end
+
+function ImportPanel:createProxyMedia()
+	if not self._createProxyMedia then
+		self._createProxyMedia = CheckBox:new(self, function()
+			return axutils.childWith(self:parent():groupUI(), id "CreateProxyMedia")
+		end)
 	end
-	return false
+	return self._createProxyMedia
 end
 
 -- TODO: Add documentation
 function ImportPanel:toggleCreateProxyMedia()
-	return self:toggleCheckBox(ImportPanel.CREATE_PROXY_MEDIA)
+	if self:show() and self:createProxyMedia():isShowing() then
+		self:createProxyMedia():toggle()
+		return true
+	end
+	return false
+end
+
+function ImportPanel:createOptimizedMedia()
+	if not self._createOptimizedMedia then
+		self._createOptimizedMedia = CheckBox:new(self, function()
+			return axutils.childWith(self:parent():groupUI(), id "CreateOptimizedMedia")
+		end)
+	end
+	return self._createOptimizedMedia
 end
 
 -- TODO: Add documentation
 function ImportPanel:toggleCreateOptimizedMedia()
-	return self:toggleCheckBox(ImportPanel.CREATE_OPTIMIZED_MEDIA)
+	if self:show() and self:createOptimizedMedia():isShowing() then
+		self:createOptimizedMedia():toggle()
+		return true
+	end
+	return false
+end
+
+function ImportPanel:mediaLocationGroupUI()
+	return axutils.cache(self, "_mediaLocationGroup", function()
+		return axutils.childWithID(self:parent():groupUI(), id "MediaLocationGroup")
+	end)
+end
+
+function ImportPanel:copyToMediaFolder()
+	if not self._copyToMediaFolder then
+		self._copyToMediaFolder = RadioButton:new(self, function()
+			return self:mediaLocationGroupUI()[id "CopyToMediaFolder"]
+		end)
+	end
+	return self._copyToMediaFolder
+end
+
+function ImportPanel:leaveInPlace()
+	if not self._leaveInPlace then
+		self._leaveInPlace = RadioButton:new(self, function()
+			return self:mediaLocationGroupUI()[id "LeaveInPlace"]
+		end)
+	end
+	return self._leaveInPlace
 end
 
 -- TODO: Add documentation
-function ImportPanel:toggleCopyToMediaFolder()
+function ImportPanel:toggleMediaLocation()
 	if self:show() then
-		local group = self:parent():groupUI()
-		if group then
-			local radioGroup = axutils.childWith(group, "AXIdentifier", ImportPanel.COPY_TO_MEDIA_FOLDER)
-			if radioGroup then
-				for i,button in ipairs(radioGroup) do
-					if button:value() == 0 then
-						button:doPress()
-						return true
-					end
-				end
-			end
+		if self:copyToMediaFolder():isChecked() then
+			self:leaveInPlace():check()
+		else
+			self:copyToMediaFolder():check()
 		end
+		return true
 	end
 	return false
 end
