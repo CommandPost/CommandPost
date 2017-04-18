@@ -235,6 +235,10 @@ function build_hammerspoon_app() {
 ############################ POST-BUILD FUNCTIONS #############################
 
 function build_dmgcanvas() {
+
+  echo "Remove Old DMG..."
+  rm -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
+
   echo "Building DMG..."
   mkdir -p "../CommandPost-Releases/${VERSION}"
   dmgcanvas "../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${HAMMERSPOON_HOME}/build/CommandPost.app"
@@ -248,9 +252,8 @@ function build_dmgcanvas() {
 
 function generate_appcast() {
 
-  echo "Remove Old Files..."
+  echo "Remove Old AppCast..."
   rm -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
-  rm -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
 
   echo "Generating AppCast Content..."
   export SPARKLE_DSA_SIGNATURE

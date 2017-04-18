@@ -420,9 +420,16 @@ end
 ---
 --- Returns:
 ---  * Version as string or nil if an error occurred
-function App:getVersion()
+---
+--- Notes:
+---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
+function App:getVersion(notRunning)
 	local app = self:application()
-	return app and app["CFBundleShortVersionString"] or nil
+	if app then
+		return app and app["CFBundleShortVersionString"] or nil
+	else
+		return application.infoForBundleID(App.BUNDLE_ID) and application.infoForBundleID(App.BUNDLE_ID)["CFBundleShortVersionString"] or nil
+	end
 end
 
 ----------------------------------------------------------------------------------------
