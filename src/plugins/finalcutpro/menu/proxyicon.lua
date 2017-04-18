@@ -119,7 +119,7 @@ function plugin.init(deps)
 	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
-		deps.prefs:addHeading(30, i18n("menubarHeading"))
+		deps.prefs.panel:addHeading(30, i18n("menubarHeading"))
 
 		:addCheckbox(31,
 			{

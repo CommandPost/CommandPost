@@ -470,7 +470,9 @@ function plugin.init(deps, env)
 	-- Add the menu item to the top section:
 	--------------------------------------------------------------------------------
 	deps.top:addItem(PRIORITY, function()
-		return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
+		if fcp:isInstalled()  then
+			return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
+		end
 	end)
 
 	--------------------------------------------------------------------------------
