@@ -255,6 +255,17 @@ local function run()
 		ok(viewer:getTitle() ~= nil)
 	end)
 	
+	test("PreferencesWindow", function()
+		reset()
+		local prefs = fcp:preferencesWindow()
+		
+		prefs:show()
+		ok(prefs:isShowing())
+		
+		prefs:hide()
+		ok(not prefs:isShowing())
+	end)
+	
 	test("ImportPanel", function()
 		reset()
 		local panel = fcp:preferencesWindow():importPanel()
