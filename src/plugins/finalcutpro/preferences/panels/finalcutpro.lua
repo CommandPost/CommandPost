@@ -36,8 +36,8 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 	local mod = {}
-	
-	if fcp:application() then
+
+	if fcp:isInstalled() then
 		mod.panel = deps.manager.addPanel({
 			priority 	= 2040,
 			id			= "finalcutpro",
@@ -46,7 +46,7 @@ function plugin.init(deps)
 			tooltip		= i18n("finalCutProPanelTooltip"),
 		})
 	end
-	
+
 	return mod
 end
 

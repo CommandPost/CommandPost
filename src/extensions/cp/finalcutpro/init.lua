@@ -6,7 +6,7 @@
 
 --- === cp.finalcutpro ===
 ---
---- Represents the Final Cut Pro X application, providing functions that allow different tasks to be accomplished.
+--- Represents the Final Cut Pro application, providing functions that allow different tasks to be accomplished.
 ---
 --- This module provides an API to work with the FCPX application. There are a couple of types of files:
 ---
@@ -88,6 +88,8 @@ local task										= require("hs.task")
 local timer										= require("hs.timer")
 local windowfilter								= require("hs.window.filter")
 
+local v											= require("semver")
+
 local plist										= require("cp.plist")
 local just										= require("cp.just")
 local tools										= require("cp.tools")
@@ -115,6 +117,11 @@ local shortcut									= require("cp.commands.shortcut")
 --
 --------------------------------------------------------------------------------
 local App = {}
+
+--- cp.finalcutpro.EARLIEST_SUPPORTED_VERSION
+--- Constant
+--- The earliest version of Final Cut Pro supported by this module.
+App.EARLIEST_SUPPORTED_VERSION					= v("10.3")
 
 --- cp.finalcutpro.BUNDLE_ID
 --- Constant
@@ -173,7 +180,7 @@ end
 
 --- cp.finalcutpro:application() -> hs.application
 --- Function
---- Returns the hs.application for Final Cut Pro X.
+--- Returns the hs.application for Final Cut Pro.
 ---
 --- Parameters:
 ---  * N/A
@@ -181,10 +188,12 @@ end
 --- Returns:
 ---  * The hs.application, or nil if the application is not installed.
 function App:application()
-	local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
-	-- If there is at least one copy installed, return the first one
-	if result and #result > 0 then
-		return result[1]
+	if self:isInstalled() then
+		local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
+		-- If there is at least one copy running, return the first one
+		if result and #result > 0 then
+			return result[1]
+		end
 	end
 	return nil
 end
@@ -278,13 +287,13 @@ end
 
 --- cp.finalcutpro:restart() -> boolean
 --- Function
---- Restart Final Cut Pro X
+--- Restart Final Cut Pro
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if Final Cut Pro X was running and restarted successfully.
+---  * `true` if Final Cut Pro was running and restarted successfully.
 function App:restart()
 	local app = self:application()
 	if app then
@@ -385,21 +394,21 @@ end
 
 --- cp.finalcutpro:isInstalled() -> boolean
 --- Function
---- Is Final Cut Pro X Installed?
+--- Is a supported version of Final Cut Pro Installed?
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if a version of FCPX is installed.
+---  * `true` if a supported version of Final Cut Pro is installed otherwise `false`
 function App:isInstalled()
-	local path = self:getPath()
-	return doesDirectoryExist(path)
+	local app = application.infoForBundleID(App.BUNDLE_ID)
+	return app and v(app["CFBundleShortVersionString"]) >= App.EARLIEST_SUPPORTED_VERSION or false
 end
 
 --- cp.finalcutpro:isFrontmost() -> boolean
 --- Function
---- Is Final Cut Pro X Frontmost?
+--- Is Final Cut Pro Frontmost?
 ---
 --- Parameters:
 ---  * None
@@ -423,7 +432,7 @@ end
 ---
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-function App:getVersion(notRunning)
+function App:getVersion()
 	local app = self:application()
 	if app then
 		return app and app["CFBundleShortVersionString"] or nil
