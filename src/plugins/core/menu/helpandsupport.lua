@@ -28,15 +28,13 @@ local plugin = {
 	}
 }
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(dependencies)
-		local section = dependencies.bottom:addSection(PRIORITY)
-			--:addSeparator(100)
-			:addMenu(0, function() return i18n("helpAndSupport") end)
-
-		return section
-	end
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(dependencies)
+	local section = dependencies.bottom:addSection(PRIORITY)
+		:addMenu(0, function() return i18n("helpAndSupport") end)
+	return section
+end
 
 return plugin

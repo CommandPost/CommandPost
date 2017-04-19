@@ -419,6 +419,7 @@ return {
     	credits									=			"Credits",
     	helpCentre								=			"Help Centre",
     	userGuide								=			"User Guide",
+    	developerGuide							=			"Developer Guide",
 
 			--------------------------------------------------------------------------------
 			-- Advanced:

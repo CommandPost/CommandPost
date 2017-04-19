@@ -1,19 +1,18 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                             F E E D B A C K                                --
+--                      D E V E L O P E R     G U I D E                       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.helpandsupport.feedback ===
+--- === plugins.core.helpandsupport.developerguide ===
 ---
---- Feedback Menu Item.
+--- Developer Guide Menu Item.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local feedback			= require("cp.feedback")
 local config			= require("cp.config")
 
 --------------------------------------------------------------------------------
@@ -21,7 +20,7 @@ local config			= require("cp.config")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 2
+local PRIORITY 			= 1.1
 
 --------------------------------------------------------------------------------
 --
@@ -30,9 +29,9 @@ local PRIORITY 			= 2
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.helpandsupport.feedback.show() -> nil
+--- plugins.core.helpandsupport.developerguide.show() -> nil
 --- Function
---- Opens CommandPost Credits Window
+--- Opens the CommandPost Developer Guide in the Default Browser.
 ---
 --- Parameters:
 ---  * None
@@ -40,7 +39,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	feedback.showFeedback()
+	os.execute('open "http://dev.commandpost.io/"')
 end
 
 --------------------------------------------------------------------------------
@@ -49,7 +48,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.feedback",
+	id				= "core.helpandsupport.developerguide",
 	group			= "core",
 	dependencies	= {
 		["core.menu.helpandsupport"]	= "helpandsupport",
@@ -61,10 +60,9 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("provideFeedback"),	fn = mod.show }
+		return { title = i18n("developerGuide"),	fn = mod.show }
 	end)
 	:addSeparator(PRIORITY+0.1)
-
 	return mod
 end
 
