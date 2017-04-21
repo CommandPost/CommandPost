@@ -42,11 +42,6 @@ mod.appVersion       = hs.processInfo["version"]
 --- Prefix used for Configuration Settings
 mod.configPrefix		= "cp"
 
---- cp.config.bugReportEmail
---- Constant
---- Email address used for bug reports
-mod.bugReportEmail      = "chris@latenitefilms.com"
-
 --- cp.config.privacyPolicyURL
 --- Constant
 --- URL for Privacy Policy
