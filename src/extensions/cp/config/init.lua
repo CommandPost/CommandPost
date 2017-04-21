@@ -499,4 +499,97 @@ function fileDroppedToDockIconCallback:callbackFn()
 	return self._callbackFn
 end
 
+--------------------------------------------------------------------------------
+--
+-- DOCK ICON CLICKED CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+--- === cp.config.dockIconClickCallback ===
+---
+--- Callback which triggers when the CommandPost Dock Icon is clicked
+
+local dockIconClickCallback = {}
+dockIconClickCallback._items = {}
+
+mod.dockIconClickCallback = dockIconClickCallback
+
+--- cp.config.dockIconClickCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new File Dropped to Dock Icon Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function dockIconClickCallback:new(id, callbackFn)
+
+	if dockIconClickCallback._items[id] ~= nil then
+		error("Duplicate Dock Icon Click Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	dockIconClickCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.dockIconClickCallback:get(id) -> table
+--- Method
+--- Creates a new Dock Icon Click Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function dockIconClickCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.dockIconClickCallback:getAll() -> table
+--- Method
+--- Returns all of the created Dock Icon Click Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function dockIconClickCallback:getAll()
+	return self._items
+end
+
+--- cp.config.dockIconClickCallback:id() -> string
+--- Method
+--- Returns the ID of the current Dock Icon Click Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
+function dockIconClickCallback:id()
+	return self._id
+end
+
+--- cp.config.dockIconClickCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Dock Icon Click Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function dockIconClickCallback:callbackFn()
+	return self._callbackFn
+end
+
 return mod

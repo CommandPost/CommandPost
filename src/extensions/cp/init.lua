@@ -124,20 +124,6 @@ function mod.init()
 	if errorLogOpenOnClose then hs.openConsole() end
 
 	--------------------------------------------------------------------------------
-	-- Create CommandPost Shutdown Callback:
-	--------------------------------------------------------------------------------
-	hs.shuttingDown = false
-	config.shutdownCallback:new("cp", function()
-		hs.shuttingDown = true
-		if console.hswindow() then
-			config.set("errorLogOpenOnClose", true)
-		else
-			config.set("errorLogOpenOnClose", false)
-		end
-		console.clearConsole()
-	end)
-
-	--------------------------------------------------------------------------------
 	-- Setup Global Shutdown Callback:
 	--------------------------------------------------------------------------------
 	hs.shutdownCallback = function()
@@ -183,12 +169,49 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
+	-- Setup Global Dock Icon Click Callback:
+	--------------------------------------------------------------------------------
+	hs.dockIconClickCallback = function(value)
+		local dockIconClickCallbacks = config.dockIconClickCallback:getAll()
+		if dockIconClickCallbacks and type(dockIconClickCallbacks) == "table" then
+			for i, v in pairs(dockIconClickCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Create CommandPost Dock Icon Click Callback:
+	--------------------------------------------------------------------------------
+	config.dockIconClickCallback:new("cp", function()
+		if debugMode then hs.openConsole() end
+	end)
+
+	--------------------------------------------------------------------------------
+	-- Create CommandPost Shutdown Callback:
+	--------------------------------------------------------------------------------
+	hs.shuttingDown = false
+	config.shutdownCallback:new("cp", function()
+		hs.shuttingDown = true
+		if console.hswindow() then
+			config.set("errorLogOpenOnClose", true)
+		else
+			config.set("errorLogOpenOnClose", false)
+		end
+		console.clearConsole()
+	end)
+
+	--------------------------------------------------------------------------------
 	-- Check Versions & Language:
 	--------------------------------------------------------------------------------
-	local fcpVersion    		= fcp:getVersion()
-	local fcpPath				= fcp:getPath()
-	local osVersion    			= tools.macOSVersion()
-	local fcpLanguage   		= fcp:getCurrentLanguage()
+	local fcpVersion    		= fcp:getVersion() or "Unknown"
+	local fcpPath				= fcp:getPath() or "Unknown"
+	local osVersion    			= tools.macOSVersion() or "Unknown"
+	local fcpLanguage   		= fcp:getCurrentLanguage() or "Unknown"
+	local debugModeStatus		= debugMode or false
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -224,7 +247,7 @@ function mod.init()
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
+												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugModeStatus))
 	console.printStyledtext("")
 
 	--------------------------------------------------------------------------------
