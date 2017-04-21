@@ -48,6 +48,12 @@ local function enableHacksShortcuts()
 
 	local finalCutProVersion = fcp:getVersion()
 
+	if not finalCutProVersion then
+		dialog.displayMessage("The Final Cut Pro version could not be detected.\n\nThis shouldn't happen, so something has broken.")
+		log.ef("No Final Cut Pro Version was detected. This shouldn't happen.")
+		return nil
+	end
+
 	local whichVersion = "10.3.2"
 	if v(finalCutProVersion) <= v("10.3.3") then
 		whichVersion = "10.3.3"
