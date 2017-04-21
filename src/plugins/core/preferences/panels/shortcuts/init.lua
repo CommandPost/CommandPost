@@ -154,12 +154,12 @@ local function updateShortcut(id, params)
 		if params.keyCode and params.keyCode ~= "" then
 			theCommand:activatedBy(modifiers, params.keyCode)
 		end
-		
+
 		commands.saveToFile(DEFAULT_SHORTCUTS)
 	else
 		log.wf("Unable to find command to update: %s:%s", params.group, params.command)
 	end
-	
+
 end
 
 --------------------------------------------------------------------------------
@@ -167,24 +167,15 @@ end
 --------------------------------------------------------------------------------
 function getAllKeyCodes()
 
+	-- TODO: Work out a way to ONLY display keyboard shortcuts that the system actually has on it's keyboard.
+	--       See: https://github.com/Hammerspoon/hammerspoon/issues/1307
+
 	local shortcuts = {}
 
-	for i, v in pairs(keycodes.map) do
-	  if type(v) == "number" then
-	  	if v <= 9 then
-	  		local alreadyExists = false
-	  		for x, y in pairs(shortcuts) do
-	  			if shortcuts[x] == tostring(v) then
-	  				alreadyExists = true
-	  			end
-	  		end
-	  		if not alreadyExists then
-		  		shortcuts[#shortcuts + 1] = tostring(v)
-		  	end
-	  	end
-	  else
-	  	shortcuts[#shortcuts + 1] = v
-	  end
+	for k,_ in pairs(keycodes.map) do
+		if type(k) == "string" and k ~= "" then
+			shortcuts[#shortcuts + 1] = k
+		end
 	end
 
 	table.sort(shortcuts, function(a, b) return a < b end)
@@ -372,9 +363,9 @@ function mod.init(deps, env)
 		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
 		tooltip			= i18n("shortcutsPanelTooltip"),
 	})
-	
+
 	mod._panel:addContent(10, generateContent, true)
-	
+
 	mod._panel:addButton(20,
 		{
 			label		= i18n("resetShortcuts"),
@@ -382,7 +373,7 @@ function mod.init(deps, env)
 			class		= "buttons",
 		}
 	)
-	
+
 	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 
 	return mod

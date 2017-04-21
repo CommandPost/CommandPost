@@ -430,10 +430,11 @@ return {
 			developer							=			"Developer",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
+			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
 			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.\n\nDo you want to continue?",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
-			cliInstallError						=			"I'm sorry, but we ffailed to Install the Command Line Tool. Please try again.",
+			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
 			commandLineToolDescription			=			"When the Command Line Tool is installed, you can use <strong>cmdpost</strong> in Terminal to trigger Lua code. Please refer to the User Guide for more information.",
 
 			--------------------------------------------------------------------------------

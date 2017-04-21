@@ -184,13 +184,6 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Create CommandPost Dock Icon Click Callback:
-	--------------------------------------------------------------------------------
-	config.dockIconClickCallback:new("cp", function()
-		if debugMode then hs.openConsole() end
-	end)
-
-	--------------------------------------------------------------------------------
 	-- Create CommandPost Shutdown Callback:
 	--------------------------------------------------------------------------------
 	hs.shuttingDown = false

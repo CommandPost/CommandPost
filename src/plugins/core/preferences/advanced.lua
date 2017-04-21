@@ -177,6 +177,16 @@ function mod.toggleCommandLineTool()
 
 end
 
+function mod.toggleOpenErrorLogOnDockClick()
+	local openErrorLogOnDockClick = config.get("openErrorLogOnDockClick", false)
+	config.set("openErrorLogOnDockClick", not openErrorLogOnDockClick)
+end
+
+
+function mod.getOpenErrorLogOnDockClick()
+	return config.get("openErrorLogOnDockClick", false)
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -200,6 +210,13 @@ function plugin.init(deps)
 	mod.manager = deps.manager
 
 	--------------------------------------------------------------------------------
+	-- Create Dock Icon Click Callback:
+	--------------------------------------------------------------------------------
+	config.dockIconClickCallback:new("cp", function()
+		if mod.getOpenErrorLogOnDockClick() then hs.openConsole() end
+	end)
+
+	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
 	deps.advanced:addHeading(60, i18n("developer") .. ":")
@@ -212,21 +229,19 @@ function plugin.init(deps)
 		}
 	)
 
-	:addHeading(62, i18n("advanced") .. ":")
+	:addCheckbox(62,
+		{
+			label = i18n("openErrorLogOnDockClick"),
+			onchange = mod.toggleOpenErrorLogOnDockClick,
+			checked = mod.getOpenErrorLogOnDockClick
+		}
+	)
 
 	:addButton(63,
 		{
 			label = i18n("openErrorLog"),
 			width = 150,
 			onclick = mod.openErrorLog,
-		}
-	)
-
-	:addButton(64,
-		{
-			label	= i18n("trashPreferences"),
-			width	= 150,
-			onclick	= mod.trashPreferences,
 		}
 	)
 
@@ -238,6 +253,16 @@ function plugin.init(deps)
 			label	= getCommandLineToolTitle(),
 			width	= 150,
 			onclick	= mod.toggleCommandLineTool,
+		}
+	)
+
+	:addHeading(80, i18n("advanced") .. ":")
+
+	:addButton(85,
+		{
+			label	= i18n("trashPreferences"),
+			width	= 150,
+			onclick	= mod.trashPreferences,
 		}
 	)
 
