@@ -231,11 +231,6 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	local replaceExisting = config.get("batchExportReplaceExistingFiles")
 
-	--------------------------------------------------------------------------------
-	-- Delete All Highlights:
-	--------------------------------------------------------------------------------
-	deleteAllHighlights()
-
 	local libraries = fcp:browser():libraries()
 
 	if not libraries:isShowing() then
