@@ -376,35 +376,62 @@ end
 
 			<!-- KEYWORDS VIEW: -->
 			<div id="view-4" class="view tab">
+
 				<!-- We can make with view with navigation, let's add Top Navbar-->
 				<div class="navbar">
 					<div class="navbar-inner">
+						<div class="left"><a href="#" class="link addMarkerButton">Add</a></div>
 						<div class="center sliding">Keywords</div>
+				        <div class="right"><a href="#" class="link toggle-sortable icon-only">Sort</a></div>
 					</div>
 				</div>
 
 				<div class="pages navbar-through">
 					<div data-page="index-4" class="page">
-						<div class="page-content">
+						<div class="page-content pull-to-refresh-content" data-ptr-distance="55">
+							<!-- Default pull to refresh layer-->
+							<div class="pull-to-refresh-layer">
+								<div class="preloader"></div>
+								<div class="pull-to-refresh-arrow"></div>
+							</div>
 							<div class="content-block-title">Keywords</div>
-							<div class="list-block">
+
+							<!-- Sortable list  -->
+							<div class="list-block sortable">
 								<ul>
-									<li>
-										<a href="#" class="item-link" onclick="tags_example()">
-											<div class="item-content">
+									<%
+									local customKeywords = config.get("customKeywords", {"Good Take", "Interior", "Exterior"})
+									table.sort(customKeywords, function(a, b) return a < b end)
+
+									for i, v in pairs(customKeywords) do
+									%>
+
+								  	<li class="swipeout">
+										<a href="#" class="item-link" onclick="keywords_<%= tostring(i) %>()">
+											<div class="swipeout-content item-content">
 												<div class="item-inner">
-													<div class="item-title">Good Take</div>
+													<div class="item-title"><%= v %></div>
 												</div>
+											</div>
+											<div class="swipeout-actions-right">
+												<a href="#" class="action1">Rename</a>
+												<a href="#" class="swipeout-delete" data-confirm="Are you sure want to delete this item?" data-confirm-title="Delete?" data-close-on-cancel="true">Delete</a>
 											</div>
 										</a>
 										<script>
-											function tags_example() {
+											function keywords_<%= tostring(i) %>() {
 												var xhttp = new XMLHttpRequest();
-												xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?keyword=Good%20Take", true);
+												xhttp.open("GET", "http://<%= hsminweb["CGIVariables"]["HTTP_HOST"] %>/?keyword=<%= cgilua.urlcode.escape(v) %>", true);
 												xhttp.send();
 											}
 										</script>
+
+										<!-- Sortable handler  -->
+										<div class="sortable-handler"></div>
 									</li>
+									<%
+									end
+									%>
 								</ul>
 							</div>
 						</div>
@@ -449,10 +476,13 @@ end
 						<i class="f7-icons">tags</i>
 						<span class="tabbar-label">Keywords</span>
 					</a>
+					<!-- DISABLING SETTINGS UNTIL WE ACTUALLY NEED THEM:
+					<!--
 					<a href="#view-5" class="tab-link">
 						<i class="f7-icons">gear_fill</i>
 						<span class="tabbar-label">Settings</span>
 					</a>
+					-->
 				</div>
 			</div>
 
