@@ -1,6 +1,5 @@
 local log				= require("hs.logger").new("webui")
 
-local uuid				= require("cp.uuid")
 local html				= require("cp.web.html")
 local _					= require("moses")
 
@@ -17,23 +16,6 @@ function evaluate(value)
 	else
 		return value
 	end
-end
-
---- cp.web.ui.new(data, generateFn) -> cp.web.ui
---- Constructor
---- Generates an HTML element with the provided `data` and generator function.
---- The `generateFn` will be passed the current data value and will return the
---- generated HTML markup, either as a string or as `cp.web.html` elements.
----
---- Parameters:
----  * data		- the data table, or function returning a table, containing the 
-function ui.new(data, generateFn, id)
-	local o = {
-		_data 		= data,
-		_id			= id or uuid(),
-		_generate	= generateFn,
-	}
-	return setmetatable(o, ui)
 end
 
 --- cp.web.ui.javascript(script, context) -> cp.web.ui
@@ -56,7 +38,7 @@ end
 ---  * context	- Table containing any values to inject into the script.
 ---
 --- Returns:
----  * a 
+---  * a `cp.web.html` element representing the JavaScript block.
 ---
 function ui.javascript(script, context)
 	local t = compile(script, "no-cache", true)
@@ -65,6 +47,21 @@ function ui.javascript(script, context)
 	)
 end
 
+--- cp.web.ui.heading(params) -> cp.web.html
+--- Function
+--- Creates a `cp.web.html` element for a heading with a specific level
+---
+--- Parameters:
+--- * `params`	- The parameters table. Details below.
+---
+--- Returns:
+--- * `cp.web.html` element representing the heading.
+---
+--- Notes:
+--- * The `params` table has the following fields:
+--- ** `text`		- The string (or function) containing the text of the heading.
+--- ** `level` 		- The heading level (or function) (1-7). Defaults to 3.
+--- ** `class`		- The CSS class (or function) for the heading tag.
 function ui.heading(params)
 	-- the level must be a number between 1 and 7.
 	local level = evaluate(params.level) or 3
@@ -74,13 +71,64 @@ function ui.heading(params)
 	return html[tag] { class=params.class } (params.text)
 end
 
-function ui.template(view, context)
-	return ui.new({
-		render	=	compile(view),
-		context	= 	context,
-	}, function(data, id)
-		return data.render(evaluate(data.context))
-	end)
+--- cp.web.ui.template(params) -> hs.web.html
+--- Function
+--- Creates a `html` element that will execute a Resty Template.
+---
+--- Parameters:
+--- * `params`	- The parameters table. Details below.
+---
+--- Returns:
+--- * `cp.web.html` containing the template.
+---
+--- Notes:
+--- * The `params` table has the following supported fields:
+--- ** `view`		- The file path to the template, or the template content itself. Required.
+--- ** `context`	- The table containing the context to execute the template in.
+--- ** `unescaped`	- If true, the template will not be escaped before outputting.
+function ui.template(params)
+	local renderer = compile(params.view)
+	return html(function() return renderer(params.context) end, params.unescaped)
+end
+
+--- cp.web.ui.textbox(params) -> hs.web.html
+--- Function
+--- Creates an `html` element that will output a text box.
+---
+--- Parameters:
+--- * `params`	- The parameters table. Details below.
+---
+--- Returns:
+--- * `cp.web.html` containing the textbox.
+---
+--- Notes:
+--- * The `params` table has the following supported fields:
+--- ** `id`				- The unique ID for the textbox.
+--- ** `name`			- The name of the textbox field.
+--- ** `class`			- The CSS classname.
+--- ** `placeholder`	- Placeholder text
+function ui.textbox(params)
+	return html.input { type = "text", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
+end
+
+--- cp.web.ui.password(params) -> hs.web.html
+--- Function
+--- Creates an `html` element that will output a password text box.
+---
+--- Parameters:
+--- * `params`	- The parameters table. Details below.
+---
+--- Returns:
+--- * `cp.web.html` containing the textbox.
+---
+--- Notes:
+--- * The `params` table has the following supported fields:
+--- ** `id`				- The unique ID for the textbox.
+--- ** `name`			- The name of the textbox field.
+--- ** `class`			- The CSS classname.
+--- ** `placeholder`	- Placeholder text
+function ui.password(params)
+	return html.input { type = "password", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
 end
 
 --- cp.web.ui.checkbox(title, value[, id]) -> cp.web.ui
@@ -203,22 +251,6 @@ function ui.select(params)
 		name	= params.id,
 		class	= params.class,
 	} (optionGenerator, true)
-end
-
-function ui:id()
-	return self._id
-end
-
-function ui:data()
-	return evaluate(self._data)
-end
-
-function ui:generate()
-	return self._generate(self:data(), self:id())
-end
-
-function ui:__tostring()
-	return tostring(self:generate())
 end
 
 return ui
