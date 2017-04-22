@@ -18,7 +18,7 @@ local log								= require("hs.logger").new("height")
 local timer								= require("hs.timer")
 local eventtap							= require("hs.eventtap")
 
-local fcp								= require("cp.finalcutpro")
+local fcp								= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

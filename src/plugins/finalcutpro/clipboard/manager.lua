@@ -22,7 +22,7 @@ local uuid										= require("cp.uuid")
 local plist 									= require("cp.plist")
 local protect 									= require("cp.protect")
 local archiver									= require("cp.plist.archiver")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local dialog 									= require("cp.dialog")
 
 --------------------------------------------------------------------------------

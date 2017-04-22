@@ -28,7 +28,7 @@ local sharing									= require("hs.sharing")
 local window									= require("hs.window")
 
 local config									= require("cp.config")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -213,7 +213,10 @@ function dialog.displayErrorMessage(whatError)
 	--------------------------------------------------------------------------------
 	-- Send bug report:
 	--------------------------------------------------------------------------------
-	if result then plugins("cp.plugins.cp.feedback").emailBugReport() end
+	if result then
+		local feedback = require("cp.feedback")
+		feedback.showFeedback(false)
+	end
 
 end
 

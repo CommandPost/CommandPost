@@ -19,7 +19,7 @@ local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
 
-local fcp							= require("cp.finalcutpro")
+local fcp							= require("cp.apple.finalcutpro")
 local dialog						= require("cp.dialog")
 local config						= require("cp.config")
 

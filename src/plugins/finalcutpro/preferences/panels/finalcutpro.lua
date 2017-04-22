@@ -16,7 +16,7 @@
 local log										= require("hs.logger").new("prefsGeneral")
 
 local image										= require("hs.image")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

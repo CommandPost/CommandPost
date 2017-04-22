@@ -20,7 +20,7 @@ local json										= require("hs.json")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
 
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local dialog									= require("cp.dialog")
 local plist										= require("cp.plist")
 local config									= require("cp.config")

@@ -17,7 +17,7 @@
 local log				= require("hs.logger").new("menuaction")
 
 local choices			= require("cp.choices")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local fnutils			= require("hs.fnutils")
 local config			= require("cp.config")
 

@@ -20,7 +20,7 @@ local inspect									= require("hs.inspect")
 local menubar									= require("hs.menubar")
 
 local config									= require("cp.config")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 
 local section									= require("section")
 

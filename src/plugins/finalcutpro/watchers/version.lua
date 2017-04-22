@@ -15,7 +15,7 @@
 --
 --------------------------------------------------------------------------------
 local config					= require("cp.config")
-local fcp						= require("cp.finalcutpro")
+local fcp						= require("cp.apple.finalcutpro")
 local watcher					= require("cp.watcher")
 
 --------------------------------------------------------------------------------

@@ -18,7 +18,7 @@ local log									= require("hs.logger").new("voice")
 local osascript								= require("hs.osascript")
 local speech   								= require("hs.speech")
 
-local fcp									= require("cp.finalcutpro")
+local fcp									= require("cp.apple.finalcutpro")
 local dialog 								= require("cp.dialog")
 local config								= require("cp.config")
 

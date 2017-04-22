@@ -24,7 +24,7 @@ local application		= require("hs.application")
 
 local ax 				= require("hs._asm.axuielement")
 
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
 
 local log				= require("hs.logger").new("console")

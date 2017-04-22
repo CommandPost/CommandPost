@@ -18,7 +18,7 @@ local eventtap 		= require("hs.eventtap")
 local inspect 		= require("hs.inspect")
 local pasteboard	= require("hs.pasteboard")
 
-local fcp 			= require("cp.finalcutpro")
+local fcp 			= require("cp.apple.finalcutpro")
 local commands 		= require("cp.commands")
 local config 		= require("cp.config")
 local uuid			= require("cp.uuid")

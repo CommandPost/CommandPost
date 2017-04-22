@@ -17,7 +17,7 @@
 local log						= require("hs.logger").new("fcpxCmds")
 
 local commands					= require("cp.commands")
-local fcp						= require("cp.finalcutpro")
+local fcp						= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

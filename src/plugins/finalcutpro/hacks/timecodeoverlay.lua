@@ -18,7 +18,7 @@ local log				= require("hs.logger").new("timecodeoverlay")
 local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
 
 --------------------------------------------------------------------------------
