@@ -253,6 +253,7 @@ function plugin.init(deps)
 			label	= getCommandLineToolTitle(),
 			width	= 150,
 			onclick	= mod.toggleCommandLineTool,
+			id		= "commandLineTool",
 		}
 	)
 
