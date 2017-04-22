@@ -56,6 +56,7 @@ local function as(appleScript)
 		set errorMessageEnd to "\n\n]] .. i18n("commonErrorMessageEnd") .. [["
 
 		tell application id "]] .. whichBundleID .. [["
+			activate
 	]]
 
 	local appleScriptEnd = [[
