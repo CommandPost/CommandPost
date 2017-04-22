@@ -18,7 +18,7 @@ local log								= require("hs.logger").new("fullscreenShortcuts")
 local eventtap							= require("hs.eventtap")
 local timer								= require("hs.timer")
 
-local fcp								= require("cp.finalcutpro")
+local fcp								= require("cp.apple.finalcutpro")
 local config							= require("cp.config")
 local shortcut							= require("cp.commands.shortcut")
 local tools								= require("cp.tools")

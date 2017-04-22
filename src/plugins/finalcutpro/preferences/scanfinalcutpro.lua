@@ -18,7 +18,7 @@ local log				= require("hs.logger").new("scanfinalcutpro")
 local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")

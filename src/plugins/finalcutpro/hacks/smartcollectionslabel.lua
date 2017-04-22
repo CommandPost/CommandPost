@@ -18,7 +18,7 @@ local log				= require("hs.logger").new("movingmarkers")
 local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
 local plist				= require("cp.plist")
 local tools				= require("cp.tools")

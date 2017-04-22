@@ -17,7 +17,7 @@ local log										= require("hs.logger").new("intro")
 
 local config									= require("cp.config")
 local generate									= require("cp.web.generate")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 
 local v											= require("semver")
 

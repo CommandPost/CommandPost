@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local log 									= require("hs.logger").new("clipboardHistory")
 
-local fcp									= require("cp.finalcutpro")
+local fcp									= require("cp.apple.finalcutpro")
 local config								= require("cp.config")
 
 --------------------------------------------------------------------------------

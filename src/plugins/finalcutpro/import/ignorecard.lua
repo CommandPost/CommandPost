@@ -19,7 +19,7 @@ local fs						= require("hs.fs")
 local application				= require("hs.application")
 local timer						= require("hs.timer")
 
-local fcp						= require("cp.finalcutpro")
+local fcp						= require("cp.apple.finalcutpro")
 local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
