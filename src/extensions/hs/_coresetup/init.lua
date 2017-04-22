@@ -369,6 +369,35 @@ hs.accessibilityStateCallback = nil
         end
       end
     })
+
+    -- COMMANDPOST:
+
+	cp = {}
+    cp._extensions = {}
+
+    -- Discover extensions in our .app bundle
+    local iter, dir_obj = require("hs.fs").dir(modpath.."/cp")
+    local extension = iter(dir_obj)
+    while extension do
+      if (extension ~= ".") and (extension ~= "..") then
+        cp._extensions[extension] = true
+      end
+      extension = iter(dir_obj)
+    end
+
+    -- Inject a lazy extension loader into the main HS table
+    setmetatable(cp, {
+      __index = function(t, key)
+        if cp._extensions[key] ~= nil then
+          print("-- Loading extension: "..key)
+          cp[key] = require("cp."..key)
+          return cp[key]
+        else
+          return nil
+        end
+      end
+    })
+
   end
 
   local logger = require("hs.logger").new("LuaSkin", "info")
@@ -506,6 +535,10 @@ hs.accessibilityStateCallback = nil
       -- Easiest case first, we have no text to work with, so just return keys from _G
       mapJoiner = ""
       completions = findCompletions(src, remnant)
+    elseif mod == "cp" then
+      -- We're either at the top of the 'cp' namespace, or completing the first level under it
+      -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
+      completions = filterForRemnant(tableSet(tablesMerge(tableKeys(cp), tableKeys(cp._extensions))), remnant)
     elseif mod == "hs" then
       -- We're either at the top of the 'hs' namespace, or completing the first level under it
       -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
