@@ -261,6 +261,9 @@ function commands.loadFromFile(name)
 	for groupId,shortcuts in pairs(groupData) do
 		local group = commands.group(groupId)
 		if group then
+			-- clear existing shortcuts
+			group:deleteShortcuts()
+			-- apply saved ones
 			group:loadShortcuts(shortcuts)
 		end
 	end
