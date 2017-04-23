@@ -194,6 +194,7 @@ end
 local plugin = {
 	id			= "core.menu.manager",
 	group		= "core",
+	required	= true,
 }
 
 --------------------------------------------------------------------------------
