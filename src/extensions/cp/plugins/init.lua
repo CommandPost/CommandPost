@@ -198,7 +198,7 @@ local function cachePlugin(id, pluginTable, status, scriptFile)
 		mod.CACHE[id] = thePlugin
 		mod.IDS[#mod.IDS + 1] = id
 
-		log.df("Loaded plugin: %s", thePlugin.id)
+		-- log.df("Loaded plugin: %s", thePlugin.id)
 		return thePlugin
 	else
 		log.df([[Duplicate plugin with ID of '%s':
@@ -351,7 +351,7 @@ function mod.initPlugin(id)
 	plugin:setStatus(mod.status.initialized)
 
 	-- return the module
-	log.df("Initialised plugin: %s", id)
+	-- log.df("Initialised plugin: %s", id)
 	return module
 end
 
@@ -368,7 +368,6 @@ end
 function mod.loadDependencies(plugin)
 	local dependencies = {}
 	if plugin.dependencies then
-		log.df("Processing dependencies for '%s'.", plugin.id)
 		for path,alias in pairs(plugin.dependencies) do
 			if type(path) == "number" then
 				-- no alias
@@ -508,7 +507,7 @@ end
 ---  * `true` if the plugin ias successfully post-initialised.
 ---
 function mod.postInitPlugin(id)
-	log.df("Post-initialising plugin: %s", id)
+	-- log.df("Post-initialising plugin: %s", id)
 	local plugin = mod.getPlugin(id)
 	if not plugin then
 		log.ef("Unable to post-initialise '%s': plugin not loaded", id)
@@ -518,7 +517,6 @@ function mod.postInitPlugin(id)
 	-- Check it exists and is initialized and ready to post-init
 	if plugin:getStatus() == mod.status.active then
 		-- already post-intialised successfully
-		log.df("Post-initialised plugin already active: %s", id)
 		return true
 	elseif plugin:getStatus() == mod.status.initialized then
 		if plugin.postInit then
@@ -539,7 +537,6 @@ function mod.postInitPlugin(id)
 			end
 
 			plugin.postInit(dependencies, env.new(plugin:getRootPath()))
-			log.df("Post-Initialised Plugin: %s", plugin.id)
 		end
 		plugin:setStatus(mod.status.active)
 		return true
