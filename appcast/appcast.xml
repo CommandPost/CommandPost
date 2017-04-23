@@ -6,6 +6,43 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.2</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added "Send to Compressor" to Batch Export Tool (issue #506)</li>
+				<li>Added Developer Guide Link in Help & Support Menu (issue #489)</li>
+				<li>Added "Open Error Log on Dock Icon Click" Option</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Added Plugin Title for WebApp & WebApp Preferences (issue #490)</li>
+				<li>Final Cut Pro Preferences Panel will now only display if FCPX is installed (issue #493)</li>
+				<li>Removed cp.config.bugReportEmail</li>
+				<li>Removed deleteAllHighlights() from Batch Export Plugin</li>
+				<li>Only open Error Log on Dock Click when in Developer Mode (issue #491)</li>
+				<li>Fixed Hacks Shortcut Bug (issue #502)</li>
+				<li>Fixed Typo in cliInstallError</li>
+				<li>Simplified getAllKeyCodes()</li>
+				<li>Changed cp.dialog to display alerts in CommandPost, not Frontmost Window #505</li>
+				<li>Added textbox to cp.web.ui (issue #504)</li>
+				<li>Now clears existing shortcuts before applying new ones (issue #501)</li>
+				<li>Added “activate” to cp.dialog AppleScript</li>
+				<li>Command Line Tool Button was missing ID</li>
+				<li>Added Lazy Loading & Auto-completion for CommandPost in Error Log</li>
+				<li>Fixed Color Board Functions for Final Cut Pro 10.3.3 (issue #512)</li>
+				<li>Commented out settings page of WebApp for now</li>
+				<li>Resize Preferences Window depending on currently selected Panel (issue #518)</li>
+				<li>Added support for ‘required’ plugins, which cannot be disabled (issue #501)</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon, 24 Apr 2017 01:41:12 +1000</pubDate>
+			<enclosure url=https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.2/CommandPost_1.0.0-beta.2.dmg
+				sparkle:version=1.0.0-beta.2
+				sparkle:dsaSignature=MC0CFQCWddnrh12DJ/j9LH+lKUqk6QN8jQIUGzVqLOiCSPO9++NfdX7oqFGnB+w=
+				type=application/octet-stream
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.1</title>
 			<description><![CDATA[
 				<h2>First Beta Release of CommandPost</h2>
