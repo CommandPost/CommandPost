@@ -140,8 +140,6 @@ local function generateContent()
 
 	local lastCategory = ""
 	
-	log.df("#listOfPlugins: %s", #listOfPlugins)
-
 	for _,plugin in ipairs(listOfPlugins) do
 
 		local info = {}
