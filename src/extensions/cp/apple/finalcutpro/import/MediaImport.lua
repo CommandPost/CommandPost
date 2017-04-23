@@ -14,15 +14,12 @@
 --
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
-local inspect						= require("hs.inspect")
-local windowfilter					= require("hs.window.filter")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
 
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
-
+local axutils						= require("cp.apple.finalcutpro.axutils")
 local id							= require("cp.apple.finalcutpro.ids") "MediaImporter"
+local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 --------------------------------------------------------------------------------
 --

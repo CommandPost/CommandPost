@@ -1308,7 +1308,7 @@ function App:_initWatchers()
 	):start()
 
 	windowfilter.setLogLevel("error") -- The wfilter errors are too annoying.
-	self._windowWatcher = windowfilter.new{"Final Cut Pro"}
+	self._windowWatcher = windowfilter.new({"Final Cut Pro"}, "finalcutpro")
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Not On Screen:

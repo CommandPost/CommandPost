@@ -14,14 +14,12 @@
 --
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("PrefsDlg")
-local inspect						= require("hs.inspect")
-local windowfilter					= require("hs.window.filter")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
 
-local ReplaceAlert					= require("cp.apple.finalcutpro.export.ReplaceAlert")
+local axutils						= require("cp.apple.finalcutpro.axutils")
 local GoToPrompt					= require("cp.apple.finalcutpro.export.GoToPrompt")
+local ReplaceAlert					= require("cp.apple.finalcutpro.export.ReplaceAlert")
 local TextField						= require("cp.apple.finalcutpro.ui.TextField")
 
 --------------------------------------------------------------------------------
