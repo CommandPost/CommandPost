@@ -492,7 +492,7 @@ function plugin.init(deps, env)
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
-		deps.prefs.panel:addHeading(50, i18n("keyboardShortcuts") .. ":")
+		deps.prefs.panel:addHeading(50, i18n("keyboardShortcuts"))
 
 		:addCheckbox(51,
 			{

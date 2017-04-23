@@ -4,10 +4,11 @@
 	}
 
 	.shortcuts {
+		float: left;
+		margin-left: 20px;
 		table-layout: fixed;
-		width: 100%;
+		width: 92%;
 		white-space: nowrap;
-
 		border: 1px solid #cccccc;
 		padding: 8px;
 		background-color: #ffffff;
@@ -86,12 +87,12 @@
 		color: white;
 	}
 
-	p.buttons {
-		padding-top: 10px;
+	.resetShortcuts {
+		margin: 10px 10px !important;
 		text-align: right;
 	}
 </style>
-<h3>{{ i18n "customiseShortcuts" }}</h3>
+<h3 class="uiItem">{{ i18n "customiseShortcuts" }}</h3>
 <div id="customiseShortcuts" class="{{ shortcutsEnabled and '' or 'disabled' }}">
 	<table class="shortcuts">
 		<thead>

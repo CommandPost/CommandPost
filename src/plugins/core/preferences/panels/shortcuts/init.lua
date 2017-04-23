@@ -362,6 +362,7 @@ function mod.init(deps, env)
 		label			= i18n("shortcutsPanelLabel"),
 		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
 		tooltip			= i18n("shortcutsPanelTooltip"),
+		height			= 465,
 	})
 
 	mod._panel:addContent(10, generateContent, true)
@@ -370,7 +371,7 @@ function mod.init(deps, env)
 		{
 			label		= i18n("resetShortcuts"),
 			onclick		= resetShortcuts,
-			class		= "buttons",
+			class		= "resetShortcuts",
 		}
 	)
 

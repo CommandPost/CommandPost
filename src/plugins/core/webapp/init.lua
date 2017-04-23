@@ -118,20 +118,20 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup Preferences:
 	--------------------------------------------------------------------------------
-	deps.webappPreferences:addHeading(10, i18n ("webappIntroduction") .. ":")
+	deps.webappPreferences:addHeading(10, i18n ("webappIntroduction"))
 
 	:addParagraph(15, i18n("webappInstructions"), true)
 
-	:addHeading(25, i18n("webappSettings") .. ":" )
-	:addCheckbox(30, 
+	:addHeading(25, i18n("webappSettings"))
+	:addCheckbox(30,
 		{
 			label = i18n("webappEnable"),
-			onchange = mod.toggleEnableWebApp, 
+			onchange = mod.toggleEnableWebApp,
 			checked = mod.getEnableWebApp,
 		}
 	)
-	
-	:addHeading(40, i18n("webappHostname") .. ":" )
+
+	:addHeading(40, i18n("webappHostname"))
 	:addParagraph(45, mod.hostname)
 	:addButton(50,
 		{

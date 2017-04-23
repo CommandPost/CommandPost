@@ -152,8 +152,8 @@ local function generateContent()
 		info.currentCategory = currentCategory
 		info.status = plugins.getPluginStatus(id)
 		info.shortName = pluginShortName(id)
-		
-		
+
+
 		local action = nil
 
 		if info.status == plugins.status.error then
@@ -174,14 +174,14 @@ local function generateContent()
 		mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
 
 	end
-	
+
 	-- handle 'open plugin folder' buttons
 	mod.panel:addHandler("onclick", "openPluginsFolder", openPluginsFolder)
-	
+
 	local env = {
 		plugins		= pluginInfo,
 	}
-	
+
 	return mod.renderPanel(env)
 end
 
@@ -198,7 +198,7 @@ end
 function mod.init(deps, env)
 
 	mod._webviewLabel = deps.manager.getLabel()
-	
+
 	mod.renderPanel = env:compileTemplate("html/panel.html")
 
 	mod.panel = deps.manager.addPanel({
@@ -207,8 +207,9 @@ function mod.init(deps, env)
 		label		= i18n("pluginsPanelLabel"),
 		image		= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns"),
 		tooltip		= i18n("pluginsPanelTooltip"),
+		height		= 492,
 	})
-	
+
 	mod.panel:addContent(10, generateContent, true)
 
 	return mod

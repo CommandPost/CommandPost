@@ -132,7 +132,7 @@ function plugin.init(deps)
 	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
 	if deps.prefs.panel then
-		deps.prefs.panel:addHeading(10, i18n("setupHeading") .. ":" )
+		deps.prefs.panel:addHeading(10, i18n("setupHeading"))
 
 		:addButton(11,
 			{

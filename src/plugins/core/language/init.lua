@@ -182,10 +182,10 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(40, i18n("languageHeading") .. ":")
+	deps.general:addHeading(40, i18n("languageHeading"))
 
-	:addSelect(41, 
-		{ 
+	:addSelect(41,
+		{
 			label		= i18n("commandPostLanguage"),
 			value		= mod.getUserLocale,
 			options		= getLanguageOptions,

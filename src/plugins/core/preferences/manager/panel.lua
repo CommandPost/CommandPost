@@ -57,6 +57,7 @@ function panel.new(params, manager)
 		label		=	params.label,
 		image		=	params.image,
 		tooltip		=	params.tooltip,
+		height		=	params.height,
 		manager		=	manager,
 		_handlers	=	{},
 		_uiItems	=	{},
@@ -210,37 +211,37 @@ end
 
 function panel:addTextbox(priority, params)
 	params.id = params.id or uuid()
-	
+
 	local textbox = ui.textbox(params)
 	if params.label then
 		local label = html (params.label)
 		textbox = html.label (label .. " " .. textbox)
 	end
-	
+
 	local content = html.p { class=getClass(params) } ( textbox )
-	
+
 	if params.onchange then
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
-	
+
 	return self:addContent(priority, content)
 end
 
 function panel:addPassword(priority, params)
 	params.id = params.id or uuid()
-	
+
 	local textbox = ui.password(params)
 	if params.label then
 		local label = html (params.label)
 		textbox = html.label (label .. " " .. textbox)
 	end
-	
+
 	local content = html.p { class=getClass(params) } ( textbox )
-	
+
 	if params.onchange then
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
-	
+
 	return self:addContent(priority, content)
 end
 
