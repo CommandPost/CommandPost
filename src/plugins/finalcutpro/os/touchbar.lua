@@ -20,7 +20,7 @@ local eventtap									= require("hs.eventtap")
 local touchbar 									= require("hs._asm.touchbar")
 
 local dialog									= require("cp.dialog")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local config									= require("cp.config")
 
 --------------------------------------------------------------------------------

@@ -51,7 +51,7 @@ i18n.setLocale(userLocale)
 -- EXTENSIONS (THAT REQUIRE i18N):
 --------------------------------------------------------------------------------
 local dialog                    = require("cp.dialog")
-local fcp                       = require("cp.finalcutpro")
+local fcp                       = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

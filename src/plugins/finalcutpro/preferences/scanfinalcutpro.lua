@@ -18,7 +18,7 @@ local log				= require("hs.logger").new("scanfinalcutpro")
 local application		= require("hs.application")
 
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")
@@ -132,7 +132,7 @@ function plugin.init(deps)
 	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
 	if deps.prefs.panel then
-		deps.prefs.panel:addHeading(10, i18n("setupHeading") .. ":" )
+		deps.prefs.panel:addHeading(10, i18n("setupHeading"))
 
 		:addButton(11,
 			{

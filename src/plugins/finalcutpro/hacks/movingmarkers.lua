@@ -19,7 +19,7 @@ local application				= require("hs.application")
 local fs						= require("hs.fs")
 
 local config					= require("cp.config")
-local fcp						= require("cp.finalcutpro")
+local fcp						= require("cp.apple.finalcutpro")
 local dialog					= require("cp.dialog")
 local plist						= require("cp.plist")
 local tools						= require("cp.tools")

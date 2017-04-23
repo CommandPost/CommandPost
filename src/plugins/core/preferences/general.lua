@@ -19,7 +19,7 @@ local application		= require("hs.application")
 local console			= require("hs.console")
 
 local config			= require("cp.config")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(1, i18n("general") .. ":")
+	deps.general:addHeading(1, i18n("general"))
 
 	:addCheckbox(3,
 		{
@@ -147,7 +147,7 @@ function plugin.init(deps)
 		}
 	)
 
-	:addHeading(50, i18n("privacy") .. ":" )
+	:addHeading(50, i18n("privacy"))
 
 	:addCheckbox(51,
 		{
@@ -168,7 +168,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.menubar:addHeading(20, i18n("appearance") .. ":")
+	deps.menubar:addHeading(20, i18n("appearance"))
 
 	:addCheckbox(21,
 		{
@@ -178,7 +178,7 @@ function plugin.init(deps)
 		}
 	)
 
-	:addHeading(24, i18n("sections") .. ":")
+	:addHeading(24, i18n("sections"))
 
 	return mod
 

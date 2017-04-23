@@ -25,16 +25,23 @@ local inspect									= require("hs.inspect")
 local osascript									= require("hs.osascript")
 local screen									= require("hs.screen")
 local sharing									= require("hs.sharing")
-local inspect									= require("hs.inspect")
+local window									= require("hs.window")
 
-local fcp										= require("cp.finalcutpro")
-local tools										= require("cp.tools")
 local config									= require("cp.config")
+local fcp										= require("cp.apple.finalcutpro")
+local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- COMMON APPLESCRIPT:
 --------------------------------------------------------------------------------
 local function as(appleScript)
+
+	local originalFrontmostWindow = window.frontmostWindow()
+
+	local whichBundleID = hs.processInfo["bundleID"]
+	if originalFrontmostWindow and originalFrontmostWindow:application():bundleID() == fcp.BUNDLE_ID then
+		whichBundleID = fcp.BUNDLE_ID
+	end
 
 	local appleScriptStart = [[
 		set yesButton to "]] .. i18n("yes") .. [["
@@ -48,10 +55,7 @@ local function as(appleScript)
 		set errorMessageStart to "]] .. i18n("commonErrorMessageStart") .. [[\n\n"
 		set errorMessageEnd to "\n\n]] .. i18n("commonErrorMessageEnd") .. [["
 
-		set finalCutProBundleID to "]] .. fcp:getBundleID() .. [["
-
-		set frontmostApplication to (path to frontmost application as text)
-		tell application frontmostApplication
+		tell application id "]] .. whichBundleID .. [["
 			activate
 	]]
 
@@ -60,6 +64,11 @@ local function as(appleScript)
 	]]
 
 	local _, result = osascript.applescript(appleScriptStart .. appleScript .. appleScriptEnd)
+
+	if originalFrontmostWindow and whichBundleID == hs.processInfo["bundleID"] then
+		originalFrontmostWindow:focus()
+	end
+
 	return result
 
 end
@@ -204,7 +213,10 @@ function dialog.displayErrorMessage(whatError)
 	--------------------------------------------------------------------------------
 	-- Send bug report:
 	--------------------------------------------------------------------------------
-	if result then plugins("cp.plugins.cp.feedback").emailBugReport() end
+	if result then
+		local feedback = require("cp.feedback")
+		feedback.showFeedback(false)
+	end
 
 end
 

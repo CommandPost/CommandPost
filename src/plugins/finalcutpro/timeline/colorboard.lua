@@ -16,7 +16,7 @@
 local timer								= require("hs.timer")
 local eventtap							= require("hs.eventtap")
 
-local fcp								= require("cp.finalcutpro")
+local fcp								= require("cp.apple.finalcutpro")
 local tools								= require("cp.tools")
 local dialog							= require("cp.dialog")
 

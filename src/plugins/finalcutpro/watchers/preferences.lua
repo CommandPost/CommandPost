@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("fcpPrefsWatcher")
 
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

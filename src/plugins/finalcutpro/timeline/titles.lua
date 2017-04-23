@@ -24,7 +24,7 @@ local timer				= require("hs.timer")
 local choices			= require("cp.choices")
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
 
 --------------------------------------------------------------------------------

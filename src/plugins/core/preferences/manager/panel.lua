@@ -57,6 +57,7 @@ function panel.new(params, manager)
 		label		=	params.label,
 		image		=	params.image,
 		tooltip		=	params.tooltip,
+		height		=	params.height,
 		manager		=	manager,
 		_handlers	=	{},
 		_uiItems	=	{},
@@ -182,7 +183,7 @@ end
 --- ** `class`		- (optional) the CSS class list to apply to the checkbox.
 function panel:addCheckbox(priority, params)
 
-	params.id = evaluate(params.id) or uuid()
+	params.id = params.id or uuid()
 
 	local checkbox = ui.checkbox(params)
 
@@ -206,6 +207,42 @@ end
 --------------------------------------------------------------------------------
 function panel:addHeading(priority, text, level)
 	return self:addContent(priority, ui.heading({text=text, level=level, class="uiItem"}))
+end
+
+function panel:addTextbox(priority, params)
+	params.id = params.id or uuid()
+
+	local textbox = ui.textbox(params)
+	if params.label then
+		local label = html (params.label)
+		textbox = html.label (label .. " " .. textbox)
+	end
+
+	local content = html.p { class=getClass(params) } ( textbox )
+
+	if params.onchange then
+		self:addHandler("onchange", params.id, params.onchange, { "value" })
+	end
+
+	return self:addContent(priority, content)
+end
+
+function panel:addPassword(priority, params)
+	params.id = params.id or uuid()
+
+	local textbox = ui.password(params)
+	if params.label then
+		local label = html (params.label)
+		textbox = html.label (label .. " " .. textbox)
+	end
+
+	local content = html.p { class=getClass(params) } ( textbox )
+
+	if params.onchange then
+		self:addHandler("onchange", params.id, params.onchange, { "value" })
+	end
+
+	return self:addContent(priority, content)
 end
 
 --------------------------------------------------------------------------------

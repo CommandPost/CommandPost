@@ -19,7 +19,7 @@ local console			= require("hs.console")
 local ipc				= require("hs.ipc")
 
 local config			= require("cp.config")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
 local html				= require("cp.web.html")
@@ -219,7 +219,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.advanced:addHeading(60, i18n("developer") .. ":")
+	deps.advanced:addHeading(60, i18n("developer"))
 
 	:addCheckbox(61,
 		{
@@ -245,7 +245,7 @@ function plugin.init(deps)
 		}
 	)
 
-	:addHeading(70, i18n("commandLineTool") .. ":")
+	:addHeading(70, i18n("commandLineTool"))
 	:addParagraph(71, i18n("commandLineToolDescription"), true)
 
 	:addButton(75,
@@ -253,10 +253,11 @@ function plugin.init(deps)
 			label	= getCommandLineToolTitle(),
 			width	= 150,
 			onclick	= mod.toggleCommandLineTool,
+			id		= "commandLineTool",
 		}
 	)
 
-	:addHeading(80, i18n("advanced") .. ":")
+	:addHeading(80, i18n("advanced"))
 
 	:addButton(85,
 		{

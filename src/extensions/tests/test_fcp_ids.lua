@@ -1,8 +1,8 @@
 local test		= require("cp.test")
 local log		= require("hs.logger").new("testfcpids")
 
-local fcp		= require("cp.finalcutpro")
-local ids		= require("cp.finalcutpro.ids")
+local fcp		= require("cp.apple.finalcutpro")
+local ids		= require("cp.apple.finalcutpro.ids")
 local just		= require("cp.just")
 
 local function reset()

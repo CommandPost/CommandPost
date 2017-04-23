@@ -40,6 +40,7 @@ function plugin.init(deps)
 		label		= i18n("menubarPanelLabel"),
 		image		= image.imageFromPath("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns"),
 		tooltip		= i18n("menubarPanelTooltip"),
+		height		= 306,
 	})
 end
 

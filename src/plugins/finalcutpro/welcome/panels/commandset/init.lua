@@ -18,7 +18,7 @@ local log										= require("hs.logger").new("commandset")
 local timer										= require("hs.timer")
 
 local config									= require("cp.config")
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------

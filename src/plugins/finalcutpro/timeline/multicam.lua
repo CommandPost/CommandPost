@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("multicam")
 
-local fcp								= require("cp.finalcutpro")
+local fcp								= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --

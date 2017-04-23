@@ -73,7 +73,7 @@ return {
 			--------------------------------------------------------------------------------
 			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
 			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
-			commonErrorMessageEnd				=			"Would you like to email this bug to Chris so that he can try and come up with a fix?",
+			commonErrorMessageEnd				=			"Would you like to submit a bug report?",
 			sendBugReport						=			"Send Bug Report",
 
 			--------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ return {
 			batchExportReplaceNo				=			"Exports with duplicate filenames will be incremented.",
 			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
 			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
-
+			batchExportFinalCutProClosed		=			"Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
 			activeCommandSetError				= 			"Something went wrong whilst attempting to read the Active Command Set.",
 			failedToWriteToPreferences			=			"Failed to write to the Final Cut Pro Preferences file.",
 			failedToReadFCPPreferences			=			"Failed to read Final Cut Pro Preferences",
@@ -468,9 +468,11 @@ return {
 			--------------------------------------------------------------------------------
 			-- Batch Export Options:
 			--------------------------------------------------------------------------------
+			performBatchExport					=			"Perform Batch Export",
 			setDestinationPreset	 			=			"Set Destination Preset",
 			setDestinationFolder				=			"Set Destination Folder",
 			replaceExistingFiles				=			"Replace Existing Files",
+			sendToCompressor					=			"Send to Compressor",
 
 			--------------------------------------------------------------------------------
 			-- Menubar Options:

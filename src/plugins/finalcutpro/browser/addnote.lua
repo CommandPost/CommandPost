@@ -24,8 +24,8 @@ local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
 
 local config							= require("cp.config")
-local fcp								= require("cp.finalcutpro")
-local axutils 							= require("cp.finalcutpro.axutils")
+local fcp								= require("cp.apple.finalcutpro")
+local axutils 							= require("cp.apple.finalcutpro.axutils")
 
 --------------------------------------------------------------------------------
 --

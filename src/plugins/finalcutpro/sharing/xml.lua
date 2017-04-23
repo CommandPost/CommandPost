@@ -21,7 +21,7 @@ local image										= require("hs.image")
 local notify									= require("hs.notify")
 local pathwatcher								= require("hs.pathwatcher")
 
-local fcp										= require("cp.finalcutpro")
+local fcp										= require("cp.apple.finalcutpro")
 local config									= require("cp.config")
 
 local dialog									= require("cp.dialog")

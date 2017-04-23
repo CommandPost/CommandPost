@@ -22,7 +22,7 @@ local timer				= require("hs.timer")
 local inspect			= require("hs.inspect")
 
 local choices			= require("cp.choices")
-local fcp				= require("cp.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")

@@ -42,14 +42,16 @@ local WEBVIEW_LABEL								= "preferences"
 --------------------------------------------------------------------------------
 local mod = {}
 
+mod._panels				= {}
+mod._handlers			= {}
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
-mod.defaultWidth 		= 450
-mod.defaultHeight 		= 420
+mod.defaultWindowStyle	= {"titled", "closable", "nonactivating", "resizable"}
+mod.defaultWidth 		= 524
+mod.defaultHeight 		= 338
 mod.defaultTitle 		= i18n("preferences")
-mod._panels				= {}
-mod._handlers			= {}
 
 --------------------------------------------------------------------------------
 -- GET LABEL:
@@ -149,17 +151,12 @@ function mod.init()
 	local prefs = {}
 	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
 	mod.webview = webview.new(defaultRect, prefs, mod.controller)
-		:windowStyle({"titled", "closable", "nonactivating"})
+		:windowStyle(mod.defaultWindowStyle)
 		:shadow(true)
 		:allowNewWindows(false)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:toolbar(mod.toolbar)
-
-	--------------------------------------------------------------------------------
-	-- Select Panel:
-	--------------------------------------------------------------------------------
-	mod.selectPanel(highestPriorityID())
 
 	return mod
 end
@@ -189,9 +186,14 @@ function mod.show()
 			--log.df("Attempting to bring Preferences Panel to focus.")
 			mod.webview:hswindow():raise():focus()
 		end)
-		return true
 	end
 
+	--------------------------------------------------------------------------------
+	-- Select Panel:
+	--------------------------------------------------------------------------------
+	mod.selectPanel(highestPriorityID())
+
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -208,11 +210,24 @@ end
 --------------------------------------------------------------------------------
 function mod.selectPanel(id)
 
-	-- log.df("Selecting Panel with ID: %s", id)
+	--[[
+	log.df("Selecting Panel with ID: %s", id)
+	if mod.webview and mod.webview:hswindow() then
+		log.df("Size: %s", hs.inspect(mod.webview:hswindow():size()))
+	end
+	--]]
 
 	local js = ""
 
 	for i, v in ipairs(mod._panels) do
+
+		--------------------------------------------------------------------------------
+		-- Resize Panel:
+		--------------------------------------------------------------------------------
+		if v.id == id and v.height then
+			mod.webview:hswindow():setSize({w = mod.defaultWidth, h = v.height })
+		end
+
 		local style = v.id == id and "block" or "none"
 		js = js .. [[
 			document.getElementById(']] .. v.id .. [[').style.display = ']] .. style .. [[';

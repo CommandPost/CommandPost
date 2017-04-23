@@ -18,7 +18,7 @@ local log			= require("hs.logger").new("shortcuts")
 
 local fs			= require("hs.fs")
 
-local fcp			= require("cp.finalcutpro")
+local fcp			= require("cp.apple.finalcutpro")
 local dialog		= require("cp.dialog")
 local config		= require("cp.config")
 local tools			= require("cp.tools")
@@ -492,7 +492,7 @@ function plugin.init(deps, env)
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
-		deps.prefs.panel:addHeading(50, i18n("keyboardShortcuts") .. ":")
+		deps.prefs.panel:addHeading(50, i18n("keyboardShortcuts"))
 
 		:addCheckbox(51,
 			{

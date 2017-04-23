@@ -20,7 +20,7 @@ local eventtap					= require("hs.eventtap")
 local mouse						= require("hs.mouse")
 
 local dialog					= require("cp.dialog")
-local fcp						= require("cp.finalcutpro")
+local fcp						= require("cp.apple.finalcutpro")
 local config					= require("cp.config")
 
 --------------------------------------------------------------------------------

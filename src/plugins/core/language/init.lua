@@ -19,7 +19,7 @@ local fs			= require("hs.fs")
 local inspect		= require("hs.inspect")
 local timer			= require("hs.timer")
 
-local fcp 			= require("cp.finalcutpro")
+local fcp 			= require("cp.apple.finalcutpro")
 local dialog		= require("cp.dialog")
 local tools			= require("cp.tools")
 local config		= require("cp.config")
@@ -182,10 +182,10 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.general:addHeading(40, i18n("languageHeading") .. ":")
+	deps.general:addHeading(40, i18n("languageHeading"))
 
-	:addSelect(41, 
-		{ 
+	:addSelect(41,
+		{
 			label		= i18n("commandPostLanguage"),
 			value		= mod.getUserLocale,
 			options		= getLanguageOptions,
