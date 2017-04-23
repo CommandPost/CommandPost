@@ -546,6 +546,7 @@ return {
 			pluginName							=			"Plugin Name",
 			pluginStatus						=			"Status",
 			pluginAction						=			"Action",
+			pluginRequired						=			"Required",
 
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",

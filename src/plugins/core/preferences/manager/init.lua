@@ -216,6 +216,10 @@ function mod.selectPanel(id)
 		log.df("Size: %s", hs.inspect(mod.webview:hswindow():size()))
 	end
 	--]]
+	
+	if not mod.webview then
+		return
+	end
 
 	local js = ""
 
@@ -224,7 +228,7 @@ function mod.selectPanel(id)
 		--------------------------------------------------------------------------------
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
-		if v.id == id and v.height then
+		if v.id == id and v.height and mod.webview:hswindow() then
 			mod.webview:hswindow():setSize({w = mod.defaultWidth, h = v.height })
 		end
 

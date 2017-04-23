@@ -158,8 +158,8 @@
 		<tr>
 			<td class="rowCategory">{{ plugin.currentCategory }}</td>
 			<td class="rowName">{* plugin.shortName *}</td>
-			<td class="rowStatus">{{ i18n("plugin_status_" .. plugin.status) }}</td>
-			<td class="rowOption">{% if plugin.action then %}<a id="{{ plugin.id }}" data-action="{{ plugin.action }}" href="#">{{ plugin.actionLabel }}</a>{% else %}&nbsp;{% end %}</td>
+			<td class="rowStatus">{* plugin.status *}</td>
+			<td class="rowOption">{% if plugin.action then %}<a id="{{ plugin.id }}" data-action="{{ plugin.action }}" href="#">{{ plugin.actionLabel }}</a>{% else %}<i>{{ i18n("pluginRequired") }}</i>{% end %}</td>
 		</tr>
 	{% end %}
 	</tbody>

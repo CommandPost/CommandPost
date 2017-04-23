@@ -366,6 +366,7 @@ end
 local plugin = {
 	id				= "core.welcome.manager",
 	group			= "core",
+	required		= true,
 	dependencies	= {
 		["core.menu.manager"]						= "menumanager",
 		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",

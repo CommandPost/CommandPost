@@ -22,7 +22,6 @@ local dialog									= require("cp.dialog")
 local config									= require("cp.config")
 local tools										= require("cp.tools")
 local plugins									= require("cp.plugins")
-local html										= require("cp.web.html")
 
 --------------------------------------------------------------------------------
 --
@@ -101,27 +100,28 @@ end
 --------------------------------------------------------------------------------
 -- PLUGIN STATUS:
 --------------------------------------------------------------------------------
-local function pluginStatus(id)
-	local status = plugins.getPluginStatus(id)
+local function pluginStatus(plugin)
+	local status = plugin:getStatus()
 	return string.format("<span class='status-%s'>%s</span>", status, i18n("plugin_status_" .. status))
 end
 
 --------------------------------------------------------------------------------
 -- PLUGIN CATEGORY:
 --------------------------------------------------------------------------------
-local function pluginCategory(id)
-	local group = plugins.getPluginGroup(id)
+local function pluginCategory(plugin)
+	local group = plugin:getGroup()
 	return i18n("plugin_group_" .. group, {default = group})
 end
 
 --------------------------------------------------------------------------------
 -- PLUGIN SHORT NAME:
 --------------------------------------------------------------------------------
-local function pluginShortName(path)
+local function pluginShortName(plugin)
 
-	local result = i18n(string.gsub(path, "%.", "_") .. "_label") or path
+	local id = plugin.id
+	local result = i18n(string.gsub(id, "%.", "_") .. "_label") or id
 	if result ~= path then
-		result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', result, path)
+		result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', result, id)
 	end
 	return result
 end
@@ -131,36 +131,36 @@ end
 --------------------------------------------------------------------------------
 local function generateContent()
 
-	local listOfPlugins = plugins.getPluginIds()
+	local listOfPlugins = plugins.getPlugins()
 
-	table.sort(listOfPlugins, function(a, b) return a < b end)
+	table.sort(listOfPlugins, function(a, b) return a.id < b.id end)
 
 	local pluginRows = ""
 	local pluginInfo = {}
 
 	local lastCategory = ""
-
-	for _,id in ipairs(listOfPlugins) do
+	
+	for _,plugin in ipairs(listOfPlugins) do
 
 		local info = {}
 
-		local currentCategory = pluginCategory(id)
+		local currentCategory = pluginCategory(plugin)
 		local cachedCurrentCategory = currentCategory
 		if currentCategory == lastCategory then currentCategory = "" end
 
-		info.id = id
+		info.id = plugin.id
 		info.currentCategory = currentCategory
-		info.status = plugins.getPluginStatus(id)
-		info.shortName = pluginShortName(id)
-
-
+		info.status = pluginStatus(plugin)
+		info.shortName = pluginShortName(plugin)
+		
 		local action = nil
-
-		if info.status == plugins.status.error then
+		
+		local status = plugin:getStatus()
+		if status == plugins.status.error then
 			action = "errorLog"
-		elseif info.status == plugins.status.active then
+		elseif status == plugins.status.active and not plugin.required then
 			action = "disable"
-		elseif info.status == plugins.status.disabled then
+		elseif status == plugins.status.disabled then
 			action = "enable"
 		end
 		info.action = action
