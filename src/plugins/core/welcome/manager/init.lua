@@ -1,12 +1,22 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                        W E L C O M E   S C R E E N                         --
+--                      W E L C O M E   M A N A G E R                         --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --- === plugins.core.welcome.manager ===
 ---
 --- Manager for the CommandPost Welcome Screen.
+
+
+--- === plugins.core.welcome.manager.enableInterfaceCallback ===
+---
+--- Callbacks for when the Interface is enabled.
+
+
+--- === plugins.core.welcome.manager.disableInterfaceCallback ===
+---
+--- Callbacks for when the Interface is disabled.
 
 --------------------------------------------------------------------------------
 --
@@ -21,7 +31,6 @@ local webview									= require("hs.webview")
 
 local dialog									= require("cp.dialog")
 local config									= require("cp.config")
-local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -47,6 +56,192 @@ mod.defaultTitle 							= i18n("welcomeTitle")
 mod._panels									= {}
 
 --------------------------------------------------------------------------------
+--
+-- ENABLE INTERFACE CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+--- === plugins.core.welcome.manager.enableInterfaceCallback ===
+---
+--- Enable Interface Callback Module.
+
+local enableInterfaceCallback = {}
+enableInterfaceCallback._items = {}
+
+mod.enableInterfaceCallback = enableInterfaceCallback
+
+--- plugins.core.welcome.manager.enableInterfaceCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new Enable Interface Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function enableInterfaceCallback:new(id, callbackFn)
+
+	if enableInterfaceCallback._items[id] ~= nil then
+		error("Duplicate Shutdown Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	enableInterfaceCallback._items[id] = o
+	return o
+
+end
+
+--- plugins.core.welcome.manager.enableInterfaceCallback:get(id) -> table
+--- Method
+--- Creates a new Enable Interface Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function enableInterfaceCallback:get(id)
+	return self._items[id]
+end
+
+--- plugins.core.welcome.manager.enableInterfaceCallback:getAll() -> table
+--- Method
+--- Returns all of the created Enable Interface Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function enableInterfaceCallback:getAll()
+	return self._items
+end
+
+--- plugins.core.welcome.manager.enableInterfaceCallback:id() -> string
+--- Method
+--- Returns the ID of the current Enable Interface Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current Enable Interface Callback as a `string`
+function enableInterfaceCallback:id()
+	return self._id
+end
+
+--- plugins.core.welcome.manager.enableInterfaceCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Enable Interface Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function enableInterfaceCallback:callbackFn()
+	return self._callbackFn
+end
+
+--------------------------------------------------------------------------------
+--
+-- DISABLE INTERFACE CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+--- === plugins.core.welcome.manager.disableInterfaceCallback ===
+---
+--- Disable Interface Callback Module.
+
+local disableInterfaceCallback = {}
+disableInterfaceCallback._items = {}
+
+mod.disableInterfaceCallback = disableInterfaceCallback
+
+--- plugins.core.welcome.manager.disableInterfaceCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new disable Interface Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function disableInterfaceCallback:new(id, callbackFn)
+
+	if disableInterfaceCallback._items[id] ~= nil then
+		error("Duplicate Shutdown Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	disableInterfaceCallback._items[id] = o
+	return o
+
+end
+
+--- plugins.core.welcome.manager.disableInterfaceCallback:get(id) -> table
+--- Method
+--- Creates a new disable Interface Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function disableInterfaceCallback:get(id)
+	return self._items[id]
+end
+
+--- plugins.core.welcome.manager.disableInterfaceCallback:getAll() -> table
+--- Method
+--- Returns all of the created disable Interface Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function disableInterfaceCallback:getAll()
+	return self._items
+end
+
+--- plugins.core.welcome.manager.disableInterfaceCallback:id() -> string
+--- Method
+--- Returns the ID of the current disable Interface Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current disable Interface Callback as a `string`
+function disableInterfaceCallback:id()
+	return self._id
+end
+
+--- plugins.core.welcome.manager.disableInterfaceCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current disable Interface Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Shutdown Callback
+function disableInterfaceCallback:callbackFn()
+	return self._callbackFn
+end
+
+--------------------------------------------------------------------------------
 -- SET PANEL TEMPLATE PATH:
 --------------------------------------------------------------------------------
 function mod.setPanelRenderer(renderer)
@@ -64,18 +259,22 @@ end
 -- HIGHEST PRIORITY ID:
 --------------------------------------------------------------------------------
 local function highestPriorityID()
-
 	local sortedPanels = mod._panels
 	table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
-	return mod._panels[1]["id"]
 
+	for i, v in ipairs(sortedPanels) do
+		if v["enabledFn"] and v["enabledFn"]() == true then
+			return v["id"]
+		end
+	end
+
+	return nil
 end
 
 --------------------------------------------------------------------------------
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML()
-
 	local env = {}
 
 	env.debugMode = config.get("debugMode", false)
@@ -96,24 +295,15 @@ end
 -- SETUP THE USER INTERFACE ONCE WELCOME SCREEN IS COMPLETE:
 --------------------------------------------------------------------------------
 function mod.setupUserInterface(showNotification)
-
 	--------------------------------------------------------------------------------
-	-- Initialise Menu Manager:
+	-- Trigger All Enable Interface Callbacks:
 	--------------------------------------------------------------------------------
-	mod.menumanager.init()
-
-	--------------------------------------------------------------------------------
-	-- Initialise Shortcuts:
-	--------------------------------------------------------------------------------
-	mod.shortcuts.init()
-
-	--------------------------------------------------------------------------------
-	-- Enable Commands:
-	--------------------------------------------------------------------------------
-	local allGroups = commands.groupIds()
-	for i, v in ipairs(allGroups) do
-    	commands.group(v):enable()
-    end
+	for i, v in pairs(enableInterfaceCallback:getAll()) do
+		local fn = v:callbackFn()
+		if fn and type(fn) == "function" then
+			fn(value)
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- Notifications:
@@ -122,21 +312,35 @@ function mod.setupUserInterface(showNotification)
 		log.df("Successfully loaded.")
 		dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
 	end
-
 end
 
 --------------------------------------------------------------------------------
 -- DISABLE THE USER INTERFACE:
 --------------------------------------------------------------------------------
 function mod.disableUserInterface()
+	--------------------------------------------------------------------------------
+	-- Trigger All Disable Interface Callbacks:
+	--------------------------------------------------------------------------------
+	for i, v in pairs(disableInterfaceCallback:getAll()) do
+		local fn = v:callbackFn()
+		if fn and type(fn) == "function" then
+			fn(value)
+		end
+	end
+end
 
-	mod.menumanager.disable()
-
-	local allGroups = commands.groupIds()
-	for i, v in ipairs(allGroups) do
-    	commands.group(v):disable()
-    end
-
+--------------------------------------------------------------------------------
+-- ARE ANY PANELS ENABLED?
+--------------------------------------------------------------------------------
+local function anyPanelsEnabled()
+	for i, v in ipairs(mod._panels) do
+		if v["enabledFn"] and type(v["enabledFn"]) == "function" then
+			if v["enabledFn"]() then
+				return true
+			end
+		end
+	end
+	return false
 end
 
 --------------------------------------------------------------------------------
@@ -144,12 +348,12 @@ end
 --------------------------------------------------------------------------------
 function mod.init()
 	--------------------------------------------------------------------------------
-	-- Can we just skip the welcome screen?
+	-- Are there any panels enabled?
 	--------------------------------------------------------------------------------
-	if hs.accessibilityState() and config.get("welcomeComplete", false) then
-		mod.setupUserInterface(true)
-	else
+	if anyPanelsEnabled() then
 		mod.new()
+	else
+		mod.setupUserInterface(true)
 	end
 end
 
@@ -157,7 +361,6 @@ end
 -- CREATE THE WELCOME SCREEN:
 --------------------------------------------------------------------------------
 function mod.new()
-
 	--------------------------------------------------------------------------------
 	-- Centre on Screen:
 	--------------------------------------------------------------------------------
@@ -191,19 +394,17 @@ function mod.new()
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:html(generateHTML())
-		:toolbar(mod.toolbar)
 
 	--------------------------------------------------------------------------------
 	-- Select Panel:
 	--------------------------------------------------------------------------------
-	mod.selectPanel(highestPriorityID())
+	mod.nextPanel()
 
 	--------------------------------------------------------------------------------
 	-- Show Welcome Screen:
 	--------------------------------------------------------------------------------
 	mod.webview:show()
 	timer.doAfter(0.1, function() mod.webview:hswindow():focus() end)
-
 end
 
 --------------------------------------------------------------------------------
@@ -227,7 +428,6 @@ end
 -- NEXT PRIORITY ID:
 --------------------------------------------------------------------------------
 local function nextPriorityID(currentPanelPriority)
-
 	local sortedPanels = mod._panels
 	table.sort(sortedPanels, function(a, b) return a.priority < b.priority end)
 
@@ -242,10 +442,7 @@ local function nextPriorityID(currentPanelPriority)
 			end
 		end
 	end
-
-	log.ef("There is no next Welcome Panel. This shouldn't ever happen.")
 	return nil
-
 end
 
 --------------------------------------------------------------------------------
@@ -264,7 +461,6 @@ end
 -- IS PANEL ENABLED:
 --------------------------------------------------------------------------------
 function mod.isPanelEnabled(id)
-
 	for i, v in ipairs(mod._panels) do
 		if v["id"] == id then
 			if v["enabledFn"] and type(v["enabledFn"]) == "function" then
@@ -274,13 +470,13 @@ function mod.isPanelEnabled(id)
 		end
 	end
 	return true
-
 end
 
 --------------------------------------------------------------------------------
 -- NEXT PANEL:
 --------------------------------------------------------------------------------
 function mod.nextPanel(currentPanelPriority)
+	if not currentPanelPriority then currentPanelPriority = 0 end
 
 	currentPanelPriority = currentPanelPriority + 0.0000000000001
 
@@ -289,10 +485,10 @@ function mod.nextPanel(currentPanelPriority)
 	if nextPanelID then
 		mod.selectPanel(nextPanelID)
 	else
-		log.ef("There is no next Welcome Panel. This shouldn't ever happen.")
-		return nil
+		-- There's no more panels left!
+		mod.delete()
+		mod.setupUserInterface(false)
 	end
-
 end
 
 --------------------------------------------------------------------------------
@@ -326,7 +522,9 @@ function mod.selectPanel(id)
 		end
 	end
 
-	mod.webview:evaluateJavaScript(javascriptToInject)
+	if mod.webview then
+		mod.webview:evaluateJavaScript(javascriptToInject)
+	end
 
 end
 
@@ -334,9 +532,7 @@ end
 -- ADD PANEL:
 --------------------------------------------------------------------------------
 function mod.addPanel(id, priority, contentFn, callbackFn, enabledFn)
-
 	--log.df("Adding Welcome Panel with ID: %s", id)
-
 	mod._panels[#mod._panels + 1] = {
 		id = id,
 		priority = priority,
@@ -344,18 +540,6 @@ function mod.addPanel(id, priority, contentFn, callbackFn, enabledFn)
 		callbackFn = callbackFn,
 		enabledFn = enabledFn,
 	}
-
-end
-
---------------------------------------------------------------------------------
--- ACCESSIBILITY STATE CALLBACK:
---------------------------------------------------------------------------------
-function hs.accessibilityStateCallback()
-	log.df("Accessibility State Changed.")
-	if not hs.accessibilityState() and config.get("welcomeComplete", false) and mod.webview == nil then
-		mod.disableUserInterface()
-		mod.new()
-	end
 end
 
 --------------------------------------------------------------------------------
@@ -368,8 +552,6 @@ local plugin = {
 	group			= "core",
 	required		= true,
 	dependencies	= {
-		["core.menu.manager"]						= "menumanager",
-		["finalcutpro.hacks.shortcuts"] 			= "shortcuts",
 	}
 }
 
@@ -377,6 +559,18 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+	config.accessibilityStateCallback:new("welcome", function()
+		--log.df("Accessibility State Changed.")
+		if mod.webview == nil then
+			if anyPanelsEnabled() then
+				mod.disableUserInterface()
+				mod.new()
+			else
+				mod.setupUserInterface(true)
+			end
+		end
+	end)
+
 	mod.setPanelRenderer(env:compileTemplate("html/template.html"))
 	return mod
 end
@@ -385,12 +579,7 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
-
-	mod.menumanager = deps.menumanager
-	mod.shortcuts = deps.shortcuts
-
 	return mod.init()
-
 end
 
 return plugin

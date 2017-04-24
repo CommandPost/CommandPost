@@ -18,6 +18,7 @@ local log										= require("hs.logger").new("scanfinalcutpro")
 local timer										= require("hs.timer")
 
 local config									= require("cp.config")
+local fcp										= require("cp.apple.finalcutpro")
 local generate									= require("cp.web.generate")
 
 --------------------------------------------------------------------------------
@@ -72,7 +73,7 @@ end
 -- PANEL ENABLED:
 --------------------------------------------------------------------------------
 local function panelEnabled()
-	log.df("Scan Final Cut Pro Panel Enabled: %s", not mod.scanfinalcutpro.isScanned())
+	if not fcp:isInstalled() then return false end
 	return not mod.scanfinalcutpro.isScanned()
 end
 

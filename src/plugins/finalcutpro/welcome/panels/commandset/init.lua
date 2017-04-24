@@ -83,6 +83,7 @@ end
 -- PANEL ENABLED:
 --------------------------------------------------------------------------------
 local function panelEnabled()
+	if not fcp:isInstalled() then return false end
 	return not config.get("enableHacksShortcutsInFinalCutPro", false)
 end
 

@@ -1,5 +1,5 @@
-			<img width="150px" height="150px" src="{{ generate.imageBase64(iconPath) }}" />
-<h2 class="content-tagline">{{ i18n("finalCutProMissingHeading") }}</h2>
+			<img width="100px" height="100px" src="{{ generate.imageBase64(iconPath) }}" />
+<h2 class="content-tagline">{{ i18n("finalCutProMissingHeading", {version=version}) }}</h2>
 <p>{* i18n("finalCutProMissingText") *}
 	<br />
 	<br />
@@ -10,4 +10,7 @@
 		padding-left: 10px;
 	}
 </style>
-<p>{* generate.button({title = i18n("quit")}, "fcpxQuit") *}</p>
+<p>
+	{* generate.button({title = i18n("continue")}, "fcpxMissingContinue") *}
+	{* generate.button({title = i18n("quit")}, "fcpxQuit") *}
+</p>

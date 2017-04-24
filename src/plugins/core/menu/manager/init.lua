@@ -195,12 +195,31 @@ local plugin = {
 	id			= "core.menu.manager",
 	group		= "core",
 	required	= true,
+	dependencies	= {
+		["core.welcome.manager"] 			= "welcome",
+	}
+
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init()
+function plugin.init(deps, env)
+
+	local welcome = deps.welcome
+
+	welcome.enableInterfaceCallback:new("menumanager", function()
+		if manager.menubar then
+			manager.enable()
+		else
+			manager.init()
+		end
+	end)
+
+	welcome.disableInterfaceCallback:new("menumanager", function()
+		manager.disable()
+	end)
+
 	return manager
 end
 

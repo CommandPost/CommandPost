@@ -67,19 +67,27 @@ local function generateContent()
 end
 
 --------------------------------------------------------------------------------
+-- PANEL ENABLED:
+--------------------------------------------------------------------------------
+local function panelEnabled()
+	return not config.get("welcomeComplete", false)
+end
+
+--------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
 	mod.webviewLabel = deps.manager.getLabel()
 
 	mod._id 			= "intro"
-	mod._priority		= 20
+	mod._priority		= 1
 	mod._contentFn		= generateContent
 	mod._callbackFn 	= controllerCallback
+	mod._enabledFn		= panelEnabled
 
 	mod.manager = deps.manager
 
-	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
+	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")
 	mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
