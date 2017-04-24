@@ -45,7 +45,11 @@ local function controllerCallback(message)
 		accessibilityStateCheck = timer.doEvery(0.1, function()
 			if hs.accessibilityState() then
 				mod.manager.nextPanel(mod._priority)
-				timer.doAfter(0.1, function() mod.manager.webview:hswindow():focus() end)
+				timer.doAfter(0.1, function()
+					if mod.manager and mod.manager.webview and mod.manager.webview:hswindow() then
+						mod.manager.webview:hswindow():focus()
+					end
+				end)
 				accessibilityStateCheck:stop()
 			end
 		end)

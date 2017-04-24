@@ -592,4 +592,98 @@ function dockIconClickCallback:callbackFn()
 	return self._callbackFn
 end
 
+--------------------------------------------------------------------------------
+--
+-- ACCESSIBILITY STATE CALLBACK:
+--
+--------------------------------------------------------------------------------
+
+--- === cp.config.accessibilityStateCallback ===
+---
+--- Callback which triggers when the Accessibility State is changed
+
+local accessibilityStateCallback = {}
+accessibilityStateCallback._items = {}
+
+mod.accessibilityStateCallback = accessibilityStateCallback
+
+--- cp.config.accessibilityStateCallback:new(id, callbackFn) -> table
+--- Method
+--- Creates a new Accessibility State Callback.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this callback.
+---
+--- Returns:
+---  * table that has been created
+function accessibilityStateCallback:new(id, callbackFn)
+
+	if accessibilityStateCallback._items[id] ~= nil then
+		error("Duplicate Dock Icon Click Callback: " .. id)
+	end
+	o = {
+		_id = id,
+		_callbackFn = callbackFn,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	accessibilityStateCallback._items[id] = o
+	return o
+
+end
+
+--- cp.config.accessibilityStateCallback:get(id) -> table
+--- Method
+--- Gets a Accessibility State Callback
+---
+--- Parameters:
+--- * `id`		- The unique ID for the callback you want to return.
+---
+--- Returns:
+---  * table containing the callback
+function accessibilityStateCallback:get(id)
+	return self._items[id]
+end
+
+--- cp.config.accessibilityStateCallback:getAll() -> table
+--- Method
+--- Returns all of the created Accessibility State Callbacks
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function accessibilityStateCallback:getAll()
+	return self._items
+end
+
+--- cp.config.accessibilityStateCallback:id() -> string
+--- Method
+--- Returns the ID of the current Accessibility State Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the current Accessibility State Callback as a `string`
+function accessibilityStateCallback:id()
+	return self._id
+end
+
+--- cp.config.accessibilityStateCallback:callbackFn() -> function
+--- Method
+--- Returns the callbackFn of the current Accessibility State Callback
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The callbackFn of the current Accessibility State Callback
+function accessibilityStateCallback:callbackFn()
+	return self._callbackFn
+end
+
+
 return mod
