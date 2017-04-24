@@ -1217,12 +1217,17 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
 		local menuBar = self:menuBar()
-		local fileMenu = menuBar:findMenuUI("File")
-		if fileMenu then
-			fileValue = fileMenu:attributeValue("AXTitle") or nil
-			self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
-			if self._currentLanguage then
-				return self._currentLanguage
+		local menuMap = menuBar:getMainMenu()
+		local menuUI = menuBar:UI()
+		if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
+			local fileMap = menuMap[2]
+			local fileUI = menuUI[2]
+			local title = fileUI:attributeValue("AXTitle") or nil
+			for _,lang in ipairs(self:getSupportedLanguages()) do
+				if fileMap[lang] == title then
+					self._currentLanguage = lang
+					return lang
+				end
 			end
 		end
 	end
