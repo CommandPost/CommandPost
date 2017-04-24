@@ -297,15 +297,31 @@ function MenuBar:_processMenuItems(menu)
 	end
 end
 
-function MenuBar:_loadMainMenu(language)
+function MenuBar:_loadMainMenu(languages)
+	languages = languages or self:app():getSupportedLanguages()
+	local menu = {}
+	for _,language in ipairs(languages) do
+		self:_loadMainMenuLanguage(language, menu)
+	end
+	return menu
+end
+
+function MenuBar:_loadMainMenuLanguage(language, menu)
 	local menuPlist = plist.fileToTable(string.format("%s/Contents/Resources/%s.lproj/MainMenu.nib", self:app():getPath(), language))
 	if menuPlist then
 		local menuArchive = archiver.unarchive(menuPlist)
-		local mainMenu = menuArchive["IB.objectdata"].NSObjectsKeys[2]
-		if mainMenu.NSTitle == "MainMenu" then
-			return self:_processMenu(mainMenu)
+		-- Find the 'MainMenu' item
+		local mainMenu = nil
+		for _,item in ipairs(menuArchive["IB.objectdata"].NSObjectsKeys) do
+			if item.NSTitle == "MainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
+				mainMenu = item
+				break
+			end
+		end
+		if mainMenu then
+			return self:_processMenu(mainMenu, language, menu)
 		else
-			log.ef("Unexpected result for the MainMenu.nib: %s", hs.inspect(mainMenu))
+			log.ef("Unable to locate MainMenu in '%s.lproj/MainMenu.nib': %s", langauge, hs.inspect(mainMenu))
 			return nil
 		end
 	else
@@ -314,24 +330,25 @@ function MenuBar:_loadMainMenu(language)
 	end
 end
 
-function MenuBar:_processMenu(menu)
-	if not menu then
+function MenuBar:_processMenu(menuData, language, menu)
+	if not menuData then
 		return nil
 	end
-	
-	local result = {}
-	if menu.NSMenuItems then
-		for i,item in ipairs(menu.NSMenuItems) do
-			result[i] = {
-				title		= item.NSTitle,
-				separator	= item.NSIsSeparator,
-			}
-			if item.NSSubmenu then
-				result[i].submenu = MenuBar:_processMenu(item.NSSubmenu)
+	-- process the menu items
+	menu = menu or {}
+	if menuData.NSMenuItems then
+		for i,itemData in ipairs(menuData.NSMenuItems) do
+			local item = menu[i] or {}
+			item[language]	= itemData.NSTitle
+			item.separator	= itemData.NSIsSeparator
+			-- Check if there is a submenu
+			if itemData.NSSubmenu then
+				item.submenu = MenuBar:_processMenu(itemData.NSSubmenu, language, item.submenu)
 			end
+			menu[i] = item
 		end
 	end
-	return result
+	return menu
 end
 
 return MenuBar
