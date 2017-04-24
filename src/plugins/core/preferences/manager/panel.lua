@@ -15,9 +15,10 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefPanel")
 
+local uuid										= require("hs.host").uuid
+
 local html										= require("cp.web.html")
 local ui										= require("cp.web.ui")
-local uuid										= require("cp.uuid")
 
 --------------------------------------------------------------------------------
 --
