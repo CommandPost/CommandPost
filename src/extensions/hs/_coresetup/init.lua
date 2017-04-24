@@ -60,8 +60,8 @@ hs.accessibilityStateCallback = nil
 
   function hs.showError(err)
 
-	local config = require("cp.config")
-	local debugMode = config.get("debugMode")
+	local settings = require("hs.settings")
+	local debugMode = settings.get("cp.debugMode")
 
 	if debugMode then
 
@@ -75,14 +75,14 @@ hs.accessibilityStateCallback = nil
 	else
 		print("*** ERROR: "..err)
 
-		if not i18n then
-			i18n = require("i18n")
-			i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/" .. "/cp/resources/languages/en.lua")
-		end
+		local i18n = require("i18n")
+		i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/cp/resources/languages/en.lua")
+
+		local safeErr = string.gsub([["]] .. tostring(err) .. [["]], [[\"]], "'")
 
 		local osascript	= require("hs.osascript")
 		local appleScript = [[
-			set whatError to "]] .. tostring(err) .. [["
+			set whatError to "]] .. safeErr .. [["
 			set iconPath to ("]] .. hs.processInfo["resourcePath"] .. "/extensions/cp/resources/assets/CommandPost.icns" .. [[" as POSIX file)
 
 			display dialog "]] .. i18n("unexpectedError") .. [[" buttons {"]] .. i18n("sendBugReport") .. [[", "]] .. i18n("quit") .. " " .. i18n("scriptName") .. [["} with icon iconPath

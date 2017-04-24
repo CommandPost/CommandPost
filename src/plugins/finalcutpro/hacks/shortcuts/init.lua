@@ -18,9 +18,10 @@ local log			= require("hs.logger").new("shortcuts")
 
 local fs			= require("hs.fs")
 
-local fcp			= require("cp.apple.finalcutpro")
-local dialog		= require("cp.dialog")
+local commands		= require("cp.commands")
 local config		= require("cp.config")
+local dialog		= require("cp.dialog")
+local fcp			= require("cp.apple.finalcutpro")
 local tools			= require("cp.tools")
 
 local v				= require("semver")
@@ -403,6 +404,10 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
+
+	-- TODO: Temporarily disabled this, as it gets annoying if you're jumping between FCPX 10.3.2 and 10.3.3. Not sure of the best solution to fix?
+
+	--[[
 	local lastVersion = config.get("lastAppVersion")
 	if lastVersion == nil or v(lastVersion) < v(config.appVersion) then
 		if mod.enabled() then
@@ -412,6 +417,7 @@ function mod.init()
 	end
 
 	config.set("lastAppVersion", config.appVersion)
+	--]]
 
 	mod.update()
 end
@@ -431,6 +437,7 @@ local plugin = {
 		["finalcutpro.commands"]							= "fcpxCmds",
 		["core.preferences.panels.shortcuts"]				= "shortcuts",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
+		["core.welcome.manager"] 							= "welcome",
 	}
 }
 
@@ -441,10 +448,47 @@ function plugin.init(deps, env)
 
 	mod.globalCmds 	= deps.globalCmds
 	mod.fcpxCmds	= deps.fcpxCmds
-
 	mod.shortcuts	= deps.shortcuts
 
 	mod.commandSetsPath = env:pathToAbsolute("/") .. "/commandsets/"
+
+	local welcome = deps.welcome
+
+	--------------------------------------------------------------------------------
+	-- ENABLE INTERFACE:
+	--------------------------------------------------------------------------------
+	welcome.enableInterfaceCallback:new("hacksshortcuts", function()
+
+		--------------------------------------------------------------------------------
+		-- Initialise Hacks Shortcuts:
+		--------------------------------------------------------------------------------
+		mod.init()
+
+		--------------------------------------------------------------------------------
+		-- Enable Commands:
+		--------------------------------------------------------------------------------
+		local allGroups = commands.groupIds()
+		for i, v in ipairs(allGroups) do
+			commands.group(v):enable()
+		end
+
+	end)
+
+	--------------------------------------------------------------------------------
+	-- DISABLE INTERFACE:
+	--------------------------------------------------------------------------------
+	welcome.disableInterfaceCallback:new("hacksshortcuts", function()
+
+		--------------------------------------------------------------------------------
+		-- Disable Commands:
+		--------------------------------------------------------------------------------
+		--log.df("Disable Commands")
+		local allGroups = commands.groupIds()
+		for i, v in ipairs(allGroups) do
+			commands.group(v):disable()
+		end
+
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:

@@ -184,6 +184,22 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
+	-- Setup Global Accessibility State Callback:
+	--------------------------------------------------------------------------------
+	hs.accessibilityStateCallback = function()
+		--log.df("Accessibility State Changed.")
+		local accessibilityStateCallbacks = config.accessibilityStateCallback:getAll()
+		if accessibilityStateCallbacks and type(accessibilityStateCallbacks) == "table" then
+			for i, v in pairs(accessibilityStateCallbacks) do
+				local fn = v:callbackFn()
+				if fn and type(fn) == "function" then
+					fn(value)
+				end
+		    end
+		end
+	end
+
+	--------------------------------------------------------------------------------
 	-- Create CommandPost Shutdown Callback:
 	--------------------------------------------------------------------------------
 	hs.shuttingDown = false

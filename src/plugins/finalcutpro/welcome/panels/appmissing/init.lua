@@ -36,6 +36,8 @@ local function controllerCallback(message)
 	local result = message["body"][1]
 	if result == "fcpxQuit" then
 		config.application():kill()
+	elseif result == "fcpxMissingContinue" then
+		mod.manager.nextPanel(mod._priority)
 	end
 
 end
@@ -50,6 +52,7 @@ local function generateContent()
 	local env = {
 		generate 	= generate,
 		iconPath	= mod.iconPath,
+		version		= fcp.EARLIEST_SUPPORTED_VERSION,
 	}
 
 	local result, err = mod.renderPanel(env)
@@ -62,31 +65,31 @@ local function generateContent()
 end
 
 --------------------------------------------------------------------------------
+-- PANEL ENABLED:
+--------------------------------------------------------------------------------
+local function panelEnabled()
+	local result = fcp:isInstalled()
+	return not result
+end
+
+--------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
 
-	--------------------------------------------------------------------------------
-	-- Check Final Cut Pro Version:
-	--------------------------------------------------------------------------------
-	local fcpVersion = fcp:getVersion()
-	if not fcpVersion or v(fcpVersion) < v("10.3") then
+	mod.webviewLabel = deps.manager.getLabel()
+	mod.manager = deps.manager
 
-		mod.webviewLabel = deps.manager.getLabel()
+	mod.renderPanel = env:compileTemplate("html/panel.html")
+	mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
 
-		mod._id 			= "complete"
-		mod._priority		= 1
-		mod._contentFn		= generateContent
-		mod._callbackFn 	= controllerCallback
+	local id 			= "appmissing"
+	mod._priority		= 5
+	local contentFn		= generateContent
+	local callbackFn 	= controllerCallback
+	local enabledFn		= panelEnabled
 
-		mod.manager = deps.manager
-
-		mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn)
-
-		mod.renderPanel = env:compileTemplate("html/panel.html")
-		mod.iconPath = env:pathToAbsolute("html/commandpost_icon.png")
-
-	end
+	mod.manager.addPanel(id, mod._priority, contentFn, callbackFn, enabledFn)
 
 	return mod
 

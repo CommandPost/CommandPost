@@ -306,17 +306,15 @@
 	<body>
 		<section class="content">
 		{%	for i, panel in ipairs(panels) do %}
+			{% if (panel.enabledFn and panel.enabledFn() == true) or not panel.enabledFn then %}
 			<div id="{{ panel.id }}" style="display: {{ panel.id == highestPriorityID and 'block' or 'none' }};">
 				{* panel.contentFn() *}
 			</div>
+			{%	end %}
 		{%	end %}
 			<p class="progress-dots">
 			{%	for i, panel in ipairs(panels) do
-					local enableDot = true
-					if panel["enabledFn"] then
-						enableDot = panel["enabledFn"]()
-					end
-					if enableDot then
+					if (panel.enabledFn and panel.enabledFn() == true) or not panel.enabledFn then
 			%}
 				<span id="dot{{ panel.id }}" class="{{ panel.id == highestPriorityID and 'selected-dot' or '' }}">●</span>
 			{%		end
