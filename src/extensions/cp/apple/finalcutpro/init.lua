@@ -174,12 +174,10 @@ end
 --- Returns:
 ---  * The hs.application, or nil if the application is not installed.
 function App:application()
-	if self:isInstalled() then
-		local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
-		-- If there is at least one copy running, return the first one
-		if result and #result > 0 then
-			return result[1]
-		end
+	local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
+	-- If there is at least one copy running, return the first one
+	if result and #result > 0 then
+		return result[1]
 	end
 	return nil
 end
@@ -388,8 +386,8 @@ end
 --- Returns:
 ---  * `true` if a supported version of Final Cut Pro is installed otherwise `false`
 function App:isInstalled()
-	local app = application.infoForBundleID(App.BUNDLE_ID)
-	return app and v(app["CFBundleShortVersionString"]) >= App.EARLIEST_SUPPORTED_VERSION or false
+	local version = self:getVersion()
+	return version and v(version) >= App.EARLIEST_SUPPORTED_VERSION or false
 end
 
 --- cp.apple.finalcutpro:isFrontmost() -> boolean
@@ -419,12 +417,8 @@ end
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
 function App:getVersion()
-	local app = self:application()
-	if app then
-		return app and app["CFBundleShortVersionString"] or nil
-	else
-		return application.infoForBundleID(App.BUNDLE_ID) and application.infoForBundleID(App.BUNDLE_ID)["CFBundleShortVersionString"] or nil
-	end
+	local info = application.infoForBundleID(App.BUNDLE_ID)
+	return info and info["CFBundleShortVersionString"] or nil
 end
 
 ----------------------------------------------------------------------------------------
@@ -1105,12 +1099,17 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
 		local menuBar = self:menuBar()
-		local fileMenu = menuBar:findMenuUI("File")
-		if fileMenu then
-			fileValue = fileMenu:attributeValue("AXTitle") or nil
-			self._currentLanguage = fileValue and App.fileMenuTitle[fileValue]
-			if self._currentLanguage then
-				return self._currentLanguage
+		local menuMap = menuBar:getMainMenu()
+		local menuUI = menuBar:UI()
+		if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
+			local fileMap = menuMap[2]
+			local fileUI = menuUI[2]
+			local title = fileUI:attributeValue("AXTitle") or nil
+			for _,lang in ipairs(self:getSupportedLanguages()) do
+				if fileMap[lang] == title then
+					self._currentLanguage = lang
+					return lang
+				end
 			end
 		end
 	end

@@ -65,19 +65,11 @@ function MenuBar:UI()
 end
 
 -- TODO: Add documentation
-function MenuBar:getMenuMap()
-	if not MenuBar._menuMap then
-		local file = io.open(MenuBar.MENU_MAP_FILE, "r")
-		if file then
-			local content = file:read("*all")
-			file:close()
-			MenuBar._menuMap = json.decode(content)
-			log.d("Loaded menu map from '" .. MenuBar.MENU_MAP_FILE .. "'")
-		else
-			MenuBar._menuMap = {}
-		end
+function MenuBar:getMainMenu()
+	if not MenuBar._mainMenu then
+		MenuBar._mainMenu = self:_loadMainMenu()
 	end
-	return MenuBar._menuMap
+	return MenuBar._mainMenu
 end
 
 --- cp.apple.finalcutpro.MenuBar:selectMenu(...) -> boolean
@@ -143,8 +135,9 @@ end
 -- Eg `findMenuUI("Edit", "Copy")` returns the 'Copy' menu item in the 'Edit' menu.
 function MenuBar:findMenuUI(...)
 	-- Start at the top of the menu bar list
-	local menuMap = self:getMenuMap()
+	local menuMap = self:getMainMenu()
 	local menuUI = self:UI()
+	local language = self:app():getCurrentLanguage() or "en"
 
 	if not menuUI then
 		return nil
@@ -153,6 +146,7 @@ function MenuBar:findMenuUI(...)
 	local menuItemUI = nil
 
 	for i=1,select('#', ...) do
+		menuItemUI = nil
 		step = select(i, ...)
 		if type(step) == "number" then
 			menuItemUI = menuUI[step]
@@ -163,15 +157,23 @@ function MenuBar:findMenuUI(...)
 					break
 				end
 			end
-		elseif menuMap and menuMap[step] then
-			-- We have the menu name in our list
-			local item = menuMap[step]
-			menuItemUI = menuUI[item.id]
-			menuMap = item.items
 		else
-			-- We don't have it in our list, so look it up manually. Hopefully they are in English!
-			log.w("Searching manually for '"..step.."'.")
-			menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
+			if menuMap then
+				-- See if the menu is in the map.
+				for _,item in ipairs(menuMap) do
+					if item.en == step then
+						menuItemUI = axutils.childWith(menuUI, "AXTitle", item[language])
+						menuMap = item.submenu
+						break
+					end
+				end
+			end
+			
+			if not menuItemUI then
+				-- We don't have it in our list, so look it up manually. Hopefully they are in English!
+				log.w("Searching manually for '"..step.."'.")
+				menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
+			end
 		end
 
 		if menuItemUI then
@@ -301,7 +303,11 @@ function MenuBar:_loadMainMenu(languages)
 	languages = languages or self:app():getSupportedLanguages()
 	local menu = {}
 	for _,language in ipairs(languages) do
-		self:_loadMainMenuLanguage(language, menu)
+		if language then
+			self:_loadMainMenuLanguage(language, menu)
+		else
+			log.wf("Received a nil language request.")
+		end
 	end
 	return menu
 end
@@ -313,7 +319,7 @@ function MenuBar:_loadMainMenuLanguage(language, menu)
 		-- Find the 'MainMenu' item
 		local mainMenu = nil
 		for _,item in ipairs(menuArchive["IB.objectdata"].NSObjectsKeys) do
-			if item.NSTitle == "MainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
+			if item.NSName == "_NSMainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
 				mainMenu = item
 				break
 			end
@@ -321,7 +327,7 @@ function MenuBar:_loadMainMenuLanguage(language, menu)
 		if mainMenu then
 			return self:_processMenu(mainMenu, language, menu)
 		else
-			log.ef("Unable to locate MainMenu in '%s.lproj/MainMenu.nib': %s", langauge, hs.inspect(mainMenu))
+			log.ef("Unable to locate MainMenu in '%s.lproj/MainMenu.nib'.", language)
 			return nil
 		end
 	else
