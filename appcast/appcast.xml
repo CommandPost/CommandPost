@@ -5,6 +5,28 @@
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
+
+		<item>
+			<title>Version 1.0.0-beta.3</title>
+			<description><![CDATA[
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed Version Checking (issue #524 & #522)</li>
+				<li>Preferences Window is no longer user resizable (issue #521)</li>
+				<li>Reset Shortcuts Button is now disabled when Hacks Shortcuts is enabled</li>
+				<li>Replaced cp.uuid with hs.host.uuid (issue #515)</li>
+				<li>Redesigned the Welcome Manager (issue #520)</li>
+				<li>MenuBar is now reliable across languages (issue #485)</li>
+				<li>Now Preventing Multiple Copies of CommandPost to Run Simultaneously</li></ul>
+			]]>
+			</description>
+			<pubDate>Tue, 25 Apr 2017 03:17:06 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.3/CommandPost_1.0.0-beta.3.dmg"
+				sparkle:version="1.0.0-beta.3"
+				sparkle:dsaSignature="MC0CFCKvrgBPIuCQJtcsmeig4eNPwsIuAhUAj6Uu0uJ6unrmakga5tH1KtmrdWQ="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
 		<item>
 			<title>Version 1.0.0-beta.2</title>
 			<description><![CDATA[
