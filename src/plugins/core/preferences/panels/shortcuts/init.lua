@@ -352,11 +352,13 @@ function mod.updateCustomShortcutsVisibility()
 		mod._manager.injectScript([[
 			document.getElementById("customiseShortcuts").className = "disabled";
 			document.getElementById("enableCustomShortcuts").checked = true;
+			document.getElementById("resetShortcuts").className = "button resetShortcuts buttonDisabled";
 		]])
 	else
 		mod._manager.injectScript([[
 			document.getElementById("customiseShortcuts").className = "";
 			document.getElementById("enableCustomShortcuts").checked = false;
+			document.getElementById("resetShortcuts").className = "button resetShortcuts";
 		]])
 	end
 
@@ -393,7 +395,7 @@ function mod.init(deps, env)
 		{
 			label		= i18n("resetShortcuts"),
 			onclick		= resetShortcuts,
-			class		= "resetShortcuts",
+			class		= "resetShortcuts" .. (shortcutsEnabled and '' or ' buttonDisabled'),
 		}
 	)
 

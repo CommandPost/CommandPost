@@ -379,12 +379,23 @@ end
 function App:getPath()
 	local app = self:application()
 	if app then
+		----------------------------------------------------------------------------------------
+		-- FINAL CUT PRO IS CURRENTLY RUNNING:
+		----------------------------------------------------------------------------------------
 		local appPID = app:pid()
 		if appPID then
 			local path = getPathToApplicationFromPID(appPID)
 			if path then
-				return path
+				return path .. "/"
 			end
+		end
+	else
+		----------------------------------------------------------------------------------------
+		-- FINAL CUT PRO IS CURRENTLY CLOSED:
+		----------------------------------------------------------------------------------------
+		local result = getPathToClosedApplication(App.BUNDLE_ID)
+		if result then
+			return result
 		end
 	end
 	return nil
@@ -442,6 +453,29 @@ function getPathToApplicationFromPID(pid)
  	local success, result = osascript.applescript(appleScript)
 	if success and result and result[1] then
 		return tostring(result[1])
+	else
+		return nil
+	end
+end
+
+-- getPathToClosedApplication(bundleID) -> string or nil
+-- Function
+-- Returns the path to a closed Application
+--
+-- Parameters:
+--  * bundleID - Bundle ID
+--
+-- Returns:
+--  * Application Path as string or nil if an error occurred
+function getPathToClosedApplication(bundleID)
+	local appleScript = [[
+		tell application "Finder"
+			POSIX path of (application file id "]] .. bundleID .. [[" as alias)
+		end tell
+	]]
+ 	local success, result = osascript.applescript(appleScript)
+	if success and result then
+		return tostring(result)
 	else
 		return nil
 	end
