@@ -19,6 +19,8 @@ local fnutils										= require("hs.fnutils")
 local axutils										= require("cp.apple.finalcutpro.axutils")
 local just											= require("cp.just")
 local config										= require("cp.config")
+local plist											= require("cp.plist")
+local archiver										= require("cp.plist.archiver")
 
 --------------------------------------------------------------------------------
 --
@@ -293,6 +295,43 @@ function MenuBar:_processMenuItems(menu)
 	else
 		return nil
 	end
+end
+
+function MenuBar:_loadMainMenu(language)
+	local menuPlist = plist.fileToTable(string.format("%s/Contents/Resources/%s.lproj/MainMenu.nib", self:app():getPath(), language))
+	if menuPlist then
+		local menuArchive = archiver.unarchive(menuPlist)
+		local mainMenu = menuArchive["IB.objectdata"].NSObjectsKeys[2]
+		if mainMenu.NSTitle == "MainMenu" then
+			return self:_processMenu(mainMenu)
+		else
+			log.ef("Unexpected result for the MainMenu.nib: %s", hs.inspect(mainMenu))
+			return nil
+		end
+	else
+		log.ef("Unable to load MainMenu.nib for specified language: %s", language)
+		return nil
+	end
+end
+
+function MenuBar:_processMenu(menu)
+	if not menu then
+		return nil
+	end
+	
+	local result = {}
+	if menu.NSMenuItems then
+		for i,item in ipairs(menu.NSMenuItems) do
+			result[i] = {
+				title		= item.NSTitle,
+				separator	= item.NSIsSeparator,
+			}
+			if item.NSSubmenu then
+				result[i].submenu = MenuBar:_processMenu(item.NSSubmenu)
+			end
+		end
+	end
+	return result
 end
 
 return MenuBar
