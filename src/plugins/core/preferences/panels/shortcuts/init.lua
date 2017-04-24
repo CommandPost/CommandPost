@@ -22,10 +22,12 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local config									= require("cp.config")
 local commands									= require("cp.commands")
+local config									= require("cp.config")
 local dialog									= require("cp.dialog")
+local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
+local tools										= require("cp.tools")
 
 local _											= require("moses")
 
@@ -167,9 +169,12 @@ end
 --------------------------------------------------------------------------------
 function getAllKeyCodes()
 
-	-- TODO: Work out a way to ONLY display keyboard shortcuts that the system actually has on it's keyboard.
+	--------------------------------------------------------------------------------
+	-- TODO: Work out a way to ONLY display keyboard shortcuts that the system
+	--       actually has on it's keyboard.
+	--
 	--       See: https://github.com/Hammerspoon/hammerspoon/issues/1307
-
+	--------------------------------------------------------------------------------
 	local shortcuts = {}
 
 	for k,_ in pairs(keycodes.map) do
@@ -297,8 +302,25 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
-local function isHacksShortcutsEnabled()
-	return config.get("enableHacksShortcutsInFinalCutPro", false)
+function mod.hacksShortcutsEnabled()
+	local searchString = "<key>cpToggleMovingMarkers</key>"
+	local filePathNSProCommands = fcp:getPath() .. "/Contents/Resources/NSProCommands.plist"
+	if tools.doesFileExist(filePathNSProCommands) then
+		local file = io.open(filePathNSProCommands, "r")
+		if file then
+			io.input(file)
+			local fileContents = io.read("*a")
+			if fileContents then
+				io.close(file)
+				local result = string.find(fileContents, searchString) ~= nil
+				config.set("enableHacksShortcutsInFinalCutPro", result)
+				return result
+			end
+		end
+	end
+	log.ef("Could not find NSProCommands.plist. This shouldn't ever happen.")
+	config.set("enableHacksShortcutsInFinalCutPro", false)
+	return false
 end
 
 --------------------------------------------------------------------------------
@@ -312,7 +334,7 @@ local function generateContent()
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
 		webviewLabel 			= mod._manager.getLabel(),
-		shortcutsEnabled		= not isHacksShortcutsEnabled(),
+		shortcutsEnabled		= not mod.hacksShortcutsEnabled(),
 	}
 
 	return renderPanel(context)
@@ -324,7 +346,7 @@ end
 --------------------------------------------------------------------------------
 function mod.updateCustomShortcutsVisibility()
 
-	local enableHacksShortcutsInFinalCutPro = isHacksShortcutsEnabled()
+	local enableHacksShortcutsInFinalCutPro = mod.hacksShortcutsEnabled()
 
 	if enableHacksShortcutsInFinalCutPro then
 		mod._manager.injectScript([[
