@@ -17,8 +17,8 @@ local log										= require("hs.logger").new("clipmgr")
 
 local pasteboard 								= require("hs.pasteboard")
 local timer										= require("hs.timer")
+local uuid										= require("hs.host").uuid
 
-local uuid										= require("cp.uuid")
 local plist 									= require("cp.plist")
 local protect 									= require("cp.protect")
 local archiver									= require("cp.plist.archiver")

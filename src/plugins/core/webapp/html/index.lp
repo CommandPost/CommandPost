@@ -17,11 +17,11 @@ local log 			= hsminweb.log
 local eventtap 		= require("hs.eventtap")
 local inspect 		= require("hs.inspect")
 local pasteboard	= require("hs.pasteboard")
+local uuid			= require("hs.host").uuid
 
 local fcp 			= require("cp.apple.finalcutpro")
 local commands 		= require("cp.commands")
 local config 		= require("cp.config")
-local uuid			= require("cp.uuid")
 
 local ARRAY_DELIM = "||"
 local UNDEFINED = "_undefined"

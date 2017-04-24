@@ -91,6 +91,12 @@
 		margin: 10px 10px !important;
 		text-align: right;
 	}
+
+	.buttonDisabled {
+		pointer-events:none;
+		opacity: 0.4;
+	}
+
 </style>
 <h3 class="uiItem">{{ i18n "customiseShortcuts" }}</h3>
 <div id="customiseShortcuts" class="{{ shortcutsEnabled and '' or 'disabled' }}">
