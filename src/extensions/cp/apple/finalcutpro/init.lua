@@ -121,7 +121,12 @@ local App = {}
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-App.EARLIEST_SUPPORTED_VERSION					= v("10.3")
+App.EARLIEST_SUPPORTED_VERSION					= "10.3"
+
+--------------------------------------------------------------------------------
+-- TODO: The below five constants should probably just be determined from the
+--       Final Cut Pro plist file?
+--------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.BUNDLE_ID
 --- Constant
@@ -172,14 +177,11 @@ end
 ---  * None
 ---
 --- Returns:
----  * The hs.application, or nil if the application is not installed.
+---  * The hs.application, or nil if the application is not running.
 function App:application()
-	if self:isInstalled() then
-		local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
-		-- If there is at least one copy running, return the first one
-		if result and #result > 0 then
-			return result[1]
-		end
+	local result = application.applicationsForBundleID(App.BUNDLE_ID)
+	if result and #result > 0 then
+		return result[1] -- If there is at least one copy running, return the first one
 	end
 	return nil
 end
@@ -373,9 +375,19 @@ end
 ---  * None
 ---
 --- Returns:
----  * A string containing Final Cut Pro's filesystem path, or nil if the bundle identifier could not be located
+---  * A string containing Final Cut Pro's filesystem path, or nil if Final Cut Pro's path could not be determined.
 function App:getPath()
-	return application.pathForBundleID(App.BUNDLE_ID)
+	local app = self:application()
+	if app then
+		local appPID = app:pid()
+		if appPID then
+			local path = getPathToApplicationFromPID(appPID)
+			if path then
+				return path
+			end
+		end
+	end
+	return nil
 end
 
 --- cp.apple.finalcutpro:isInstalled() -> boolean
@@ -387,9 +399,15 @@ end
 ---
 --- Returns:
 ---  * `true` if a supported version of Final Cut Pro is installed otherwise `false`
+---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 function App:isInstalled()
-	local app = application.infoForBundleID(App.BUNDLE_ID)
-	return app and v(app["CFBundleShortVersionString"]) >= App.EARLIEST_SUPPORTED_VERSION or false
+	local version = self:getVersion()
+	if version then
+		if v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION)) then
+			return true
+		end
+	end
+	return false
 end
 
 --- cp.apple.finalcutpro:isFrontmost() -> boolean
@@ -406,6 +424,29 @@ function App:isFrontmost()
 	return fcpx and fcpx:isFrontmost()
 end
 
+-- getPathToApplicationFromPID(pid) -> string or nil
+-- Function
+-- Returns the path to an Application
+--
+-- Parameters:
+--  * pid - The UNIX process identifier of the application (i.e. a number)
+--
+-- Returns:
+--  * Application Path as string or nil if an error occurred
+function getPathToApplicationFromPID(pid)
+	local appleScript = [[
+ 		tell application "System Events"
+			return POSIX path of application file of every application process whose unix id is ]] .. tostring(pid) .. "\n\n" .. [[
+		end tell
+	]]
+ 	local success, result = osascript.applescript(appleScript)
+	if success and result and result[1] then
+		return tostring(result[1])
+	else
+		return nil
+	end
+end
+
 --- cp.apple.finalcutpro:getVersion() -> string or nil
 --- Function
 --- Version of Final Cut Pro
@@ -414,17 +455,54 @@ end
 ---  * None
 ---
 --- Returns:
----  * Version as string or nil if an error occurred
+---  * Version as string or nil if Final Cut Pro cannot be found.
 ---
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
 function App:getVersion()
+
+	----------------------------------------------------------------------------------------
+	-- GET RUNNING COPY OF FINAL CUT PRO:
+	----------------------------------------------------------------------------------------
 	local app = self:application()
+
+	----------------------------------------------------------------------------------------
+	-- FINAL CUT PRO IS CURRENTLY RUNNING:
+	----------------------------------------------------------------------------------------
 	if app then
-		return app and app["CFBundleShortVersionString"] or nil
-	else
-		return application.infoForBundleID(App.BUNDLE_ID) and application.infoForBundleID(App.BUNDLE_ID)["CFBundleShortVersionString"] or nil
+		local appPID = app:pid()
+		if appPID then
+			local appPath = getPathToApplicationFromPID(appPID)
+			if appPath then
+				local info = application.infoForBundlePath(appPath)
+				if info then
+					return info["CFBundleShortVersionString"]
+				else
+					log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
+				end
+			else
+				log.df("VERSION CHECK: Could not determine Final Cut Pro's path from PID.")
+			end
+		else
+			log.df("VERSION CHECK: Could not determine Final Cut Pro's PID.")
+		end
 	end
+
+	----------------------------------------------------------------------------------------
+	-- NO VERSION OF FINAL CUT PRO CURRENTLY RUNNING:
+	----------------------------------------------------------------------------------------
+	local app = application.infoForBundleID(App.BUNDLE_ID)
+	if app then
+		return app["CFBundleShortVersionString"]
+	else
+		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
+	end
+
+	----------------------------------------------------------------------------------------
+	-- FINAL CUT PRO COULD NOT BE DETECTED:
+	----------------------------------------------------------------------------------------
+	return nil
+
 end
 
 ----------------------------------------------------------------------------------------

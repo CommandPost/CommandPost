@@ -295,33 +295,7 @@ end
 --- Returns:
 ---  * `true` if Hacks Shortcuts are enabled otherwise `false`
 function mod.enabled()
-
-	if fcp:application() then
-		local searchString = "<key>cpToggleMovingMarkers</key>"
-		local filePathNSProCommands = fcp:getPath() .. "/Contents/Resources/NSProCommands.plist"
-
-		if tools.doesFileExist(filePathNSProCommands) then
-
-			local file = io.open(filePathNSProCommands, "r")
-			if file then
-
-				io.input(file)
-				local fileContents = io.read("*a")
-				io.close(file)
-
-				local result = string.find(fileContents, searchString) ~= nil
-
-				config.set("enableHacksShortcutsInFinalCutPro", result)
-				return result
-
-			end
-		end
-
-		log.ef("Could not find NSProCommands.plist. This shouldn't ever happen.")
-		config.set("enableHacksShortcutsInFinalCutPro", false)
-	end
-	return false
-
+	return mod.shortcuts.hacksShortcutsEnabled()
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.setEditable() -> none
@@ -468,7 +442,7 @@ function plugin.init(deps, env)
 	mod.globalCmds 	= deps.globalCmds
 	mod.fcpxCmds	= deps.fcpxCmds
 
-	mod._shortcuts	= deps.shortcuts
+	mod.shortcuts	= deps.shortcuts
 
 	mod.commandSetsPath = env:pathToAbsolute("/") .. "/commandsets/"
 
@@ -499,9 +473,9 @@ function plugin.init(deps, env)
 				label		= i18n("enableHacksShortcuts"),
 				onchange	= function()
 					mod.toggleEditable()
-					mod._shortcuts.updateCustomShortcutsVisibility()
+					mod.shortcuts.updateCustomShortcutsVisibility()
 				end,
-				checked=mod.isEditable
+				checked=mod.enabled
 			}
 		)
 	end

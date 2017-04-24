@@ -48,7 +48,7 @@ mod._handlers			= {}
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
-mod.defaultWindowStyle	= {"titled", "closable", "nonactivating", "resizable"}
+mod.defaultWindowStyle	= {"titled", "closable", "nonactivating"}
 mod.defaultWidth 		= 524
 mod.defaultHeight 		= 338
 mod.defaultTitle 		= i18n("preferences")
@@ -156,7 +156,7 @@ function mod.init()
 		:allowNewWindows(false)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
-		:toolbar(mod.toolbar)
+		:attachedToolbar(mod.toolbar)
 
 	return mod
 end
@@ -216,7 +216,7 @@ function mod.selectPanel(id)
 		log.df("Size: %s", hs.inspect(mod.webview:hswindow():size()))
 	end
 	--]]
-	
+
 	if not mod.webview then
 		return
 	end
@@ -229,7 +229,7 @@ function mod.selectPanel(id)
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
 		if v.id == id and v.height and mod.webview:hswindow() then
-			mod.webview:hswindow():setSize({w = mod.defaultWidth, h = v.height })
+			mod.webview:size({w = mod.defaultWidth, h = v.height })
 		end
 
 		local style = v.id == id and "block" or "none"
