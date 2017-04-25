@@ -85,37 +85,19 @@ end
 function ImportPanel:createProxyMedia()
 	if not self._createProxyMedia then
 		self._createProxyMedia = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "CreateProxyMedia")
+			return axutils.childWithID(self:parent():groupUI(), id "CreateProxyMedia")
 		end)
 	end
 	return self._createProxyMedia
 end
 
--- TODO: Add documentation
-function ImportPanel:toggleCreateProxyMedia()
-	if self:show() and self:createProxyMedia():isShowing() then
-		self:createProxyMedia():toggle()
-		return true
-	end
-	return false
-end
-
 function ImportPanel:createOptimizedMedia()
 	if not self._createOptimizedMedia then
 		self._createOptimizedMedia = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "CreateOptimizedMedia")
+			return axutils.childWithID(self:parent():groupUI(), id "CreateOptimizedMedia")
 		end)
 	end
 	return self._createOptimizedMedia
-end
-
--- TODO: Add documentation
-function ImportPanel:toggleCreateOptimizedMedia()
-	if self:show() and self:createOptimizedMedia():isShowing() then
-		self:createOptimizedMedia():toggle()
-		return true
-	end
-	return false
 end
 
 function ImportPanel:mediaLocationGroupUI()

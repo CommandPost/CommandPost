@@ -29,11 +29,6 @@ local id								= require("cp.apple.finalcutpro.ids") "PlaybackPanel"
 --------------------------------------------------------------------------------
 local PlaybackPanel = {}
 
-PlaybackPanel.ID = 3
-
-PlaybackPanel.CREATE_OPTIMIZED_MEDIA_FOR_MULTICAM_CLIPS = id "CreateMulticamOptimizedMedia"
-PlaybackPanel.AUTO_START_BG_RENDER = id "BackgroundRender"
-
 -- TODO: Add documentation
 function PlaybackPanel:new(preferencesDialog)
 	o = {_parent = preferencesDialog}
@@ -51,7 +46,7 @@ end
 function PlaybackPanel:UI()
 	return axutils.cache(self, "_ui", function()
 		local toolbarUI = self:parent():toolbarUI()
-		return toolbarUI and toolbarUI[PlaybackPanel.ID]
+		return toolbarUI and toolbarUI[id "ID"]
 	end)
 end
 
@@ -61,7 +56,7 @@ function PlaybackPanel:isShowing()
 		local toolbar = self:parent():toolbarUI()
 		if toolbar then
 			local selected = toolbar:selectedChildren()
-			return #selected == 1 and selected[1] == toolbar[PlaybackPanel.ID]
+			return #selected == 1 and selected[1] == toolbar[id "ID"]
 		end
 	end
 	return false
@@ -86,55 +81,22 @@ function PlaybackPanel:hide()
 	return self:parent():hide()
 end
 
--- TODO: Add documentation
-function PlaybackPanel:toggleCheckBox(identifier)
-	if self:show() then
-		local group = self:parent():groupUI()
-		if group then
-			local checkbox = axutils.childWith(group, "AXIdentifier", identifier)
-			checkbox:doPress()
-			return true
-		end
-	end
-	return false
-end
-
-function PlaybackPanel:createOptimizedMediaForMulticamClips()
+function PlaybackPanel:createMulticamOptimizedMedia()
 	if not self._createOptimizedMedia then
 		self._createOptimizedMedia = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "CreateMulticamOptimizedMedia")
+			return axutils.childWithID(self:parent():groupUI(), id "CreateMulticamOptimizedMedia")
 		end)
 	end
 	return self._createOptimizedMedia
 end
 
--- TODO: Add documentation
-function PlaybackPanel:toggleCreateOptimizedMediaForMulticamClips()
-	local checkBox = self:createOptimizedMediaForMulticamClips()
-	if self:show() and checkBox:isShowing() then
-		checkBox:toggle()
-		return true
-	end
-	return false
-end
-
-function PlaybackPanel:autoStartBGRender()
-	if not self._autoStartBGRender then
-		self._autoStartBGRender = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "BackgroundRender")
+function PlaybackPanel:backgroundRender()
+	if not self._backgroundRender then
+		self._backgroundRender = CheckBox:new(self, function()
+			return axutils.childWithID(self:parent():groupUI(), id "BackgroundRender")
 		end)
 	end
-	return self._autoStartBGRender
-end
-
--- TODO: Add documentation
-function PlaybackPanel:toggleAutoStartBGRender()
-	local checkBox = self:autoStartBGRender()
-	if self:show() and checkBox:isShowing() then
-		checkBox:toggle()
-		return true
-	end
-	return false
+	return self._backgroundRender
 end
 
 return PlaybackPanel

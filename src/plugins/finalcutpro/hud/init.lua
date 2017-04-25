@@ -258,9 +258,9 @@ local function getEnv()
 		}
 	end
 
-	local autoStartBGRender	= fcp:getPreference("FFAutoStartBGRender", true)
+	local backgroundRender	= fcp:getPreference("FFAutoStartBGRender", true)
 
-	if autoStartBGRender then
+	if backgroundRender then
 		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 		env.backgroundRender	= {
 			text	= string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
