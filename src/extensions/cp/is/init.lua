@@ -261,7 +261,7 @@ end
 --- * `watchFn`	- The watch function.
 ---
 --- Returns:
---- * Nothing
+--- * The same `cp.is` instance.
 ---
 --- Notes:
 --- * You can watch immutable instances. Wrapped `cp.is` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
@@ -272,6 +272,7 @@ function is:watch(watchFn)
 	end
 	self._watchers[#self._watchers + 1] = watchFn
 	watchFn(self:value())
+	return self
 end
 
 --- cp.is:notify() -> nil

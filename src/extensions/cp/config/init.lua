@@ -18,6 +18,7 @@ local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
+local is				= require("cp.is")
 local v					= require("semver")
 
 --------------------------------------------------------------------------------
@@ -162,7 +163,7 @@ function mod.isFrontmost()
 	return fw ~= nil and fw:application() == app
 end
 
---- cp.config.get() -> string or boolean or number or nil or table or binary data
+--- cp.config.get(key[, defaultValue]) -> string or boolean or number or nil or table or binary data
 --- Function
 --- Loads a setting
 ---
@@ -200,7 +201,42 @@ end
 --- Notes:
 ---  * This function cannot set dates or raw data types
 function mod.set(key, value)
-	return settings.set(mod.configPrefix .. "." .. key, value)
+	settings.set(mod.configPrefix .. "." .. key, value)
+	if mod._isCache then
+		local isValue = mod._isCache[key]
+		if isValue then
+			isValue:notify()
+		end
+	end
+end
+
+--- cp.config.is(key[, defaultValue]) -> cp.is
+--- Function
+--- Returns a `cp.is` instance connected to the value of the specified key. When the value is modified, it will be notified.
+---
+--- Parameters:
+--- * `key`				- The configuration setting key.
+--- * `defaultValue`	- The default value if the key has not been set.
+---
+--- Returns:
+--- * A `cp.is` instance for the key.
+function mod.is(key, defaultValue)
+	local isValue = nil
+	if not mod._isCache then
+		mod._isCache = {}
+	else
+		isValue = mod._isCache[key]
+	end
+	
+	if not isValue then
+		isValue = is.new(
+			function() return mod.get(key, defaultValue) end,
+			function(value) mod.set(key, value) end
+		)
+		mod._isCache[key] = isValue
+	end
+	
+	return isValue
 end
 
 --- cp.config.reset()
