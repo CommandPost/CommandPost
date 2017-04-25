@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log				= require("hs.logger").new("ids")
+
 local application		= require("hs.application")
 local fs				= require("hs.fs")
 
@@ -29,12 +31,49 @@ local mod = {}
 
 mod.cache = {}
 
+--------------------------------------------------------------------------------
+-- TODO: This should really be calling cp.apple.finalcutpro:getVersion()
+--       instead, but not sure how best to do this...
+--------------------------------------------------------------------------------
 local function currentVersion()
-	if not mod._currentVersion then
-		local app = application.infoForBundleID("com.apple.FinalCut") -- TODO: We should really get the Bundle ID from cp.apple.finalcutpro rather than hardcoding here.
-		mod._currentVersion = app and app["CFBundleShortVersionString"] or nil
+
+	----------------------------------------------------------------------------------------
+	-- GET RUNNING COPY OF FINAL CUT PRO:
+	----------------------------------------------------------------------------------------
+	local app = application.applicationsForBundleID("com.apple.FinalCut")
+
+	----------------------------------------------------------------------------------------
+	-- FINAL CUT PRO IS CURRENTLY RUNNING:
+	----------------------------------------------------------------------------------------
+	if app and next(app) ~= nil then
+		app = app[1]
+		local appPath = app:path()
+		if appPath then
+			local info = application.infoForBundlePath(appPath)
+			if info then
+				return info["CFBundleShortVersionString"]
+			else
+				log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
+			end
+		else
+			log.df("VERSION CHECK: Could not determine Final Cut Pro's path.")
+		end
 	end
-	return mod._currentVersion
+
+	----------------------------------------------------------------------------------------
+	-- NO VERSION OF FINAL CUT PRO CURRENTLY RUNNING:
+	----------------------------------------------------------------------------------------
+	local app = application.infoForBundleID("com.apple.FinalCut")
+	if app then
+		return app["CFBundleShortVersionString"]
+	else
+		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
+	end
+
+	----------------------------------------------------------------------------------------
+	-- FINAL CUT PRO COULD NOT BE DETECTED:
+	----------------------------------------------------------------------------------------
+	return nil
 end
 
 local function deepextend(target, ...)
