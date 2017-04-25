@@ -88,7 +88,6 @@ function mod.listFilesMenu()
 		--log.df("Using XML Sharing Menu Cache")
 		return mod._filesMenuCache
 	else
-		log.df("NOT Using XML Sharing Menu Cache")
 		--------------------------------------------------------------------------------
 		-- Shared XML Menu:
 		--------------------------------------------------------------------------------

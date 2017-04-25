@@ -196,6 +196,13 @@ function mod.show()
 	return true
 end
 
+function mod.hide()
+	if mod.webview then
+		mod.webview:delete()
+		mod.webview = nil
+	end
+end
+
 --------------------------------------------------------------------------------
 -- INJECT SCRIPT
 --------------------------------------------------------------------------------
