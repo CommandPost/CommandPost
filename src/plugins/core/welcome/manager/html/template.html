@@ -312,6 +312,15 @@
 			</div>
 			{%	end %}
 		{%	end %}
+		{%
+			local panelCount = 0
+			for i, panel in ipairs(panels) do
+				if (panel.enabledFn and panel.enabledFn() == true) or not panel.enabledFn then
+					panelCount = panelCount + 1
+				end
+			end
+			if panelCount > 1 then
+		%}
 			<p class="progress-dots">
 			{%	for i, panel in ipairs(panels) do
 					if (panel.enabledFn and panel.enabledFn() == true) or not panel.enabledFn then
@@ -319,8 +328,11 @@
 				<span id="dot{{ panel.id }}" class="{{ panel.id == highestPriorityID and 'selected-dot' or '' }}">●</span>
 			{%		end
 				end
-			%}
+			end
+		%}
 			</p>
+			<br />
+			<br />
 		</section>
 	</body>
 </html>
