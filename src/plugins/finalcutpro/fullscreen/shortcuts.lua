@@ -39,29 +39,6 @@ local FULLSCREEN_KEYS = { "Unfavorite", "Favorite", "SetSelectionStart", "SetSel
 local mod = {}
 
 --------------------------------------------------------------------------------
--- IS ENABLED:
---------------------------------------------------------------------------------
-function mod.isEnabled()
-	return config.get("enableShortcutsDuringFullscreenPlayback", false)
-end
-
---------------------------------------------------------------------------------
--- SET ENABLED:
---------------------------------------------------------------------------------
-function mod.setEnabled(enabled)
-	config.set("enableShortcutsDuringFullscreenPlayback", enabled)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-	local enabled = mod.isEnabled()
-	mod.setEnabled(not enabled)
-end
-
---------------------------------------------------------------------------------
 -- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
 --------------------------------------------------------------------------------
 function mod.update()
@@ -75,6 +52,11 @@ function mod.update()
 		mod.keyDownWatcher:stop()
 	end
 end
+
+--------------------------------------------------------------------------------
+-- IS ENABLED:
+--------------------------------------------------------------------------------
+mod.isEnabled = config.is("enableShortcutsDuringFullscreenPlayback", false):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- NINJA KEY STROKE:
@@ -226,7 +208,7 @@ function plugin.init(deps)
 	-- Add the menu item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = mod.toggleEnabled,		checked = mod.isEnabled() }
+		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = function() mod.isEnabled:toggle() end,		checked = mod.isEnabled() }
 	end)
 
 	return mod
