@@ -66,7 +66,7 @@ function run()
 		
 		local isState = is.new(function() return state end, function(newValue) state = newValue end)
 		ok(isState())
-		isState:watch(watcher)
+		isState:watch(watcher, true)
 		ok(eq(count, 1))
 		ok(watchValue == true)
 
@@ -94,7 +94,7 @@ function run()
 		-- Test watching
 		local count = 0
 		local watchValue = nil
-		isNotState:watch(function(value) watchValue = value; count = count+1 end)
+		isNotState:watch(function(value) watchValue = value; count = count+1 end, true)
 		ok(eq(count, 1))
 		ok(watchValue == false)
 		
@@ -151,7 +151,7 @@ function run()
 		-- Check that we can watch the combined `is` for changes from further down.
 		local count = 0
 		local watchValue = nil
-		isLeftAndRight:watch(function(value) count = count+1; watchValue = value end)
+		isLeftAndRight:watch(function(value) count = count+1; watchValue = value end, true)
 		ok(eq(count, 1))
 		ok(eq(watchValue, true))
 		
@@ -200,17 +200,17 @@ function run()
 		local count = 0
 		local watchValue = nil
 		isLeftOrRight:watch(function(value) count = count+1; watchValue = value end)
-		ok(eq(count, 1))
-		ok(eq(watchValue, true))
+		ok(eq(count, 0))
+		ok(eq(watchValue, nil))
 		
 		-- Toggle isLeft
 		isLeft(false)
-		ok(eq(count, 2))
+		ok(eq(count, 1))
 		ok(eq(watchValue, true))
 		
 		-- ...and isRight
 		isRight(false)
-		ok(eq(count, 3))
+		ok(eq(count, 2))
 		ok(eq(watchValue, false))
 		
 	end)
