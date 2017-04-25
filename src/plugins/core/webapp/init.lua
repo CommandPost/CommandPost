@@ -61,19 +61,15 @@ function mod.copyLinkToClipboard()
 	pasteboard.setContents(mod.hostname)
 end
 
-function mod.getEnableWebApp()
-	return config.get(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING)
-end
-
-function mod.toggleEnableWebApp()
-	local enableWebApp = config.get(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING)
-	config.set(mod.PREFERENCE_NAME, not enableWebApp)
-	if enableWebApp then
+function mod.update()
+	if mod.isEnabled() then
 		mod.stop()
 	else
 		mod.start()
 	end
 end
+
+mod.isEnabled = config.is(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- GET HOSTNAME:
@@ -126,8 +122,8 @@ function plugin.init(deps, env)
 	:addCheckbox(30,
 		{
 			label = i18n("webappEnable"),
-			onchange = mod.toggleEnableWebApp,
-			checked = mod.getEnableWebApp,
+			onchange = function() mod.isEnabled:toggle() end,
+			checked = mod.isEnabled,
 		}
 	)
 
@@ -149,7 +145,7 @@ function plugin.postInit()
 	--------------------------------------------------------------------------------
 	-- Start the WebApp if Enabled:
 	--------------------------------------------------------------------------------
-	if mod.getEnableWebApp() then
+	if mod.isEnabled() then
 		timer.doAfter(1, mod.start)
 	end
 

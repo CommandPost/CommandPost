@@ -48,33 +48,13 @@ mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
 mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
 
-function mod.isEnabled()
-	return config.get("consoleEnabled", true)
-end
-
-function mod.setEnabled(value)
-	config.set("consoleEnabled", value)
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+mod.isEnabled = config.is("consoleEnabled", true)
 
 function mod.isReducedTransparency()
 	return screen.accessibilitySettings()["ReduceTransparency"]
 end
 
-function mod.isLastQueryRemembered()
-	return config.get("consoleLastQueryRemembered", true)
-end
-
-function mod.setLastQueryRemembered(value)
-	config.set("consoleLastQueryRemembered", value)
-end
-
-function mod.toggleLastQueryRemembered()
-	mod.setLastQueryRemembered(not mod.isLastQueryRemembered())
-end
+mod.isLastQueryRemembered = config.is("consoleLastQueryRemembered", true)
 
 function mod.getLastQueryValue()
 	return config.get("consoleLastQueryValue", "")
@@ -346,14 +326,14 @@ function plugin.init(deps)
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
 
 	menu:addItem(1000, function()
-		return { title = i18n("enableConsole"),	fn = mod.toggleEnabled, checked = mod.isEnabled() }
+		return { title = i18n("enableConsole"),	fn = function() mod.isEnabled:toggle() end, checked = mod.isEnabled() }
 	end)
 
 	menu:addSeparator(2000)
 
 	menu:addItems(3000, function()
 		return {
-			{ title = i18n("rememberLastQuery"),	fn=mod.toggleLastQueryRemembered, checked = mod.isLastQueryRemembered(),  },
+			{ title = i18n("rememberLastQuery"),	fn=function() mod.isLastQueryRemembered:toggle() end, checked = mod.isLastQueryRemembered(),  },
 			{ title = "-" },
 			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}
@@ -373,7 +353,7 @@ function plugin.init(deps)
 			allDisabled = allDisabled and not enabled
 			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,
 				fn=function()
-					action.toggleEnabled()
+					action.isEnabled:toggle()
 					deps.actionmanager.refresh()
 				end,
 				checked = enabled, }
