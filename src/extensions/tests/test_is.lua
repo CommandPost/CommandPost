@@ -139,7 +139,8 @@ function run()
 		ok(isLeftAndRight() == true)
 		
 		-- Use AND as a method
-		ok(isLeft:AND(isRight):value() == true)
+		isLeftAndRightAgain = isLeft:AND(isRight)
+		ok(isLeftAndRightAgain:value() == true)
 		
 		-- Check we get an error when combining an AND and OR
 		-- We have to wrap the execution in a 'spy' function to catch the error.

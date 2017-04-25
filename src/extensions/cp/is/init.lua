@@ -1,9 +1,79 @@
 --- === cp.is ===
 ---
---- This is a utility library for helping keep track of `true`/`false` states.
---- They can be combined with other `is` values as an `OR` or `AND` operation.
---- They can be watched for changes, so that updates happen as needed.
-
+--- This is a utility library for helping keep track of `true`/`false` states. It works by creating a table which has a `get` and (optionally) a `set` function which are called when changing the state.
+---
+--- ## Features
+--- ### 1. Callable
+--- An `is` can be called like a function once created. Eg:
+---
+--- ```lua
+--- local value = true
+--- local isValue = is.new(function() return value end, function(newValue) value = newValue end)
+--- isValue() == true		-- `value` is still true
+--- isValue(false) == false	-- now `value` is false
+--- ```
+---
+--- ### 2. Togglable
+--- An `is` comes with toggling built in - as long as the it has a `set` function. Continuing from the last example:
+---
+--- ```lua
+--- isValue:toggle()	-- `value` went from `false` to `true`.
+--- ```
+---
+--- ### 3. Watchable
+--- Interested parties can 'watch' the `is` value to be notified of changes. Again, continuing on:
+---
+--- ```lua
+--- isValue:watch(function(newValue) print "New Value: "...newValue) end)	-- prints "New Value: true" immediately
+--- isValue(false)	-- prints "New Value: false"
+--- ```
+---
+--- ### 4. Combinable
+--- Because all values are booleans, we can combine or modify them with AND/OR and NOT operations. The resulting values will be a live combination of the underlying `is` values. They can also be watched, and will be notified when the underlying `is` values change. For example:
+---
+--- ```lua
+--- local watered   = is.TRUE()               -- a simple `is` which stores the current value internally, defaults to `true`
+--- local fed       = is.FALSE()              -- same as above, defautls to `false`
+--- local rested    = is.FALSE()              -- as above.
+--- local satisfied = watered:AND(fed)        -- will be true if both `watered` and `fed` are true.
+--- local happy     = satisfied:AND(rested)   -- will be true if both `satisfied` and `happy`.
+--- local sleepy    = fed:AND(is.NOT(rested)) -- will be sleepy if `fed`, but not `rested`.
+---
+--- -- These statements all evaluate to `true`
+--- satisfied()     == false
+--- happy()         == false
+--- sleepy()        == false
+--- 
+--- -- Get fed
+--- fed(true)       == true
+--- satisfied()     == true
+--- happy()         == false
+--- sleepy()        == true
+---
+--- -- Get rest
+--- rested:toggle() == true
+--- satisfied()     == true
+--- happy()         == true
+--- sleepy()        == false
+---
+--- -- These will produce an error, because you can't modify an AND or OR:
+--- happy(true)
+--- happy:toggle()
+--- ```
+---
+--- ## 5. Immutable
+--- If appropriate, an `is` may be immutable. Any `is` with no `set` function defined is immutable. Examples are the `is.AND` and `is.OR` instances, since modifying combinations of values doesn't really make sense. Additionally, an immutable wrapper can be made from any `is` value via either `is.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
+---
+--- Note that the underlying `is` value(s) are still potentially modifyable, and any watchers on the immutable wrapper will be notified of changes. You just can't make any changes directly to the immutable value.
+---
+--- For example:
+---
+--- ```lua
+--- local isImmutable = isValue:IMMUTABLE()
+--- isImmutable:toggle()	-- results in an `error` being thrown
+--- isImmutable:watch(function(newValue) print "isImmutable changed to "..newValue end)
+--- isValue:toggle()		-- prints "isImmutable changed to false"
+--- ```
 local log				= require("hs.logger").new("is")
 
 local is = {}
