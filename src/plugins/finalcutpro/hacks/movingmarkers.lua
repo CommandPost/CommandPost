@@ -80,6 +80,7 @@ mod.isEnabled = is.new(
 		end
 		return false
 	end,
+	
 	function(allowMovingMarkers)
 		if not fcp:isInstalled() then
 			return
