@@ -323,25 +323,27 @@ function is:toggle()
 	return self:value(not self._get())
 end
 
---- cp.is:watch(watchFn) -> nil
+--- cp.is:watch(watchFn[, notifyNow]) -> cp.is
 --- Method
 --- Adds the watch function to the instance. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
 ---
 --- Parameters:
---- * `watchFn`	- The watch function.
+--- * `watchFn`		- The watch function.
+--- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
 ---
 --- Returns:
 --- * The same `cp.is` instance.
 ---
 --- Notes:
 --- * You can watch immutable instances. Wrapped `cp.is` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
---- * New watchers will be notified immediately of the current value.
-function is:watch(watchFn)
+function is:watch(watchFn, notifyNow)
 	if not self._watchers then
 		self._watchers = {}
 	end
 	self._watchers[#self._watchers + 1] = watchFn
-	watchFn(self:value())
+	if notifyNow then
+		watchFn(self:value())
+	end
 	return self
 end
 

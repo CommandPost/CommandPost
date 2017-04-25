@@ -44,29 +44,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-function mod.isEnabled()
-	return config.get("enableXMLSharing", false)
-end
-
---------------------------------------------------------------------------------
--- SET ENABLED:
---------------------------------------------------------------------------------
-function mod.setEnabled(value)
-	config.set("enableXMLSharing", value)
-	if value then
-		mod:_notify('enable')
-	else
-		mod:_notify('disable')
-	end
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE ENABLED:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+mod.isEnabled = config.is("enableXMLSharing", false)
 
 --------------------------------------------------------------------------------
 -- GET SHARING PATH:
@@ -102,74 +80,75 @@ end
 -- LIST FILES MENU:
 --------------------------------------------------------------------------------
 function mod.listFilesMenu()
+	if not mod.isEnabled() then
+		return nil
+	end
+	
 	if mod._filesMenuCache ~= nil then
 		--log.df("Using XML Sharing Menu Cache")
 		return mod._filesMenuCache
 	else
-		--log.df("NOT Using XML Sharing Menu Cache")
+		log.df("NOT Using XML Sharing Menu Cache")
 		--------------------------------------------------------------------------------
 		-- Shared XML Menu:
 		--------------------------------------------------------------------------------
 		local menu = {}
-		if mod.isEnabled() then
+		--------------------------------------------------------------------------------
+		-- Get list of files:
+		--------------------------------------------------------------------------------
+		local sharedXMLFiles = {}
 
-			--------------------------------------------------------------------------------
-			-- Get list of files:
-			--------------------------------------------------------------------------------
-			local sharedXMLFiles = {}
+		local emptySharedXMLFiles = true
+		local xmlSharingPath = mod.getSharingPath()
 
-			local emptySharedXMLFiles = true
-			local xmlSharingPath = mod.getSharingPath()
+		if not xmlSharingPath then
+			return nil
+		end
 
-			if not xmlSharingPath then
-				return nil
-			end
+		local fcpxRunning = fcp:isRunning()
 
-			local fcpxRunning = fcp:isRunning()
+		for folder in fs.dir(xmlSharingPath) do
 
-			for folder in fs.dir(xmlSharingPath) do
+			if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
 
-				if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
+				submenu = {}
+				for file in fs.dir(xmlSharingPath .. "/" .. folder) do
+					if file:sub(-7) == ".fcpxml" then
+						emptySharedXMLFiles = false
+						local xmlPath = xmlSharingPath .. folder .. "/" .. file
 
-					submenu = {}
-					for file in fs.dir(xmlSharingPath .. "/" .. folder) do
-						if file:sub(-7) == ".fcpxml" then
-							emptySharedXMLFiles = false
-							local xmlPath = xmlSharingPath .. folder .. "/" .. file
+						local attributes = fs.attributes(xmlPath)
 
-							local attributes = fs.attributes(xmlPath)
-
-							if attributes then
-								creation = attributes["creation"]
-							end
-							table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning, creation = creation})
+						if attributes then
+							creation = attributes["creation"]
 						end
-					end
-
-					-- Sort table by creation date:
-					table.sort(submenu, function(a, b) return a.creation > b.creation end)
-
-					if next(submenu) ~= nil then
-						table.insert(menu, {title = folder, menu = submenu})
+						table.insert(submenu, {title = file:sub(1, -8), fn = function() fcp:importXML(xmlPath) end, disabled = not fcpxRunning, creation = creation})
 					end
 				end
-			end
 
-			-- Sort table by title:
-			table.sort(menu, function(a, b) return a.title < b.title end)
+				-- Sort table by creation date:
+				table.sort(submenu, function(a, b) return a.creation > b.creation end)
 
-			if emptySharedXMLFiles then
-				--------------------------------------------------------------------------------
-				-- Nothing in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(menu, { title = "Empty", disabled = true })
-			else
-				--------------------------------------------------------------------------------
-				-- Something in the Shared Clipboard:
-				--------------------------------------------------------------------------------
-				table.insert(menu, { title = "-" })
-				table.insert(menu, { title = "Clear Shared XML Files", fn = mod.clearSharedFiles })
+				if next(submenu) ~= nil then
+					table.insert(menu, {title = folder, menu = submenu})
+				end
 			end
+		end
+
+		-- Sort table by title:
+		table.sort(menu, function(a, b) return a.title < b.title end)
+
+		if emptySharedXMLFiles then
+			--------------------------------------------------------------------------------
+			-- Nothing in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			table.insert(menu, { title = "Empty", disabled = true })
+		else
+			--------------------------------------------------------------------------------
+			-- Something in the Shared Clipboard:
+			--------------------------------------------------------------------------------
+			table.insert(menu, { title = "-" })
+			table.insert(menu, { title = "Clear Shared XML Files", fn = mod.clearSharedFiles })
 		end
 		mod._filesMenuCache = menu
 		return menu
@@ -225,14 +204,14 @@ function mod.update()
 			if sharingPath ~= false then
 				mod.setSharingPath(sharingPath)
 			else
-				mod.setEnabled(false)
+				mod.isEnabled(false)
 				return
 			end
 		end
 
 		-- Ensure the directory actually exists.
 		if not tools.doesDirectoryExist(sharingPath) then
-			mod.setEnabled(false)
+			mod.isEnabled(false)
 			return
 		end
 
@@ -360,6 +339,13 @@ function mod.shareXML(incomingXML, noErrors)
 
 end
 
+function mod.init()
+	-- Ensures that mod.update is called whenever isEnabled changes.
+	mod.isEnabled:watch(mod.update)
+	-- Pre-generate the menu.
+	mod.listFilesMenu()
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -381,8 +367,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Generate Files Menu for Cache:
 	--------------------------------------------------------------------------------
-	mod.update()
-	mod.listFilesMenu()
+	mod.init()
 
 	--------------------------------------------------------------------------------
 	-- Tools Menus:
@@ -390,7 +375,7 @@ function plugin.init(deps)
 	deps.menu:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
 
 		:addItem(1, function()
-			return { title = i18n("enableXMLSharing"),	fn = mod.toggleEnabled,	checked = mod.isEnabled()}
+			return { title = i18n("enableXMLSharing"),	fn = function() mod.isEnabled:toggle() end,	checked = mod.isEnabled()}
 		end)
 		:addSeparator(2)
 		:addItems(3, mod.listFilesMenu)

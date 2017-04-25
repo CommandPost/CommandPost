@@ -62,45 +62,10 @@ function mod.id()
 	return ID
 end
 
---- plugins.finalcutpro.menu.menuaction.setEnabled() -> none
---- Function
---- Sets
----
---- Parameters:
----  * `value` - boolean value
----
---- Returns:
----  * None
-function mod.setEnabled(value)
-	config.set("menuActionEnabled", value)
-	mod._manager.refresh()
-end
-
---- plugins.finalcutpro.menu.menuaction.isEnabled() -> none
---- Function
---- Enabled the Menu Action
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.isEnabled()
-	return config.get("menuActionEnabled", true)
-end
-
---- plugins.finalcutpro.menu.menuaction.toggleEnabled() -> none
---- Function
---- Toggles whether or not a menu action is enabled.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+--- plugins.finalcutpro.menu.menuaction.isEnabled
+--- Is Value
+--- This will be `true` when menu actions are enabled.
+mod.isEnabled = config.is("menuActionEnabled", true)
 
 --- plugins.finalcutpro.menu.menuaction.choices() -> table
 --- Function

@@ -50,24 +50,7 @@ mod.log						= log
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-function mod.isEnabled()
-	return config.get("enableSharedClipboard", false)
-end
-
---------------------------------------------------------------------------------
--- SET ENABLED:
---------------------------------------------------------------------------------
-function mod.setEnabled(value)
-	config.set("enableSharedClipboard", value)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE ENABLED:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+mod.isEnabled = config.is("enabledShardClipboard", false)
 
 --------------------------------------------------------------------------------
 -- GET ROOT PATH:
@@ -138,7 +121,7 @@ function mod.update()
 			if result then
 				mod.setRootPath(result)
 			else
-				mod.setEnabled(false)
+				mod.isEnabled(false)
 			end
 		end
 		if mod.validRootPath() and not mod._watcherId then
@@ -327,7 +310,8 @@ function mod.init(manager)
 		end
 	end
 
-	mod.setEnabled(setEnabledValue)
+	mod.isEnabled(setEnabledValue)
+	mod.isEnabled:watch(mod.update)
 
 	return self
 end
@@ -426,7 +410,7 @@ function plugin.init(deps)
 	local menu = deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
 
 	:addItem(1000, function()
-		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled() and mod.validRootPath() }
+		return { title = i18n("enableSharedClipboard"),	fn = function() mod.isEnabled:toggle() end, checked = mod.isEnabled() and mod.validRootPath() }
 	end)
 
 	:addSeparator(2000)

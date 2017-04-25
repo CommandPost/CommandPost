@@ -53,18 +53,7 @@ function action.id()
 	return "generator"
 end
 
-function action.setEnabled(value)
-	config.set(action.id().."ActionEnabled", value)
-	action._manager.refresh()
-end
-
-function action.isEnabled()
-	return config.get(action.id().."ActionEnabled", true)
-end
-
-function action.toggleEnabled()
-	action.setEnabled(not action.isEnabled())
-end
+action.isEnabled = config.is(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then

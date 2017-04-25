@@ -53,18 +53,7 @@ function videoaction.id()
 	return "video"
 end
 
-function videoaction.setEnabled(value)
-	config.set(videoaction.id().."ActionEnabled", value)
-	videoaction._manager.refresh()
-end
-
-function videoaction.isEnabled()
-	return config.get(videoaction.id().."ActionEnabled", true)
-end
-
-function videoaction.toggleEnabled()
-	videoaction.setEnabled(not videoaction.isEnabled())
-end
+videoaction.isEnabled = config.is(videoaction.id().."ActionEnabled", true)
 
 function videoaction.choices()
 	if not videoaction._choices then
@@ -112,18 +101,7 @@ function audioaction.id()
 	return "audio"
 end
 
-function audioaction.setEnabled(value)
-	config.set(audioaction.id().."ActionEnabled", value)
-	audioaction._manager.refresh()
-end
-
-function audioaction.isEnabled()
-	return config.get(audioaction.id().."ActionEnabled", true)
-end
-
-function audioaction.toggleEnabled()
-	audioaction.setEnabled(not audioaction.isEnabled())
-end
+audioaction.isEnabled = config.is(audioaction.id().."ActionEnabled", true)
 
 function audioaction.choices()
 	if not audioaction._choices then
