@@ -391,11 +391,14 @@ function mod.init(deps, env)
 
 	mod._panel:addContent(10, generateContent, true)
 
+	local shortcutsEnabledClass  = ""
+	if shortcutsEnabled then shortcutsEnabledClass = "  buttonDisabled" end
+
 	mod._panel:addButton(20,
 		{
 			label		= i18n("resetShortcuts"),
 			onclick		= resetShortcuts,
-			class		= "resetShortcuts" .. (shortcutsEnabled and '' or ' buttonDisabled'),
+			class		= "resetShortcuts" .. shortcutsEnabledClass,
 		}
 	)
 
