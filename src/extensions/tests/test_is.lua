@@ -39,6 +39,7 @@ function run()
 	test("is IMMUTABLE", function()
 		local isTrue = is.TRUE():IMMUTABLE()
 		ok(isTrue() == true)
+		ok(not isTrue:mutable())
 		
 		local check = spy(function() isTrue():toggle() end)
 		check()

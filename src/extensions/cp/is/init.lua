@@ -234,7 +234,7 @@ end
 --- Returns:
 --- * `true` if the instance can be modified.
 function is:mutable()
-	return self._get ~= nil
+	return self._set ~= nil
 end
 
 --- cp.is:toggle() -> boolean
