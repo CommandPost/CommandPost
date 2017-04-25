@@ -19,6 +19,7 @@ local application		= require("hs.application")
 local console			= require("hs.console")
 
 local config			= require("cp.config")
+local is				= require("cp.is")
 local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
@@ -36,60 +37,30 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.general.toggleDisplayMenubarAsIcon() -> none
---- Function
+--- plugins.core.preferences.general.displayMenubarAsIcon
+--- Is Value
 --- Toggles the menubar display icon from icon to text value and vice versa.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleDisplayMenubarAsIcon()
-	config.set("displayMenubarAsIcon", not mod.getDisplayMenubarAsIcon())
-	mod.menuManager:updateMenubarIcon()
-end
+mod.displayMenubarAsIcon = config.is("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(
+	function(value)
+		if mod.menuManager then mod.menuManager:updateMenubarIcon() end
+	end
+)
 
---- plugins.core.preferences.general.getDisplayMenubarAsIcon() -> boolean
---- Function
---- Returns whether the menubar is display as an icon or not.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if set to display the menubar as an icon other `false` if displaying menubar as text.
-function mod.getDisplayMenubarAsIcon()
-	return config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
-end
+--- plugins.core.preferences.general.autoLaunch
+--- Is Value
+--- A `cp.is` value to control if CommandPost will automatically launch when the user logs in.
+mod.autoLaunch = is.new(
+	function() return hs.autoLaunch() end,
+	function(value) hs.autoLaunch(value) end
+)
 
---- plugins.core.preferences.general.toggleAutoLaunch() -> boolean
---- Function
---- Toggles the "Launch on Login" status for CommandPost.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleAutoLaunch()
-	hs.autoLaunch(not mod._autoLaunch)
-	mod._autoLaunch = not mod._autoLaunch
-end
-
---- plugins.core.preferences.general.toggleUploadCrashData() -> boolean
---- Function
---- Toggles the "Upload Crash Data" status for CommandPost.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleUploadCrashData()
-	hs.uploadCrashData(not mod._uploadCrashData)
-	mod._uploadCrashData = not mod._uploadCrashData
-end
+--- plugins.core.preferences.general.autoLaunch
+--- Is Value
+--- A `cp.is` value to control if CommandPost will automatically upload crash data to the developer.
+mod.uploadCrashData = is.new(
+	function() return hs.uploadCrashData() end,
+	function(value) hs.uploadCrashData(value) end
+)
 
 --- plugins.core.preferences.general.openPrivacyPolicy() -> none
 --- Function
@@ -142,8 +113,8 @@ function plugin.init(deps)
 	:addCheckbox(3,
 		{
 			label		= i18n("launchAtStartup"),
-			checked		= hs.autoLaunch,
-			onchange	= function(id, params) hs.autoLaunch(params.checked) end,
+			checked		= mod.autoLaunch,
+			onchange	= function(id, params) mod.autoLaunch(params.checked) end,
 		}
 	)
 
@@ -152,8 +123,8 @@ function plugin.init(deps)
 	:addCheckbox(51,
 		{
 			label		= i18n("sendCrashData"),
-			checked		= hs.uploadCrashData,
-			onchange	= function(id, params) hs.uploadCrashData(params.checked) end,
+			checked		= mod.uploadCrashData,
+			onchange	= function(id, params) mod.uploadCrashData(params.checked) end,
 		}
 	)
 
@@ -173,8 +144,8 @@ function plugin.init(deps)
 	:addCheckbox(21,
 		{
 			label = i18n("displayThisMenuAsIcon"),
-			onchange = mod.toggleDisplayMenubarAsIcon,
-			checked = mod.getDisplayMenubarAsIcon,
+			onchange = function(id, params) mod.displayMenubarAsIcon(params.checked) end,
+			checked = mod.displayMenubarAsIcon,
 		}
 	)
 
