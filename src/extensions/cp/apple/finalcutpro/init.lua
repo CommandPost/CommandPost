@@ -285,6 +285,7 @@ end
 function App:restart()
 	local app = self:application()
 	if app then
+		local appPath = app:path()
 		-- Kill Final Cut Pro:
 		self:quit()
 
@@ -292,7 +293,11 @@ function App:restart()
 		just.doWhile(function() return self:isRunning() end, 20, 0.1)
 
 		-- Launch Final Cut Pro:
-		return self:launch()
+		if appPath then
+			local _, result = hs.execute([[open "]] .. tostring(appPath) .. [["]])
+			return result
+		end
+
 	end
 	return false
 end
