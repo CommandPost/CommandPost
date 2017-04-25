@@ -382,12 +382,11 @@ function App:getPath()
 		----------------------------------------------------------------------------------------
 		-- FINAL CUT PRO IS CURRENTLY RUNNING:
 		----------------------------------------------------------------------------------------
-		local appPID = app:pid()
-		if appPID then
-			local path = getPathToApplicationFromPID(appPID)
-			if path then
-				return path .. "/"
-			end
+		local appPath = app:path()
+		if appPath then
+			return appPath
+		else
+			log.df("GET PATH: Failed to get running application path.")
 		end
 	else
 		----------------------------------------------------------------------------------------
@@ -433,29 +432,6 @@ end
 function App:isFrontmost()
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
-end
-
--- getPathToApplicationFromPID(pid) -> string or nil
--- Function
--- Returns the path to an Application
---
--- Parameters:
---  * pid - The UNIX process identifier of the application (i.e. a number)
---
--- Returns:
---  * Application Path as string or nil if an error occurred
-function getPathToApplicationFromPID(pid)
-	local appleScript = [[
- 		tell application "System Events"
-			return POSIX path of application file of every application process whose unix id is ]] .. tostring(pid) .. "\n\n" .. [[
-		end tell
-	]]
- 	local success, result = osascript.applescript(appleScript)
-	if success and result and result[1] then
-		return tostring(result[1])
-	else
-		return nil
-	end
 end
 
 -- getPathToClosedApplication(bundleID) -> string or nil
@@ -504,21 +480,16 @@ function App:getVersion()
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
 	if app then
-		local appPID = app:pid()
-		if appPID then
-			local appPath = getPathToApplicationFromPID(appPID)
-			if appPath then
-				local info = application.infoForBundlePath(appPath)
-				if info then
-					return info["CFBundleShortVersionString"]
-				else
-					log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
-				end
+		local appPath = app:path()
+		if appPath then
+			local info = application.infoForBundlePath(appPath)
+			if info then
+				return info["CFBundleShortVersionString"]
 			else
-				log.df("VERSION CHECK: Could not determine Final Cut Pro's path from PID.")
+				log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
 			end
 		else
-			log.df("VERSION CHECK: Could not determine Final Cut Pro's PID.")
+			log.df("VERSION CHECK: Could not determine Final Cut Pro's path.")
 		end
 	end
 
