@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 local geometry							= require("hs.geometry")
 
+local is								= require("cp.is")
 local just								= require("cp.just")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
@@ -76,9 +77,20 @@ function ColorBoard:new(parent)
 		_parent = parent,
 		_child = {}
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		local ui = self:UI()
+		return ui ~= nil and ui:attributeValue("AXSize").w > 0
+	end):methodOf(o)
+	
+	-- TODO: Add documentation
+	o.isActive = is.new(function(self)
+		local ui = self:colorSatExpUI()
+		return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = ColorBoard})
 end
 
 -- TODO: Add documentation
@@ -124,12 +136,6 @@ end
 
 -- TODO: Add documentation
 function ColorBoard:_findUI()
-end
-
--- TODO: Add documentation
-function ColorBoard:isShowing()
-	local ui = self:UI()
-	return ui ~= nil and ui:attributeValue("AXSize").w > 0
 end
 
 -- TODO: Add documentation
@@ -179,12 +185,6 @@ function ColorBoard:showInspectorUI()
 		end
 		return nil
 	end)
-end
-
--- TODO: Add documentation
-function ColorBoard:isActive()
-	local ui = self:colorSatExpUI()
-	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
 end
 
 -----------------------------------------------------------------------

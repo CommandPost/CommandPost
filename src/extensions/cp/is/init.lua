@@ -74,7 +74,28 @@
 --- isImmutable:watch(function(newValue) print "isImmutable changed to "..newValue end)
 --- isValue:toggle()		-- prints "isImmutable changed to false"
 --- ```
+---
+--- ## 6. Attachable
+--- By default, an `is` acts like a function. It does not expect to receive a table as the first parameter. So, this will fail:
+---
+--- ```lua
+--- local owner = {}
+--- owner.isMethod = is.TRUE()
+--- owner:isMethod() -- error!
+--- ```
+---
+--- To use an `is` as a method, you need to `attach` it to the owning table, like so:
+---
+--- ```lua
+--- local owner = {}
+--- owner.isMethod = is.TRUE():methodOf(owner)
+--- owner:isMethod() -- success!
+--- ```
+---
+--- **NOTE:** An `is` should only be attached to a true instance, not to a metatable.
+	
 local log				= require("hs.logger").new("is")
+local inspect			= require("hs.inspect")
 
 local is = {}
 is.__index = is
@@ -86,23 +107,34 @@ local function nextId()
 	return ids
 end
 
+local function isInstance(something)
+	return getmetatable(something).__index == is
+end
+
 --- cp.is.new(getFn, setFn) --> cp.is
 --- Constructor
---- Creates a new `is` instance, with the provided `get` and `set` functions.
+--- Creates a new `is` value, with the provided `get` and `set` functions.
 ---
 --- Parameters:
---- * `getFn`	- The function that will get called to retrieve the current value.
---- * `setFn`	- The function that will get called to set the new value. It will be passed the new value.
+--- * `getFn`		- The function that will get called to retrieve the current value.
+--- * `setFn`		- The function that will get called to set the new value.
 ---
 --- Returns:
 --- * The new `cp.is` instance.
+---
+--- Notes:
+--- * `getFn` signature: `function([owner])`
+--- ** `owner`		- If this is attached as a method, the owner table is passed in.
+--- * `setFn` signature: `function(newValue[, owner])`
+--- ** `newValue`	- The new value to store.
+--- ** `owner`		- If this is attached as a method, the owner table is passed in.
 function is.new(getFn, setFn)
 	assert(getFn ~= nil and type(getFn) == "function")
 	assert(setFn == nil or type(setFn) == "function")
 	local o = {
-		_id		= nextId(),
-		_get	= getFn,
-		_set	= setFn,
+		_id			= nextId(),
+		_get		= getFn,
+		_set		= setFn,
 	}
 	setmetatable(o, is)
 	return o
@@ -135,7 +167,7 @@ end
 --- * a new `cp.is` instance which cannot be modified.
 ---
 --- Note:
---- * The original `isValue` can still be modified (if appropriate) and watchers of the immutable instance will be notified when it changes.
+--- * The original `isValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 --- * This can also be called as a method of a `cp.is` instance. Eg `cp.is.TRUE():IMMUTABLE()`.
 function is.IMMUTABLE(isValue)
 	local immutable = is.new(function() return isValue:value() end)
@@ -212,7 +244,7 @@ function is.AND(...)
 	local isAnd = is.new(
 		function()
 			for _,value in ipairs(values) do
-				if not value() then
+				if not value:value() then
 					return false
 				end
 			end
@@ -250,7 +282,7 @@ function is.OR(...)
 	local isOr = is.new(
 		function()
 			for _,value in ipairs(values) do
-				if value() then
+				if value:value() then
 					return true
 				end
 			end
@@ -276,7 +308,7 @@ end
 --- Returns:
 --- * The current boolean value.
 function is:value(newValue, quiet)
-	local value = self._get()
+	local value = self._get(self._owner)
 	value = value ~= nil and value ~= false
 	if newValue ~= nil then
 		if not self._set then
@@ -284,7 +316,7 @@ function is:value(newValue, quiet)
 		end
 		newValue = newValue ~= false
 		if value ~= newValue then
-			self._set(newValue)
+			self._set(newValue, self._owner)
 			if not quiet then
 				self:notify()
 			end
@@ -294,38 +326,68 @@ function is:value(newValue, quiet)
 	return value
 end
 
---- cp.is:mutable() -> boolean
+--- cp.is:methodOf(owner) -> cp.is
 --- Method
---- Checks if the `cp.is` instance can be modified.
+--- Creates a new instance of the is which is bound to the specified owner.
+---
+--- Parameters:
+--- * `owner`	- The owner to attach to.
+---
+--- Returns:
+--- * the `cp.is`
+---
+--- Notes:
+--- * Throws an `error` if this is already attached to an owner.
+function is:methodOf(owner)
+	local o = {_owner = owner}
+	return setmetatable(o, {__index = self, __call = is.__call, __tostring = is.__tostring})
+end
+
+--- cp.is:owner() -> table
+--- Method
+--- If this is a 'method', return the table instance the method is attached to.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
---- * `true` if the instance can be modified.
+--- * The owner table, or `nil`.
+function is:owner()
+	return self._owner
+end
+
+--- cp.is:mutable() -> boolean
+--- Method
+--- Checks if the `cp.is` owner can be modified.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the value can be modified.
 function is:mutable()
 	return self._set ~= nil
 end
 
 --- cp.is:toggle() -> boolean
 --- Method
---- Toggles the current value of the instance.
+--- Toggles the current value.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
---- * The new value of the instance.
+--- * The new value.
 ---
 --- Notes:
---- * If the instance is immutable, an error will be thrown.
+--- * If the value is immutable, an error will be thrown.
 function is:toggle()
-	return self:value(not self._get())
+	return self:value(not self._get(self._owner))
 end
 
 --- cp.is:watch(watchFn[, notifyNow]) -> cp.is
 --- Method
---- Adds the watch function to the instance. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
+--- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
 ---
 --- Parameters:
 --- * `watchFn`		- The watch function.
@@ -335,7 +397,7 @@ end
 --- * The same `cp.is` instance.
 ---
 --- Notes:
---- * You can watch immutable instances. Wrapped `cp.is` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+--- * You can watch immutable values. Wrapped `cp.is` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function is:watch(watchFn, notifyNow)
 	if not self._watchers then
 		self._watchers = {}
@@ -373,6 +435,18 @@ function is:__tostring()
 	return string.format("is #%d: %s", self._id, self:value())
 end
 
-is.__call = is.value
+is.__call = function(target, owner, newValue, quiet)
+	if target._owner then
+		-- confirm we received the owner we expected.
+		if target._owner ~= owner then
+			error(string.format("'is' received unexpected owner: %s", inspect(owner)))
+		end
+	else
+		-- no owner, so shift the parameters across
+		quiet = newValue
+		newValue = owner
+	end
+	return is.value(target, newValue, quiet)
+end
 
 return is

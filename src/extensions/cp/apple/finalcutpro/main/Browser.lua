@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -42,26 +43,30 @@ end
 -- TODO: Add documentation
 function Browser:new(app)
 	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+
+	-- TODO: Add documentation
+	o.isOnSecondary = is.new(function(self)
+		local ui = self:UI()
+		return ui and SecondaryWindow.matches(ui:window())
+	end):methodOf(o)
+
+	-- TODO: Add documentation
+	o.isOnPrimary = is.new(function(self)
+		local ui = self:UI()
+		return ui and PrimaryWindow.matches(ui:window())
+	end):methodOf(o)
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = Browser})
 end
 
 -- TODO: Add documentation
 function Browser:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function Browser:isOnSecondary()
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end
-
--- TODO: Add documentation
-function Browser:isOnPrimary()
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -92,11 +97,6 @@ function Browser._findBrowser(...)
 		end
 	end
 	return nil
-end
-
--- TODO: Add documentation
-function Browser:isShowing()
-	return self:UI() ~= nil
 end
 
 -- TODO: Add documentation

@@ -19,6 +19,7 @@ local fnutils							= require("hs.fnutils")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local just								= require("cp.just")
+local is								= require("cp.is")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -48,9 +49,12 @@ end
 
 function Browser:new(parent, type)
 	o = {_parent = parent, _type = type}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	o.isShowing = is.new(function(self)
+		return self:toggleButton():isChecked()
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = Browser})
 end
 
 function Browser:parent()
@@ -92,10 +96,6 @@ function Browser:toggleButton()
 		self._toggleButton = button
 	end
 	return self._toggleButton
-end
-
-function Browser:isShowing()
-	return self:toggleButton():isChecked()
 end
 
 function Browser:show()

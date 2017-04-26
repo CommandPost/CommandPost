@@ -214,6 +214,54 @@ function run()
 		ok(eq(watchValue, false))
 		
 	end)
+	
+	test("Is Method", function()
+		local instance = {
+			value = true,
+		}
+		
+		instance.isMethod = is.new(
+			function(owner)
+				return owner.value
+			end,
+			function(newValue, owner)
+				owner.value = newValue
+			end):methodOf(instance)
+		
+		ok(instance:isMethod() == true)
+		ok(instance:isMethod(false) == false)
+		ok(instance.value == false)
+		ok(instance.isMethod:toggle() == true)
+		ok(instance.value == true)
+
+		instance.isSimple = is.TRUE():methodOf(instance)
+		ok(instance:isSimple())
+		ok(instance.isSimple:toggle() == false)
+		ok(not instance:isSimple())
+		
+		instance.isNot = is.NOT(instance.isSimple):methodOf(instance)
+		instance:isSimple(true)
+		ok(instance:isNot() == false)
+		ok(instance.isNot:toggle() == true)
+		ok(instance:isSimple() == false)
+		
+		instance.isAndMethod = instance.isMethod:AND(instance.isSimple):methodOf(instance)
+		instance:isMethod(true)
+		instance:isSimple(true)
+		ok(instance:isAndMethod() == true)
+		ok(instance:isMethod(false) == false)
+		ok(instance:isAndMethod() == false)
+		
+		instance.isOrMethod = instance.isMethod:OR(instance.isSimple):methodOf(instance)
+		instance:isMethod(true)
+		instance:isSimple(true)
+		ok(instance:isOrMethod() == true)
+		ok(instance:isMethod(false) == false)
+		ok(instance:isOrMethod() == true)
+		ok(instance:isSimple(false) == false)
+		ok(instance:isOrMethod() == false)
+		
+	end)
 end
 
 return run

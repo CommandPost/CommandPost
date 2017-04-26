@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils						= require("cp.apple.finalcutpro.axutils")
+local is							= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -34,9 +35,13 @@ end
 -- TODO: Add documentation
 function ReplaceAlert:new(parent)
 	o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = ReplaceAlert})
 end
 
 -- TODO: Add documentation
@@ -55,11 +60,6 @@ function ReplaceAlert:UI()
 		return axutils.childMatching(self:parent():UI(), ReplaceAlert.matches)
 	end,
 	ReplaceAlert.matches)
-end
-
--- TODO: Add documentation
-function ReplaceAlert:isShowing()
-	return self:UI() ~= nil
 end
 
 -- TODO: Add documentation

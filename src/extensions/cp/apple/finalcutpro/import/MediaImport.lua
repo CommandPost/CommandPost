@@ -16,6 +16,7 @@
 local log							= require("hs.logger").new("PrefsDlg")
 
 local just							= require("cp.just")
+local is							= require("cp.is")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local id							= require("cp.apple.finalcutpro.ids") "MediaImporter"
@@ -42,9 +43,13 @@ end
 -- TODO: Add documentation
 function MediaImport:new(app)
 	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = MediaImport})
 end
 
 -- TODO: Add documentation
@@ -67,11 +72,6 @@ function MediaImport:_findWindowUI(windows)
 		if MediaImport.matches(window) then return window end
 	end
 	return nil
-end
-
--- TODO: Add documentation
-function MediaImport:isShowing()
-	return self:UI() ~= nil
 end
 
 -- TODO: Add documentation

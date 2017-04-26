@@ -16,6 +16,7 @@
 local log							= require("hs.logger").new("PrefsDlg")
 
 local just							= require("cp.just")
+local is							= require("cp.is")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local GoToPrompt					= require("cp.apple.finalcutpro.export.GoToPrompt")
@@ -40,9 +41,13 @@ end
 -- TODO: Add documentation
 function SaveSheet:new(parent)
 	o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil or self:replaceAlert():isShowing()
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = SaveSheet})
 end
 
 -- TODO: Add documentation
@@ -61,11 +66,6 @@ function SaveSheet:UI()
 		return axutils.childMatching(self:parent():UI(), SaveSheet.matches)
 	end,
 	SaveSheet.matches)
-end
-
--- TODO: Add documentation
-function SaveSheet:isShowing()
-	return self:UI() ~= nil or self:replaceAlert():isShowing()
 end
 
 -- TODO: Add documentation

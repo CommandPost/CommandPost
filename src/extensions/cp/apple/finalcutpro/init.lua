@@ -111,6 +111,8 @@ local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local kc										= require("cp.apple.finalcutpro.keycodes")
 local shortcut									= require("cp.commands.shortcut")
 
+local is										= require("cp.is")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -152,22 +154,6 @@ App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
-
---- cp.apple.finalcutpro:new() -> App
---- Function
---- Creates a new App instance representing Final Cut Pro
----
---- Parameters:
----  * None
----
---- Returns:
----  * True is successful otherwise Nil
-function App:new()
-	o = {}
-	setmetatable(o, self)
-	self.__index = self
-	return o
-end
 
 --- cp.apple.finalcutpro:application() -> hs.application
 --- Function
@@ -237,10 +223,10 @@ end
 ---
 --- Returns:
 ---  * True if Final Cut Pro is running otherwise False
-function App:isRunning()
+App.isRunning = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isRunning()
-end
+end):methodOf(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
 --- Function
@@ -333,10 +319,10 @@ end
 ---
 --- Returns:
 ---  * An cp.finalcutpro object otherwise nil
-function App:isShowing()
+App.isShowing = is.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
-end
+end):methodOf(App)
 
 --- cp.apple.finalcutpro:hide() -> cp.finalcutpro object
 --- Function
@@ -415,7 +401,7 @@ end
 --- Returns:
 ---  * `true` if a supported version of Final Cut Pro is installed otherwise `false`
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-function App:isInstalled()
+App.isInstalled = is.new(function(self)
 	local version = self:getVersion()
 	if version then
 		if v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION)) then
@@ -423,7 +409,7 @@ function App:isInstalled()
 		end
 	end
 	return false
-end
+end):methodOf(App)
 
 --- cp.apple.finalcutpro:isFrontmost() -> boolean
 --- Function
@@ -434,10 +420,10 @@ end
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro is Frontmost.
-function App:isFrontmost()
+App.isFrontmost = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
-end
+end):methodOf(App)
 
 --- cp.apple.finalcutpro:getVersion() -> string or nil
 --- Function
@@ -1470,4 +1456,4 @@ function App:_describeWindow(w)
 		   "; modal: "..inspect(w:attributeValue("AXModal"))
 end
 
-return App:new()
+return App

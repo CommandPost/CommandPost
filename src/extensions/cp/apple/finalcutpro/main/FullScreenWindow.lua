@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
+local is							= require("cp.is")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 --------------------------------------------------------------------------------
@@ -39,20 +40,37 @@ function FullScreenWindow:new(app)
 	o = {
 		_app = app
 	}
-	setmetatable(o, self)
-	self.__index = self
-
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil
+	end):methodOf(o)
+	
+	-- TODO: Add documentation
+	o.isFullScreen = is.new(function(self)
+		local ui = self:rootGroupUI()
+		if ui then
+			-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
+			local group = nil
+			if #ui == 1 then
+				group = ui[1]
+			else
+				group = axutils.childMatching(ui, function(element) return #element == 2 end)
+			end
+			if #group == 2 then
+				local image = axutils.childWithRole(group, "AXImage")
+				return image ~= nil
+			end
+		end
+		return false
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = FullScreenWindow})
 end
 
 -- TODO: Add documentation
 function FullScreenWindow:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function FullScreenWindow:isShowing()
-	return self:UI() ~= nil
 end
 
 -- TODO: Add documentation
@@ -84,25 +102,6 @@ function FullScreenWindow:_findWindowUI(windows)
 		if FullScreenWindow.matches(w) then return w end
 	end
 	return nil
-end
-
--- TODO: Add documentation
-function FullScreenWindow:isFullScreen()
-	local ui = self:rootGroupUI()
-	if ui then
-		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
-		local group = nil
-		if #ui == 1 then
-			group = ui[1]
-		else
-			group = axutils.childMatching(ui, function(element) return #element == 2 end)
-		end
-		if #group == 2 then
-			local image = axutils.childWithRole(group, "AXImage")
-			return image ~= nil
-		end
-	end
-	return false
 end
 
 -- TODO: Add documentation

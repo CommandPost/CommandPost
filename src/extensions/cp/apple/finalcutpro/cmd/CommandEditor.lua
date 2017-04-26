@@ -23,6 +23,7 @@ local Button						= require("cp.apple.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 local id							= require("cp.apple.finalcutpro.ids").current("CommandEditor")
+local is							= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -44,9 +45,13 @@ end
 -- TODO: Add documentation
 function CommandEditor:new(app)
 	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:UI() ~= nil
+	end):methodOf(o)
+	
+	return setmetatable(o, { __index = CommandEditor })
 end
 
 -- TODO: Add documentation
@@ -69,11 +74,6 @@ function CommandEditor:_findWindowUI(windows)
 		if CommandEditor.matches(window) then return window end
 	end
 	return nil
-end
-
--- TODO: Add documentation
-function CommandEditor:isShowing()
-	return self:UI() ~= nil
 end
 
 -- TODO: Add documentation
