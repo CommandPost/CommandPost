@@ -48,7 +48,7 @@ function Browser.matches(element)
 end
 
 function Browser:new(parent, type)
-	o = {_parent = parent, _type = type}
+	local o = {_parent = parent, _type = type}
 	
 	o.isShowing = is.new(function(self)
 		return self:toggleButton():isChecked()

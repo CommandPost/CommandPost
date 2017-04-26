@@ -42,7 +42,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:new(app, eventViewer)
-	o = {
+	local o = {
 		_app = app,
 		_eventViewer = eventViewer
 	}

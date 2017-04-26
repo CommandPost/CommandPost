@@ -73,7 +73,7 @@ end
 
 -- TODO: Add documentation
 function ColorBoard:new(parent)
-	o = {
+	local o = {
 		_parent = parent,
 		_child = {}
 	}

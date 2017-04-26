@@ -84,7 +84,7 @@ function enableInterfaceCallback:new(id, callbackFn)
 	if enableInterfaceCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -177,7 +177,7 @@ function disableInterfaceCallback:new(id, callbackFn)
 	if disableInterfaceCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}

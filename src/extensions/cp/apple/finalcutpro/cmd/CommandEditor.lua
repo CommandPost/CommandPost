@@ -44,7 +44,7 @@ end
 
 -- TODO: Add documentation
 function CommandEditor:new(app)
-	o = {_app = app}
+	local o = {_app = app}
 	
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)

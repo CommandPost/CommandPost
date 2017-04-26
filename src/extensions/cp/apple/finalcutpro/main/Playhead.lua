@@ -62,7 +62,7 @@ end
 -- * containerFn 	- (optional) a function which returns the container axuielement which contains the playheads.
 -- 						If not present, it will use the parent's UI element.
 function Playhead:new(parent, skimming, containerFn)
-	o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
+	local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
 	setmetatable(o, self)
 	self.__index = self
 	return o

@@ -34,7 +34,7 @@ local mod = {}
 --- Returns:
 ---  * a new watcher instance
 function mod:new(...)
-	o = {
+	local o = {
 		_events 		= table.pack(...),
 		_watchers 		= {},
 		_watchersCount 	= 0,

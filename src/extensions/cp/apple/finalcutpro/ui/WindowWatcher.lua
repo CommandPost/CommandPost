@@ -35,7 +35,7 @@ local WindowWatcher = {}
 --- Returns:
 ---  * `WindowWatcher`	- the new WindowWatcher instance.
 function WindowWatcher:new(window)
-	o = {_window = window}
+	local o = {_window = window}
 	setmetatable(o, self)
 	self.__index = self
 	return o

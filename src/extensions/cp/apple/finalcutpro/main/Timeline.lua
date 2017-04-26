@@ -43,7 +43,7 @@ end
 
 -- TODO: Add documentation
 function Timeline:new(app)
-	o = {_app = app}
+	local o = {_app = app}
 	setmetatable(o, self)
 	self.__index = self
 	return o

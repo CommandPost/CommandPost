@@ -34,7 +34,7 @@ end
 
 -- TODO: Add documentation
 function ReplaceAlert:new(parent)
-	o = {_parent = parent}
+	local o = {_parent = parent}
 	
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)

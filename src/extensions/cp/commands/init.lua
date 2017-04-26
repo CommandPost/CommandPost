@@ -75,7 +75,7 @@ function commands:new(id)
 	if commands.group(id) ~= nil then
 		error("Duplicate command group ID: "..id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_commands = {},
 		_enabled = false,

@@ -41,7 +41,7 @@ hotkey.setLogLevel("error")
 ---  * command - The command that was created.
 ---
 function command:new(id, parent)
-	o = {
+	local o = {
 		_id = id,
 		_parent = parent,
 		_shortcuts = {},

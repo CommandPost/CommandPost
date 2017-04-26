@@ -44,7 +44,7 @@ GeneratorsBrowser.TITLE = "Titles and Generators"
 
 -- TODO: Add documentation
 function GeneratorsBrowser:new(parent)
-	o = {_parent = parent}
+	local o = {_parent = parent}
 	
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)

@@ -40,7 +40,7 @@ end
 
 -- TODO: Add documentation
 function SecondaryWindow:new(app)
-	o = {
+	local o = {
 		_app = app
 	}
 	setmetatable(o, self)

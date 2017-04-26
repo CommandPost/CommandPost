@@ -36,10 +36,14 @@ end
 
 -- TODO: Add documentation
 function Inspector:new(parent)
-	o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_parent = parent}
+	
+	-- TODO: Add documentation
+	o.isShowing = is.new(function(self)
+		return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
+	end):methodOf(o)
+	
+	return setmetatable(o, {__index = Inspector})
 end
 
 -- TODO: Add documentation
@@ -81,11 +85,6 @@ function Inspector:UI()
 		return nil
 	end,
 	Inspector.matches)
-end
-
--- TODO: Add documentation
-function Inspector:isShowing()
-	return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
 end
 
 -- TODO: Add documentation

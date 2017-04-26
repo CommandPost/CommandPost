@@ -38,7 +38,7 @@ end
 --- Function
 --- Creates a new Table
 function Table:new(parent, finder)
-	o = {_parent = parent, _finder = finder}
+	local o = {_parent = parent, _finder = finder}
 	setmetatable(o, self)
 	self.__index = self
 	return o

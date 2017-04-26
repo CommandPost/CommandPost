@@ -39,7 +39,7 @@ end
 
 -- TODO: Add documentation
 function PrimaryWindow:new(app)
-	o = {
+	local o = {
 		_app = app
 	}
 	setmetatable(o, self)

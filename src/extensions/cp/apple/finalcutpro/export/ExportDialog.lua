@@ -45,7 +45,7 @@ end
 
 -- TODO: Add documentation
 function ExportDialog:new(app)
-	o = {_app = app}
+	local o = {_app = app}
 	
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)

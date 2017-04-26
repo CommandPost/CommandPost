@@ -37,7 +37,7 @@ end
 
 -- TODO: Add documentation
 function FullScreenWindow:new(app)
-	o = {
+	local o = {
 		_app = app
 	}
 	

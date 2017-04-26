@@ -39,7 +39,7 @@ local Libraries = {}
 
 -- TODO: Add documentation
 function Libraries:new(parent)
-	o = {_parent = parent}
+	local o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o

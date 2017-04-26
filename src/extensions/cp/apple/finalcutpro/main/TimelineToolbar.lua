@@ -36,7 +36,7 @@ end
 
 -- TODO: Add documentation
 function TimelineToolbar:new(parent)
-	o = {_parent = parent}
+	local o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o

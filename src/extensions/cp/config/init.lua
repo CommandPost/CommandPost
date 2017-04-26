@@ -279,7 +279,7 @@ function shutdownCallback:new(id, callbackFn)
 	if shutdownCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -372,7 +372,7 @@ function textDroppedToDockIconCallback:new(id, callbackFn)
 	if textDroppedToDockIconCallback._items[id] ~= nil then
 		error("Duplicate Text Dropped to Dock Icon Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -465,7 +465,7 @@ function fileDroppedToDockIconCallback:new(id, callbackFn)
 	if fileDroppedToDockIconCallback._items[id] ~= nil then
 		error("Duplicate File Dropped to Dock Icon Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -558,7 +558,7 @@ function dockIconClickCallback:new(id, callbackFn)
 	if dockIconClickCallback._items[id] ~= nil then
 		error("Duplicate Dock Icon Click Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -651,7 +651,7 @@ function accessibilityStateCallback:new(id, callbackFn)
 	if accessibilityStateCallback._items[id] ~= nil then
 		error("Duplicate Dock Icon Click Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}

@@ -47,7 +47,7 @@ MediaBrowser.SOUND_EFFECTS = 4
 
 -- TODO: Add documentation
 function MediaBrowser:new(parent)
-	o = {_parent = parent}
+	local o = {_parent = parent}
 	setmetatable(o, self)
 	self.__index = self
 	return o

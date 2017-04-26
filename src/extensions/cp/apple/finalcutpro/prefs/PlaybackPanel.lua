@@ -31,7 +31,7 @@ local PlaybackPanel = {}
 
 -- TODO: Add documentation
 function PlaybackPanel:new(preferencesDialog)
-	o = {_parent = preferencesDialog}
+	local o = {_parent = preferencesDialog}
 	setmetatable(o, self)
 	self.__index = self
 	return o

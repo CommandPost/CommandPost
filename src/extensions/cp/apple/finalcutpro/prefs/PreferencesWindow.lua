@@ -35,7 +35,7 @@ PreferencesWindow.GROUP						= id "Group"
 
 -- TODO: Add documentation
 function PreferencesWindow:new(app)
-	o = {_app = app}
+	local o = {_app = app}
 	setmetatable(o, self)
 	self.__index = self
 	return o

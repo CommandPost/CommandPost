@@ -42,7 +42,7 @@ end
 
 -- TODO: Add documentation
 function Browser:new(app)
-	o = {_app = app}
+	local o = {_app = app}
 
 	-- TODO: Add documentation
 	o.isOnSecondary = is.new(function(self)
