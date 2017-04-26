@@ -98,7 +98,7 @@ Browser.isOnPrimary = is.new(function(self)
 end):bind(Browser)
 
 --- cp.apple.finalcutpro.main.Browser <cp.is: boolean; read-only>
---- Feature
+--- Field
 --- Is the Browser showing?
 Browser.isShowing = is.new(function(self)
 	return self:UI() ~= nil
