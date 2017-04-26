@@ -38,68 +38,6 @@ local SPACEBAR_KEYCODE 			= 49
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.isScrollingTimelineActive()
-	return config.get("scrollingTimelineActive", false)
-end
-
-function mod.setScrollingTimelineActive(active)
-	config.set("scrollingTimelineActive", active)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE SCROLLING TIMELINE:
---------------------------------------------------------------------------------
-function mod.toggleScrollingTimeline()
-
-	--------------------------------------------------------------------------------
-	-- Toggle Scrolling Timeline:
-	--------------------------------------------------------------------------------
-	if mod.isScrollingTimelineActive() then
-		--------------------------------------------------------------------------------
-		-- Update Settings:
-		--------------------------------------------------------------------------------
-		mod.setScrollingTimelineActive(false)
-
-		--------------------------------------------------------------------------------
-		-- Unlock the playhead.
-		--------------------------------------------------------------------------------
-		fcp:timeline():unlockPlayhead()
-
-		--------------------------------------------------------------------------------
-		-- Display Notification:
-		--------------------------------------------------------------------------------
-		dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
-
-	else
-		local message = ""
-
-		--------------------------------------------------------------------------------
-		-- Ensure that Playhead Lock is Off:
-		--------------------------------------------------------------------------------
-		if mod.isPlayheadLocked() then
-			mod.setPlayheadLocked(false)
-			message = i18n("playheadLockDeactivated") .. "\n"
-		end
-
-		--------------------------------------------------------------------------------
-		-- Update Settings:
-		--------------------------------------------------------------------------------
-		mod.setScrollingTimelineActive(true)
-
-		--------------------------------------------------------------------------------
-		-- If activated whilst already playing, then turn on Scrolling Timeline:
-		--------------------------------------------------------------------------------
-		mod.checkScrollingTimeline()
-
-		--------------------------------------------------------------------------------
-		-- Display Notification:
-		--------------------------------------------------------------------------------
-		dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-
-	end
-end
-
 --------------------------------------------------------------------------------
 -- Ensures the Scrolling Timeline/Playhead Lock are in the correct mode
 --------------------------------------------------------------------------------
@@ -122,6 +60,36 @@ function mod.update()
 		fcp:timeline():unlockPlayhead()
 	end
 end
+
+mod.isScrollingTimelineActive = config.is("scrollingTimelineActive", false):watch(function(active)
+	log.df("Updating Scrolling Timeline: %s", active)
+	if active then
+		local message = ""
+
+		--------------------------------------------------------------------------------
+		-- Ensure that Playhead Lock is Off:
+		--------------------------------------------------------------------------------
+		if mod.isPlayheadLocked() then
+			mod.isPlayheadLocked(false)
+			message = i18n("playheadLockDeactivated") .. "\n"
+			log.df("Message: %s", message)
+		end
+
+		--------------------------------------------------------------------------------
+		-- If activated whilst already playing, then turn on Scrolling Timeline:
+		--------------------------------------------------------------------------------
+		mod.checkScrollingTimeline()
+
+		--------------------------------------------------------------------------------
+		-- Display Notification:
+		--------------------------------------------------------------------------------
+		dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
+	elseif not mod.isPlayheadLocked() then
+		dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
+	end
+	
+	mod.update()
+end)
 
 --------------------------------------------------------------------------------
 -- SCROLLING TIMELINE WATCHER:
@@ -208,37 +176,24 @@ end
 --------------------------------------------------------------------------------
 -- PLAYHEAD LOCK:
 --------------------------------------------------------------------------------
-function mod.isPlayheadLocked()
-	return config.get("lockTimelinePlayhead", false)
-end
-
-function mod.setPlayheadLocked(locked)
-	config.set("lockTimelinePlayhead", locked)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE LOCK PLAYHEAD:
---------------------------------------------------------------------------------
-function mod.togglePlayheadLock()
-	local lockTimelinePlayhead = mod.isPlayheadLocked()
-
-	if lockTimelinePlayhead then
-		mod.setPlayheadLocked(false)
-		dialog.displayNotification(i18n("playheadLockDeactivated"))
-	else
+mod.isPlayheadLocked = config.is("lockTimelinePlayhead", false):watch(function(active)
+	log.df("Updating Playhead Lock: %s", active)
+	if active then
 		local message = ""
 		--------------------------------------------------------------------------------
 		-- Ensure that Scrolling Timeline is off
 		--------------------------------------------------------------------------------
 		if mod.isScrollingTimelineActive() then
-			mod.setScrollingTimelineActive(false)
+			mod.isScrollingTimelineActive(false)
 			message = i18n("scrollingTimelineDeactivated") .. "\n"
 		end
-		mod.setPlayheadLocked(true)
+		-- Notify the user.
 		dialog.displayNotification(message .. i18n("playheadLockActivated"))
+	elseif not mod.isScrollingTimelineActive() then
+		dialog.displayNotification(i18n("playheadLockDeactivated"))
 	end
-end
+	mod.update()
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -263,8 +218,8 @@ function plugin.init(deps)
 	-- menu items
 	section:addItems(1000, function()
 		return {
-			{ title = i18n("enableScrollingTimeline"),		fn = mod.toggleScrollingTimeline, 	checked = mod.isScrollingTimelineActive() },
-			{ title = i18n("enableTimelinePlayheadLock"),	fn = mod.togglePlayheadLock,		checked = mod.isPlayheadLocked()},
+			{ title = i18n("enableScrollingTimeline"),		fn = function() mod.isScrollingTimelineActive:toggle() end, 	checked = mod.isScrollingTimelineActive() },
+			{ title = i18n("enableTimelinePlayheadLock"),	fn = function() mod.isPlayheadLocked:toggle() end,				checked = mod.isPlayheadLocked() },
 		}
 	end)
 
@@ -272,10 +227,10 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpScrollingTimeline")
 		:groupedBy("timeline")
 		:activatedBy():ctrl():option():cmd("w")
-		:whenActivated(mod.toggleScrollingTimeline)
+		:whenActivated(function() mod.isScrollingTimelineActive:toggle() end)
 	deps.fcpxCmds:add("cpLockPlayhead")
 		:groupedBy("timeline")
-		:whenActivated(mod.togglePlayheadLock)
+		:whenActivated(function() mod.isPlayheadLocked:toggle() end)
 
 	-- watch for changes
 	fcp:watch(

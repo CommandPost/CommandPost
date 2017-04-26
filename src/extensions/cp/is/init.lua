@@ -349,7 +349,7 @@ end
 
 --- cp.is:notify() -> nil
 --- Method
---- Notifies all watchers of the current value, regardless of whether it has changed.
+--- Notifies all watchers of the current value if it has changed since the last notification.
 ---
 --- Parameters:
 --- * None
@@ -359,9 +359,12 @@ end
 function is:notify()
 	if self._watchers then
 		local value = self:value()
-		for _,watcher in ipairs(self._watchers) do
-			watcher(value)
+		if self._lastValue ~= value then
+			for _,watcher in ipairs(self._watchers) do
+				watcher(value)
+			end
 		end
+		self._lastValue = value
 	end
 end
 
