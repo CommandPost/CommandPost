@@ -62,8 +62,8 @@ function mod.id()
 	return ID
 end
 
---- plugins.finalcutpro.menu.menuaction.isEnabled
---- Is Value
+--- plugins.finalcutpro.menu.menuaction.isEnabled <cp.is: boolean>
+--- Field
 --- This will be `true` when menu actions are enabled.
 mod.isEnabled = config.is("menuActionEnabled", true)
 

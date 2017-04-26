@@ -56,7 +56,9 @@ function ReplaceAlert:UI()
 	ReplaceAlert.matches)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.export.ReplaceAlert.isShowing <cp.is: boolean; read-only>
+--- Field
+--- Is the Replace File alert showing?
 ReplaceAlert.isShowing = is.new(function(self)
 	return self:UI() ~= nil
 end):bind(ReplaceAlert)

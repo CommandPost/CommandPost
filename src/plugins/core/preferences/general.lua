@@ -37,8 +37,8 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.general.displayMenubarAsIcon
---- Is Value
+--- plugins.core.preferences.general.displayMenubarAsIcon <cp.is: boolean>
+--- Field
 --- Toggles the menubar display icon from icon to text value and vice versa.
 mod.displayMenubarAsIcon = config.is("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(
 	function(value)
@@ -46,17 +46,17 @@ mod.displayMenubarAsIcon = config.is("displayMenubarAsIcon", DEFAULT_DISPLAY_MEN
 	end
 )
 
---- plugins.core.preferences.general.autoLaunch
---- Is Value
---- A `cp.is` value to control if CommandPost will automatically launch when the user logs in.
+--- plugins.core.preferences.general.autoLaunch <cp.is: boolean>
+--- Field
+--- Controls if CommandPost will automatically launch when the user logs in.
 mod.autoLaunch = is.new(
 	function() return hs.autoLaunch() end,
 	function(value) hs.autoLaunch(value) end
 )
 
---- plugins.core.preferences.general.autoLaunch
---- Is Value
---- A `cp.is` value to control if CommandPost will automatically upload crash data to the developer.
+--- plugins.core.preferences.general.autoLaunch <cp.is: boolean>
+--- Field
+--- Controls if CommandPost will automatically upload crash data to the developer.
 mod.uploadCrashData = is.new(
 	function() return hs.uploadCrashData() end,
 	function(value) hs.uploadCrashData(value) end

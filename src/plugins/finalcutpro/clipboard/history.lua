@@ -36,9 +36,9 @@ local mod = {}
 mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
 mod.log										= log
 
---- plugins.finalcutpro.clipboard.history.isEnabled
---- Is Value
---- A `cp.is` to enable or disable the Clipboard History.
+--- plugins.finalcutpro.clipboard.history.isEnabled <cp.is: boolean>
+--- Field
+--- Enable or disable the Clipboard History.
 mod.isEnabled = config.is("enableClipboardHistory", false)
 
 function mod.getHistory()

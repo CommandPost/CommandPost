@@ -68,7 +68,9 @@ function MediaImport:_findWindowUI(windows)
 	return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.is: boolean; read-only>
+--- Field
+--- Is the Media Import window showing?
 MediaImport.isShowing = is.new(function(self)
 	return self:UI() ~= nil
 end):bind(MediaImport)

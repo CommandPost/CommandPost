@@ -70,7 +70,9 @@ function CommandEditor:_findWindowUI(windows)
 	return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.cmd.CommandEditor.isShowing <cp.is: boolean; read-only>
+--- Field
+--- Is the Command Editor showing?
 CommandEditor.isShowing = is.new(function(self)
 	return self:UI() ~= nil
 end):bind(CommandEditor)

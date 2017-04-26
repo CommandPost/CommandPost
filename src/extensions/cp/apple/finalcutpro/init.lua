@@ -156,7 +156,7 @@ App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
 --- cp.apple.finalcutpro:application() -> hs.application
---- Function
+--- Method
 --- Returns the hs.application for Final Cut Pro.
 ---
 --- Parameters:
@@ -173,7 +173,7 @@ function App:application()
 end
 
 --- cp.apple.finalcutpro:getBundleID() -> string
---- Function
+--- Method
 --- Returns the Final Cut Pro Bundle ID
 ---
 --- Parameters:
@@ -186,7 +186,7 @@ function App:getBundleID()
 end
 
 --- cp.apple.finalcutpro:getPasteboardUTI() -> string
---- Function
+--- Method
 --- Returns the Final Cut Pro Pasteboard UTI
 ---
 --- Parameters:
@@ -199,7 +199,7 @@ function App:getPasteboardUTI()
 end
 
 --- cp.apple.finalcutpro:getPasteboardUTI() -> axuielementObject
---- Function
+--- Method
 --- Returns the Final Cut Pro axuielementObject
 ---
 --- Parameters:
@@ -214,22 +214,16 @@ function App:UI()
 	end)
 end
 
---- cp.apple.finalcutpro:isRunning() -> boolean
---- Function
+--- cp.apple.finalcutpro.isRunning <cp.is: boolean; read-only>
+--- Field
 --- Is Final Cut Pro Running?
----
---- Parameters:
----  * None
----
---- Returns:
----  * True if Final Cut Pro is running otherwise False
 App.isRunning = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isRunning()
 end):bind(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
---- Function
+--- Method
 --- Launches Final Cut Pro, or brings it to the front if it was already running.
 ---
 --- Parameters:
@@ -260,7 +254,7 @@ function App:launch()
 end
 
 --- cp.apple.finalcutpro:restart() -> boolean
---- Function
+--- Method
 --- Restart Final Cut Pro
 ---
 --- Parameters:
@@ -288,15 +282,15 @@ function App:restart()
 	return false
 end
 
---- cp.apple.finalcutpro:show() -> cp.finalcutpro object
---- Function
+--- cp.apple.finalcutpro:show() -> cp.apple.finalcutpro
+--- Method
 --- Activate Final Cut Pro
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An cp.finalcutpro object otherwise nil
+---  * A cp.apple.finalcutpro otherwise nil
 function App:show()
 	local app = self:application()
 	if app then
@@ -310,29 +304,23 @@ function App:show()
 	return self
 end
 
---- cp.apple.finalcutpro:show() -> cp.finalcutpro object
---- Function
---- Activate Final Cut Pro
----
---- Parameters:
----  * None
----
---- Returns:
----  * An cp.finalcutpro object otherwise nil
+--- cp.apple.finalcutpro.isShowing <cp.is: boolean; read-only>
+--- Field
+--- Is Final Cut visible on screen? 
 App.isShowing = is.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
 end):bind(App)
 
---- cp.apple.finalcutpro:hide() -> cp.finalcutpro object
---- Function
+--- cp.apple.finalcutpro:hide() -> cp.apple.finalcutpro
+--- Method
 --- Hides Final Cut Pro
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An cp.finalcutpro object otherwise nil
+---  * A cp.apple.finalcutpro otherwise nil
 function App:hide()
 	local app = self:application()
 	if app then
@@ -341,15 +329,15 @@ function App:hide()
 	return self
 end
 
---- cp.apple.finalcutpro:quit() -> cp.finalcutpro object
---- Function
+--- cp.apple.finalcutpro:quit() -> cp.apple.finalcutpro
+--- Method
 --- Quits Final Cut Pro
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An cp.finalcutpro object otherwise nil
+---  * A cp.apple.finalcutpro otherwise nil
 function App:quit()
 	local app = self:application()
 	if app then
@@ -359,7 +347,7 @@ function App:quit()
 end
 
 --- cp.apple.finalcutpro:path() -> string or nil
---- Function
+--- Method
 --- Path to Final Cut Pro Application
 ---
 --- Parameters:
@@ -391,15 +379,11 @@ function App:getPath()
 	return nil
 end
 
---- cp.apple.finalcutpro:isInstalled() -> boolean
---- Function
+--- cp.apple.finalcutpro.isInstalled <cp.is: boolean; read-only>
+--- Field
 --- Is a supported version of Final Cut Pro Installed?
 ---
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if a supported version of Final Cut Pro is installed otherwise `false`
+--- Note:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 App.isInstalled = is.new(function(self)
 	local version = self:getVersion()
@@ -411,22 +395,16 @@ App.isInstalled = is.new(function(self)
 	return false
 end):bind(App)
 
---- cp.apple.finalcutpro:isFrontmost() -> boolean
---- Function
+--- cp.apple.finalcutpro:isFrontmost <cp.is: boolean; read-only>
+--- Field
 --- Is Final Cut Pro Frontmost?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if Final Cut Pro is Frontmost.
 App.isFrontmost = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
 end):bind(App)
 
 --- cp.apple.finalcutpro:getVersion() -> string or nil
---- Function
+--- Method
 --- Version of Final Cut Pro
 ---
 --- Parameters:
@@ -487,7 +465,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:menuBar() -> menuBar object
---- Function
+--- Method
 --- Returns the Final Cut Pro Menu Bar
 ---
 --- Parameters:
@@ -503,7 +481,7 @@ function App:menuBar()
 end
 
 --- cp.apple.finalcutpro:selectMenu(...) -> boolean
---- Function
+--- Method
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
@@ -525,7 +503,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:preferencesWindow() -> preferenceWindow object
---- Function
+--- Method
 --- Returns the Final Cut Pro Preferences Window
 ---
 --- Parameters:
@@ -541,7 +519,7 @@ function App:preferencesWindow()
 end
 
 --- cp.apple.finalcutpro:primaryWindow() -> primaryWindow object
---- Function
+--- Method
 --- Returns the Final Cut Pro Preferences Window
 ---
 --- Parameters:
@@ -557,7 +535,7 @@ function App:primaryWindow()
 end
 
 --- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
---- Function
+--- Method
 --- Returns the Final Cut Pro Preferences Window
 ---
 --- Parameters:
@@ -573,7 +551,7 @@ function App:secondaryWindow()
 end
 
 --- cp.apple.finalcutpro:fullScreenWindow() -> fullScreenWindow object
---- Function
+--- Method
 --- Returns the Final Cut Pro Full Screen Window
 ---
 --- Parameters:
@@ -589,7 +567,7 @@ function App:fullScreenWindow()
 end
 
 --- cp.apple.finalcutpro:commandEditor() -> commandEditor object
---- Function
+--- Method
 --- Returns the Final Cut Pro Command Editor
 ---
 --- Parameters:
@@ -605,7 +583,7 @@ function App:commandEditor()
 end
 
 --- cp.apple.finalcutpro:mediaImport() -> mediaImport object
---- Function
+--- Method
 --- Returns the Final Cut Pro Media Import Window
 ---
 --- Parameters:
@@ -621,7 +599,7 @@ function App:mediaImport()
 end
 
 --- cp.apple.finalcutpro:exportDialog() -> exportDialog object
---- Function
+--- Method
 --- Returns the Final Cut Pro Export Dialog Box
 ---
 --- Parameters:
@@ -637,7 +615,7 @@ function App:exportDialog()
 end
 
 --- cp.apple.finalcutpro:windowsUI() -> axuielement
---- Function
+--- Method
 --- Returns the UI containing the list of windows in the app.
 ---
 --- Parameters:
@@ -659,7 +637,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:timeline() -> Timeline
---- Function
+--- Method
 --- Returns the Timeline instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -675,7 +653,7 @@ function App:timeline()
 end
 
 --- cp.apple.finalcutpro:viewer() -> Viewer
---- Function
+--- Method
 --- Returns the Viewer instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -691,7 +669,7 @@ function App:viewer()
 end
 
 --- cp.apple.finalcutpro:eventViewer() -> Event Viewer
---- Function
+--- Method
 --- Returns the Event Viewer instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -707,7 +685,7 @@ function App:eventViewer()
 end
 
 --- cp.apple.finalcutpro:browser() -> Browser
---- Function
+--- Method
 --- Returns the Browser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -723,7 +701,7 @@ function App:browser()
 end
 
 --- cp.apple.finalcutpro:libraries() -> LibrariesBrowser
---- Function
+--- Method
 --- Returns the LibrariesBrowser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -736,7 +714,7 @@ function App:libraries()
 end
 
 --- cp.apple.finalcutpro:media() -> MediaBrowser
---- Function
+--- Method
 --- Returns the MediaBrowser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -749,7 +727,7 @@ function App:media()
 end
 
 --- cp.apple.finalcutpro:generators() -> GeneratorsBrowser
---- Function
+--- Method
 --- Returns the GeneratorsBrowser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -762,7 +740,7 @@ function App:generators()
 end
 
 --- cp.apple.finalcutpro:effects() -> EffectsBrowser
---- Function
+--- Method
 --- Returns the EffectsBrowser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -775,7 +753,7 @@ function App:effects()
 end
 
 --- cp.apple.finalcutpro:transitions() -> TransitionsBrowser
---- Function
+--- Method
 --- Returns the TransitionsBrowser instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
@@ -788,7 +766,7 @@ function App:transitions()
 end
 
 --- cp.apple.finalcutpro:inspector() -> Inspector
---- Function
+--- Method
 --- Returns the Inspector instance from the primary window
 ---
 --- Parameters:
@@ -801,7 +779,7 @@ function App:inspector()
 end
 
 --- cp.apple.finalcutpro:colorBoard() -> ColorBoard
---- Function
+--- Method
 --- Returns the ColorBoard instance from the primary window
 ---
 --- Parameters:
@@ -822,7 +800,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:getPreferences() -> table or nil
---- Function
+--- Method
 --- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
 --- file has been modified and reloads when necessary.
 ---
@@ -846,8 +824,8 @@ function App:getPreferences(forceReload)
 	return self._preferences
 end
 
---- cp.apple.finalcutpro.getPreference(value, default, forceReload) -> string or nil
---- Function
+--- cp.apple.finalcutpro:getPreference(value, default, forceReload) -> string or nil
+--- Method
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
@@ -872,7 +850,7 @@ function App:getPreference(value, default, forceReload)
 end
 
 --- cp.apple.finalcutpro:setPreference(key, value) -> boolean
---- Function
+--- Method
 --- Sets an individual Final Cut Pro preference
 ---
 --- Parameters:
@@ -914,7 +892,7 @@ function App:setPreference(key, value)
 end
 
 --- cp.apple.finalcutpro:importXML() -> boolean
---- Function
+--- Method
 --- Imports an XML file into Final Cut Pro
 ---
 --- Parameters:
@@ -945,7 +923,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:getActiveCommandSetPath() -> string or nil
---- Function
+--- Method
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 ---
 --- Parameters:
@@ -963,7 +941,7 @@ function App:getActiveCommandSetPath()
 end
 
 --- cp.apple.finalcutpro:getDefaultCommandSetPath([langauge]) -> string
---- Function
+--- Method
 --- Gets the path to the 'Default' Command Set.
 ---
 --- Parameters:
@@ -977,7 +955,7 @@ function App:getDefaultCommandSetPath(language)
 end
 
 --- cp.apple.finalcutpro:getCommandSet(path) -> string
---- Function
+--- Method
 --- Loads the Command Set at the specified path into a table.
 ---
 --- Parameters:
@@ -992,7 +970,7 @@ function App:getCommandSet(path)
 end
 
 --- cp.apple.finalcutpro:getActiveCommandSet([forceReload]) -> table or nil
---- Function
+--- Method
 --- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
 --- `true` for `forceReload` if you want to reload it.
 ---
@@ -1016,7 +994,7 @@ function App:getActiveCommandSet(forceReload)
 end
 
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
---- Function
+--- Method
 --- Finds a shortcut from the Active Command Set with the specified ID and returns a table
 --- of `hs.commands.shortcut`s for the specified command, or `nil` if it doesn't exist.
 ---
@@ -1080,8 +1058,8 @@ function App:getCommandShortcuts(id)
 	return shortcuts
 end
 
---- cp.apple.finalcutpro.performShortcut() -> Boolean
---- Function
+--- cp.apple.finalcutpro:performShortcut() -> boolean
+--- Method
 --- Performs a Final Cut Pro Shortcut
 ---
 --- Parameters:
@@ -1120,7 +1098,7 @@ App.fileMenuTitle = {
 }
 
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string
---- Function
+--- Method
 --- Returns the language Final Cut Pro is currently using.
 ---
 --- Parameters:
@@ -1253,7 +1231,7 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 end
 
 --- cp.apple.finalcutpro:getSupportedLanguages() -> table
---- Function
+--- Method
 --- Returns a table of languages Final Cut Pro supports
 ---
 --- Parameters:
@@ -1266,7 +1244,7 @@ function App:getSupportedLanguages()
 end
 
 --- cp.apple.finalcutpro:getFlexoLanguages() -> table
---- Function
+--- Method
 --- Returns a table of languages Final Cut Pro's Flexo Framework supports
 ---
 --- Parameters:
@@ -1423,8 +1401,8 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- cp.apple.finalcutpro._generateMenuMap() -> Table
--- Function
+-- cp.apple.finalcutpro:_generateMenuMap() -> Table
+-- Method
 -- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
 --
 -- Parameters:

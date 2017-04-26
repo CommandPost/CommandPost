@@ -107,13 +107,13 @@ function mod.updateLocation()
 	mod.setLastLocation(mod.touchBarWindow:topLeft())
 end
 
---- plugins.finalcutpro.os.touchbar.isSupported
---- Is Value
+--- plugins.finalcutpro.os.touchbar.isSupported <cp.is: boolean; read-only>
+--- Field
 --- Is `true` if the plugin is supported on this OS.
 mod.isSupported = is.new(function() return touchbar.supported() end)
 
---- plugins.finalcutpro.os.touchbar.isEnabled
---- Is Value
+--- plugins.finalcutpro.os.touchbar.isEnabled <cp.is: boolean>
+--- Field
 --- Is `true` if the plugin is enabled.
 mod.isEnabled = config.is("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
@@ -124,8 +124,8 @@ mod.isEnabled = config.is("displayTouchBar", false):watch(function(enabled)
 	end
 end)
 
---- plugins.finalcutpro.os.touchbar.isActive
---- Is Value
+--- plugins.finalcutpro.os.touchbar.isActive <cp.is: boolean; read-only>
+--- Field
 --- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
 mod.isActive = mod.isEnabled:AND(mod.isSupported):watch(function(active)
 	if active then

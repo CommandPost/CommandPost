@@ -62,7 +62,9 @@ function GoToPrompt:UI()
 	GoToPrompt.matches)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.export.GoToPrompt.isShowing <cp.is: boolean; read-only>
+--- Field
+--- Is the 'Go To' prompt showing?
 GoToPrompt.isShowing = is.new(function(self)
 	return self:UI() ~= nil
 end):bind(GoToPrompt)

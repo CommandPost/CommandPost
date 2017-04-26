@@ -81,19 +81,25 @@ function Browser._findBrowser(...)
 	return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.is: boolean; read-only>
+--- Field
+--- Is the Browser on the Secondary Window?
 Browser.isOnSecondary = is.new(function(self)
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
 end):bind(Browser)
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Browser <cp.is: boolean; read-only>
+--- Field
+--- Is the Browser on the Primary Window?
 Browser.isOnPrimary = is.new(function(self)
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end):bind(Browser)
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Browser <cp.is: boolean; read-only>
+--- Feature
+--- Is the Browser showing?
 Browser.isShowing = is.new(function(self)
 	return self:UI() ~= nil
 end):bind(Browser)

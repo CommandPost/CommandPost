@@ -39,7 +39,7 @@ local App = {}
 App.BUNDLE_ID 									= "com.apple.Compressor"
 
 --- cp.apple.compressor:application() -> hs.application
---- Function
+--- Method
 --- Returns the hs.application for Compressor.
 ---
 --- Parameters:
@@ -59,7 +59,7 @@ function App:application()
 end
 
 --- cp.apple.compressor:getBundleID() -> string
---- Function
+--- Method
 --- Returns the Compressor Bundle ID
 ---
 --- Parameters:
@@ -72,7 +72,7 @@ function App:getBundleID()
 end
 
 --- cp.apple.compressor:launch() -> boolean
---- Function
+--- Method
 --- Launches Compressor, or brings it to the front if it was already running.
 ---
 --- Parameters:
@@ -103,14 +103,14 @@ function App:launch()
 end
 
 --- cp.apple.compressor:restart() -> boolean
---- Function
---- Restart Compressor
+--- Method
+--- Restart the application.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if Compressor was running and restarted successfully.
+---  * `true` if the application was running and restarted successfully.
 function App:restart()
 	local app = self:application()
 	if app then
@@ -127,7 +127,7 @@ function App:restart()
 end
 
 --- cp.apple.compressor:show() -> cp.apple.compressor object
---- Function
+--- Method
 --- Activate Compressor
 ---
 --- Parameters:
@@ -149,7 +149,7 @@ function App:show()
 end
 
 --- cp.apple.compressor:hide() -> cp.apple.compressor object
---- Function
+--- Method
 --- Hides Compressor
 ---
 --- Parameters:
@@ -166,7 +166,7 @@ function App:hide()
 end
 
 --- cp.apple.compressor:quit() -> cp.apple.compressor object
---- Function
+--- Method
 --- Quits Compressor
 ---
 --- Parameters:
@@ -183,7 +183,7 @@ function App:quit()
 end
 
 --- cp.apple.compressor:path() -> string or nil
---- Function
+--- Method
 --- Path to Compressor Application
 ---
 --- Parameters:
@@ -196,59 +196,41 @@ function App:getPath()
 end
 
 
---- cp.apple.compressor:isRunning
---- Is Value
---- Is Compressor Running?
+--- cp.apple.compressor.isRunning <cp.is: boolean; read-only>
+--- Field
+--- Is the app is running?
 App.isRunning = is.new(function(self)
 	local app = self:application()
 	return app and app:isRunning()
 end):bind(App)
 
---- cp.apple.compressor:isShowing() -> boolean
---- Function
+--- cp.apple.compressor.isShowing <cp.is: boolean; read-only>
+--- Field
 --- Is Compressor Showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing otherwise `false`
 App.isShowing = is.new(function(owner)
 	local app = owner:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
 end):bind(App)
 
---- cp.apple.compressor:isInstalled() -> boolean
---- Method
+--- cp.apple.compressor.isInstalled <cp.is: boolean; read-only>
+--- Field
 --- Is a supported version of Compressor Installed?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if a supported version of Compressor is installed otherwise `false`
 App.isInstalled = is.new(function(owner)
 	local app = application.infoForBundleID(App.BUNDLE_ID)
 	if app then return true end
 	return false
 end):bind(App)
 
---- cp.apple.compressor:isFrontmost() -> boolean
---- Method
+--- cp.apple.compressor.isFrontmost <cp.is: boolean; read-only>
+--- Field
 --- Is Compressor Frontmost?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if Compressor is Frontmost.
 App.isFrontmost = is.new(function(owner)
 	local app = owner:application()
 	return app and app:isFrontmost()
 end):bind(App)
 
---- cp.apple.compressor:getVersion() -> string or nil
---- Function
+--- cp.apple.compressor:getVersion() -> string | nil
+--- Method
 --- Version of Compressor
 ---
 --- Parameters:

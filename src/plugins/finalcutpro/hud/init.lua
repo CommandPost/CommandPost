@@ -352,8 +352,8 @@ function hud.delete()
 	end
 end
 
---- plugins.finalcutpro.hud.isEnabled() -> boolean
---- Is Value
+--- plugins.finalcutpro.hud.isEnabled <cp.is: boolean>
+--- Field
 --- Is the HUD enabled in the settings?
 hud.isEnabled = config.is(PREFERENCES_KEY, false)
 
@@ -383,18 +383,18 @@ function hud.setOption(name, value)
 	end
 end
 
---- plugins.finalcutpro.hud.isInspectorShown
---- Is Value
+--- plugins.finalcutpro.hud.isInspectorShown <cp.is: boolean>
+--- Field
 --- Should the Inspector in the HUD be shown?
 hud.isInspectorShown = config.is("hudShowInspector", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.isDropTargetsShown
---- Is Value
+--- plugins.finalcutpro.hud.isDropTargetsShown <cp.is: boolean>
+--- Field
 --- Should Drop Targets in the HUD be enabled?
 hud.isDropTargetsShown = config.is("hudShowDropTargets", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.isButtonsShown
---- Is Value
+--- plugins.finalcutpro.hud.isButtonsShown <cp.is: boolean>
+--- Field
 --- Should Buttons in the HUD be shown?
 hud.isButtonsShown = config.is("hudShowButtons", true):watch(hud.refresh)
 

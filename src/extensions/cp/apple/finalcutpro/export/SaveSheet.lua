@@ -62,7 +62,9 @@ function SaveSheet:UI()
 	SaveSheet.matches)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.export.SaveSheet <cp.is: boolean; read-only>
+--- Field
+--- Is the Save Sheet showing?
 SaveSheet.isShowing = is.new(function(self)
 	return self:UI() ~= nil or self:replaceAlert():isShowing()
 end):bind(SaveSheet)

@@ -147,8 +147,8 @@ function mod.application()
 	return mod._application
 end
 
---- cp.config.isFrontmost() -> boolean
---- Is Value
+--- cp.config.isFrontmost <cp.is: boolean; read-only>
+--- Field
 --- Returns whether or not the Application is frontmost.
 mod.isFrontmost = is.new(function()
 	local app = mod.application()

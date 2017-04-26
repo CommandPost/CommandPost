@@ -85,9 +85,9 @@ function mod.trashPreferences()
 
 end
 
---- plugins.core.preferences.advanced.isDeveloperMode
---- Is Value
---- Checks developer mode.
+--- plugins.core.preferences.advanced.isDeveloperMode <cp.is: boolean>
+--- Field
+--- Enables or disables developer mode.
 mod.isDeveloperMode = config.is("debugMode"):watch(function()
 	mod.manager.hide()
 	console.clearConsole()
