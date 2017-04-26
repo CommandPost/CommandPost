@@ -22,6 +22,7 @@ local touchbar 									= require("hs._asm.touchbar")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local config									= require("cp.config")
+local is										= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -42,10 +43,6 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
-function mod.isSupported()
-	return touchbar.supported()
-end
 
 function mod.getLastLocation()
 	config.get("lastTouchBarLocation")
@@ -110,45 +107,37 @@ function mod.updateLocation()
 	mod.setLastLocation(mod.touchBarWindow:topLeft())
 end
 
-function mod.isEnabled()
-	return config.get("displayTouchBar", false)
-end
+--- plugins.finalcutpro.os.touchbar.isSupported
+--- Is Value
+--- Is `true` if the plugin is supported on this OS.
+mod.isSupported = is.new(function() return touchbar.supported() end)
 
-function mod.setEnabled(value)
-	config.set("displayTouchBar", value)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE TOUCH BAR:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-
+--- plugins.finalcutpro.os.touchbar.isEnabled
+--- Is Value
+--- Is `true` if the plugin is enabled.
+mod.isEnabled = config.is("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
-	if not mod.isSupported() then
+	if enabled and not mod.isSupported() then
 		dialog.displayMessage(i18n("touchBarError"))
-		return "Fail"
 	end
+end)
 
-	--------------------------------------------------------------------------------
-	-- Get Settings:
-	--------------------------------------------------------------------------------
-	mod.setEnabled(not mod.isEnabled())
-
-	--------------------------------------------------------------------------------
-	-- Toggle Touch Bar:
-	--------------------------------------------------------------------------------
-	mod.update()
-end
-
-function mod.update()
-	if mod.isEnabled() then
+--- plugins.finalcutpro.os.touchbar.isActive
+--- Is Value
+--- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
+mod.isActive = mod.isEnabled:AND(mod.isSupported):watch(function(active)
+	if active then
 		mod.show()
 	else
 		mod.hide()
 	end
+end)
+
+function mod.update()
+	-- Check if it's active.
+	mod.isActive:notify()
 end
 
 --------------------------------------------------------------------------------
@@ -277,7 +266,7 @@ function plugin.init(deps)
 		:addItems(1000, function()
 			local location = mod.getLocation()
 			return {
-				{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 									checked = mod.isEnabled(),					disabled = not mod.isSupported() },
+				{ title = i18n("enableTouchBar"), 		fn = function() mod.isEnabled:toggle() end, 				checked = mod.isEnabled(),					disabled = not mod.isSupported() },
 				{ title = "-" },
 				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
 				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
@@ -294,7 +283,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
-		:whenActivated(function() mod.toggleEnabled() end)
+		:whenActivated(function() mod.isEnabled:toggle() end)
 
 	return mod
 end

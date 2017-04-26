@@ -26,6 +26,7 @@ local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
+local is				= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -125,7 +126,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noTransitionShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -182,7 +183,7 @@ function mod.apply(shortcut)
 			matches = transitions:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in transitionsShortcut().")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -205,6 +206,8 @@ function mod.apply(shortcut)
 		if not transitionsShowing then transitions:hide() end
 	end)
 
+	-- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -317,7 +320,7 @@ function mod.updateTransitionsList()
 	local transitionsShowing = transitions:isShowing()
 	if not transitions:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	local transitionsLayout = transitions:saveLayout()
@@ -341,7 +344,7 @@ function mod.updateTransitionsList()
 
 	if not sidebar:isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -355,7 +358,7 @@ function mod.updateTransitionsList()
 	local allTransitions = transitions:getCurrentTitles()
 	if allTransitions == nil then
 		dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -372,11 +375,14 @@ function mod.updateTransitionsList()
 	config.set(currentLanguage .. ".allTransitions", allTransitions)
 	config.set(currentLanguage .. ".transitionsListUpdated", true)
 	action.reset()
+	
+	-- Success!
+	return true
 end
 
-function mod.isTransitionsListUpdated()
+mod.isTransitionsListUpdated = is.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --

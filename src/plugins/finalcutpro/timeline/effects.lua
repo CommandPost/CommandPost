@@ -26,6 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
+local is				= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -182,7 +183,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noEffectShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -241,7 +242,7 @@ function mod.apply(shortcut)
 			matches = effects:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in effectsShortcut().")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -263,6 +264,9 @@ function mod.apply(shortcut)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
 	end)
+	
+	-- Success!
+	return true
 end
 
 function mod.choices()
@@ -399,7 +403,7 @@ function mod.updateEffectsList()
 	local effectsShowing = effects:isShowing()
 	if not effects:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	local effectsLayout = effects:saveLayout()
@@ -426,7 +430,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not sidebar:isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -434,7 +438,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not effects:showAllVideoEffects() then
 		dialog.displayErrorMessage("Unable to select all video effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -443,7 +447,7 @@ function mod.updateEffectsList()
 	local allVideoEffects = effects:getCurrentTitles()
 	if not allVideoEffects then
 		dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -451,7 +455,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not effects:showAllAudioEffects() then
 		dialog.displayErrorMessage("Unable to select all audio effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -460,7 +464,7 @@ function mod.updateEffectsList()
 	local allAudioEffects = effects:getCurrentTitles()
 	if not allAudioEffects then
 		dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -475,7 +479,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if #allVideoEffects == 0 or #allAudioEffects == 0 then
 		dialog.displayMessage(i18n("updateEffectsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-		return "Fail"
+		return false
 	else
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -486,13 +490,14 @@ function mod.updateEffectsList()
 		config.set(currentLanguage .. ".effectsListUpdated", true)
 		audioaction.reset()
 		videoaction.reset()
+		return true
 	end
 
 end
 
-function mod.isEffectsListUpdated()
+mod.isEffectsListUpdated = is.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --

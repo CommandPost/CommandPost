@@ -26,6 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
+local is				= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -129,7 +130,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noGeneratorShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -197,7 +198,7 @@ function mod.apply(shortcut)
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in generators.apply(...).")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -220,6 +221,8 @@ function mod.apply(shortcut)
 		if not generatorsShowing then generators:hide() end
 	end)
 
+	-- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -325,7 +328,7 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	if not generators:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Generators and Generators panel.\n\nError occurred in updateGeneratorsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -354,7 +357,7 @@ function mod.updateGeneratorsList()
 		end
 	else
 		dialog.displayErrorMessage("Unable to get list of all generators.\n\nError occurred in updateGeneratorsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -369,11 +372,14 @@ function mod.updateGeneratorsList()
 	config.set(currentLanguage .. ".allGenerators", allGenerators)
 	config.set(currentLanguage .. ".generatorsListUpdated", true)
 	action.reset()
+	
+	-- Success!
+	return true
 end
 
-function mod.isGeneratorsListUpdated()
+mod.isGeneratorsListUpdated = is.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --

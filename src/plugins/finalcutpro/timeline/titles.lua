@@ -26,6 +26,7 @@ local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
+local is				= require("cp.is")
 
 --------------------------------------------------------------------------------
 --
@@ -123,7 +124,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noTitleShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -191,7 +192,7 @@ function mod.apply(shortcut)
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in titles.apply(...).")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -213,7 +214,9 @@ function mod.apply(shortcut)
 		if browserLayout then browser:loadLayout(browserLayout) end
 		if not generatorsShowing then generators:hide() end
 	end)
-
+	
+	--- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -319,7 +322,7 @@ function mod.updateTitlesList()
 	--------------------------------------------------------------------------------
 	if not generators:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -348,7 +351,7 @@ function mod.updateTitlesList()
 		end
 	else
 		dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -363,11 +366,14 @@ function mod.updateTitlesList()
 	config.set(currentLanguage .. ".allTitles", allTitles)
 	config.set(currentLanguage .. ".titlesListUpdated", true)
 	action.reset()
+	
+	--- Success!
+	return true
 end
 
-function mod.isTitlesListUpdated()
+mod.isTitlesListUpdated = is.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --

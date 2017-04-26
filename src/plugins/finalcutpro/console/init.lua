@@ -26,6 +26,7 @@ local ax 				= require("hs._asm.axuielement")
 
 local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
+local is				= require("cp.is")
 
 local log				= require("hs.logger").new("console")
 
@@ -50,9 +51,9 @@ mod.active 				= false		-- is the Hacks Console Active?
 
 mod.isEnabled = config.is("consoleEnabled", true)
 
-function mod.isReducedTransparency()
+mod.isReducedTransparency = is.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
-end
+end)
 
 mod.isLastQueryRemembered = config.is("consoleLastQueryRemembered", true)
 
