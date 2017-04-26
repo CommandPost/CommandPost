@@ -34,38 +34,10 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.isEnabled()
-	return config.get("iMessageNotificationsEnabled", false)
-end
-
-function mod.setEnabled(value)
-	config.set("iMessageNotificationsEnabled", value)
-	mod.update(true)
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
-function mod.getTarget()
-	return config.get("iMessageTarget", nil)
-end
-
-function mod.setTarget(value)
-	config.set("iMessageTarget", value)
-end
-
-function mod.sendNotification(message)
-	local iMessageTarget = mod.getTarget()
-	if iMessageTarget then
-		messages.iMessage(iMessageTarget, message)
-	end
-end
-
 local function requestTarget()
 	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
 	if result == false then
-		mod.setEnabled(false)
+		mod.isEnabled(false)
 		return
 	else
 		mod.setTarget(result)
@@ -89,6 +61,23 @@ function mod.update(changed)
 			mod.notifications.unwatch(mod.watchId)
 			mod.watchId = nil
 		end
+	end
+end
+
+mod.isEnabled = config.is("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
+
+function mod.getTarget()
+	return config.get("iMessageTarget", nil)
+end
+
+function mod.setTarget(value)
+	config.set("iMessageTarget", value)
+end
+
+function mod.sendNotification(message)
+	local iMessageTarget = mod.getTarget()
+	if iMessageTarget then
+		messages.iMessage(iMessageTarget, message)
 	end
 end
 
@@ -121,7 +110,7 @@ function plugin.init(deps)
 	-- Menu Item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("iMessage"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+		return { title = i18n("iMessage"),	fn = function() mod.isEnabled:toggle() end,	checked = mod.isEnabled() }
 	end)
 
 

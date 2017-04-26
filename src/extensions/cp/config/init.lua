@@ -148,20 +148,14 @@ function mod.application()
 end
 
 --- cp.config.isFrontmost() -> boolean
---- Function
---- Returns whether or not the Application is front most
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if Application is front most otherwise `false`
-function mod.isFrontmost()
+--- Is Value
+--- Returns whether or not the Application is frontmost.
+mod.isFrontmost = is.new(function()
 	local app = mod.application()
 	local fw = window.focusedWindow()
 
 	return fw ~= nil and fw:application() == app
-end
+end)
 
 --- cp.config.get(key[, defaultValue]) -> string or boolean or number or nil or table or binary data
 --- Function
