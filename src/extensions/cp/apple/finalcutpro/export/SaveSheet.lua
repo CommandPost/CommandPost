@@ -45,7 +45,7 @@ function SaveSheet:new(parent)
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)
 		return self:UI() ~= nil or self:replaceAlert():isShowing()
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = SaveSheet})
 end

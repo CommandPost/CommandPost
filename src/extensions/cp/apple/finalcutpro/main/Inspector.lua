@@ -41,7 +41,7 @@ function Inspector:new(parent)
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)
 		return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = Inspector})
 end

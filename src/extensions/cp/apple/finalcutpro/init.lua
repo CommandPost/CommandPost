@@ -226,7 +226,7 @@ end
 App.isRunning = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isRunning()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
 --- Function
@@ -322,7 +322,7 @@ end
 App.isShowing = is.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.finalcutpro:hide() -> cp.finalcutpro object
 --- Function
@@ -409,7 +409,7 @@ App.isInstalled = is.new(function(self)
 		end
 	end
 	return false
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.finalcutpro:isFrontmost() -> boolean
 --- Function
@@ -423,7 +423,7 @@ end):methodOf(App)
 App.isFrontmost = is.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.finalcutpro:getVersion() -> string or nil
 --- Function

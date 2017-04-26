@@ -202,7 +202,7 @@ end
 App.isRunning = is.new(function(self)
 	local app = self:application()
 	return app and app:isRunning()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.compressor:isShowing() -> boolean
 --- Function
@@ -216,7 +216,7 @@ end):methodOf(App)
 App.isShowing = is.new(function(owner)
 	local app = owner:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.compressor:isInstalled() -> boolean
 --- Method
@@ -231,7 +231,7 @@ App.isInstalled = is.new(function(owner)
 	local app = application.infoForBundleID(App.BUNDLE_ID)
 	if app then return true end
 	return false
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.compressor:isFrontmost() -> boolean
 --- Method
@@ -245,7 +245,7 @@ end):methodOf(App)
 App.isFrontmost = is.new(function(owner)
 	local app = owner:application()
 	return app and app:isFrontmost()
-end):methodOf(App)
+end):bind(App)
 
 --- cp.apple.compressor:getVersion() -> string or nil
 --- Function

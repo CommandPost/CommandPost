@@ -50,7 +50,7 @@ function GeneratorsBrowser:new(parent)
 	o.isShowing = is.new(function(self)
 		local parent = self:parent()
 		return parent:isShowing() and parent:showGenerators():isChecked()
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = GeneratorsBrowser})
 end

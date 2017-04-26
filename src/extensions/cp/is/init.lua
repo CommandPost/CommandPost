@@ -88,7 +88,7 @@
 ---
 --- ```lua
 --- local owner = {}
---- owner.isMethod = is.TRUE():methodOf(owner)
+--- owner.isMethod = is.TRUE():bind(owner)
 --- owner:isMethod() -- success!
 --- ```
 ---
@@ -108,7 +108,11 @@ local function nextId()
 end
 
 local function isInstance(something)
-	return getmetatable(something).__index == is
+	if something and type(something) == "table" then
+		local mt = getmetatable(something)
+		return mt and (mt.__index == is or isInstance(mt.__index))
+	end
+	return false
 end
 
 --- cp.is.new(getFn, setFn) --> cp.is
@@ -297,6 +301,49 @@ function is.OR(...)
 	return isOr
 end
 
+--- cp.is.applyAll(target, ...) -> table
+--- Function
+--- Copies and binds all 'method' properties on the source tables passed in to the `target` table. E.g.:
+---
+--- ```lua
+--- local source, target = {}, {}
+--- source.isMethod = is.TRUE():bind(source)
+--- source.isFunction = is.TRUE()
+--- is.bindAll(target, source)
+--- target:isMethod() == true
+--- target.isFunction() -- error. The function was not copied.
+--- ```
+---
+--- The original `is` methods on the source 
+--- 
+--- Parameters:
+--- * `target`	- The target table to copy the methods into.
+--- * `...`		- The list of source tables to copy and bind methods from
+---
+--- Returns:
+--- * The target
+function is.applyAll(target, ...)
+	local sources = table.pack(...)
+	for i,source in ipairs(sources) do
+		for k,v in pairs(source) do
+			if target[k] == nil and isInstance(v) then
+				if v:owner() == source then
+					-- it's a bound method. rebind.
+					target[k] = v:bind(target)
+				else
+					-- it's an unbound function
+					target[k] = v
+				end
+			end
+		end
+	end
+end
+
+function is.extend(target, source)
+	is.applyAll(target, source)
+	return setmetatable(target, {__index = source})
+end
+
 --- cp.is:value([newValue[, quiet]]) -> boolean
 --- Method
 --- Returns the current value of the `cp.is` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
@@ -312,7 +359,7 @@ function is:value(newValue, quiet)
 	value = value ~= nil and value ~= false
 	if newValue ~= nil then
 		if not self._set then
-			error("This 'is' value cannot be modified.")
+			error("This value cannot be modified.")
 		end
 		newValue = newValue ~= false
 		if value ~= newValue then
@@ -326,7 +373,7 @@ function is:value(newValue, quiet)
 	return value
 end
 
---- cp.is:methodOf(owner) -> cp.is
+--- cp.is:bind(owner) -> cp.is
 --- Method
 --- Creates a new instance of the is which is bound to the specified owner.
 ---
@@ -338,7 +385,7 @@ end
 ---
 --- Notes:
 --- * Throws an `error` if this is already attached to an owner.
-function is:methodOf(owner)
+function is:bind(owner)
 	local o = {_owner = owner}
 	return setmetatable(o, {__index = self, __call = is.__call, __tostring = is.__tostring})
 end
@@ -436,13 +483,8 @@ function is:__tostring()
 end
 
 is.__call = function(target, owner, newValue, quiet)
-	if target._owner then
-		-- confirm we received the owner we expected.
-		if target._owner ~= owner then
-			error(string.format("'is' received unexpected owner: %s", inspect(owner)))
-		end
-	else
-		-- no owner, so shift the parameters across
+	if not target._owner or target._owner ~= owner then
+		-- no owner provided, so shift the parameters across
 		quiet = newValue
 		newValue = owner
 	end

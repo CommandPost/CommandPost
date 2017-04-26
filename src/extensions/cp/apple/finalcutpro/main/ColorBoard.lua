@@ -82,13 +82,13 @@ function ColorBoard:new(parent)
 	o.isShowing = is.new(function(self)
 		local ui = self:UI()
 		return ui ~= nil and ui:attributeValue("AXSize").w > 0
-	end):methodOf(o)
+	end):bind(o)
 	
 	-- TODO: Add documentation
 	o.isActive = is.new(function(self)
 		local ui = self:colorSatExpUI()
 		return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = ColorBoard})
 end

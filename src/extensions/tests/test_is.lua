@@ -226,7 +226,7 @@ function run()
 			end,
 			function(newValue, owner)
 				owner.value = newValue
-			end):methodOf(instance)
+			end):bind(instance)
 		
 		ok(instance:isMethod() == true)
 		ok(instance:isMethod(false) == false)
@@ -234,25 +234,25 @@ function run()
 		ok(instance.isMethod:toggle() == true)
 		ok(instance.value == true)
 
-		instance.isSimple = is.TRUE():methodOf(instance)
+		instance.isSimple = is.TRUE():bind(instance)
 		ok(instance:isSimple())
 		ok(instance.isSimple:toggle() == false)
 		ok(not instance:isSimple())
 		
-		instance.isNot = is.NOT(instance.isSimple):methodOf(instance)
+		instance.isNot = is.NOT(instance.isSimple):bind(instance)
 		instance:isSimple(true)
 		ok(instance:isNot() == false)
 		ok(instance.isNot:toggle() == true)
 		ok(instance:isSimple() == false)
 		
-		instance.isAndMethod = instance.isMethod:AND(instance.isSimple):methodOf(instance)
+		instance.isAndMethod = instance.isMethod:AND(instance.isSimple):bind(instance)
 		instance:isMethod(true)
 		instance:isSimple(true)
 		ok(instance:isAndMethod() == true)
 		ok(instance:isMethod(false) == false)
 		ok(instance:isAndMethod() == false)
 		
-		instance.isOrMethod = instance.isMethod:OR(instance.isSimple):methodOf(instance)
+		instance.isOrMethod = instance.isMethod:OR(instance.isSimple):bind(instance)
 		instance:isMethod(true)
 		instance:isSimple(true)
 		ok(instance:isOrMethod() == true)
@@ -261,6 +261,20 @@ function run()
 		ok(instance:isSimple(false) == false)
 		ok(instance:isOrMethod() == false)
 		
+	end)
+	
+	test("Is applyAll", function()
+		local source, target = {}, {}
+		
+		source.isMethod = is.TRUE():bind(source)
+		source.isFunction = is.TRUE()
+		source.isRealFunction = function() return true end
+		
+		is.applyAll(target, source)
+		
+		ok(target.isMethod:owner() == target)
+		ok(target.isFunction:owner() == nil)
+		ok(target.isRealFunction == nil)
 	end)
 end
 

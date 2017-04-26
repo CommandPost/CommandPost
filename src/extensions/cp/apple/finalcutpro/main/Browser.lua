@@ -48,18 +48,18 @@ function Browser:new(app)
 	o.isOnSecondary = is.new(function(self)
 		local ui = self:UI()
 		return ui and SecondaryWindow.matches(ui:window())
-	end):methodOf(o)
+	end):bind(o)
 
 	-- TODO: Add documentation
 	o.isOnPrimary = is.new(function(self)
 		local ui = self:UI()
 		return ui and PrimaryWindow.matches(ui:window())
-	end):methodOf(o)
+	end):bind(o)
 	
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)
 		return self:UI() ~= nil
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = Browser})
 end

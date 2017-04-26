@@ -44,7 +44,7 @@ function FullScreenWindow:new(app)
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)
 		return self:UI() ~= nil
-	end):methodOf(o)
+	end):bind(o)
 	
 	-- TODO: Add documentation
 	o.isFullScreen = is.new(function(self)
@@ -63,7 +63,7 @@ function FullScreenWindow:new(app)
 			end
 		end
 		return false
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = FullScreenWindow})
 end

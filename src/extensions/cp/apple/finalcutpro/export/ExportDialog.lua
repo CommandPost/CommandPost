@@ -50,7 +50,7 @@ function ExportDialog:new(app)
 	-- TODO: Add documentation
 	o.isShowing = is.new(function(self)
 		return self:UI() ~= nil
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, { __index = ExportDialog })
 end

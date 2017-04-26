@@ -52,7 +52,7 @@ function Browser:new(parent, type)
 	
 	o.isShowing = is.new(function(self)
 		return self:toggleButton():isChecked()
-	end):methodOf(o)
+	end):bind(o)
 	
 	return setmetatable(o, {__index = Browser})
 end
