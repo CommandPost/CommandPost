@@ -397,7 +397,7 @@ function App:getPath()
 		----------------------------------------------------------------------------------------
 		-- FINAL CUT PRO IS CURRENTLY CLOSED:
 		----------------------------------------------------------------------------------------
-		local result = getPathToClosedApplication(App.BUNDLE_ID)
+		local result = application.pathForBundleID(App.BUNDLE_ID)
 		if result then
 			return result
 		end
@@ -437,29 +437,6 @@ end
 function App:isFrontmost()
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
-end
-
--- getPathToClosedApplication(bundleID) -> string or nil
--- Function
--- Returns the path to a closed Application
---
--- Parameters:
---  * bundleID - Bundle ID
---
--- Returns:
---  * Application Path as string or nil if an error occurred
-function getPathToClosedApplication(bundleID)
-	local appleScript = [[
-		tell application "Finder"
-			POSIX path of (application file id "]] .. bundleID .. [[" as alias)
-		end tell
-	]]
- 	local success, result = osascript.applescript(appleScript)
-	if success and result then
-		return tostring(result)
-	else
-		return nil
-	end
 end
 
 --- cp.apple.finalcutpro:getVersion() -> string or nil
