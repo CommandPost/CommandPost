@@ -40,32 +40,7 @@ function FullScreenWindow:new(app)
 	local o = {
 		_app = app
 	}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	-- TODO: Add documentation
-	o.isFullScreen = is.new(function(self)
-		local ui = self:rootGroupUI()
-		if ui then
-			-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
-			local group = nil
-			if #ui == 1 then
-				group = ui[1]
-			else
-				group = axutils.childMatching(ui, function(element) return #element == 2 end)
-			end
-			if #group == 2 then
-				local image = axutils.childWithRole(group, "AXImage")
-				return image ~= nil
-			end
-		end
-		return false
-	end):bind(o)
-	
-	return setmetatable(o, {__index = FullScreenWindow})
+	return is.extend(o, FullScreenWindow)
 end
 
 -- TODO: Add documentation
@@ -95,6 +70,30 @@ function FullScreenWindow:UI()
 	end,
 	FullScreenWindow.matches)
 end
+
+-- TODO: Add documentation
+FullScreenWindow.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(FullScreenWindow)
+
+-- TODO: Add documentation
+FullScreenWindow.isFullScreen = is.new(function(self)
+	local ui = self:rootGroupUI()
+	if ui then
+		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
+		local group = nil
+		if #ui == 1 then
+			group = ui[1]
+		else
+			group = axutils.childMatching(ui, function(element) return #element == 2 end)
+		end
+		if #group == 2 then
+			local image = axutils.childWithRole(group, "AXImage")
+			return image ~= nil
+		end
+	end
+	return false
+end):bind(FullScreenWindow)
 
 -- TODO: Add documentation
 function FullScreenWindow:_findWindowUI(windows)

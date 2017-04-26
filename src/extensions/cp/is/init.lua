@@ -386,6 +386,7 @@ end
 --- Notes:
 --- * Throws an `error` if this is already attached to an owner.
 function is:bind(owner)
+	assert(owner ~= nil, "The owner must not be nil.")
 	local o = {_owner = owner}
 	return setmetatable(o, {__index = self, __call = is.__call, __tostring = is.__tostring})
 end

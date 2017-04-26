@@ -43,25 +43,7 @@ end
 -- TODO: Add documentation
 function Browser:new(app)
 	local o = {_app = app}
-
-	-- TODO: Add documentation
-	o.isOnSecondary = is.new(function(self)
-		local ui = self:UI()
-		return ui and SecondaryWindow.matches(ui:window())
-	end):bind(o)
-
-	-- TODO: Add documentation
-	o.isOnPrimary = is.new(function(self)
-		local ui = self:UI()
-		return ui and PrimaryWindow.matches(ui:window())
-	end):bind(o)
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, {__index = Browser})
+	return is.extend(o, Browser)
 end
 
 -- TODO: Add documentation
@@ -98,6 +80,23 @@ function Browser._findBrowser(...)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+Browser.isOnSecondary = is.new(function(self)
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
+end):bind(Browser)
+
+-- TODO: Add documentation
+Browser.isOnPrimary = is.new(function(self)
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
+end):bind(Browser)
+
+-- TODO: Add documentation
+Browser.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(Browser)
 
 -- TODO: Add documentation
 function Browser:showOnPrimary()

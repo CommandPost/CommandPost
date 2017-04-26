@@ -18,6 +18,7 @@ local inspect						= require("hs.inspect")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
+local is							= require("cp.is")
 
 local Button						= require("cp.apple.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
@@ -43,10 +44,7 @@ function SecondaryWindow:new(app)
 	local o = {
 		_app = app
 	}
-	setmetatable(o, self)
-	self.__index = self
-
-	return o
+	return is.extend(o, SecondaryWindow)
 end
 
 -- TODO: Add documentation
@@ -55,9 +53,28 @@ function SecondaryWindow:app()
 end
 
 -- TODO: Add documentation
-function SecondaryWindow:isShowing()
+SecondaryWindow.isShowing = is.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(SecondaryWindow)
+
+-- TODO: Add documentation
+SecondaryWindow.isFullScreen = is.new(function(self)
+	local ui = self:rootGroupUI()
+	if ui then
+		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
+		local group = nil
+		if #ui == 1 then
+			group = ui[1]
+		else
+			group = axutils.childMatching(ui, function(element) return #element == 2 end)
+		end
+		if #group == 2 then
+			local image = axutils.childWithRole(group, "AXImage")
+			return image ~= nil
+		end
+	end
+	return false
+end):bind(SecondaryWindow)
 
 -- TODO: Add documentation
 function SecondaryWindow:show()
@@ -88,25 +105,6 @@ function SecondaryWindow:_findWindowUI(windows)
 		if SecondaryWindow.matches(w) then return w end
 	end
 	return nil
-end
-
--- TODO: Add documentation
-function SecondaryWindow:isFullScreen()
-	local ui = self:rootGroupUI()
-	if ui then
-		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
-		local group = nil
-		if #ui == 1 then
-			group = ui[1]
-		else
-			group = axutils.childMatching(ui, function(element) return #element == 2 end)
-		end
-		if #group == 2 then
-			local image = axutils.childWithRole(group, "AXImage")
-			return image ~= nil
-		end
-	end
-	return false
 end
 
 -- TODO: Add documentation

@@ -19,6 +19,7 @@ local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
@@ -43,9 +44,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:new(parent)
 	local o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.extend(o, TimelineContents)
 end
 
 -- TODO: Add documentation
@@ -91,9 +90,9 @@ function TimelineContents:scrollAreaUI()
 end
 
 -- TODO: Add documentation
-function TimelineContents:isShowing()
+TimelineContents.isShowing = is.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(TimelineContents)
 
 -- TODO: Add documentation
 function TimelineContents:show()

@@ -45,13 +45,7 @@ end
 -- TODO: Add documentation
 function CommandEditor:new(app)
 	local o = {_app = app}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, { __index = CommandEditor })
+	return is.extend(o, CommandEditor)
 end
 
 -- TODO: Add documentation
@@ -75,6 +69,11 @@ function CommandEditor:_findWindowUI(windows)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+CommandEditor.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(CommandEditor)
 
 -- TODO: Add documentation
 -- Ensures the CommandEditor is showing

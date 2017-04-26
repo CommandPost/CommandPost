@@ -41,13 +41,7 @@ end
 -- TODO: Add documentation
 function SaveSheet:new(parent)
 	local o = {_parent = parent}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil or self:replaceAlert():isShowing()
-	end):bind(o)
-	
-	return setmetatable(o, {__index = SaveSheet})
+	return is.extend(o, SaveSheet)
 end
 
 -- TODO: Add documentation
@@ -67,6 +61,11 @@ function SaveSheet:UI()
 	end,
 	SaveSheet.matches)
 end
+
+-- TODO: Add documentation
+SaveSheet.isShowing = is.new(function(self)
+	return self:UI() ~= nil or self:replaceAlert():isShowing()
+end):bind(SaveSheet)
 
 -- TODO: Add documentation
 function SaveSheet:hide()

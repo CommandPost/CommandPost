@@ -35,13 +35,7 @@ end
 -- TODO: Add documentation
 function ReplaceAlert:new(parent)
 	local o = {_parent = parent}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, {__index = ReplaceAlert})
+	return is.extend(o, ReplaceAlert)
 end
 
 -- TODO: Add documentation
@@ -61,6 +55,11 @@ function ReplaceAlert:UI()
 	end,
 	ReplaceAlert.matches)
 end
+
+-- TODO: Add documentation
+ReplaceAlert.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(ReplaceAlert)
 
 -- TODO: Add documentation
 function ReplaceAlert:hide()

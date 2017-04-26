@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("librariesBrowser")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -40,9 +41,7 @@ local Libraries = {}
 -- TODO: Add documentation
 function Libraries:new(parent)
 	local o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.extend(o, Libraries)
 end
 
 -- TODO: Add documentation
@@ -72,9 +71,25 @@ function Libraries:UI()
 end
 
 -- TODO: Add documentation
-function Libraries:isShowing()
+Libraries.isShowing = is.new(function(self)
 	return self:parent():isShowing() and self:parent():showLibraries():isChecked()
-end
+end):bind(Libraries)
+
+-- TODO: Add documentation
+Libraries.isListView = is.new(function(self)
+	return self:list():isShowing()
+end):bind(Libraries)
+
+-- TODO: Add documentation
+Libraries.isFilmstripView = is.new(function(self)
+	return self:filmstrip():isShowing()
+end):bind(Libraries)
+
+-- TODO: Add documentation
+Libraries.isFocused = is.new(function(self)
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
+end):bind(Libraries)
 
 -- TODO: Add documentation
 function Libraries:show()
@@ -247,16 +262,6 @@ function Libraries.matchesSidebar(element)
 end
 
 -- TODO: Add documentation
-function Libraries:isListView()
-	return self:list():isShowing()
-end
-
--- TODO: Add documentation
-function Libraries:isFilmstripView()
-	return self:filmstrip():isShowing()
-end
-
--- TODO: Add documentation
 function Libraries:clipsUI()
 	if self:isListView() then
 		return self:list():clipsUI()
@@ -326,12 +331,6 @@ function Libraries:deselectAll()
 	else
 		self:filmstrip():deselectAll()
 	end
-end
-
--- TODO: Add documentation
-function Libraries:isFocused()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
 end
 
 -- TODO: Add documentation

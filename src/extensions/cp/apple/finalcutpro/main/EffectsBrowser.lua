@@ -49,12 +49,7 @@ end
 
 function Browser:new(parent, type)
 	local o = {_parent = parent, _type = type}
-	
-	o.isShowing = is.new(function(self)
-		return self:toggleButton():isChecked()
-	end):bind(o)
-	
-	return setmetatable(o, {__index = Browser})
+	return is.extend(o, Browser)
 end
 
 function Browser:parent()
@@ -82,6 +77,10 @@ function Browser:UI()
 		Browser.matches)
 	end
 end
+
+Browser.isShowing = is.new(function(self)
+	return self:toggleButton():isChecked()
+end):bind(Browser)
 
 function Browser:toggleButton()
 	if not self._toggleButton then

@@ -20,6 +20,8 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
 
+local is								= require("cp.is")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -35,9 +37,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:new(parent)
 	local o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.expend(o, Filmstrip)
 end
 
 -- TODO: Add documentation
@@ -80,15 +80,15 @@ function Filmstrip:verticalScrollBarUI()
 	return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
+-- TODO: Add documentation
+Filmstrip.isShowing = is.new(function(self)
+	return self:UI() ~= nil and self:parent():isShowing()
+end):bind(Filmstrip)
+
 function Filmstrip:show()
 	if not self:isShowing() and self:parent():show():isShowing() then
 		self:parent():toggleViewMode():press()
 	end
-end
-
--- TODO: Add documentation
-function Filmstrip:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -- TODO: Add documentation

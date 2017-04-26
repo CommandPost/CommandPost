@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils							= require("cp.apple.finalcutpro.axutils")
+local is								= require("cp.is")
 
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
 local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
@@ -37,9 +38,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:new(parent)
 	local o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.extend(o, TimelineToolbar)
 end
 
 -- TODO: Add documentation
@@ -67,9 +66,9 @@ function TimelineToolbar:UI()
 end
 
 -- TODO: Add documentation
-function TimelineToolbar:isShowing()
+TimelineToolbar.isShowing = is.new(function(this)
 	return self:UI() ~= nil
-end
+end):bind(TimelineToolbar)
 
 -- TODO: Add documentation
 -- Contains buttons relating to mouse skimming behaviour:

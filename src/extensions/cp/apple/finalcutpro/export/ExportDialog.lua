@@ -46,13 +46,7 @@ end
 -- TODO: Add documentation
 function ExportDialog:new(app)
 	local o = {_app = app}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, { __index = ExportDialog })
+	return is.extend(o, ExportDialog)
 end
 
 -- TODO: Add documentation
@@ -76,6 +70,11 @@ function ExportDialog:_findWindowUI(windows)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+ExportDialog.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(ExportDialog)
 
 -- Ensures the ExportDialog is showing
 function ExportDialog:show()

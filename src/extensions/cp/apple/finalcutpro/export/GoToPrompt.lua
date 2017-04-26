@@ -41,13 +41,7 @@ end
 -- TODO: Add documentation
 function GoToPrompt:new(parent)
 	local o = {_parent = parent}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, {__index = GoToPrompt})
+	return is.extend(o, GoToPrompt)
 end
 
 -- TODO: Add documentation
@@ -67,6 +61,11 @@ function GoToPrompt:UI()
 	end,
 	GoToPrompt.matches)
 end
+
+-- TODO: Add documentation
+GoToPrompt.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(GoToPrompt)
 
 -- TODO: Add documentation
 function GoToPrompt:show()

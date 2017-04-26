@@ -45,14 +45,7 @@ GeneratorsBrowser.TITLE = "Titles and Generators"
 -- TODO: Add documentation
 function GeneratorsBrowser:new(parent)
 	local o = {_parent = parent}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		local parent = self:parent()
-		return parent:isShowing() and parent:showGenerators():isChecked()
-	end):bind(o)
-	
-	return setmetatable(o, {__index = GeneratorsBrowser})
+	return is.extend(o, GeneratorsBrowser)
 end
 
 -- TODO: Add documentation
@@ -80,6 +73,12 @@ function GeneratorsBrowser:UI()
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+GeneratorsBrowser.isShowing = is.new(function(self)
+	local parent = self:parent()
+	return parent:isShowing() and parent:showGenerators():isChecked()
+end):bind(GeneratorsBrowser)
 
 -- TODO: Add documentation
 function GeneratorsBrowser:show()

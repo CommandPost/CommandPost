@@ -43,13 +43,7 @@ end
 -- TODO: Add documentation
 function MediaImport:new(app)
 	local o = {_app = app}
-	
-	-- TODO: Add documentation
-	o.isShowing = is.new(function(self)
-		return self:UI() ~= nil
-	end):bind(o)
-	
-	return setmetatable(o, {__index = MediaImport})
+	return is.extend(o, MediaImport)
 end
 
 -- TODO: Add documentation
@@ -73,6 +67,11 @@ function MediaImport:_findWindowUI(windows)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+MediaImport.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(MediaImport)
 
 -- TODO: Add documentation
 -- Ensures the MediaImport is showing

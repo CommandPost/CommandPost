@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
@@ -36,9 +37,7 @@ end
 -- TODO: Add documentation
 function TimelineAppearance:new(parent)
 	local o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.extend(o, TimelineAppearance)
 end
 
 -- TODO: Add documentation
@@ -83,6 +82,11 @@ function TimelineAppearance:UI()
 end
 
 -- TODO: Add documentation
+TimelineAppearance.isShowing = is.new(function(self)
+	return self:UI() ~= nil
+end):bind(TimelineAppearance)
+
+-- TODO: Add documentation
 function TimelineAppearance:show()
 	if not self:isShowing() then
 		self:toggle():check()
@@ -98,11 +102,6 @@ function TimelineAppearance:hide()
 	end
 	just.doWhile(function() return self:isShowing() end)
 	return self
-end
-
--- TODO: Add documentation
-function TimelineAppearance:isShowing()
-	return self:UI() ~= nil
 end
 
 -----------------------------------------------------------------------

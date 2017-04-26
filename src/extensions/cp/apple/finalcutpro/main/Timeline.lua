@@ -18,6 +18,7 @@ local inspect							= require("hs.inspect")
 local timer								= require("hs.timer")
 
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
@@ -44,26 +45,12 @@ end
 -- TODO: Add documentation
 function Timeline:new(app)
 	local o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return is.extend(o, Timeline)
 end
 
 -- TODO: Add documentation
 function Timeline:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function Timeline:isOnSecondary()
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end
-
--- TODO: Add documentation
-function Timeline:isOnPrimary()
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -97,10 +84,22 @@ function Timeline._findTimeline(...)
 end
 
 -- TODO: Add documentation
-function Timeline:isShowing()
+Timeline.isOnSecondary = is.new(function(self)
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
+end):bind(Timeline)
+
+-- TODO: Add documentation
+Timeline.isOnPrimary = is.new(function(self)
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
+end):bind(Timeline)
+
+-- TODO: Add documentation
+Timeline.isShowing = is.new(function(self)
 	local ui = self:UI()
 	return ui ~= nil and #ui > 0
-end
+end):bind(Timeline)
 
 -- TODO: Add documentation
 function Timeline:show()
@@ -267,6 +266,11 @@ Timeline.DEADZONE = 3
 Timeline.INVISIBLE = 4
 
 -- TODO: Add documentation
+Timeline.isLockedPlayhead = is.new(function(self)
+	return self._locked
+end):bind(Timeline)
+
+-- TODO: Add documentation
 function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 	if self._locked then
 		-- already locked.
@@ -391,11 +395,6 @@ function Timeline:unlockPlayhead()
 	self._locked = false
 
 	return self
-end
-
--- TODO: Add documentation
-function Timeline:isLockedPlayhead()
-	return self._locked
 end
 
 return Timeline

@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("viewer")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local is								= require("cp.is")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -46,36 +47,13 @@ function Viewer:new(app, eventViewer)
 		_app = app,
 		_eventViewer = eventViewer
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+
+	return is.extend(o, Viewer)
 end
 
 -- TODO: Add documentation
 function Viewer:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function Viewer:isEventViewer()
-	return self._eventViewer
-end
-
--- TODO: Add documentation
-function Viewer:isMainViewer()
-	return not self._eventViewer
-end
-
--- TODO: Add documentation
-function Viewer:isOnSecondary()
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end
-
--- TODO: Add documentation
-function Viewer:isOnPrimary()
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -163,9 +141,31 @@ function Viewer:findEventViewerUI(...)
 end
 
 -- TODO: Add documentation
-function Viewer:isShowing()
+Viewer.isEventViewer = is.new(function(self)
+	return self._eventViewer
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isMainViewer = is.new(function(self)
+	return not self._eventViewer
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isOnSecondary = is.new(function(self)
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
+end)
+
+-- TODO: Add documentation
+Viewer.isOnPrimary = is.new(function(self)
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isShowing = is.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(Viewer)
 
 -- TODO: Add documentation
 function Viewer:showOnPrimary()
