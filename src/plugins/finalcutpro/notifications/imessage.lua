@@ -37,7 +37,7 @@ local mod = {}
 local function requestTarget()
 	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
 	if result == false then
-		mod.isEnabled(false)
+		mod.enabled(false)
 		return
 	else
 		mod.setTarget(result)
@@ -45,7 +45,7 @@ local function requestTarget()
 end
 
 function mod.update(changed)
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if changed or mod.getTarget() == nil then
 			requestTarget()
 		end
@@ -64,7 +64,7 @@ function mod.update(changed)
 	end
 end
 
-mod.isEnabled = config.prop("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
+mod.enabled = config.prop("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
 
 function mod.getTarget()
 	return config.get("iMessageTarget", nil)
@@ -110,7 +110,7 @@ function plugin.init(deps)
 	-- Menu Item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("iMessage"),	fn = function() mod.isEnabled:toggle() end,	checked = mod.isEnabled() }
+		return { title = i18n("iMessage"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
 	end)
 
 

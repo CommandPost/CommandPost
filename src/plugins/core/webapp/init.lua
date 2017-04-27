@@ -62,14 +62,14 @@ function mod.copyLinkToClipboard()
 end
 
 function mod.update()
-	if mod.isEnabled() then
+	if mod.enabled() then
 		mod.stop()
 	else
 		mod.start()
 	end
 end
 
-mod.isEnabled = config.prop(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING):watch(mod.update)
+mod.enabled = config.prop(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- GET HOSTNAME:
@@ -122,8 +122,8 @@ function plugin.init(deps, env)
 	:addCheckbox(30,
 		{
 			label = i18n("webappEnable"),
-			onchange = function() mod.isEnabled:toggle() end,
-			checked = mod.isEnabled,
+			onchange = function() mod.enabled:toggle() end,
+			checked = mod.enabled,
 		}
 	)
 
@@ -145,7 +145,7 @@ function plugin.postInit()
 	--------------------------------------------------------------------------------
 	-- Start the WebApp if Enabled:
 	--------------------------------------------------------------------------------
-	if mod.isEnabled() then
+	if mod.enabled() then
 		timer.doAfter(1, mod.start)
 	end
 

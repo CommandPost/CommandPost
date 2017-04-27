@@ -40,7 +40,7 @@ local PREFERENCES_KEY 	= "FFSuspendBGOpsDuringPlay"
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.isEnabled = prop.new(
+mod.enabled = prop.new(
 	function()
 		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
 	end,
@@ -95,14 +95,14 @@ local plugin = {
 function plugin.init(deps)
 
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableRenderingDuringPlayback"),	fn = function() mod.isEnabled:toggle() end, checked=mod.isEnabled() }
+		return { title = i18n("enableRenderingDuringPlayback"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
 	end)
 
 	-- Commands
 	deps.fcpxCmds:add("cpAllowTasksDuringPlayback")
 		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("p")
-		:whenActivated(function() mod.isEnabled:toggle() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 

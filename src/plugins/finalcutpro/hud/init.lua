@@ -156,7 +156,7 @@ end
 local function windowCallback(action, webview, frame)
 	if action == "closing" then
 		if not hs.shuttingDown then
-			hud.isEnabled(false)
+			hud.enabled(false)
 			hud.webview = nil
 		end
 	elseif action == "frameChange" then
@@ -352,10 +352,10 @@ function hud.delete()
 	end
 end
 
---- plugins.finalcutpro.hud.isEnabled <cp.prop: boolean>
+--- plugins.finalcutpro.hud.enabled <cp.prop: boolean>
 --- Field
 --- Is the HUD enabled in the settings?
-hud.isEnabled = config.prop(PREFERENCES_KEY, false)
+hud.enabled = config.prop(PREFERENCES_KEY, false)
 
 --
 -- Check Options:
@@ -491,7 +491,7 @@ end
 --- Returns:
 ---  * None
 function hud.updateVisibility()
-	if hud.isEnabled() then
+	if hud.enabled() then
 
 		local fcpRunning 	= fcp:isRunning()
 		local fcpFrontmost 	= fcp:isFrontmost()
@@ -599,7 +599,7 @@ function hud.assignButton(button)
 		--------------------------------------------------------------------------------
 		-- Refresh HUD:
 		--------------------------------------------------------------------------------
-		if hud.isEnabled() then
+		if hud.enabled() then
 			hud.refresh()
 		end
 	end
@@ -668,7 +668,7 @@ function hud.javaScriptCallback(message)
 end
 
 function hud.update()
-	if hud.isEnabled() then
+	if hud.enabled() then
 		hud.new()
 		hud.updateVisibility()
 	else
@@ -691,10 +691,10 @@ function hud.init(xmlSharing, actionmanager, env)
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
 	
 	-- Set up checking for XML Sharing
-	xmlSharing.isEnabled:watch(hud.refresh)
-	hud.isDropTargetsAvailable = hud.isDropTargetsShown:AND(xmlSharing.isEnabled)
+	xmlSharing.enabled:watch(hud.refresh)
+	hud.isDropTargetsAvailable = hud.isDropTargetsShown:AND(xmlSharing.enabled)
 	
-	hud.isEnabled:watch(hud.update)
+	hud.enabled:watch(hud.update)
 	return hud
 end
 
@@ -748,14 +748,14 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	local hudMenu = deps.menu:addMenu(PRIORITY, function() return i18n("hud") end)
 	hudMenu:addItem(1000, function()
-			return { title = i18n("enableHUD"),	fn = function() hud.isEnabled:toggle() end,		checked = hud.isEnabled()}
+			return { title = i18n("enableHUD"),	fn = function() hud.enabled:toggle() end,		checked = hud.enabled()}
 		end)
 	hudMenu:addSeparator(2000)
 	hudMenu:addMenu(3000, function() return i18n("hudOptions") end)
 		:addItems(1000, function()
 			return {
 				{ title = i18n("showInspector"),	fn = function() hud.isInspectorShown:toggle() end,		checked = hud.isInspectorShown()},
-				{ title = i18n("showDropTargets"),	fn = function() hud.isDropTargetsShown:toggle() end, 	checked = hud.isDropTargetsAvailable(),	disabled = not hud.xmlSharing.isEnabled()},
+				{ title = i18n("showDropTargets"),	fn = function() hud.isDropTargetsShown:toggle() end, 	checked = hud.isDropTargetsAvailable(),	disabled = not hud.xmlSharing.enabled()},
 				{ title = i18n("showButtons"),		fn = function() hud.isButtonsShown:toggle() end, 		checked = hud.isButtonsShown()},
 			}
 		end)
@@ -776,7 +776,7 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpHUD")
 		:activatedBy():ctrl():option():cmd("a")
-		:whenActivated(function() hud.isEnabled:toggle() end)
+		:whenActivated(function() hud.enabled:toggle() end)
 
 	return hud
 end

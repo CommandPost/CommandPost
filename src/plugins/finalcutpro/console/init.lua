@@ -49,7 +49,7 @@ mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
 mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
 
-mod.isEnabled = config.prop("consoleEnabled", true)
+mod.enabled = config.prop("consoleEnabled", true)
 
 mod.isReducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
@@ -152,7 +152,7 @@ function mod.showHider()
 end
 
 function mod.showChooser(chooser)
-	if not mod.isEnabled() then
+	if not mod.enabled() then
 		return false
 	end
 
@@ -321,7 +321,7 @@ function plugin.init(deps)
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
 
 	menu:addItem(1000, function()
-		return { title = i18n("enableConsole"),	fn = function() mod.isEnabled:toggle() end, checked = mod.isEnabled() }
+		return { title = i18n("enableConsole"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 	end)
 
 	menu:addSeparator(2000)
@@ -343,12 +343,12 @@ function plugin.init(deps)
 		local allDisabled = true
 
 		for id,action in pairs(deps.actionmanager.getActions()) do
-			local enabled = action.isEnabled()
+			local enabled = action.enabled()
 			allEnabled = allEnabled and enabled
 			allDisabled = allDisabled and not enabled
 			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,
 				fn=function()
-					action.isEnabled:toggle()
+					action.enabled:toggle()
 					deps.actionmanager.refresh()
 				end,
 				checked = enabled, }

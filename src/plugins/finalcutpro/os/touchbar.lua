@@ -112,10 +112,10 @@ end
 --- Is `true` if the plugin is supported on this OS.
 mod.isSupported = prop.new(function() return touchbar.supported() end)
 
---- plugins.finalcutpro.os.touchbar.isEnabled <cp.prop: boolean>
+--- plugins.finalcutpro.os.touchbar.enabled <cp.prop: boolean>
 --- Field
 --- Is `true` if the plugin is enabled.
-mod.isEnabled = config.prop("displayTouchBar", false):watch(function(enabled)
+mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ end)
 --- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
-mod.isActive = mod.isEnabled:AND(mod.isSupported):watch(function(active)
+mod.isActive = mod.enabled:AND(mod.isSupported):watch(function(active)
 	if active then
 		mod.show()
 	else
@@ -147,7 +147,7 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if we need to show the Touch Bar:
 	--------------------------------------------------------------------------------
-	if fcp:isFrontmost() and mod.isSupported() and mod.isEnabled() then
+	if fcp:isFrontmost() and mod.isSupported() and mod.enabled() then
 		mod.updateLocation()
 		mod.touchBarWindow:show()
 	end
@@ -266,7 +266,7 @@ function plugin.init(deps)
 		:addItems(1000, function()
 			local location = mod.getLocation()
 			return {
-				{ title = i18n("enableTouchBar"), 		fn = function() mod.isEnabled:toggle() end, 				checked = mod.isEnabled(),					disabled = not mod.isSupported() },
+				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.isSupported() },
 				{ title = "-" },
 				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
 				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
@@ -283,7 +283,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
-		:whenActivated(function() mod.isEnabled:toggle() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 end

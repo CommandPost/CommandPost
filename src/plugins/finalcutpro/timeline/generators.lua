@@ -54,7 +54,7 @@ function action.id()
 	return "generator"
 end
 
-action.isEnabled = config.prop(action.id().."ActionEnabled", true)
+action.enabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then

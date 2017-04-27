@@ -54,7 +54,7 @@ function videoaction.id()
 	return "video"
 end
 
-videoaction.isEnabled = config.prop(videoaction.id().."ActionEnabled", true)
+videoaction.enabled = config.prop(videoaction.id().."ActionEnabled", true)
 
 function videoaction.choices()
 	if not videoaction._choices then
@@ -102,7 +102,7 @@ function audioaction.id()
 	return "audio"
 end
 
-audioaction.isEnabled = config.prop(audioaction.id().."ActionEnabled", true)
+audioaction.enabled = config.prop(audioaction.id().."ActionEnabled", true)
 
 function audioaction.choices()
 	if not audioaction._choices then

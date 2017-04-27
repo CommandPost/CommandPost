@@ -38,7 +38,7 @@ local PREFERENCES_KEY 	= "FFEnableGuards"
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.isEnabled = prop.new(
+mod.enabled = prop.new(
 	function()
 		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
 	end,
@@ -94,7 +94,7 @@ local plugin = {
 function plugin.init(deps)
 
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableTimecodeOverlay"),	fn = function() mod.isEnabled:toggle() end, checked=mod.isEnabled() }
+		return { title = i18n("enableTimecodeOverlay"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
 	end)
 
 	--------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpToggleTimecodeOverlays")
 		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("t")
-		:whenActivated(function() mod.isEnabled:toggle() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 

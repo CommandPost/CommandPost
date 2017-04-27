@@ -44,7 +44,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = config.prop("enableXMLSharing", false)
+mod.enabled = config.prop("enableXMLSharing", false)
 
 --------------------------------------------------------------------------------
 -- GET SHARING PATH:
@@ -80,7 +80,7 @@ end
 -- LIST FILES MENU:
 --------------------------------------------------------------------------------
 function mod.listFilesMenu()
-	if not mod.isEnabled() then
+	if not mod.enabled() then
 		return nil
 	end
 	
@@ -192,7 +192,7 @@ end
 -- UPDATE:
 --------------------------------------------------------------------------------
 function mod.update()
-	local enabled = mod.isEnabled()
+	local enabled = mod.enabled()
 
 	if enabled then
 		--log.d("Enabling XML Sharing")
@@ -203,14 +203,14 @@ function mod.update()
 			if sharingPath ~= false then
 				mod.setSharingPath(sharingPath)
 			else
-				mod.isEnabled(false)
+				mod.enabled(false)
 				return
 			end
 		end
 
 		-- Ensure the directory actually exists.
 		if not tools.doesDirectoryExist(sharingPath) then
-			mod.isEnabled(false)
+			mod.enabled(false)
 			return
 		end
 
@@ -272,7 +272,7 @@ end
 ---  * None
 function mod.shareXML(incomingXML, noErrors)
 
-	local enableXMLSharing = mod.isEnabled()
+	local enableXMLSharing = mod.enabled()
 
 	if enableXMLSharing then
 
@@ -339,8 +339,8 @@ function mod.shareXML(incomingXML, noErrors)
 end
 
 function mod.init()
-	-- Ensures that mod.update is called whenever isEnabled changes.
-	mod.isEnabled:watch(mod.update)
+	-- Ensures that mod.update is called whenever enabled changes.
+	mod.enabled:watch(mod.update)
 	-- Pre-generate the menu.
 	mod.listFilesMenu()
 end
@@ -374,7 +374,7 @@ function plugin.init(deps)
 	deps.menu:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
 
 		:addItem(1, function()
-			return { title = i18n("enableXMLSharing"),	fn = function() mod.isEnabled:toggle() end,	checked = mod.isEnabled()}
+			return { title = i18n("enableXMLSharing"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled()}
 		end)
 		:addSeparator(2)
 		:addItems(3, mod.listFilesMenu)

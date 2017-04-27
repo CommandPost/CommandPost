@@ -40,7 +40,7 @@ local mod = {}
 mod.commandTitles = {}
 mod.commandsByTitle = {}
 
-mod.isEnabled = config.prop("enableVoiceCommands", false):watch(function() mod.update() end)
+mod.enabled = config.prop("enableVoiceCommands", false):watch(function() mod.update() end)
 
 mod.isAnnouncementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
 
@@ -146,12 +146,12 @@ mod.isListening = prop.new(function()
 end)
 
 function mod.update()
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if not mod.isListening() then
 			local result = mod.new()
 			if result == false then
 				dialog.displayErrorMessage(i18n("voiceCommandsError"))
-				mod.isEnabled(false)
+				mod.enabled(false)
 				return
 			end
 
@@ -234,13 +234,13 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommands") end)
 		:addItem(500, function()
-			return { title = i18n("enableVoiceCommands"), fn = function() mod.isEnabled:toggle() end, checked = mod.isEnabled() }
+			return { title = i18n("enableVoiceCommands"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 		end)
 		:addSeparator(600)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("enableAnnouncements"),	fn = function() mod.isAnnouncementsEnabled:toggle() end,	checked = mod.isAnnouncementsEnabled(), disabled = not mod.isEnabled() },
-				{ title = i18n("enableVisualAlerts"), 	fn = function() mod.isVisualAlertsEnabled:toggle() end,		checked = mod.isVisualAlertsEnabled(), disabled = not mod.isEnabled() },
+				{ title = i18n("enableAnnouncements"),	fn = function() mod.isAnnouncementsEnabled:toggle() end,	checked = mod.isAnnouncementsEnabled(), disabled = not mod.enabled() },
+				{ title = i18n("enableVisualAlerts"), 	fn = function() mod.isVisualAlertsEnabled:toggle() end,		checked = mod.isVisualAlertsEnabled(), disabled = not mod.enabled() },
 				{ title = "-" },
 				{ title = i18n("openDictationPreferences"), fn = mod.openDictationSystemPreferences },
 			}
@@ -250,7 +250,7 @@ function plugin.init(deps)
 	-- Commands:
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpToggleVoiceCommands")
-		:whenActivated(function() mod.isEnabled:toggle() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 end

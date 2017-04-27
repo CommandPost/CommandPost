@@ -63,7 +63,7 @@ end
 --------------------------------------------------------------------------------
 -- ARE MOVING MARKERS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = prop.new(
+mod.enabled = prop.new(
 	function()
 		if fcp:isInstalled() then
 			local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH
@@ -130,13 +130,13 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Cache status on load:
 	--------------------------------------------------------------------------------
-	mod.isEnabled()
+	mod.enabled()
 
 	--------------------------------------------------------------------------------
 	-- Setup Menu:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableMovingMarkers"),	fn = function() mod.isEnabled:toggle() end, checked=mod.isEnabled() }
+		return { title = i18n("enableMovingMarkers"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
 	end)
 
 	:addSeparator(PRIORITY + 1)
@@ -147,7 +147,7 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpToggleMovingMarkers")
 		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("y")
-		:whenActivated(function() mod.isEnabled:toggle() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 

@@ -42,7 +42,7 @@ local mod = {}
 -- TOGGLE ENABLE SHORTCUTS DURING FULLSCREEN PLAYBACK:
 --------------------------------------------------------------------------------
 function mod.update()
-	if mod.isEnabled() and fcp:fullScreenWindow():isShowing() then
+	if mod.enabled() and fcp:fullScreenWindow():isShowing() then
 		log.df("Watching for fullscreen shortcuts")
 		mod.keyUpWatcher:start()
 		mod.keyDownWatcher:start()
@@ -56,7 +56,7 @@ end
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watch(mod.update)
+mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- NINJA KEY STROKE:
@@ -208,7 +208,7 @@ function plugin.init(deps)
 	-- Add the menu item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = function() mod.isEnabled:toggle() end,		checked = mod.isEnabled() }
+		return { title = i18n("enableShortcutsDuringFullscreen"),	fn = function() mod.enabled:toggle() end,		checked = mod.enabled() }
 	end)
 
 	return mod

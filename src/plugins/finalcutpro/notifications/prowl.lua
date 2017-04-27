@@ -57,7 +57,7 @@ function prowlAPIKeyValid(input)
 	return result, errorMessage
 end
 
-mod.isEnabled = config.prop("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
+mod.enabled = config.prop("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
 
 function mod.getAPIKey()
 	return config.get("prowlAPIKey", nil)
@@ -73,7 +73,7 @@ local function requestProwlAPIKey()
 	-- Request the API Key from the user
 	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.getAPIKey())
 	if result == false then
-		mod.isEnabled(false)
+		mod.enabled(false)
 		return
 	end
 
@@ -90,7 +90,7 @@ local function requestProwlAPIKey()
 end
 
 function mod.update(changed)
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if changed or mod.getAPIKey() == nil then
 			requestProwlAPIKey()
 		end
@@ -156,7 +156,7 @@ function plugin.init(deps)
 	-- Menu Item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("prowl"),	fn = function() mod.isEnabled:toggle() end,	checked = mod.isEnabled() }
+		return { title = i18n("prowl"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
 	end)
 
 	return mod

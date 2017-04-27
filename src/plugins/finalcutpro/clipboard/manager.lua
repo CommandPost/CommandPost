@@ -221,7 +221,7 @@ end
 function mod.copyWithCustomClipName()
 	log.d("Copying Clip with custom Clip Name")
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Edit", "Copy") then
+	if menuBar:enabled("Edit", "Copy") then
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextClipName(result)
