@@ -37,7 +37,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:new(parent)
 	local o = {_parent = parent}
-	return prop.expend(o, Filmstrip)
+	return prop.extend(o, Filmstrip)
 end
 
 -- TODO: Add documentation

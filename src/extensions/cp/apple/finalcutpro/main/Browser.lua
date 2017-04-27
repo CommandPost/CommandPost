@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
+local log								= require("hs.logger").new("browser")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
@@ -37,7 +37,7 @@ local Browser = {}
 -- TODO: Add documentation
 function Browser.matches(element)
 	local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
-	return checkBoxes and #checkBoxes == 3
+	return checkBoxes and #checkBoxes >= 3
 end
 
 -- TODO: Add documentation

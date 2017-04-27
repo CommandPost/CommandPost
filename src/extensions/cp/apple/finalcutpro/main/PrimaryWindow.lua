@@ -52,6 +52,11 @@ function PrimaryWindow:app()
 end
 
 -- TODO: Add documentation
+PrimaryWindow.isShowing = prop(function(self)
+	return self:UI() ~= nil
+end):bind(PrimaryWindow)
+
+-- TODO: Add documentation
 function PrimaryWindow:show()
 	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
 	return true
@@ -81,6 +86,12 @@ function PrimaryWindow:_findWindowUI(windows)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+PrimaryWindow.isFullScreen = prop(function(self)
+	local ui = self:UI()
+	return ui and ui:fullScreen()
+end):bind(PrimaryWindow)
 
 -- TODO: Add documentation
 function PrimaryWindow:setFullScreen(isFullScreen)

@@ -66,7 +66,7 @@ function TimelineToolbar:UI()
 end
 
 -- TODO: Add documentation
-TimelineToolbar.isShowing = prop.new(function(this)
+TimelineToolbar.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(TimelineToolbar)
 
