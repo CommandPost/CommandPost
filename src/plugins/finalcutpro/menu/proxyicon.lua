@@ -50,7 +50,7 @@ mod.ORIGINAL_ICON		= "🔵"
 function mod.toggleEnableProxyMenuIcon()
 	local enableProxyMenuIcon = config.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
 	config.set("enableProxyMenuIcon", not enableProxyMenuIcon)
-	mod.menuManager:updateMenubarIcon()
+	mod.menuManager:update()
 end
 
 --- plugins.finalcutpro.menu.proxyicon.getEnableProxyMenuIcon() -> string

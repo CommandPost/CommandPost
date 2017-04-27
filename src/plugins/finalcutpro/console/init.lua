@@ -57,13 +57,7 @@ end)
 
 mod.isLastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
 
-function mod.getLastQueryValue()
-	return config.get("consoleLastQueryValue", "")
-end
-
-function mod.setLastQueryValue(value)
-	config.set("consoleLastQueryValue", value)
-end
+mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 
 --------------------------------------------------------------------------------
 -- LOAD CONSOLE:
@@ -180,7 +174,7 @@ function mod.showChooser(chooser)
 	if not chooserRememberLast then
 		chooser:query("")
 	else
-		chooser:query(mod.getLastQueryValue())
+		chooser:query(mod.lastQueryValue())
 	end
 
 	--------------------------------------------------------------------------------
@@ -218,7 +212,7 @@ function mod.hide()
 		--------------------------------------------------------------------------------
 		-- Save Last Query to Settings:
 		--------------------------------------------------------------------------------
-		mod.setLastQueryValue(chooser:query())
+		mod.lastQueryValue:set(chooser:query())
 
 		if mod._frontApp then
 			mod._frontApp:activate()

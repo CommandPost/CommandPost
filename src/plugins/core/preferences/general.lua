@@ -25,26 +25,10 @@ local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.core.preferences.general.displayMenubarAsIcon <cp.prop: boolean>
---- Field
---- Toggles the menubar display icon from icon to text value and vice versa.
-mod.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(
-	function(value)
-		if mod.menuManager then mod.menuManager:updateMenubarIcon() end
-	end
-)
 
 --- plugins.core.preferences.general.autoLaunch <cp.prop: boolean>
 --- Field
@@ -85,19 +69,12 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.preferences.panels.general"]	= "general",
-		["core.preferences.panels.menubar"]	= "menubar",
-		["core.menu.manager"]				= "menuManager",
 	}
 }
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
-	--------------------------------------------------------------------------------
-	-- Setup Dependencies:
-	--------------------------------------------------------------------------------
-	mod.menuManager 		= deps.menuManager
 
 	--------------------------------------------------------------------------------
 	-- Cache Values:
@@ -135,21 +112,6 @@ function plugin.init(deps)
 			onclick		= mod.openPrivacyPolicy,
 		}
 	)
-
-	--------------------------------------------------------------------------------
-	-- Setup Menubar Preferences Panel:
-	--------------------------------------------------------------------------------
-	deps.menubar:addHeading(20, i18n("appearance"))
-
-	:addCheckbox(21,
-		{
-			label = i18n("displayThisMenuAsIcon"),
-			onchange = function(id, params) mod.displayMenubarAsIcon(params.checked) end,
-			checked = mod.displayMenubarAsIcon,
-		}
-	)
-
-	:addHeading(24, i18n("sections"))
 
 	return mod
 

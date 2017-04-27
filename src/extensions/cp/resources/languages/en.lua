@@ -738,6 +738,7 @@ return {
 	core_preferences_updates_label							=	"Preferences: Updates",
 	core_preferences_advanced_label							=	"Preferences: Advanced",
 	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
+	core_preferences_menuitem_label							=   "Preferences Menu Item",
 	core_quit_label											=	"Quit Command",
 	core_webapp_label										=	"WebApp",
 	core_welcome_manager_label								= 	"Welcome Manager",

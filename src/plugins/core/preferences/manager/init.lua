@@ -301,9 +301,7 @@ end
 local plugin = {
 	id				= "core.preferences.manager",
 	group			= "core",
-	dependencies	= {
-		["core.menu.bottom"]	= "bottom",
-	}
+	required		= true,
 }
 
 --------------------------------------------------------------------------------
@@ -312,10 +310,6 @@ local plugin = {
 function plugin.init(deps, env)
 
 	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
-
-	deps.bottom:addItem(PRIORITY, function()
-		return { title = i18n("preferences") .. "...", fn = mod.show }
-	end)
 
 	return mod.init()
 end

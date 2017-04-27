@@ -86,7 +86,8 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+	local prefs = dependencies.prefs
+	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
 			label = i18n("showAdminTools"),
 			onchange = function(id, params)

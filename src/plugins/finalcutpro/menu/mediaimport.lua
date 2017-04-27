@@ -80,7 +80,8 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+	local prefs = dependencies.prefs
+	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
 			label = i18n("show") .. " " .. i18n("mediaImport"),
 			onchange = function(id, params) setSectionEnabled(params.checked) end,

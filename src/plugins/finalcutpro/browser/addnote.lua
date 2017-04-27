@@ -34,6 +34,8 @@ local axutils 							= require("cp.apple.finalcutpro.axutils")
 --------------------------------------------------------------------------------
 local mod = {}
 
+mod.recentNotes = config.prop("recentNotes", {})
+
 function mod.addNoteToSelectedClip()
 
 	local errorFunction = " Error occurred in addNoteToSelectedClip()."
@@ -172,14 +174,14 @@ function mod.addNoteToSelectedClip()
 
 			local selectedRow = mod.noteChooser:selectedRow()
 
-			local recentNotes = config.get("recentNotes", {})
+			local recentNotes = mod.recentNotes()
 			if selectedRow == 1 then
 				table.insert(recentNotes, 1, result)
-				config.set("recentNotes", recentNotes)
+				mod.recentNotes(recentNotes)
 			else
 				table.remove(recentNotes, selectedRow)
 				table.insert(recentNotes, 1, result)
-				config.set("recentNotes", recentNotes)
+				mod.recentNotes(recentNotes)
 			end
 		end
 
@@ -193,7 +195,7 @@ function mod.addNoteToSelectedClip()
 		--------------------------------------------------------------------------------
 		-- Chooser Query Changed by User:
 		--------------------------------------------------------------------------------
-		local recentNotes = config.get("recentNotes", {})
+		local recentNotes = mod.recentNotes()
 
 		local currentQuery = mod.noteChooser:query()
 
@@ -216,7 +218,7 @@ function mod.addNoteToSelectedClip()
 		local rightClickMenu = {
 			{ title = i18n("clearList"), fn = function()
 				log.df("Clearing List")
-				config.set("recentNotes", {})
+				mod.recentNotes({})
 				local currentQuery = mod.noteChooser:query()
 				local currentQueryTable = {
 					{
