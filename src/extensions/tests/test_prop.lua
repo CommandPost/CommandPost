@@ -215,7 +215,7 @@ function run()
 		
 	end)
 	
-	test("Prop Method", function()
+	test("Prop Bind", function()
 		local instance = {
 			value = true,
 		}
@@ -263,7 +263,7 @@ function run()
 		
 	end)
 	
-	test("Prop extend", function()
+	test("Prop Extend", function()
 		local source, target = {}, {}
 		
 		source.isMethod = prop.TRUE():bind(source)
