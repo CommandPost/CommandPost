@@ -261,6 +261,19 @@ function prop.mt:set(newValue)
 	return value
 end
 
+--- cp.prop:clear() -> nil
+--- Method
+--- Clears the property. Watchers will be notified if the value has changed.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing
+function prop.mt:clear()
+	self:set(nil)
+end
+
 --- cp.prop:bind(owner) -> cp.prop
 --- Method
 --- Creates a new instance of the is which is bound to the specified owner.

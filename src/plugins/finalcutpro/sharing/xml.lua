@@ -49,22 +49,13 @@ mod.enabled = config.prop("enableXMLSharing", false)
 --------------------------------------------------------------------------------
 -- GET SHARING PATH:
 --------------------------------------------------------------------------------
-function mod.getSharingPath()
-	return config.get("xmlSharingPath")
-end
-
---------------------------------------------------------------------------------
--- SET SHARING PATH:
---------------------------------------------------------------------------------
-function mod.setSharingPath(value)
-	config.set("xmlSharingPath", value)
-end
+mod.sharingPath = config.prop("xmlSharingPath")
 
 --------------------------------------------------------------------------------
 -- CLEAR SHARED XML FILES:
 --------------------------------------------------------------------------------
 function mod.clearSharedFiles()
-	local xmlSharingPath = mod.getSharingPath()
+	local xmlSharingPath = mod.sharingPath()
 	for folder in fs.dir(xmlSharingPath) do
 		if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) then
 			for file in fs.dir(xmlSharingPath .. "/" .. folder) do
@@ -98,7 +89,7 @@ function mod.listFilesMenu()
 		local sharedXMLFiles = {}
 
 		local emptySharedXMLFiles = true
-		local xmlSharingPath = mod.getSharingPath()
+		local xmlSharingPath = mod.sharingPath()
 
 		if not xmlSharingPath then
 			return nil
@@ -168,7 +159,7 @@ local function sharedXMLFileWatcher(files)
 				local editorName = string.reverse(string.sub(string.reverse(file), string.find(string.reverse(file), "/", 1) + 1, string.find(string.reverse(file), "/", string.find(string.reverse(file), "/", 1) + 1) - 1))
 
 				if host.localizedName() ~= editorName then
-					local xmlSharingPath = mod.getSharingPath()
+					local xmlSharingPath = mod.sharingPath()
 					sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
 						--:setIdImage(image.imageFromPath(config.iconPath))
 						:title("Shared XML File Received")
@@ -196,12 +187,12 @@ function mod.update()
 
 	if enabled then
 		--log.d("Enabling XML Sharing")
-		local sharingPath = mod.getSharingPath()
+		local sharingPath = mod.sharingPath()
 		if sharingPath == nil then
 			sharingPath = dialog.displayChooseFolder("Which folder would you like to use for XML Sharing?")
 
 			if sharingPath ~= false then
-				mod.setSharingPath(sharingPath)
+				mod.sharingPath(sharingPath)
 			else
 				mod.enabled(false)
 				return
@@ -233,7 +224,7 @@ function mod.update()
 		--------------------------------------------------------------------------------
 		-- Clear Settings:
 		--------------------------------------------------------------------------------
-		mod.setSharingPath(nil)
+		mod.sharingPath:clear()
 	end
 end
 
@@ -279,7 +270,7 @@ function mod.shareXML(incomingXML, noErrors)
 		--------------------------------------------------------------------------------
 		-- Get Settings:
 		--------------------------------------------------------------------------------
-		local xmlSharingPath = mod.getSharingPath()
+		local xmlSharingPath = mod.sharingPath()
 
 		--------------------------------------------------------------------------------
 		-- Get only the needed XML content:

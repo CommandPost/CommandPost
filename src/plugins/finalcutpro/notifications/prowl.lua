@@ -59,19 +59,13 @@ end
 
 mod.enabled = config.prop("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
 
-function mod.getAPIKey()
-	return config.get("prowlAPIKey", nil)
-end
-
-function mod.setAPIKey(value)
-	config.set("prowlAPIKey", value)
-end
+mod.apiKey = config.prop("prowlAPIKey", nil)
 
 local function requestProwlAPIKey()
 	local returnToFinalCutPro = fcp:isFrontmost()
 
 	-- Request the API Key from the user
-	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.getAPIKey())
+	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.apiKey())
 	if result == false then
 		mod.enabled(false)
 		return
@@ -80,7 +74,7 @@ local function requestProwlAPIKey()
 	-- Check the key is valid
 	local valid, err = prowlAPIKeyValid(result)
 	if valid then
-		mod.setAPIKey(result)
+		mod.apiKey(result)
 		if returnToFinalCutPro then fcp:launch() end
 	else
 		-- Try again
@@ -91,7 +85,7 @@ end
 
 function mod.update(changed)
 	if mod.enabled() then
-		if changed or mod.getAPIKey() == nil then
+		if changed or mod.apiKey() == nil then
 			requestProwlAPIKey()
 		end
 
@@ -115,7 +109,7 @@ function mod.init(notifications)
 end
 
 function mod.sendNotification(message)
-	local prowlAPIKey = config.get("prowlAPIKey", nil)
+	local prowlAPIKey = mod.apiKey()
 	if prowlAPIKey ~= nil then
 		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 		local prowlEvent = http.encodeForQuery("")

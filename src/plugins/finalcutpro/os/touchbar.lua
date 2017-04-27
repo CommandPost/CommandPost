@@ -44,22 +44,9 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.getLastLocation()
-	config.get("lastTouchBarLocation")
-end
+mod.lastLocation = config.prop("lastTouchBarLocation")
 
-function mod.setLastLocation(value)
-	config.set("lastTouchBarLocation", value)
-end
-
-function mod.getLocation()
-	return config.get("displayTouchBarLocation", DEFAULT_VALUE)
-end
-
-function mod.setLocation(value)
-	config.set("displayTouchBarLocation", value)
-	mod.update()
-end
+mod.location = config.prop("displayTouchBarLocation", DEFAULT_VALUE):watch(function() mod.update() end)
 
 --------------------------------------------------------------------------------
 -- SET TOUCH BAR LOCATION:
@@ -69,12 +56,12 @@ function mod.updateLocation()
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = mod.getLocation()
+	local displayTouchBarLocation = mod.location()
 
 	--------------------------------------------------------------------------------
 	-- Put it back to last known position:
 	--------------------------------------------------------------------------------
-	local lastLocation = mod.getLastLocation()
+	local lastLocation = mod.lastLocation()
 	if lastLocation then
 		mod.touchBarWindow:topLeft(lastLocation)
 	end
@@ -104,13 +91,13 @@ function mod.updateLocation()
 	--------------------------------------------------------------------------------
 	-- Save last Touch Bar Location to Settings:
 	--------------------------------------------------------------------------------
-	mod.setLastLocation(mod.touchBarWindow:topLeft())
+	mod.lastLocation(mod.touchBarWindow:topLeft())
 end
 
 --- plugins.finalcutpro.os.touchbar.supported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is supported on this OS.
-mod.supported = prop.new(function() return touchbar.supported() end)
+mod.supported = prop(function() return touchbar.supported() end)
 
 --- plugins.finalcutpro.os.touchbar.enabled <cp.prop: boolean>
 --- Field
@@ -175,7 +162,7 @@ local function touchbarWatcher(obj, message)
 		--------------------------------------------------------------------------------
 		mod.touchBarWindow:movable(false)
 		mod.touchBarWindow:acceptsMouseEvents(true)
-		mod.setLastLocation(mod.touchBarWindow:topLeft())
+		mod.lastLocation(mod.touchBarWindow:topLeft())
 	end
 end
 
@@ -194,7 +181,7 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
-		local lastTouchBarLocation = mod.getLastLocation()
+		local lastTouchBarLocation = mod.lastLocation()
 		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
@@ -202,7 +189,7 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mod.mouseInsideTouchbar and mod.getLocation() == LOCATION_DRAGGABLE then
+			if mod.mouseInsideTouchbar and mod.location() == LOCATION_DRAGGABLE then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
 					mod.touchBarWindow:backgroundColor{ red = 1 }
 									:movable(true)
@@ -211,7 +198,7 @@ function mod.init()
 					mod.touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					mod.setLastLocation(mod.touchBarWindow:topLeft())
+					mod.lastLocation(mod.touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -265,7 +252,7 @@ function plugin.init(deps)
 
 	section:addMenu(2000, function() return i18n("touchBar") end)
 		:addItems(1000, function()
-			local location = mod.getLocation()
+			local location = mod.location()
 			return {
 				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.supported() },
 				{ title = "-" },
