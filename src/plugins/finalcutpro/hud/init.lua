@@ -79,31 +79,10 @@ hud.fcpRed 										= "#d1393e"
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
 
---- plugins.finalcutpro.hud.getPosition() -> table
---- Function
+--- plugins.finalcutpro.hud.position <cp.prop: table>
+--- Constant
 --- Returns the last HUD frame saved in settings.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The last HUD frame or {}.
-function hud.getPosition()
-	return config.get(PREFERENCES_KEY_POSITION, {})
-end
-
---- plugins.finalcutpro.hud.setPosition() -> none
---- Function
---- Saves the HUD position to settings.
----
---- Parameters:
----  * value - Position as table
----
---- Returns:
----  * None
-function hud.setPosition(value)
-	config.set(PREFERENCES_KEY_POSITION, value)
-end
+hud.position = config.prop(PREFERENCES_KEY_POSITION, {})
 
 --------------------------------------------------------------------------------
 -- GET HUD HEIGHT:
@@ -141,7 +120,7 @@ local function getHUDRect()
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.width, h = hudHeight}
-	local hudPosition = hud.getPosition()
+	local hudPosition = hud.position()
 	if next(hudPosition) ~= nil then
 		defaultHUDRect = {x = hudPosition["x"], y = hudPosition["y"], w = hud.width, h = hudHeight}
 	end
@@ -161,7 +140,7 @@ local function windowCallback(action, webview, frame)
 		end
 	elseif action == "frameChange" then
 		if frame then
-			hud.setPosition(frame)
+			hud.position(frame)
 		end
 	end
 end
