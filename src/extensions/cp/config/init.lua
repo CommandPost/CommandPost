@@ -197,9 +197,9 @@ end
 function mod.set(key, value)
 	settings.set(mod.configPrefix .. "." .. key, value)
 	if mod._isCache then
-		local isValue = mod._isCache[key]
-		if isValue then
-			isValue:notify()
+		local prop = mod._isCache[key]
+		if prop then
+			prop:update()
 		end
 	end
 end
@@ -215,22 +215,22 @@ end
 --- Returns:
 --- * A `cp.prop` instance for the key.
 function mod.prop(key, defaultValue)
-	local isValue = nil
+	local propValue = nil
 	if not mod._isCache then
 		mod._isCache = {}
 	else
-		isValue = mod._isCache[key]
+		propValue = mod._isCache[key]
 	end
 	
-	if not isValue then
-		isValue = prop.new(
+	if not propValue then
+		propValue = prop.new(
 			function() return mod.get(key, defaultValue) end,
 			function(value) mod.set(key, value) end
 		)
-		mod._isCache[key] = isValue
+		mod._isCache[key] = propValue
 	end
 	
-	return isValue
+	return propValue
 end
 
 --- cp.config.reset()

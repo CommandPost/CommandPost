@@ -1,35 +1,39 @@
 --- === cp.prop ===
 ---
---- This is a utility library for helping keep track of `true`/`false` states. It works by creating a table which has a `get` and (optionally) a `set` function which are called when changing the state.
+--- This is a utility library for helping keep track of single-value property states. Each property provides access to a single value. Must be readable, but may be read-only. It works by creating a table which has a `get` and (optionally) a `set` function which are called when changing the state.
 ---
 --- ## Features
 --- ### 1. Callable
---- An `prop` can be called like a function once created. Eg:
+--- A `prop` can be called like a function once created. Eg:
 ---
 --- ```lua
 --- local value = true
---- local isValue = prop.new(function() return value end, function(newValue) value = newValue end)
---- isValue() == true		-- `value` is still true
---- isValue(false) == false	-- now `value` is false
+--- local propValue = prop.new(function() return value end, function(newValue) value = newValue end)
+--- propValue() == true		-- `value` is still true
+--- propValue(false) == false	-- now `value` is false
 --- ```
 ---
 --- ### 2. Togglable
---- An `prop` comes with toggling built in - as long as the it has a `set` function. Continuing from the last example:
+--- A `prop` comes with toggling built in - as long as the it has a `set` function. Continuing from the last example:
 ---
 --- ```lua
---- isValue:toggle()	-- `value` went from `false` to `true`.
+--- propValue:toggle()	-- `value` went from `false` to `true`.
 --- ```
+---
+--- **Note:** Toggling a non-boolean value will flip it to `nil` and a subsequent toggle will make it `true`. See the [toggle method](#toggle) for more details.
 ---
 --- ### 3. Watchable
 --- Interested parties can 'watch' the `prop` value to be notified of changes. Again, continuing on:
 ---
 --- ```lua
---- isValue:watch(function(newValue) print "New Value: "...newValue) end)	-- prints "New Value: true" immediately
---- isValue(false)	-- prints "New Value: false"
+--- propValue:watch(function(newValue) print "New Value: "...newValue) end)	-- prints "New Value: true" immediately
+--- propValue(false)	-- prints "New Value: false"
 --- ```
 ---
+--- This will also work on [AND](#and) and [OR][#or] properties. Any changes from component properties will trigger a notification.
+---
 --- ### 4. Combinable
---- Because all values are booleans, we can combine or modify them with AND/OR and NOT operations. The resulting values will be a live combination of the underlying `prop` values. They can also be watched, and will be notified when the underlying `prop` values change. For example:
+--- We can combine or modify properties with AND/OR and NOT operations. The resulting values will be a live combination of the underlying `prop` values. They can also be watched, and will be notified when the underlying `prop` values change. For example:
 ---
 --- ```lua
 --- local watered   = prop.TRUE()               -- a simple `prop` which stores the current value internally, defaults to `true`
@@ -61,38 +65,100 @@
 --- happy:toggle()
 --- ```
 ---
---- ## 5. Immutable
---- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense. Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
+--- You can also use non-boolean properties. Any non-`nil` value is considered to be `true`.
 ---
---- Note that the underlying `prop` value(s) are still potentially modifyable, and any watchers on the immutable wrapper will be notified of changes. You just can't make any changes directly to the immutable value.
+--- ## 5. Immutable
+--- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense. 
+---
+--- Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
+---
+--- Note that the underlying `prop` value(s) are still potentially modifiable, and any watchers on the immutable wrapper will be notified of changes. You just can't make any changes directly to the immutable property instance.
 ---
 --- For example:
 ---
 --- ```lua
---- local isImmutable = isValue:IMMUTABLE()
+--- local isImmutable = propValue:IMMUTABLE()
 --- isImmutable:toggle()	-- results in an `error` being thrown
 --- isImmutable:watch(function(newValue) print "isImmutable changed to "..newValue end)
---- isValue:toggle()		-- prints "isImmutable changed to false"
+--- propValue:toggle()		-- prints "isImmutable changed to false"
 --- ```
 ---
---- ## 6. Attachable
---- By default, a `prop` acts like a function. It does not expect to receive a table as the first parameter. So, this will fail:
+--- ## 6. Bindable
+--- A property can be bound to an 'owning' table. This table will be passed into the `get` and `set` functions for the property if present. This is mostly useful if your property depends on internal instance values of a table. For example, you might want to make a property work as a method instead of a function:
 ---
 --- ```lua
---- local owner = {}
---- owner.isMethod = prop.TRUE()
+--- local owner = {
+---    _value = true
+--- }
+--- owner.value = prop(function() return owner._value end)
 --- owner:isMethod() -- error!
 --- ```
 ---
 --- To use a `prop` as a method, you need to `attach` it to the owning table, like so:
 ---
 --- ```lua
---- local owner = {}
---- owner.isMethod = prop.TRUE():bind(owner)
---- owner:isMethod() -- success!
+--- local owner = {
+---     _value = true
+--- }
+--- owner.isMethod = prop(function(self) return self._value end, function(value, self) self._value = value end):bind(owner)
+--- owner:isMethod()				-- success!
+--- owner.isMethod()				-- also works - will still pass in the bound owner.
+--- owner.isMethod:owner() == owner	-- is true~
+--- ```
+--- 
+--- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.
+---
+--- ## 7. Extendable
+--- A common use case is using metatables to provide shared fields and methods across multiple instances. A typical example might be:
+---
+--- ```lua
+--- local person = {}
+--- function person:name(newValue)
+---     if newValue then
+---         self._name = newValue
+---     end
+---     return self._name
+--- end
+---
+--- function person.new(name)
+---     local o = { _name = name }
+---     return setmetatable(o, { __index = person })
+--- end
+---
+--- local johnDoe = person.new("John Doe")
+--- johnDoe:name() == "John Doe"
 --- ```
 ---
---- **NOTE:** An `prop` should only be attached to a true instance, not to a metatable.
+--- If we want to make the `name` a property, we might try creating a bound property like this:
+---
+--- ```lua
+--- person.name = prop(function(self) return self._name end, function(value, self) self._name = value end):bind(person)
+--- ```
+--- Unfortunately, this doesn't work as expected:
+---
+--- ```lua
+--- johnDoe:name() 			-- Throws an error because `person` is the owner, not `johnDoe`.
+--- johnDoe.name() == nil	-- Works, but will return `nil` because "John Doe" is applied to the new table, not `person`
+--- ```
+---
+--- The fix is to use `prop.extend` when creating the new person. Rewrite `person.new` like so:
+---
+--- ```lua
+--- person.new(name)
+---     local o = { _name = name }
+---     return prop.extend(o, person)
+--- end
+--- ```
+---
+--- Now, this will work as expected:
+---
+--- ```lua
+--- johnDoe:name() == "John Doe"
+--- johnDoe.name() == "John Doe"
+--- ```
+---
+--- The `prop.extend` function will set the `source` table as a metatable of the `target`, as well as binding any bound props that are in the `source` to `target`.
+
 	
 local log				= require("hs.logger").new("prop")
 local inspect			= require("hs.inspect")
@@ -111,39 +177,86 @@ local function nextId()
 	return ids
 end
 
-local function isInstance(something)
-	if something and type(something) == "table" then
-		local mt = getmetatable(something)
-		return mt and (mt.__index == prop.mt or isInstance(mt.__index))
+-- Returns `true` if the value is `truthy` - either `true` or not `nil`.
+local function isTruthy(value)
+	return value ~= nil and value ~= false
+end
+
+--- cp.prop.is(value) -> boolean
+--- Function
+--- Checks if the `value` is an instance of a `cp.prop`.
+---
+--- Parameters:
+--- * `value`	- The value to check.
+---
+--- Returns:
+--- * `true` if the value is an instance of `cp.prop`.
+function prop.is(value)
+	if value and type(value) == "table" then
+		local mt = getmetatable(value)
+		return mt and (mt.__index == prop.mt or prop.is(mt.__index))
 	end
 	return false
 end
 
---- cp.prop:value([newValue[, quiet]]) -> boolean
+--- cp.prop:value([newValue]) -> value
 --- Method
 --- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
+---
+--- This method can also be called directly on the property, like so:
+---
+--- ```lua
+--- local foo = prop.TRUE()
+--- foo() == foo:value()
+--- ```
 --- 
 --- Parameters:
 --- * `newValue`	- The new value to set the instance to.
---- * `quiet`		- If `true`, no notifications will be sent to watchers. Defaults to `false`.
 ---
 --- Returns:
 --- * The current boolean value.
-function prop.mt:value(newValue, quiet)
-	local value = self._get(self._owner)
-	value = value ~= nil and value ~= false
+---
+--- Notes:
+--- * If you need to set the property to `nil`, use the [set method](#set), otherwise it will be ignored.
+function prop.mt:value(newValue)
 	if newValue ~= nil then
-		if not self._set then
-			error("This value cannot be modified.")
-		end
-		newValue = newValue ~= false
-		if value ~= newValue then
-			self._set(newValue, self._owner)
-			if not quiet then
-				self:notify()
-			end
-			return newValue
-		end
+		return self:set(newValue)
+	else
+		return self:get()
+	end
+end
+
+--- cp.prop:get() -> value
+--- Method
+--- Returns the current value of the property.
+---
+--- Parameters:
+--- * None
+---
+--- Returns
+--- * The current value.
+function prop.mt:get()
+	return self._get(self._owner)
+end
+
+--- cp.prop:set(newValue) -> value
+--- Method
+--- Sets the property to the specified value. Watchers will be notified if the value has changed.
+---
+--- Parameters:
+--- * `newValue`	- The new value to set. May be `nil`.
+---
+--- Returns:
+--- * The new value.
+function prop.mt:set(newValue)
+	if not self._set then
+		error("This property cannot be modified.")
+	end
+	local value = self:get()
+	if value ~= newValue then
+		self._set(newValue, self._owner)
+		self:_notify(newValue)
+		return newValue
 	end
 	return value
 end
@@ -181,7 +294,7 @@ end
 
 --- cp.prop:mutable() -> boolean
 --- Method
---- Checks if the `cp.prop` owner can be modified.
+--- Checks if the `cp.prop` can be modified.
 ---
 --- Parameters:
 --- * None
@@ -192,9 +305,36 @@ function prop.mt:mutable()
 	return self._set ~= nil
 end
 
---- cp.prop:toggle() -> boolean
+-- negate(value) -> boolean | nil
+-- Private Function
+-- Negates the current value. Values are modified as follows:
+--
+-- * `boolean`	- Switch between `true` and `false`
+-- * `nil`		- Switches to `true`
+-- * <other>	- Switches to `nil`.
+-- Parameters:
+-- * `value`	- The value to negate.
+--
+-- Returns:
+--
+local function negate(value)
+	if value == nil then					-- `nil` gets toggled to `true`
+		value = true
+	elseif type(value) ~= "boolean" then	-- non-booleans get toggle to nil
+		value = nil
+	else									-- flip the boolean
+		value = not value
+	end
+	return value
+end
+
+--- cp.prop:toggle() -> boolean | nil
 --- Method
---- Toggles the current value.
+--- Toggles the current value. Values are modified as follows:
+---
+--- * `boolean`	- Switch between `true` and `false`
+--- * `nil`		- Switches to `true`
+--- * <other>	- Switches to `nil`.
 ---
 --- Parameters:
 --- * None
@@ -204,8 +344,9 @@ end
 ---
 --- Notes:
 --- * If the value is immutable, an error will be thrown.
+--- * If you toggle a non-boolean parameter twice, it will end up set to `true`.
 function prop.mt:toggle()
-	return self:value(not self._get(self._owner))
+	return self:set(negate(self:get()))
 end
 
 --- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
@@ -225,25 +366,39 @@ function prop.mt:watch(watchFn, notifyNow)
 	if not self._watchers then
 		self._watchers = {}
 	end
-	self._watchers[#self._watchers + 1] = watchFn
 	if notifyNow then
-		watchFn(self:value())
+		watchFn(self:get())
 	end
+	self._watchers[#self._watchers + 1] = watchFn
 	return self
 end
 
---- cp.prop:notify() -> nil
+--- cp.prop:update() -> value
 --- Method
---- Notifies all watchers of the current value if it has changed since the last notification.
+--- Forces an update of the property and notifies any watchers if it has changed.
 ---
 --- Parameters:
 --- * None
 ---
---- Returns:
---- * Nothing
-function prop.mt:notify()
+--- Returns
+--- * The current value of the property.
+function prop.mt:update()
+	local value = self:get() 
+	self:_notify(value)
+	return value
+end
+
+-- cp.prop:_notify(value) -> nil
+-- Method
+-- Notifies all watchers of the current value if it has changed since the last notification.
+--
+-- Parameters:
+-- * `value`	- The current value of the property.
+--
+-- Returns:
+-- * Nothing
+function prop.mt:_notify(value)
 	if self._watchers then
-		local value = self:value()
 		if self._lastValue ~= value then
 			for _,watcher in ipairs(self._watchers) do
 				watcher(value)
@@ -285,7 +440,7 @@ end
 --- * `setFn` signature: `function(newValue[, owner])`
 --- ** `newValue`	- The new value to store.
 --- ** `owner`		- If this is attached as a method, the owner table is passed in.
---- * This can also be executed by calling the module directly. E.g. `require('cp.prop')(mySetFunction)`
+--- * This can also be executed by calling the module directly. E.g. `require('cp.prop')(myGetFunction)`
 function prop.new(getFn, setFn)
 	assert(getFn ~= nil and type(getFn) == "function")
 	assert(setFn == nil or type(setFn) == "function")
@@ -299,7 +454,7 @@ end
 
 --- cp.prop.THIS([initialValue]) -> cp.prop
 --- Function
---- Returns a new `cp.prop` instance which will cache a value internally. It will default to the 'truthy' value of the `initialValue`, if provided.
+--- Returns a new `cp.prop` instance which will cache a value internally. It will default to the value of the `initialValue`, if provided.
 ---
 --- Parameters:
 --- * `initialValue`	- The initial value to set it to (optional).
@@ -307,27 +462,27 @@ end
 --- Returns:
 --- * a new `cp.prop` instance.
 function prop.THIS(initialValue)
-	local value = initialValue ~= nil and initialValue ~= false
+	local value = initialValue
 	local get = function() return value end
 	local set = function(newValue) value = newValue end
 	return prop.new(get, set)
 end
 
---- cp.prop.IMMUTABLE(isValue) -- cp.prop
+--- cp.prop.IMMUTABLE(propValue) -- cp.prop
 --- Function
 --- Returns a new `cp.prop` instance which will not allow the wrapped value to be modified.
 ---
 --- Parameters:
---- * `isValue`		- The `cp.prop` value to wrap.
+--- * `propValue`		- The `cp.prop` value to wrap.
 ---
 --- Returns:
 --- * a new `cp.prop` instance which cannot be modified.
 ---
 --- Note:
---- * The original `isValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
-function prop.IMMUTABLE(isValue)
-	local immutable = prop.new(function() return isValue:value() end)
-	isValue:watch(function() immutable:notify() end)
+--- * The original `propValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
+function prop.IMMUTABLE(propValue)
+	local immutable = prop.new(function() return propValue:get() end)
+	propValue:watch(function() immutable:update() end)
 	return immutable
 end
 
@@ -336,7 +491,7 @@ end
 --- Returns a new `cp.prop` instance wrapping this property which will not allow it to be modified.
 ---
 --- Parameters:
---- * `isValue`		- The `cp.prop` value to wrap.
+--- * `propValue`		- The `cp.prop` value to wrap.
 ---
 --- Returns:
 --- * a new `cp.prop` instance which cannot be modified.
@@ -372,39 +527,53 @@ function prop.FALSE()
 	return prop.THIS(false)
 end
 
---- cp.prop.NOT(isValue) -> cp.prop
+--- cp.prop.NOT(propValue) -> cp.prop
 --- Function
---- Returns a new `cp.prop` which negates the provided `isValue`.
+--- Returns a new `cp.prop` which negates the provided `propValue`. Values are negated as follows:
+---
+--- * `boolean`	- Switch between `true` and `false`
+--- * `nil`		- Switches to `true`
+--- * <other>	- Switches to `nil`.
 ---
 --- Parameters:
---- * `isValue`		- Another `cp.prop` instance.
+--- * `propValue`		- Another `cp.prop` instance.
 ---
 --- Returns:
---- * a `cp.prop` instance negating the `isValue`.
-function prop.NOT(isValue)
-	local isNot = prop.new(
-		function() return not isValue:value() end,
-		function(newValue) return isValue:value(not newValue, true) end
+--- * a `cp.prop` instance negating the `propValue`.
+---
+--- Notes:
+--- * If the `propValue` is mutable, you can set the `NOT` property value and the underlying value will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
+function prop.NOT(propValue)
+	local notProp = prop.new(
+		function() return negate(propValue:get()) end,
+		function(newValue) propValue:set(negate(newValue)) end
 	)
 	-- notify the 'not' watchers if the original value changes.
-	isValue:watch(function(value) isNot:notify() end)
-	return isNot
+	propValue:watch(function(value) notProp:update() end)
+	return notProp
 end
 
 --- cp.prop:NOT() -> cp.prop
 --- Method
---- Returns a new `cp.prop` which negates the current value.
+--- Returns a new `cp.prop` which negates the current value. Values are negated as follows:
+---
+--- * `boolean`	- Switch between `true` and `false`
+--- * `nil`		- Switches to `true`
+--- * <other>	- Switches to `nil`.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * a `cp.prop` instance negating the current instance.
+---
+--- Notes:
+--- * If this property is mutable, you can set the `NOT` property value and this property will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
 prop.mt.NOT = prop.NOT
 
 --- cp.prop.AND(...) -> cp.prop
 --- Function
---- Returns a new `cp.prop` which will be `true` if all `cp.prop` instances passed into the function return `true`.
+--- Returns a new `cp.prop` which will be `true` if all `cp.prop` instances passed into the function return a `truthy` value.
 ---
 --- Parameters:
 --- * `...`		- The list of `cp.prop` instances to 'AND' together.
@@ -413,28 +582,30 @@ prop.mt.NOT = prop.NOT
 --- * a `cp.prop` instance.
 ---
 --- Notes:
---- * The value of this instance will resolve by lazily checking the `value` of the contained `cp.prop` instances in the order provided. If any return `false`, no further instances will be checked.
---- * The instance is immutable, since there is no realy way to flip the component values of an 'AND' in a way that makes sense.
---- * You can also use this as a method. Eg: `prop.TRUE():AND(prop.FALSE()):value() == false`.
+--- * The value of this instance will resolve by lazily checking the `value` of the contained `cp.prop` instances in the order provided. The first `falsy` value will be returned. Otherwise the last `truthy` value is returned.
+--- * The instance is **immutable**.
 --- * Once you have created an 'AND', you cannot 'OR' as a method. Eg, this will fail: `prop.TRUE():AND(prop:FALSE()):OR(prop.TRUE())`. This is to avoid ambiguity as to whether the 'AND' or 'OR' takes precedence. Is it `(true and false) or true` or `true and (false or true)`?.
 --- * To combine 'AND' and 'OR' values, group them together when combining. Eg:
 --- ** `(true and false) or true`: `prop.OR( prop.TRUE():AND(prop.FALSE()), prop.TRUE() )`
 --- ** `true and (false or true)`: `prop.TRUE():AND( prop.FALSE():OR(prop.TRUE()) )`
 function prop.AND(...)
-	local values = table.pack(...)
+	local props = table.pack(...)
 	local andProp = prop.new(
 		function()
-			for _,value in ipairs(values) do
-				if not value:value() then
-					return false
+			local value = false
+			for _,p in ipairs(props) do
+				value = p:get()
+				if not isTruthy(value) then
+					return value
 				end
 			end
-			return true
+			return value
 		end
 	)
-	local watcher = function(value) andProp:notify() end
-	for _,value in ipairs(values) do
-		value:watch(watcher)
+	local watcher = function(value) andProp:update() end
+	for i,p in ipairs(props) do
+		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
+		p:watch(watcher)
 	end
 	andProp.OR = function() error("Unable to 'OR' an 'AND'.") end
 	return andProp
@@ -456,7 +627,7 @@ prop.mt.AND = prop.AND
 
 --- cp.prop.OR(...) -> cp.prop
 --- Function
---- Returns a new `cp.prop` which will be `true` if any `cp.prop` instance passed into the function returns `true`.
+--- Returns a new `cp.prop` which will return the first 'truthy' value provided by one of the provided properties. Otherwise, returns the last 'falsy' value.
 ---
 --- Parameters:
 --- * `...`		- The list of `cp.prop` instances to 'OR' together.
@@ -467,26 +638,28 @@ prop.mt.AND = prop.AND
 --- Notes:
 --- * The value of this instance will resolve by lazily checking the `value` of the contained `cp.prop` instances in the order provided. If any return `true`, no further instances will be checked.
 --- * The instance is immutable, since there is no realy way to flip the component values of an 'OR' in a way that makes sense.
---- * You can also use this as a method. Eg: `prop.TRUE():OR(prop.FALSE()):value() == true`.
 --- * Once you have created an 'OR', you cannot 'AND' as a method. Eg, this will fail: `prop.TRUE():OR(prop:FALSE()):AND(prop.TRUE())`. This is to avoid ambiguity as to whether the 'OR' or 'AND' takes precedence. Is it `(true or false) and true` or `true or (false and true)`?.
 --- * To combine 'AND' and 'OR' values, group them together when combining. Eg:
 --- ** `(true or false) and true`: `prop.AND( prop.TRUE():OR(prop.FALSE()), prop.TRUE() )`
 --- ** `true or (false and true)`: `prop.TRUE():OR( prop.FALSE():AND(prop.TRUE()) )`
 function prop.OR(...)
-	local values = table.pack(...)
+	local props = table.pack(...)
 	local orProp = prop.new(
 		function()
-			for _,value in ipairs(values) do
-				if value:value() then
-					return true
+			local value = false
+			for _,p in ipairs(props) do
+				value = p:get()
+				if isTruthy(value) then
+					return value
 				end
 			end
-			return false
+			return value
 		end
 	)
-	local watcher = function(value) orProp:notify() end
-	for _,value in ipairs(values) do
-		value:watch(watcher)
+	local watcher = function(value) orProp:update() end
+	for i,p in ipairs(props) do
+		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
+		p:watch(watcher)
 	end
 	orProp.AND = function() error("Unable to 'AND' an 'OR'.") end
 	return orProp
@@ -531,7 +704,7 @@ local function rebind(target, ...)
 	local sources = table.pack(...)
 	for i,source in ipairs(sources) do
 		for k,v in pairs(source) do
-			if target[k] == nil and isInstance(v) then
+			if target[k] == nil and prop.is(v) then
 				if v:owner() == source then
 					-- it's a bound method. rebind.
 					target[k] = v:bind(target)
@@ -556,4 +729,4 @@ function prop.extend(target, source)
 	return setmetatable(target, {__index = source})
 end
 
-return setmetatable(prop, { __call = prop.new })
+return setmetatable(prop, { __call = function(_, ...) return prop.new(...) end })

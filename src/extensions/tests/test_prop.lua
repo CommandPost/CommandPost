@@ -14,6 +14,14 @@ function run()
 		ok(not state)
 	end)
 	
+	test("Prop Call", function()
+		local state = true
+	
+		local isState = prop(function() return state end)
+		ok(isState())
+		ok(isState:mutable() == false)
+	end)
+	
 	test("Prop THIS", function()
 		local isTrue = prop.THIS(true)
 		ok(isTrue() == true)
@@ -22,6 +30,12 @@ function run()
 		local isFalse = prop.THIS(false)
 		ok(isFalse() == false)
 		ok(isFalse:toggle() == true)
+		
+		local isHello = prop.THIS("Hello world")
+		ok(isHello() == "Hello world")
+		ok(isHello("Hello universe") == "Hello universe")
+		ok(isHello(nil) == "Hello universe")
+		ok(isHello:set(nil) == nil)
 	end)
 	
 	test("Prop TRUE", function()
@@ -53,6 +67,12 @@ function run()
 		ok(isState())
 		ok(isState:toggle() == false)
 		ok(not isState())
+		
+		-- Toggling a non-boolean will `nil` it, then toggling the `nil` will make it `true`
+		local hello = prop.THIS("Hello world")
+		ok(hello() == "Hello world")
+		ok(hello:toggle() == nil)
+		ok(hello:toggle() == true)
 	end)
 	
 	test("Watcher", function()
@@ -110,6 +130,10 @@ function run()
 		ok(isState:value() == true)
 		ok(eq(count, 3))
 		ok(watchValue == false)
+		
+		-- Check that non-booleans work as expected
+		ok(prop.THIS("Hello"):NOT():value() == nil)
+		ok(prop.THIS(nil):NOT():value() == true)
 	end)
 	
 	test("Prop AND", function() 
@@ -159,14 +183,16 @@ function run()
 		isLeft(false)
 		ok(eq(count, 2))
 		ok(eq(watchValue, false))
+		
+		-- Test non-boolean properties.
+		ok(prop.THIS("Hello"):AND(prop.THIS("world")):value() == "world")
+		ok(prop.THIS("Hello"):AND(prop.THIS(nil)):value() == nil)
+		ok(prop.THIS("Hello"):AND(prop.FALSE()):value() == false)
 	end)
 	
 	test("Prop OR", function() 
-		local leftState = true
-		local rightState = true
-		
-		local isLeft	= prop.new(function() return leftState end, function(value) leftState = value end)
-		local isRight	= prop.new(function() return rightState end, function(value) rightState = value end)
+		local isLeft	= prop.TRUE()
+		local isRight	= prop.TRUE()
 		
 		local isLeftOrRight = prop.OR(isLeft, isRight)
 		
@@ -174,45 +200,49 @@ function run()
 		-- isLeft false
 		isLeft(false)
 		ok(isLeftOrRight() == true)
-		
+
 		-- isRight false as well
 		isRight(false)
 		ok(isLeftOrRight() == false)
-		
+
 		-- isLeft back to true
 		isLeft(true)
 		ok(isLeftOrRight() == true)
-		
+
 		-- isRight back to true
 		isRight(true)
 		ok(isLeftOrRight() == true)
-		
-		-- Use AND as a method
+
+		-- Use OR as a method
 		ok(isLeft:OR(isRight):value() == true)
-		
+
 		-- Check we get an error when combining an OR and AND
 		-- We have to wrap the execution in a 'spy' function to catch the error.
 		local andOr = spy(function() isLeftOrRight:AND(prop.new(function() return false end)) end)
 		andOr()
 		ok(andOr.errors[1], "Cannot combine OR and AND")
-		
+
 		-- Check that we can watch the combined `prop` for changes from further down.
 		local count = 0
 		local watchValue = nil
 		isLeftOrRight:watch(function(value) count = count+1; watchValue = value end)
 		ok(eq(count, 0))
 		ok(eq(watchValue, nil))
-		
+
 		-- Toggle isLeft
 		isLeft(false)
 		ok(eq(count, 1))
 		ok(eq(watchValue, true))
-		
+
 		-- ...and isRight
 		isRight(false)
 		ok(eq(count, 2))
 		ok(eq(watchValue, false))
 		
+		-- Test non-boolean properties.
+		ok(prop.THIS("Hello"):OR(prop.THIS("world")):value() == "Hello")
+		ok(prop.THIS(nil):OR(prop.THIS("world")):value() == "world")
+		ok(prop.THIS(nil):OR(prop.FALSE()):value() == false)
 	end)
 	
 	test("Prop Bind", function()
@@ -260,7 +290,6 @@ function run()
 		ok(instance:isOrMethod() == true)
 		ok(instance:isSimple(false) == false)
 		ok(instance:isOrMethod() == false)
-		
 	end)
 	
 	test("Prop Extend", function()

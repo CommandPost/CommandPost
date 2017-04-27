@@ -137,7 +137,7 @@ end)
 
 function mod.update()
 	-- Check if it's active.
-	mod.isActive:notify()
+	mod.isActive:update()
 end
 
 --------------------------------------------------------------------------------
