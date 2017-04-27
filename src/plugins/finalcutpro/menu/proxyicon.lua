@@ -24,7 +24,7 @@ local fcp				= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 
-local DEFAULT_ENABLE_PROXY_MENU_ICON 	= false
+local ENABLED_DEFAULT 	= false
 
 --------------------------------------------------------------------------------
 --
@@ -38,33 +38,12 @@ mod.PROXY_ICON			= "🔴"
 mod.ORIGINAL_QUALITY	= 5
 mod.ORIGINAL_ICON		= "🔵"
 
---- plugins.finalcutpro.menu.proxyicon.toggleEnableProxyMenuIcon() -> none
---- Function
+--- plugins.finalcutpro.menu.proxyicon.procyMenuIconEnabled <cp.prop: boolean>
+--- Constant
 --- Toggles the Enable Proxy Menu Icon
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleEnableProxyMenuIcon()
-	local enableProxyMenuIcon = config.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
-	config.set("enableProxyMenuIcon", not enableProxyMenuIcon)
-	mod.menuManager:update()
-end
-
---- plugins.finalcutpro.menu.proxyicon.getEnableProxyMenuIcon() -> string
---- Function
---- Generates the Proxy Title
----
---- Parameters:
----  * None
----
---- Returns:
----  * String containing the Proxy Title
-function mod.getEnableProxyMenuIcon()
-	return config.get("enableProxyMenuIcon", DEFAULT_ENABLE_PROXY_MENU_ICON)
-end
+mod.enabled = config.prop("enableProxyMenuIcon", ENABLED_DEFAULT):watch(
+	function() mod.menuManager:updateMenubarIcon() end
+)
 
 --- plugins.finalcutpro.menu.proxyicon.generateProxyTitle() -> string
 --- Function
@@ -77,7 +56,7 @@ end
 ---  * String containing the Proxy Title
 function mod.generateProxyTitle()
 
-	if mod.getEnableProxyMenuIcon() then
+	if mod.enabled() then
 		local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
 		if FFPlayerQuality == mod.PROXY_QUALITY then
 			return " " .. mod.PROXY_ICON
@@ -124,11 +103,13 @@ function plugin.init(deps)
 		:addCheckbox(31,
 			{
 				label = i18n("displayProxyOriginalIcon"),
-				onchange = mod.toggleEnableProxyMenuIcon,
-				checked = mod.getEnableProxyMenuIcon,
+				onchange = function(_, params) mod.enabled(params.checked) end,
+				checked = mod.enabled,
 			}
 		)
 	end
+
+	return mod
 
 end
 
