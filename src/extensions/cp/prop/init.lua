@@ -62,7 +62,7 @@
 --- ```
 ---
 --- ## 5. Immutable
---- If appropriate, an `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense. Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
+--- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense. Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
 ---
 --- Note that the underlying `prop` value(s) are still potentially modifyable, and any watchers on the immutable wrapper will be notified of changes. You just can't make any changes directly to the immutable value.
 ---
@@ -76,7 +76,7 @@
 --- ```
 ---
 --- ## 6. Attachable
---- By default, an `prop` acts like a function. It does not expect to receive a table as the first parameter. So, this will fail:
+--- By default, a `prop` acts like a function. It does not expect to receive a table as the first parameter. So, this will fail:
 ---
 --- ```lua
 --- local owner = {}
@@ -84,7 +84,7 @@
 --- owner:isMethod() -- error!
 --- ```
 ---
---- To use an `prop` as a method, you need to `attach` it to the owning table, like so:
+--- To use a `prop` as a method, you need to `attach` it to the owning table, like so:
 ---
 --- ```lua
 --- local owner = {}
@@ -97,8 +97,12 @@
 local log				= require("hs.logger").new("prop")
 local inspect			= require("hs.inspect")
 
+-- The module
 local prop = {}
-prop.__index = prop
+
+-- The metatable
+prop.mt = {}
+prop.mt.__index = prop.mt
 
 local ids = 0
 
@@ -110,9 +114,158 @@ end
 local function isInstance(something)
 	if something and type(something) == "table" then
 		local mt = getmetatable(something)
-		return mt and (mt.__index == is or isInstance(mt.__index))
+		return mt and (mt.__index == prop.mt or isInstance(mt.__index))
 	end
 	return false
+end
+
+--- cp.prop:value([newValue[, quiet]]) -> boolean
+--- Method
+--- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
+--- 
+--- Parameters:
+--- * `newValue`	- The new value to set the instance to.
+--- * `quiet`		- If `true`, no notifications will be sent to watchers. Defaults to `false`.
+---
+--- Returns:
+--- * The current boolean value.
+function prop.mt:value(newValue, quiet)
+	local value = self._get(self._owner)
+	value = value ~= nil and value ~= false
+	if newValue ~= nil then
+		if not self._set then
+			error("This value cannot be modified.")
+		end
+		newValue = newValue ~= false
+		if value ~= newValue then
+			self._set(newValue, self._owner)
+			if not quiet then
+				self:notify()
+			end
+			return newValue
+		end
+	end
+	return value
+end
+
+--- cp.prop:bind(owner) -> cp.prop
+--- Method
+--- Creates a new instance of the is which is bound to the specified owner.
+---
+--- Parameters:
+--- * `owner`	- The owner to attach to.
+---
+--- Returns:
+--- * the `cp.prop`
+---
+--- Notes:
+--- * Throws an `error` if this is already attached to an owner.
+function prop.mt:bind(owner)
+	assert(owner ~= nil, "The owner must not be nil.")
+	local o = {_owner = owner}
+	return setmetatable(o, {__index = self, __call = self.__call, __tostring = self.__tostring})
+end
+
+--- cp.prop:owner() -> table
+--- Method
+--- If this is a 'method', return the table instance the method is attached to.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The owner table, or `nil`.
+function prop.mt:owner()
+	return self._owner
+end
+
+--- cp.prop:mutable() -> boolean
+--- Method
+--- Checks if the `cp.prop` owner can be modified.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the value can be modified.
+function prop.mt:mutable()
+	return self._set ~= nil
+end
+
+--- cp.prop:toggle() -> boolean
+--- Method
+--- Toggles the current value.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The new value.
+---
+--- Notes:
+--- * If the value is immutable, an error will be thrown.
+function prop.mt:toggle()
+	return self:value(not self._get(self._owner))
+end
+
+--- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
+--- Method
+--- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
+---
+--- Parameters:
+--- * `watchFn`		- The watch function.
+--- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
+---
+--- Returns:
+--- * The same `cp.prop` instance.
+---
+--- Notes:
+--- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+function prop.mt:watch(watchFn, notifyNow)
+	if not self._watchers then
+		self._watchers = {}
+	end
+	self._watchers[#self._watchers + 1] = watchFn
+	if notifyNow then
+		watchFn(self:value())
+	end
+	return self
+end
+
+--- cp.prop:notify() -> nil
+--- Method
+--- Notifies all watchers of the current value if it has changed since the last notification.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing
+function prop.mt:notify()
+	if self._watchers then
+		local value = self:value()
+		if self._lastValue ~= value then
+			for _,watcher in ipairs(self._watchers) do
+				watcher(value)
+			end
+		end
+		self._lastValue = value
+	end
+end
+
+-- Displays the `cp.prop` instance as a string.
+function prop.mt:__tostring()
+	return string.format("is #%d: %s", self._id, self:value())
+end
+
+-- Allows the prop to be called directly.
+prop.mt.__call = function(target, owner, newValue, quiet)
+	if not target._owner or target._owner ~= owner then
+		-- no owner provided, so shift the parameters across
+		quiet = newValue
+		newValue = owner
+	end
+	return target:value(newValue, quiet)
 end
 
 --- cp.prop.new(getFn, setFn) --> cp.prop
@@ -132,6 +285,7 @@ end
 --- * `setFn` signature: `function(newValue[, owner])`
 --- ** `newValue`	- The new value to store.
 --- ** `owner`		- If this is attached as a method, the owner table is passed in.
+--- * This can also be executed by calling the module directly. E.g. `require('cp.prop')(mySetFunction)`
 function prop.new(getFn, setFn)
 	assert(getFn ~= nil and type(getFn) == "function")
 	assert(setFn == nil or type(setFn) == "function")
@@ -140,8 +294,7 @@ function prop.new(getFn, setFn)
 		_get		= getFn,
 		_set		= setFn,
 	}
-	setmetatable(o, prop)
-	return o
+	return setmetatable(o, prop.mt)
 end
 
 --- cp.prop.THIS([initialValue]) -> cp.prop
@@ -172,12 +325,25 @@ end
 ---
 --- Note:
 --- * The original `isValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
---- * This can also be called as a method of a `cp.prop` instance. Eg `cp.prop.TRUE():IMMUTABLE()`.
 function prop.IMMUTABLE(isValue)
 	local immutable = prop.new(function() return isValue:value() end)
 	isValue:watch(function() immutable:notify() end)
 	return immutable
 end
+
+--- cp.prop:IMMUTABLE() -- cp.prop
+--- Method
+--- Returns a new `cp.prop` instance wrapping this property which will not allow it to be modified.
+---
+--- Parameters:
+--- * `isValue`		- The `cp.prop` value to wrap.
+---
+--- Returns:
+--- * a new `cp.prop` instance which cannot be modified.
+---
+--- Note:
+--- * The original property can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
+prop.mt.IMMUTABLE = prop.IMMUTABLE
 
 --- cp.prop.TRUE() -> cp.prop
 --- Function
@@ -225,6 +391,17 @@ function prop.NOT(isValue)
 	return isNot
 end
 
+--- cp.prop:NOT() -> cp.prop
+--- Method
+--- Returns a new `cp.prop` which negates the current value.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * a `cp.prop` instance negating the current instance.
+prop.mt.NOT = prop.NOT
+
 --- cp.prop.AND(...) -> cp.prop
 --- Function
 --- Returns a new `cp.prop` which will be `true` if all `cp.prop` instances passed into the function return `true`.
@@ -245,7 +422,7 @@ end
 --- ** `true and (false or true)`: `prop.TRUE():AND( prop.FALSE():OR(prop.TRUE()) )`
 function prop.AND(...)
 	local values = table.pack(...)
-	local isAnd = prop.new(
+	local andProp = prop.new(
 		function()
 			for _,value in ipairs(values) do
 				if not value:value() then
@@ -255,13 +432,27 @@ function prop.AND(...)
 			return true
 		end
 	)
-	local watcher = function(value) isAnd:notify() end
+	local watcher = function(value) andProp:notify() end
 	for _,value in ipairs(values) do
 		value:watch(watcher)
 	end
-	isAnd.OR = function() error("Unable to 'OR' an 'AND'.") end
-	return isAnd
+	andProp.OR = function() error("Unable to 'OR' an 'AND'.") end
+	return andProp
 end
+
+--- cp.prop:AND(...) -> cp.prop
+--- Method
+--- Returns a new `cp.prop` which will be `true` if this and all other `cp.prop` instances passed into the function return `true`.
+---
+--- Parameters:
+--- * `...`		- The list of `cp.prop` instances to 'AND' together.
+---
+--- Returns:
+--- * a `cp.prop` instance.
+---
+--- Notes:
+--- * See the [AND Function](#and) for more details
+prop.mt.AND = prop.AND
 
 --- cp.prop.OR(...) -> cp.prop
 --- Function
@@ -283,7 +474,7 @@ end
 --- ** `true or (false and true)`: `prop.TRUE():OR( prop.FALSE():AND(prop.TRUE()) )`
 function prop.OR(...)
 	local values = table.pack(...)
-	local isOr = prop.new(
+	local orProp = prop.new(
 		function()
 			for _,value in ipairs(values) do
 				if value:value() then
@@ -293,36 +484,50 @@ function prop.OR(...)
 			return false
 		end
 	)
-	local watcher = function(value) isOr:notify() end
+	local watcher = function(value) orProp:notify() end
 	for _,value in ipairs(values) do
 		value:watch(watcher)
 	end
-	isOr.AND = function() error("Unable to 'AND' an 'OR'.") end
-	return isOr
+	orProp.AND = function() error("Unable to 'AND' an 'OR'.") end
+	return orProp
 end
 
---- cp.prop.applyAll(target, ...) -> table
---- Function
---- Copies and binds all 'method' properties on the source tables passed in to the `target` table. E.g.:
+--- cp.prop:OR(...) -> cp.prop
+--- Method
+--- Returns a new `cp.prop` which will be `true` if this or any `cp.prop` instance passed into the function returns `true`.
 ---
---- ```lua
---- local source, target = {}, {}
---- source.isMethod = prop.TRUE():bind(source)
---- source.isFunction = prop.TRUE()
---- prop.bindAll(target, source)
---- target:isMethod() == true
---- target.isFunction() -- error. The function was not copied.
---- ```
----
---- The original `prop` methods on the source 
---- 
 --- Parameters:
---- * `target`	- The target table to copy the methods into.
---- * `...`		- The list of source tables to copy and bind methods from
+--- * `...`		- The list of `cp.prop` instances to 'OR' together.
 ---
 --- Returns:
---- * The target
-function prop.applyAll(target, ...)
+--- * a `cp.prop` instance.
+---
+--- Notes:
+--- * See [OR Function](#or) for more details.
+prop.mt.OR = prop.OR
+
+-- cp.prop.applyAll(target, ...) -> table
+-- Function
+-- Copies and binds all 'method' properties on the source tables passed in to the `target` table. E.g.:
+--
+-- ```lua
+-- local source, target = {}, {}
+-- source.isMethod = prop.TRUE():bind(source)
+-- source.isFunction = prop.TRUE()
+-- prop.bindAll(target, source)
+-- target:isMethod() == true
+-- target.isFunction() -- error. The function was not copied.
+-- ```
+--
+-- The original `prop` methods on the source 
+-- 
+-- Parameters:
+-- * `target`	- The target table to copy the methods into.
+-- * `...`		- The list of source tables to copy and bind methods from
+--
+-- Returns:
+-- * The target
+local function rebind(target, ...)
 	local sources = table.pack(...)
 	for i,source in ipairs(sources) do
 		for k,v in pairs(source) do
@@ -330,166 +535,25 @@ function prop.applyAll(target, ...)
 				if v:owner() == source then
 					-- it's a bound method. rebind.
 					target[k] = v:bind(target)
-				else
-					-- it's an unbound function
-					target[k] = v
 				end
 			end
 		end
 	end
 end
 
+--- cp.prop.extend(target, source) -> table
+--- Function
+--- Makes the `target` extend the `source`. It will copy all bound properties on the source table into the target, rebinding it to the target table. Other keys are inherited via the metatable.
+---
+--- Parameters:
+--- * `target`	- The target to extend
+--- * `source`	- The source to extend from
+---
+--- Returns:
+--- * The `target`, now extending the `source`.
 function prop.extend(target, source)
-	prop.applyAll(target, source)
+	rebind(target, source)
 	return setmetatable(target, {__index = source})
 end
 
---- cp.prop:value([newValue[, quiet]]) -> boolean
---- Method
---- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
---- 
---- Parameters:
---- * `newValue`	- The new value to set the instance to.
---- * `quiet`		- If `true`, no notifications will be sent to watchers. Defaults to `false`.
----
---- Returns:
---- * The current boolean value.
-function prop:value(newValue, quiet)
-	local value = self._get(self._owner)
-	value = value ~= nil and value ~= false
-	if newValue ~= nil then
-		if not self._set then
-			error("This value cannot be modified.")
-		end
-		newValue = newValue ~= false
-		if value ~= newValue then
-			self._set(newValue, self._owner)
-			if not quiet then
-				self:notify()
-			end
-			return newValue
-		end
-	end
-	return value
-end
-
---- cp.prop:bind(owner) -> cp.prop
---- Method
---- Creates a new instance of the is which is bound to the specified owner.
----
---- Parameters:
---- * `owner`	- The owner to attach to.
----
---- Returns:
---- * the `cp.prop`
----
---- Notes:
---- * Throws an `error` if this is already attached to an owner.
-function prop:bind(owner)
-	assert(owner ~= nil, "The owner must not be nil.")
-	local o = {_owner = owner}
-	return setmetatable(o, {__index = self, __call = prop.__call, __tostring = prop.__tostring})
-end
-
---- cp.prop:owner() -> table
---- Method
---- If this is a 'method', return the table instance the method is attached to.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The owner table, or `nil`.
-function prop:owner()
-	return self._owner
-end
-
---- cp.prop:mutable() -> boolean
---- Method
---- Checks if the `cp.prop` owner can be modified.
----
---- Parameters:
---- * None
----
---- Returns:
---- * `true` if the value can be modified.
-function prop:mutable()
-	return self._set ~= nil
-end
-
---- cp.prop:toggle() -> boolean
---- Method
---- Toggles the current value.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The new value.
----
---- Notes:
---- * If the value is immutable, an error will be thrown.
-function prop:toggle()
-	return self:value(not self._get(self._owner))
-end
-
---- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
---- Method
---- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
----
---- Parameters:
---- * `watchFn`		- The watch function.
---- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
----
---- Returns:
---- * The same `cp.prop` instance.
----
---- Notes:
---- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
-function prop:watch(watchFn, notifyNow)
-	if not self._watchers then
-		self._watchers = {}
-	end
-	self._watchers[#self._watchers + 1] = watchFn
-	if notifyNow then
-		watchFn(self:value())
-	end
-	return self
-end
-
---- cp.prop:notify() -> nil
---- Method
---- Notifies all watchers of the current value if it has changed since the last notification.
----
---- Parameters:
---- * None
----
---- Returns:
---- * Nothing
-function prop:notify()
-	if self._watchers then
-		local value = self:value()
-		if self._lastValue ~= value then
-			for _,watcher in ipairs(self._watchers) do
-				watcher(value)
-			end
-		end
-		self._lastValue = value
-	end
-end
-
--- Displays the `cp.prop` instance as a string.
-function prop:__tostring()
-	return string.format("is #%d: %s", self._id, self:value())
-end
-
-prop.__call = function(target, owner, newValue, quiet)
-	if not target._owner or target._owner ~= owner then
-		-- no owner provided, so shift the parameters across
-		quiet = newValue
-		newValue = owner
-	end
-	return prop.value(target, newValue, quiet)
-end
-
-return prop
+return setmetatable(prop, { __call = prop.new })
