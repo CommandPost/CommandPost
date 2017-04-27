@@ -4,7 +4,7 @@ local log		= require("hs.logger").new("testis")
 local prop		= require("cp.prop")
 
 function run()
-	test("Is new", function()
+	test("Prop new", function()
 		local state = true
 	
 		local isState = prop.new(function() return state end, function(newValue) state = newValue end)
@@ -14,7 +14,7 @@ function run()
 		ok(not state)
 	end)
 	
-	test("Is THIS", function()
+	test("Prop THIS", function()
 		local isTrue = prop.THIS(true)
 		ok(isTrue() == true)
 		ok(isTrue:toggle() == false)
@@ -24,13 +24,13 @@ function run()
 		ok(isFalse:toggle() == true)
 	end)
 	
-	test("Is TRUE", function()
+	test("Prop TRUE", function()
 		local isTrue = prop.TRUE()
 		ok(isTrue() == true)
 		ok(isTrue:toggle() == false)
 	end)
 	
-	test("Is FALSE", function()
+	test("Prop FALSE", function()
 		local isFalse = prop.FALSE()
 		ok(isFalse() == false)
 		ok(isFalse:toggle() == true)
@@ -81,7 +81,7 @@ function run()
 		ok(watchValue == true)
 	end)
 	
-	test("Is NOT", function()
+	test("Prop NOT", function()
 		local state = true
 	
 		local isState		= prop.new(function() return state end, function(newValue) state = newValue end)
@@ -112,7 +112,7 @@ function run()
 		ok(watchValue == false)
 	end)
 	
-	test("Is AND", function() 
+	test("Prop AND", function() 
 		local leftState = true
 		local rightState = true
 		
@@ -161,7 +161,7 @@ function run()
 		ok(eq(watchValue, false))
 	end)
 	
-	test("Is OR", function() 
+	test("Prop OR", function() 
 		local leftState = true
 		local rightState = true
 		
@@ -215,7 +215,7 @@ function run()
 		
 	end)
 	
-	test("Is Method", function()
+	test("Prop Method", function()
 		local instance = {
 			value = true,
 		}
@@ -263,18 +263,20 @@ function run()
 		
 	end)
 	
-	test("Is applyAll", function()
+	test("Prop extend", function()
 		local source, target = {}, {}
 		
 		source.isMethod = prop.TRUE():bind(source)
 		source.isFunction = prop.TRUE()
 		source.isRealFunction = function() return true end
 		
-		prop.applyAll(target, source)
+		prop.extend(target, source)
 		
 		ok(target.isMethod:owner() == target)
+		ok(target.isMethod ~= source.isMethod)
 		ok(target.isFunction:owner() == nil)
-		ok(target.isRealFunction == nil)
+		ok(target.isFunction == source.isFunction)
+		ok(target.isRealFunction == source.isRealFunction)
 	end)
 end
 
