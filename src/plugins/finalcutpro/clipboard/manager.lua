@@ -381,7 +381,8 @@ function mod.startWatching()
 		mod._lastChange = currentChange
 	end)
 	mod._timer:start()
-
+	
+	mod.watching:update()
 	--log.d("Started Clipboard Watcher")
 end
 
@@ -392,6 +393,7 @@ function mod.stopWatching()
 	if mod._timer then
 		mod._timer:stop()
 		mod._timer = nil
+		mod.watching:update()
 		--log.d("Stopped Clipboard Watcher")
 	end
 end
@@ -399,7 +401,7 @@ end
 --------------------------------------------------------------------------------
 -- IS THIS MODULE WATCHING THE CLIPBOARD:
 -------------------------------------------------------------------------------
-mod.isWatching = prop.new(function()
+mod.watching = prop.new(function()
 	return mod._timer ~= nil
 end)
 
