@@ -233,13 +233,13 @@ function mod.assignTitlesShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local titlesListUpdated 	= mod.isTitlesListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allTitles 			= mod.getTitles()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not titlesListUpdated
+	if not listUpdated
 	   or allTitles == nil
 	   or next(allTitles) == nil then
 		dialog.displayMessage(i18n("assignTitlesShortcutError"))
@@ -371,7 +371,7 @@ function mod.updateTitlesList()
 	return true
 end
 
-mod.isTitlesListUpdated = prop.new(function()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
 end)
 
@@ -408,7 +408,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isTitlesListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}

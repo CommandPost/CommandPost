@@ -239,13 +239,13 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local generatorsListUpdated 	= mod.isGeneratorsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allGenerators 			= mod.getGenerators()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not generatorsListUpdated
+	if not listUpdated
 	   or allGenerators == nil
 	   or next(allGenerators) == nil then
 		dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
@@ -377,7 +377,7 @@ function mod.updateGeneratorsList()
 	return true
 end
 
-mod.isGeneratorsListUpdated = prop.new(function()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
 end)
 
@@ -410,7 +410,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isGeneratorsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}

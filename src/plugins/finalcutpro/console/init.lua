@@ -51,11 +51,11 @@ mod.active 				= false		-- is the Hacks Console Active?
 
 mod.enabled = config.prop("consoleEnabled", true)
 
-mod.isReducedTransparency = prop.new(function()
+mod.reducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
-mod.isLastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
+mod.lastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
 
 mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 
@@ -78,7 +78,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
-	mod.lastReducedTransparency = mod.isReducedTransparency()
+	mod.lastReducedTransparency = mod.reducedTransparency()
 	if mod.lastReducedTransparency then
 		mod.mainChooser:fgColor(nil)
 								 :subTextColor(nil)
@@ -98,7 +98,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
-	mod.lastReducedTransparency = mod.isReducedTransparency()
+	mod.lastReducedTransparency = mod.reducedTransparency()
 	if mod.lastReducedTransparency then
 		mod.hiderChooser:fgColor(nil)
 								 :subTextColor(nil)
@@ -135,7 +135,7 @@ function mod.refresh()
 end
 
 function mod.checkReducedTransparency()
-	if mod.lastReducedTransparency ~= mod.isReducedTransparency() then
+	if mod.lastReducedTransparency ~= mod.reducedTransparency() then
 		mod.new()
 	end
 end
@@ -170,7 +170,7 @@ function mod.showChooser(chooser)
 	--------------------------------------------------------------------------------
 	-- Remember last query?
 	--------------------------------------------------------------------------------
-	local chooserRememberLast = mod.isLastQueryRemembered()
+	local chooserRememberLast = mod.lastQueryRemembered()
 	if not chooserRememberLast then
 		chooser:query("")
 	else
@@ -328,7 +328,7 @@ function plugin.init(deps)
 
 	menu:addItems(3000, function()
 		return {
-			{ title = i18n("rememberLastQuery"),	fn=function() mod.isLastQueryRemembered:toggle() end, checked = mod.isLastQueryRemembered(),  },
+			{ title = i18n("rememberLastQuery"),	fn=function() mod.lastQueryRemembered:toggle() end, checked = mod.lastQueryRemembered(),  },
 			{ title = "-" },
 			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}

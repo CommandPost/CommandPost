@@ -291,14 +291,14 @@ function mod.assignEffectsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 		= fcp:getCurrentLanguage()
-	local effectsListUpdated 	= mod.isEffectsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allVideoEffects 		= mod.getVideoEffects()
 	local allAudioEffects 		= mod.getAudioEffects()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not effectsListUpdated
+	if not listUpdated
 	   or allVideoEffects == nil or allAudioEffects == nil
 	   or next(allVideoEffects) == nil or next(allAudioEffects) == nil then
 		dialog.displayMessage(i18n("assignEffectsShortcutError"))
@@ -495,7 +495,7 @@ function mod.updateEffectsList()
 
 end
 
-mod.isEffectsListUpdated = prop.new(function()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
 end)
 
@@ -531,14 +531,14 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= mod.isEffectsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local effectsShortcuts		= mod.getShortcuts()
 
 		local items = {}
 
 		for i = 1,MAX_SHORTCUTS do
 			local shortcutName = effectsShortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("effectShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignEffectsShortcut(i) end,	disabled = not effectsListUpdated }
+			items[i] = { title = i18n("effectShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignEffectsShortcut(i) end,	disabled = not listUpdated }
 		end
 
 		return items

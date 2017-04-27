@@ -358,7 +358,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Replace Existing Files Option:
 	--------------------------------------------------------------------------------
-	local replaceExisting = mod.isReplaceExistingFiles()
+	local replaceExisting = mod.replaceExistingFiles()
 
 	local libraries = fcp:browser():libraries()
 
@@ -428,7 +428,7 @@ function mod.batchExport()
 
 end
 
-mod.isReplaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
+mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
 
 --------------------------------------------------------------------------------
 --
@@ -477,7 +477,7 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset },
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"),	fn = function() mod.isReplaceExistingFiles:toggle() end, checked = mod.isReplaceExistingFiles() },
+			{ title = i18n("replaceExistingFiles"),	fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
 		}
 	end)
 

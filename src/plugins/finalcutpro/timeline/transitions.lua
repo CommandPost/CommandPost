@@ -224,13 +224,13 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local transitionsListUpdated 	= mod.isTransitionsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allTransitions 			= mod.getTransitions()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not transitionsListUpdated
+	if not listUpdated
 	   or allTransitions == nil
 	   or next(allTransitions) == nil then
 		dialog.displayMessage(i18n("assignTransitionsShortcutError"))
@@ -380,7 +380,7 @@ function mod.updateTransitionsList()
 	return true
 end
 
-mod.isTransitionsListUpdated = prop.new(function()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
 end)
 
@@ -417,7 +417,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isTransitionsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}

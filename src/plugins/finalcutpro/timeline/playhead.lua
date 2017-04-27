@@ -42,8 +42,8 @@ local mod = {}
 -- Ensures the Scrolling Timeline/Playhead Lock are in the correct mode
 --------------------------------------------------------------------------------
 function mod.update()
-	local scrolling	= mod.isScrollingTimelineActive()
-	local locked	= mod.isPlayheadLocked()
+	local scrolling	= mod.scrollingTimeline()
+	local locked	= mod.playheadLocked()
 
 	local watcher = mod.getScrollingTimelineWatcher()
 
@@ -61,7 +61,7 @@ function mod.update()
 	end
 end
 
-mod.isScrollingTimelineActive = config.prop("scrollingTimelineActive", false):watch(function(active)
+mod.scrollingTimeline = config.prop("scrollingTimelineActive", false):watch(function(active)
 	log.df("Updating Scrolling Timeline: %s", active)
 	if active then
 		local message = ""
@@ -69,8 +69,8 @@ mod.isScrollingTimelineActive = config.prop("scrollingTimelineActive", false):wa
 		--------------------------------------------------------------------------------
 		-- Ensure that Playhead Lock is Off:
 		--------------------------------------------------------------------------------
-		if mod.isPlayheadLocked() then
-			mod.isPlayheadLocked(false)
+		if mod.playheadLocked() then
+			mod.playheadLocked(false)
 			message = i18n("playheadLockDeactivated") .. "\n"
 			log.df("Message: %s", message)
 		end
@@ -84,7 +84,7 @@ mod.isScrollingTimelineActive = config.prop("scrollingTimelineActive", false):wa
 		-- Display Notification:
 		--------------------------------------------------------------------------------
 		dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-	elseif not mod.isPlayheadLocked() then
+	elseif not mod.playheadLocked() then
 		dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
 	end
 	
@@ -176,20 +176,20 @@ end
 --------------------------------------------------------------------------------
 -- PLAYHEAD LOCK:
 --------------------------------------------------------------------------------
-mod.isPlayheadLocked = config.prop("lockTimelinePlayhead", false):watch(function(active)
+mod.playheadLocked = config.prop("lockTimelinePlayhead", false):watch(function(active)
 	log.df("Updating Playhead Lock: %s", active)
 	if active then
 		local message = ""
 		--------------------------------------------------------------------------------
 		-- Ensure that Scrolling Timeline is off
 		--------------------------------------------------------------------------------
-		if mod.isScrollingTimelineActive() then
-			mod.isScrollingTimelineActive(false)
+		if mod.scrollingTimeline() then
+			mod.scrollingTimeline(false)
 			message = i18n("scrollingTimelineDeactivated") .. "\n"
 		end
 		-- Notify the user.
 		dialog.displayNotification(message .. i18n("playheadLockActivated"))
-	elseif not mod.isScrollingTimelineActive() then
+	elseif not mod.scrollingTimeline() then
 		dialog.displayNotification(i18n("playheadLockDeactivated"))
 	end
 	mod.update()
@@ -218,8 +218,8 @@ function plugin.init(deps)
 	-- menu items
 	section:addItems(1000, function()
 		return {
-			{ title = i18n("enableScrollingTimeline"),		fn = function() mod.isScrollingTimelineActive:toggle() end, 	checked = mod.isScrollingTimelineActive() },
-			{ title = i18n("enableTimelinePlayheadLock"),	fn = function() mod.isPlayheadLocked:toggle() end,				checked = mod.isPlayheadLocked() },
+			{ title = i18n("enableScrollingTimeline"),		fn = function() mod.scrollingTimeline:toggle() end, 	checked = mod.scrollingTimeline() },
+			{ title = i18n("enableTimelinePlayheadLock"),	fn = function() mod.playheadLocked:toggle() end,				checked = mod.playheadLocked() },
 		}
 	end)
 
@@ -227,10 +227,10 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpScrollingTimeline")
 		:groupedBy("timeline")
 		:activatedBy():ctrl():option():cmd("w")
-		:whenActivated(function() mod.isScrollingTimelineActive:toggle() end)
+		:whenActivated(function() mod.scrollingTimeline:toggle() end)
 	deps.fcpxCmds:add("cpLockPlayhead")
 		:groupedBy("timeline")
-		:whenActivated(function() mod.isPlayheadLocked:toggle() end)
+		:whenActivated(function() mod.playheadLocked:toggle() end)
 
 	-- watch for changes
 	fcp:watch(

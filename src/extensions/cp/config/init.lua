@@ -147,10 +147,10 @@ function mod.application()
 	return mod._application
 end
 
---- cp.config.isFrontmost <cp.prop: boolean; read-only>
+--- cp.config.frontmost <cp.prop: boolean; read-only>
 --- Field
 --- Returns whether or not the Application is frontmost.
-mod.isFrontmost = prop.new(function()
+mod.frontmost = prop.new(function()
 	local app = mod.application()
 	local fw = window.focusedWindow()
 

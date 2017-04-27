@@ -42,9 +42,9 @@ mod.commandsByTitle = {}
 
 mod.enabled = config.prop("enableVoiceCommands", false):watch(function() mod.update() end)
 
-mod.isAnnouncementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
+mod.announcementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
 
-mod.isVisualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
+mod.visualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
 
 function mod.openDictationSystemPreferences()
 	osascript.applescript([[
@@ -60,8 +60,8 @@ end
 --------------------------------------------------------------------------------
 local function listenerCallback(listenerObj, text)
 
-	local visualAlerts = mod.isVisualAlertsEnabled()
-	local announcements = mod.isAnnouncementsEnabled()
+	local visualAlerts = mod.visualAlertsEnabled()
+	local announcements = mod.announcementsEnabled()
 
 	if announcements then
 		mod.talker:speak(text)
@@ -141,13 +141,13 @@ end
 --------------------------------------------------------------------------------
 -- IS LISTENING:
 --------------------------------------------------------------------------------
-mod.isListening = prop.new(function()
-	return mod.listener ~= nil and mod.listener:isListening()
+mod.listening = prop.new(function()
+	return mod.listener ~= nil and mod.listener:listening()
 end)
 
 function mod.update()
 	if mod.enabled() then
-		if not mod.isListening() then
+		if not mod.listening() then
 			local result = mod.new()
 			if result == false then
 				dialog.displayErrorMessage(i18n("voiceCommandsError"))
@@ -162,14 +162,14 @@ function mod.update()
 			end
 		end
 	else
-		if mod.isListening() then
+		if mod.listening() then
 			mod.stop()
 		end
 	end
 end
 
 function mod.pause()
-	if mod.isListening() then
+	if mod.listening() then
 		mod.stop()
 	end
 end
@@ -239,8 +239,8 @@ function plugin.init(deps)
 		:addSeparator(600)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("enableAnnouncements"),	fn = function() mod.isAnnouncementsEnabled:toggle() end,	checked = mod.isAnnouncementsEnabled(), disabled = not mod.enabled() },
-				{ title = i18n("enableVisualAlerts"), 	fn = function() mod.isVisualAlertsEnabled:toggle() end,		checked = mod.isVisualAlertsEnabled(), disabled = not mod.enabled() },
+				{ title = i18n("enableAnnouncements"),	fn = function() mod.announcementsEnabled:toggle() end,	checked = mod.announcementsEnabled(), disabled = not mod.enabled() },
+				{ title = i18n("enableVisualAlerts"), 	fn = function() mod.visualAlertsEnabled:toggle() end,		checked = mod.visualAlertsEnabled(), disabled = not mod.enabled() },
 				{ title = "-" },
 				{ title = i18n("openDictationPreferences"), fn = mod.openDictationSystemPreferences },
 			}

@@ -85,10 +85,10 @@ function mod.trashPreferences()
 
 end
 
---- plugins.core.preferences.advanced.isDeveloperMode <cp.prop: boolean>
+--- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
 --- Field
 --- Enables or disables developer mode.
-mod.isDeveloperMode = config.prop("debugMode"):watch(function()
+mod.developerMode = config.prop("debugMode"):watch(function()
 	mod.manager.hide()
 	console.clearConsole()
 	hs.reload()
@@ -106,7 +106,7 @@ end)
 function mod.toggleDeveloperMode()
 	local result = dialog.displayMessage(i18n("togglingDeveloperMode"), {"Yes", "No"})
 	if result == "Yes" then
-		mod.isDeveloperMode:toggle()
+		mod.developerMode:toggle()
 	end
 end
 
@@ -170,7 +170,7 @@ function mod.toggleCommandLineTool()
 
 end
 
-mod.isOpenErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
 
 --------------------------------------------------------------------------------
 --
@@ -198,7 +198,7 @@ function plugin.init(deps)
 	-- Create Dock Icon Click Callback:
 	--------------------------------------------------------------------------------
 	config.dockIconClickCallback:new("cp", function()
-		if mod.isOpenErrorLogOnDockClick() then hs.openConsole() end
+		if mod.openErrorLogOnDockClick() then hs.openConsole() end
 	end)
 
 	--------------------------------------------------------------------------------
@@ -210,15 +210,15 @@ function plugin.init(deps)
 		{
 			label = i18n("enableDeveloperMode"),
 			onchange = mod.toggleDeveloperMode,
-			checked = mod.isDeveloperMode,
+			checked = mod.developerMode,
 		}
 	)
 
 	:addCheckbox(62,
 		{
 			label = i18n("openErrorLogOnDockClick"),
-			onchange = function() mod.isOpenErrorLogOnDockClick:toggle() end,
-			checked = mod.isOpenErrorLogOnDockClick
+			onchange = function() mod.openErrorLogOnDockClick:toggle() end,
+			checked = mod.openErrorLogOnDockClick
 		}
 	)
 

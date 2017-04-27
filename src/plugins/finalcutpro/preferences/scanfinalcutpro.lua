@@ -39,16 +39,6 @@ local PRIORITY = 1
 local mod = {}
 
 --------------------------------------------------------------------------------
--- HAS FINAL CUT PRO BEEN SCANNED?
---------------------------------------------------------------------------------
-mod.isScanned = prop.new(function()
-	return mod.effects.isEffectsListUpdated()
-	   and mod.generators.isGeneratorsListUpdated() 
-	   and mod.titles.isTitlesListUpdated()
-	   and mod.transitions.isTransitionsListUpdated()
-end)
-
---------------------------------------------------------------------------------
 -- SCAN FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function mod.scanFinalCutPro()
@@ -99,6 +89,17 @@ function mod.init(effects, generators, titles, transitions)
 	mod.generators = generators
 	mod.titles = titles
 	mod.transitions = transitions
+	
+	--------------------------------------------------------------------------------
+	-- HAS FINAL CUT PRO BEEN SCANNED?
+	--------------------------------------------------------------------------------
+	mod.scaned = prop.AND(
+		mod.effects.listUpdated,
+		mod.generators.listUpdated,
+		mod.titles.listUpdated,
+		mod.transitions.listUpdated
+	)
+	
 end
 
 --------------------------------------------------------------------------------

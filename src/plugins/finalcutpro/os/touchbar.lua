@@ -107,10 +107,10 @@ function mod.updateLocation()
 	mod.setLastLocation(mod.touchBarWindow:topLeft())
 end
 
---- plugins.finalcutpro.os.touchbar.isSupported <cp.prop: boolean; read-only>
+--- plugins.finalcutpro.os.touchbar.supported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is supported on this OS.
-mod.isSupported = prop.new(function() return touchbar.supported() end)
+mod.supported = prop.new(function() return touchbar.supported() end)
 
 --- plugins.finalcutpro.os.touchbar.enabled <cp.prop: boolean>
 --- Field
@@ -119,15 +119,16 @@ mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
-	if enabled and not mod.isSupported() then
+	if enabled and not mod.supported() then
 		dialog.displayMessage(i18n("touchBarError"))
+		mod.enabled(false)
 	end
 end)
 
 --- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
-mod.isActive = mod.enabled:AND(mod.isSupported):watch(function(active)
+mod.isActive = mod.enabled:AND(mod.supported):watch(function(active)
 	if active then
 		mod.show()
 	else
@@ -147,7 +148,7 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if we need to show the Touch Bar:
 	--------------------------------------------------------------------------------
-	if fcp:isFrontmost() and mod.isSupported() and mod.enabled() then
+	if fcp:isFrontmost() and mod.supported() and mod.enabled() then
 		mod.updateLocation()
 		mod.touchBarWindow:show()
 	end
@@ -157,7 +158,7 @@ end
 -- HIDE TOUCH BAR:
 --------------------------------------------------------------------------------
 function mod.hide()
-	if mod.isSupported() then mod.touchBarWindow:hide() end
+	if mod.supported() then mod.touchBarWindow:hide() end
 end
 
 --------------------------------------------------------------------------------
@@ -179,7 +180,7 @@ local function touchbarWatcher(obj, message)
 end
 
 function mod.init()
-	if mod.isSupported() then
+	if mod.supported() then
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
@@ -266,12 +267,12 @@ function plugin.init(deps)
 		:addItems(1000, function()
 			local location = mod.getLocation()
 			return {
-				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.isSupported() },
+				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
-				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
-				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
-				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.isSupported() },
+				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.supported() },
+				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.supported() },
+				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = i18n("touchBarTipOne"), 		disabled = true },
 				{ title = i18n("touchBarTipTwo"), 		disabled = true },
