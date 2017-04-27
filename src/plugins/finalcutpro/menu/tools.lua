@@ -30,7 +30,7 @@ local SETTING 					= "menubarToolsEnabled"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local sectionEnabled = config.get(SETTING, true)
+local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
 --
