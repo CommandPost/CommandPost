@@ -32,9 +32,7 @@ local function controllerCallback(message)
 
 	local result = message["body"][1]
 	if result == "complete" then
-		config.set("welcomeComplete", true)
-		mod.manager.delete()
-		mod.manager.setupUserInterface(false)
+		mod.manager.welcomeComplete(true)
 	end
 
 end
@@ -65,13 +63,15 @@ end
 -- PANEL ENABLED:
 --------------------------------------------------------------------------------
 local function panelEnabled()
-	return not config.get("welcomeComplete", false)
+	return not mod.manager.welcomeComplete()
 end
 
 --------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
+
+	mod.manager = deps.manager
 
 	mod.webviewLabel = deps.manager.getLabel()
 
@@ -80,8 +80,6 @@ function mod.init(deps, env)
 	mod._contentFn		= generateContent
 	mod._callbackFn 	= controllerCallback
 	mod._enabledFn		= panelEnabled
-
-	mod.manager = deps.manager
 
 	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
