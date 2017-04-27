@@ -21,7 +21,7 @@ local speech   								= require("hs.speech")
 local fcp									= require("cp.apple.finalcutpro")
 local dialog 								= require("cp.dialog")
 local config								= require("cp.config")
-local is									= require("cp.is")
+local prop									= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -40,11 +40,11 @@ local mod = {}
 mod.commandTitles = {}
 mod.commandsByTitle = {}
 
-mod.isEnabled = config.is("enableVoiceCommands", false):watch(function() mod.update() end)
+mod.isEnabled = config.prop("enableVoiceCommands", false):watch(function() mod.update() end)
 
-mod.isAnnouncementsEnabled = config.is("voiceCommandEnableAnnouncements", false)
+mod.isAnnouncementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
 
-mod.isVisualAlertsEnabled = config.is("voiceCommandEnableVisualAlerts", false)
+mod.isVisualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
 
 function mod.openDictationSystemPreferences()
 	osascript.applescript([[
@@ -141,7 +141,7 @@ end
 --------------------------------------------------------------------------------
 -- IS LISTENING:
 --------------------------------------------------------------------------------
-mod.isListening = is.new(function()
+mod.isListening = prop.new(function()
 	return mod.listener ~= nil and mod.listener:isListening()
 end)
 

@@ -69,7 +69,7 @@ function mod.update()
 	end
 end
 
-mod.isEnabled = config.is(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING):watch(mod.update)
+mod.isEnabled = config.prop(mod.PREFERENCE_NAME, mod.DEFAULT_SETTING):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- GET HOSTNAME:

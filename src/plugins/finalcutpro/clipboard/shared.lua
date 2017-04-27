@@ -50,7 +50,7 @@ mod.log						= log
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = config.is("enabledShardClipboard", false)
+mod.isEnabled = config.prop("enabledShardClipboard", false)
 
 --------------------------------------------------------------------------------
 -- GET ROOT PATH:

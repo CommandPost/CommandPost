@@ -18,7 +18,7 @@ local inspect							= require("hs.inspect")
 
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
 
 local id								= require("cp.apple.finalcutpro.ids") "PlaybackPanel"
@@ -34,7 +34,7 @@ local PlaybackPanel = {}
 function PlaybackPanel:new(preferencesDialog)
 	local o = {_parent = preferencesDialog}
 	
-	return is.extend(o, PlaybackPanel)
+	return prop.extend(o, PlaybackPanel)
 end
 
 -- TODO: Add documentation
@@ -51,7 +51,7 @@ function PlaybackPanel:UI()
 end
 
 -- TODO: Add documentation
-PlaybackPanel.isShowing = is.new(function(self)
+PlaybackPanel.isShowing = prop.new(function(self)
 	if self:parent():isShowing() then
 		local toolbar = self:parent():toolbarUI()
 		if toolbar then

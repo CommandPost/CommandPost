@@ -19,7 +19,7 @@ local application		= require("hs.application")
 local console			= require("hs.console")
 
 local config			= require("cp.config")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
@@ -37,27 +37,27 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 	= true
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.general.displayMenubarAsIcon <cp.is: boolean>
+--- plugins.core.preferences.general.displayMenubarAsIcon <cp.prop: boolean>
 --- Field
 --- Toggles the menubar display icon from icon to text value and vice versa.
-mod.displayMenubarAsIcon = config.is("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(
+mod.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(
 	function(value)
 		if mod.menuManager then mod.menuManager:updateMenubarIcon() end
 	end
 )
 
---- plugins.core.preferences.general.autoLaunch <cp.is: boolean>
+--- plugins.core.preferences.general.autoLaunch <cp.prop: boolean>
 --- Field
 --- Controls if CommandPost will automatically launch when the user logs in.
-mod.autoLaunch = is.new(
+mod.autoLaunch = prop.new(
 	function() return hs.autoLaunch() end,
 	function(value) hs.autoLaunch(value) end
 )
 
---- plugins.core.preferences.general.autoLaunch <cp.is: boolean>
+--- plugins.core.preferences.general.autoLaunch <cp.prop: boolean>
 --- Field
 --- Controls if CommandPost will automatically upload crash data to the developer.
-mod.uploadCrashData = is.new(
+mod.uploadCrashData = prop.new(
 	function() return hs.uploadCrashData() end,
 	function(value) hs.uploadCrashData(value) end
 )

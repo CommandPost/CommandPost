@@ -111,7 +111,7 @@ local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local kc										= require("cp.apple.finalcutpro.keycodes")
 local shortcut									= require("cp.commands.shortcut")
 
-local is										= require("cp.is")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -214,10 +214,10 @@ function App:UI()
 	end)
 end
 
---- cp.apple.finalcutpro.isRunning <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Running?
-App.isRunning = is.new(function(self)
+App.isRunning = prop.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isRunning()
 end):bind(App)
@@ -304,10 +304,10 @@ function App:show()
 	return self
 end
 
---- cp.apple.finalcutpro.isShowing <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut visible on screen? 
-App.isShowing = is.new(function(self)
+App.isShowing = prop.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
 end):bind(App)
@@ -379,13 +379,13 @@ function App:getPath()
 	return nil
 end
 
---- cp.apple.finalcutpro.isInstalled <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
 --- Field
 --- Is a supported version of Final Cut Pro Installed?
 ---
 --- Note:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-App.isInstalled = is.new(function(self)
+App.isInstalled = prop.new(function(self)
 	local version = self:getVersion()
 	if version then
 		if v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION)) then
@@ -395,10 +395,10 @@ App.isInstalled = is.new(function(self)
 	return false
 end):bind(App)
 
---- cp.apple.finalcutpro:isFrontmost <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Frontmost?
-App.isFrontmost = is.new(function(self)
+App.isFrontmost = prop.new(function(self)
 	local fcpx = self:application()
 	return fcpx and fcpx:isFrontmost()
 end):bind(App)

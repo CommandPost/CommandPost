@@ -51,7 +51,7 @@ end
 --------------------------------------------------------------------------------
 -- RETURNS THE CURRENT ENABLED STATUS
 --------------------------------------------------------------------------------
-mod.isEnabled = config.is("enableMediaImportWatcher", false):watch(mod.update)
+mod.isEnabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- MEDIA IMPORT WINDOW WATCHER:

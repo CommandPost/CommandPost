@@ -16,7 +16,7 @@
 local log							= require("hs.logger").new("PrefsDlg")
 
 local just							= require("cp.just")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local GoToPrompt					= require("cp.apple.finalcutpro.export.GoToPrompt")
@@ -41,7 +41,7 @@ end
 -- TODO: Add documentation
 function SaveSheet:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, SaveSheet)
+	return prop.extend(o, SaveSheet)
 end
 
 -- TODO: Add documentation
@@ -62,10 +62,10 @@ function SaveSheet:UI()
 	SaveSheet.matches)
 end
 
---- cp.apple.finalcutpro.export.SaveSheet <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.export.SaveSheet <cp.prop: boolean; read-only>
 --- Field
 --- Is the Save Sheet showing?
-SaveSheet.isShowing = is.new(function(self)
+SaveSheet.isShowing = prop.new(function(self)
 	return self:UI() ~= nil or self:replaceAlert():isShowing()
 end):bind(SaveSheet)
 

@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local geometry							= require("hs.geometry")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -67,7 +67,7 @@ end
 --- * The new `Playhead` instance.
 function Playhead:new(parent, skimming, containerFn)
 	local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
-	is.extend(o, Playhead)
+	prop.extend(o, Playhead)
 end
 
 -- TODO: Add documentation
@@ -96,17 +96,17 @@ function Playhead:UI()
 end
 
 -- TODO: Add documentation
-Playhead.isPersistent = is.new(function(self)
+Playhead.isPersistent = prop.new(function(self)
 	return not self._skimming
 end):bind(Playhead)
 
 -- TODO: Add documentation
-Playhead.isSkimming = is.new(function(self)
+Playhead.isSkimming = prop.new(function(self)
 	return self._skimming == true
 end):bind(Playhead)
 
 -- TODO: Add documentation
-Playhead.isShowing = is.new(function(self)
+Playhead.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(Playhead)
 

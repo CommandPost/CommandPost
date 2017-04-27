@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 --------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ function FullScreenWindow:new(app)
 	local o = {
 		_app = app
 	}
-	return is.extend(o, FullScreenWindow)
+	return prop.extend(o, FullScreenWindow)
 end
 
 -- TODO: Add documentation
@@ -72,12 +72,12 @@ function FullScreenWindow:UI()
 end
 
 -- TODO: Add documentation
-FullScreenWindow.isShowing = is.new(function(self)
+FullScreenWindow.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(FullScreenWindow)
 
 -- TODO: Add documentation
-FullScreenWindow.isFullScreen = is.new(function(self)
+FullScreenWindow.isFullScreen = prop.new(function(self)
 	local ui = self:rootGroupUI()
 	if ui then
 		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.

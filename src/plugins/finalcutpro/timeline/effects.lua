@@ -26,7 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -54,7 +54,7 @@ function videoaction.id()
 	return "video"
 end
 
-videoaction.isEnabled = config.is(videoaction.id().."ActionEnabled", true)
+videoaction.isEnabled = config.prop(videoaction.id().."ActionEnabled", true)
 
 function videoaction.choices()
 	if not videoaction._choices then
@@ -102,7 +102,7 @@ function audioaction.id()
 	return "audio"
 end
 
-audioaction.isEnabled = config.is(audioaction.id().."ActionEnabled", true)
+audioaction.isEnabled = config.prop(audioaction.id().."ActionEnabled", true)
 
 function audioaction.choices()
 	if not audioaction._choices then
@@ -495,7 +495,7 @@ function mod.updateEffectsList()
 
 end
 
-mod.isEffectsListUpdated = is.new(function()
+mod.isEffectsListUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
 end)
 

@@ -14,7 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local fcp			= require("cp.apple.finalcutpro")
-local is			= require("cp.is")
+local prop			= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -31,7 +31,7 @@ local BACKGROUN_RENDER	= "FFAutoStartBGRender"
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.backgroundRender = is.new(
+mod.backgroundRender = prop.new(
 	function() return fcp:getPreference(BACKGROUND_RENDER, true) end,
 	function(value)
 		--------------------------------------------------------------------------------

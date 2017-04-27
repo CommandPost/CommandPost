@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("importPanel")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
 local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
@@ -35,7 +35,7 @@ local ImportPanel = {}
 function ImportPanel:new(preferencesDialog)
 	local o = {_parent = preferencesDialog}
 	
-	return is.extend(o, ImportPanel)
+	return prop.extend(o, ImportPanel)
 end
 
 -- TODO: Add documentation
@@ -52,7 +52,7 @@ function ImportPanel:UI()
 end
 
 -- TODO: Add documentation
-ImportPanel.isShowing = is.new(function(self)
+ImportPanel.isShowing = prop.new(function(self)
 	if self:parent():isShowing() then
 		local toolbar = self:parent():toolbarUI()
 		if toolbar then

@@ -85,10 +85,10 @@ function mod.trashPreferences()
 
 end
 
---- plugins.core.preferences.advanced.isDeveloperMode <cp.is: boolean>
+--- plugins.core.preferences.advanced.isDeveloperMode <cp.prop: boolean>
 --- Field
 --- Enables or disables developer mode.
-mod.isDeveloperMode = config.is("debugMode"):watch(function()
+mod.isDeveloperMode = config.prop("debugMode"):watch(function()
 	mod.manager.hide()
 	console.clearConsole()
 	hs.reload()
@@ -170,7 +170,7 @@ function mod.toggleCommandLineTool()
 
 end
 
-mod.isOpenErrorLogOnDockClick = config.is("openErrorLogOnDockClick", false)
+mod.isOpenErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
 
 --------------------------------------------------------------------------------
 --

@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("mediaBrowser")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -49,7 +49,7 @@ MediaBrowser.SOUND_EFFECTS = 4
 -- TODO: Add documentation
 function MediaBrowser:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, MediaBrowser)
+	return prop.extend(o, MediaBrowser)
 end
 
 -- TODO: Add documentation
@@ -79,7 +79,7 @@ function MediaBrowser:UI()
 end
 
 -- TODO: Add documentation
-MediaBrowser.isShowing = is.new(function(self)
+MediaBrowser.isShowing = prop.new(function(self)
 	local parent = self:parent()
 	return parent:isShowing() and parent:showMedia():isChecked()
 end):bind(MediaBrowser)

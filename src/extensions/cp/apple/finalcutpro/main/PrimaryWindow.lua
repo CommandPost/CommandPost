@@ -18,7 +18,7 @@ local inspect						= require("hs.inspect")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 
 local Button						= require("cp.apple.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
@@ -43,7 +43,7 @@ function PrimaryWindow:new(app)
 	local o = {
 		_app = app
 	}
-	return is.extend(o, PrimaryWindow)
+	return prop.extend(o, PrimaryWindow)
 end
 
 -- TODO: Add documentation

@@ -222,7 +222,7 @@ end
 --- cp.plist.fileToTable(plistFileName) -> table or nil
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
---- It will check the file prior to loading to determine which type it is.
+--- It will check the file prior to loading to determine which type it prop.
 --- If you know which type of file you're dealing with in advance, you can use
 --- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
 --- (small) file read

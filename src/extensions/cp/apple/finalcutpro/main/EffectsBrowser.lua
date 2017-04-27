@@ -19,7 +19,7 @@ local fnutils							= require("hs.fnutils")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -49,7 +49,7 @@ end
 
 function Browser:new(parent, type)
 	local o = {_parent = parent, _type = type}
-	return is.extend(o, Browser)
+	return prop.extend(o, Browser)
 end
 
 function Browser:parent()
@@ -78,7 +78,7 @@ function Browser:UI()
 	end
 end
 
-Browser.isShowing = is.new(function(self)
+Browser.isShowing = prop.new(function(self)
 	return self:toggleButton():isChecked()
 end):bind(Browser)
 

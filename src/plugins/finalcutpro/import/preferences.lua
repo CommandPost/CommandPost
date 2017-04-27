@@ -14,7 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local fcp			= require("cp.apple.finalcutpro")
-local is			= require("cp.is")
+local prop			= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -34,7 +34,7 @@ local COPY_TO_MEDIA_FOLDER				= "FFImportCopyToMediaFolder"
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.createOptimizedMedia = is.new(
+mod.createOptimizedMedia = prop.new(
 	function() return fcp:getPreference(CREATE_OPTIMIZED_MEDIA, false) end,
 	function(value)
 		--------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ mod.createOptimizedMedia = is.new(
 	end
 )
 
-mod.createMulticamOptimizedMedia = is.new(
+mod.createMulticamOptimizedMedia = prop.new(
 	-- get
 	function() return fcp:getPreference(CREATE_MULTICAM_OPTIMIZED_MEDIA, true) end,
 	-- set
@@ -86,7 +86,7 @@ mod.createMulticamOptimizedMedia = is.new(
 	end
 )
 
-mod.createProxyMedia = is.new(
+mod.createProxyMedia = prop.new(
 	function() return fcp:getPreference(CREATE_PROXY_MEDIA, false) end,
 	function(value)
 		--------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ mod.createProxyMedia = is.new(
 )
 
 
-mod.leaveInPlace = is.new(
+mod.leaveInPlace = prop.new(
 	function() return not fcp:getPreference(COPY_TO_MEDIA_FOLDER, true) end,
 	function(value)
 		--------------------------------------------------------------------------------

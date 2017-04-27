@@ -22,7 +22,7 @@ local fcp						= require("cp.apple.finalcutpro")
 local dialog					= require("cp.dialog")
 local plist						= require("cp.plist")
 local tools						= require("cp.tools")
-local is						= require("cp.is")
+local prop						= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -63,7 +63,7 @@ end
 --------------------------------------------------------------------------------
 -- ARE MOVING MARKERS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = is.new(
+mod.isEnabled = prop.new(
 	function()
 		if fcp:isInstalled() then
 			local eventDescriptionsPath = fcp:getPath() .. EVENT_DESCRIPTION_PATH

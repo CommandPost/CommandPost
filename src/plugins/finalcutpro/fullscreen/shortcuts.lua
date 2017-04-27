@@ -56,7 +56,7 @@ end
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-mod.isEnabled = config.is("enableShortcutsDuringFullscreenPlayback", false):watch(mod.update)
+mod.isEnabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- NINJA KEY STROKE:

@@ -62,10 +62,10 @@ function mod.id()
 	return ID
 end
 
---- plugins.finalcutpro.menu.menuaction.isEnabled <cp.is: boolean>
+--- plugins.finalcutpro.menu.menuaction.isEnabled <cp.prop: boolean>
 --- Field
 --- This will be `true` when menu actions are enabled.
-mod.isEnabled = config.is("menuActionEnabled", true)
+mod.isEnabled = config.prop("menuActionEnabled", true)
 
 --- plugins.finalcutpro.menu.menuaction.choices() -> table
 --- Function

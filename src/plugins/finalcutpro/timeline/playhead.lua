@@ -61,7 +61,7 @@ function mod.update()
 	end
 end
 
-mod.isScrollingTimelineActive = config.is("scrollingTimelineActive", false):watch(function(active)
+mod.isScrollingTimelineActive = config.prop("scrollingTimelineActive", false):watch(function(active)
 	log.df("Updating Scrolling Timeline: %s", active)
 	if active then
 		local message = ""
@@ -176,7 +176,7 @@ end
 --------------------------------------------------------------------------------
 -- PLAYHEAD LOCK:
 --------------------------------------------------------------------------------
-mod.isPlayheadLocked = config.is("lockTimelinePlayhead", false):watch(function(active)
+mod.isPlayheadLocked = config.prop("lockTimelinePlayhead", false):watch(function(active)
 	log.df("Updating Playhead Lock: %s", active)
 	if active then
 		local message = ""

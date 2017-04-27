@@ -14,7 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
@@ -37,7 +37,7 @@ end
 -- TODO: Add documentation
 function TimelineAppearance:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, TimelineAppearance)
+	return prop.extend(o, TimelineAppearance)
 end
 
 -- TODO: Add documentation
@@ -82,7 +82,7 @@ function TimelineAppearance:UI()
 end
 
 -- TODO: Add documentation
-TimelineAppearance.isShowing = is.new(function(self)
+TimelineAppearance.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(TimelineAppearance)
 

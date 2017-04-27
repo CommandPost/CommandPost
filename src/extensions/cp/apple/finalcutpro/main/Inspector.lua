@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
@@ -38,7 +38,7 @@ end
 -- TODO: Add documentation
 function Inspector:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, Inspector)
+	return prop.extend(o, Inspector)
 end
 
 -- TODO: Add documentation
@@ -83,7 +83,7 @@ function Inspector:UI()
 end
 
 -- TODO: Add documentation
-Inspector.isShowing = is.new(function(self)
+Inspector.isShowing = prop.new(function(self)
 	return self:app():menuBar():isChecked("Window", "Show in Workspace", "Inspector")
 end):bind(Inspector)
 

@@ -19,7 +19,7 @@ local eventtap						= require("hs.eventtap")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +41,7 @@ end
 -- TODO: Add documentation
 function GoToPrompt:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, GoToPrompt)
+	return prop.extend(o, GoToPrompt)
 end
 
 -- TODO: Add documentation
@@ -62,10 +62,10 @@ function GoToPrompt:UI()
 	GoToPrompt.matches)
 end
 
---- cp.apple.finalcutpro.export.GoToPrompt.isShowing <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.export.GoToPrompt.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the 'Go To' prompt showing?
-GoToPrompt.isShowing = is.new(function(self)
+GoToPrompt.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(GoToPrompt)
 

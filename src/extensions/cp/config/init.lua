@@ -18,7 +18,7 @@ local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 local v					= require("semver")
 
 --------------------------------------------------------------------------------
@@ -147,10 +147,10 @@ function mod.application()
 	return mod._application
 end
 
---- cp.config.isFrontmost <cp.is: boolean; read-only>
+--- cp.config.isFrontmost <cp.prop: boolean; read-only>
 --- Field
 --- Returns whether or not the Application is frontmost.
-mod.isFrontmost = is.new(function()
+mod.isFrontmost = prop.new(function()
 	local app = mod.application()
 	local fw = window.focusedWindow()
 
@@ -204,17 +204,17 @@ function mod.set(key, value)
 	end
 end
 
---- cp.config.is(key[, defaultValue]) -> cp.is
+--- cp.config.prop(key[, defaultValue]) -> cp.prop
 --- Function
---- Returns a `cp.is` instance connected to the value of the specified key. When the value is modified, it will be notified.
+--- Returns a `cp.prop` instance connected to the value of the specified key. When the value is modified, it will be notified.
 ---
 --- Parameters:
 --- * `key`				- The configuration setting key.
 --- * `defaultValue`	- The default value if the key has not been set.
 ---
 --- Returns:
---- * A `cp.is` instance for the key.
-function mod.is(key, defaultValue)
+--- * A `cp.prop` instance for the key.
+function mod.prop(key, defaultValue)
 	local isValue = nil
 	if not mod._isCache then
 		mod._isCache = {}
@@ -223,7 +223,7 @@ function mod.is(key, defaultValue)
 	end
 	
 	if not isValue then
-		isValue = is.new(
+		isValue = prop.new(
 			function() return mod.get(key, defaultValue) end,
 			function(value) mod.set(key, value) end
 		)

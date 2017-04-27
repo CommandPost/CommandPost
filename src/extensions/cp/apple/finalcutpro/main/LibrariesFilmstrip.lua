@@ -20,7 +20,7 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
 
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -37,7 +37,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:new(parent)
 	local o = {_parent = parent}
-	return is.expend(o, Filmstrip)
+	return prop.expend(o, Filmstrip)
 end
 
 -- TODO: Add documentation
@@ -81,7 +81,7 @@ function Filmstrip:verticalScrollBarUI()
 end
 
 -- TODO: Add documentation
-Filmstrip.isShowing = is.new(function(self)
+Filmstrip.isShowing = prop.new(function(self)
 	return self:UI() ~= nil and self:parent():isShowing()
 end):bind(Filmstrip)
 

@@ -352,10 +352,10 @@ function hud.delete()
 	end
 end
 
---- plugins.finalcutpro.hud.isEnabled <cp.is: boolean>
+--- plugins.finalcutpro.hud.isEnabled <cp.prop: boolean>
 --- Field
 --- Is the HUD enabled in the settings?
-hud.isEnabled = config.is(PREFERENCES_KEY, false)
+hud.isEnabled = config.prop(PREFERENCES_KEY, false)
 
 --
 -- Check Options:
@@ -383,20 +383,20 @@ function hud.setOption(name, value)
 	end
 end
 
---- plugins.finalcutpro.hud.isInspectorShown <cp.is: boolean>
+--- plugins.finalcutpro.hud.isInspectorShown <cp.prop: boolean>
 --- Field
 --- Should the Inspector in the HUD be shown?
-hud.isInspectorShown = config.is("hudShowInspector", true):watch(hud.refresh)
+hud.isInspectorShown = config.prop("hudShowInspector", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.isDropTargetsShown <cp.is: boolean>
+--- plugins.finalcutpro.hud.isDropTargetsShown <cp.prop: boolean>
 --- Field
 --- Should Drop Targets in the HUD be enabled?
-hud.isDropTargetsShown = config.is("hudShowDropTargets", true):watch(hud.refresh)
+hud.isDropTargetsShown = config.prop("hudShowDropTargets", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.isButtonsShown <cp.is: boolean>
+--- plugins.finalcutpro.hud.isButtonsShown <cp.prop: boolean>
 --- Field
 --- Should Buttons in the HUD be shown?
-hud.isButtonsShown = config.is("hudShowButtons", true):watch(hud.refresh)
+hud.isButtonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 
 --- plugins.finalcutpro.hud.getButton() -> string
 --- Function

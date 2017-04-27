@@ -14,7 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils						= require("cp.apple.finalcutpro.axutils")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -35,7 +35,7 @@ end
 -- TODO: Add documentation
 function ReplaceAlert:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, ReplaceAlert)
+	return prop.extend(o, ReplaceAlert)
 end
 
 -- TODO: Add documentation
@@ -56,10 +56,10 @@ function ReplaceAlert:UI()
 	ReplaceAlert.matches)
 end
 
---- cp.apple.finalcutpro.export.ReplaceAlert.isShowing <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.export.ReplaceAlert.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the Replace File alert showing?
-ReplaceAlert.isShowing = is.new(function(self)
+ReplaceAlert.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(ReplaceAlert)
 

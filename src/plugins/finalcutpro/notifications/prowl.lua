@@ -57,7 +57,7 @@ function prowlAPIKeyValid(input)
 	return result, errorMessage
 end
 
-mod.isEnabled = config.is("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
+mod.isEnabled = config.prop("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
 
 function mod.getAPIKey()
 	return config.get("prowlAPIKey", nil)

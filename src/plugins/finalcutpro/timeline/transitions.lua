@@ -26,7 +26,7 @@ local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -54,7 +54,7 @@ function action.id()
 	return "transition"
 end
 
-action.isEnabled = config.is(action.id().."ActionEnabled", true)
+action.isEnabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then
@@ -380,7 +380,7 @@ function mod.updateTransitionsList()
 	return true
 end
 
-mod.isTransitionsListUpdated = is.new(function()
+mod.isTransitionsListUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
 end)
 

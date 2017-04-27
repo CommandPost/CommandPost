@@ -14,7 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils							= require("cp.apple.finalcutpro.axutils")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
 local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
@@ -38,7 +38,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, TimelineToolbar)
+	return prop.extend(o, TimelineToolbar)
 end
 
 -- TODO: Add documentation
@@ -66,7 +66,7 @@ function TimelineToolbar:UI()
 end
 
 -- TODO: Add documentation
-TimelineToolbar.isShowing = is.new(function(this)
+TimelineToolbar.isShowing = prop.new(function(this)
 	return self:UI() ~= nil
 end):bind(TimelineToolbar)
 

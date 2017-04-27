@@ -19,7 +19,7 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
 
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -36,7 +36,7 @@ end
 -- TODO: Add documentation
 function List:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, List)
+	return prop.extend(o, List)
 end
 
 -- TODO: Add documentation
@@ -74,12 +74,12 @@ function List:UI()
 end
 
 -- TODO: Add documentation
-List.isShowing = is.new(function(self)
+List.isShowing = prop.new(function(self)
 	return self:UI() ~= nil and self:parent():isShowing()
 end):bind(List)
 
 -- TODO: Add documentation
-List.isFocused = is.new(function(self)
+List.isFocused = prop.new(function(self)
 	local player = self:playerUI()
 	return self:contents():isFocused() or player and player:focused()
 end):bind(List)

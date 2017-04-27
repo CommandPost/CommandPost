@@ -22,7 +22,7 @@ local touchbar 									= require("hs._asm.touchbar")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local config									= require("cp.config")
-local is										= require("cp.is")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -107,15 +107,15 @@ function mod.updateLocation()
 	mod.setLastLocation(mod.touchBarWindow:topLeft())
 end
 
---- plugins.finalcutpro.os.touchbar.isSupported <cp.is: boolean; read-only>
+--- plugins.finalcutpro.os.touchbar.isSupported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is supported on this OS.
-mod.isSupported = is.new(function() return touchbar.supported() end)
+mod.isSupported = prop.new(function() return touchbar.supported() end)
 
---- plugins.finalcutpro.os.touchbar.isEnabled <cp.is: boolean>
+--- plugins.finalcutpro.os.touchbar.isEnabled <cp.prop: boolean>
 --- Field
 --- Is `true` if the plugin is enabled.
-mod.isEnabled = config.is("displayTouchBar", false):watch(function(enabled)
+mod.isEnabled = config.prop("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ mod.isEnabled = config.is("displayTouchBar", false):watch(function(enabled)
 	end
 end)
 
---- plugins.finalcutpro.os.touchbar.isActive <cp.is: boolean; read-only>
+--- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
 mod.isActive = mod.isEnabled:AND(mod.isSupported):watch(function(active)

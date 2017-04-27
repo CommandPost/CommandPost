@@ -428,7 +428,7 @@ function mod.batchExport()
 
 end
 
-mod.isReplaceExistingFiles = config.is("batchExportReplaceExistingFiles", false)
+mod.isReplaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
 
 --------------------------------------------------------------------------------
 --

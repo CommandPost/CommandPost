@@ -24,7 +24,7 @@ local v											= require("semver")
 local plist										= require("cp.plist")
 local just										= require("cp.just")
 local tools										= require("cp.tools")
-local is										= require("cp.is")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -196,35 +196,35 @@ function App:getPath()
 end
 
 
---- cp.apple.compressor.isRunning <cp.is: boolean; read-only>
+--- cp.apple.compressor.isRunning <cp.prop: boolean; read-only>
 --- Field
 --- Is the app is running?
-App.isRunning = is.new(function(self)
+App.isRunning = prop.new(function(self)
 	local app = self:application()
 	return app and app:isRunning()
 end):bind(App)
 
---- cp.apple.compressor.isShowing <cp.is: boolean; read-only>
+--- cp.apple.compressor.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is Compressor Showing?
-App.isShowing = is.new(function(owner)
+App.isShowing = prop.new(function(owner)
 	local app = owner:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
 end):bind(App)
 
---- cp.apple.compressor.isInstalled <cp.is: boolean; read-only>
+--- cp.apple.compressor.isInstalled <cp.prop: boolean; read-only>
 --- Field
 --- Is a supported version of Compressor Installed?
-App.isInstalled = is.new(function(owner)
+App.isInstalled = prop.new(function(owner)
 	local app = application.infoForBundleID(App.BUNDLE_ID)
 	if app then return true end
 	return false
 end):bind(App)
 
---- cp.apple.compressor.isFrontmost <cp.is: boolean; read-only>
+--- cp.apple.compressor.isFrontmost <cp.prop: boolean; read-only>
 --- Field
 --- Is Compressor Frontmost?
-App.isFrontmost = is.new(function(owner)
+App.isFrontmost = prop.new(function(owner)
 	local app = owner:application()
 	return app and app:isFrontmost()
 end):bind(App)

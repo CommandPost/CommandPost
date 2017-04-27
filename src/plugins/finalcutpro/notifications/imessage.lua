@@ -64,7 +64,7 @@ function mod.update(changed)
 	end
 end
 
-mod.isEnabled = config.is("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
+mod.isEnabled = config.prop("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
 
 function mod.getTarget()
 	return config.get("iMessageTarget", nil)

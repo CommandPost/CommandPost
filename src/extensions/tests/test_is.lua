@@ -1,13 +1,13 @@
 local test		= require("cp.test")
 local log		= require("hs.logger").new("testis")
 
-local is		= require("cp.is")
+local prop		= require("cp.prop")
 
 function run()
 	test("Is new", function()
 		local state = true
 	
-		local isState = is.new(function() return state end, function(newValue) state = newValue end)
+		local isState = prop.new(function() return state end, function(newValue) state = newValue end)
 		ok(isState())
 		ok(isState(false) == false)
 		ok(not isState())
@@ -15,29 +15,29 @@ function run()
 	end)
 	
 	test("Is THIS", function()
-		local isTrue = is.THIS(true)
+		local isTrue = prop.THIS(true)
 		ok(isTrue() == true)
 		ok(isTrue:toggle() == false)
 		
-		local isFalse = is.THIS(false)
+		local isFalse = prop.THIS(false)
 		ok(isFalse() == false)
 		ok(isFalse:toggle() == true)
 	end)
 	
 	test("Is TRUE", function()
-		local isTrue = is.TRUE()
+		local isTrue = prop.TRUE()
 		ok(isTrue() == true)
 		ok(isTrue:toggle() == false)
 	end)
 	
 	test("Is FALSE", function()
-		local isFalse = is.FALSE()
+		local isFalse = prop.FALSE()
 		ok(isFalse() == false)
 		ok(isFalse:toggle() == true)
 	end)
 	
 	test("is IMMUTABLE", function()
-		local isTrue = is.TRUE():IMMUTABLE()
+		local isTrue = prop.TRUE():IMMUTABLE()
 		ok(isTrue() == true)
 		ok(not isTrue:mutable())
 		
@@ -49,7 +49,7 @@ function run()
 	test("Toggling", function()
 		local state = true
 	
-		local isState = is.new(function() return state end, function(newValue) state = newValue end)
+		local isState = prop.new(function() return state end, function(newValue) state = newValue end)
 		ok(isState())
 		ok(isState:toggle() == false)
 		ok(not isState())
@@ -64,7 +64,7 @@ function run()
 			count = count + 1
 		end
 		
-		local isState = is.new(function() return state end, function(newValue) state = newValue end)
+		local isState = prop.new(function() return state end, function(newValue) state = newValue end)
 		ok(isState())
 		isState:watch(watcher, true)
 		ok(eq(count, 1))
@@ -84,8 +84,8 @@ function run()
 	test("Is NOT", function()
 		local state = true
 	
-		local isState		= is.new(function() return state end, function(newValue) state = newValue end)
-		local isNotState	= is.NOT(isState)
+		local isState		= prop.new(function() return state end, function(newValue) state = newValue end)
+		local isNotState	= prop.NOT(isState)
 		ok(isState())
 		ok(not isNotState())
 		
@@ -116,10 +116,10 @@ function run()
 		local leftState = true
 		local rightState = true
 		
-		local isLeft	= is.new(function() return leftState end, function(value) leftState = value end)
-		local isRight	= is.new(function() return rightState end, function(value) rightState = value end)
+		local isLeft	= prop.new(function() return leftState end, function(value) leftState = value end)
+		local isRight	= prop.new(function() return rightState end, function(value) rightState = value end)
 		
-		local isLeftAndRight = is.AND(isLeft, isRight)
+		local isLeftAndRight = prop.AND(isLeft, isRight)
 		
 		ok(isLeftAndRight() == true)
 		-- isLeft false
@@ -144,11 +144,11 @@ function run()
 		
 		-- Check we get an error when combining an AND and OR
 		-- We have to wrap the execution in a 'spy' function to catch the error.
-		local andOr = spy(function() isLeftAndRight:OR(is.new(function() return false end)) end)
+		local andOr = spy(function() isLeftAndRight:OR(prop.new(function() return false end)) end)
 		andOr()
 		ok(andOr.errors[1], "Cannot combine AND and OR")
 		
-		-- Check that we can watch the combined `is` for changes from further down.
+		-- Check that we can watch the combined `prop` for changes from further down.
 		local count = 0
 		local watchValue = nil
 		isLeftAndRight:watch(function(value) count = count+1; watchValue = value end, true)
@@ -165,10 +165,10 @@ function run()
 		local leftState = true
 		local rightState = true
 		
-		local isLeft	= is.new(function() return leftState end, function(value) leftState = value end)
-		local isRight	= is.new(function() return rightState end, function(value) rightState = value end)
+		local isLeft	= prop.new(function() return leftState end, function(value) leftState = value end)
+		local isRight	= prop.new(function() return rightState end, function(value) rightState = value end)
 		
-		local isLeftOrRight = is.OR(isLeft, isRight)
+		local isLeftOrRight = prop.OR(isLeft, isRight)
 		
 		ok(isLeftOrRight() == true)
 		-- isLeft false
@@ -192,11 +192,11 @@ function run()
 		
 		-- Check we get an error when combining an OR and AND
 		-- We have to wrap the execution in a 'spy' function to catch the error.
-		local andOr = spy(function() isLeftOrRight:AND(is.new(function() return false end)) end)
+		local andOr = spy(function() isLeftOrRight:AND(prop.new(function() return false end)) end)
 		andOr()
 		ok(andOr.errors[1], "Cannot combine OR and AND")
 		
-		-- Check that we can watch the combined `is` for changes from further down.
+		-- Check that we can watch the combined `prop` for changes from further down.
 		local count = 0
 		local watchValue = nil
 		isLeftOrRight:watch(function(value) count = count+1; watchValue = value end)
@@ -220,7 +220,7 @@ function run()
 			value = true,
 		}
 		
-		instance.isMethod = is.new(
+		instance.isMethod = prop.new(
 			function(owner)
 				return owner.value
 			end,
@@ -234,12 +234,12 @@ function run()
 		ok(instance.isMethod:toggle() == true)
 		ok(instance.value == true)
 
-		instance.isSimple = is.TRUE():bind(instance)
+		instance.isSimple = prop.TRUE():bind(instance)
 		ok(instance:isSimple())
 		ok(instance.isSimple:toggle() == false)
 		ok(not instance:isSimple())
 		
-		instance.isNot = is.NOT(instance.isSimple):bind(instance)
+		instance.isNot = prop.NOT(instance.isSimple):bind(instance)
 		instance:isSimple(true)
 		ok(instance:isNot() == false)
 		ok(instance.isNot:toggle() == true)
@@ -266,11 +266,11 @@ function run()
 	test("Is applyAll", function()
 		local source, target = {}, {}
 		
-		source.isMethod = is.TRUE():bind(source)
-		source.isFunction = is.TRUE()
+		source.isMethod = prop.TRUE():bind(source)
+		source.isFunction = prop.TRUE()
 		source.isRealFunction = function() return true end
 		
-		is.applyAll(target, source)
+		prop.applyAll(target, source)
 		
 		ok(target.isMethod:owner() == target)
 		ok(target.isFunction:owner() == nil)

@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local geometry							= require("hs.geometry")
@@ -45,7 +45,7 @@ GeneratorsBrowser.TITLE = "Titles and Generators"
 -- TODO: Add documentation
 function GeneratorsBrowser:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, GeneratorsBrowser)
+	return prop.extend(o, GeneratorsBrowser)
 end
 
 -- TODO: Add documentation
@@ -75,7 +75,7 @@ function GeneratorsBrowser:UI()
 end
 
 -- TODO: Add documentation
-GeneratorsBrowser.isShowing = is.new(function(self)
+GeneratorsBrowser.isShowing = prop.new(function(self)
 	local parent = self:parent()
 	return parent:isShowing() and parent:showGenerators():isChecked()
 end):bind(GeneratorsBrowser)

@@ -39,10 +39,10 @@ function mod.id()
 	return ID
 end
 
---- plugins.core.commands.commandaction.isEnabled <cp.is: boolean>
+--- plugins.core.commands.commandaction.isEnabled <cp.prop: boolean>
 --- Field
 --- This will be `true` when the command actions are enabled.
-mod.isEnabled = config.is("commandActionEnabled", true)
+mod.isEnabled = config.prop("commandActionEnabled", true)
 
 --- plugins.core.commands.commandaction.choices() -> table
 --- Function

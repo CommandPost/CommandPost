@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("librariesBrowser")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -41,7 +41,7 @@ local Libraries = {}
 -- TODO: Add documentation
 function Libraries:new(parent)
 	local o = {_parent = parent}
-	return is.extend(o, Libraries)
+	return prop.extend(o, Libraries)
 end
 
 -- TODO: Add documentation
@@ -71,22 +71,22 @@ function Libraries:UI()
 end
 
 -- TODO: Add documentation
-Libraries.isShowing = is.new(function(self)
+Libraries.isShowing = prop.new(function(self)
 	return self:parent():isShowing() and self:parent():showLibraries():isChecked()
 end):bind(Libraries)
 
 -- TODO: Add documentation
-Libraries.isListView = is.new(function(self)
+Libraries.isListView = prop.new(function(self)
 	return self:list():isShowing()
 end):bind(Libraries)
 
 -- TODO: Add documentation
-Libraries.isFilmstripView = is.new(function(self)
+Libraries.isFilmstripView = prop.new(function(self)
 	return self:filmstrip():isShowing()
 end):bind(Libraries)
 
 -- TODO: Add documentation
-Libraries.isFocused = is.new(function(self)
+Libraries.isFocused = prop.new(function(self)
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
 end):bind(Libraries)

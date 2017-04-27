@@ -20,7 +20,7 @@ local application		= require("hs.application")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -38,7 +38,7 @@ local PREFERENCES_KEY 	= "FFEnableGuards"
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.isEnabled = is.new(
+mod.isEnabled = prop.new(
 	function()
 		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
 	end,

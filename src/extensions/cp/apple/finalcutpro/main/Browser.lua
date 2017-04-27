@@ -17,7 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
-local is								= require("cp.is")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -43,7 +43,7 @@ end
 -- TODO: Add documentation
 function Browser:new(app)
 	local o = {_app = app}
-	return is.extend(o, Browser)
+	return prop.extend(o, Browser)
 end
 
 -- TODO: Add documentation
@@ -81,26 +81,26 @@ function Browser._findBrowser(...)
 	return nil
 end
 
---- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
 --- Field
 --- Is the Browser on the Secondary Window?
-Browser.isOnSecondary = is.new(function(self)
+Browser.isOnSecondary = prop.new(function(self)
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
 end):bind(Browser)
 
---- cp.apple.finalcutpro.main.Browser <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
 --- Field
 --- Is the Browser on the Primary Window?
-Browser.isOnPrimary = is.new(function(self)
+Browser.isOnPrimary = prop.new(function(self)
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end):bind(Browser)
 
---- cp.apple.finalcutpro.main.Browser <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
 --- Field
 --- Is the Browser showing?
-Browser.isShowing = is.new(function(self)
+Browser.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(Browser)
 

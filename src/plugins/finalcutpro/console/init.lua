@@ -26,7 +26,7 @@ local ax 				= require("hs._asm.axuielement")
 
 local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 local log				= require("hs.logger").new("console")
 
@@ -49,13 +49,13 @@ mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
 mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
 
-mod.isEnabled = config.is("consoleEnabled", true)
+mod.isEnabled = config.prop("consoleEnabled", true)
 
-mod.isReducedTransparency = is.new(function()
+mod.isReducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
-mod.isLastQueryRemembered = config.is("consoleLastQueryRemembered", true)
+mod.isLastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
 
 function mod.getLastQueryValue()
 	return config.get("consoleLastQueryValue", "")

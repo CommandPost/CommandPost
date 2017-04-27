@@ -26,7 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -54,7 +54,7 @@ function action.id()
 	return "generator"
 end
 
-action.isEnabled = config.is(action.id().."ActionEnabled", true)
+action.isEnabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then
@@ -377,7 +377,7 @@ function mod.updateGeneratorsList()
 	return true
 end
 
-mod.isGeneratorsListUpdated = is.new(function()
+mod.isGeneratorsListUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
 end)
 

@@ -22,7 +22,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")
-local is				= require("cp.is")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +41,7 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- HAS FINAL CUT PRO BEEN SCANNED?
 --------------------------------------------------------------------------------
-mod.isScanned = is.new(function()
+mod.isScanned = prop.new(function()
 	return mod.effects.isEffectsListUpdated()
 	   and mod.generators.isGeneratorsListUpdated() 
 	   and mod.titles.isTitlesListUpdated()

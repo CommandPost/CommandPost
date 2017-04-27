@@ -24,7 +24,7 @@ local protect 									= require("cp.protect")
 local archiver									= require("cp.plist.archiver")
 local fcp										= require("cp.apple.finalcutpro")
 local dialog 									= require("cp.dialog")
-local is										= require("cp.is")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -399,7 +399,7 @@ end
 --------------------------------------------------------------------------------
 -- IS THIS MODULE WATCHING THE CLIPBOARD:
 -------------------------------------------------------------------------------
-mod.isWatching = is.new(function()
+mod.isWatching = prop.new(function()
 	return mod._timer ~= nil
 end)
 

@@ -16,7 +16,7 @@
 local log							= require("hs.logger").new("PrefsDlg")
 
 local just							= require("cp.just")
-local is							= require("cp.is")
+local prop							= require("cp.prop")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local id							= require("cp.apple.finalcutpro.ids") "MediaImporter"
@@ -43,7 +43,7 @@ end
 -- TODO: Add documentation
 function MediaImport:new(app)
 	local o = {_app = app}
-	return is.extend(o, MediaImport)
+	return prop.extend(o, MediaImport)
 end
 
 -- TODO: Add documentation
@@ -68,10 +68,10 @@ function MediaImport:_findWindowUI(windows)
 	return nil
 end
 
---- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.is: boolean; read-only>
+--- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the Media Import window showing?
-MediaImport.isShowing = is.new(function(self)
+MediaImport.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
 end):bind(MediaImport)
 
