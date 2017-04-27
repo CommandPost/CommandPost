@@ -35,22 +35,22 @@ local PRIORITY = 2000
 local mod = {}
 
 local function requestTarget()
-	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
+	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.target())
 	if result == false then
 		mod.enabled(false)
 		return
 	else
-		mod.setTarget(result)
+		mod.target(result)
 	end
 end
 
 function mod.update(changed)
 	if mod.enabled() then
-		if changed or mod.getTarget() == nil then
+		if changed or mod.target() == nil then
 			requestTarget()
 		end
 
-		if mod.getTarget() ~= nil and mod.watchId == nil then
+		if mod.target() ~= nil and mod.watchId == nil then
 			mod.watchId = mod.notifications.watch({
 				success	= mod.sendNotification,
 				failure = mod.sendNotification,
@@ -66,16 +66,10 @@ end
 
 mod.enabled = config.prop("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
 
-function mod.getTarget()
-	return config.get("iMessageTarget", nil)
-end
-
-function mod.setTarget(value)
-	config.set("iMessageTarget", value)
-end
+mod.target = config.prop("iMessageTarget")
 
 function mod.sendNotification(message)
-	local iMessageTarget = mod.getTarget()
+	local iMessageTarget = mod.target()
 	if iMessageTarget then
 		messages.iMessage(iMessageTarget, message)
 	end
