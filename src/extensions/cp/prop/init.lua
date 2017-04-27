@@ -557,6 +557,7 @@ end
 --- Notes:
 --- * If the `propValue` is mutable, you can set the `NOT` property value and the underlying value will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
 function prop.NOT(propValue)
+	assert(prop.is(propValue), string.format("Expected a `cp.prop` at argument #1 but got `%s`", inspect(propValue)))
 	local notProp = prop.new(
 		function() return negate(propValue:get()) end,
 		function(newValue) propValue:set(negate(newValue)) end
