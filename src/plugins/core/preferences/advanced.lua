@@ -85,6 +85,15 @@ function mod.trashPreferences()
 
 end
 
+--- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
+--- Field
+--- Enables or disables developer mode.
+mod.developerMode = config.prop("debugMode"):watch(function()
+	mod.manager.hide()
+	console.clearConsole()
+	hs.reload()
+end)
+
 --- plugins.core.preferences.advanced.toggleDeveloperMode() -> none
 --- Function
 --- Toggles the Developer Mode.
@@ -97,24 +106,8 @@ end
 function mod.toggleDeveloperMode()
 	local result = dialog.displayMessage(i18n("togglingDeveloperMode"), {"Yes", "No"})
 	if result == "Yes" then
-		local debugMode = config.get("debugMode")
-		config.set("debugMode", not debugMode)
-		console.clearConsole()
-		hs.reload()
+		mod.developerMode:toggle()
 	end
-end
-
---- plugins.core.preferences.advanced.getDeveloperMode() -> boolean
---- Function
---- Returns the Developer Mode status.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if developer mode is enabled otherwise `false`.
-function mod.getDeveloperMode()
-	return config.get("debugMode")
 end
 
 --- plugins.core.preferences.advanced.openErrorLog() -> none
@@ -177,15 +170,7 @@ function mod.toggleCommandLineTool()
 
 end
 
-function mod.toggleOpenErrorLogOnDockClick()
-	local openErrorLogOnDockClick = config.get("openErrorLogOnDockClick", false)
-	config.set("openErrorLogOnDockClick", not openErrorLogOnDockClick)
-end
-
-
-function mod.getOpenErrorLogOnDockClick()
-	return config.get("openErrorLogOnDockClick", false)
-end
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
 
 --------------------------------------------------------------------------------
 --
@@ -213,7 +198,7 @@ function plugin.init(deps)
 	-- Create Dock Icon Click Callback:
 	--------------------------------------------------------------------------------
 	config.dockIconClickCallback:new("cp", function()
-		if mod.getOpenErrorLogOnDockClick() then hs.openConsole() end
+		if mod.openErrorLogOnDockClick() then hs.openConsole() end
 	end)
 
 	--------------------------------------------------------------------------------
@@ -225,15 +210,15 @@ function plugin.init(deps)
 		{
 			label = i18n("enableDeveloperMode"),
 			onchange = mod.toggleDeveloperMode,
-			checked = mod.getDeveloperMode
+			checked = mod.developerMode,
 		}
 	)
 
 	:addCheckbox(62,
 		{
 			label = i18n("openErrorLogOnDockClick"),
-			onchange = mod.toggleOpenErrorLogOnDockClick,
-			checked = mod.getOpenErrorLogOnDockClick
+			onchange = function() mod.openErrorLogOnDockClick:toggle() end,
+			checked = mod.openErrorLogOnDockClick
 		}
 	)
 

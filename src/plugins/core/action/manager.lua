@@ -141,22 +141,26 @@ end
 -- TODO: Add documentation
 function mod.toggleActionEnabled(id)
 	local action = mod.getAction(id)
-	if action and action.toggleEnabled then
-		action:toggleEnabled()
+	if action and action.isEnabled then
+		action.isEnabled:toggle()
 	end
 end
 
 -- TODO: Add documentation
 function mod.enableAllActions()
 	for _,action in pairs(mod._actions) do
-		action.setEnabled(true)
+		if action.isEnabled then
+			action.isEnabled(true)
+		end
 	end
 end
 
 -- TODO: Add documentation
 function mod.disableAllActions()
 	for _,action in pairs(mod._actions) do
-		action.setEnabled(false)
+		if action.isEnabled then
+			action.isEnabled(false)
+		end
 	end
 end
 

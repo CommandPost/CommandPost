@@ -36,18 +36,10 @@ local mod = {}
 mod._historyMaximumSize 					= 5				-- Maximum Size of Clipboard History
 mod.log										= log
 
-function mod.isEnabled()
-	return config.get("enableClipboardHistory", false)
-end
-
-function mod.setEnabled(value)
-	config.set("enableClipboardHistory", value == true)
-	mod.update()
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+--- plugins.finalcutpro.clipboard.history.enabled <cp.prop: boolean>
+--- Field
+--- Enable or disable the Clipboard History.
+mod.enabled = config.prop("enableClipboardHistory", false)
 
 function mod.getHistory()
 	if not mod._history then
@@ -103,7 +95,7 @@ local function watchUpdate(data, name)
 end
 
 function mod.update()
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if not mod._watcherId then
 			mod._watcherId = mod._manager.watch({
 				update	= watchUpdate,
@@ -153,12 +145,12 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localClipboardHistory") end)
 		:addItem(OPTIONS_PRIORITY, function()
-			return { title = i18n("enableClipboardHistory"),	fn = mod.toggleEnabled, checked = mod.isEnabled()}
+			return { title = i18n("enableClipboardHistory"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
 		end)
 		:addSeparator(2000)
 		:addItems(3000, function()
 			local historyItems = {}
-			if mod.isEnabled() then
+			if mod.enabled() then
 				local fcpxRunning = fcp:isRunning()
 				local history = mod.getHistory()
 				if #history > 0 then

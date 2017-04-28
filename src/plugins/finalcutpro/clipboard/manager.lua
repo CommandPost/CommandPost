@@ -24,6 +24,7 @@ local protect 									= require("cp.protect")
 local archiver									= require("cp.plist.archiver")
 local fcp										= require("cp.apple.finalcutpro")
 local dialog 									= require("cp.dialog")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -220,7 +221,7 @@ end
 function mod.copyWithCustomClipName()
 	log.d("Copying Clip with custom Clip Name")
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Edit", "Copy") then
+	if menuBar:enabled("Edit", "Copy") then
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextClipName(result)
@@ -380,7 +381,8 @@ function mod.startWatching()
 		mod._lastChange = currentChange
 	end)
 	mod._timer:start()
-
+	
+	mod.watching:update()
 	--log.d("Started Clipboard Watcher")
 end
 
@@ -391,6 +393,7 @@ function mod.stopWatching()
 	if mod._timer then
 		mod._timer:stop()
 		mod._timer = nil
+		mod.watching:update()
 		--log.d("Stopped Clipboard Watcher")
 	end
 end
@@ -398,9 +401,9 @@ end
 --------------------------------------------------------------------------------
 -- IS THIS MODULE WATCHING THE CLIPBOARD:
 -------------------------------------------------------------------------------
-function mod.isWatching()
+mod.watching = prop.new(function()
 	return mod._timer ~= nil
-end
+end)
 
 --------------------------------------------------------------------------------
 --

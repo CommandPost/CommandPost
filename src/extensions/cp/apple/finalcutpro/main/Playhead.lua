@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local geometry							= require("hs.geometry")
+local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -53,19 +54,20 @@ function Playhead.find(containerUI, skimming)
 	return nil
 end
 
--- TODO: Add documentation
--- Constructs a new Playhead
---
--- Parameters:
--- * parent 		- The parent object
--- * skimming		- (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
--- * containerFn 	- (optional) a function which returns the container axuielement which contains the playheads.
--- 						If not present, it will use the parent's UI element.
+--- cp.apple.finalcutpro.main.Playhead:new(parent, skimming, containerFn) -> Playhead
+--- Constructor
+--- Constructs a new Playhead
+---
+--- Parameters:
+--- * parent 		- The parent object
+--- * skimming		- (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
+--- * containerFn 	- (optional) a function which returns the container axuielement which contains the playheads. If not present, it will use the parent's UI element.
+---
+--- Returns:
+--- * The new `Playhead` instance.
 function Playhead:new(parent, skimming, containerFn)
-	o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
+	return prop.extend(o, Playhead)
 end
 
 -- TODO: Add documentation
@@ -76,16 +78,6 @@ end
 -- TODO: Add documentation
 function Playhead:app()
 	return self:parent():app()
-end
-
--- TODO: Add documentation
-function Playhead:isPersistent()
-	return not self._skimming
-end
-
--- TODO: Add documentation
-function Playhead:isSkimming()
-	return self._skimming == true
 end
 
 -----------------------------------------------------------------------
@@ -104,9 +96,19 @@ function Playhead:UI()
 end
 
 -- TODO: Add documentation
-function Playhead:isShowing()
+Playhead.isPersistent = prop.new(function(self)
+	return not self._skimming
+end):bind(Playhead)
+
+-- TODO: Add documentation
+Playhead.isSkimming = prop.new(function(self)
+	return self._skimming == true
+end):bind(Playhead)
+
+-- TODO: Add documentation
+Playhead.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(Playhead)
 
 -- TODO: Add documentation
 function Playhead:show()

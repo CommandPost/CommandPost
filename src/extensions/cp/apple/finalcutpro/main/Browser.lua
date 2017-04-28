@@ -13,10 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
+local log								= require("hs.logger").new("browser")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -36,32 +37,18 @@ local Browser = {}
 -- TODO: Add documentation
 function Browser.matches(element)
 	local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
-	return checkBoxes and #checkBoxes == 3
+	return checkBoxes and #checkBoxes >= 3
 end
 
 -- TODO: Add documentation
 function Browser:new(app)
-	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_app = app}
+	return prop.extend(o, Browser)
 end
 
 -- TODO: Add documentation
 function Browser:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function Browser:isOnSecondary()
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end
-
--- TODO: Add documentation
-function Browser:isOnPrimary()
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -94,10 +81,28 @@ function Browser._findBrowser(...)
 	return nil
 end
 
--- TODO: Add documentation
-function Browser:isShowing()
+--- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
+--- Field
+--- Is the Browser on the Secondary Window?
+Browser.isOnSecondary = prop.new(function(self)
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
+end):bind(Browser)
+
+--- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
+--- Field
+--- Is the Browser on the Primary Window?
+Browser.isOnPrimary = prop.new(function(self)
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
+end):bind(Browser)
+
+--- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
+--- Field
+--- Is the Browser showing?
+Browser.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(Browser)
 
 -- TODO: Add documentation
 function Browser:showOnPrimary()

@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("timline")
 local inspect							= require("hs.inspect")
 local geometry							= require("hs.geometry")
 
+local prop								= require("cp.prop")
 local just								= require("cp.just")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
@@ -72,13 +73,12 @@ end
 
 -- TODO: Add documentation
 function ColorBoard:new(parent)
-	o = {
+	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	
+	return prop.extend(o, ColorBoard)
 end
 
 -- TODO: Add documentation
@@ -127,10 +127,16 @@ function ColorBoard:_findUI()
 end
 
 -- TODO: Add documentation
-function ColorBoard:isShowing()
+ColorBoard.isShowing = prop.new(function(self)
 	local ui = self:UI()
 	return ui ~= nil and ui:attributeValue("AXSize").w > 0
-end
+end):bind(ColorBoard)
+
+-- TODO: Add documentation
+ColorBoard.isActive = prop.new(function(self)
+	local ui = self:colorSatExpUI()
+	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
+end):bind(ColorBoard)
 
 -- TODO: Add documentation
 function ColorBoard:show()
@@ -179,12 +185,6 @@ function ColorBoard:showInspectorUI()
 		end
 		return nil
 	end)
-end
-
--- TODO: Add documentation
-function ColorBoard:isActive()
-	local ui = self:colorSatExpUI()
-	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
 end
 
 -----------------------------------------------------------------------

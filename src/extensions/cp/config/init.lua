@@ -18,6 +18,7 @@ local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
+local prop				= require("cp.prop")
 local v					= require("semver")
 
 --------------------------------------------------------------------------------
@@ -146,23 +147,17 @@ function mod.application()
 	return mod._application
 end
 
---- cp.config.isFrontmost() -> boolean
---- Function
---- Returns whether or not the Application is front most
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if Application is front most otherwise `false`
-function mod.isFrontmost()
+--- cp.config.frontmost <cp.prop: boolean; read-only>
+--- Field
+--- Returns whether or not the Application is frontmost.
+mod.frontmost = prop.new(function()
 	local app = mod.application()
 	local fw = window.focusedWindow()
 
 	return fw ~= nil and fw:application() == app
-end
+end)
 
---- cp.config.get() -> string or boolean or number or nil or table or binary data
+--- cp.config.get(key[, defaultValue]) -> string or boolean or number or nil or table or binary data
 --- Function
 --- Loads a setting
 ---
@@ -200,7 +195,42 @@ end
 --- Notes:
 ---  * This function cannot set dates or raw data types
 function mod.set(key, value)
-	return settings.set(mod.configPrefix .. "." .. key, value)
+	settings.set(mod.configPrefix .. "." .. key, value)
+	if mod._isCache then
+		local prop = mod._isCache[key]
+		if prop then
+			prop:update()
+		end
+	end
+end
+
+--- cp.config.prop(key[, defaultValue]) -> cp.prop
+--- Function
+--- Returns a `cp.prop` instance connected to the value of the specified key. When the value is modified, it will be notified.
+---
+--- Parameters:
+--- * `key`				- The configuration setting key.
+--- * `defaultValue`	- The default value if the key has not been set.
+---
+--- Returns:
+--- * A `cp.prop` instance for the key.
+function mod.prop(key, defaultValue)
+	local propValue = nil
+	if not mod._isCache then
+		mod._isCache = {}
+	else
+		propValue = mod._isCache[key]
+	end
+	
+	if not propValue then
+		propValue = prop.new(
+			function() return mod.get(key, defaultValue) end,
+			function(value) mod.set(key, value) end
+		)
+		mod._isCache[key] = propValue
+	end
+	
+	return propValue
 end
 
 --- cp.config.reset()
@@ -249,7 +279,7 @@ function shutdownCallback:new(id, callbackFn)
 	if shutdownCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -342,7 +372,7 @@ function textDroppedToDockIconCallback:new(id, callbackFn)
 	if textDroppedToDockIconCallback._items[id] ~= nil then
 		error("Duplicate Text Dropped to Dock Icon Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -435,7 +465,7 @@ function fileDroppedToDockIconCallback:new(id, callbackFn)
 	if fileDroppedToDockIconCallback._items[id] ~= nil then
 		error("Duplicate File Dropped to Dock Icon Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -528,7 +558,7 @@ function dockIconClickCallback:new(id, callbackFn)
 	if dockIconClickCallback._items[id] ~= nil then
 		error("Duplicate Dock Icon Click Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -621,7 +651,7 @@ function accessibilityStateCallback:new(id, callbackFn)
 	if accessibilityStateCallback._items[id] ~= nil then
 		error("Duplicate Dock Icon Click Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}

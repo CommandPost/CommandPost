@@ -22,6 +22,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -36,18 +37,6 @@ local PRIORITY = 1
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---------------------------------------------------------------------------------
--- HAS FINAL CUT PRO BEEN SCANNED?
---------------------------------------------------------------------------------
-function mod.isScanned()
-
-	if mod.effects.isEffectsListUpdated() and mod.generators.isGeneratorsListUpdated() and mod.titles.isTitlesListUpdated() and mod.transitions.isTransitionsListUpdated() then
-		return true
-	end
-	return false
-
-end
 
 --------------------------------------------------------------------------------
 -- SCAN FINAL CUT PRO:
@@ -79,22 +68,17 @@ function mod.scanFinalCutPro()
 
 	local result
 
-	result = mod.effects.updateEffectsList()
-	if result == "Fail" then return false end
+	if not mod.effects.updateEffectsList() then return false end
 
-	result = mod.transitions.updateTransitionsList()
-	if result == "Fail" then return false end
+	if not mod.transitions.updateTransitionsList() then return false end
 
-	result = mod.titles.updateTitlesList()
-	if result == "Fail" then return false end
+	if not mod.titles.updateTitlesList() then return false end
 
-	result = mod.generators.updateGeneratorsList()
-	if result == "Fail" then return false end
+	if not mod.generators.updateGeneratorsList() then return false end
 
 	dialog.displayMessage(i18n("scanFinalCutProDone"))
 
 	return true
-
 end
 
 --------------------------------------------------------------------------------
@@ -105,6 +89,17 @@ function mod.init(effects, generators, titles, transitions)
 	mod.generators = generators
 	mod.titles = titles
 	mod.transitions = transitions
+	
+	--------------------------------------------------------------------------------
+	-- HAS FINAL CUT PRO BEEN SCANNED?
+	--------------------------------------------------------------------------------
+	mod.scaned = prop.AND(
+		mod.effects.listUpdated,
+		mod.generators.listUpdated,
+		mod.titles.listUpdated,
+		mod.transitions.listUpdated
+	)
+	
 end
 
 --------------------------------------------------------------------------------

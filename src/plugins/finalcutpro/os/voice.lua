@@ -21,6 +21,7 @@ local speech   								= require("hs.speech")
 local fcp									= require("cp.apple.finalcutpro")
 local dialog 								= require("cp.dialog")
 local config								= require("cp.config")
+local prop									= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -39,42 +40,11 @@ local mod = {}
 mod.commandTitles = {}
 mod.commandsByTitle = {}
 
-function mod.isEnabled()
-	return config.get("enableVoiceCommands", false)
-end
+mod.enabled = config.prop("enableVoiceCommands", false):watch(function() mod.update() end)
 
-function mod.setEnabled(value)
-	config.set("enableVoiceCommands", value)
-	mod.update()
-end
+mod.announcementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
 
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
-function mod.isAnnouncementsEnabled()
-	return config.get("voiceCommandEnableAnnouncements", false)
-end
-
-function mod.setAnnouncementsEnabled(value)
-	config.set("voiceCommandEnableAnnouncements", value)
-end
-
-function mod.toggleAnnouncementsEnabled()
-	mod.setAnnouncementsEnabled(not mod.isAnnouncementsEnabled())
-end
-
-function mod.isVisualAlertsEnabled()
-	return config.get("voiceCommandEnableVisualAlerts", false)
-end
-
-function mod.setVisualAlertsEnabled(value)
-	config.set("voiceCommandEnableVisualAlerts", value)
-end
-
-function mod.toggleVisualAlertsEnabled()
-	mod.setVisualAlertsEnabled(not mod.isVisualAlertsEnabled())
-end
+mod.visualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
 
 function mod.openDictationSystemPreferences()
 	osascript.applescript([[
@@ -90,8 +60,8 @@ end
 --------------------------------------------------------------------------------
 local function listenerCallback(listenerObj, text)
 
-	local visualAlerts = mod.isVisualAlertsEnabled()
-	local announcements = mod.isAnnouncementsEnabled()
+	local visualAlerts = mod.visualAlertsEnabled()
+	local announcements = mod.announcementsEnabled()
 
 	if announcements then
 		mod.talker:speak(text)
@@ -171,17 +141,17 @@ end
 --------------------------------------------------------------------------------
 -- IS LISTENING:
 --------------------------------------------------------------------------------
-function mod.isListening()
-	return mod.listener ~= nil and mod.listener:isListening()
-end
+mod.listening = prop.new(function()
+	return mod.listener ~= nil and mod.listener:listening()
+end)
 
 function mod.update()
-	if mod.isEnabled() then
-		if not mod.isListening() then
+	if mod.enabled() then
+		if not mod.listening() then
 			local result = mod.new()
 			if result == false then
 				dialog.displayErrorMessage(i18n("voiceCommandsError"))
-				mod.setEnabled(false)
+				mod.enabled(false)
 				return
 			end
 
@@ -192,14 +162,14 @@ function mod.update()
 			end
 		end
 	else
-		if mod.isListening() then
+		if mod.listening() then
 			mod.stop()
 		end
 	end
 end
 
 function mod.pause()
-	if mod.isListening() then
+	if mod.listening() then
 		mod.stop()
 	end
 end
@@ -264,13 +234,13 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommands") end)
 		:addItem(500, function()
-			return { title = i18n("enableVoiceCommands"), fn = mod.toggleEnabled, checked = mod.isEnabled() }
+			return { title = i18n("enableVoiceCommands"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 		end)
 		:addSeparator(600)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("enableAnnouncements"),	fn = mod.toggleAnnouncementsEnabled, checked = mod.isAnnouncementsEnabled(), disabled = not mod.isEnabled() },
-				{ title = i18n("enableVisualAlerts"), 	fn = mod.toggleVisualAlertsEnabled, checked = mod.isVisualAlertsEnabled(), disabled = not mod.isEnabled() },
+				{ title = i18n("enableAnnouncements"),	fn = function() mod.announcementsEnabled:toggle() end,	checked = mod.announcementsEnabled(), disabled = not mod.enabled() },
+				{ title = i18n("enableVisualAlerts"), 	fn = function() mod.visualAlertsEnabled:toggle() end,		checked = mod.visualAlertsEnabled(), disabled = not mod.enabled() },
 				{ title = "-" },
 				{ title = i18n("openDictationPreferences"), fn = mod.openDictationSystemPreferences },
 			}
@@ -280,7 +250,7 @@ function plugin.init(deps)
 	-- Commands:
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpToggleVoiceCommands")
-		:whenActivated(mod.toggleEnabled)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 end

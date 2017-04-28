@@ -74,7 +74,7 @@ end
 --------------------------------------------------------------------------------
 local function panelEnabled()
 	if not fcp:isInstalled() then return false end
-	return not mod.scanfinalcutpro.isScanned()
+	return not mod.scanfinalcutpro.scaned()
 end
 
 --------------------------------------------------------------------------------

@@ -24,6 +24,8 @@ local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 local id							= require "cp.apple.finalcutpro.ids" "ExportDialog"
 
+local prop							= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -43,10 +45,8 @@ end
 
 -- TODO: Add documentation
 function ExportDialog:new(app)
-	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_app = app}
+	return prop.extend(o, ExportDialog)
 end
 
 -- TODO: Add documentation
@@ -71,10 +71,12 @@ function ExportDialog:_findWindowUI(windows)
 	return nil
 end
 
--- TODO: Add documentation
-function ExportDialog:isShowing()
+--- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the window showing?
+ExportDialog.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(ExportDialog)
 
 -- Ensures the ExportDialog is showing
 function ExportDialog:show()

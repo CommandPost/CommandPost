@@ -13,9 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsGeneral")
+local log										= require("hs.logger").new("menupref")
 
 local image										= require("hs.image")
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+local APPEARANCE_HEADING = 100
+
+local SECTIONS_HEADING = 200
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +35,8 @@ local plugin = {
 	id				= "core.preferences.panels.menubar",
 	group			= "core",
 	dependencies	= {
-		["core.preferences.manager"]			= "manager",
+		["core.preferences.manager"]			= "prefsMgr",
+		["core.menu.manager"]					= "menuMgr",
 	}
 }
 
@@ -34,7 +44,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return deps.manager.addPanel({
+	local panel = deps.prefsMgr.addPanel({
 		priority 	= 2020,
 		id			= "menubar",
 		label		= i18n("menubarPanelLabel"),
@@ -42,6 +52,26 @@ function plugin.init(deps)
 		tooltip		= i18n("menubarPanelTooltip"),
 		height		= 306,
 	})
+	
+	--------------------------------------------------------------------------------
+	-- Setup Menubar Preferences Panel:
+	--------------------------------------------------------------------------------
+	panel:addHeading(APPEARANCE_HEADING, i18n("appearance"))
+
+	:addCheckbox(APPEARANCE_HEADING + 10,
+		{
+			label = i18n("displayThisMenuAsIcon"),
+			onchange = function(id, params) dep.menuMgr.displayMenubarAsIcon(params.checked) end,
+			checked = deps.menuMgr.displayMenubarAsIcon,
+		}
+	)
+
+	:addHeading(SECTIONS_HEADING, i18n("sections"))
+	
+	panel.APPEARANCE_HEADING	= APPEARANCE_HEADING
+	panel.SECTIONS_HEADING		= SECTIONS_HEADING
+	
+	return panel
 end
 
 return plugin

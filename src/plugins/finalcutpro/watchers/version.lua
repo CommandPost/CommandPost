@@ -17,6 +17,7 @@
 local config					= require("cp.config")
 local fcp						= require("cp.apple.finalcutpro")
 local watcher					= require("cp.watcher")
+local prop						= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -35,17 +36,11 @@ function mod.unwatch(id)
 	return mod._watchers:unwatch(id)
 end
 
-function mod.getLastVersion()
-	return config.get("lastVersion")
-end
+mod.lastVersion = config.prop("lastVersion")
 
-function mod.setLastVersion(version)
-	return config.set("lastVersion", version)
-end
-
-function mod.getCurrentVersion()
+mod.currentVersion = prop(function()
 	return fcp:getVersion()
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -71,12 +66,12 @@ function plugin.postInit(deps)
 	--------------------------------------------------------------------------------
 	-- Check for Final Cut Pro Updates:
 	--------------------------------------------------------------------------------
-	local lastVersion = mod.getLastVersion()
-	local currentVersion = mod.getCurrentVersion()
+	local lastVersion = mod.lastVersion()
+	local currentVersion = mod.currentVersion()
 	if lastVersion ~= nil and lastVersion ~= currentVersion then
 		mod._watchers:notify("change", lastVersion, currentVersion)
 	end
-	mod.setLastVersion(currentVersion)
+	mod.lastVersion(currentVersion)
 end
 
 return plugin

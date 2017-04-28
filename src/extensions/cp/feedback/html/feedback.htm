@@ -122,7 +122,7 @@
 			<textarea id="form-console-output" name="form-console-output" style="display:none"></textarea>
 			{% for i, v in ipairs(screenshots) do %}
 				<div id="screenshot{{ i }}" hidden>
-					<img id='base64image{{ i }}' src='data:image/jpeg;base64, {{ v }}' />
+					<img width="100%" id='base64image{{ i }}' src='data:image/jpeg;base64, {{ v }}' />
 				</div>
 				<textarea id="form-screenshot{{ i }}" name="form-screenshot{{ i }}" style="display:none"></textarea>
 			{% end %}

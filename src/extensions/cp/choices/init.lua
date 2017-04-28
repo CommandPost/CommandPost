@@ -26,7 +26,7 @@ local builder = {}
 --- Returns:
 --- * The new choice builder.
 function builder.new(choice)
-	o = {
+	local o = {
 		_choice 		= choice,
 	}
 	setmetatable(o, builder)
@@ -115,7 +115,7 @@ mod.builder = builder
 --- Returns:
 --- * The new `choices` instance.
 function mod.new(type)
-	o = {
+	local o = {
 		_type 		= type,
 		_choices	= {},
 	}

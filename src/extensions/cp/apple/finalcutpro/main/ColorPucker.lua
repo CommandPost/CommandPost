@@ -30,7 +30,7 @@ Pucker.elasticity = Pucker.naturalLength/10
 
 -- TODO: Add documentation
 function Pucker:new(colorBoard, aspect, property)
-	o = {
+	local o = {
 		colorBoard = colorBoard,
 		aspect = aspect,
 		property = property,

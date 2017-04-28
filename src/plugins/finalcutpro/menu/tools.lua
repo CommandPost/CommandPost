@@ -30,17 +30,7 @@ local SETTING 					= "menubarToolsEnabled"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local function isSectionEnabled()
-	return config.get(SETTING, true)
-end
-
-local function setSectionEnabled(value)
-	config.set(SETTING, value)
-end
-
-local function toggleSectionDisabled()
-	setSectionEnabled(not isSectionEnabled())
-end
+local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
 --
@@ -69,7 +59,7 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Disable the section if the Tools option is disabled:
 	--------------------------------------------------------------------------------
-	shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not isSectionEnabled() end)
+	shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
 
 	--------------------------------------------------------------------------------
 	-- Add the separator and title for the section:
@@ -82,11 +72,12 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+	local prefs = dependencies.prefs
+	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
 			label = i18n("showTools"),
-			onchange = function(id, params) setSectionEnabled(params.checked) end,
-			checked = isSectionEnabled,
+			onchange = function(id, params) sectionEnabled(params.checked) end,
+			checked = sectionEnabled,
 		}
 	)
 

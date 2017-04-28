@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("importPanel")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
 local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
@@ -32,10 +33,9 @@ local ImportPanel = {}
 
 -- TODO: Add documentation
 function ImportPanel:new(preferencesDialog)
-	o = {_parent = preferencesDialog}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_parent = preferencesDialog}
+	
+	return prop.extend(o, ImportPanel)
 end
 
 -- TODO: Add documentation
@@ -52,7 +52,7 @@ function ImportPanel:UI()
 end
 
 -- TODO: Add documentation
-function ImportPanel:isShowing()
+ImportPanel.isShowing = prop.new(function(self)
 	if self:parent():isShowing() then
 		local toolbar = self:parent():toolbarUI()
 		if toolbar then
@@ -61,7 +61,7 @@ function ImportPanel:isShowing()
 		end
 	end
 	return false
-end
+end):bind(ImportPanel)
 
 -- TODO: Add documentation
 function ImportPanel:show()
@@ -85,37 +85,19 @@ end
 function ImportPanel:createProxyMedia()
 	if not self._createProxyMedia then
 		self._createProxyMedia = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "CreateProxyMedia")
+			return axutils.childWithID(self:parent():groupUI(), id "CreateProxyMedia")
 		end)
 	end
 	return self._createProxyMedia
 end
 
--- TODO: Add documentation
-function ImportPanel:toggleCreateProxyMedia()
-	if self:show() and self:createProxyMedia():isShowing() then
-		self:createProxyMedia():toggle()
-		return true
-	end
-	return false
-end
-
 function ImportPanel:createOptimizedMedia()
 	if not self._createOptimizedMedia then
 		self._createOptimizedMedia = CheckBox:new(self, function()
-			return axutils.childWith(self:parent():groupUI(), id "CreateOptimizedMedia")
+			return axutils.childWithID(self:parent():groupUI(), id "CreateOptimizedMedia")
 		end)
 	end
 	return self._createOptimizedMedia
-end
-
--- TODO: Add documentation
-function ImportPanel:toggleCreateOptimizedMedia()
-	if self:show() and self:createOptimizedMedia():isShowing() then
-		self:createOptimizedMedia():toggle()
-		return true
-	end
-	return false
 end
 
 function ImportPanel:mediaLocationGroupUI()

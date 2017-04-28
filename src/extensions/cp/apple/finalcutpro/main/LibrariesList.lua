@@ -19,6 +19,8 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
 
+local prop								= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -33,10 +35,8 @@ end
 
 -- TODO: Add documentation
 function List:new(parent)
-	o = {_parent = parent}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_parent = parent}
+	return prop.extend(o, List)
 end
 
 -- TODO: Add documentation
@@ -73,15 +73,21 @@ function List:UI()
 	List.matches)
 end
 
+-- TODO: Add documentation
+List.isShowing = prop.new(function(self)
+	return self:UI() ~= nil and self:parent():isShowing()
+end):bind(List)
+
+-- TODO: Add documentation
+List.isFocused = prop.new(function(self)
+	local player = self:playerUI()
+	return self:contents():isFocused() or player and player:focused()
+end):bind(List)
+
 function List:show()
 	if not self:isShowing() and self:parent():show():isShowing() then
 		self:parent():toggleViewMode():press()
 	end
-end
-
--- TODO: Add documentation
-function List:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -----------------------------------------------------------------------
@@ -181,12 +187,6 @@ end
 function List:deselectAll(clipsUI)
 	self:contents():deselectAll(clipsUI)
 	return self
-end
-
--- TODO: Add documentation
-function List:isFocused()
-	local player = self:playerUI()
-	return self:contents():isFocused() or player and player:focused()
 end
 
 return List

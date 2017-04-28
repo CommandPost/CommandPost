@@ -34,7 +34,7 @@ section.DEFAULT_PRIORITY = 0
 --- Returns:
 ---  * section - The section that was created.
 function section:new()
-	o = {
+	local o = {
 		_generators = {}
 	}
 	setmetatable(o, self)

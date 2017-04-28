@@ -19,6 +19,7 @@ local fnutils							= require("hs.fnutils")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 local tools								= require("cp.tools")
 local just								= require("cp.just")
+local prop								= require("cp.prop")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -47,10 +48,8 @@ function Browser.matches(element)
 end
 
 function Browser:new(parent, type)
-	o = {_parent = parent, _type = type}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_parent = parent, _type = type}
+	return prop.extend(o, Browser)
 end
 
 function Browser:parent()
@@ -79,6 +78,10 @@ function Browser:UI()
 	end
 end
 
+Browser.isShowing = prop.new(function(self)
+	return self:toggleButton():isChecked()
+end):bind(Browser)
+
 function Browser:toggleButton()
 	if not self._toggleButton then
 		local toolbar = self:app():timeline():toolbar()
@@ -92,10 +95,6 @@ function Browser:toggleButton()
 		self._toggleButton = button
 	end
 	return self._toggleButton
-end
-
-function Browser:isShowing()
-	return self:toggleButton():isChecked()
 end
 
 function Browser:show()

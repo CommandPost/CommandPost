@@ -26,6 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -53,18 +54,7 @@ function videoaction.id()
 	return "video"
 end
 
-function videoaction.setEnabled(value)
-	config.set(videoaction.id().."ActionEnabled", value)
-	videoaction._manager.refresh()
-end
-
-function videoaction.isEnabled()
-	return config.get(videoaction.id().."ActionEnabled", true)
-end
-
-function videoaction.toggleEnabled()
-	videoaction.setEnabled(not videoaction.isEnabled())
-end
+videoaction.enabled = config.prop(videoaction.id().."ActionEnabled", true)
 
 function videoaction.choices()
 	if not videoaction._choices then
@@ -112,18 +102,7 @@ function audioaction.id()
 	return "audio"
 end
 
-function audioaction.setEnabled(value)
-	config.set(audioaction.id().."ActionEnabled", value)
-	audioaction._manager.refresh()
-end
-
-function audioaction.isEnabled()
-	return config.get(audioaction.id().."ActionEnabled", true)
-end
-
-function audioaction.toggleEnabled()
-	audioaction.setEnabled(not audioaction.isEnabled())
-end
+audioaction.enabled = config.prop(audioaction.id().."ActionEnabled", true)
 
 function audioaction.choices()
 	if not audioaction._choices then
@@ -204,7 +183,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noEffectShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -263,7 +242,7 @@ function mod.apply(shortcut)
 			matches = effects:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in effectsShortcut().")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -285,6 +264,9 @@ function mod.apply(shortcut)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
 	end)
+	
+	-- Success!
+	return true
 end
 
 function mod.choices()
@@ -309,14 +291,14 @@ function mod.assignEffectsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 		= fcp:getCurrentLanguage()
-	local effectsListUpdated 	= mod.isEffectsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allVideoEffects 		= mod.getVideoEffects()
 	local allAudioEffects 		= mod.getAudioEffects()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not effectsListUpdated
+	if not listUpdated
 	   or allVideoEffects == nil or allAudioEffects == nil
 	   or next(allVideoEffects) == nil or next(allAudioEffects) == nil then
 		dialog.displayMessage(i18n("assignEffectsShortcutError"))
@@ -421,7 +403,7 @@ function mod.updateEffectsList()
 	local effectsShowing = effects:isShowing()
 	if not effects:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Effects panel.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	local effectsLayout = effects:saveLayout()
@@ -448,7 +430,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not sidebar:isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Effects sidebar.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -456,7 +438,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not effects:showAllVideoEffects() then
 		dialog.displayErrorMessage("Unable to select all video effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -465,7 +447,7 @@ function mod.updateEffectsList()
 	local allVideoEffects = effects:getCurrentTitles()
 	if not allVideoEffects then
 		dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -473,7 +455,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if not effects:showAllAudioEffects() then
 		dialog.displayErrorMessage("Unable to select all audio effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -482,7 +464,7 @@ function mod.updateEffectsList()
 	local allAudioEffects = effects:getCurrentTitles()
 	if not allAudioEffects then
 		dialog.displayErrorMessage("Unable to get list of all effects.\n\nError occurred in updateEffectsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -497,7 +479,7 @@ function mod.updateEffectsList()
 	--------------------------------------------------------------------------------
 	if #allVideoEffects == 0 or #allAudioEffects == 0 then
 		dialog.displayMessage(i18n("updateEffectsListFailed") .. "\n\n" .. i18n("pleaseTryAgain"))
-		return "Fail"
+		return false
 	else
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
@@ -508,13 +490,14 @@ function mod.updateEffectsList()
 		config.set(currentLanguage .. ".effectsListUpdated", true)
 		audioaction.reset()
 		videoaction.reset()
+		return true
 	end
 
 end
 
-function mod.isEffectsListUpdated()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -548,14 +531,14 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Effects Shortcuts:
 		--------------------------------------------------------------------------------
-		local effectsListUpdated 	= mod.isEffectsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local effectsShortcuts		= mod.getShortcuts()
 
 		local items = {}
 
 		for i = 1,MAX_SHORTCUTS do
 			local shortcutName = effectsShortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("effectShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignEffectsShortcut(i) end,	disabled = not effectsListUpdated }
+			items[i] = { title = i18n("effectShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignEffectsShortcut(i) end,	disabled = not listUpdated }
 		end
 
 		return items

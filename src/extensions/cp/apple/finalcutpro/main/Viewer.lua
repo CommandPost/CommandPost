@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("viewer")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
+local prop								= require("cp.prop")
 local axutils							= require("cp.apple.finalcutpro.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -42,40 +43,17 @@ end
 
 -- TODO: Add documentation
 function Viewer:new(app, eventViewer)
-	o = {
+	local o = {
 		_app = app,
 		_eventViewer = eventViewer
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+
+	return prop.extend(o, Viewer)
 end
 
 -- TODO: Add documentation
 function Viewer:app()
 	return self._app
-end
-
--- TODO: Add documentation
-function Viewer:isEventViewer()
-	return self._eventViewer
-end
-
--- TODO: Add documentation
-function Viewer:isMainViewer()
-	return not self._eventViewer
-end
-
--- TODO: Add documentation
-function Viewer:isOnSecondary()
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end
-
--- TODO: Add documentation
-function Viewer:isOnPrimary()
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
 end
 
 -----------------------------------------------------------------------
@@ -163,9 +141,31 @@ function Viewer:findEventViewerUI(...)
 end
 
 -- TODO: Add documentation
-function Viewer:isShowing()
+Viewer.isEventViewer = prop.new(function(self)
+	return self._eventViewer
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isMainViewer = prop.new(function(self)
+	return not self._eventViewer
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isOnSecondary = prop.new(function(self)
+	local ui = self:UI()
+	return ui and SecondaryWindow.matches(ui:window())
+end)
+
+-- TODO: Add documentation
+Viewer.isOnPrimary = prop.new(function(self)
+	local ui = self:UI()
+	return ui and PrimaryWindow.matches(ui:window())
+end):bind(Viewer)
+
+-- TODO: Add documentation
+Viewer.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(Viewer)
 
 -- TODO: Add documentation
 function Viewer:showOnPrimary()

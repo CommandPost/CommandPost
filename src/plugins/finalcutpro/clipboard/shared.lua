@@ -50,24 +50,7 @@ mod.log						= log
 --------------------------------------------------------------------------------
 -- IS ENABLED:
 --------------------------------------------------------------------------------
-function mod.isEnabled()
-	return config.get("enableSharedClipboard", false)
-end
-
---------------------------------------------------------------------------------
--- SET ENABLED:
---------------------------------------------------------------------------------
-function mod.setEnabled(value)
-	config.set("enableSharedClipboard", value)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE ENABLED:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+mod.enabled = config.prop("enabledShardClipboard", false)
 
 --------------------------------------------------------------------------------
 -- GET ROOT PATH:
@@ -131,14 +114,14 @@ end
 -- UPDATE:
 --------------------------------------------------------------------------------
 function mod.update()
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if not mod.validRootPath() then
 			-- Assign a new root path:
 			local result = dialog.displayChooseFolder(i18n("sharedClipboardRootFolder"))
 			if result then
 				mod.setRootPath(result)
 			else
-				mod.setEnabled(false)
+				mod.enabled(false)
 			end
 		end
 		if mod.validRootPath() and not mod._watcherId then
@@ -147,7 +130,7 @@ function mod.update()
 			})
 		end
 	end
-	if not mod.isEnabled() then
+	if not mod.enabled() then
 		if mod._watcherId then
 			mod._manager.unwatch(mod._watcherId)
 			mod._watcherId = nil
@@ -316,7 +299,7 @@ function mod.init(manager)
 	mod._manager = manager
 
 	local setEnabledValue = false
-	if mod.isEnabled() then
+	if mod.enabled() then
 		if not mod.validRootPath() then
 			local result = dialog.displayMessage(i18n("sharedClipboardPathMissing"), {"Yes", "No"})
 			if result == "Yes" then
@@ -327,7 +310,8 @@ function mod.init(manager)
 		end
 	end
 
-	mod.setEnabled(setEnabledValue)
+	mod.enabled(setEnabledValue)
+	mod.enabled:watch(mod.update)
 
 	return self
 end
@@ -337,7 +321,7 @@ end
 --------------------------------------------------------------------------------
 function mod.generateSharedClipboardMenu()
 	local folderItems = {}
-	if mod.isEnabled() and mod.validRootPath() then
+	if mod.enabled() and mod.validRootPath() then
 		local fcpxRunning = fcp:isRunning()
 
 		local sharedClipboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
@@ -426,7 +410,7 @@ function plugin.init(deps)
 	local menu = deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
 
 	:addItem(1000, function()
-		return { title = i18n("enableSharedClipboard"),	fn = mod.toggleEnabled, checked = mod.isEnabled() and mod.validRootPath() }
+		return { title = i18n("enableSharedClipboard"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
 	end)
 
 	:addSeparator(2000)

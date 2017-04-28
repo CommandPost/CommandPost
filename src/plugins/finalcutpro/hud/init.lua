@@ -79,31 +79,10 @@ hud.fcpRed 										= "#d1393e"
 hud.maxButtons									= 4
 hud.maxTextLength 								= 25
 
---- plugins.finalcutpro.hud.getPosition() -> table
---- Function
+--- plugins.finalcutpro.hud.position <cp.prop: table>
+--- Constant
 --- Returns the last HUD frame saved in settings.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The last HUD frame or {}.
-function hud.getPosition()
-	return config.get(PREFERENCES_KEY_POSITION, {})
-end
-
---- plugins.finalcutpro.hud.setPosition() -> none
---- Function
---- Saves the HUD position to settings.
----
---- Parameters:
----  * value - Position as table
----
---- Returns:
----  * None
-function hud.setPosition(value)
-	config.set(PREFERENCES_KEY_POSITION, value)
-end
+hud.position = config.prop(PREFERENCES_KEY_POSITION, {})
 
 --------------------------------------------------------------------------------
 -- GET HUD HEIGHT:
@@ -112,9 +91,9 @@ local function getHUDHeight()
 
 	local hudHeight = nil
 
-	local hudShowInspector 		= hud.isInspectorShown()
-	local hudShowDropTargets 	= hud.isDropTargetsShown()
-	local hudShowButtons 		= hud.isButtonsShown()
+	local hudShowInspector 		= hud.inspectorShown()
+	local hudShowDropTargets 	= hud.isDropTargetsAvailable()
+	local hudShowButtons 		= hud.buttonsShown()
 
 	local hudHeight = 0
 	if hudShowInspector then hudHeight = hudHeight + hud.heightInspector end
@@ -141,7 +120,7 @@ local function getHUDRect()
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.width/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.width, h = hudHeight}
-	local hudPosition = hud.getPosition()
+	local hudPosition = hud.position()
 	if next(hudPosition) ~= nil then
 		defaultHUDRect = {x = hudPosition["x"], y = hudPosition["y"], w = hud.width, h = hudHeight}
 	end
@@ -156,12 +135,12 @@ end
 local function windowCallback(action, webview, frame)
 	if action == "closing" then
 		if not hs.shuttingDown then
-			hud.setEnabled(false)
+			hud.enabled(false)
 			hud.webview = nil
 		end
 	elseif action == "frameChange" then
 		if frame then
-			hud.setPosition(frame)
+			hud.position(frame)
 		end
 	end
 end
@@ -206,6 +185,136 @@ function hud.new()
 
 end
 
+--------------------------------------------------------------------------------
+-- DISPLAY DIV VALUE:
+--------------------------------------------------------------------------------
+local function displayDiv(value)
+	if value then
+		return "block"
+	else
+		return "none"
+	end
+end
+
+--------------------------------------------------------------------------------
+-- SET UP TEMPLATE ENVIRONMENT:
+--------------------------------------------------------------------------------
+local function getEnv()
+	--------------------------------------------------------------------------------
+	-- Set up the template environment
+	--------------------------------------------------------------------------------
+	local env 		= {}
+
+	env.i18n		= i18n
+	env.hud			= hud
+	env.displayDiv	= displayDiv
+
+	env.debugMode	= config.get("debugMode", false)
+
+	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
+
+	if playerQuality == PROXY then
+		env.media 	= {
+			text	= i18n("proxy"),
+			class	= "bad",
+		}
+	else
+		env.media	= {
+			text	= i18n("originalOptimised"),
+			class	= "good",
+		}
+	end
+
+	if playerQuality == ORIGINAL_QUALITY then
+		env.quality	= {
+			text	= i18n("betterQuality"),
+			class	= "good",
+		}
+	else
+		env.quality	= {
+			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
+			class	= "bad",
+		}
+	end
+
+	local backgroundRender	= fcp:getPreference("FFAutoStartBGRender", true)
+
+	if backgroundRender then
+		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
+		env.backgroundRender	= {
+			text	= string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
+			class	= "good",
+		}
+	else
+		env.backgroundRender	= {
+			text	= i18n("disabled"),
+			class	= "bad",
+		}
+	end
+
+	env.hudInspector 		= displayDiv( hud.inspectorShown() )
+	env.hr1 				= displayDiv( hud.inspectorShown() and (hud.isDropTargetsAvailable() or hud.buttonsShown()) )
+	env.hudDropTargets		= displayDiv( hud.isDropTargetsAvailable() )
+	env.hr2					= displayDiv( (hud.isDropTargetsAvailable() and hud.buttonsShown()) )
+	env.hudButtons			= displayDiv( hud.buttonsShown() )
+
+	return env
+end
+
+--- plugins.finalcutpro.hud.refresh() -> none
+--- Function
+--- Refresh the HUD's content.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function hud.refresh()
+
+	--------------------------------------------------------------------------------
+	-- Update HUD Content:
+	--------------------------------------------------------------------------------
+	if hud.webview then
+		local env = getEnv()
+		local javascriptToInject = [[
+			document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
+			document.getElementById('media').className = "]] .. env.media.class .. [[";
+
+			document.getElementById('quality').innerHTML = "]] .. env.quality.text .. [[";
+			document.getElementById('quality').className = "]] .. env.quality.class .. [[";
+
+			document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
+			document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
+
+			document.getElementById('button1').innerHTML = "]] .. hud.getButtonText(1) .. [[";
+			document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
+			document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
+			document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
+
+			document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
+			document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
+			document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
+			document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
+
+			document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
+			document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
+			document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
+			document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
+			document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
+		]]
+		hud.webview:evaluateJavaScript(javascriptToInject)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Resize the HUD:
+	--------------------------------------------------------------------------------
+	if hud.visible() then
+		hud.webview:hswindow():setSize(geometry.size(hud.width, getHUDHeight()))
+	end
+
+end
+
 --- plugins.finalcutpro.hud.delete()
 --- Function
 --- Deletes the existing HUD if it exists
@@ -222,197 +331,25 @@ function hud.delete()
 	end
 end
 
---- plugins.finalcutpro.hud.isEnabled() -> boolean
---- Function
+--- plugins.finalcutpro.hud.enabled <cp.prop: boolean>
+--- Field
 --- Is the HUD enabled in the settings?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled otherwise false
-function hud.isEnabled()
-	return config.get(PREFERENCES_KEY, false)
-end
+hud.enabled = config.prop(PREFERENCES_KEY, false)
 
---- plugins.finalcutpro.hud.setEnabled() -> none
---- Function
---- Sets whether or not the HUD is enabled.
----
---- Parameters:
----  * value - `true` if HUD should be enabled otherwise `false`
----
---- Returns:
----  * `true` if enabled otherwise false
-function hud.setEnabled(value)
-	config.set(PREFERENCES_KEY, value)
-end
-
---- plugins.finalcutpro.hud.toggleEnabled() -> none
---- Function
---- Toggles the HUD
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.toggleEnabled()
-
-	local hudEnabled = hud.isEnabled()
-	hud.setEnabled(not hudEnabled)
-
-	if hudEnabled then
-		hud.delete()
-	else
-		hud.new()
-		hud.updateVisibility()
-	end
-
-end
-
---
--- Check Options:
---
-local function checkOptions()
-	return hud.isInspectorShown() or hud.isDropTargetsShown() or hud.isButtonsShown()
-end
-
---- plugins.finalcutpro.hud.setOption() -> none
---- Function
---- Sets a HUD option
----
---- Parameters:
----  * name - The name of the option
----  * value - The value of the option
----
---- Returns:
----  * None
-function hud.setOption(name, value)
-	config.set(name, value)
-	if checkOptions() then
-		hud.refresh()
-	else
-		config.set(name, not value)
-	end
-end
-
---- plugins.finalcutpro.hud.isInspectorShown() -> boolean
---- Function
+--- plugins.finalcutpro.hud.inspectorShown <cp.prop: boolean>
+--- Field
 --- Should the Inspector in the HUD be shown?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` or `false`
-function hud.isInspectorShown()
-	return config.get("hudShowInspector", true)
-end
+hud.inspectorShown = config.prop("hudShowInspector", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.setInspectorShown() -> none
---- Function
---- Set whether or not the Inspector should be shown in the HUD.
----
---- Parameters:
----  * value - `true` or `false`
----
---- Returns:
----  * None
-function hud.setInspectorShown(value)
-	hud.setOption("hudShowInspector", value)
-end
+--- plugins.finalcutpro.hud.dropTargetsShown <cp.prop: boolean>
+--- Field
+--- Should Drop Targets in the HUD be enabled?
+hud.dropTargetsShown = config.prop("hudShowDropTargets", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.toggleInspectorShown() -> none
---- Function
---- Toggles whether or not the Inspector should be shown in the HUD.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.toggleInspectorShown()
-	hud.setInspectorShown(not hud.isInspectorShown())
-end
-
---- plugins.finalcutpro.hud.isDropTargetsShown() -> boolean
---- Function
---- Should Drop Targets in the HUD be shown?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` or `false`
-function hud.isDropTargetsShown()
-	return config.get("hudShowDropTargets", true) and hud.xmlSharing.isEnabled()
-end
-
---- plugins.finalcutpro.hud.setDropTargetsShown() -> none
---- Function
---- Set whether or not Drop Targets should be shown in the HUD.
----
---- Parameters:
----  * value - `true` or `false`
----
---- Returns:
----  * None
-function hud.setDropTargetsShown(value)
-	hud.setOption("hudShowDropTargets", value)
-end
-
---- plugins.finalcutpro.hud.toggleInspectorShown() -> none
---- Function
---- Toggles whether or not Drop Targets should be shown in the HUD.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.toggleDropTargetsShown()
-	hud.setDropTargetsShown(not hud.isDropTargetsShown())
-end
-
---- plugins.finalcutpro.hud.isButtonsShown() -> boolean
---- Function
+--- plugins.finalcutpro.hud.buttonsShown <cp.prop: boolean>
+--- Field
 --- Should Buttons in the HUD be shown?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` or `false`
-function hud.isButtonsShown()
-	return config.get("hudShowButtons", true)
-end
-
---- plugins.finalcutpro.hud.setButtonsShown() -> none
---- Function
---- Set whether or not Buttons should be shown in the HUD.
----
---- Parameters:
----  * value - `true` or `false`
----
---- Returns:
----  * None
-function hud.setButtonsShown(value)
-	hud.setOption("hudShowButtons", value)
-end
-
---- plugins.finalcutpro.hud.toggleInspectorShown() -> none
---- Function
---- Toggles whether or not Buttons should be shown in the HUD.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.toggleButtonsShown()
-	hud.setButtonsShown(not hud.isButtonsShown())
-end
+hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 
 --- plugins.finalcutpro.hud.getButton() -> string
 --- Function
@@ -507,7 +444,7 @@ end
 --- Returns:
 ---  * None
 function hud.updateVisibility()
-	if hud.isEnabled() then
+	if hud.enabled() then
 
 		local fcpRunning 	= fcp:isRunning()
 		local fcpFrontmost 	= fcp:isFrontmost()
@@ -518,9 +455,12 @@ function hud.updateVisibility()
 		if (fcpRunning and fcpFrontmost and not fullscreenWindowShowing and not commandEditorShowing) then
 			hud.show()
 		else
-			local frontmostWindowTitle = window.frontmostWindow():application():title()
-			if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "CommandPost" then
-				hud.hide()
+			local frontmostWindow = window.frontmostWindow()
+			if frontmostWindow then
+				local frontmostWindowTitle = frontmostWindow:application():title()
+				if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "Error Log" then
+					hud.hide()
+				end
 			end
 		end
 	end
@@ -573,136 +513,6 @@ function hud.visible()
 	return false
 end
 
---------------------------------------------------------------------------------
--- DISPLAY DIV VALUE:
---------------------------------------------------------------------------------
-local function displayDiv(value)
-	if value then
-		return "block"
-	else
-		return "none"
-	end
-end
-
---------------------------------------------------------------------------------
--- SET UP TEMPLATE ENVIRONMENT:
---------------------------------------------------------------------------------
-local function getEnv()
-	--------------------------------------------------------------------------------
-	-- Set up the template environment
-	--------------------------------------------------------------------------------
-	local env 		= {}
-
-	env.i18n		= i18n
-	env.hud			= hud
-	env.displayDiv	= displayDiv
-
-	env.debugMode	= config.get("debugMode", false)
-
-	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
-
-	if playerQuality == PROXY then
-		env.media 	= {
-			text	= i18n("proxy"),
-			class	= "bad",
-		}
-	else
-		env.media	= {
-			text	= i18n("originalOptimised"),
-			class	= "good",
-		}
-	end
-
-	if playerQuality == ORIGINAL_QUALITY then
-		env.quality	= {
-			text	= i18n("betterQuality"),
-			class	= "good",
-		}
-	else
-		env.quality	= {
-			text	= playerQuality == ORIGINAL_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
-			class	= "bad",
-		}
-	end
-
-	local autoStartBGRender	= fcp:getPreference("FFAutoStartBGRender", true)
-
-	if autoStartBGRender then
-		local autoRenderDelay 	= tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
-		env.backgroundRender	= {
-			text	= string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
-			class	= "good",
-		}
-	else
-		env.backgroundRender	= {
-			text	= i18n("disabled"),
-			class	= "bad",
-		}
-	end
-
-	env.hudInspector 		= displayDiv( hud.isInspectorShown() )
-	env.hr1 				= displayDiv( hud.isInspectorShown() and (hud.isDropTargetsShown() or hud.isButtonsShown()) )
-	env.hudDropTargets		= displayDiv( hud.isDropTargetsShown() )
-	env.hr2					= displayDiv( (hud.isDropTargetsShown() and hud.isButtonsShown()) )
-	env.hudButtons			= displayDiv( hud.isButtonsShown() )
-
-	return env
-end
-
---- plugins.finalcutpro.hud.refresh() -> none
---- Function
---- Refresh the HUD's content.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.refresh()
-
-	--------------------------------------------------------------------------------
-	-- Update HUD Content:
-	--------------------------------------------------------------------------------
-	if hud.webview then
-		local env = getEnv()
-		local javascriptToInject = [[
-			document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
-			document.getElementById('media').className = "]] .. env.media.class .. [[";
-
-			document.getElementById('quality').innerHTML = "]] .. env.quality.text .. [[";
-			document.getElementById('quality').className = "]] .. env.quality.class .. [[";
-
-			document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
-			document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
-
-			document.getElementById('button1').innerHTML = "]] .. hud.getButtonText(1) .. [[";
-			document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
-			document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
-			document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
-
-			document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
-			document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
-			document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
-			document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
-
-			document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
-			document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
-			document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
-			document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
-			document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
-		]]
-		hud.webview:evaluateJavaScript(javascriptToInject)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Resize the HUD:
-	--------------------------------------------------------------------------------
-	if hud.visible() then
-		hud.webview:hswindow():setSize(geometry.size(hud.width, getHUDHeight()))
-	end
-
-end
-
 --- plugins.finalcutpro.hud.assignButton() -> none
 --- Function
 --- Assigns a HUD button.
@@ -745,7 +555,7 @@ function hud.assignButton(button)
 		--------------------------------------------------------------------------------
 		-- Refresh HUD:
 		--------------------------------------------------------------------------------
-		if hud.isEnabled() then
+		if hud.enabled() then
 			hud.refresh()
 		end
 	end
@@ -813,6 +623,15 @@ function hud.javaScriptCallback(message)
 	end
 end
 
+function hud.update()
+	if hud.enabled() then
+		hud.new()
+		hud.updateVisibility()
+	else
+		hud.delete()
+	end
+end
+
 --- plugins.finalcutpro.hud.init() -> none
 --- Function
 --- Initialise HUD Module.
@@ -826,6 +645,12 @@ function hud.init(xmlSharing, actionmanager, env)
 	hud.xmlSharing		= xmlSharing
 	hud.actionmanager	= actionmanager
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
+	
+	-- Set up checking for XML Sharing
+	xmlSharing.enabled:watch(hud.refresh)
+	hud.isDropTargetsAvailable = hud.dropTargetsShown:AND(xmlSharing.enabled)
+	
+	hud.enabled:watch(hud.update)
 	return hud
 end
 
@@ -874,25 +699,20 @@ function plugin.init(deps, env)
 		hide		= hud.updateVisibility,
 	})
 
-	hud.xmlSharing:watch({
-		enable		= hud.updateVisibility,
-		disable		= hud.updateVisibility,
-	})
-
 	--------------------------------------------------------------------------------
 	-- Menus:
 	--------------------------------------------------------------------------------
 	local hudMenu = deps.menu:addMenu(PRIORITY, function() return i18n("hud") end)
 	hudMenu:addItem(1000, function()
-			return { title = i18n("enableHUD"),	fn = hud.toggleEnabled,		checked = hud.isEnabled()}
+			return { title = i18n("enableHUD"),	fn = function() hud.enabled:toggle() end,		checked = hud.enabled()}
 		end)
 	hudMenu:addSeparator(2000)
 	hudMenu:addMenu(3000, function() return i18n("hudOptions") end)
 		:addItems(1000, function()
 			return {
-				{ title = i18n("showInspector"),	fn = hud.toggleInspectorShown,		checked = hud.isInspectorShown()},
-				{ title = i18n("showDropTargets"),	fn = hud.toggleDropTargetsShown, 	checked = hud.isDropTargetsShown(),	disabled = not hud.xmlSharing.isEnabled()},
-				{ title = i18n("showButtons"),		fn = hud.toggleButtonsShown, 		checked = hud.isButtonsShown()},
+				{ title = i18n("showInspector"),	fn = function() hud.inspectorShown:toggle() end,		checked = hud.inspectorShown()},
+				{ title = i18n("showDropTargets"),	fn = function() hud.dropTargetsShown:toggle() end, 	checked = hud.isDropTargetsAvailable(),	disabled = not hud.xmlSharing.enabled()},
+				{ title = i18n("showButtons"),		fn = function() hud.buttonsShown:toggle() end, 		checked = hud.buttonsShown()},
 			}
 		end)
 
@@ -912,7 +732,7 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpHUD")
 		:activatedBy():ctrl():option():cmd("a")
-		:whenActivated(hud.toggleEnabled)
+		:whenActivated(function() hud.enabled:toggle() end)
 
 	return hud
 end
@@ -921,12 +741,7 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
-
-	if hud.isEnabled() then
-		hud.new()
-		hud.updateVisibility()
-	end
-
+	hud.update()
 end
 
 return plugin

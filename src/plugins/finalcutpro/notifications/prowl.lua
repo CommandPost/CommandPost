@@ -57,41 +57,24 @@ function prowlAPIKeyValid(input)
 	return result, errorMessage
 end
 
-function mod.isEnabled()
-	return config.get("prowlNotificationsEnabled", false)
-end
+mod.enabled = config.prop("prowlNotificationsEnabled", false):watch(function() mod.update(true) end)
 
-function mod.setEnabled(value)
-	config.set("prowlNotificationsEnabled", value)
-	mod.update(true)
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
-function mod.getAPIKey()
-	return config.get("prowlAPIKey", nil)
-end
-
-function mod.setAPIKey(value)
-	config.set("prowlAPIKey", value)
-end
+mod.apiKey = config.prop("prowlAPIKey", nil)
 
 local function requestProwlAPIKey()
 	local returnToFinalCutPro = fcp:isFrontmost()
 
 	-- Request the API Key from the user
-	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.getAPIKey())
+	local result = dialog.displayTextBoxMessage(i18n("prowlTextbox"), i18n("prowlTextboxError") .. "\n\n" .. i18n("pleaseTryAgain"), mod.apiKey())
 	if result == false then
-		mod.setEnabled(false)
+		mod.enabled(false)
 		return
 	end
 
 	-- Check the key is valid
 	local valid, err = prowlAPIKeyValid(result)
 	if valid then
-		mod.setAPIKey(result)
+		mod.apiKey(result)
 		if returnToFinalCutPro then fcp:launch() end
 	else
 		-- Try again
@@ -101,8 +84,8 @@ local function requestProwlAPIKey()
 end
 
 function mod.update(changed)
-	if mod.isEnabled() then
-		if changed or mod.getAPIKey() == nil then
+	if mod.enabled() then
+		if changed or mod.apiKey() == nil then
 			requestProwlAPIKey()
 		end
 
@@ -126,7 +109,7 @@ function mod.init(notifications)
 end
 
 function mod.sendNotification(message)
-	local prowlAPIKey = config.get("prowlAPIKey", nil)
+	local prowlAPIKey = mod.apiKey()
 	if prowlAPIKey ~= nil then
 		local prowlApplication = http.encodeForQuery("FINAL CUT PRO")
 		local prowlEvent = http.encodeForQuery("")
@@ -167,7 +150,7 @@ function plugin.init(deps)
 	-- Menu Item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("prowl"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+		return { title = i18n("prowl"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
 	end)
 
 	return mod

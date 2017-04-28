@@ -102,6 +102,7 @@ function manager.enable()
 	end
 end
 
+
 --- plugins.core.menu.manager.updateMenubarIcon(priority) -> none
 --- Function
 --- Updates the Menubar Icon
@@ -112,8 +113,11 @@ end
 --- Returns:
 ---  * None
 function manager.updateMenubarIcon()
-
-	local displayMenubarAsIcon = config.get("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON)
+	if not manager.menubar then
+		return
+	end
+		
+	local displayMenubarAsIcon = manager.displayMenubarAsIcon()
 
 	local title = config.appName
 	local icon = nil
@@ -145,6 +149,12 @@ function manager.updateMenubarIcon()
 
 end
 
+--- plugins.core.menu.manager.displayMenubarAsIcon <cp.prop: boolean>
+--- Field
+--- If `true`, the menubar item will be the app icon. If not, it will be the app name.
+manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(manager.updateMenubarIcon)
+
+
 --- plugins.core.menu.manager.addSection(priority) -> section
 --- Function
 --- Creates a new menu section, which can have items and sub-menus added to it.
@@ -170,7 +180,7 @@ end
 function manager.addTitleSuffix(fnTitleSuffix)
 
 	manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
-
+	manager.updateMenubarIcon()
 end
 
 --- plugins.core.menu.manager.generateMenuTable()
@@ -198,7 +208,6 @@ local plugin = {
 	dependencies	= {
 		["core.welcome.manager"] 			= "welcome",
 	}
-
 }
 
 --------------------------------------------------------------------------------
@@ -219,7 +228,7 @@ function plugin.init(deps, env)
 	welcome.disableInterfaceCallback:new("menumanager", function()
 		manager.disable()
 	end)
-
+	
 	return manager
 end
 

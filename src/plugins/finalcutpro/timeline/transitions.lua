@@ -26,6 +26,7 @@ local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -53,18 +54,7 @@ function action.id()
 	return "transition"
 end
 
-function action.setEnabled(value)
-	config.set(action.id().."ActionEnabled", value)
-	action._manager.refresh()
-end
-
-function action.isEnabled()
-	return config.get(action.id().."ActionEnabled", true)
-end
-
-function action.toggleEnabled()
-	action.setEnabled(not action.isEnabled())
-end
+action.enabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then
@@ -136,7 +126,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noTransitionShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -193,7 +183,7 @@ function mod.apply(shortcut)
 			matches = transitions:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in transitionsShortcut().")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -216,6 +206,8 @@ function mod.apply(shortcut)
 		if not transitionsShowing then transitions:hide() end
 	end)
 
+	-- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -232,13 +224,13 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local transitionsListUpdated 	= mod.isTransitionsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allTransitions 			= mod.getTransitions()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not transitionsListUpdated
+	if not listUpdated
 	   or allTransitions == nil
 	   or next(allTransitions) == nil then
 		dialog.displayMessage(i18n("assignTransitionsShortcutError"))
@@ -328,7 +320,7 @@ function mod.updateTransitionsList()
 	local transitionsShowing = transitions:isShowing()
 	if not transitions:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	local transitionsLayout = transitions:saveLayout()
@@ -352,7 +344,7 @@ function mod.updateTransitionsList()
 
 	if not sidebar:isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -366,7 +358,7 @@ function mod.updateTransitionsList()
 	local allTransitions = transitions:getCurrentTitles()
 	if allTransitions == nil then
 		dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -383,11 +375,14 @@ function mod.updateTransitionsList()
 	config.set(currentLanguage .. ".allTransitions", allTransitions)
 	config.set(currentLanguage .. ".transitionsListUpdated", true)
 	action.reset()
+	
+	-- Success!
+	return true
 end
 
-function mod.isTransitionsListUpdated()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -422,7 +417,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isTransitionsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}

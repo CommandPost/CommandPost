@@ -55,6 +55,16 @@ mod.defaultHeight 							= 470
 mod.defaultTitle 							= i18n("welcomeTitle")
 mod._panels									= {}
 
+--- plugins.core.welcome.manager.welcomeComplete <cp.prop: boolean>
+--- Constant
+--- If true, the Welcome window is complete.
+mod.welcomeComplete	= config.prop("welcomeComplete", false):watch(function(value)
+	if not value then
+		mod.delete()
+		mod.setupUserInterface(false)	
+	end
+end)
+
 --------------------------------------------------------------------------------
 --
 -- ENABLE INTERFACE CALLBACK:
@@ -84,7 +94,7 @@ function enableInterfaceCallback:new(id, callbackFn)
 	if enableInterfaceCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}
@@ -177,7 +187,7 @@ function disableInterfaceCallback:new(id, callbackFn)
 	if disableInterfaceCallback._items[id] ~= nil then
 		error("Duplicate Shutdown Callback: " .. id)
 	end
-	o = {
+	local o = {
 		_id = id,
 		_callbackFn = callbackFn,
 	}

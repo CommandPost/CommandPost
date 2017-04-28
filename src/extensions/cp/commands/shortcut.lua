@@ -63,7 +63,7 @@ end
 --- Returns:
 ---  * shortcut - The shortcut that was created.
 function shortcut:new(modifiers, keyCode)
-	o = {
+	local o = {
 		_modifiers = modifiers or {},
 		_keyCode = keyCode,
 	}
@@ -230,7 +230,7 @@ end
 --- Returns:
 ---  * None
 function builder:new(receiverFn)
-	o = {
+	local o = {
 		_receiver	= receiverFn,
 		_modifiers 	= modifiers or {},
 	}

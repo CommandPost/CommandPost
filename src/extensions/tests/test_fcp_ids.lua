@@ -298,8 +298,8 @@ local function run()
 		-- Show the import preferences panel
 		panel:show()
 		ok(panel:isShowing())
-		ok(panel:createOptimizedMediaForMulticamClips():isShowing())
-		ok(panel:autoStartBGRender():isShowing())
+		ok(panel:createMulticamOptimizedMedia():isShowing())
+		ok(panel:backgroundRender():isShowing())
 		
 		panel:hide()
 		ok(not panel:isShowing())

@@ -39,21 +39,10 @@ function mod.id()
 	return ID
 end
 
--- TODO: Add documentation
-function mod.setEnabled(value)
-	config.set("commandActionEnabled", value)
-	mod._manager.refresh()
-end
-
--- TODO: Add documentation
-function mod.isEnabled()
-	return config.get("commandActionEnabled", true)
-end
-
--- TODO: Add documentation
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
+--- plugins.core.commands.commandaction.enabled <cp.prop: boolean>
+--- Field
+--- This will be `true` when the command actions are enabled.
+mod.enabled = config.prop("commandActionEnabled", true)
 
 --- plugins.core.commands.commandaction.choices() -> table
 --- Function

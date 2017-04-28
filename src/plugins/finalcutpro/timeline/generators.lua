@@ -26,6 +26,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -53,18 +54,7 @@ function action.id()
 	return "generator"
 end
 
-function action.setEnabled(value)
-	config.set(action.id().."ActionEnabled", value)
-	action._manager.refresh()
-end
-
-function action.isEnabled()
-	return config.get(action.id().."ActionEnabled", true)
-end
-
-function action.toggleEnabled()
-	action.setEnabled(not action.isEnabled())
-end
+action.enabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then
@@ -140,7 +130,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noGeneratorShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -208,7 +198,7 @@ function mod.apply(shortcut)
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in generators.apply(...).")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -231,6 +221,8 @@ function mod.apply(shortcut)
 		if not generatorsShowing then generators:hide() end
 	end)
 
+	-- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -247,13 +239,13 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local generatorsListUpdated 	= mod.isGeneratorsListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allGenerators 			= mod.getGenerators()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not generatorsListUpdated
+	if not listUpdated
 	   or allGenerators == nil
 	   or next(allGenerators) == nil then
 		dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
@@ -336,7 +328,7 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	if not generators:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Generators and Generators panel.\n\nError occurred in updateGeneratorsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -365,7 +357,7 @@ function mod.updateGeneratorsList()
 		end
 	else
 		dialog.displayErrorMessage("Unable to get list of all generators.\n\nError occurred in updateGeneratorsList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -380,11 +372,14 @@ function mod.updateGeneratorsList()
 	config.set(currentLanguage .. ".allGenerators", allGenerators)
 	config.set(currentLanguage .. ".generatorsListUpdated", true)
 	action.reset()
+	
+	-- Success!
+	return true
 end
 
-function mod.isGeneratorsListUpdated()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -415,7 +410,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isGeneratorsListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}
