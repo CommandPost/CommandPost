@@ -34,7 +34,7 @@ end
 --- Function
 --- Creates a new Button
 function Button:new(parent, finderFn)
-	o = {_parent = parent, _finder = finderFn}
+	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
 	return o

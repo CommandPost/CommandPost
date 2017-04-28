@@ -32,17 +32,7 @@ local SETTING 					= "menubarAdministratorEnabled"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local function isSectionEnabled()
-	return config.get(SETTING, true)
-end
-
-local function setSectionEnabled(value)
-	config.set(SETTING, value)
-end
-
-local function toggleSectionEnabled()
-	setSectionEnabled(not isSectionEnabled())
-end
+local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
 --
@@ -72,7 +62,7 @@ function plugin.init(dependencies)
 	-- Disable the section if the Administrator option is disabled
 	--------------------------------------------------------------------------------
 	shortcuts:setDisabledFn(function()
-		return not fcp:isInstalled() or not isSectionEnabled()
+		return not fcp:isInstalled() or not sectionEnabled()
 	end)
 
 	--------------------------------------------------------------------------------
@@ -86,14 +76,14 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add to General Preferences Panel:
 	--------------------------------------------------------------------------------
-	dependencies.prefs:addCheckbox(PREFERENCES_PRIORITY,
+	local prefs = dependencies.prefs
+	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
 			label = i18n("showAdminTools"),
 			onchange = function(id, params)
-				log.df("params: %s", hs.inspect(params))
-				setSectionEnabled(params.checked)
+				sectionEnabled(params.checked)
 			end,
-			checked = isSectionEnabled,
+			checked = sectionEnabled,
 		}
 	)
 

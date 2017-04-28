@@ -34,51 +34,23 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.isEnabled()
-	return config.get("iMessageNotificationsEnabled", false)
-end
-
-function mod.setEnabled(value)
-	config.set("iMessageNotificationsEnabled", value)
-	mod.update(true)
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
-function mod.getTarget()
-	return config.get("iMessageTarget", nil)
-end
-
-function mod.setTarget(value)
-	config.set("iMessageTarget", value)
-end
-
-function mod.sendNotification(message)
-	local iMessageTarget = mod.getTarget()
-	if iMessageTarget then
-		messages.iMessage(iMessageTarget, message)
-	end
-end
-
 local function requestTarget()
-	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.getTarget())
+	local result = dialog.displayTextBoxMessage(i18n("iMessageTextBox"), i18n("pleaseTryAgain"), mod.target())
 	if result == false then
-		mod.setEnabled(false)
+		mod.enabled(false)
 		return
 	else
-		mod.setTarget(result)
+		mod.target(result)
 	end
 end
 
 function mod.update(changed)
-	if mod.isEnabled() then
-		if changed or mod.getTarget() == nil then
+	if mod.enabled() then
+		if changed or mod.target() == nil then
 			requestTarget()
 		end
 
-		if mod.getTarget() ~= nil and mod.watchId == nil then
+		if mod.target() ~= nil and mod.watchId == nil then
 			mod.watchId = mod.notifications.watch({
 				success	= mod.sendNotification,
 				failure = mod.sendNotification,
@@ -89,6 +61,17 @@ function mod.update(changed)
 			mod.notifications.unwatch(mod.watchId)
 			mod.watchId = nil
 		end
+	end
+end
+
+mod.enabled = config.prop("iMessageNotificationsEnabled", false):watch(function() mod.update(true) end)
+
+mod.target = config.prop("iMessageTarget")
+
+function mod.sendNotification(message)
+	local iMessageTarget = mod.target()
+	if iMessageTarget then
+		messages.iMessage(iMessageTarget, message)
 	end
 end
 
@@ -121,7 +104,7 @@ function plugin.init(deps)
 	-- Menu Item:
 	--------------------------------------------------------------------------------
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("iMessage"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+		return { title = i18n("iMessage"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
 	end)
 
 

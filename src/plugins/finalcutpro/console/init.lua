@@ -26,6 +26,7 @@ local ax 				= require("hs._asm.axuielement")
 
 local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
+local prop				= require("cp.prop")
 
 local log				= require("hs.logger").new("console")
 
@@ -48,41 +49,15 @@ mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
 mod.activeChooser		= nil		-- the currently-visible chooser.
 mod.active 				= false		-- is the Hacks Console Active?
 
-function mod.isEnabled()
-	return config.get("consoleEnabled", true)
-end
+mod.enabled = config.prop("consoleEnabled", true)
 
-function mod.setEnabled(value)
-	config.set("consoleEnabled", value)
-end
-
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
-function mod.isReducedTransparency()
+mod.reducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
-end
+end)
 
-function mod.isLastQueryRemembered()
-	return config.get("consoleLastQueryRemembered", true)
-end
+mod.lastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
 
-function mod.setLastQueryRemembered(value)
-	config.set("consoleLastQueryRemembered", value)
-end
-
-function mod.toggleLastQueryRemembered()
-	mod.setLastQueryRemembered(not mod.isLastQueryRemembered())
-end
-
-function mod.getLastQueryValue()
-	return config.get("consoleLastQueryValue", "")
-end
-
-function mod.setLastQueryValue(value)
-	config.set("consoleLastQueryValue", value)
-end
+mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 
 --------------------------------------------------------------------------------
 -- LOAD CONSOLE:
@@ -103,7 +78,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
-	mod.lastReducedTransparency = mod.isReducedTransparency()
+	mod.lastReducedTransparency = mod.reducedTransparency()
 	if mod.lastReducedTransparency then
 		mod.mainChooser:fgColor(nil)
 								 :subTextColor(nil)
@@ -123,7 +98,7 @@ function mod.new()
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
 	--------------------------------------------------------------------------------
-	mod.lastReducedTransparency = mod.isReducedTransparency()
+	mod.lastReducedTransparency = mod.reducedTransparency()
 	if mod.lastReducedTransparency then
 		mod.hiderChooser:fgColor(nil)
 								 :subTextColor(nil)
@@ -160,7 +135,7 @@ function mod.refresh()
 end
 
 function mod.checkReducedTransparency()
-	if mod.lastReducedTransparency ~= mod.isReducedTransparency() then
+	if mod.lastReducedTransparency ~= mod.reducedTransparency() then
 		mod.new()
 	end
 end
@@ -177,7 +152,7 @@ function mod.showHider()
 end
 
 function mod.showChooser(chooser)
-	if not mod.isEnabled() then
+	if not mod.enabled() then
 		return false
 	end
 
@@ -195,11 +170,11 @@ function mod.showChooser(chooser)
 	--------------------------------------------------------------------------------
 	-- Remember last query?
 	--------------------------------------------------------------------------------
-	local chooserRememberLast = mod.isLastQueryRemembered()
+	local chooserRememberLast = mod.lastQueryRemembered()
 	if not chooserRememberLast then
 		chooser:query("")
 	else
-		chooser:query(mod.getLastQueryValue())
+		chooser:query(mod.lastQueryValue())
 	end
 
 	--------------------------------------------------------------------------------
@@ -237,7 +212,7 @@ function mod.hide()
 		--------------------------------------------------------------------------------
 		-- Save Last Query to Settings:
 		--------------------------------------------------------------------------------
-		mod.setLastQueryValue(chooser:query())
+		mod.lastQueryValue:set(chooser:query())
 
 		if mod._frontApp then
 			mod._frontApp:activate()
@@ -346,14 +321,14 @@ function plugin.init(deps)
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
 
 	menu:addItem(1000, function()
-		return { title = i18n("enableConsole"),	fn = mod.toggleEnabled, checked = mod.isEnabled() }
+		return { title = i18n("enableConsole"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 	end)
 
 	menu:addSeparator(2000)
 
 	menu:addItems(3000, function()
 		return {
-			{ title = i18n("rememberLastQuery"),	fn=mod.toggleLastQueryRemembered, checked = mod.isLastQueryRemembered(),  },
+			{ title = i18n("rememberLastQuery"),	fn=function() mod.lastQueryRemembered:toggle() end, checked = mod.lastQueryRemembered(),  },
 			{ title = "-" },
 			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}
@@ -368,12 +343,12 @@ function plugin.init(deps)
 		local allDisabled = true
 
 		for id,action in pairs(deps.actionmanager.getActions()) do
-			local enabled = action.isEnabled()
+			local enabled = action.enabled()
 			allEnabled = allEnabled and enabled
 			allDisabled = allDisabled and not enabled
 			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,
 				fn=function()
-					action.toggleEnabled()
+					action.enabled:toggle()
 					deps.actionmanager.refresh()
 				end,
 				checked = enabled, }

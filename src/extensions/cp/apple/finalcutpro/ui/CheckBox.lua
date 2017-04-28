@@ -31,7 +31,7 @@ end
 --- Function
 --- Creates a new CheckBox
 function CheckBox:new(parent, finderFn)
-	o = {_parent = parent, _finder = finderFn}
+	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
 	return o

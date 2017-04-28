@@ -26,6 +26,7 @@ local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -53,18 +54,7 @@ function action.id()
 	return "title"
 end
 
-function action.setEnabled(value)
-	config.set(action.id().."ActionEnabled", value)
-	action._manager.refresh()
-end
-
-function action.isEnabled()
-	return config.get(action.id().."ActionEnabled", true)
-end
-
-function action.toggleEnabled()
-	action.setEnabled(not action.isEnabled())
-end
+action.enabled = config.prop(action.id().."ActionEnabled", true)
 
 function action.choices()
 	if not action._choices then
@@ -134,7 +124,7 @@ function mod.apply(shortcut)
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noTitleShortcut"))
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -202,7 +192,7 @@ function mod.apply(shortcut)
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
 				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in titles.apply(...).")
-				return "Fail"
+				return false
 			end
 		end
 	end
@@ -224,7 +214,9 @@ function mod.apply(shortcut)
 		if browserLayout then browser:loadLayout(browserLayout) end
 		if not generatorsShowing then generators:hide() end
 	end)
-
+	
+	--- Success!
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -241,13 +233,13 @@ function mod.assignTitlesShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:getCurrentLanguage()
-	local titlesListUpdated 	= mod.isTitlesListUpdated()
+	local listUpdated 	= mod.listUpdated()
 	local allTitles 			= mod.getTitles()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not titlesListUpdated
+	if not listUpdated
 	   or allTitles == nil
 	   or next(allTitles) == nil then
 		dialog.displayMessage(i18n("assignTitlesShortcutError"))
@@ -330,7 +322,7 @@ function mod.updateTitlesList()
 	--------------------------------------------------------------------------------
 	if not generators:show():isShowing() then
 		dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -359,7 +351,7 @@ function mod.updateTitlesList()
 		end
 	else
 		dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
-		return "Fail"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -374,11 +366,14 @@ function mod.updateTitlesList()
 	config.set(currentLanguage .. ".allTitles", allTitles)
 	config.set(currentLanguage .. ".titlesListUpdated", true)
 	action.reset()
+	
+	--- Success!
+	return true
 end
 
-function mod.isTitlesListUpdated()
+mod.listUpdated = prop.new(function()
 	return config.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -413,7 +408,7 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.isTitlesListUpdated()
+		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}

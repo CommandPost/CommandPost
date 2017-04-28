@@ -18,6 +18,7 @@ local inspect						= require("hs.inspect")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
+local prop							= require("cp.prop")
 
 local Button						= require("cp.apple.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
@@ -39,13 +40,10 @@ end
 
 -- TODO: Add documentation
 function PrimaryWindow:new(app)
-	o = {
+	local o = {
 		_app = app
 	}
-	setmetatable(o, self)
-	self.__index = self
-
-	return o
+	return prop.extend(o, PrimaryWindow)
 end
 
 -- TODO: Add documentation
@@ -54,9 +52,9 @@ function PrimaryWindow:app()
 end
 
 -- TODO: Add documentation
-function PrimaryWindow:isShowing()
+PrimaryWindow.isShowing = prop(function(self)
 	return self:UI() ~= nil
-end
+end):bind(PrimaryWindow)
 
 -- TODO: Add documentation
 function PrimaryWindow:show()
@@ -90,10 +88,10 @@ function PrimaryWindow:_findWindowUI(windows)
 end
 
 -- TODO: Add documentation
-function PrimaryWindow:isFullScreen()
+PrimaryWindow.isFullScreen = prop(function(self)
 	local ui = self:UI()
 	return ui and ui:fullScreen()
-end
+end):bind(PrimaryWindow)
 
 -- TODO: Add documentation
 function PrimaryWindow:setFullScreen(isFullScreen)

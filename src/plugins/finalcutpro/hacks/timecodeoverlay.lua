@@ -20,6 +20,7 @@ local application		= require("hs.application")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -37,57 +38,41 @@ local PREFERENCES_KEY 	= "FFEnableGuards"
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.isEnabled()
-	local FFEnableGuards = DEFAULT_VALUE
-	local preferences = fcp:getPreferences()
-	if preferences and preferences[PREFERENCES_KEY] then
-		FFEnableGuards = preferences[PREFERENCES_KEY]
-	end
-	return FFEnableGuards
-end
-
-function mod.toggleTimecodeOverlay()
-
-	--------------------------------------------------------------------------------
-	-- Get existing value:
-	--------------------------------------------------------------------------------
-	local FFEnableGuards = mod.isEnabled()
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartStatus = false
-	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			restartStatus = true
-		else
-			return "Done"
+mod.enabled = prop.new(
+	function()
+		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+	end,
+	
+	function(value)
+		--------------------------------------------------------------------------------
+		-- If Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		local running = fcp:isRunning()
+		if running and not dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+			return
 		end
-	end
 
-	--------------------------------------------------------------------------------
-	-- Update plist:
-	--------------------------------------------------------------------------------
-	local result = fcp:setPreference(PREFERENCES_KEY, not FFEnableGuards)
-	if result == nil then
-		dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-		return "Failed"
-	end
+		--------------------------------------------------------------------------------
+		-- Update plist:
+		--------------------------------------------------------------------------------
+		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
+			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+			return
+		end
 
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartStatus then
-		if not fcp:restart() then
+		--------------------------------------------------------------------------------
+		-- Restart Final Cut Pro:
+		--------------------------------------------------------------------------------
+		if running and not fcp:restart() then
 			--------------------------------------------------------------------------------
 			-- Failed to restart Final Cut Pro:
 			--------------------------------------------------------------------------------
 			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return "Failed"
+			return
 		end
-	end
 
-end
+	end
+)
 
 --------------------------------------------------------------------------------
 --
@@ -109,7 +94,7 @@ local plugin = {
 function plugin.init(deps)
 
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableTimecodeOverlay"),	fn = mod.toggleTimecodeOverlay, checked=mod.isEnabled() }
+		return { title = i18n("enableTimecodeOverlay"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
 	end)
 
 	--------------------------------------------------------------------------------
@@ -118,7 +103,7 @@ function plugin.init(deps)
 	deps.fcpxCmds:add("cpToggleTimecodeOverlays")
 		:groupedBy("hacks")
 		:activatedBy():ctrl():option():cmd("t")
-		:whenActivated(mod.toggleTimecodeOverlay)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 

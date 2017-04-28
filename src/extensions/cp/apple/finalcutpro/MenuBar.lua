@@ -43,7 +43,7 @@ MenuBar.ROLE										= "AXMenuBar"
 ---  * a new MenuBar instance
 ---
 function MenuBar:new(app)
-	o = {
+	local o = {
 	  _app 		= app
 	}
 	setmetatable(o, self)

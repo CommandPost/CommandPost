@@ -23,6 +23,7 @@ local Button						= require("cp.apple.finalcutpro.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 local id							= require("cp.apple.finalcutpro.ids").current("CommandEditor")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -43,10 +44,8 @@ end
 
 -- TODO: Add documentation
 function CommandEditor:new(app)
-	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_app = app}
+	return prop.extend(o, CommandEditor)
 end
 
 -- TODO: Add documentation
@@ -71,10 +70,12 @@ function CommandEditor:_findWindowUI(windows)
 	return nil
 end
 
--- TODO: Add documentation
-function CommandEditor:isShowing()
+--- cp.apple.finalcutpro.cmd.CommandEditor.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the Command Editor showing?
+CommandEditor.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(CommandEditor)
 
 -- TODO: Add documentation
 -- Ensures the CommandEditor is showing

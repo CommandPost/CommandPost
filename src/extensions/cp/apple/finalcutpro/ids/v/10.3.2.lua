@@ -107,6 +107,7 @@ return {
 		LeaveInPlace			= 2,
 	},
 	PlaybackPanel = {
+		ID						= 3,
 		CreateMulticamOptimizedMedia		= "_NS:145",
 		BackgroundRender		= "_NS:15",
 	},

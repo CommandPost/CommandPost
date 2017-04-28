@@ -22,6 +22,7 @@ local touchbar 									= require("hs._asm.touchbar")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local config									= require("cp.config")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -43,26 +44,9 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.isSupported()
-	return touchbar.supported()
-end
+mod.lastLocation = config.prop("lastTouchBarLocation")
 
-function mod.getLastLocation()
-	config.get("lastTouchBarLocation")
-end
-
-function mod.setLastLocation(value)
-	config.set("lastTouchBarLocation", value)
-end
-
-function mod.getLocation()
-	return config.get("displayTouchBarLocation", DEFAULT_VALUE)
-end
-
-function mod.setLocation(value)
-	config.set("displayTouchBarLocation", value)
-	mod.update()
-end
+mod.location = config.prop("displayTouchBarLocation", DEFAULT_VALUE):watch(function() mod.update() end)
 
 --------------------------------------------------------------------------------
 -- SET TOUCH BAR LOCATION:
@@ -72,12 +56,12 @@ function mod.updateLocation()
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = mod.getLocation()
+	local displayTouchBarLocation = mod.location()
 
 	--------------------------------------------------------------------------------
 	-- Put it back to last known position:
 	--------------------------------------------------------------------------------
-	local lastLocation = mod.getLastLocation()
+	local lastLocation = mod.lastLocation()
 	if lastLocation then
 		mod.touchBarWindow:topLeft(lastLocation)
 	end
@@ -107,48 +91,41 @@ function mod.updateLocation()
 	--------------------------------------------------------------------------------
 	-- Save last Touch Bar Location to Settings:
 	--------------------------------------------------------------------------------
-	mod.setLastLocation(mod.touchBarWindow:topLeft())
+	mod.lastLocation(mod.touchBarWindow:topLeft())
 end
 
-function mod.isEnabled()
-	return config.get("displayTouchBar", false)
-end
+--- plugins.finalcutpro.os.touchbar.supported <cp.prop: boolean; read-only>
+--- Field
+--- Is `true` if the plugin is supported on this OS.
+mod.supported = prop(function() return touchbar.supported() end)
 
-function mod.setEnabled(value)
-	config.set("displayTouchBar", value)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE TOUCH BAR:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-
+--- plugins.finalcutpro.os.touchbar.enabled <cp.prop: boolean>
+--- Field
+--- Is `true` if the plugin is enabled.
+mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
-	if not mod.isSupported() then
+	if enabled and not mod.supported() then
 		dialog.displayMessage(i18n("touchBarError"))
-		return "Fail"
+		mod.enabled(false)
 	end
+end)
 
-	--------------------------------------------------------------------------------
-	-- Get Settings:
-	--------------------------------------------------------------------------------
-	mod.setEnabled(not mod.isEnabled())
-
-	--------------------------------------------------------------------------------
-	-- Toggle Touch Bar:
-	--------------------------------------------------------------------------------
-	mod.update()
-end
-
-function mod.update()
-	if mod.isEnabled() then
+--- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
+--- Field
+--- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
+mod.isActive = mod.enabled:AND(mod.supported):watch(function(active)
+	if active then
 		mod.show()
 	else
 		mod.hide()
 	end
+end)
+
+function mod.update()
+	-- Check if it's active.
+	mod.isActive:update()
 end
 
 --------------------------------------------------------------------------------
@@ -158,7 +135,7 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if we need to show the Touch Bar:
 	--------------------------------------------------------------------------------
-	if fcp:isFrontmost() and mod.isSupported() and mod.isEnabled() then
+	if fcp:isFrontmost() and mod.supported() and mod.enabled() then
 		mod.updateLocation()
 		mod.touchBarWindow:show()
 	end
@@ -168,7 +145,7 @@ end
 -- HIDE TOUCH BAR:
 --------------------------------------------------------------------------------
 function mod.hide()
-	if mod.isSupported() then mod.touchBarWindow:hide() end
+	if mod.supported() then mod.touchBarWindow:hide() end
 end
 
 --------------------------------------------------------------------------------
@@ -185,12 +162,12 @@ local function touchbarWatcher(obj, message)
 		--------------------------------------------------------------------------------
 		mod.touchBarWindow:movable(false)
 		mod.touchBarWindow:acceptsMouseEvents(true)
-		mod.setLastLocation(mod.touchBarWindow:topLeft())
+		mod.lastLocation(mod.touchBarWindow:topLeft())
 	end
 end
 
 function mod.init()
-	if mod.isSupported() then
+	if mod.supported() then
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
@@ -204,7 +181,7 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
-		local lastTouchBarLocation = mod.getLastLocation()
+		local lastTouchBarLocation = mod.lastLocation()
 		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
@@ -212,7 +189,7 @@ function mod.init()
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mod.mouseInsideTouchbar and mod.getLocation() == LOCATION_DRAGGABLE then
+			if mod.mouseInsideTouchbar and mod.location() == LOCATION_DRAGGABLE then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
 					mod.touchBarWindow:backgroundColor{ red = 1 }
 									:movable(true)
@@ -221,7 +198,7 @@ function mod.init()
 					mod.touchBarWindow:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					mod.setLastLocation(mod.touchBarWindow:topLeft())
+					mod.lastLocation(mod.touchBarWindow:topLeft())
 				end
 			end
 			return false
@@ -275,14 +252,14 @@ function plugin.init(deps)
 
 	section:addMenu(2000, function() return i18n("touchBar") end)
 		:addItems(1000, function()
-			local location = mod.getLocation()
+			local location = mod.location()
 			return {
-				{ title = i18n("enableTouchBar"), 		fn = mod.toggleEnabled, 									checked = mod.isEnabled(),					disabled = not mod.isSupported() },
+				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
-				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.isSupported() },
-				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.isSupported() },
-				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.isSupported() },
+				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.supported() },
+				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.supported() },
+				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = i18n("touchBarTipOne"), 		disabled = true },
 				{ title = i18n("touchBarTipTwo"), 		disabled = true },
@@ -294,7 +271,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpToggleTouchBar")
 		:activatedBy():ctrl():option():cmd("z")
-		:whenActivated(function() mod.toggleEnabled() end)
+		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
 end

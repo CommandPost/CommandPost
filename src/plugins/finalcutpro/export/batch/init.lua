@@ -358,7 +358,7 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Replace Existing Files Option:
 	--------------------------------------------------------------------------------
-	local replaceExisting = config.get("batchExportReplaceExistingFiles")
+	local replaceExisting = mod.replaceExistingFiles()
 
 	local libraries = fcp:browser():libraries()
 
@@ -428,20 +428,7 @@ function mod.batchExport()
 
 end
 
---- plugins.finalcutpro.export.batch.toggleReplaceExistingFiles() -> none
---- Function
---- Toggle Replace Existing Files
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful
-function mod.toggleReplaceExistingFiles()
-	local batchExportReplaceExistingFiles = config.get("batchExportReplaceExistingFiles")
-	config.set("batchExportReplaceExistingFiles", not batchExportReplaceExistingFiles)
-	return true
-end
+mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
 
 --------------------------------------------------------------------------------
 --
@@ -490,7 +477,7 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationPreset"),	fn = mod.changeExportDestinationPreset },
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
-			{ title = i18n("replaceExistingFiles"),	fn = mod.toggleReplaceExistingFiles, checked = config.get("batchExportReplaceExistingFiles") },
+			{ title = i18n("replaceExistingFiles"),	fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
 		}
 	end)
 

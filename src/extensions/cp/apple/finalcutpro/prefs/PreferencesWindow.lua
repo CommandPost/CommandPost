@@ -18,6 +18,7 @@ local inspect						= require("hs.inspect")
 
 local axutils						= require("cp.apple.finalcutpro.axutils")
 local just							= require("cp.just")
+local prop							= require("cp.prop")
 
 local PlaybackPanel					= require("cp.apple.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("cp.apple.finalcutpro.prefs.ImportPanel")
@@ -35,10 +36,8 @@ PreferencesWindow.GROUP						= id "Group"
 
 -- TODO: Add documentation
 function PreferencesWindow:new(app)
-	o = {_app = app}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	local o = {_app = app}
+	return prop.extend(o, PreferencesWindow)
 end
 
 -- TODO: Add documentation
@@ -105,9 +104,9 @@ function PreferencesWindow:importPanel()
 end
 
 -- TODO: Add documentation
-function PreferencesWindow:isShowing()
+PreferencesWindow.isShowing = prop.new(function(self)
 	return self:UI() ~= nil
-end
+end):bind(PreferencesWindow)
 
 -- TODO: Add documentation
 -- Ensures the PreferencesWindow is showing

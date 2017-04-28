@@ -69,7 +69,7 @@ end
 --------------------------------------------------------------------------------
 local function panelEnabled()
 	local result = fcp:isInstalled()
-	return not result and not config.get("welcomeComplete", false)
+	return not result and not mod.manager.welcomeComplete()
 end
 
 --------------------------------------------------------------------------------

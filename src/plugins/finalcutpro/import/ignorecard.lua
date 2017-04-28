@@ -37,38 +37,21 @@ local PRIORITY = 20000
 local mod = {}
 
 --------------------------------------------------------------------------------
--- RETURNS THE CURRENT ENABLED STATUS
---------------------------------------------------------------------------------
-function mod.isEnabled()
-	return config.get("enableMediaImportWatcher", false)
-end
-
---------------------------------------------------------------------------------
--- SETS THE ENABLED STATUS AND UPDATES THE WATCHER APPROPRIATELY
---------------------------------------------------------------------------------
-function mod.setEnabled(enabled)
-	config.set("enableMediaImportWatcher", enabled)
-	mod.update()
-end
-
---------------------------------------------------------------------------------
--- TOGGLE MEDIA IMPORT WATCHER:
---------------------------------------------------------------------------------
-function mod.toggleEnabled()
-	mod.setEnabled(not mod.isEnabled())
-end
-
---------------------------------------------------------------------------------
 -- UPDATES THE WATCHER BASED ON THE ENABLED STATUS
 --------------------------------------------------------------------------------
 function mod.update()
 	local watcher = mod.getDeviceWatcher()
-	if mod.isEnabled() then
+	if mod.enabled() then
 		watcher:start()
 	else
 		watcher:stop()
 	end
 end
+
+--------------------------------------------------------------------------------
+-- RETURNS THE CURRENT ENABLED STATUS
+--------------------------------------------------------------------------------
+mod.enabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
 
 --------------------------------------------------------------------------------
 -- MEDIA IMPORT WINDOW WATCHER:
@@ -148,7 +131,7 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	local section = deps.menu:addSection(PRIORITY)
 	section:addItem(200, function()
-		return { title = i18n("ignoreInsertedCameraCards"),	fn = mod.toggleEnabled,	checked = mod.isEnabled() }
+		return { title = i18n("ignoreInsertedCameraCards"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
 	end)
 	section:addSeparator(900)
 
