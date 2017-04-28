@@ -518,9 +518,12 @@ function hud.updateVisibility()
 		if (fcpRunning and fcpFrontmost and not fullscreenWindowShowing and not commandEditorShowing) then
 			hud.show()
 		else
-			local frontmostWindowTitle = window.frontmostWindow():application():title()
-			if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "CommandPost" then
-				hud.hide()
+			local frontmostWindow = window.frontmostWindow()
+			if frontmostWindow then
+				local frontmostWindowTitle = frontmostWindow:application():title()
+				if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "Error Log" then
+					hud.hide()
+				end
 			end
 		end
 	end
