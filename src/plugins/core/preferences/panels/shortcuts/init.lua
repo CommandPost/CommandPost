@@ -17,6 +17,8 @@ local log										= require("hs.logger").new("prefsShortcuts")
 
 local fs										= require("hs.fs")
 local image										= require("hs.image")
+local inspect									= require("hs.inspect")
+local keycodes									= require("hs.keycodes")
 local keycodes									= require("hs.keycodes")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
@@ -27,6 +29,7 @@ local config									= require("cp.config")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
+local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
 local _											= require("moses")
@@ -164,10 +167,64 @@ local function updateShortcut(id, params)
 
 end
 
+function modifierMaskToModifiers(value)
+
+	local modifiers = {
+		alphashift = 1 << 16,
+		shift      = 1 << 17,
+		control    = 1 << 18,
+		option	   = 1 << 19,
+		command    = 1 << 20,
+		numericpad = 1 << 21,
+		help       = 1 << 22,
+		Function   = 1 << 23,
+	}
+
+	local answer = {}
+
+	for k, v in pairs(modifiers) do
+		if (value & v) == v then
+			table.insert(answer, k)
+		end
+	end
+
+	return answer
+
+end
+
+--------------------------------------------------------------------------------
+-- GET LIST OF UNAVAILABLE SHORTCUTS:
+--------------------------------------------------------------------------------
+function getListOfUnavailableShortcuts()
+
+	local unavailibleShortcuts = {}
+
+	--------------------------------------------------------------------------------
+	-- Get list of macOS Shortcuts currently in use:
+	--------------------------------------------------------------------------------
+	local symbolichotkeys = plist.binaryFileToTable("~/Library/Preferences/com.apple.symbolichotkeys.plist")
+	if symbolichotkeys and symbolichotkeys["AppleSymbolicHotKeys"] then
+		for i, v in pairs(symbolichotkeys["AppleSymbolicHotKeys"]) do
+			if v["enabled"] then
+				if v["value"]["parameters"] and v["value"]["parameters"][2] and v["value"]["parameters"][3] then
+					if next(modifierMaskToModifiers(v["value"]["parameters"][3])) ~= nil then
+						unavailibleShortcuts[#unavailibleShortcuts + 1] = { keycode = keycodes.map[v["value"]["parameters"][2]], modifiers = modifierMaskToModifiers(v["value"]["parameters"][3]) }
+					end
+				end
+			end
+		end
+	end
+
+	return unavailibleShortcuts
+
+end
+
 --------------------------------------------------------------------------------
 -- GENERATE LIST OF SHORTCUTS:
 --------------------------------------------------------------------------------
 function getAllKeyCodes()
+
+	--print(inspect(getListOfUnavailableShortcuts()))
 
 	--------------------------------------------------------------------------------
 	-- TODO: Work out a way to ONLY display keyboard shortcuts that the system
