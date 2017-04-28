@@ -457,7 +457,8 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			provideFeedback						=			"Provide Feedback...",
+			provideFeedback						=			"Provide Feedback",
+			feedback							=			"Feedback",
 			createdBy							=			"Created by",
 			appVersion							=			"Version",
 

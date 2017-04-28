@@ -26,8 +26,8 @@ local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
 local config					= require("cp.config")
-local tools                     = require("cp.tools")
 local plugins					= require("cp.plugins")
+local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
@@ -52,6 +52,7 @@ i18n.setLocale(userLocale)
 --------------------------------------------------------------------------------
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
+local feedback					= require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
@@ -92,9 +93,8 @@ function mod.init()
 			return image.imageFromName("NSStatusUnavailable")
 		end
 	end
-	local toolbar = require("hs.webview.toolbar")
 	errorLogToolbar = toolbar.new("myConsole", {
-			{ id = i18n("reload"), image = image.imageFromName("NSPreferencesGeneral"),
+			{ id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
 				fn = function()
 					console.clearConsole()
 					print("Reloading CommandPost...")
@@ -110,6 +110,17 @@ function mod.init()
 				fn = function()
 					hs.consoleOnTop(not hs.consoleOnTop())
 					errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+				end
+			},
+			{ id = "NSToolbarFlexibleSpaceItem" },
+			{ id = i18n("preferences"), image = image.imageFromName("NSPreferencesGeneral"),
+				fn = function()
+					plugins("core.preferences.manager").show()
+				end
+			},
+			{ id = i18n("feedback"), image = image.imageFromName("NSInfo"),
+				fn = function()
+					feedback.showFeedback()
 				end
 			},
 		})
