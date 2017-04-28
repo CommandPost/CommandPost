@@ -220,6 +220,8 @@ return {
 			changeBackupIntervalMessage			=			"Changing the Backup Interval requires Final Cut Pro to restart.",
 			changeSmartCollectionsLabel			=			"Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
+			hacksEnabling						=			"Enabling",
+			hacksDisabling						=			"Disabling",
 			hacksShortcutsRestart				=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
 			hacksShortcutAdminPassword			=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password.",
 

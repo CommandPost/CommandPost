@@ -42,9 +42,9 @@ local function controllerCallback(message)
 		mod.manager.nextPanel(mod._priority)
 	elseif result == "commandsetContinue" then
 
-		local result = mod.shortcuts.enableHacksShortcuts()
+		local result = mod.shortcuts.installHacksShortcuts()
 
-		--log.df("enableHacksShortcuts result: %s", result)
+		--log.df("installHacksShortcuts result: %s", result)
 
 		if result then
 			if fcp:isRunning() then fcp:restart() end
