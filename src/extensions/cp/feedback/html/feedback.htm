@@ -114,7 +114,7 @@
 			<div class="email-note">{{ i18n("emailResponse") }}</div>
 			<div class="contact-checkbox"><input id="include-contact-info" type="checkbox" checked>{{ i18n("includeContactInfo") }}:</div>
 			<div class="user-details"><input id="fullname" type="text" name="name" value="{{ userFullName }}"> <input id="email" type="text" name="email" value="{{ userEmail }}"></div>
-			<div class="bottom-buttons"><a class="button" href="commandpost://feedback?action=cancel">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
+			<div class="bottom-buttons"><a id="button-cancel" class="button">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
 			<!-- Hidden Fields: -->
 			<input type="hidden" name="script-version" value="{{ appVersion }}">
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>
@@ -200,6 +200,21 @@
 
 				document.getElementById("feedback-form").submit();
 
+				try {
+					webkit.messageHandlers.feedback.postMessage("hide");
+				} catch(err) {
+					console.log('The controller does not exist yet');
+				}
+
+			}
+
+			/* CANCEL BUTTON: */
+			document.getElementById("button-cancel").onclick = function() {
+				try {
+					webkit.messageHandlers.feedback.postMessage("cancel");
+				} catch(err) {
+					console.log('The controller does not exist yet');
+				}
 			}
 
 			/* SEND BUTTON PRESSED: */
