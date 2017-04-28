@@ -75,9 +75,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("finalcutpro")
+local logname									= "fcp"
+local log										= require("hs.logger").new(logname)
 
 local application								= require("hs.application")
+local applicationwatcher						= require("hs.application.watcher")
 local ax 										= require("hs._asm.axuielement")
 local eventtap									= require("hs.eventtap")
 local fs 										= require("hs.fs")
@@ -86,30 +88,28 @@ local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 local task										= require("hs.task")
 local timer										= require("hs.timer")
-local windowfilter								= require("hs.window.filter")
-
 local v											= require("semver")
+local watchable									= require("hs.watchable")
 
-local plist										= require("cp.plist")
 local just										= require("cp.just")
+local plist										= require("cp.plist")
+local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
 
 local axutils									= require("cp.apple.finalcutpro.axutils")
-
+local Browser									= require("cp.apple.finalcutpro.main.Browser")
+local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
+local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
+local kc										= require("cp.apple.finalcutpro.keycodes")
+local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
-local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
-local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
-local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
-local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-
-local kc										= require("cp.apple.finalcutpro.keycodes")
-local shortcut									= require("cp.commands.shortcut")
+local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
 --------------------------------------------------------------------------------
 --
@@ -166,6 +166,10 @@ function App:new()
 	o = {}
 	setmetatable(o, self)
 	self.__index = self
+
+	-- Initialise watchers:
+	self:_initWatchers()
+
 	return o
 end
 
@@ -326,13 +330,13 @@ end
 
 --- cp.apple.finalcutpro:show() -> cp.finalcutpro object
 --- Function
---- Activate Final Cut Pro
+--- Is Final Cut Pro showing?
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An cp.finalcutpro object otherwise nil
+---  * `true` if showing otherwise `false`
 function App:isShowing()
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
@@ -1301,33 +1305,20 @@ end
 --- cp.apple.finalcutpro:watch() -> string
 --- Method
 --- Watch for events that happen in the application.
---- The optional functions will be called when the window
---- is shown or hidden, respectively.
+--- The optional functions will be called when the window is shown or hidden, respectively.
 ---
 --- Parameters:
---- * `events` - A table of functions with to watch. These may be:
+---  * `events` - A table of functions with to watch. These may be:
 --- 	* `active()`		- Triggered when the application is the active application.
 --- 	* `inactive()`		- Triggered when the application is no longer the active application.
 ---     * `move()` 	 		- Triggered when the application window is moved.
 --- 	* `preferences()`	- Triggered when the application preferences are updated.
 ---
 --- Returns:
---- * An ID which can be passed to `unwatch` to stop watching.
+---  * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
-	self:_initWatchers()
-
-	if not self._watchers then
-		self._watchers = {}
-	end
-
 	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move, preferences = events.preferences}
 	local id = { id=#self._watchers }
-
-	-- If already active, we trigger an 'active' notification.
-	if self:isFrontmost() and events.active then
-		events.active()
-	end
-
 	return id
 end
 
@@ -1336,10 +1327,10 @@ end
 --- Stop watching for events that happen in the application for the specified ID.
 ---
 --- Parameters:
---- * `id` 	- The ID object which was returned from the `watch(...)` function.
+---  * `id` 	- The ID object which was returned from the `watch(...)` function.
 ---
 --- Returns:
---- * `true` if the ID was watching and has been removed.
+---  * `true` if the ID was watching and has been removed.
 function App:unwatch(id)
 	local watchers = self._watchers
 	if id and id.id and watchers and watchers[id.id] then
@@ -1349,67 +1340,52 @@ function App:unwatch(id)
 	return false
 end
 
+-- cp.apple.finalcutpro:_initWatchers() -> none
+-- Method
+-- Initialise all the various Final Cut Pro Watchers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function App:_initWatchers()
 
-	--------------------------------------------------------------------------------
-	-- Application Watcher:
-	--------------------------------------------------------------------------------
-	local watcher = application.watcher
+	if not self._watchers then
+		--log.df("Setting up Final Cut Pro Watchers...")
+		self._watchers = {}
+	end
 
-	self._active = false
-	self._appWatcher = watcher.new(
-		function(appName, eventType, appObject)
-			local event = nil
-
-			if (appName == "Final Cut Pro") then
-				if self._active == false and (eventType == watcher.activated) and self:isFrontmost() then
-					self._active = true
-					event = "active"
-				elseif self._active == true and (eventType == watcher.deactivated or eventType == watcher.terminated) then
-					self._active = false
-					event = "inactive"
+	--------------------------------------------------------------------------------
+	-- Setup Application Watcher:
+	--------------------------------------------------------------------------------
+	--log.df("Setting up Application Watcher...")
+	self._appWatcher = applicationwatcher.new(
+		function(appName, eventType, application)
+			if (application:bundleID() == App.BUNDLE_ID) then
+				if eventType == applicationwatcher.activated then
+					self:_notifyWatchers("active")
+					return
+				elseif eventType == applicationwatcher.deactivated then
+					self:_notifyWatchers("inactive")
+					return
 				end
-			end
-
-			if event then
-				self:_notifyWatchers(event)
 			end
 		end
 	):start()
 
-	windowfilter.setLogLevel("error") -- The wfilter errors are too annoying.
-	self._windowWatcher = windowfilter.new({"Final Cut Pro"}, "finalcutpro")
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Not On Screen:
-	--------------------------------------------------------------------------------
-	self._windowWatcher:subscribe(windowfilter.windowNotOnScreen, function()
-		if self._active == true and not self:isFrontmost() then
-			self._active = false
-			self:_notifyWatchers("inactive")
-		end
-	end, true)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window On Screen:
-	--------------------------------------------------------------------------------
-	self._windowWatcher:subscribe(windowfilter.windowOnScreen, function()
-		if self._active == false and self:isFrontmost() then
-			self._active = true
-			self:_notifyWatchers("active")
-		end
-	end, true)
-
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
-	self._windowWatcher:subscribe(windowfilter.windowMoved, function()
+	self._windowWatcher = windowfilter
+	self._windowWatcher:subscribe("windowMoved", function()
 		self:_notifyWatchers("move")
-	end, true)
+	end, false)
 
 	--------------------------------------------------------------------------------
-	-- Preferences Watcher:
+	-- Setup Preferences Watcher:
 	--------------------------------------------------------------------------------
+	--log.df("Setting up Preferences Watcher...")
 	self._preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files)
 		for _,file in pairs(files) do
 			if file:sub(-24) == "com.apple.FinalCut.plist" then
@@ -1421,7 +1397,17 @@ function App:_initWatchers()
 
 end
 
+-- cp.apple.finalcutpro:_notifyWatchers(event) -> none
+-- Method
+-- Notifies all the registered watchers.
+--
+-- Parameters:
+-- * event - which event to notify.
+--
+-- Returns:
+-- * None
 function App:_notifyWatchers(event)
+	--log.df("FCPX WATCHER EVENT: %s", event)
 	if self._watchers then
 		for i,watcher in ipairs(self._watchers) do
 			if type(watcher[event]) == "function" then
