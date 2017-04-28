@@ -127,7 +127,8 @@ hs.accessibilityStateCallback = nil
 ---  * If the console is focused, it will be closed.
   function hs.toggleConsole()
     local console = hs.appfinder.windowFromWindowTitle("CommandPost Console")
-    if console and (console ~= hs.window.focusedWindow()) then
+    local window = require("hs.window")
+    if console and (console ~= window.focusedWindow()) then
       console:focus()
     elseif console then
       console:close()

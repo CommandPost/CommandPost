@@ -81,7 +81,7 @@ local function generateHTML()
 	--------------------------------------------------------------------------------
 	-- Get Console output:
 	--------------------------------------------------------------------------------
-	env.consoleOutput = console.getConsole(true):convert("html")
+	env.consoleOutput = base64.encode(console.getConsole(true):convert("html"))
 
 	--------------------------------------------------------------------------------
 	-- Get screenshots of all screens:

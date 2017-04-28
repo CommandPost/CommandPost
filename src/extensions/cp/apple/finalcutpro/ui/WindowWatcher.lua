@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("windowWatcher")
 
-local windowfilter					= require("hs.window.filter")
+local windowfilter					= require("cp.apple.finalcutpro.windowfilter")
 local axuielement					= require("hs._asm.axuielement")
 
 --------------------------------------------------------------------------------
@@ -55,63 +55,46 @@ end
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function WindowWatcher:watch(events)
-	local startWatching = false
+
 	if not self._watchers then
 		self._watchers = {}
-		startWatching = true
 	end
+
 	self._watchers[#(self._watchers)+1] = {show = events.show, hide = events.hide}
 	local id = {id=#(self._watchers)}
 
-	if startWatching then
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Filter:
-		--------------------------------------------------------------------------------
-		local bundleID = self._window:app():getBundleID()
-		local filter = windowfilter.new(function(window)
-			return window and window:application():bundleID() == bundleID
-		end, "fcpWinWatch")
-		filter.setLogLevel("error") -- The wfilter errors are too annoying.
-
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Created:
-		--------------------------------------------------------------------------------
-		filter:subscribe(
-			windowfilter.windowVisible,
-			function(window, applicationName)
-				local windowUI = axuielement.windowElement(window)
-				if self._window:UI() == windowUI and self._window:isShowing() then
-					self._windowID = window:id()
-					for i,watcher in ipairs(self._watchers) do
-						if watcher.show then
-							watcher.show(self)
-						end
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Created:
+	--------------------------------------------------------------------------------
+	windowfilter:subscribe("windowVisible", function(window)
+			local windowUI = axuielement.windowElement(window)
+			if self._window:UI() == windowUI and self._window:isShowing() then
+				self._windowID = window:id()
+				for i,watcher in ipairs(self._watchers) do
+					if watcher.show then
+						watcher.show(self)
 					end
 				end
-			end,
-			true
-		)
+			end
+		end,
+		true
+	)
 
-		--------------------------------------------------------------------------------
-		-- Final Cut Pro Window Destroyed:
-		--------------------------------------------------------------------------------
-		filter:subscribe(
-			windowfilter.windowNotVisible,
-			function(window, applicationName)
-				if window:id() == self._windowID then
-					self._windowID = nil
-
-					for i,watcher in ipairs(self._watchers) do
-						if watcher.hide then
-							watcher.hide(self)
-						end
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Destroyed:
+	--------------------------------------------------------------------------------
+	windowfilter:subscribe("windowNotVisible", function(window)
+			if window:id() == self._windowID then
+				self._windowID = nil
+				for i,watcher in ipairs(self._watchers) do
+					if watcher.hide then
+						watcher.hide(self)
 					end
 				end
-			end,
-			true
-		)
-		self.windowFilter = filter
-	end
+			end
+		end,
+		true
+	)
 
 	return id
 end

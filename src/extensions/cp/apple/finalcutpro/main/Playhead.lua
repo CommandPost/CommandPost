@@ -67,7 +67,7 @@ end
 --- * The new `Playhead` instance.
 function Playhead:new(parent, skimming, containerFn)
 	local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
-	prop.extend(o, Playhead)
+	return prop.extend(o, Playhead)
 end
 
 -- TODO: Add documentation
