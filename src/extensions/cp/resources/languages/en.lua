@@ -115,6 +115,8 @@ return {
 			attachScreenshot					=			"Attach Screenshot",
 			fullName							=			"Full Name",
 			emailAddress						=			"Email Address",
+			feedbackSuccess						=			"Your feedback was submitted successfully.\n\nThank you!",
+			feedbackError						=			"An error occurred trying to communicate with the CommandPost servers.\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
 
 			--------------------------------------------------------------------------------
 			-- Notifications:
