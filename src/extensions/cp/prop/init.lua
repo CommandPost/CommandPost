@@ -254,17 +254,13 @@ function prop.mt:set(newValue)
 	end
 	-- if currently notifying, defer the update
 	if self._notifying then
-		self._hasNewValue = true
+		self._doSet = true
 		self._newValue = newValue
 		return newValue
 	end
-	local value = self:get()
-	if value ~= newValue then
-		self._set(newValue, self._owner)
-		self:_notify(newValue)
-		return newValue
-	end
-	return value
+	self._set(newValue, self._owner)
+	self:_notify(newValue)
+	return newValue
 end
 
 --- cp.prop:clear() -> nil
@@ -402,7 +398,7 @@ end
 --- Returns
 --- * The current value of the property.
 function prop.mt:update()
-	local value = self:get() 
+	local value = self:get()
 	self:_notify(value)
 	return value
 end
@@ -417,6 +413,12 @@ end
 -- Returns:
 -- * Nothing
 function prop.mt:_notify(value)
+	-- make sure we aren't already notifying
+	if self._notifying then
+		self._doUpdate = true
+		return
+	end
+	
 	if self._watchers then
 		if self._lastValue ~= value then
 			self._notifying = true
@@ -426,10 +428,13 @@ function prop.mt:_notify(value)
 			self._lastValue = value
 			self._notifying = false
 			-- check if a 'set' happened during the notification cycle.
-			if self._hasNewValue then
-				self._hasNewValue = false
+			if self._doSet then
+				self._doSet = false
 				self:set(self._newValue)
 				self._newValue = nil
+			elseif self._doUpdate then
+				self._doUpdate = false
+				self:update()
 			end
 		end
 	end
