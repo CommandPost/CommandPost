@@ -58,7 +58,7 @@ function mod.trashPreferences()
 	--------------------------------------------------------------------------------
 	-- Remove Hacks Shortcut in Final Cut Pro:
 	--------------------------------------------------------------------------------
-	mod.hacksShortcuts.disableHacksShortcuts()
+	mod.hacksShortcuts.uninstall()
 
 	--------------------------------------------------------------------------------
 	-- Trash all Script Settings:

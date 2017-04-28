@@ -81,16 +81,82 @@ local function hacksModifiedPath(resourceName)
 	return hacksPath("modified/"..resourceName)
 end
 
+local function fileContentsMatch(path1, path2)
+	-- Open the first path
+	local file1, err = io.open(path1, "rb")
+	if err then log.wf("Unable to read file: %s", path1); return false; end
+
+	-- Open the second path
+	local file2, err = io.open(path2,"rb")
+	if err then log.wf("Unable to read file: %s", path2); return false; end
+	-- compare line by line
+
+	local f = assert(io.open(arg[1], "rb"))
+	local block = 100
+	function matches = true
+	while true do
+		local bytes1 = file1:read(block)
+		local bytes2 = file2:read(block)
+		
+		if not bytes1 then
+			-- make sure file finished as well
+			matches = not bytes2
+			break
+		elseif not bytes2 then
+			-- file1 finished before file2
+			matches = false
+			break
+		end
+		
+		if bytes1 ~= bytes1 then
+			matches = false
+			break
+		end
+	end
+
+	file1:close()
+	file2:close()
+	
+	return matches
+end
+
 -- Returns `true` if the files at the specified paths are the same.
 local function filesMatch(path1, path2)
 	if path1 and path2 then
 		local attr1, attr2 = fs.attributes(path1), fs.attributes(path2)
-		return attr1			and		attr2
-		   and attr1.size		==		attr2.size
-		   and attr1.mode		==		attr2.mode
-   else
-	   return false
-   end
+		if attr1 and attr2 and attr1.mode == attr2.mode then
+			-- They are the same type and size. Now, we compare contents.
+			if attr1.mode == "directory" then
+				return directoriesMatch(path1, path2)
+			elseif attr1.mode == "file" and attr1.size == attr2.size then
+				fileContentsMatch(path1, path2)
+			end
+		end
+	end
+	return false
+end
+
+-- Checks if all files contained in the source path match 
+local function directoriesMatch(sourcePath, targetPath)
+	local sourceFiles = tools.dirFiles(sourcePath)
+
+	for i,file in ipairs(sourceFiles) do
+		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
+			local sourceFile = fs.pathToAbsolute(sourcePath .. "/" .. file)
+			local targetFile = fs.pathToAbsolute(targetPath .. "/" .. file)
+			
+			if not sourceFile or not targetFile then -- A file is missing
+				return false
+			end
+			-- log.df("Checking '%s'...", filePath)
+
+			if not filesMatch(sourceFile, targetFile) then
+				return false
+			end
+		end
+	end
+	
+	return true
 end
 
 -- copyHacksFiles(batch, sourcePath) -> nil
