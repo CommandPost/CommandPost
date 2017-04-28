@@ -61,7 +61,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("provideFeedback"),	fn = mod.show }
+		return { title = i18n("provideFeedback") .. "...",	fn = mod.show }
 	end)
 	:addSeparator(PRIORITY+0.1)
 
