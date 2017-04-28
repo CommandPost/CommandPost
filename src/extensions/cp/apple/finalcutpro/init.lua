@@ -81,15 +81,11 @@ local log										= require("hs.logger").new(logname)
 local application								= require("hs.application")
 local applicationwatcher						= require("hs.application.watcher")
 local ax 										= require("hs._asm.axuielement")
-local eventtap									= require("hs.eventtap")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
-local task										= require("hs.task")
-local timer										= require("hs.timer")
 local v											= require("semver")
-local watchable									= require("hs.watchable")
 
 local just										= require("cp.just")
 local plist										= require("cp.plist")
@@ -1377,8 +1373,7 @@ function App:_initWatchers()
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
-	self._windowWatcher = windowfilter
-	self._windowWatcher:subscribe("windowMoved", function()
+	windowfilter:subscribe("windowMoved", function()
 		self:_notifyWatchers("move")
 	end, false)
 
