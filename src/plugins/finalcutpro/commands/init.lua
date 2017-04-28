@@ -39,31 +39,58 @@ function plugin.init()
 	-- Switch to Final Cut Pro to activate:
 	--------------------------------------------------------------------------------
 	cmds:watch({
-		activate	= function() log.df("activated"); fcp:launch() end,
+		activate	= function()
+			log.df("Final Cut Pro Activated by Commands Plugin")
+			fcp:launch()
+		end,
 	})
 
 	--------------------------------------------------------------------------------
 	-- Enable/Disable as Final Cut Pro becomes Active/Inactive:
 	--------------------------------------------------------------------------------
 	fcp:watch({
-		active 		= function() cmds:enable() end,
-		inactive	= function() cmds:disable() end,
+		active 		= function()
+			if not fcp:commandEditor():isShowing() and not fcp:mediaImport():isShowing() then
+				--log.df("Final Cut Pro Commands Enabled")
+				cmds:enable()
+			end
+		end,
+		inactive	= function()
+			--log.df("Final Cut Pro Commands Disabled")
+			cmds:disable()
+		end,
 	})
 
 	--------------------------------------------------------------------------------
 	-- Disable when the Command Editor window is open:
 	--------------------------------------------------------------------------------
 	fcp:commandEditor():watch({
-		show		= function() cmds:disable() end,
-		hide		= function() cmds:enable() end,
+		show		= function()
+			--log.df("Final Cut Pro Commands Disabled due to Command Editor")
+			cmds:disable()
+		end,
+		hide		= function()
+			if fcp:isShowing() then
+				--log.df("Final Cut Pro Commands Enabled due to Command Editor")
+				cmds:enable()
+			end
+		end,
 	})
 
 	--------------------------------------------------------------------------------
 	-- Disable when the Media Import window is open:
 	--------------------------------------------------------------------------------
 	fcp:mediaImport():watch({
-		show		= function() cmds:disable() end,
-		hide		= function() cmds:enable() end,
+		show		= function()
+			--log.df("Final Cut Pro Commands Dsiabled due to Media Import")
+			cmds:disable()
+		end,
+		hide		= function()
+			if fcp:isShowing() then
+				--log.df("Final Cut Pro Commands Enabled due to Media Import")
+				cmds:enable()
+			end
+		end,
 	})
 
 	return cmds

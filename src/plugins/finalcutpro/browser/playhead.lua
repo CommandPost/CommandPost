@@ -203,7 +203,37 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	-- Menus
+
+	--------------------------------------------------------------------------------
+	-- Remove Highlight when Final Cut Pro is inactive:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		inactive	= function()
+			mod.deleteHighlight()
+		end,
+	})
+
+	--------------------------------------------------------------------------------
+	-- Remove Highlight when the Command Editor window is open:
+	--------------------------------------------------------------------------------
+	fcp:commandEditor():watch({
+		show		= function()
+			mod.deleteHighlight()
+		end,
+	})
+
+	--------------------------------------------------------------------------------
+	-- Remove Highlight when the Media Import window is open:
+	--------------------------------------------------------------------------------
+	fcp:mediaImport():watch({
+		show		= function()
+			mod.deleteHighlight()
+		end,
+	})
+
+	--------------------------------------------------------------------------------
+	-- Setup Menus:
+	--------------------------------------------------------------------------------
 	local section = deps.prefs:addSection(PRIORITY)
 
 	section:addSeparator(1000)
@@ -249,7 +279,9 @@ function plugin.init(deps)
 		}
 	end)
 
-	-- Commands
+	--------------------------------------------------------------------------------
+	-- Setup Commands:
+	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpHighlightBrowserPlayhead")
 		:groupedBy("browser")
 		:activatedBy():cmd():option():ctrl("h")
