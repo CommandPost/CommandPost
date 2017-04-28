@@ -307,6 +307,53 @@ function run()
 		ok(target.isFunction == source.isFunction)
 		ok(target.isRealFunction == source.isRealFunction)
 	end)
+	
+	test("Prop Notify Loop", function()
+		local aProp = prop.TRUE()
+		local log = {}
+		
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 1 end)
+		
+		-- modifies then logs
+		aProp:watch(function(value)
+			aProp:set(false)
+			log[#log+1] = 2
+		end)
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 3 end)
+		
+		aProp:update()
+		
+		-- should be two sets of logs, one after the other.
+		ok(aProp() == false)
+		ok(eq(log, {1, 2, 3, 1, 2, 3}))
+	end)
+	
+	test("Prop Notify On/Off", function()
+		local aProp = prop.TRUE()
+		local log = {}
+		
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 1 end)
+		
+		-- modifies to false then logs
+		aProp:watch(function(value)
+			aProp:set(false)
+			log[#log+1] = 2
+		end)
+		-- modifes back to true then logs
+		aProp:watch(function(value)
+			aProp:set(true)
+			log[#log+1] = 3
+		end)
+		
+		aProp:update()
+		
+		-- The value was reset before the notification loop finished, so no change occurs.
+		ok(aProp() == true)
+		ok(eq(log, {1, 2, 3}))
+	end)
 end
 
 return run

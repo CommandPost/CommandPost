@@ -252,6 +252,12 @@ function prop.mt:set(newValue)
 	if not self._set then
 		error("This property cannot be modified.")
 	end
+	-- if currently notifying, defer the update
+	if self._notifying then
+		self._hasNewValue = true
+		self._newValue = newValue
+		return newValue
+	end
 	local value = self:get()
 	if value ~= newValue then
 		self._set(newValue, self._owner)
@@ -413,11 +419,19 @@ end
 function prop.mt:_notify(value)
 	if self._watchers then
 		if self._lastValue ~= value then
+			self._notifying = true
 			for _,watcher in ipairs(self._watchers) do
 				watcher(value)
 			end
+			self._lastValue = value
+			self._notifying = false
+			-- check if a 'set' happened during the notification cycle.
+			if self._hasNewValue then
+				self._hasNewValue = false
+				self:set(self._newValue)
+				self._newValue = nil
+			end
 		end
-		self._lastValue = value
 	end
 end
 

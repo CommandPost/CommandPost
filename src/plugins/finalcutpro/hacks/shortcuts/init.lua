@@ -48,8 +48,10 @@ local FCP_RESOURCES_PATH		= "/Contents/Resources/"
 --------------------------------------------------------------------------------
 local mod = {}
 
+local private = {}
+
 -- Returns the path to the specified resource inside FCPX, or `nil` if it cannot be found.
-local function resourcePath(resourceName)
+function private.resourcePath(resourceName)
 	local fcpPath = fcp:getPath()
 	if fcpPath then
 		return fs.pathToAbsolute(fcpPath .. FCP_RESOURCES_PATH .. tostring(resourceName))
@@ -59,7 +61,7 @@ local function resourcePath(resourceName)
 end
 
 -- Returns the path to the most recent version of the specified file inside the plugin, or `nil` if it can't be found.
-local function hacksPath(resourceName)
+function private.hacksPath(resourceName)
 	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
 	if mod.commandSetsPath and fcp:isInstalled() then
 		local ver = v(fcp:getVersion())
@@ -71,19 +73,20 @@ local function hacksPath(resourceName)
 	end
 end
 
-local function hacksOriginalPath(resourceName)
+function private.hacksOriginalPath(resourceName)
 	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
-	return hacksPath("original/"..resourceName)
+	return private.hacksPath("original/"..resourceName)
 end
 
-local function hacksModifiedPath(resourceName)
+function private.hacksModifiedPath(resourceName)
 	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
-	return hacksPath("modified/"..resourceName)
+	return private.hacksPath("modified/"..resourceName)
 end
 
-local function fileContentsMatch(path1, path2)
+function private.fileContentsMatch(path1, path2)
+	
 	-- Open the first path
-	local file1, err = io.open(path1, "rb")
+	local file1 = io.open(path1, "rb")
 	if err then log.wf("Unable to read file: %s", path1); return false; end
 
 	-- Open the second path
@@ -91,9 +94,9 @@ local function fileContentsMatch(path1, path2)
 	if err then log.wf("Unable to read file: %s", path2); return false; end
 	-- compare line by line
 
-	local f = assert(io.open(arg[1], "rb"))
 	local block = 100
-	function matches = true
+	local matches = true
+	
 	while true do
 		local bytes1 = file1:read(block)
 		local bytes2 = file2:read(block)
@@ -108,7 +111,7 @@ local function fileContentsMatch(path1, path2)
 			break
 		end
 		
-		if bytes1 ~= bytes1 then
+		if bytes1 ~= bytes2 then
 			matches = false
 			break
 		end
@@ -121,15 +124,15 @@ local function fileContentsMatch(path1, path2)
 end
 
 -- Returns `true` if the files at the specified paths are the same.
-local function filesMatch(path1, path2)
+function private.filesMatch(path1, path2)
 	if path1 and path2 then
 		local attr1, attr2 = fs.attributes(path1), fs.attributes(path2)
 		if attr1 and attr2 and attr1.mode == attr2.mode then
 			-- They are the same type and size. Now, we compare contents.
 			if attr1.mode == "directory" then
-				return directoriesMatch(path1, path2)
+				return private.directoriesMatch(path1, path2)
 			elseif attr1.mode == "file" and attr1.size == attr2.size then
-				fileContentsMatch(path1, path2)
+				return private.fileContentsMatch(path1, path2)
 			end
 		end
 	end
@@ -137,7 +140,7 @@ local function filesMatch(path1, path2)
 end
 
 -- Checks if all files contained in the source path match 
-local function directoriesMatch(sourcePath, targetPath)
+function private.directoriesMatch(sourcePath, targetPath)
 	local sourceFiles = tools.dirFiles(sourcePath)
 
 	for i,file in ipairs(sourceFiles) do
@@ -146,11 +149,12 @@ local function directoriesMatch(sourcePath, targetPath)
 			local targetFile = fs.pathToAbsolute(targetPath .. "/" .. file)
 			
 			if not sourceFile or not targetFile then -- A file is missing
+				-- log.df("Missing file:\n\t%s", sourceFile or targetFile)
 				return false
 			end
-			-- log.df("Checking '%s'...", filePath)
 
-			if not filesMatch(sourceFile, targetFile) then
+			if not private.filesMatch(sourceFile, targetFile) then
+				-- log.df("Mismatched file:\n\t%s", sourceFile)
 				return false
 			end
 		end
@@ -159,40 +163,40 @@ local function directoriesMatch(sourcePath, targetPath)
 	return true
 end
 
--- copyHacksFiles(batch, sourcePath) -> nil
+-- private.copyHacksFiles(batch, sourcePath) -> nil
 -- Function
 -- Adds commands to copy Hacks Shortcuts files into FCPX.
 --
 -- Parameters:
 -- * `batch`		- The table of batch commands to be executed.
 -- * `sourcePath`	- A function that will return the absolute source path to copy from.
-local function copyHacksFiles(batch, sourcePath)
+function private.copyHacksFiles(batch, sourcePath)
 	
 	local copy = "cp -f '%s' '%s'"
 	local mkdir = "mkdir '%s'"
 
-	table.insert(batch, copy:format( sourcePath(COMMAND_GROUPS_FILE), resourcePath(COMMAND_GROUPS_FILE) ) )
-	table.insert(batch, copy:format( sourcePath(COMMANDS_FILE), resourcePath(COMMAND_GROUPS_FILE) ) )
+	table.insert(batch, copy:format( sourcePath(COMMAND_GROUPS_FILE), private.resourcePath(COMMAND_GROUPS_FILE) ) )
+	table.insert(batch, copy:format( sourcePath(COMMANDS_FILE), private.resourcePath(COMMANDS_FILE) ) )
 
 	local finalCutProLanguages = fcp:getSupportedLanguages()
 
 	for _, whichLanguage in ipairs(finalCutProLanguages) do
 		local langPath = whichLanguage .. ".lproj/"
-		local whichDirectory = resourcePath(langPath)
+		local whichDirectory = private.resourcePath(langPath)
 		if not tools.doesDirectoryExist(whichDirectory) then
 			table.insert(batch, mkdir:format(whichDirectory))
 		end
 
-		table.insert(batch, copy:format(sourcePath(langPath .. "Default.commandset"), resourcePath(langPath .. "Default.commandset")))
-		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandDescriptions.strings"), resourcePath(langPath .. "NSProCommandDescriptions.strings")))
-		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandNames.strings"), resourcePath(langPath .. "NSProCommandNames.strings")))
+		table.insert(batch, copy:format(sourcePath(langPath .. "Default.commandset"), private.resourcePath(langPath .. "Default.commandset")))
+		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandDescriptions.strings"), private.resourcePath(langPath .. "NSProCommandDescriptions.strings")))
+		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandNames.strings"), private.resourcePath(langPath .. "NSProCommandNames.strings")))
 	end	
 end
 
 --------------------------------------------------------------------------------
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
-local function updateHacksShortcuts(install)
+function private.updateHacksShortcuts(install)
 
 	log.df("Updating Hacks Shortcuts...")
 
@@ -208,13 +212,13 @@ local function updateHacksShortcuts(install)
 	-- previously removed them or used an old version of CommandPost or FCPX Hacks:
 	--------------------------------------------------------------------------------
 	
-	copyHacksFiles(batch, hacksOriginalPath)
+	private.copyHacksFiles(batch, private.hacksOriginalPath)
 
 	--------------------------------------------------------------------------------
 	-- Only then do we copy the 'modified' files...
 	--------------------------------------------------------------------------------
 	if install then
-		copyHackFiles(batch, hacksModifiedPath)
+		private.copyHacksFiles(batch, private.hacksModifiedPath)
 	end
 	
 	--------------------------------------------------------------------------------
@@ -241,7 +245,7 @@ end
 -- UPDATE FINAL CUT PRO COMMANDS:
 -- Switches to or from having CommandPost commands editible inside FCPX.
 --------------------------------------------------------------------------------
-local function updateFCPXCommands(enable, silently)
+function private.updateFCPXCommands(enable, silently)
 	
 	if not silently then
 		--------------------------------------------------------------------------------
@@ -266,7 +270,7 @@ local function updateFCPXCommands(enable, silently)
 	--------------------------------------------------------------------------------
 	-- Let's do it!
 	--------------------------------------------------------------------------------
-	if not updateHacksShortcuts(enable) then
+	if not private.updateHacksShortcuts(enable) then
 		return false
 	end
 
@@ -286,7 +290,7 @@ end
 --------------------------------------------------------------------------------
 -- APPLY SHORTCUTS:
 --------------------------------------------------------------------------------
-local function applyShortcuts(commands, commandSet)
+function private.applyShortcuts(commands, commandSet)
 	commands:deleteShortcuts()
 	if commandSet ~= nil then
 		for id, cmd in pairs(commands:getAll()) do
@@ -304,13 +308,13 @@ end
 --------------------------------------------------------------------------------
 -- APPLY COMMAND SET SHORTCUTS:
 --------------------------------------------------------------------------------
-local function applyCommandSetShortcuts()
+function private.applyCommandSetShortcuts()
 	local commandSet = fcp:getActiveCommandSet(true)
 
 	log.df("Applying FCPX Shortcuts to global commands...")
-	applyShortcuts(mod.globalCmds, commandSet)
+	private.applyShortcuts(mod.globalCmds, commandSet)
 	log.df("Applying FCPX Shortcuts to FCPX commands...")
-	applyShortcuts(mod.fcpxCmds, commandSet)
+	private.applyShortcuts(mod.fcpxCmds, commandSet)
 
 	mod.globalCmds:watch({
 		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
@@ -324,21 +328,21 @@ end
 --- Constant
 --- A property that returns `true` if the a supported version of FCPX is installed.
 mod.supported = prop(function()
-	return hacksModifiedPath("") ~= nil
+	return private.hacksModifiedPath("") ~= nil
 end)
 
 --- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
 mod.installed = prop(function()
-	return filesMatch(resourcePath(COMMAND_GROUPS_FILE), hacksModifiedPath(COMMAND_GROUPS_FILE))
+	return private.directoriesMatch(private.hacksModifiedPath(""), private.resourcePath(""))
 end)
 
 --- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
 mod.uninstalled = prop(function()
-	return not mod.supported() or filesMatch(resourcePath(COMMAND_GROUPS_FILE), hacksOriginalPath(COMMAND_GROUPS_FILE))
+	return private.directoriesMatch(private.hacksOriginalPath(""), private.resourcePath(""))
 end)
 
 --- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
@@ -364,7 +368,7 @@ end)
 --- Notes:
 ---  * Used by Trash Preferences menubar command.
 function mod.uninstall(silently)
-	return updateFCPXCommands(false, silently)
+	return private.updateFCPXCommands(false, silently)
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.install(silently) -> none
@@ -377,7 +381,7 @@ end
 --- Returns:
 ---  * `true` if successful.
 function mod.install(silently)
-	return updateFCPXCommands(true, silently)
+	return private.updateFCPXCommands(true, silently)
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.editCommands() -> none
@@ -406,7 +410,7 @@ end
 function mod.update()
 	if mod.installed:update() then
 		log.df("Applying FCPX Command Editor Shortcuts")
-		applyCommandSetShortcuts()
+		private.applyCommandSetShortcuts()
 	end
 end
 
