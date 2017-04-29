@@ -97,8 +97,22 @@
 		opacity: 0.4;
 	}
 
+	.shortcutsControl {
+		padding-top: 0px;
+		padding-bottom: 3pt;
+		padding-left: 20px;
+		margin-top: 0px;
+		margin-bottom: 2px;
+		margin-right: 0px;
+		margin-left: 0px;
+		height: 20px;
+	}
+	#shortcutController {
+		font-weight: bold;
+	}
 </style>
 <h3 class="uiItem">{{ i18n "customiseShortcuts" }}</h3>
+<p class="shortcutsControl">{{ i18n "shortcutsControl" }} <span id="shortcutController">{% if shortcutsEnabled then %}{{ i18n "appName" }}{% else %}{{ i18n("finalCutPro")}}{% end %}</span>.</p>
 <div id="customiseShortcuts" class="{{ shortcutsEnabled and '' or 'disabled' }}">
 	<table class="shortcuts">
 		<thead>

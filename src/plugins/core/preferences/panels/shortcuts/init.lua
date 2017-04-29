@@ -353,12 +353,14 @@ function mod.updateCustomShortcutsVisibility()
 			document.getElementById("customiseShortcuts").className = "disabled";
 			document.getElementById("enableCustomShortcuts").checked = true;
 			document.getElementById("resetShortcuts").className = "button resetShortcuts buttonDisabled";
+			document.getElementById("shortcutController").innerHTML = "]] .. i18n("finalCutPro") .. [["
 		]])
 	else
 		mod._manager.injectScript([[
 			document.getElementById("customiseShortcuts").className = "";
 			document.getElementById("enableCustomShortcuts").checked = false;
 			document.getElementById("resetShortcuts").className = "button resetShortcuts";
+			document.getElementById("shortcutController").innerHTML = "]] .. i18n("appName") .. [["
 		]])
 	end
 
@@ -386,7 +388,7 @@ function mod.init(deps, env)
 		label			= i18n("shortcutsPanelLabel"),
 		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
 		tooltip			= i18n("shortcutsPanelTooltip"),
-		height			= 465,
+		height			= 490,
 	})
 
 	mod._panel:addContent(10, generateContent, true)
