@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("matchframe")
 
+local dialog						= require("cp.dialog")
 local fcp							= require("cp.apple.finalcutpro")
 local just							= require("cp.just")
 
@@ -158,8 +159,8 @@ function mod.multicamMatchFrame(goBackToTimeline)
 	-- Open in Angle Editor:
 	--------------------------------------------------------------------------------
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Clip", "Open Clip") then
-		menuBar:selectMenu("Clip", "Open Clip")
+	if menuBar:isEnabled("Clip", "Open in Angle Editor") then
+		menuBar:selectMenu("Clip", "Open in Angle Editor")
 	else
 		dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
 		return false
