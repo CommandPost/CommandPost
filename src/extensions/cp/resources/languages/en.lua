@@ -12,6 +12,11 @@ return {
 		--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
+			-- Apps:
+			--------------------------------------------------------------------------------
+			finalCutPro							=			"Final Cut Pro",
+
+			--------------------------------------------------------------------------------
 			-- Numbers:
 			--------------------------------------------------------------------------------
 			one									=			"1",
@@ -562,6 +567,7 @@ return {
 
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
+			shortcutsControl					=			"Shortcuts are currently being controlled by",
 
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
