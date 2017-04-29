@@ -257,10 +257,11 @@ function prop.mt:set(newValue)
 		self._doSet = true
 		self._newValue = newValue
 		return newValue
+	else
+		self._set(newValue, self._owner)
+		self:_notify(newValue)
+		return newValue
 	end
-	self._set(newValue, self._owner)
-	self:_notify(newValue)
-	return newValue
 end
 
 --- cp.prop:clear() -> nil
@@ -430,6 +431,7 @@ function prop.mt:_notify(value)
 			-- check if a 'set' happened during the notification cycle.
 			if self._doSet then
 				self._doSet = false
+				self._doUpdate = false
 				self:set(self._newValue)
 				self._newValue = nil
 			elseif self._doUpdate then

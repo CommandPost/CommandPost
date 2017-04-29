@@ -354,6 +354,32 @@ function run()
 		ok(aProp() == true)
 		ok(eq(log, {1, 2, 3}))
 	end)
+	
+	test("Prop Parent Notify Loop", function()
+		local aProp = prop.TRUE()
+		local bProp = prop.FALSE()
+		local cProp = aProp:AND(bProp)
+		
+		local log = {}
+
+		ok(cProp() == false)
+		
+		cProp:watch(function(value)
+			log[#log+1] = {one = value}
+			if not value then
+				bProp(true)
+			end
+		end)
+		
+		cProp:watch(function(value)
+			log[#log+1] = {two = value}
+		end)
+		
+		cProp:update()
+		
+		ok(cProp() == true)
+		ok(eq(log, {{one = false}, {two = false}, {one = true}, {two = true}}))
+	end)
 end
 
 return run
