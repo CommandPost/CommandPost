@@ -472,6 +472,15 @@ function plugin.init(deps, env)
 			commands.group(v):enable()
 		end
 
+		--------------------------------------------------------------------------------
+		-- Check to see if Final Cut Pro is running:
+		--------------------------------------------------------------------------------
+		if fcp:isFrontmost() then
+			mod.fcpxCmds:enable()
+		else
+			mod.fcpxCmds:disable()
+		end
+
 	end)
 
 	--------------------------------------------------------------------------------
