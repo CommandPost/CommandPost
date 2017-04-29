@@ -60,6 +60,7 @@ local mod = {}
 
 mod.excludedClassnames					= {CLIPBOARD.MARKER}				-- Data we don't want to count when copying.
 mod.watcherFrequency					= 0.5
+mod._watchersCount						= 0
 
 --------------------------------------------------------------------------------
 -- IS TIMELINE CLIP:
@@ -381,7 +382,7 @@ function mod.startWatching()
 		mod._lastChange = currentChange
 	end)
 	mod._timer:start()
-	
+
 	mod.watching:update()
 	--log.d("Started Clipboard Watcher")
 end
