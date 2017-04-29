@@ -283,17 +283,19 @@ function tools.cleanupButtonText(value)
 
 end
 
---------------------------------------------------------------------------------
--- GET USER LOCALE:
---------------------------------------------------------------------------------
-function tools.userLocale()
-	local a, userLocale = osascript.applescript("return user locale of (get system info)")
-	return userLocale
-end
-
---------------------------------------------------------------------------------
--- MODIFIER MATCH:
---------------------------------------------------------------------------------
+--- cp.tools.modifierMatch(inputA, inputB) -> boolean
+--- Function
+--- Compares two modifier tables.
+---
+--- Parameters:
+---  * inputA - table of modifiers
+---  * inputB - table of modifiers
+---
+--- Returns:
+---  * `true` if there's a match otherwise `false`
+---
+--- Notes:
+---  * This function only takes into account 'ctrl', 'alt', 'cmd', 'shift'.
 function tools.modifierMatch(inputA, inputB)
 
 	local match = true
@@ -304,6 +306,40 @@ function tools.modifierMatch(inputA, inputB)
 	if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
 
 	return match
+
+end
+
+--- cp.tools.modifierMaskToModifiers() -> table
+--- Function
+--- Translate Keyboard Modifiers from Apple's Plist Format into Hammerspoon Format
+---
+--- Parameters:
+---  * value - Modifiers String
+---
+--- Returns:
+---  * table
+function tools.modifierMaskToModifiers(value)
+
+	local modifiers = {
+		["alphashift"] 	= 1 << 16,
+		["shift"]      	= 1 << 17,
+		["control"]    	= 1 << 18,
+		["option"]	   	= 1 << 19,
+		["command"]    	= 1 << 20,
+		["numericpad"] 	= 1 << 21,
+		["help"]       	= 1 << 22,
+		["function"]   	= 1 << 23,
+	}
+
+	local answer = {}
+
+	for k, v in pairs(modifiers) do
+		if (value & v) == v then
+			table.insert(answer, k)
+		end
+	end
+
+	return answer
 
 end
 

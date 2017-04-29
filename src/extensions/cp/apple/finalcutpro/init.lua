@@ -1045,7 +1045,7 @@ function App:getCommandShortcuts(id)
 				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
 				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
 			elseif fcpxCmd["modifierMask"] ~= nil then
-				modifiers = kc.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
 			end
 
 			if fcpxCmd["characterString"] ~= nil then
