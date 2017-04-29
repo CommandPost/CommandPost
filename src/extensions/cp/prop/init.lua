@@ -367,14 +367,15 @@ end
 
 --- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
 --- Method
---- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter.
+--- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter. If property is bound to an owner, the owner is the second parameter.
 ---
 --- Parameters:
---- * `watchFn`		- The watch function.
+--- * `watchFn`		- The watch function, with the signature `function(newValue, owner)`.
 --- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
 ---
 --- Returns:
---- * The same `cp.prop` instance.
+--- * `cp.prop`		- The same `cp.prop` instance
+--- * `function`	- The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
 ---
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
@@ -383,10 +384,39 @@ function prop.mt:watch(watchFn, notifyNow)
 		self._watchers = {}
 	end
 	if notifyNow then
-		watchFn(self:get())
+		watchFn(self:get(), self:owner())
 	end
 	self._watchers[#self._watchers + 1] = watchFn
-	return self
+	return self, watchFn
+end
+
+--- cp.prop:unwatch(watchFn) -> boolean
+--- Method
+--- Removes the specified watch method as a watcher, if present. An example of adding and removing a watch:
+---
+--- ```lua
+--- local prop, watcher = prop.TRUE():watch(function(value) print tostring(value) end)
+--- prop:unwatch(watcher) == true
+--- ```
+---
+--- Parameters:
+--- * `watchFn`		- The original watch function to remove. Must be the same instance that was added.
+--- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
+---
+--- Returns:
+--- * `cp.prop`		- The same `cp.prop` instance
+--- * `function`	- The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
+---
+--- Notes:
+--- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+function prop.mt:unwatch(watchFn)
+	for i,watcher in ipairs(self._watchers) do
+		if watcher == watchFn then
+			table.remove(self._watchers, i)
+			return true
+		end
+	end
+	return false
 end
 
 --- cp.prop:update() -> value
@@ -424,18 +454,18 @@ function prop.mt:_notify(value)
 		if self._lastValue ~= value then
 			self._notifying = true
 			for _,watcher in ipairs(self._watchers) do
-				watcher(value)
+				watcher(value, self:owner())
 			end
 			self._lastValue = value
-			self._notifying = false
+			self._notifying = nil
 			-- check if a 'set' happened during the notification cycle.
 			if self._doSet then
-				self._doSet = false
-				self._doUpdate = false
+				self._doSet = nil
+				self._doUpdate = nil
 				self:set(self._newValue)
 				self._newValue = nil
 			elseif self._doUpdate then
-				self._doUpdate = false
+				self._doUpdate = nil
 				self:update()
 			end
 		end

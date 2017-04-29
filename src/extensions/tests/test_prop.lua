@@ -75,7 +75,7 @@ function run()
 		ok(hello:toggle() == true)
 	end)
 	
-	test("Watcher", function()
+	test("Prop Watch", function()
 		local state = true
 		local count = 0
 		local watchValue = nil
@@ -99,6 +99,23 @@ function run()
 		ok(isState:toggle() == true)
 		ok(eq(count, 3))
 		ok(watchValue == true)
+	end)
+	
+	test("Prop Unwatch", function()
+		local log = {}
+		-- watch the property, keep the watcher instance
+		local prop, watcher = prop.TRUE():watch(function(value) log[#log+1] = value end)
+		ok(eq(log, {}))
+		
+		prop:update()
+		ok(eq(log, {true}))
+		
+		ok(prop(false) == false)
+		ok(eq(log, {true, false}))
+		
+		prop:unwatch(watcher)
+		ok(prop(true) == true)
+		ok(eq(log, {true, false}))
 	end)
 	
 	test("Prop NOT", function()
