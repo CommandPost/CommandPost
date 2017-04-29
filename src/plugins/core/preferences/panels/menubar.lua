@@ -52,7 +52,7 @@ function plugin.init(deps)
 		tooltip		= i18n("menubarPanelTooltip"),
 		height		= 306,
 	})
-	
+
 	--------------------------------------------------------------------------------
 	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
@@ -61,16 +61,16 @@ function plugin.init(deps)
 	:addCheckbox(APPEARANCE_HEADING + 10,
 		{
 			label = i18n("displayThisMenuAsIcon"),
-			onchange = function(id, params) dep.menuMgr.displayMenubarAsIcon(params.checked) end,
+			onchange = function(id, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
 			checked = deps.menuMgr.displayMenubarAsIcon,
 		}
 	)
 
 	:addHeading(SECTIONS_HEADING, i18n("sections"))
-	
+
 	panel.APPEARANCE_HEADING	= APPEARANCE_HEADING
 	panel.SECTIONS_HEADING		= SECTIONS_HEADING
-	
+
 	return panel
 end
 
