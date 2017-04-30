@@ -20,6 +20,7 @@ local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
 local geometry					= require("hs.geometry")
+local host						= require("hs.host")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local styledtext                = require("hs.styledtext")
@@ -41,7 +42,7 @@ for file in fs.dir(languagePath) do
 end
 local userLocale = nil
 if config.get("language") == nil then
-	userLocale = tools.userLocale()
+	userLocale = host.locale.current()
 else
 	userLocale = config.get("language")
 end
