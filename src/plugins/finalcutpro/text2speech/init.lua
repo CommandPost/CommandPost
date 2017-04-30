@@ -15,14 +15,16 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("text2speech")
 
+local base64							= require("hs.base64")
 local chooser							= require("hs.chooser")
-local screen							= require("hs.screen")
-local timer								= require("hs.timer")
 local drawing							= require("hs.drawing")
 local eventtap							= require("hs.eventtap")
+local host								= require("hs.host")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
+local screen							= require("hs.screen")
 local speech							= require("hs.speech")
+local timer								= require("hs.timer")
 
 local axutils 							= require("cp.apple.finalcutpro.axutils")
 local config							= require("cp.config")
@@ -37,10 +39,9 @@ local tools								= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.defaultFilename = "Synthesised Voice Over 1"
-
-mod.recentText = config.prop("text2speechRecentText", {})
-mod.path = config.prop("text2speechPath", "")
+mod.defaultFilename 	= "Synthesised Voice Over"
+mod.recentText 			= config.prop("textToSpeechRecentText", {})
+mod.path 				= config.prop("text2speechPath", "")
 
 function mod.chooseFolder()
 	local result = dialog.displayChooseFolder("Please select where you want to save your audio files:")
@@ -48,6 +49,31 @@ function mod.chooseFolder()
 		mod.path(result)
 	end
 	return result
+end
+
+local function fileToString(path)
+	local result = nil
+	file = io.open(path, "r")
+	if file then
+		io.input(file)
+		result = io.read("*a")
+		io.close(file)
+	end
+	return result
+end
+
+local charset = {}
+for i = 48,  57 do table.insert(charset, string.char(i)) end
+for i = 65,  90 do table.insert(charset, string.char(i)) end
+
+function string.random(length)
+  math.randomseed(os.time())
+
+  if length > 0 then
+    return string.random(length - 1) .. charset[math.random(1, #charset)]
+  else
+    return ""
+  end
 end
 
 local function completionFn(result)
@@ -73,23 +99,73 @@ local function completionFn(result)
 		mod.recentText(recentText)
 	end
 
+	--log.df("mod.recentText: %s", hs.inspect(mod.recentText()))
+
 	local textToSpeak = result["text"]
 
+	local label = mod.defaultFilename
 	local savePath = mod.path() .. mod.defaultFilename .. ".aif"
 
 	if tools.doesFileExist(savePath) then
-		savePath = mod.path() .. tools.incrementFilename(mod.defaultFilename) .. ".aif"
+		local newPathCount = 0
+		repeat
+			newPathCount = newPathCount + 1
+			savePath = mod.path() .. mod.defaultFilename .. " " .. tostring(newPathCount) .. ".aif"
+			label = mod.defaultFilename .. " " .. tostring(newPathCount)
+		until not tools.doesFileExist(savePath)
 	end
 
 	--log.df("Saving to file (%s): %s", savePath, textToSpeak)
 
 	speech.new():speakToFile(textToSpeak, savePath)
 
+	hs.execute("open -R '" ..  savePath .. "'")
+
+	do return end
+
 	--------------------------------------------------------------------------------
 	--
-	-- TODO: Now we need to import this file into Final Cut Pro (probably using the Pasteboard - or XML is too hard)
+	-- TODO: Below is a failed attempt of trying to import the audio clip into the
+	--       Final Cut Pro timeline using the Pasteboard. Need to do a lot more
+	--       testing and experimentation to hopefully get it to actually work.
 	--
 	--------------------------------------------------------------------------------
+
+	local templateXML = fileToString(mod.assetsPath .. "/inside.plist")
+	templateXML = string.gsub(templateXML, "{{ clipname }}", textToSpeak)
+	templateXML = string.gsub(templateXML, "{{ label }}", label)
+	templateXML = string.gsub(templateXML, "{{ fullPath }}", savePath)
+	templateXML = string.gsub(templateXML, "{{ uuidA }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidB }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidC}}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidD }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidE }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidF }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidG }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidH }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidI }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ uuidJ }}", host.uuid())
+	templateXML = string.gsub(templateXML, "{{ randomA }}", string.random(32))
+
+	local base64Encoded = base64.encode(templateXML, 68)
+
+	local finalClipboardData = fileToString(mod.assetsPath .. "/outside.plist")
+	finalClipboardData = string.gsub(finalClipboardData, "{{ base64data }}", base64Encoded)
+
+	--------------------------------------------------------------------------------
+	-- Put item back in the clipboard quietly:
+	--------------------------------------------------------------------------------
+	mod.clipboardManager.writeFCPXData(finalClipboardData, true)
+
+	--------------------------------------------------------------------------------
+	-- Paste in FCPX:
+	--------------------------------------------------------------------------------
+	fcp:launch()
+	if fcp:performShortcut("Paste") then
+		return true
+	else
+		log.w("Failed to trigger the 'Paste' Shortcut.")
+	end
 
 end
 
@@ -149,7 +225,7 @@ function mod.show()
 	if not tools.doesDirectoryExist(mod.path()) then
 		local result = mod.chooseFolder()
 		if not result then
-			log.df("Choose Folder Cancelled.")
+			--log.df("Choose Folder Cancelled.")
 			return nil
 		else
 			mod.path(result)
@@ -194,14 +270,19 @@ local plugin = {
 	id				= "finalcutpro.text2speech",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.commands"]		= "fcpxCmds",
+		["finalcutpro.commands"]			= "fcpxCmds",
+		["finalcutpro.clipboard.manager"]	= "clipboardManager",
 	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+	mod.clipboardManager = deps.clipboardManager
+
+	mod.assetsPath = env:pathToAbsolute("assets")
 
 	deps.fcpxCmds:add("cpText2Speech")
 		:whenActivated(function() mod.show() end)
