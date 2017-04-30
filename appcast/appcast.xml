@@ -39,7 +39,7 @@
 			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.4/CommandPost_1.0.0-beta.4.dmg"
 				sparkle:version="1.0.0-beta.4"
 				sparkle:dsaSignature="MC0CFFQS2MIyU1pa26Jleq0ZY67zTlXCAhUAuHgAZvmy+MWyh+cx0EN+BxaRTck="
-				type=application/octet-stream
+				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
 		</item>
