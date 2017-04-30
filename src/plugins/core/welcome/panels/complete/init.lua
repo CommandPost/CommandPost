@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("intro")
+local log										= require("hs.logger").new("complete")
 
 local config									= require("cp.config")
 local generate									= require("cp.web.generate")
@@ -29,12 +29,12 @@ local mod = {}
 -- CONTROLLER CALLBACK:
 --------------------------------------------------------------------------------
 local function controllerCallback(message)
-
 	local result = message["body"][1]
 	if result == "complete" then
 		mod.manager.welcomeComplete(true)
+		mod.manager.delete()
+		mod.manager.setupUserInterface(false)
 	end
-
 end
 
 --------------------------------------------------------------------------------
