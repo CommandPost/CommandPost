@@ -5,7 +5,44 @@
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
+		<item>
+			<title>Version 1.0.0-beta.4</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added a Preferences button to the Error Log (issue #549)</li>
+				<li>Added Initial Release of Text to Speech Plugin (issue #540)</li></ul>
 
+				<h2>Bug Fixes:</h2>
+				<ul><li>Replaced `getPathToApplicationFromPID()` with `app:path()` (issue #532)</li>
+				<li>Now only shows Welcome Panel Progress Dots if there’s more than one panel enabled</li>
+				<li>Only show FCPX Missing & Hacks Shortcuts Panel once</li>
+				<li>`fcp:restart()` now restarts the active version of Final Cut Pro - not necessarily the newest version (issue #535)</li>
+				<li>Replaced `getPathToClosedApplication()` with `hs.application.pathForBundleID`</li>
+				<li>Fixed bug with Reset Shortcuts Class</li>
+				<li>Feedback Plugin - Debug Console Output triggering mod_security (issue #544)</li>
+				<li>Prevent all the wfilter error messages in Error Log (issue #516)</li>
+				<li>Fixed HUD Error (issue #547)</li>
+				<li>Improve support for boolean 'is' properties (issue #542)</li>
+				<li>Improved Feedback Form UI Feedback (issue #480)</li>
+				<li>Fixed Bug in "Reveal Multicam Clip in Angle Editor" (issue #559)</li>
+				<li>Fixed issue when Final Cut Pro Shortcuts are enabled on load even if FCPX isn't active (issue #561)</li>
+				<li>Added Explanation to Shortcuts Panel when Hacks Shortcuts Enabled (issue #554)</li>
+				<li>Fixed Bug in "Display Menubar as Icon" (issue #564)</li>
+				<li>Changed “Hacks Shortcuts” to “CommandPost”</li>
+				<li>Added description to Trash Preferences</li>
+				<li>Fixed Welcome Screen Complete Button (issue #566)</li>
+				<li>Better Error Handling when Hotkey is already used (issue #517)</li>
+				<li>Replaced tools.userLocale() with hs.host.locale.current()</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon,  1 May 2017 00:57:30 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.4/CommandPost_1.0.0-beta.4.dmg"
+				sparkle:version="1.0.0-beta.4"
+				sparkle:dsaSignature="MC0CFFQS2MIyU1pa26Jleq0ZY67zTlXCAhUAuHgAZvmy+MWyh+cx0EN+BxaRTck="
+				type=application/octet-stream
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
 		<item>
 			<title>Version 1.0.0-beta.3</title>
 			<description><![CDATA[
