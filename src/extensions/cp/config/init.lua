@@ -221,7 +221,7 @@ function mod.prop(key, defaultValue)
 	else
 		propValue = mod._isCache[key]
 	end
-	
+
 	if not propValue then
 		propValue = prop.new(
 			function() return mod.get(key, defaultValue) end,
@@ -229,7 +229,7 @@ function mod.prop(key, defaultValue)
 		)
 		mod._isCache[key] = propValue
 	end
-	
+
 	return propValue
 end
 
@@ -244,9 +244,7 @@ end
 ---  * None
 function mod.reset()
 	for i, v in ipairs(settings.getKeys()) do
-		if (v:sub(1,string.len(mod.configPrefix .. "."))) == mod.configPrefix .. "." then
-			settings.set(v, nil)
-		end
+		settings.set(v, nil)
 	end
 end
 
