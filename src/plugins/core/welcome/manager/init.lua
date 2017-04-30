@@ -56,14 +56,9 @@ mod.defaultTitle 							= i18n("welcomeTitle")
 mod._panels									= {}
 
 --- plugins.core.welcome.manager.welcomeComplete <cp.prop: boolean>
---- Constant
+--- Variable
 --- If true, the Welcome window is complete.
-mod.welcomeComplete	= config.prop("welcomeComplete", false):watch(function(value)
-	if not value then
-		mod.delete()
-		mod.setupUserInterface(false)	
-	end
-end)
+mod.welcomeComplete	= config.prop("welcomeComplete", false)
 
 --------------------------------------------------------------------------------
 --

@@ -12,6 +12,11 @@ return {
 		--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
+			-- Apps:
+			--------------------------------------------------------------------------------
+			finalCutPro							=			"Final Cut Pro",
+
+			--------------------------------------------------------------------------------
 			-- Numbers:
 			--------------------------------------------------------------------------------
 			one									=			"1",
@@ -94,7 +99,7 @@ return {
 			finalCutProMissingText				=			"Unfortunately we couldn't detect a supported installation of Final Cut Pro installed.<br /><br />Please download the latest version from the App Store to enable Final Cut Pro functionality.",
 			completeHeading						=			"CommandPost is now setup and ready to go!",
 			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
-			commandSetText						=			"CommandPost has the ability to add handy new functions to Final Cut Pro’s Command Editor.<br /><br />This allows you to customise the shortcuts for CommandPost directly within Final Cut Pro.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.",
+			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
 			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
 			enableAccessibility					=			"Enable Accessibility",
 
@@ -222,8 +227,8 @@ return {
 			changeBackupIntervalMessage			=			"Changing the Backup Interval requires Final Cut Pro to restart.",
 			changeSmartCollectionsLabel			=			"Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
-			hacksShortcutsRestart				=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
-			hacksShortcutAdminPassword			=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password.",
+			hacksShortcutsRestart				=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
+			hacksShortcutAdminPassword			=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
 			togglingMovingMarkersRestart		=			"Toggling Moving Markers requires Final Cut Pro to restart.",
 			togglingBackgroundTasksRestart 		=			"Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.",
@@ -438,6 +443,7 @@ return {
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
 			commandLineToolDescription			=			"When the Command Line Tool is installed, you can use <strong>cmdpost</strong> in Terminal to trigger Lua code. Please refer to the User Guide for more information.",
+			trashPreferencesDescription			=			"You can also trash the CommandPost Preferences by holding down OPTION+COMMAND when you launch CommandPost from the dock.",
 
 			--------------------------------------------------------------------------------
 			-- General:
@@ -562,6 +568,7 @@ return {
 
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
+			shortcutsControl					=			"Shortcuts are currently being controlled by",
 
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",

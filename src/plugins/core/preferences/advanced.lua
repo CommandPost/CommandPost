@@ -243,6 +243,7 @@ function plugin.init(deps)
 	)
 
 	:addHeading(80, i18n("advanced"))
+	:addParagraph(81, i18n("trashPreferencesDescription"), true)
 
 	:addButton(85,
 		{
