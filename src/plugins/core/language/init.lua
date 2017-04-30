@@ -16,6 +16,7 @@
 local log			= require("hs.logger").new("lang")
 
 local fs			= require("hs.fs")
+local host			= require("hs.host")
 local inspect		= require("hs.inspect")
 local timer			= require("hs.timer")
 
@@ -86,7 +87,7 @@ function mod.getCommandPostLanguages()
 end
 
 function mod.getUserLocale()
-	local userLocale = config.get("language", tools.userLocale())
+	local userLocale = config.get("language", host.locale.current())
 	if string.find(userLocale, "_") ~= nil then
 		userLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
 	end
@@ -110,7 +111,7 @@ local function getCommandPostLanguagesMenu()
 	else
 		--log.df("Not using CommandPost Language Menu Cache")
 
-		if userLocale == nil then userLocale = tools.userLocale() end
+		if userLocale == nil then userLocale = host.locale.current() end
 
 		local basicUserLocale = nil
 		if string.find(userLocale, "_") ~= nil then

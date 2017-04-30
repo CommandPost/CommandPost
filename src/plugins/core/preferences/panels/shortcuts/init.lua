@@ -17,6 +17,7 @@ local log										= require("hs.logger").new("prefsShortcuts")
 
 local fs										= require("hs.fs")
 local image										= require("hs.image")
+local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
@@ -27,6 +28,7 @@ local config									= require("cp.config")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
+local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
 local _											= require("moses")
@@ -90,6 +92,9 @@ local function controllerCallback(message)
 	local action = body.action
 
 	-- log.df("Callback message: %s", hs.inspect(message))
+
+	-- TODO: Can this whole updateShortcut action be removed??
+
 	if action == "updateShortcut" then
 		--------------------------------------------------------------------------------
 		-- Values from Callback:
@@ -129,6 +134,7 @@ local function controllerCallback(message)
 end
 
 local function updateShortcut(id, params)
+
 	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
@@ -156,6 +162,12 @@ local function updateShortcut(id, params)
 		if params.keyCode and params.keyCode ~= "" then
 			theCommand:activatedBy(modifiers, params.keyCode)
 		end
+
+		--------------------------------------------------------------------------------
+		--
+		-- TODO: Check that the shortcut was actually added and alert user if not.
+		--
+		--------------------------------------------------------------------------------
 
 		commands.saveToFile(DEFAULT_SHORTCUTS)
 	else

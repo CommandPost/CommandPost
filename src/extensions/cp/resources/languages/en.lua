@@ -99,7 +99,7 @@ return {
 			finalCutProMissingText				=			"Unfortunately we couldn't detect a supported installation of Final Cut Pro installed.<br /><br />Please download the latest version from the App Store to enable Final Cut Pro functionality.",
 			completeHeading						=			"CommandPost is now setup and ready to go!",
 			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
-			commandSetText						=			"CommandPost has the ability to add handy new functions to Final Cut Pro’s Command Editor.<br /><br />This allows you to customise the shortcuts for CommandPost directly within Final Cut Pro.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.",
+			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
 			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
 			enableAccessibility					=			"Enable Accessibility",
 

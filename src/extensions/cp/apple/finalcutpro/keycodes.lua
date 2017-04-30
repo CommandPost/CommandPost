@@ -116,38 +116,4 @@ function mod.fcpxModifiersToHsModifiers(input)
 
 end
 
---- cp.apple.finalcutpro.keycodes.modifierMaskToModifiers() -> table
---- Function
---- Translate Keyboard Modifiers from Command Set Format into Hammerspoon Format
----
---- Parameters:
----  * value - Modifiers String
----
---- Returns:
----  * table
-function mod.modifierMaskToModifiers(value)
-
-	local modifiers = {
-		--AlphaShift = 1 << 16,
-		shift      = 1 << 17,
-		control    = 1 << 18,
-		option	   = 1 << 19,
-		command    = 1 << 20,
-		--NumericPad = 1 << 21,
-		--Help       = 1 << 22,
-		--Function   = 1 << 23,
-	}
-
-	local answer = {}
-
-	for k, v in pairs(modifiers) do
-		if (value & v) == v then
-			table.insert(answer, k)
-		end
-	end
-
-	return answer
-
-end
-
 return mod

@@ -85,10 +85,12 @@ local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
+
 local v											= require("semver")
 
 local just										= require("cp.just")
 local plist										= require("cp.plist")
+local prop										= require("cp.prop")
 local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
 
@@ -106,8 +108,6 @@ local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
-
-local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -316,7 +316,7 @@ end
 
 --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only>
 --- Field
---- Is Final Cut visible on screen? 
+--- Is Final Cut visible on screen?
 App.isShowing = prop.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:isRunning() and not app:isHidden()
@@ -1045,7 +1045,7 @@ function App:getCommandShortcuts(id)
 				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
 				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
 			elseif fcpxCmd["modifierMask"] ~= nil then
-				modifiers = kc.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
 			end
 
 			if fcpxCmd["characterString"] ~= nil then
