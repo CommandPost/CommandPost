@@ -55,7 +55,7 @@ function manager.init()
 	-------------------------------------------------------------------------------
 	-- Set up Menubar:
 	--------------------------------------------------------------------------------
-	manager.menubar = menubar.newWithPriority(1)
+	manager.menubar = menubar.new()
 
 	--------------------------------------------------------------------------------
 	-- Set Tool Tip:
@@ -116,7 +116,7 @@ function manager.updateMenubarIcon()
 	if not manager.menubar then
 		return
 	end
-		
+
 	local displayMenubarAsIcon = manager.displayMenubarAsIcon()
 
 	local title = config.appName
@@ -228,7 +228,7 @@ function plugin.init(deps, env)
 	welcome.disableInterfaceCallback:new("menumanager", function()
 		manager.disable()
 	end)
-	
+
 	return manager
 end
 
