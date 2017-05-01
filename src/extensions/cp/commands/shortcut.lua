@@ -195,7 +195,7 @@ function getListOfUnavailableShortcuts()
 	local symbolichotkeys = plist.binaryFileToTable("~/Library/Preferences/com.apple.symbolichotkeys.plist")
 	if symbolichotkeys and symbolichotkeys["AppleSymbolicHotKeys"] then
 		for i, v in pairs(symbolichotkeys["AppleSymbolicHotKeys"]) do
-			if v["enabled"] and v["value"]["parameters"] and v["value"]["parameters"][2] and v["value"]["parameters"][3] and next(tools.modifierMaskToModifiers(v["value"]["parameters"][3])) ~= nil then
+			if v["enabled"] and v["value"] and v["value"]["parameters"] and v["value"]["parameters"][2] and v["value"]["parameters"][3] and type(v["value"]["parameters"][3]) == "table" and next(tools.modifierMaskToModifiers(v["value"]["parameters"][3])) ~= nil then
 				unavailibleShortcuts[#unavailibleShortcuts + 1] = { keycode = v["value"]["parameters"][2], modifiers = tools.modifierMaskToModifiers(v["value"]["parameters"][3]) }
 			end
 		end
