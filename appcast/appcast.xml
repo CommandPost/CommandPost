@@ -6,6 +6,27 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.5</title>
+			<description><![CDATA[
+				<h2>Bug Fixes:</h2>
+				<ul><li>CommandPost now requires Final Cut Pro 10.3.2 or later</li>
+				<li>Fixed bug in getListOfUnavailableShortcuts() (issue #573)</li>
+				<li>Fixed bug in _coresetup (issue #572)</li>
+				<li>Improved "Text to Speech" Plugin (issue #569 & #570)</li>
+				<li>Fixed bug in "Move to Playhead" Plugin</li>
+				<li>Added "Text to Speech" Label</li>
+				<li>"Scan Final Cut Pro" now opens Effects & Generator panels prior to updating lists</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon,  1 May 2017 23:35:50 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.5/CommandPost_1.0.0-beta.5.dmg"
+				sparkle:version="1.0.0-beta.5"
+				sparkle:dsaSignature="MC0CFG2tvjz/WSSbrYSN+MQMXIoe3YGnAhUAvHr4GIpg9Pzxnt8tATIXKpV/CFk="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.4</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>
