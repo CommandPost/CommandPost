@@ -15,18 +15,16 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("text2speech")
 
-local base64							= require("hs.base64")
 local chooser							= require("hs.chooser")
 local drawing							= require("hs.drawing")
-local eventtap							= require("hs.eventtap")
-local host								= require("hs.host")
+local fnutils							= require("hs.fnutils")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
+local pasteboard						= require("hs.pasteboard")
 local screen							= require("hs.screen")
 local speech							= require("hs.speech")
 local timer								= require("hs.timer")
 
-local axutils 							= require("cp.apple.finalcutpro.axutils")
 local config							= require("cp.config")
 local dialog							= require("cp.dialog")
 local fcp								= require("cp.apple.finalcutpro")
@@ -39,173 +37,231 @@ local tools								= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.defaultFilename 	= "Synthesised Voice Over"
-mod.recentText 			= config.prop("textToSpeechRecentText", {})
-mod.path 				= config.prop("text2speechPath", "")
+--- plugins.finalcutpro.text2speech.recentText
+--- Variable
+--- Table of recent items in Text to Speech Search.
+mod.history = config.prop("textToSpeechHistory", {})
 
+--- plugins.finalcutpro.text2speech.path
+--- Variable
+--- Text to Speech Path for generated files.
+mod.path = config.prop("text2speechPath", "")
+
+--- plugins.finalcutpro.text2speech.voice
+--- Variable
+--- Text to Speech Voice.
+mod.voice = config.prop("text2speechVoice", "")
+
+--- plugins.finalcutpro.text2speech.chooseFolder() -> string or false
+--- Function
+--- Prompts the user to choose a folder for the Text to Speech Tool.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string of the selected path or `false` if cancelled.
 function mod.chooseFolder()
-	local result = dialog.displayChooseFolder("Please select where you want to save your audio files:")
+	local result = dialog.displayChooseFolder(i18n("textToSpeechDestination"))
 	if result then
 		mod.path(result)
 	end
 	return result
 end
 
-local function fileToString(path)
-	local result = nil
-	file = io.open(path, "r")
-	if file then
-		io.input(file)
-		result = io.read("*a")
-		io.close(file)
-	end
-	return result
-end
-
-local charset = {}
-for i = 48,  57 do table.insert(charset, string.char(i)) end
-for i = 65,  90 do table.insert(charset, string.char(i)) end
-
-function string.random(length)
-  math.randomseed(os.time())
-
-  if length > 0 then
-    return string.random(length - 1) .. charset[math.random(1, #charset)]
-  else
-    return ""
-  end
-end
-
+-- completionFn() -> none
+-- Function
+-- Completion Function for the Chooser
+--
+-- Parameters:
+--  * result - the result of the chooser.
+--
+-- Returns:
+--  * None
 local function completionFn(result)
-	--------------------------------------------------------------------------------
-	-- When Chooser Item is Selected or Closed:
-	--------------------------------------------------------------------------------
-	mod.chooser:hide()
-	fcp:launch()
 
+	--------------------------------------------------------------------------------
+	-- If cancelled then stop here:
+	--------------------------------------------------------------------------------
 	if not result then
-		--log.df("Chooser Closed")
+		mod.chooser:hide()
 		return
 	end
 
+	--------------------------------------------------------------------------------
+	-- Hide Chooser:
+	--------------------------------------------------------------------------------
+	mod.chooser:hide()
+
+	--------------------------------------------------------------------------------
+	-- Return to Final Cut Pro:
+	--------------------------------------------------------------------------------
+	fcp:launch()
+
+	--------------------------------------------------------------------------------
+	-- Save last result to history:
+	--------------------------------------------------------------------------------
 	local selectedRow = mod.chooser:selectedRow()
-	local recentText = mod.recentText()
+	local history = fnutils.copy(mod.history())
 	if selectedRow == 1 then
-		table.insert(recentText, 1, result)
-		mod.recentText(recentText)
-	else
-		table.remove(recentText, selectedRow)
-		table.insert(recentText, 1, result)
-		mod.recentText(recentText)
+		table.insert(history, 1, result)
 	end
+	mod.history(history)
 
-	--log.df("mod.recentText: %s", hs.inspect(mod.recentText()))
-
+	--------------------------------------------------------------------------------
+	-- Determine Filename from Result:
+	--------------------------------------------------------------------------------
 	local textToSpeak = result["text"]
-
-	local label = mod.defaultFilename
-	local savePath = mod.path() .. mod.defaultFilename .. ".aif"
-
+	local filename = string.sub(textToSpeak, 1, 255) 	-- macOS doesn't like filenames over 255 characters
+	filename = string.gsub(filename, ":", "") 			-- macOS doesn't like : symbols in filenames
+	local savePath = mod.path() .. filename .. ".aif"
 	if tools.doesFileExist(savePath) then
 		local newPathCount = 0
 		repeat
 			newPathCount = newPathCount + 1
-			savePath = mod.path() .. mod.defaultFilename .. " " .. tostring(newPathCount) .. ".aif"
-			label = mod.defaultFilename .. " " .. tostring(newPathCount)
+			savePath = mod.path() .. filename .. " " .. tostring(newPathCount) .. ".aif"
 		until not tools.doesFileExist(savePath)
 	end
 
-	--log.df("Saving to file (%s): %s", savePath, textToSpeak)
-
-	speech.new():speakToFile(textToSpeak, savePath)
-
-	hs.execute("open -R '" ..  savePath .. "'")
-
-	do return end
-
 	--------------------------------------------------------------------------------
-	--
-	-- TODO: Below is a failed attempt of trying to import the audio clip into the
-	--       Final Cut Pro timeline using the Pasteboard. Need to do a lot more
-	--       testing and experimentation to hopefully get it to actually work.
-	--
+	-- Save Synthesised Voice to File:
 	--------------------------------------------------------------------------------
-
-	local templateXML = fileToString(mod.assetsPath .. "/inside.plist")
-	templateXML = string.gsub(templateXML, "{{ clipname }}", textToSpeak)
-	templateXML = string.gsub(templateXML, "{{ label }}", label)
-	templateXML = string.gsub(templateXML, "{{ fullPath }}", savePath)
-	templateXML = string.gsub(templateXML, "{{ uuidA }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidB }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidC}}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidD }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidE }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidF }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidG }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidH }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidI }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ uuidJ }}", host.uuid())
-	templateXML = string.gsub(templateXML, "{{ randomA }}", string.random(32))
-
-	local base64Encoded = base64.encode(templateXML, 68)
-
-	local finalClipboardData = fileToString(mod.assetsPath .. "/outside.plist")
-	finalClipboardData = string.gsub(finalClipboardData, "{{ base64data }}", base64Encoded)
-
-	--------------------------------------------------------------------------------
-	-- Put item back in the clipboard quietly:
-	--------------------------------------------------------------------------------
-	mod.clipboardManager.writeFCPXData(finalClipboardData, true)
-
-	--------------------------------------------------------------------------------
-	-- Paste in FCPX:
-	--------------------------------------------------------------------------------
-	fcp:launch()
-	if fcp:performShortcut("Paste") then
-		return true
-	else
-		log.w("Failed to trigger the 'Paste' Shortcut.")
+	local talker = speech.new()
+	local defaultVoice = speech.defaultVoice()
+	if mod.voice() ~= "" then
+		local result = talker:voice(mod.voice())
+		if not result then
+			talker:voice(defaultVoice)
+			mod.voice(defaultVoice)
+		end
 	end
+	talker:speakToFile(textToSpeak, savePath)
+
+	--------------------------------------------------------------------------------
+	-- Temporarily stop the Clipboard Watcher:
+	--------------------------------------------------------------------------------
+	mod.clipboardManager.stopWatching()
+
+	--------------------------------------------------------------------------------
+	-- Save current Clipboard Content:
+	--------------------------------------------------------------------------------
+	local originalClipboard = pasteboard.readAllData()
+
+	--------------------------------------------------------------------------------
+	-- Write URL to Pasteboard:
+	--------------------------------------------------------------------------------
+	local safeSavePath = "file://" .. string.gsub(savePath, " ", "%%20") -- Replace spaces with %20
+	pasteboard.writeObjects({url=safeSavePath})
+
+	--------------------------------------------------------------------------------
+	-- Check if Timeline can be enabled:
+	--------------------------------------------------------------------------------
+	local result = fcp:menuBar():isEnabled("Window", "Go To", "Timeline")
+	if result then
+		local result = fcp:selectMenu("Window", "Go To", "Timeline")
+	else
+		log.wf("Failed to activate timeline in Text to Speech Plugin.")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Perform Paste:
+	--------------------------------------------------------------------------------
+	local result = fcp:menuBar():isEnabled("Edit", "Paste as Connected Clip")
+	if result then
+		local result = fcp:selectMenu("Edit", "Paste as Connected Clip")
+	else
+		log.wf("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
+		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Restore original Clipboard Content:
+	--------------------------------------------------------------------------------
+	timer.doAfter(2, function()
+		pasteboard.writeAllData(originalClipboard)
+		mod.clipboardManager.startWatching()
+	end)
 
 end
 
+-- queryChangedCallback() -> none
+-- Function
+-- Callback for when the Chooser Query is Changed.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function queryChangedCallback()
 	--------------------------------------------------------------------------------
 	-- Chooser Query Changed by User:
 	--------------------------------------------------------------------------------
-	local recentText = mod.recentText()
-
+	local history = fnutils.copy(mod.history())
 	local currentQuery = mod.chooser:query()
-
 	local currentQueryTable = {
 		{
 			["text"] = currentQuery
 		},
 	}
-
-	for i=1, #recentText do
-		table.insert(currentQueryTable, recentText[i])
+	for i=1, #history do
+		table.insert(currentQueryTable, history[i])
 	end
-
 	mod.chooser:choices(currentQueryTable)
-	return
 end
 
+-- firstToUpper() -> string
+-- Function
+-- Makes the first letter in a word a capital letter.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A string.
+function firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
+
+-- rightClickCallback() -> none
+-- Function
+-- Callback for when you right click on the Chooser.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function rightClickCallback()
 	--------------------------------------------------------------------------------
 	-- Right Click Menu:
 	--------------------------------------------------------------------------------
+	local availableVoices = speech.availableVoices()
+
+	local voicesMenu = {}
+	for i, v in ipairs(availableVoices) do
+		voicesMenu[#voicesMenu + 1] = {
+			title = firstToUpper(v),
+			fn = function()
+				mod.voice(v)
+			end,
+			checked = (v == mod.voice()),
+		}
+    end
+
 	local rightClickMenu = {
-		{ title = "Change Location to Save Files",
+		{ title = i18n("selectVoice"), menu = voicesMenu },
+		{ title = "-" },
+		{ title = i18n("changeDestinationFolder"),
 			fn = function()
 				mod.chooseFolder()
 				mod.chooser:show()
 			end,
 		},
 		{ title = "-" },
-		{ title = i18n("clearList"), fn = function()
-			log.df("Clearing List")
-			mod.recentText({})
+		{ title = i18n("clearHistory"), fn = function()
+			mod.history({})
 			local currentQuery = mod.chooser:query()
 			local currentQueryTable = {
 				{
@@ -216,22 +272,39 @@ local function rightClickCallback()
 		end },
 	}
 	mod.rightClickMenubar = menubar.new(false)
-	mod.rightClickMenubar:setMenu(rightClickMenu)
-	mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+		:setMenu(rightClickMenu)
+		:popupMenu(mouse.getAbsolutePosition())
 end
 
+--- plugins.finalcutpro.text2speech.show() -> none
+--- Function
+--- Shows the Text to Speech Chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.show()
 
+	--------------------------------------------------------------------------------
+	-- Check if Timeline can be enabled:
+	--------------------------------------------------------------------------------
+	local result = fcp:menuBar():isEnabled("Window", "Go To", "Timeline")
+	if not result then
+		log.wf("Failed to activate timeline in Text to Speech Plugin.")
+	end
+
+	--------------------------------------------------------------------------------
+	-- If directory doesn't exist then prompt user to select a new folder:
+	--------------------------------------------------------------------------------
 	if not tools.doesDirectoryExist(mod.path()) then
 		local result = mod.chooseFolder()
 		if not result then
-			--log.df("Choose Folder Cancelled.")
 			return nil
 		else
 			mod.path(result)
 		end
-	else
-		--log.df("Using path: %s", mod.path())
 	end
 
 	--------------------------------------------------------------------------------
@@ -239,9 +312,9 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	mod.chooser = chooser.new(completionFn)
 		:bgDark(true)
-		:query(existingValue)
 		:queryChangedCallback(queryChangedCallback)
 		:rightClickCallback(rightClickCallback)
+		:choices(mod.history())
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -280,10 +353,14 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
+	--------------------------------------------------------------------------------
+	-- Define Plugins:
+	--------------------------------------------------------------------------------
 	mod.clipboardManager = deps.clipboardManager
 
-	mod.assetsPath = env:pathToAbsolute("assets")
-
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpText2Speech")
 		:whenActivated(function() mod.show() end)
 		:activatedBy():cmd():option():ctrl("u")
