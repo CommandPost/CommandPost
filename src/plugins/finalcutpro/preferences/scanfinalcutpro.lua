@@ -66,16 +66,27 @@ function mod.scanFinalCutPro()
 	--------------------------------------------------------------------------------
 	dialog.displayMessage(i18n("scanFinalCutProWarning"))
 
-	local result
+	--------------------------------------------------------------------------------
+	-- Show Effects Panel:
+	--------------------------------------------------------------------------------
+	fcp:effects():show()
 
+	--------------------------------------------------------------------------------
+	-- Show Generators Panel:
+	--------------------------------------------------------------------------------
+	fcp:generators():show()
+
+	--------------------------------------------------------------------------------
+	-- Update Effects, Transitions, Titles & Generator Lists:
+	--------------------------------------------------------------------------------
 	if not mod.effects.updateEffectsList() then return false end
-
 	if not mod.transitions.updateTransitionsList() then return false end
-
 	if not mod.titles.updateTitlesList() then return false end
-
 	if not mod.generators.updateGeneratorsList() then return false end
 
+	--------------------------------------------------------------------------------
+	-- Competition Message:
+	--------------------------------------------------------------------------------
 	dialog.displayMessage(i18n("scanFinalCutProDone"))
 
 	return true
@@ -89,7 +100,7 @@ function mod.init(effects, generators, titles, transitions)
 	mod.generators = generators
 	mod.titles = titles
 	mod.transitions = transitions
-	
+
 	--------------------------------------------------------------------------------
 	-- HAS FINAL CUT PRO BEEN SCANNED?
 	--------------------------------------------------------------------------------
@@ -99,7 +110,7 @@ function mod.init(effects, generators, titles, transitions)
 		mod.titles.listUpdated,
 		mod.transitions.listUpdated
 	)
-	
+
 end
 
 --------------------------------------------------------------------------------
