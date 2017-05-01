@@ -75,23 +75,24 @@ hs.accessibilityStateCallback = nil
 	else
 		print("*** ERROR: "..err)
 
-		local i18n = require("i18n")
+		i18n = require("i18n")
 		i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/cp/resources/languages/en.lua")
 
 		local safeErr = string.gsub([["]] .. tostring(err) .. [["]], [[\"]], "'")
 
 		local osascript	= require("hs.osascript")
 		local appleScript = [[
-			set whatError to "]] .. safeErr .. [["
+			set whatError to ]] .. safeErr .. "\n\n" ..[[
 			set iconPath to ("]] .. hs.processInfo["resourcePath"] .. "/extensions/cp/resources/assets/CommandPost.icns" .. [[" as POSIX file)
 
-			display dialog "]] .. i18n("unexpectedError") .. [[" buttons {"]] .. i18n("sendBugReport") .. [[", "]] .. i18n("quit") .. " " .. i18n("scriptName") .. [["} with icon iconPath
+			display dialog "]] .. i18n("unexpectedError") .. [[" buttons {"]] .. i18n("sendBugReport") .. [[", "]] .. i18n("quit") .. " " .. i18n("appName") .. [["} with icon iconPath
 			if the button returned of the result is equal to "]] .. i18n("sendBugReport") .. [[" then
 				return true
 			else
 				return false
 			end if
 		]]
+
 		local _, result = osascript.applescript(appleScript)
 
 		if result then

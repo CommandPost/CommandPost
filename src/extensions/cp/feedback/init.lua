@@ -159,8 +159,12 @@ function mod.showFeedback(quitOnComplete)
 	mod.feedbackWebViewController = webview.usercontent.new("feedback")
 		:setCallback(function(message)
 			if message["body"] == "cancel" then
-				mod.feedbackWebView:delete()
-				mod.feedbackWebView = nil
+				if mod.quitOnComplete then
+					application.applicationForPID(hs.processInfo["processID"]):kill()
+				else
+					mod.feedbackWebView:delete()
+					mod.feedbackWebView = nil
+				end
 			elseif message["body"] == "hide" then
 				mod.feedbackWebView:hide()
 			elseif type(message["body"]) == "table" then
