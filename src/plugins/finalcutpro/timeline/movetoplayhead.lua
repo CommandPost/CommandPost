@@ -35,7 +35,7 @@ local mod = {}
 ---  * `true` if successful otherwise `false`
 function mod.moveToPlayhead()
 
-	local clipboardManager = plugins("cp.plugins.clipboard.manager")
+	local clipboardManager = mod.clipboardManager
 
 	clipboardManager.stopWatching()
 
@@ -64,11 +64,14 @@ local plugin = {
 	id = "finalcutpro.timeline.movetoplayhead",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.commands"]	= "fcpxCmds",
+		["finalcutpro.commands"]			= "fcpxCmds",
+		["finalcutpro.clipboard.manager"]	= "clipboardManager",
 	}
 }
 
 function plugin.init(deps)
+
+	mod.clipboardManager = deps.clipboardManager
 
 	deps.fcpxCmds:add("cpMoveToPlayhead")
 		:whenActivated(function() mod.moveToPlayhead() end)

@@ -595,6 +595,14 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
+	-- TEXT TO SPEECH PLUGIN:
+	--------------------------------------------------------------------------------
+	clearHistory						=			"Clear History",
+	changeDestinationFolder				=			"Change Destination Folder",
+	selectVoice							=			"Select Voice",
+	textToSpeechDestination				=			"Please select where you want to save your audio files:",
+
+	--------------------------------------------------------------------------------
 	-- HUD:
 	--------------------------------------------------------------------------------
 	hud									=			"HUD",
