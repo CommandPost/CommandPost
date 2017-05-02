@@ -18,6 +18,7 @@ local log								= require("hs.logger").new("text2speech")
 local chooser							= require("hs.chooser")
 local drawing							= require("hs.drawing")
 local fnutils							= require("hs.fnutils")
+local fs								= require("hs.fs")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
 local pasteboard						= require("hs.pasteboard")
@@ -28,6 +29,7 @@ local timer								= require("hs.timer")
 local config							= require("cp.config")
 local dialog							= require("cp.dialog")
 local fcp								= require("cp.apple.finalcutpro")
+local just								= require("cp.just")
 local tools								= require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -51,6 +53,16 @@ mod.path = config.prop("text2speechPath", "")
 --- Variable
 --- Text to Speech Voice.
 mod.voice = config.prop("text2speechVoice", "")
+
+--- plugins.finalcutpro.text2speech.tag
+--- Variable
+--- Tag that will be added to generated voice overs.
+mod.tag = config.prop("text2speechTag", "Generated Voice Over")
+
+--- plugins.finalcutpro.text2speech.insertIntoTimeline
+--- Variable
+--- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
+mod.insertIntoTimeline = config.prop("text2speechInsertIntoTimeline", true)
 
 --- plugins.finalcutpro.text2speech.chooseFolder() -> string or false
 --- Function
@@ -115,6 +127,7 @@ local function completionFn(result)
 	local filename = string.sub(textToSpeak, 1, 255) 	-- macOS doesn't like filenames over 255 characters
 	filename = string.gsub(filename, ":", "") 			-- macOS doesn't like : symbols in filenames
 	local savePath = mod.path() .. filename .. ".aif"
+
 	if tools.doesFileExist(savePath) then
 		local newPathCount = 0
 		repeat
@@ -136,6 +149,19 @@ local function completionFn(result)
 		end
 	end
 	talker:speakToFile(textToSpeak, savePath)
+
+	--------------------------------------------------------------------------------
+	-- Add Finder Tag:
+	--------------------------------------------------------------------------------
+	local result = just.doUntil(function()
+		return tools.doesFileExist(savePath)
+	end, 3)
+	if result then
+		fs.tagsAdd(savePath, {mod.tag()})
+	else
+		log.ef("The Text to Speech file could not be found.")
+		return nil
+	end
 
 	--------------------------------------------------------------------------------
 	-- Temporarily stop the Clipboard Watcher:
@@ -173,6 +199,24 @@ local function completionFn(result)
 	else
 		log.wf("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
 		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Remove from Timeline if appropriate:
+	--------------------------------------------------------------------------------
+	if not mod.insertIntoTimeline() then
+		local result = just.doUntil(function()
+			return fcp:menuBar():isEnabled("Edit", "Undo Paste")
+		end, 3)
+		if result then
+			local result = fcp:menuBar():isEnabled("Edit", "Undo Paste")
+			if result then
+				local result = fcp:selectMenu("Edit", "Undo Paste")
+			else
+				log.wf("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
+				return nil
+			end
+		end
 	end
 
 	--------------------------------------------------------------------------------
@@ -224,6 +268,22 @@ function firstToUpper(str)
     return (str:gsub("^%l", string.upper))
 end
 
+-- tagValidation() -> string
+-- Function
+-- Checks to see if a tag is valid.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if valid otherwise `false`
+local function tagValidation(value)
+	if string.find(value, ":") then
+		return false
+	end
+	return true
+end
+
 -- rightClickCallback() -> none
 -- Function
 -- Callback for when you right click on the Chooser.
@@ -253,6 +313,19 @@ local function rightClickCallback()
 	local rightClickMenu = {
 		{ title = i18n("selectVoice"), menu = voicesMenu },
 		{ title = "-" },
+		{ title = i18n("insertIntoTimeline"), checked = mod.insertIntoTimeline(),
+			fn = function()
+				mod.insertIntoTimeline:toggle()
+			end,
+		},
+		{ title = i18n("customiseFinderTag"), fn = function()
+				local result = dialog.displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), tagValidation)
+				if result then
+					mod.tag(result)
+				end
+				mod.chooser:show()
+			end,
+		},
 		{ title = i18n("changeDestinationFolder"),
 			fn = function()
 				mod.chooseFolder()

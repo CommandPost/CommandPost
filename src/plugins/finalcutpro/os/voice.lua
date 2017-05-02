@@ -142,7 +142,7 @@ end
 -- IS LISTENING:
 --------------------------------------------------------------------------------
 mod.listening = prop.new(function()
-	return mod.listener ~= nil and mod.listener:listening()
+	return mod.listener ~= nil and mod.listener:isListening()
 end)
 
 function mod.update()
