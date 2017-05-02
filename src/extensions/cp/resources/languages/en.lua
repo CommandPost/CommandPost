@@ -601,6 +601,10 @@ return {
 	changeDestinationFolder				=			"Change Destination Folder",
 	selectVoice							=			"Select Voice",
 	textToSpeechDestination				=			"Please select where you want to save your audio files:",
+	customiseFinderTag					=			"Customise Finder Tag",
+	enterFinderTag						=			"Please enter the Finder Tag you want to use:",
+	enterFinderTagError					=			"This Finder Tag looks invalid.\n\nPlease try again.",
+	insertIntoTimeline					=			"Insert into Timeline",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
