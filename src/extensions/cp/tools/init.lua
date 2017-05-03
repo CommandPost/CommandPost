@@ -1,15 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---              T O O L S     S U P P O R T     L I B R A R Y                 --
+--                T O O L S     S U P P O R T     L I B R A R Y               --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local tools = {}
+--- === cp.tools ===
+---
+--- A collection of handy Lua tools for CommandPost.
 
 --------------------------------------------------------------------------------
 --
@@ -32,8 +29,13 @@ local just										= require("cp.just")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
+--------------------------------------------------------------------------------
+local tools = {}
+
+--------------------------------------------------------------------------------
+-- CONSTANTS:
 --------------------------------------------------------------------------------
 tools.DEFAULT_DELAY 	= 0
 
@@ -44,18 +46,83 @@ local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
 
--------------------------------------------------------------------------------
--- RETURNS MACOS VERSION:
--------------------------------------------------------------------------------
+--- cp.tools.safeFilename(value[, defaultValue]) -> string
+--- Function
+--- Returns a Safe Filename.
+---
+--- Parameters:
+---  * value - a string you want to make safe
+---  * defaultValue - the optional default filename to use if the value is not valid
+---
+--- Returns:
+---  * A string of the safe filename
+---
+--- Notes:
+---  * Returns "filename" is both `value` and `defaultValue` are `nil`.
+function tools.safeFilename(value, defaultValue)
+
+	--------------------------------------------------------------------------------
+	-- Return default value.
+	--------------------------------------------------------------------------------
+	if not value then
+		if defaultValue then
+			return defaultValue
+		else
+			return "filename"
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- Trim whitespaces:
+	--------------------------------------------------------------------------------
+	result = string.gsub(value, "^%s*(.-)%s*$", "%1")
+
+	--------------------------------------------------------------------------------
+	-- Remove Unfriendly Symbols:
+	--------------------------------------------------------------------------------
+	--result = string.gsub(result, "[^a-zA-Z0-9 ]","") -- This is probably too overkill.
+	result = string.gsub(result, ":", "")
+	result = string.gsub(result, "/", "")
+	result = string.gsub(result, "\"", "")
+
+	--------------------------------------------------------------------------------
+	-- Remove Line Breaks:
+	--------------------------------------------------------------------------------
+	result = string.gsub(result, "\n", "")
+
+	--------------------------------------------------------------------------------
+	-- Limit to 255 characters (including extension):
+	--------------------------------------------------------------------------------
+	result = string.sub(result, 1, 255 - 4)
+
+	return result
+
+end
+
+--- cp.tools.macOSVersion() -> string
+--- Function
+--- Returns a the macOS Version as a single string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing the macOS version
 function tools.macOSVersion()
 	local osVersion = host.operatingSystemVersion()
 	local osVersionString = (tostring(osVersion["major"]) .. "." .. tostring(osVersion["minor"]) .. "." .. tostring(osVersion["patch"]))
 	return osVersionString
 end
 
---------------------------------------------------------------------------------
--- DOES DIRECTORY EXIST:
---------------------------------------------------------------------------------
+--- cp.tools.doesDirectoryExist(path) -> boolean
+--- Function
+--- Returns whether or not a directory exists.
+---
+--- Parameters:
+---  * path - Path to the directory
+---
+--- Returns:
+---  * `true` if the directory exists otherwise `false`
 function tools.doesDirectoryExist(path)
 	if path then
 	    local attr = fs.attributes(path)
@@ -65,9 +132,15 @@ function tools.doesDirectoryExist(path)
     end
 end
 
---------------------------------------------------------------------------------
--- DOES FILE EXIST:
---------------------------------------------------------------------------------
+--- cp.tools.doesFileExist(path) -> boolean
+--- Function
+--- Returns whether or not a file exists.
+---
+--- Parameters:
+---  * path - Path to the file
+---
+--- Returns:
+---  * `true` if the file exists otherwise `false`
 function tools.doesFileExist(path)
 	if path == nil then return nil end
     local attr = fs.attributes(path)
@@ -78,16 +151,28 @@ function tools.doesFileExist(path)
     end
 end
 
---------------------------------------------------------------------------------
--- TRIM STRING:
---------------------------------------------------------------------------------
+--- cp.tools.trim(string) -> string
+--- Function
+--- Trims the whitespaces from a string
+---
+--- Parameters:
+---  * string - the string you want to trim
+---
+--- Returns:
+---  * A trimmed string
 function tools.trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
---------------------------------------------------------------------------------
--- SPLIT STRING LINES INTO TABLE:
---------------------------------------------------------------------------------
+--- cp.tools.lines(string) -> table
+--- Function
+--- Splits a string containing multiple lines of text into a table.
+---
+--- Parameters:
+---  * string - the string you want to process
+---
+--- Returns:
+---  * A table
 function tools.lines(str)
 	local t = {}
 	local function helper(line)
@@ -101,10 +186,16 @@ function tools.lines(str)
 	return t
 end
 
---------------------------------------------------------------------------------
--- EXECUTE WITH ADMINISTRATOR PRIVILEGES:
--- Returns: 'true' if successful, 'false' if cancelled, and a 'string' if error
---------------------------------------------------------------------------------
+--- cp.tools.executeWithAdministratorPrivileges(input[, stopOnError]) -> boolean or string
+--- Function
+--- Executes a single or multiple shell commands with Administrator Privileges.
+---
+--- Parameters:
+---  * input - either a string or a table of strings of commands you want to execute
+---  * stopOnError - an optional variable that stops processing multiple commands when an individual commands returns an error
+---
+--- Returns:
+---  * `true` if successful, `false` if cancelled and a string if there's an error.
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
 	local hsBundleID = hs.processInfo["bundleID"]
 	if type(stopOnError) ~= "boolean" then stopOnError = true end
@@ -175,9 +266,17 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
 	end
 end
 
---------------------------------------------------------------------------------
--- LEFT CLICK:
---------------------------------------------------------------------------------
+--- cp.tools.leftClick(point[, delay, clickNumber]) -> none
+--- Function
+--- Performs a Left Mouse Click.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---  * clickNumber - The optional number of times you want to perform the click.
+---
+--- Returns:
+---  * None
 function tools.leftClick(point, delay, clickNumber)
 	delay = delay or tools.DEFAULT_DELAY
 	clickNumber = clickNumber or 1
@@ -186,18 +285,32 @@ function tools.leftClick(point, delay, clickNumber)
 	eventtap.event.newMouseEvent(leftMouseUp, point):setProperty(clickState, clickNumber):post()
 end
 
---------------------------------------------------------------------------------
--- DOUBLE LEFT CLICK:
---------------------------------------------------------------------------------
+--- cp.tools.doubleLeftClick(point[, delay]) -> none
+--- Function
+--- Performs a Left Mouse Double Click.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
 function tools.doubleLeftClick(point, delay)
 	delay = delay or tools.DEFAULT_DELAY
 	tools.leftClick(point, delay, 1)
 	tools.leftClick(point, delay, 2)
 end
 
---------------------------------------------------------------------------------
--- NINJA MOUSE CLICK:
---------------------------------------------------------------------------------
+--- cp.tools.ninjaMouseClick(point[, delay]) -> none
+--- Function
+--- Performs a mouse click, but returns the mouse to the original position without the users knowledge.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
 function tools.ninjaMouseClick(point, delay)
 	delay = delay or tools.DEFAULT_DELAY
 	local originalMousePoint = mouse.getAbsolutePosition()
@@ -206,9 +319,16 @@ function tools.ninjaMouseClick(point, delay)
 	mouse.setAbsolutePosition(originalMousePoint)
 end
 
---------------------------------------------------------------------------------
--- NINJA DOUBLE MOUSE CLICK:
---------------------------------------------------------------------------------
+--- cp.tools.ninjaDoubleClick(point[, delay]) -> none
+--- Function
+--- Performs a mouse double click, but returns the mouse to the original position without the users knowledge.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
 function tools.ninjaDoubleClick(point, delay)
 	delay = delay or tools.DEFAULT_DELAY
 	local originalMousePoint = mouse.getAbsolutePosition()
@@ -217,9 +337,16 @@ function tools.ninjaDoubleClick(point, delay)
 	mouse.setAbsolutePosition(originalMousePoint)
 end
 
---------------------------------------------------------------------------------
--- NINJA MOUSE ACTION:
---------------------------------------------------------------------------------
+--- cp.tools.ninjaMouseAction(point, fn) -> none
+--- Function
+--- Moves the mouse to a point, performs a function, then returns the mouse to the original point.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * fn - A function you want to perform
+---
+--- Returns:
+---  * None
 function tools.ninjaMouseAction(point, fn)
 	local originalMousePoint = mouse.getAbsolutePosition()
 	mouse.setAbsolutePosition(point)
@@ -227,25 +354,44 @@ function tools.ninjaMouseAction(point, fn)
 	mouse.setAbsolutePosition(originalMousePoint)
 end
 
---------------------------------------------------------------------------------
--- HOW MANY ITEMS IN A TABLE:
---------------------------------------------------------------------------------
+--- cp.tools.tableCount(table) -> number
+--- Function
+--- Returns how many items are in a table.
+---
+--- Parameters:
+---  * table - The table you want to count.
+---
+--- Returns:
+---  * The number of items in the table.
 function tools.tableCount(table)
 	local count = 0
 	for _ in pairs(table) do count = count + 1 end
 	return count
 end
 
---------------------------------------------------------------------------------
--- REMOVE FILENAME FROM PATH:
---------------------------------------------------------------------------------
+--- cp.tools.removeFilenameFromPath(string) -> string
+--- Function
+--- Removes the filename from a path.
+---
+--- Parameters:
+---  * string - The path
+---
+--- Returns:
+---  * A string of the path without the filename.
 function tools.removeFilenameFromPath(input)
 	return (string.sub(input, 1, (string.find(input, "/[^/]*$"))))
 end
 
---------------------------------------------------------------------------------
--- STRING MAX LENGTH
---------------------------------------------------------------------------------
+--- cp.tools.stringMaxLength(string, maxLength[, optionalEnd]) -> string
+--- Function
+--- Trims a string based on a maximum length.
+---
+--- Parameters:
+---  * maxLength - The length of the string as a number
+---  * optionalEnd - A string that is applied to the end of the input string if the input string is larger than the maximum length.
+---
+--- Returns:
+---  * A string
 function tools.stringMaxLength(string, maxLength, optionalEnd)
 
 	local result = string
@@ -259,9 +405,15 @@ function tools.stringMaxLength(string, maxLength, optionalEnd)
 
 end
 
---------------------------------------------------------------------------------
--- CLEAN UP BUTTON TEXT:
---------------------------------------------------------------------------------
+--- cp.tools.cleanupButtonText(value) -> string
+--- Function
+--- Removes the … symbol and multiple >'s from a string.
+---
+--- Parameters:
+---  * value - A string
+---
+--- Returns:
+---  * A cleaned string
 function tools.cleanupButtonText(value)
 
 	--------------------------------------------------------------------------------
@@ -343,9 +495,15 @@ function tools.modifierMaskToModifiers(value)
 
 end
 
---------------------------------------------------------------------------------
--- INCREMENT FILENAME:
---------------------------------------------------------------------------------
+--- cp.tools.incrementFilename(value) -> string
+--- Function
+--- Increments the filename.
+---
+--- Parameters:
+---  * value - A string
+---
+--- Returns:
+---  * A string
 function tools.incrementFilename(value)
 	if value == nil then return nil end
 	if type(value) ~= "string" then return nil end
@@ -358,9 +516,15 @@ function tools.incrementFilename(value)
 	return name .. " " .. tostring(tonumber(counter) + 1)
 end
 
---------------------------------------------------------------------------------
--- RETURNS A LIST OF FILE NAMES FOR THE PATH IN AN ARRAY:
---------------------------------------------------------------------------------
+--- cp.tools.incrementFilename(value) -> string
+--- Function
+--- Returns a table of file names for the given path.
+---
+--- Parameters:
+---  * path - A path as string
+---
+--- Returns:
+---  * A table containing filenames as strings.
 function tools.dirFiles(path)
 	path = fs.pathToAbsolute(path)
 	if not path then
@@ -375,10 +539,17 @@ function tools.dirFiles(path)
 	return files
 end
 
---------------------------------------------------------------------------------
--- NUMBER TO WORD:
---------------------------------------------------------------------------------
+--- cp.tools.numberToWord(number) -> string
+--- Function
+--- Converts a number to a string (i.e. 1 becomes "One").
+---
+--- Parameters:
+---  * number - A whole number between 0 and 10
+---
+--- Returns:
+---  * A string
 function tools.numberToWord(number)
+	if number == 0 then return "Zero" end
 	if number == 1 then return "One" end
 	if number == 2 then return "Two" end
 	if number == 3 then return "Three" end

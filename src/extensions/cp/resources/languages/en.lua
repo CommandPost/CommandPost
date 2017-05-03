@@ -605,6 +605,9 @@ return {
 	enterFinderTag						=			"Please enter the Finder Tag you want to use:",
 	enterFinderTagError					=			"This Finder Tag looks invalid.\n\nPlease try again.",
 	insertIntoTimeline					=			"Insert into Timeline",
+	openEmbeddedSpeechCommandsHelp 		=			"Speech Commands Help",
+	openVoiceOverUtility				=			"Open Voice Over Utility",
+	createRoleForVoice					=			"Assign Voice Role",
 
 	--------------------------------------------------------------------------------
 	-- HUD:

@@ -15,10 +15,12 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("text2speech")
 
+local application						= require("hs.application")
 local chooser							= require("hs.chooser")
 local drawing							= require("hs.drawing")
 local fnutils							= require("hs.fnutils")
 local fs								= require("hs.fs")
+local http								= require("hs.http")
 local menubar							= require("hs.menubar")
 local mouse								= require("hs.mouse")
 local pasteboard						= require("hs.pasteboard")
@@ -52,7 +54,7 @@ mod.path = config.prop("text2speechPath", "")
 --- plugins.finalcutpro.text2speech.voice
 --- Variable
 --- Text to Speech Voice.
-mod.voice = config.prop("text2speechVoice", "")
+mod.voice = config.prop("text2speechVoice", speech.defaultVoice())
 
 --- plugins.finalcutpro.text2speech.tag
 --- Variable
@@ -63,6 +65,24 @@ mod.tag = config.prop("text2speechTag", "Generated Voice Over")
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.insertIntoTimeline = config.prop("text2speechInsertIntoTimeline", true)
+
+--- plugins.finalcutpro.text2speech.createRoleForVoice
+--- Variable
+--- Boolean that sets whether or not a tag should be added for the voice.
+mod.createRoleForVoice = config.prop("text2speechCreateRoleForVoice", true)
+
+-- firstToUpper() -> string
+-- Function
+-- Makes the first letter in a word a capital letter.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A string.
+function firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
 
 --- plugins.finalcutpro.text2speech.chooseFolder() -> string or false
 --- Function
@@ -79,6 +99,50 @@ function mod.chooseFolder()
 		mod.path(result)
 	end
 	return result
+end
+
+-- speechCallback() -> none
+-- Function
+-- Callback function for the speech tool.
+--
+-- Parameters:
+--  * object - the synthesizer object
+--  * result - string indicating the activity which has caused the callback
+--  * a - optional argument
+--  * b - optional argument
+--  * c - optional argument
+--
+-- Returns:
+--  * None
+local function speechCallback(object, result, a, b, c)
+	if result == "willSpeakWord" then
+	elseif result == "willSpeakPhoneme" then
+	elseif result == "didEncounterError" then
+		log.df("Speech Callback Received: didEncounterError")
+		log.df("Index: %s", a)
+		log.df("Text: %s", b)
+		log.df("Error: %s", c)
+	elseif result == "didEncounterSync" then
+	elseif result == "didFinish" then
+		if a then
+			completeProcess()
+		else
+			speechError()
+		end
+	end
+end
+
+-- speechError() -> none
+-- Function
+-- Error message when something goes wrong.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function speechError()
+	dialog.displayErrorMessage("Something went wrong whilst trying to generate the generated voice over.")
 end
 
 -- completionFn() -> none
@@ -124,10 +188,8 @@ local function completionFn(result)
 	-- Determine Filename from Result:
 	--------------------------------------------------------------------------------
 	local textToSpeak = result["text"]
-	local filename = string.sub(textToSpeak, 1, 255) 	-- macOS doesn't like filenames over 255 characters
-	filename = string.gsub(filename, ":", "") 			-- macOS doesn't like : symbols in filenames
+	local filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
 	local savePath = mod.path() .. filename .. ".aif"
-
 	if tools.doesFileExist(savePath) then
 		local newPathCount = 0
 		repeat
@@ -148,25 +210,49 @@ local function completionFn(result)
 			mod.voice(defaultVoice)
 		end
 	end
-	talker:speakToFile(textToSpeak, savePath)
+
+	mod._lastSavePath = savePath
+
+	talker:setCallback(speechCallback)
+		:speakToFile(textToSpeak, savePath)
+
+end
+
+-- completeProcess() -> none
+-- Function
+-- Completes the Text to Speech Process.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function completeProcess()
 
 	--------------------------------------------------------------------------------
-	-- Add Finder Tag:
+	-- Get the last Save Path:
 	--------------------------------------------------------------------------------
-	local result = just.doUntil(function()
-		return tools.doesFileExist(savePath)
-	end, 3)
-	if result then
-		fs.tagsAdd(savePath, {mod.tag()})
-	else
-		log.ef("The Text to Speech file could not be found.")
+	local savePath = mod._lastSavePath
+	if not tools.doesFileExist(savePath) then
+		dialog.displayErrorMessage("The generated Text to Speech file could not be found.")
 		return nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Add Finder Tag(s):
+	--------------------------------------------------------------------------------
+	if mod.createRoleForVoice() then
+		fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())})
+	else
+		fs.tagsAdd(savePath, {mod.tag()})
 	end
 
 	--------------------------------------------------------------------------------
 	-- Temporarily stop the Clipboard Watcher:
 	--------------------------------------------------------------------------------
-	mod.clipboardManager.stopWatching()
+	if mod.clipboardManager then
+		mod.clipboardManager.stopWatching()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Save current Clipboard Content:
@@ -176,8 +262,12 @@ local function completionFn(result)
 	--------------------------------------------------------------------------------
 	-- Write URL to Pasteboard:
 	--------------------------------------------------------------------------------
-	local safeSavePath = "file://" .. string.gsub(savePath, " ", "%%20") -- Replace spaces with %20
-	pasteboard.writeObjects({url=safeSavePath})
+	local safeSavePath = "file://" .. http.encodeForQuery(savePath)
+	local result = pasteboard.writeObjects({url=safeSavePath})
+	if not result then
+		dialog.displayErrorMessage("The URL could not be written to the Pasteboard.")
+		return nil
+	end
 
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
@@ -186,7 +276,7 @@ local function completionFn(result)
 	if result then
 		local result = fcp:selectMenu("Window", "Go To", "Timeline")
 	else
-		log.wf("Failed to activate timeline in Text to Speech Plugin.")
+		dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
 		return nil
 	end
 
@@ -197,7 +287,7 @@ local function completionFn(result)
 	if result then
 		local result = fcp:selectMenu("Edit", "Paste as Connected Clip")
 	else
-		log.wf("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
+		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
 		return nil
 	end
 
@@ -224,7 +314,9 @@ local function completionFn(result)
 	--------------------------------------------------------------------------------
 	timer.doAfter(2, function()
 		pasteboard.writeAllData(originalClipboard)
-		mod.clipboardManager.startWatching()
+		if mod.clipboardManager then
+			mod.clipboardManager.startWatching()
+		end
 	end)
 
 end
@@ -253,19 +345,6 @@ local function queryChangedCallback()
 		table.insert(currentQueryTable, history[i])
 	end
 	mod.chooser:choices(currentQueryTable)
-end
-
--- firstToUpper() -> string
--- Function
--- Makes the first letter in a word a capital letter.
---
--- Parameters:
---  * None
---
--- Returns:
---  * A string.
-function firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
 end
 
 -- tagValidation() -> string
@@ -300,6 +379,14 @@ local function rightClickCallback()
 	local availableVoices = speech.availableVoices()
 
 	local voicesMenu = {}
+	voicesMenu[1] = {
+		title = "Default " .. "(" .. speech.defaultVoice() .. ")",
+		fn = function()
+			mod.voice(hs.speech.defaultVoice())
+		end,
+		checked = (v == mod.voice()),
+	}
+	voicesMenu[2] = { title = "-" }
 	for i, v in ipairs(availableVoices) do
 		voicesMenu[#voicesMenu + 1] = {
 			title = firstToUpper(v),
@@ -309,7 +396,6 @@ local function rightClickCallback()
 			checked = (v == mod.voice()),
 		}
     end
-
 	local rightClickMenu = {
 		{ title = i18n("selectVoice"), menu = voicesMenu },
 		{ title = "-" },
@@ -318,6 +404,12 @@ local function rightClickCallback()
 				mod.insertIntoTimeline:toggle()
 			end,
 		},
+		{ title = i18n("createRoleForVoice"), checked = mod.createRoleForVoice(),
+			fn = function()
+				mod.createRoleForVoice:toggle()
+			end,
+		},
+		{ title = "-" },
 		{ title = i18n("customiseFinderTag"), fn = function()
 				local result = dialog.displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), tagValidation)
 				if result then
@@ -342,7 +434,17 @@ local function rightClickCallback()
 				},
 			}
 			mod.chooser:choices(currentQueryTable)
-		end },
+		end
+		},
+		{ title = "-" },
+		{ title = i18n("openVoiceOverUtility"), fn = function()
+				application.open("VoiceOver Utility")
+			end,
+		},
+		{ title = i18n("openEmbeddedSpeechCommandsHelp"), fn = function()
+			os.execute('open "https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/SpeechSynthesisProgrammingGuide/FineTuning/FineTuning.html#//apple_ref/doc/uid/TP40004365-CH5-SW6"')
+		end,
+		},
 	}
 	mod.rightClickMenubar = menubar.new(false)
 		:setMenu(rightClickMenu)
