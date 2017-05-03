@@ -9,12 +9,12 @@
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.menuitem",
+	id				= "core.watchfolders.menuitem",
 	group			= "core",
 	required		= true,
 	dependencies	= {
 		["core.menu.bottom"]			= "bottom",
-		["core.preferences.manager"]	= "prefs",
+		["core.watchfolders.manager"]	= "watchfolders",
 	}
 }
 
@@ -23,14 +23,14 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	deps.bottom:addItem(10, function()
-		return { title = i18n("preferences") .. "...", fn = deps.prefs.show }
+	deps.bottom:addItem(5, function()
+		return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
 	end)
 
 	--------------------------------------------------------------------------------
 	-- Add separator:
 	--------------------------------------------------------------------------------
-	deps.bottom:addItem(11, function()
+	deps.bottom:addItem(6, function()
 		return { title = "-" }
 	end)
 
