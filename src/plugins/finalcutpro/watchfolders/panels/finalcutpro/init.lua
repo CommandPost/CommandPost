@@ -300,7 +300,7 @@ function importFile(file, obj)
 	-- Check to see if Final Cut Pro is running:
 	--------------------------------------------------------------------------------
 	if not fcp:isRunning() then
-		dialog.displayMessage("Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.")
+		dialog.displayMessage(i18n("finalCutProNotRunning"))
 		obj:send()
 		return
 	end
@@ -399,11 +399,11 @@ end
 
 function createNotification(file)
 	mod.notifications[file] = notify.new(function(obj) importFile(file, obj) end)
-		:title("New file for Final Cut Pro")
+		:title(i18n("newFileForFinalCutPro"))
 		:subTitle(tools.getFilenameFromPath(file))
 		:hasActionButton(true)
-		:actionButtonTitle("Import")
-		:otherButtonTitle("Ignore")
+		:actionButtonTitle(i18n("import"))
+		:otherButtonTitle(i18n("ignore"))
 		:send()
 end
 
@@ -461,26 +461,26 @@ function mod.init(deps, env)
 			label		= i18n("finalCutProPanelLabel"),
 			image		= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
 			tooltip		= i18n("finalCutProPanelTooltip"),
-			height		= 460,
+			height		= 465,
 		})
 
 	mod.panel
-		:addHeading(10, "Description")
-		:addParagraph(11, "This feature will allow you to recieve macOS notfications whenever a supported file is dragged into one of the below watch folders. From the notification you can then <b>Import</b> or <b>Import All</b> (if you have multiple notifications), directly to the current Final Cut Pro timeline.", true)
+		:addHeading(10, i18n("description"))
+		:addParagraph(11, i18n("watchFolderHelp"), true)
 		:addParagraph(12, "")
-		:addHeading(13, "Watch Folders", 3)
+		:addHeading(13, i18n("watchFolders"), 3)
 		:addContent(14, [[<div id="watchFolderTable">]] .. generateTable() .. [[</div>]], true)
 		:addButton(15,
 			{
-				label		= "Add Watch Folder",
+				label		= i18n("addWatchFolder"),
 				onclick		= addWatchFolder,
 				class		= "btnAddWatchFolder",
 			})
 		:addParagraph(16, "")
-		:addHeading(17, "Options", 3)
+		:addHeading(17, i18n("options"), 3)
 		:addCheckbox(18,
 			{
-				label		= "Import directly into Timeline",
+				label		= i18n("importToTimeline"),
 				checked		= mod.insertIntoTimeline,
 				onchange	= function(id, params) mod.insertIntoTimeline(params.checked) end,
 			}

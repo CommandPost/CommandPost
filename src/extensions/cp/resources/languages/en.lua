@@ -597,10 +597,18 @@ return {
 	--------------------------------------------------------------------------------
 	-- WATCH FOLDERS PLUGIN:
 	--------------------------------------------------------------------------------
+	addWatchFolder						=			"Add Watch Folder",
 	watchFolders						=			"Watch Folders",
 	setupWatchFolders					=			"Setup Watch Folders",
 	selectFolderToWatch					=			"Please select a folder to watch:",
 	alreadyWatched						=			"This folder is already being watched.",
+	watchFolderHelp 					=			"This feature will allow you to recieve macOS notfications whenever a supported file is dragged into one of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> while pressing <b>Import</b>, it will import all the outstanding files.",
+	description							=			"Description",
+	importToTimeline					=			"Import directly into Timeline",
+	newFileForFinalCutPro				=			"New file for Final Cut Pro",
+	import								=			"Import",
+	ignore								=			"Ignore",
+	finalCutProNotRunning				=			"Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
 
 	--------------------------------------------------------------------------------
 	-- TEXT TO SPEECH PLUGIN:
