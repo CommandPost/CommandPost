@@ -46,12 +46,14 @@ local dialog = {}
 --  * An object containing the parsed output that can be any type, or nil if unsuccessful
 local function as(appleScript)
 
-	local originalFrontmostWindow = window.frontmostWindow()
+	local originalFocusedWindow = window.focusedWindow()
+	-- log.df("originalFocusedWindow: %s", originalFocusedWindow)
 
 	local whichBundleID = hs.processInfo["bundleID"]
-	if originalFrontmostWindow and originalFrontmostWindow:application():bundleID() == fcp.BUNDLE_ID then
+	if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcp.BUNDLE_ID then
 		whichBundleID = fcp.BUNDLE_ID
 	end
+	--log.df("whichBundleID: %s", whichBundleID)
 
 	local appleScriptStart = [[
 		set yesButton to "]] .. i18n("yes") .. [["
@@ -75,8 +77,8 @@ local function as(appleScript)
 
 	local _, result = osascript.applescript(appleScriptStart .. appleScript .. appleScriptEnd)
 
-	if originalFrontmostWindow and whichBundleID == hs.processInfo["bundleID"] then
-		originalFrontmostWindow:focus()
+	if originalFocusedWindow and whichBundleID == hs.processInfo["bundleID"] then
+		originalFocusedWindow:focus()
 	end
 
 	return result

@@ -151,6 +151,11 @@ App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
 App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS
+--- Constant
+--- Table of file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_EXTENSIONS					= {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif", "aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+
 --- cp.apple.finalcutpro:init() -> App
 --- Function
 --- Initialises the app instance representing Final Cut Pro.

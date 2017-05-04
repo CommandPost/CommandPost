@@ -599,6 +599,8 @@ return {
 	--------------------------------------------------------------------------------
 	watchFolders						=			"Watch Folders",
 	setupWatchFolders					=			"Setup Watch Folders",
+	selectFolderToWatch					=			"Please select a folder to watch:",
+	alreadyWatched						=			"This folder is already being watched.",
 
 	--------------------------------------------------------------------------------
 	-- TEXT TO SPEECH PLUGIN:

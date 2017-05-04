@@ -45,6 +45,11 @@ local mod = {}
 mod._panels				= {}
 mod._handlers			= {}
 
+--- plugins.core.watchfolders.manager.position <cp.prop: table>
+--- Constant
+--- Returns the last frame saved in settings.
+mod.position = config.prop("watchFoldersPosition", {})
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
@@ -102,6 +107,21 @@ local function generateHTML()
 	end
 end
 
+--------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			mod.webview = nil
+		end
+	elseif action == "frameChange" then
+		if frame then
+			mod.position(frame)
+		end
+	end
+end
+
 --- plugins.core.watchfolders.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
@@ -124,7 +144,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
 		:setCallback(function(message)
-			-- log.df("webview callback called: %s", hs.inspect(message))
+			--log.df("webview callback called: %s", hs.inspect(message))
 			local body = message.body
 			local id = body.id
 			local params = body.params
@@ -138,12 +158,14 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Setup Tool Bar:
 	--------------------------------------------------------------------------------
-	mod.toolbar = toolbar.new(WEBVIEW_LABEL)
-		:canCustomize(true)
-		:autosaves(true)
-		:setCallback(function(toolbar, webview, id)
-			mod.selectPanel(id)
-		end)
+	if not mod.toolbar then
+		mod.toolbar = toolbar.new(WEBVIEW_LABEL)
+			:canCustomize(true)
+			:autosaves(true)
+			:setCallback(function(toolbar, webview, id)
+				mod.selectPanel(id)
+			end)
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
@@ -157,6 +179,8 @@ function mod.init()
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:attachedToolbar(mod.toolbar)
+		:deleteOnClose(true)
+		:windowCallback(windowCallback)
 
 	return mod
 end
@@ -171,11 +195,9 @@ end
 --- Returns:
 ---  * True if successful or nil if an error occurred
 function mod.show()
-
 	if mod.webview == nil then
 		mod.init()
 	end
-
 	if next(mod._panels) == nil then
 		dialog.displayMessage("There are no Preferences Panels to display.")
 		return nil
