@@ -81,6 +81,7 @@ local log										= require("hs.logger").new(logname)
 local application								= require("hs.application")
 local applicationwatcher						= require("hs.application.watcher")
 local ax 										= require("hs._asm.axuielement")
+local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
@@ -129,27 +130,47 @@ App.EARLIEST_SUPPORTED_VERSION					= "10.3.2"
 --- cp.apple.finalcutpro.BUNDLE_ID
 --- Constant
 --- Final Cut Pro's Bundle ID
-App.BUNDLE_ID 									= "com.apple.FinalCut"
+App.BUNDLE_ID = "com.apple.FinalCut"
 
 --- cp.apple.finalcutpro.PASTEBOARD_UTI
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
-App.PASTEBOARD_UTI 								= "com.apple.flexo.proFFPasteboardUTI"
+App.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
 
 --- cp.apple.finalcutpro.PREFS_PLIST_PATH
 --- Constant
 --- Final Cut Pro's Preferences Path
-App.PREFS_PLIST_PATH 							= "~/Library/Preferences/com.apple.FinalCut.plist"
+App.PREFS_PLIST_PATH = "~/Library/Preferences/com.apple.FinalCut.plist"
 
 --- cp.apple.finalcutpro.SUPPORTED_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages
-App.SUPPORTED_LANGUAGES 						= {"de", "en", "es", "fr", "ja", "zh_CN"}
+App.SUPPORTED_LANGUAGES = {"de", "en", "es", "fr", "ja", "zh_CN"}
 
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
-App.FLEXO_LANGUAGES								= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
+App.FLEXO_LANGUAGES	= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
+
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS
+--- Constant
+--- Table of video file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf",}
+
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_AUDIO_EXTENSIONS
+--- Constant
+--- Table of audio file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_IMAGE_EXTENSIONS
+--- Constant
+--- Table of image file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
+
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS
+--- Constant
+--- Table of all file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(App.ALLOWED_IMPORT_AUDIO_EXTENSIONS, App.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function

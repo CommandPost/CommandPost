@@ -1,19 +1,19 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                     P R E F E R E N C E S   M A N A G E R                  --
+--                  W A T C H   F O L D E R    M A N A G E R                  --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.preferences.manager ===
+--- === plugins.core.watchfolders.manager ===
 ---
---- Manager for the CommandPost Preferences Panel.
+--- Manager for the CommandPost Watch Folders Panel.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsMgr")
+local log										= require("hs.logger").new("watchMan")
 
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
@@ -33,7 +33,7 @@ local _											= require("moses")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 									= 8888889
-local WEBVIEW_LABEL								= "preferences"
+local WEBVIEW_LABEL								= "watchfolders"
 
 --------------------------------------------------------------------------------
 --
@@ -45,15 +45,15 @@ local mod = {}
 mod._panels				= {}
 mod._handlers			= {}
 
---- plugins.core.preferences.manager.position
+--- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("preferencesPosition", {})
+mod.position = config.prop("watchFoldersPosition", {})
 
---- plugins.core.preferences.manager.lastTab
+--- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
---- Returns the last tab saved in settings.
-mod.lastTab = config.prop("preferencesLastTab", nil)
+--- Returns the last frame saved in settings.
+mod.lastTab = config.prop("watchFoldersLastTab", nil)
 
 --------------------------------------------------------------------------------
 -- SETTINGS:
@@ -61,7 +61,7 @@ mod.lastTab = config.prop("preferencesLastTab", nil)
 mod.defaultWindowStyle	= {"titled", "closable", "nonactivating"}
 mod.defaultWidth 		= 524
 mod.defaultHeight 		= 338
-mod.defaultTitle 		= i18n("preferences")
+mod.defaultTitle 		= i18n("watchFolders")
 
 --------------------------------------------------------------------------------
 -- GET LABEL:
@@ -116,7 +116,6 @@ end
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML()
-	-- log.df("generateHTML: called")
 	local env = {}
 
 	env.debugMode = config.get("debugMode", false)
@@ -141,6 +140,15 @@ local function windowCallback(action, webview, frame)
 			mod.webview = nil
 		end
 	elseif action == "focusChange" then
+		if frame then
+			local id = mod.toolbar:selectedItem()
+			for i, v in ipairs(mod._panels) do
+				if v.id == id then
+					--log.df("Executing Load Function via manager.windowCallback.")
+					v.loadFn()
+				end
+			end
+		end
 	elseif action == "frameChange" then
 		if frame then
 			mod.position(frame)
@@ -148,7 +156,7 @@ local function windowCallback(action, webview, frame)
 	end
 end
 
---- plugins.core.preferences.manager.init() -> nothing
+--- plugins.core.watchfolders.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
 ---
@@ -173,11 +181,10 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
 		:setCallback(function(message)
-			-- log.df("webview callback called: %s", hs.inspect(message))
+			--log.df("webview callback called: %s", hs.inspect(message))
 			local body = message.body
 			local id = body.id
 			local params = body.params
-
 			local handler = mod.getHandler(id)
 			if handler then
 				return handler(id, params)
@@ -214,7 +221,7 @@ function mod.init()
 	return mod
 end
 
---- plugins.core.preferences.manager.showPreferences() -> boolean
+--- plugins.core.watchfolders.manager.showPreferences() -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
@@ -224,11 +231,9 @@ end
 --- Returns:
 ---  * True if successful or nil if an error occurred
 function mod.show()
-
 	if mod.webview == nil then
 		mod.init()
 	end
-
 	if next(mod._panels) == nil then
 		dialog.displayMessage("There are no Preferences Panels to display.")
 		return nil
@@ -260,8 +265,13 @@ end
 -- INJECT SCRIPT
 --------------------------------------------------------------------------------
 function mod.injectScript(script)
-	if mod.webview then
-		mod.webview:evaluateJavaScript(script)
+	if mod.webview and mod.webview:frame() then
+		mod.webview:evaluateJavaScript(script,
+		function(result, theerror)
+			if theerror then
+				--log.df("Javascript Error: %s", hs.inspect(theerror))
+			end
+		end)
 	end
 end
 
@@ -276,7 +286,15 @@ function mod.selectPanel(id)
 
 	local js = ""
 
+	local loadFn = nil
 	for i, v in ipairs(mod._panels) do
+
+		--------------------------------------------------------------------------------
+		-- Load Function for Panel:
+		--------------------------------------------------------------------------------
+		if v.id == id and v.loadFn then
+			loadFn = v.loadFn
+		end
 
 		--------------------------------------------------------------------------------
 		-- Resize Panel:
@@ -291,8 +309,14 @@ function mod.selectPanel(id)
 		]]
 	end
 
-	mod.webview:evaluateJavaScript(js)
+	mod.injectScript(js)
+
 	mod.toolbar:selectedItem(id)
+
+	if loadFn then
+		--log.df("Executing Load Function via manager.selectPanel.")
+		loadFn()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Save Last Tab in Settings:
@@ -305,7 +329,7 @@ local function comparePriorities(a, b)
 	return a.priority < b.priority
 end
 
---- plugins.core.preferences.manager.addPanel(params) -> plugins.core.preferences.manager.panel
+--- plugins.core.watchfolders.manager.addPanel(params) -> plugins.core.watchfolders.manager.panel
 --- Function
 --- Adds a new panel with the specified `params` to the preferences manager.
 ---
@@ -350,7 +374,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.manager",
+	id				= "core.watchfolders.manager",
 	group			= "core",
 	required		= true,
 }

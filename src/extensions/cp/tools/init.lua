@@ -197,14 +197,18 @@ end
 --- Returns:
 ---  * `true` if successful, `false` if cancelled and a string if there's an error.
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
-	local hsBundleID = hs.processInfo["bundleID"]
+	local originalFocusedWindow = window.focusedWindow()
+	local whichBundleID = hs.processInfo["bundleID"]
+	if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcp.BUNDLE_ID then
+		whichBundleID = fcp.BUNDLE_ID
+	end
 	if type(stopOnError) ~= "boolean" then stopOnError = true end
 	if type(input) == "table" then
 		local appleScript = [[
 			set stopOnError to ]] .. tostring(stopOnError) .. "\n\n" .. [[
 			set errorMessage to ""
 			set frontmostApplication to (path to frontmost application as text)
-			tell application id "]] .. hsBundleID .. [["
+			tell application id "]] .. whichBundleID .. [["
 				activate
 				set shellScriptInputs to ]] .. inspect(input) .. "\n\n" .. [[
 				try
@@ -236,11 +240,14 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
 			end tell
 		]]
 		_,result = osascript.applescript(appleScript)
+		if originalFocusedWindow and whichBundleID == hs.processInfo["bundleID"] then
+			originalFocusedWindow:focus()
+		end
 		return result
 	elseif type(input) == "string" then
 		local appleScript = [[
 			set frontmostApplication to (path to frontmost application as text)
-			tell application id "]] .. hsBundleID .. [["
+			tell application id "]] .. whichBundleID .. [["
 				activate
 				set shellScriptInput to "]] .. input .. [["
 				try
@@ -259,6 +266,9 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
 			end tell
 		]]
 		_,result = osascript.applescript(appleScript)
+		if originalFocusedWindow and whichBundleID == hs.processInfo["bundleID"] then
+			originalFocusedWindow:focus()
+		end
 		return result
 	else
 		log.ef("ERROR: Expected a Table or String in tools.executeWithAdministratorPrivileges()")
@@ -367,6 +377,66 @@ function tools.tableCount(table)
 	local count = 0
 	for _ in pairs(table) do count = count + 1 end
 	return count
+end
+
+--- cp.tools.tableContains(table, element) -> boolean
+--- Function
+--- Does a element exist in a table?
+---
+--- Parameters:
+---  * table - the table you want to check
+---  * element - the element you want to check for
+---
+--- Returns:
+---  * Boolean
+function tools.tableContains(table, element)
+	if not table or not element then
+		return false
+	end
+	for _, value in pairs(table) do
+		if value == element then
+			return true
+		end
+	end
+	return false
+end
+
+--- cp.tools.removeFromTable(table, element) -> table
+--- Function
+--- Removes a string from a table of strings
+---
+--- Parameters:
+---  * table - the table you want to check
+---  * element - the string you want to remove
+---
+--- Returns:
+---  * A table
+function tools.removeFromTable(table, element)
+	local result = {}
+	for _, value in pairs(table) do
+		if value ~= element then
+			result[#result + 1] = value
+		end
+	end
+	return result
+end
+
+--- cp.tools.getFilenameFromPath(input) -> string
+--- Function
+--- Gets the filename component of a path.
+---
+--- Parameters:
+---  * input - The path
+---
+--- Returns:
+---  * A string of the filename.
+function tools.getFilenameFromPath(input, removeExtension)
+	if removeExtension then
+		local filename = string.match(input, "[^/]+$")
+		return  filename:match("(.+)%..+")
+	else
+		return string.match(input, "[^/]+$")
+	end
 end
 
 --- cp.tools.removeFilenameFromPath(string) -> string
