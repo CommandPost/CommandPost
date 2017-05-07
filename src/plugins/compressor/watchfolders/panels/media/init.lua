@@ -194,16 +194,16 @@ function mod.refreshTable()
 end
 
 
---- removeFromTable(table, element) -> table
---- Function
---- Removes a string from a table of strings
----
---- Parameters:
----  * table - the table you want to check
----  * element - the string you want to remove
----
---- Returns:
----  * A table
+-- removeFromTable(table, element) -> table
+-- Function
+-- Removes a string from a table of strings
+--
+-- Parameters:
+--  * table - the table you want to check
+--  * element - the string you want to remove
+--
+-- Returns:
+--  * A table
 function removeFromTable(table, element)
 	local result = {}
 	for value, contents in pairs(table) do
