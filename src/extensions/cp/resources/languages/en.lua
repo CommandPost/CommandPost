@@ -595,20 +595,46 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
-	-- WATCH FOLDERS PLUGIN:
+	-- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
 	--------------------------------------------------------------------------------
 	addWatchFolder						=			"Add Watch Folder",
 	watchFolders						=			"Watch Folders",
 	setupWatchFolders					=			"Setup Watch Folders",
 	selectFolderToWatch					=			"Please select a folder to watch:",
 	alreadyWatched						=			"This folder is already being watched.",
-	watchFolderHelp 					=			"This feature will allow you to recieve macOS notfications whenever a supported file is dragged into one of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> while pressing <b>Import</b>, it will import all the outstanding files.",
+	watchFolderFCPMediaHelp				=			"This feature allows you to recieve macOS notfications whenever supported files are added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
 	description							=			"Description",
+	automaticallyImport					=			"Automatically Import without Notification",
 	importToTimeline					=			"Import directly into Timeline",
-	newFileForFinalCutPro				=			"New file for Final Cut Pro",
+	newFileForFinalCutPro				=			"New Media for Final Cut Pro",
 	import								=			"Import",
-	ignore								=			"Ignore",
+	skip								=			"Skip",
 	finalCutProNotRunning				=			"Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
+	deleteAfterImport					=			"Delete file from Watch Folder (5 seconds after Import)",
+	deleteNote							=			"Make sure <strong>Copy to library storage location</strong> is selected in Final Cut Pro's Preferences.",
+	addFinderTagsOnImport				=			"Add Finder Tags on Import",
+	enterVideoTag						=			"Enter a Video Tag Here",
+	enterAudioTag						=			"Enter a Audio Tag Here",
+	enterImageTag						=			"Enter a Image Tag Here",
+	watchFolderFCPMediaTooltip			=			"Final Cut Pro Media Watch Folder Preferences",
+
+	--------------------------------------------------------------------------------
+	-- FCPXML WATCH FOLDER PLUGIN:
+	--------------------------------------------------------------------------------
+	xml									=			"XML",
+	newFCPXMLForFinalCutPro				=			"New Media for Final Cut Pro",
+	watchFolderFCPXMLTooltip			=			"Final Cut Pro XML Watch Folder Preferences",
+	watchFolderXMLHelp					=			"This feature allows you to recieve macOS notfications whenever a FCPXML file is added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
+
+	--------------------------------------------------------------------------------
+	-- COMPRESSOR WATCH FOLDER PLUGIN:
+	--------------------------------------------------------------------------------
+	compressor							=			"Compressor",
+	watchFolderCompressorTooltip		=			"Compressor Watch Folder Preferences",
+	watchFolderCompressorHelp			=			"This feature allows you to automatically transcode files with Compressor when they're added to any of the below Watch Folders.",
+	selectCompressorSettingsFile		=			"Select a Compressor Settings File:",
+	selectCompressorDestination			=			"Select a Destination Folder:",
+	compressorError						=			"Something went wrong when sending to Compressor.",
 
 	--------------------------------------------------------------------------------
 	-- TEXT TO SPEECH PLUGIN:
@@ -865,6 +891,8 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
+		cpText2Speech_title										=	"Activate Text to Speech Tool",
+
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",
 

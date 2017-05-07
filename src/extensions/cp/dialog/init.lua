@@ -166,22 +166,25 @@ function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnsw
 
 end
 
---- cp.dialog.displayChooseFile(whatMessage, fileType) -> boolean or string
+--- cp.dialog.displayChooseFile(whatMessage, fileType[, defaultLocation]) -> boolean or string
 --- Function
 --- Display a Choose File Dialog Box.
 ---
 --- Parameters:
 ---  * whatMessage - The message you want to display as a string
 ---  * fileType - The filetype you wish to display
+---  * defaultLocation - Path to Default Location
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the file as a string
-function dialog.displayChooseFile(whatMessage, fileType)
+function dialog.displayChooseFile(whatMessage, fileType, defaultLocation)
+	if not defaultLocation then
+		defaultLocation = os.getenv("HOME") .. "/Desktop"
+	end
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
-
 		try
-			set whichFile to POSIX path of (choose file with prompt whatMessage default location (path to desktop) of type {"]] .. fileType .. [["})
+			set whichFile to POSIX path of (choose file with prompt whatMessage default location (POSIX path of "]] .. defaultLocation .. [[") of type {"]] .. fileType .. [["})
 			return whichFile
 		on error
 			-- Cancel Pressed:
@@ -191,21 +194,25 @@ function dialog.displayChooseFile(whatMessage, fileType)
 	return as(appleScript)
 end
 
---- cp.dialog.displayChooseFolder(whatMessage) -> boolean or string
+--- cp.dialog.displayChooseFolder(whatMessage[, defaultLocation]) -> boolean or string
 --- Function
 --- Display a Choose Folder Dialog Box.
 ---
 --- Parameters:
 ---  * whatMessage - The message you want to display as a string
+---  * defaultLocation - Path to Default Location
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the folder as a string
-function dialog.displayChooseFolder(whatMessage)
+function dialog.displayChooseFolder(whatMessage, defaultLocation)
+	if not defaultLocation then
+		defaultLocation = os.getenv("HOME") .. "/Desktop"
+	end
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
 
 		try
-			set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (path to desktop))
+			set whichFolder to POSIX path of (choose folder with prompt whatMessage default location (POSIX path of "]] .. defaultLocation .. [["))
 			return whichFolder
 		on error
 			-- Cancel Pressed:

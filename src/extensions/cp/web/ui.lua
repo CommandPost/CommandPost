@@ -52,22 +52,22 @@ end
 --- Creates a `cp.web.html` element for a heading with a specific level
 ---
 --- Parameters:
---- * `params`	- The parameters table. Details below.
+---  * `params`	- The parameters table. Details below.
 ---
 --- Returns:
---- * `cp.web.html` element representing the heading.
+---  * `cp.web.html` element representing the heading.
 ---
 --- Notes:
---- * The `params` table has the following fields:
---- ** `text`		- The string (or function) containing the text of the heading.
---- ** `level` 		- The heading level (or function) (1-7). Defaults to 3.
---- ** `class`		- The CSS class (or function) for the heading tag.
+---  * The `params` table has the following fields:
+---  ** `text`		- The string (or function) containing the text of the heading.
+---  ** `level` 		- The heading level (or function) (1-7). Defaults to 3.
+---  ** `class`		- The CSS class (or function) for the heading tag.
 function ui.heading(params)
 	-- the level must be a number between 1 and 7.
 	local level = evaluate(params.level) or 3
 	assert(type(level) == "number" and level >= 1 and level <= 7)
 	local tag = "h" .. level
-	
+
 	return html[tag] { class=params.class } (params.text)
 end
 
@@ -76,16 +76,16 @@ end
 --- Creates a `html` element that will execute a Resty Template.
 ---
 --- Parameters:
---- * `params`	- The parameters table. Details below.
+---  * `params`	- The parameters table. Details below.
 ---
 --- Returns:
---- * `cp.web.html` containing the template.
+---  * `cp.web.html` containing the template.
 ---
 --- Notes:
---- * The `params` table has the following supported fields:
---- ** `view`		- The file path to the template, or the template content itself. Required.
---- ** `context`	- The table containing the context to execute the template in.
---- ** `unescaped`	- If true, the template will not be escaped before outputting.
+---  * The `params` table has the following supported fields:
+---  ** `view`		- The file path to the template, or the template content itself. Required.
+---  ** `context`	- The table containing the context to execute the template in.
+---  ** `unescaped`	- If true, the template will not be escaped before outputting.
 function ui.template(params)
 	local renderer = compile(params.view)
 	return html(function() return renderer(params.context) end, params.unescaped)
@@ -96,19 +96,20 @@ end
 --- Creates an `html` element that will output a text box.
 ---
 --- Parameters:
---- * `params`	- The parameters table. Details below.
+---  * `params`	- The parameters table. Details below.
 ---
 --- Returns:
---- * `cp.web.html` containing the textbox.
+---  * `cp.web.html` containing the textbox.
 ---
 --- Notes:
---- * The `params` table has the following supported fields:
---- ** `id`				- The unique ID for the textbox.
---- ** `name`			- The name of the textbox field.
---- ** `class`			- The CSS classname.
---- ** `placeholder`	- Placeholder text
+---  * The `params` table has the following supported fields:
+---  ** `id`				- The unique ID for the textbox.
+---  ** `name`			- The name of the textbox field.
+---  ** `class`			- The CSS classname.
+---  ** `placeholder`	- Placeholder text.
+---  ** `value`			- The default value of the textbox.
 function ui.textbox(params)
-	return html.input { type = "text", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
+	return html.input { type = "text", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder, value = params.value }
 end
 
 --- cp.web.ui.password(params) -> hs.web.html
@@ -116,17 +117,17 @@ end
 --- Creates an `html` element that will output a password text box.
 ---
 --- Parameters:
---- * `params`	- The parameters table. Details below.
+---  * `params`	- The parameters table. Details below.
 ---
 --- Returns:
---- * `cp.web.html` containing the textbox.
+---  * `cp.web.html` containing the textbox.
 ---
 --- Notes:
---- * The `params` table has the following supported fields:
---- ** `id`				- The unique ID for the textbox.
---- ** `name`			- The name of the textbox field.
---- ** `class`			- The CSS classname.
---- ** `placeholder`	- Placeholder text
+---  * The `params` table has the following supported fields:
+---  ** `id`				- The unique ID for the textbox.
+---  ** `name`			- The name of the textbox field.
+---  ** `class`			- The CSS classname.
+---  ** `placeholder`	- Placeholder text
 function ui.password(params)
 	return html.input { type = "password", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
 end
@@ -149,13 +150,13 @@ end
 ---  ** `name`		- (optional) a unique name for the checkbox field.
 ---  ** `class`		- (optional) the CSS class list.
 function ui.checkbox(params)
-	
+
 	if params then
 		local checked = function() return evaluate(params.checked) and "checked" or nil end
 		return html.input {
-			type = "checkbox", 
+			type = "checkbox",
 			name = params.name,
-			id = params.id, 
+			id = params.id,
 			value = params.value, checked,
 			class = params.class,
 		}
@@ -176,10 +177,10 @@ end
 ---  * A `cp.web.ui` representing the button.
 ---
 --- Notes:
---- * The `params` can contain the following fields:
---- ** `value`		- The value of th button.
---- ** `label`		- The text label for the button. Defaults to the `value` if not provided.
---- ** `width`		- The width of the button in pixels.
+---  * The `params` can contain the following fields:
+---  ** `value`		- The value of th button.
+---  ** `label`		- The text label for the button. Defaults to the `value` if not provided.
+---  ** `width`		- The width of the button in pixels.
 function ui.button(params)
 	params.label = params.label or params.value
 
@@ -193,10 +194,10 @@ function ui.button(params)
 	end
 
 	local result = html.a {
-		id=params.id, 
-		style=style, 
-		class=class, 
-		href="#", 
+		id=params.id,
+		style=style,
+		class=class,
+		href="#",
 		value=params.value
 	} (params.label)
 
@@ -228,11 +229,11 @@ function ui.select(params)
 	local optionGenerator = function()
 		local options = ""
 		local value = evaluate(params.value)
-		
+
 		if not params.required then
 			options = options .. html.option { value = "" } (evaluate(params.blankLabel) or "")
 		end
-		
+
 		local opts = evaluate(params.options)
 		if opts then
 			for _,opt in ipairs(opts) do
@@ -244,8 +245,8 @@ function ui.select(params)
 		end
 		return options
 	end
-	
-	-- create the 
+
+	-- create the
 	return html.select {
 		id 		= params.id,
 		name	= params.id,

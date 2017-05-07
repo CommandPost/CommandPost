@@ -43,7 +43,7 @@ local HANDLER_PRIORITY							= 1000000
 --------------------------------------------------------------------------------
 local panel = {}
 
---- plugins.core.watchfolders.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel
+--- plugins.core.watchfolders.manager.panel.new(priority, id) -> plugins.core.watchfolders.manager.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
@@ -59,6 +59,7 @@ function panel.new(params, manager)
 		image		=	params.image,
 		tooltip		=	params.tooltip,
 		height		=	params.height,
+		loadFn		=	params.loadFn,
 		manager		=	manager,
 		_handlers	=	{},
 		_uiItems	=	{},
@@ -83,18 +84,13 @@ end
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 function panel:generateContent()
-	-- log.df("generating panel: %s", self.id)
-
 	local result = ""
-
 	table.sort(self._uiItems, function(a, b) return a.priority < b.priority end)
 	for i,item in ipairs(self._uiItems) do
-		-- log.df("generating item %d:\n%s", i, item.html)
 		if item.html then
 			result = result .. "\n" .. tostring(item.html)
 		end
 	end
-
 	return result
 end
 
@@ -118,9 +114,7 @@ end
 --- Returns:
 --- * The panel.
 function panel:addContent(priority, content, unescaped)
-	-- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
 	priority = priority or DEFAULT_PRIORITY
-
 	local items = self._uiItems
 	items[#items+1] = {
 		priority = priority,
@@ -216,7 +210,8 @@ function panel:addTextbox(priority, params)
 	local textbox = ui.textbox(params)
 	if params.label then
 		local label = html (params.label)
-		textbox = html.label (label .. " " .. textbox)
+		local result = html.label (label)
+		textbox = result .. " " .. textbox
 	end
 
 	local content = html.p { class=getClass(params) } ( textbox )

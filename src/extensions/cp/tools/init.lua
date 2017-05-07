@@ -379,6 +379,48 @@ function tools.tableCount(table)
 	return count
 end
 
+--- cp.tools.tableContains(table, element) -> boolean
+--- Function
+--- Does a element exist in a table?
+---
+--- Parameters:
+---  * table - the table you want to check
+---  * element - the element you want to check for
+---
+--- Returns:
+---  * Boolean
+function tools.tableContains(table, element)
+	if not table or not element then
+		return false
+	end
+	for _, value in pairs(table) do
+		if value == element then
+			return true
+		end
+	end
+	return false
+end
+
+--- cp.tools.removeFromTable(table, element) -> table
+--- Function
+--- Removes a string from a table of strings
+---
+--- Parameters:
+---  * table - the table you want to check
+---  * element - the string you want to remove
+---
+--- Returns:
+---  * A table
+function tools.removeFromTable(table, element)
+	local result = {}
+	for _, value in pairs(table) do
+		if value ~= element then
+			result[#result + 1] = value
+		end
+	end
+	return result
+end
+
 --- cp.tools.getFilenameFromPath(input) -> string
 --- Function
 --- Gets the filename component of a path.
@@ -388,8 +430,13 @@ end
 ---
 --- Returns:
 ---  * A string of the filename.
-function tools.getFilenameFromPath(input)
-	return string.match(input, "[^/]+$")
+function tools.getFilenameFromPath(input, removeExtension)
+	if removeExtension then
+		local filename = string.match(input, "[^/]+$")
+		return  filename:match("(.+)%..+")
+	else
+		return string.match(input, "[^/]+$")
+	end
 end
 
 --- cp.tools.removeFilenameFromPath(string) -> string

@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsMgr")
+local log										= require("hs.logger").new("watchMan")
 
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
@@ -50,6 +50,11 @@ mod._handlers			= {}
 --- Returns the last frame saved in settings.
 mod.position = config.prop("watchFoldersPosition", {})
 
+--- plugins.core.watchfolders.manager.position <cp.prop: table>
+--- Constant
+--- Returns the last frame saved in settings.
+mod.lastTab = config.prop("watchFoldersLastTab", nil)
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
@@ -77,21 +82,40 @@ function mod.setPanelRenderer(renderer)
 	mod._panelRenderer = renderer
 end
 
+-- isPanelIDValid() -> boolean
+-- Function
+-- Is Panel ID Valid?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Boolean
+local function isPanelIDValid(whichID)
+	for i, v in ipairs(mod._panels) do
+		if v.id == whichID then
+			return true
+		end
+	end
+	return false
+end
+
 --------------------------------------------------------------------------------
 -- HIGHEST PRIORITY ID:
 --------------------------------------------------------------------------------
 local function highestPriorityID()
-
-	local sortedPanels = mod._panels
-	return #mod._panels > 0 and mod._panels[1].id or nil
-
+	if mod.lastTab() and isPanelIDValid(mod.lastTab()) then
+		return mod.lastTab()
+	else
+		local sortedPanels = mod._panels
+		return #mod._panels > 0 and mod._panels[1].id or nil
+	end
 end
 
 --------------------------------------------------------------------------------
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML()
-	-- log.df("generateHTML: called")
 	local env = {}
 
 	env.debugMode = config.get("debugMode", false)
@@ -115,6 +139,16 @@ local function windowCallback(action, webview, frame)
 		if not hs.shuttingDown then
 			mod.webview = nil
 		end
+	elseif action == "focusChange" then
+		if frame then
+			local id = mod.toolbar:selectedItem()
+			for i, v in ipairs(mod._panels) do
+				if v.id == id then
+					--log.df("Executing Load Function via manager.windowCallback.")
+					v.loadFn()
+				end
+			end
+		end
 	elseif action == "frameChange" then
 		if frame then
 			mod.position(frame)
@@ -134,10 +168,13 @@ end
 function mod.init()
 
 	--------------------------------------------------------------------------------
-	-- Centre on Screen:
+	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+	if mod.position() then
+		defaultRect = mod.position()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
@@ -148,7 +185,6 @@ function mod.init()
 			local body = message.body
 			local id = body.id
 			local params = body.params
-
 			local handler = mod.getHandler(id)
 			if handler then
 				return handler(id, params)
@@ -229,8 +265,13 @@ end
 -- INJECT SCRIPT
 --------------------------------------------------------------------------------
 function mod.injectScript(script)
-	if mod.webview then
-		mod.webview:evaluateJavaScript(script)
+	if mod.webview and mod.webview:frame() then
+		mod.webview:evaluateJavaScript(script,
+		function(result, theerror)
+			if theerror then
+				--log.df("Javascript Error: %s", hs.inspect(theerror))
+			end
+		end)
 	end
 end
 
@@ -239,20 +280,21 @@ end
 --------------------------------------------------------------------------------
 function mod.selectPanel(id)
 
-	--[[
-	log.df("Selecting Panel with ID: %s", id)
-	if mod.webview and mod.webview:hswindow() then
-		log.df("Size: %s", hs.inspect(mod.webview:hswindow():size()))
-	end
-	--]]
-
 	if not mod.webview then
 		return
 	end
 
 	local js = ""
 
+	local loadFn = nil
 	for i, v in ipairs(mod._panels) do
+
+		--------------------------------------------------------------------------------
+		-- Load Function for Panel:
+		--------------------------------------------------------------------------------
+		if v.id == id and v.loadFn then
+			loadFn = v.loadFn
+		end
 
 		--------------------------------------------------------------------------------
 		-- Resize Panel:
@@ -267,8 +309,19 @@ function mod.selectPanel(id)
 		]]
 	end
 
-	mod.webview:evaluateJavaScript(js)
+	mod.injectScript(js)
+
 	mod.toolbar:selectedItem(id)
+
+	if loadFn then
+		--log.df("Executing Load Function via manager.selectPanel.")
+		loadFn()
+	end
+
+	--------------------------------------------------------------------------------
+	-- Save Last Tab in Settings:
+	--------------------------------------------------------------------------------
+	mod.lastTab(id)
 
 end
 
