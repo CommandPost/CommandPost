@@ -6,6 +6,32 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.6</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added Finder Tags support to "Text to Speech" plugin (issue #587)</li>
+				<li>Added Watch Folders for Final Cut Pro Media & XML (issue #583)</li>
+				<li>Added Watch Folders for Compressor (issue #10)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Improved the Text to Speech Tool (issue #590)</li>
+				<li>Added Documentation to `cp.dialog` and `cp.tools` (issue #590)</li>
+				<li>Preferences now remembers location and last open panel (issue #583)</li>
+				<li>`cp.dialog` now uses `window.focusedWindow` instead of `window.frontmostWindow` (issue #583)</li>
+				<li>Fixed `cp.prop` documentation (issue #583)</li>
+				<li>Fixed `tools.executeWithAdministratorPrivileges` window focussing (issue #583)</li>
+				<li>Added `cp.tools.getFilenameFromPath` (issue #583)</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon,  8 May 2017 02:49:11 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.6/CommandPost_1.0.0-beta.6.dmg"
+				sparkle:version="1.0.0-beta.6"
+				sparkle:dsaSignature="MCwCFEpbcM/l/fQoDbzgPPxu262GojUpAhQj9SHJLKfPCrcsHezvV+Ikkj0cqg=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.5</title>
 			<description><![CDATA[
 				<h2>Bug Fixes:</h2>
