@@ -17,6 +17,7 @@ local log						= require("hs.logger").new("commands")
 
 local command					= require("cp.commands.command")
 local config					= require("cp.config")
+local prop						= require("cp.prop")
 local timer						= require("hs.timer")
 local json						= require("hs.json")
 local _							= require("moses")
@@ -80,8 +81,7 @@ function commands:new(id)
 		_commands = {},
 		_enabled = false,
 	}
-	setmetatable(o, self)
-	self.__index = self
+	prop.extend(o, commands)
 
 	commands._groups[id] = o
 	return o
@@ -128,28 +128,30 @@ end
 
 -- TODO: Add documentation
 function commands:enable()
-	self._enabled = true
-	for _,command in pairs(self._commands) do
-		command:enable()
-	end
-	self:_notify('enable')
+	self:isEnabled(true)
 	return self
 end
 
 -- TODO: Add documentation
 function commands:disable()
-	for _,command in pairs(self._commands) do
-		command:disable()
-	end
-	self._enabled = false
-	self:_notify('disable')
+	self:isEnabled(false)
 	return self
 end
 
--- TODO: Add documentation
-function commands:isEnabled()
-	return self._enabled
-end
+--- cp.commands.enabled <cp.prop: boolean>
+--- Field
+--- If enabled, the commands in the group will be active as well.
+commands.isEnabled = prop.TRUE():bind(commands):watch(function(enabled, self)
+	if enabled then
+		self:_notify('enable')
+	else
+		self:_notify('disable')
+end)
+
+--- cp.commands.isEditable <cp.prop: boolean>
+--- Field
+--- If set to `false`, the command group is not user-editable.
+commands.isEditable = prop.TRUE():bind(commands)
 
 -- TODO: Add documentation
 function commands:watch(events)

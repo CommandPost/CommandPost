@@ -118,6 +118,12 @@ function run()
 		ok(eq(log, {true, false}))
 	end)
 	
+	test("Prop Watch Bound", function()
+		local owner = {}
+		owner.prop = prop.TRUE():watch(function(value, self) ok(eq(self, owner)) end):bind(owner)
+		owner.prop:update()
+	end)
+	
 	test("Prop NOT", function()
 		local state = true
 	

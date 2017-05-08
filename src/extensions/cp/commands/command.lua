@@ -19,6 +19,7 @@ local keycodes				= require("hs.keycodes")
 local hotkey				= require("hs.hotkey")
 
 local shortcut				= require("cp.commands.shortcut")
+local prop					= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -32,10 +33,10 @@ hotkey.setLogLevel("error")
 
 --- cp.commands.command:new() -> command
 --- Method
---- Creates a new menu command, which can have items and sub-menus added to it.
+--- Creates a new command, which can have keyboard shortcuts assigned to it.
 ---
 --- Parameters:
----  * `id`	= the unique identifier for the command. E.g. 'FCPXHacksCustomCommand'
+---  * `id`	= the unique identifier for the command. E.g. 'cpCustomCommand'
 ---
 --- Returns:
 ---  * command - The command that was created.
@@ -45,10 +46,18 @@ function command:new(id, parent)
 		_id = id,
 		_parent = parent,
 		_shortcuts = {},
-		_enabled = false,
 	}
-	setmetatable(o, self)
-	self.__index = self
+	prop.extend(o, command)
+	
+	--- cp.commands.command.isActive <cp.prop: boolean; read-only>
+	--- Field
+	--- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
+	o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active, self)
+		for _,shortcut in ipairs(self._shortcuts) do
+			shortcut:isEnabled(active)
+		end
+	end)
+	
 	return o
 end
 
@@ -198,9 +207,6 @@ function command:addShortcut(newShortcut)
 	-- mark it as a 'command' hotkey
 	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
-
-	-- enable it if appropriate
-	if self:isEnabled() then newShortcut:enable() end
 	return self
 end
 
@@ -354,23 +360,18 @@ function command:activated(repeats)
 end
 
 function command:enable()
-	self._enabled = true
-	for _,shortcut in ipairs(self._shortcuts) do
-		shortcut:enable()
-	end
+	self:isEnabled(true)
 	return self
 end
 
 function command:disable()
-	self._enabled = false
-	for _,shortcut in ipairs(self._shortcuts) do
-		shortcut:disable()
-	end
+	self:isEnabled(false)
 	return self
 end
 
-function command:isEnabled()
-	return self._enabled
-end
+--- cp.commands.command.isEnabled <cp.prop: boolean>
+--- Field
+--- If set to `true`, the command is enabled.
+command.isEnabled = prop.FALSE():bind(command)
 
 return command

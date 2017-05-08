@@ -19,6 +19,7 @@ local eventtap									= require("hs.eventtap")
 local hotkey									= require("hs.hotkey")
 local keycodes									= require("hs.keycodes")
 local englishKeyCodes							= require("cp.commands.englishKeyCodes")
+local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -52,7 +53,7 @@ function shortcut.textToKeyCode(input)
 	return result
 end
 
---- cp.commands.shortcut:new(command) -> shortcut
+--- cp.commands.shortcut:new(modifiers, keyCode) -> shortcut
 --- Method
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
@@ -64,12 +65,10 @@ end
 ---  * shortcut - The shortcut that was created.
 function shortcut:new(modifiers, keyCode)
 	local o = {
-		_modifiers = modifiers or {},
-		_keyCode = keyCode,
+		_modifiers	= modifiers or {},
+		_keyCode	= keyCode,
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return prop.extend(o, shortcut)
 end
 
 --- cp.commands.shortcut:build(receiverFn) -> cp.commands.shortcut.builder
@@ -111,10 +110,22 @@ function shortcut:getKeyCode()
 	return self._keyCode
 end
 
--- TODO: Add documentation
-function shortcut:isEnabled()
-	return self._enabled
-end
+--- cp.commands.shortcut:isEnabled <cp.prop: boolean>
+--- Field
+--- If `true`, the shortcut is enabled.
+shortcut.isEnabled = prop(
+	function(self) return self._enabled end,
+	function(enabled, self)
+		self._enabled = enabled
+		if self._hotkey then
+			if enabled then
+				self._hotkey:enable()
+			else
+				self._hotkey:disabled()
+			end
+		end
+	end
+):bind(shortcut)
 
 --- cp.commands.shortcut:enable() - > shortcut
 --- Method
@@ -126,10 +137,7 @@ end
 --- Returns:
 ---  * `self`
 function shortcut:enable()
-	self._enabled = true
-	if self._hotkey then
-		self._hotkey:enable()
-	end
+	self:isEnabled(true)
 	return self
 end
 
@@ -143,10 +151,7 @@ end
 --- Returns:
 ---  * `self`
 function shortcut:disable()
-	self._enabled = false
-	if self._hotkey then
-		self._hotkey:disable()
-	end
+	self:ifEnabled(false)
 	return self
 end
 
@@ -195,7 +200,9 @@ end
 
 -- TODO: Add documentation
 function shortcut:delete()
-	return self:unbind()
+	-- unhook the hotkeys
+	self:unbind()
+	return self
 end
 
 --- cp.commands.shortcut:trigger() -> shortcut

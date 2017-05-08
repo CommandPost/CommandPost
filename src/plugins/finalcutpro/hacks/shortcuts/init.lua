@@ -163,7 +163,43 @@ function private.directoriesMatch(sourcePath, targetPath)
 	return true
 end
 
--- private.copyHacksFiles(batch, sourcePath) -> nil
+-- private.copyFiles(batch, sourcePath, targetPath) -> nil
+-- Function
+-- Adds commands to copy Hacks Shortcuts files into FCPX.
+--
+-- Parameters:
+-- * `batch`		- The table of batch commands to be executed.
+-- * `sourcePath`	- The source file.
+-- * `targetPath`	- The target path.
+function private.copyFiles(batch, sourcePath, targetPath)
+	local copy = "cp -f '%s' '%s'"
+	local mkdir = "mkdir '%s'"
+	
+	local sourceFiles = tools.dirFiles(sourcePath)
+
+	for i,file in ipairs(sourceFiles) do
+		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
+			local sourceFile = sourcePath .. "/" .. file
+			local targetFile = targetPath .. "/" .. file
+			
+			local sourceAttr = fs.attributes(sourceFile)
+			local targetAttr = fs.attributes(targetFile)
+			
+			if sourceAttr.mode == "directory" then
+				if not targetAttr then
+					-- The directory doesn't exist. Make it first.
+					table.insert(batch, mkdir:format(targetFile))
+				end
+				private.copyFiles(batch, sourceFile, targetFile)
+			elseif sourceAttr.mode == "file" then
+				table.insert(batch, copy:format(sourceFile, targetFile))
+			end
+		end
+	end
+	
+end
+
+-- private.copyHacksFiles(batch, sourcePath) -> ni(""), private.resourcePath("")l
 -- Function
 -- Adds commands to copy Hacks Shortcuts files into FCPX.
 --
@@ -212,13 +248,13 @@ function private.updateHacksShortcuts(install)
 	-- previously removed them or used an old version of CommandPost or FCPX Hacks:
 	--------------------------------------------------------------------------------
 	
-	private.copyHacksFiles(batch, private.hacksOriginalPath)
+	private.copyFiles(batch, private.hacksOriginalPath(""), private.resourcePath(""))
 
 	--------------------------------------------------------------------------------
 	-- Only then do we copy the 'modified' files...
 	--------------------------------------------------------------------------------
 	if install then
-		private.copyHacksFiles(batch, private.hacksModifiedPath)
+		private.copyFiles(batch, private.hacksModifiedPath(""), private.resourcePath(""))
 	end
 	
 	--------------------------------------------------------------------------------
@@ -247,17 +283,21 @@ end
 --------------------------------------------------------------------------------
 function private.updateFCPXCommands(enable, silently)
 	
+	if enable == mod.installed() then
+		return true
+	end
+	
+	local running = fcp:isRunning()
 	if not silently then
 		--------------------------------------------------------------------------------
 		-- Check if the user really wants to do this
 		--------------------------------------------------------------------------------
 		local prompt = enable and i18n("hacksEnabling") or i18n("hacksDisabling")
 
-		local running = fcp:isRunning()
 		if running then
-			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
-		else
 			prompt = prompt .. " " .. i18n("hacksShortcutsRestart")
+		else
+			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
 	
 		prompt = prompt .. " " .. i18n("doYouWantToContinue")
@@ -311,17 +351,19 @@ end
 function private.applyCommandSetShortcuts()
 	local commandSet = fcp:getActiveCommandSet(true)
 
-	log.df("Applying FCPX Shortcuts to global commands...")
-	private.applyShortcuts(mod.globalCmds, commandSet)
+	-- log.df("Applying FCPX Shortcuts to global commands...")
+	-- private.applyShortcuts(mod.globalCmds, commandSet)
 	log.df("Applying FCPX Shortcuts to FCPX commands...")
 	private.applyShortcuts(mod.fcpxCmds, commandSet)
 
-	mod.globalCmds:watch({
-		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
-	})
+	-- mod.globalCmds:watch({
+	-- 	add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
+	-- })
 	mod.fcpxCmds:watch({
 		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
 	})
+	
+	mod.fcpxCmds:isEditable(false)
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
@@ -423,11 +465,40 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init()
+function mod.init(deps, env)
 	log.df("Initialising shortcuts...")
+	
+	mod.globalCmds 	= deps.globalCmds
+	mod.fcpxCmds	= deps.fcpxCmds
+	mod.shortcuts	= deps.shortcuts
+
+	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
+	
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
+	
+	--- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
+	--- Constant
+	--- A property that returns `true` if the FCPX shortcuts are active.
+	mod.active = prop.NOT(mod.fcpxCmds.isEditable)
+
+	mod.requiresActivation = mod.installed:AND(prop.NOT(mod.active)):watch(
+		function(activate)
+			if activate then
+				private.applyCommandSetShortcuts()
+			end
+		end
+	)
+	
+	mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
+		function(deactivate)
+			if deactivate then
+				-- got to restart to reset shortcuts.
+				hs.reload()
+			end
+		end
+	)
 
 	mod.update()
 end
@@ -456,12 +527,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.globalCmds 	= deps.globalCmds
-	mod.fcpxCmds	= deps.fcpxCmds
-	mod.shortcuts	= deps.shortcuts
-
-	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
-
 	local welcome = deps.welcome
 
 	--------------------------------------------------------------------------------
@@ -472,7 +537,7 @@ function plugin.init(deps, env)
 		--------------------------------------------------------------------------------
 		-- Initialise Hacks Shortcuts:
 		--------------------------------------------------------------------------------
-		mod.init()
+		mod.init(deps, env)
 
 		--------------------------------------------------------------------------------
 		-- Enable Commands:
@@ -526,9 +591,13 @@ function plugin.init(deps, env)
 			{
 				label		= i18n("enableHacksShortcuts"),
 				onchange	= function(_,params)
-					mod.enabled(params.checked)
+					if params.checked then
+						mod.install()
+					else
+						mod.uninstall()
+					end
 				end,
-				checked=mod.enabled
+				checked=mod.installed
 			}
 		)
 	end

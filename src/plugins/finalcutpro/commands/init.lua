@@ -51,12 +51,12 @@ function plugin.init()
 	fcp:watch({
 		active 		= function()
 			if not fcp:commandEditor():isShowing() and not fcp:mediaImport():isShowing() then
-				--log.df("Final Cut Pro Commands Enabled")
+				log.df("Final Cut Pro Commands Enabled")
 				cmds:enable()
 			end
 		end,
 		inactive	= function()
-			--log.df("Final Cut Pro Commands Disabled")
+			log.df("Final Cut Pro Commands Disabled")
 			cmds:disable()
 		end,
 	})
