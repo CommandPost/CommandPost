@@ -42,7 +42,15 @@ local prop				= require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local watchFolderTableID = "fcpMediaWatchFoldersTable"
+--- plugins.finalcutpro.watchfolders.panels.media.filesInTransit
+--- Variable
+--- Files currently being copied
+mod.filesInTransit = {}
+
+--- plugins.finalcutpro.watchfolders.panels.media.watchFolderTableID
+--- Variable
+--- Watch Folder Table ID
+mod.watchFolderTableID = "fcpMediaWatchFoldersTable"
 
 --- plugins.finalcutpro.watchfolders.panels.media.notifications
 --- Variable
@@ -209,26 +217,26 @@ end
 function mod.refreshTable()
 	local result = [[
 		try {
-			var ]] .. watchFolderTableID .. [[ = document.getElementById("]] .. watchFolderTableID .. [[");
-			if (typeof(]] .. watchFolderTableID .. [[) != 'undefined' && ]] .. watchFolderTableID .. [[ != null)
+			var ]] .. mod.watchFolderTableID .. [[ = document.getElementById("]] .. mod.watchFolderTableID .. [[");
+			if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
 			{
-				document.getElementById("]] .. watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
+				document.getElementById("]] .. mod.watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
 			}
 
 			var videoFiles = document.getElementById("videoFiles");
-			if (typeof(]] .. watchFolderTableID .. [[) != 'undefined' && ]] .. watchFolderTableID .. [[ != null)
+			if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
 			{
 				document.getElementById("videoFiles").value = `]] .. mod.videoTag() .. [[`;
 			}
 
 			var audioFiles = document.getElementById("audioFiles");
-			if (typeof(]] .. watchFolderTableID .. [[) != 'undefined' && ]] .. watchFolderTableID .. [[ != null)
+			if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
 			{
 				document.getElementById("audioFiles").value = `]] .. mod.audioTag() .. [[`;
 			}
 
 			var imageFiles = document.getElementById("imageFiles");
-			if (typeof(]] .. watchFolderTableID .. [[) != 'undefined' && ]] .. watchFolderTableID .. [[ != null)
+			if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
 			{
 				document.getElementById("imageFiles").value = `]] .. mod.imageTag() .. [[`;
 			}
@@ -571,16 +579,129 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.watchFolderTriggered(files)
+function mod.watchFolderTriggered(files, eventFlags)
+
+	--------------------------------------------------------------------------------
+	-- Debugging:
+	--------------------------------------------------------------------------------
+	--[[
+	local result = "{ "
+	for _,v in pairs(eventFlags) do
+		result = result .. "{ "
+		for description,value in pairs(pathwatcher.eventFlags) do
+			if eventFlags[1] & value == value then
+				result = result .. description .. " | "
+			end
+		end
+		result = result .. "} "
+	end
+	result = result .. " }"
+
+	log.df("files: %s", hs.inspect(files))
+	log.df("eventFlags: %s", hs.inspect(eventFlags))
+	log.df("eventFlags: %s", result)
+	log.df("-----------")
+	--]]
+
+	--------------------------------------------------------------------------------
+	-- Add Event Flags to Table:
+	--------------------------------------------------------------------------------
+	local eventFlagsValues = {}
+	for i, flags in pairs(eventFlags) do
+		for description,value in pairs(pathwatcher.eventFlags) do
+			if not eventFlagsValues[i] then
+				eventFlagsValues[i] = {}
+			end
+			if eventFlags[i] & value == value then
+				eventFlagsValues[i][description] = true
+			else
+				eventFlagsValues[i][description] = false
+			end
+		end
+	end
+
 	if not mod.disableImport then
 		local autoFiles = {}
-		for _,file in pairs(files) do
-			local allowedExtensions = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
-			if (fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4))) and tools.doesFileExist(file) then
-				if mod.automaticallyImport() then
-					autoFiles[#autoFiles + 1] = file
-				else
-					mod.createNotification(file)
+		for i,file in pairs(files) do
+
+			--------------------------------------------------------------------------------
+			-- File deleted or removed from Watch Folder:
+			--------------------------------------------------------------------------------
+			if eventFlagsValues[i] and eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] and not tools.doesFileExist(file) then
+				--log.df("File deleted or moved outside of watch folder!")
+				if mod.notifications[file] then
+					mod.notifications[file]:withdraw()
+					mod.notifications[file] = nil
+					local savedNotifications = fnutils.copy(mod.savedNotifications())
+					savedNotifications[file] = nil
+					mod.savedNotifications(savedNotifications)
+				end
+			else
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder:
+				--------------------------------------------------------------------------------
+				local newFile = false
+				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and eventFlagsValues[i]["itemModified"] then
+					--log.df("New File Added: %s", file)
+					newFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder, but still in transit:
+				--------------------------------------------------------------------------------
+				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and not eventFlagsValues[i]["itemModified"] then
+
+					-------------------------------------------------------------------------------
+					-- Add filename to table:
+					-------------------------------------------------------------------------------
+					mod.filesInTransit[#mod.filesInTransit + 1] = file
+
+					-------------------------------------------------------------------------------
+					-- Show Temporary Notification:
+					--------------------------------------------------------------------------------
+					mod.notifications[file] = notify.new()
+						:title(i18n("incomingFile"))
+						:subTitle(tools.getFilenameFromPath(file))
+						:hasActionButton(false)
+						:send()
+
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder after copying:
+				--------------------------------------------------------------------------------
+				if eventFlagsValues[i]["itemModified"] and eventFlagsValues[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
+					tools.removeFromTable(mod.filesInTransit, file)
+					if mod.notifications[file] then
+						mod.notifications[file]:withdraw()
+						mod.notifications[file] = nil
+					end
+					newFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Moved into Watch Folder:
+				--------------------------------------------------------------------------------
+				local movedFile = false
+				if eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] then
+					--log.df("File Moved or Renamed: %s", file)
+					movedFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- Check Extensions:
+				--------------------------------------------------------------------------------
+				local allowedExtensions = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
+				if (fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4))) and tools.doesFileExist(file) then
+					if newFile or movedFile then
+						--log.df("File finished copying: %s", file)
+						if mod.automaticallyImport() then
+							autoFiles[#autoFiles + 1] = file
+						else
+							mod.createNotification(file)
+						end
+					end
 				end
 			end
 		end
@@ -652,17 +773,26 @@ end
 --- Returns:
 ---  * None
 function mod.setupWatchers()
+
+	--------------------------------------------------------------------------------
+	-- Setup Watchers:
+	--------------------------------------------------------------------------------
 	local watchFolders = fnutils.copy(mod.watchFolders())
 	for i, v in ipairs(watchFolders) do
 		mod.newWatcher(v)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Register Notifications from Previous Session:
+	-- Re-create any Un-clicked Notifications from Previous Session:
 	--------------------------------------------------------------------------------
 	local savedNotifications = fnutils.copy(mod.savedNotifications())
 	for file,tag in pairs(savedNotifications) do
-		notify.register(tag, function(obj) mod.importFile(file, tag) end)
+		if tools.doesFileExist(file) then
+			mod.createNotification(file)
+		else
+			savedNotifications[file] = nil
+			mod.savedNotifications(savedNotifications)
+		end
 	end
 
 end
@@ -714,7 +844,7 @@ function mod.init(deps, env)
 		:addParagraph(11, i18n("watchFolderFCPMediaHelp"), true)
 		:addParagraph(12, "")
 		:addHeading(13, i18n("watchFolders"), 3)
-		:addContent(14, [[<div id="]] .. watchFolderTableID .. [[">]] .. mod.generateTable() .. [[</div>]], true)
+		:addContent(14, [[<div id="]] .. mod.watchFolderTableID .. [[">]] .. mod.generateTable() .. [[</div>]], true)
 		:addButton(15,
 			{
 				label		= i18n("addWatchFolder"),

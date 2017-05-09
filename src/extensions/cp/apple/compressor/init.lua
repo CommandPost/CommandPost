@@ -42,7 +42,7 @@ App.BUNDLE_ID = "com.apple.Compressor"
 --- cp.apple.compressor.ALLOWED_IMPORT_VIDEO_EXTENSIONS
 --- Constant
 --- Table of video file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_VIDEO_EXTENSIONS = {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf",}
+App.ALLOWED_IMPORT_VIDEO_EXTENSIONS = {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
 
 --- cp.apple.compressor.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 --- Constant
