@@ -617,6 +617,7 @@ return {
 	enterAudioTag						=			"Enter a Audio Tag Here",
 	enterImageTag						=			"Enter a Image Tag Here",
 	watchFolderFCPMediaTooltip			=			"Final Cut Pro Media Watch Folder Preferences",
+	incomingFile						=			"Incoming File...",
 
 	--------------------------------------------------------------------------------
 	-- FCPXML WATCH FOLDER PLUGIN:
@@ -635,6 +636,8 @@ return {
 	selectCompressorSettingsFile		=			"Select a Compressor Settings File:",
 	selectCompressorDestination			=			"Select a Destination Folder:",
 	compressorError						=			"Something went wrong when sending to Compressor.",
+	addedToCompressor					=			"Added to Compressor:",
+	monitor								=			"Monitor",
 
 	--------------------------------------------------------------------------------
 	-- TEXT TO SPEECH PLUGIN:

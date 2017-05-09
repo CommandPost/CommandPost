@@ -23,6 +23,7 @@ local geometry					= require("hs.geometry")
 local host						= require("hs.host")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
+local notify					= require("hs.notify")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
@@ -128,6 +129,11 @@ function mod.init()
 		:canCustomize(true)
 		:autosaves(true)
 	console.toolbar(errorLogToolbar)
+
+	--------------------------------------------------------------------------------
+	-- Kill any existing Notifications:
+	--------------------------------------------------------------------------------
+	notify.withdrawAll()
 
 	--------------------------------------------------------------------------------
 	-- Open Error Log:

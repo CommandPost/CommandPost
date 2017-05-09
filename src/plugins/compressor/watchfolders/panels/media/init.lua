@@ -25,6 +25,7 @@ local image				= require("hs.image")
 local notify			= require("hs.notify")
 local pasteboard		= require("hs.pasteboard")
 local pathwatcher		= require("hs.pathwatcher")
+local task				= require("hs.task")
 local timer				= require("hs.timer")
 local uuid				= require("hs.host").uuid
 
@@ -42,7 +43,15 @@ local tools				= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local watchFolderTableID = "compressorWatchFoldersTable"
+--- plugins.compressor.watchfolders.panels.media.watchFolderTableID
+--- Variable
+--- Watch Folder Table ID
+mod.watchFolderTableID = "compressorWatchFoldersTable"
+
+--- plugins.compressor.watchfolders.panels.media.filesInTransit
+--- Variable
+--- Files currently being copied
+mod.filesInTransit = {}
 
 --- plugins.compressor.watchfolders.panels.media.notifications
 --- Variable
@@ -180,10 +189,10 @@ end
 function mod.refreshTable()
 	local result = [[
 		try {
-			var ]] .. watchFolderTableID .. [[ = document.getElementById("]] .. watchFolderTableID .. [[");
-			if (typeof(]] .. watchFolderTableID .. [[) != 'undefined' && ]] .. watchFolderTableID .. [[ != null)
+			var ]] .. mod.watchFolderTableID .. [[ = document.getElementById("]] .. mod.watchFolderTableID .. [[");
+			if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
 			{
-				document.getElementById("]] .. watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
+				document.getElementById("]] .. mod.watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
 			}
 		}
 		catch(err) {
@@ -352,6 +361,19 @@ function mod.styleSheet()
 	return result
 end
 
+-- wrapInQuotes(value) -> none
+-- Function
+-- Wraps a string in quotes
+--
+-- Parameters:
+--  * value - Incoming string
+--
+-- Returns:
+--  * A string in quotes
+local function wrapInQuotes(value)
+	return [["]] .. value .. [["]]
+end
+
 --- plugins.compressor.watchfolders.panels.media.addFilesToCompressor(files) -> none
 --- Function
 --- Imports a file into Final Cut Pro
@@ -373,24 +395,59 @@ function mod.addFilesToCompressor(files)
 	--------------------------------------------------------------------------------
 	for _, file in pairs(files) do
 
-		-- Compressor [-computergroup <name>] [-batchname <name>]
-		--     [-priority <value>] -jobpath <file>[?frameRate=<frame rate>
-		--     |?audio=<file>|?frameRate=<frame rate>\&audio=<file>]
-		--     -settingpath <setting> -locationpath <file>
-		--     [-info <xml>] [-scc <file>] [-startoffset <hh:mm:ss:ff>]
-		--     [-in <hh:mm:ss:ff> [-out <hh:mm:ss:ff> [-annotations <file>]
-		--     [-chapters <file>]
-		-- Compressor -checkstream <file>
-		-- Compressor -findletterbox <file>
-		-- Compressor -help
-		-- Compressor [-resetBackgroundProcessing [cancelJobs]]
-		--     [-sharing <on|off>] [[-requiresPassword <password>]
-		--     | [-noPassword]] [-instances <value>]
-		--     [-networkInterface <bsd name>] [-portRange <starting port>
-		--     <count>]
-		-- These three arguments are the minimum required to submit a batch:
+		--         Usage:  Compressor [Cluster Info] [Batch Specific Info] [Optional Info] [Other Options]
 		--
-		-- Compressor ‑jobpath <path> ‑settingpath <path> ‑locationpath <path>
+		--         	-computergroup <name> -- name of the Computer Group to use.
+		--         --Batch Specific Info:--
+		--         	-batchname <name> -- name to be given to the batch.
+		--         	-priority <value> -- priority to be given to the batch. Possible values are: low, medium or high
+		--         Job Info: Used when submitting individual source files. Following parameters are repeated to enter multiple job targets in a batch
+		--         	-jobpath <url> -- url to source file.
+		--         				   -- In case of Image Sequence, URL should be a file URL pointing to directory with image sequence.
+		--         				   -- Additional parameters may be specified to set frameRate (e.g. frameRate=29.97) and audio file (e.g. audio=/usr/me/myaudiofile.mov).
+		--         	-settingpath <url> -- url to settings file.
+		--         	-locationpath <url> -- url to location file.
+		--         	-info <xml> -- xml for job info.
+		--         	-scc <url> -- url to scc file for source
+		--         	-startoffset <hh:mm:ss;ff> -- time offset from beginning
+		--         	-in <hh:mm:ss;ff> -- in time
+		--         	-out <hh:mm:ss;ff> -- out time
+		--         	-annotations <path> -- path to file to import annotations from; a plist file or a Quicktime movie
+		--         	-chapters <path> -- path to file to import chapters from
+		--         --Optional Info:--
+		--         	-help -- Displays, on stdout, this help information.
+		--         	-checkstream <url> -- url to source file to analyze
+		--         	-findletterbox <url> -- url to source file to analyze
+		--
+		--         --Batch Monitoring Info:--
+		--         Actions on Job:
+		--         	-monitor -- monitor the job or batch specified by jobid or batchid.
+		--         	-kill -- kill the job or batch specified by jobid or batchid.
+		--         	-pause -- pause the job or batch specified by jobid or batchid.
+		--         	-resume -- resume previously paused job or batch specified by jobid or batchid.
+		--         Optional Info:
+		--         	-jobid <id> -- unique id of the job usually obtained when job was submitted.
+		--         	-batchid <id> -- unique id of the batch usually obtained when job was submitted.
+		--         	-query <seconds> -- The value in seconds, specifies how often to query the cluster for job status.
+		--         	-timeout <seconds> -- the timeOut value, in seconds, specifies when to quit the process.
+		--         	-once -- show job status only once and quit the process.
+		--
+		--         --Sharing Related Options:--
+		--         	-resetBackgroundProcessing [cancelJobs] -- Restart all processes used in background processing, and optionally cancel all queued jobs.
+		--
+		--         	-repairCompressor -- Repair Compressor config files and restart all processes used in background processing.
+		--
+		--         	-sharing <on/off>  -- Turn sharing of this computer on or off.
+		--
+		--         	-requiresPassword [password] -- Sharing of this computer requires specified password. Computer must not be busy processing jobs when you set the password.
+		--
+		--         	-noPassword  -- Turn off the password requirement for sharing this computer.
+		--
+		--         	-instances <number>  -- Enables additional Compressor instances.
+		--
+		--         	-networkInterface <bsdname>  -- Specify which network interface to use. If "all" is specified for <bsdname>, all available network interfaces are used.
+		--
+		--         	-portRange <startNumber> <count>  -- Defines what port range use, using start number specifying how many ports to use.
 		--
 		-- EXAMPLE:
 		--
@@ -399,6 +456,22 @@ function mod.addFilesToCompressor(files)
 		-- MySource.mov -settingpath ~/Library/Application\
 		-- Support/Compressor/Settings/Apple\ Devices\ HD\ \
 		-- (Custom\).cmprstng -locationpath ~/Movies/MyOutput.m4v
+
+		-------------------------------------------------------------------------------
+		-- Show Notification:
+		--------------------------------------------------------------------------------
+		if mod.notifications[file] then
+			mod.notifications[file]:withdraw()
+			mod.notifications[file] = nil
+		end
+		mod.notifications[file] = notify.new(function()
+			compressor:launch()
+		end)
+			:title(i18n("addedToCompressor"))
+			:subTitle(tools.getFilenameFromPath(file))
+			:hasActionButton(true)
+			:actionButtonTitle(i18n("monitor"))
+			:send()
 
 		local selectedFile = nil
 		local watchFolders = fnutils.copy(mod.watchFolders())
@@ -412,12 +485,32 @@ function mod.addFilesToCompressor(files)
 
 		local filename = tools.getFilenameFromPath(file, true)
 
-		local compressorCommand = compressorPath .. [[/Contents/MacOS/Compressor -jobpath "]] .. file .. [[" -settingpath "]] .. selectedFile.settingFile .. [[" -locationpath "]] .. selectedFile.destinationPath .. filename .. [[" ]]
+		local uniqueUUID = string.gsub(uuid(), "-", "")
 
+		local compressorCommand = compressorPath .. [[/Contents/MacOS/Compressor -batchname "CommandPost Watch Folder" -jobid "]] .. uniqueUUID .. [[" -jobpath "]] .. file .. [[" -settingpath "]] .. selectedFile.settingFile .. [[" -locationpath "]] .. selectedFile.destinationPath .. filename .. [[" &]]
 		local output, status, endType = hs.execute(compressorCommand)
-		if not status then
-			print("compressorCommand: %s", compressorCommand)
-			print("RESULT:\nOutput: %s\nStatus: %s\nendType: %s", output, status, endType)
+		if status then
+			--------------------------------------------------------------------------------
+			-- Command Triggered Successfully:
+			--------------------------------------------------------------------------------
+			--[[
+			if not mod.compressorTask then
+				mod.compressorTask = {}
+			end
+			mod.compressorTask[uniqueUUID] =  task.new(compressorPath .. "/Contents/MacOS/Compressor", function(exitCode, stdOut, stdErr)
+				log.df("exitCode: %s", exitCode)
+				log.df("stdOut: %s", stdOut)
+				log.df("stdErr: %s", stdErr)
+			end, function(task, stdOut, stdErr)
+				log.df("task: %s", task)
+				log.df("stdOut: %s", stdOut)
+				log.df("stdErr: %s", stdErr)
+			end, { "-monitor", "-jobid", wrapInQuotes(uniqueUUID) } )
+			:start()
+			--]]
+		else
+			log.df("compressorCommand: %s", compressorCommand)
+			log.df("RESULT:\nOutput: %s\nStatus: %s\nendType: %s", output, status, endType)
 			dialog.displayErrorMessage(i18n("compressorError"))
 		end
 
@@ -440,13 +533,101 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.watchFolderTriggered(files)
+function mod.watchFolderTriggered(files, eventFlags)
+
+	--------------------------------------------------------------------------------
+	-- Add Event Flags to Table:
+	--------------------------------------------------------------------------------
+	local eventFlagsValues = {}
+	for i, flags in pairs(eventFlags) do
+		for description,value in pairs(pathwatcher.eventFlags) do
+			if not eventFlagsValues[i] then
+				eventFlagsValues[i] = {}
+			end
+			if eventFlags[i] & value == value then
+				eventFlagsValues[i][description] = true
+			else
+				eventFlagsValues[i][description] = false
+			end
+		end
+	end
+
 	if not mod.disableImport then
 		local autoFiles = {}
 		local allowedExtensions = compressor.ALLOWED_IMPORT_ALL_EXTENSIONS
-		for _,file in pairs(files) do
-			if ((fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4)))) and tools.doesFileExist(file) then
-				autoFiles[#autoFiles + 1] = file
+		for i,file in pairs(files) do
+
+			--------------------------------------------------------------------------------
+			-- File deleted or removed from Watch Folder:
+			--------------------------------------------------------------------------------
+			if eventFlagsValues[i] and eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] and not tools.doesFileExist(file) then
+				--log.df("File deleted or moved outside of watch folder!")
+				if mod.notifications[file] then
+					mod.notifications[file]:withdraw()
+					mod.notifications[file] = nil
+					local savedNotifications = fnutils.copy(mod.savedNotifications())
+					savedNotifications[file] = nil
+					mod.savedNotifications(savedNotifications)
+				end
+			else
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder:
+				--------------------------------------------------------------------------------
+				local newFile = false
+				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and eventFlagsValues[i]["itemModified"] then
+					--log.df("New File Added: %s", file)
+					newFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder, but still in transit:
+				--------------------------------------------------------------------------------
+				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and not eventFlagsValues[i]["itemModified"] then
+
+					-------------------------------------------------------------------------------
+					-- Add filename to table:
+					-------------------------------------------------------------------------------
+					mod.filesInTransit[#mod.filesInTransit + 1] = file
+
+					-------------------------------------------------------------------------------
+					-- Show Temporary Notification:
+					--------------------------------------------------------------------------------
+					mod.notifications[file] = notify.new()
+						:title(i18n("incomingFile"))
+						:subTitle(tools.getFilenameFromPath(file))
+						:hasActionButton(false)
+						:send()
+
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Added to Watch Folder after copying:
+				--------------------------------------------------------------------------------
+				if eventFlagsValues[i]["itemModified"] and eventFlagsValues[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
+					tools.removeFromTable(mod.filesInTransit, file)
+					if mod.notifications[file] then
+						mod.notifications[file]:withdraw()
+						mod.notifications[file] = nil
+					end
+					newFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Moved into Watch Folder:
+				--------------------------------------------------------------------------------
+				local movedFile = false
+				if eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] then
+					--log.df("File Moved or Renamed: %s", file)
+					movedFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- Check Extensions:
+				--------------------------------------------------------------------------------
+				if ((fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4)))) and tools.doesFileExist(file) then
+					autoFiles[#autoFiles + 1] = file
+				end
 			end
 		end
 		if next(autoFiles) ~= nil then
@@ -608,7 +789,7 @@ function mod.init(deps, env)
 		:addParagraph(11, i18n("watchFolderCompressorHelp"), true)
 		:addParagraph(12, "")
 		:addHeading(13, i18n("watchFolders"), 3)
-		:addContent(14, [[<div id="]] .. watchFolderTableID .. [[">]] .. mod.generateTable() .. [[</div>]], true)
+		:addContent(14, [[<div id="]] .. mod.watchFolderTableID .. [[">]] .. mod.generateTable() .. [[</div>]], true)
 		:addButton(15,
 			{
 				label		= i18n("addWatchFolder"),
