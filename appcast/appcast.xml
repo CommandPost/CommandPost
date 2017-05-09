@@ -6,6 +6,21 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.7</title>
+			<description><![CDATA[
+				<h2>Bug Fixes:</h2>
+				<ul><li>Watch Folders no longer trigger if a file is still being copied or rendered (issue #598)</li></ul>
+			]]>
+			</description>
+			<pubDate>Wed, 10 May 2017 03:52:01 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.7/CommandPost_1.0.0-beta.7.dmg"
+				sparkle:version="1.0.0-beta.7"
+				sparkle:dsaSignature="MCwCFFWAejEWmvM0nPYsJT5CDkrTt2ZLAhQ8RfJmY2yRyuTsOCIh6bW0e1chPA=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.6</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>
