@@ -956,6 +956,8 @@ return {
 
 		cpChangeTimelineClipHeightUp_title						=	"Timeline Clip Height Increase",
 		cpChangeTimelineClipHeightDown_title					=	"Timeline Clip Height Decrease",
+		
+		cpZoomToSelection_title									=	"Zoom to Selection",
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",

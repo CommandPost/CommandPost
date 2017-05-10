@@ -1506,6 +1506,13 @@
 		<key>modifiers</key>
 		<string>control option command shift</string>
 	</dict>
+	<key>cpZoomToSelection</key>
+	<dict>
+		<key>characterString</key>
+		<string>z</string>
+		<key>modifiers</key>
+		<string>option shift</string>
+	</dict>
 	<key>AddAndEditMarker</key>
 	<dict>
 		<key>characterString</key>
