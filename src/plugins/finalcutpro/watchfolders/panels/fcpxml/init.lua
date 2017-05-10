@@ -454,45 +454,6 @@ end
 ---  * None
 function mod.watchFolderTriggered(files, eventFlags)
 
-	--------------------------------------------------------------------------------
-	-- Debugging:
-	--------------------------------------------------------------------------------
-	--[[
-	local result = "{ "
-	for _,v in pairs(eventFlags) do
-		result = result .. "{ "
-		for description,value in pairs(pathwatcher.eventFlags) do
-			if eventFlags[1] & value == value then
-				result = result .. description .. " | "
-			end
-		end
-		result = result .. "} "
-	end
-	result = result .. " }"
-
-	log.df("files: %s", hs.inspect(files))
-	log.df("eventFlags: %s", hs.inspect(eventFlags))
-	log.df("eventFlags: %s", result)
-	log.df("-----------")
-	--]]
-
-	--------------------------------------------------------------------------------
-	-- Add Event Flags to Table:
-	--------------------------------------------------------------------------------
-	local eventFlagsValues = {}
-	for i, flags in pairs(eventFlags) do
-		for description,value in pairs(pathwatcher.eventFlags) do
-			if not eventFlagsValues[i] then
-				eventFlagsValues[i] = {}
-			end
-			if eventFlags[i] & value == value then
-				eventFlagsValues[i][description] = true
-			else
-				eventFlagsValues[i][description] = false
-			end
-		end
-	end
-
 	local autoFiles = {}
 	if not mod.disableImport then
 		for i,file in pairs(files) do
@@ -500,7 +461,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 			--------------------------------------------------------------------------------
 			-- File deleted or removed from Watch Folder:
 			--------------------------------------------------------------------------------
-			if eventFlagsValues[i] and eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] and not tools.doesFileExist(file) then
+			if eventFlags[i] and eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] and not tools.doesFileExist(file) then
 				--log.df("File deleted or moved outside of watch folder!")
 				if mod.notifications[file] then
 					mod.notifications[file]:withdraw()
@@ -515,7 +476,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				-- New File Added to Watch Folder:
 				--------------------------------------------------------------------------------
 				local newFile = false
-				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and eventFlagsValues[i]["itemModified"] then
+				if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
 					--log.df("New File Added: %s", file)
 					newFile = true
 				end
@@ -523,7 +484,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				--------------------------------------------------------------------------------
 				-- New File Added to Watch Folder, but still in transit:
 				--------------------------------------------------------------------------------
-				if eventFlagsValues[i]["itemCreated"] and eventFlagsValues[i]["itemIsFile"] and not eventFlagsValues[i]["itemModified"] then
+				if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
 
 					-------------------------------------------------------------------------------
 					-- Add filename to table:
@@ -544,7 +505,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				--------------------------------------------------------------------------------
 				-- New File Added to Watch Folder after copying:
 				--------------------------------------------------------------------------------
-				if eventFlagsValues[i]["itemModified"] and eventFlagsValues[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
+				if eventFlags[i]["itemModified"] and eventFlags[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
 					tools.removeFromTable(mod.filesInTransit, file)
 					if mod.notifications[file] then
 						mod.notifications[file]:withdraw()
@@ -557,7 +518,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				-- New File Moved into Watch Folder:
 				--------------------------------------------------------------------------------
 				local movedFile = false
-				if eventFlagsValues[i]["itemRenamed"] and eventFlagsValues[i]["itemIsFile"] then
+				if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
 					--log.df("File Moved or Renamed: %s", file)
 					movedFile = true
 				end
