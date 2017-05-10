@@ -24,6 +24,7 @@ local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
 local timer										= require("hs.timer")
+local window									= require("hs.window")
 
 local just										= require("cp.just")
 
@@ -199,9 +200,6 @@ end
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
 	local originalFocusedWindow = window.focusedWindow()
 	local whichBundleID = hs.processInfo["bundleID"]
-	if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcp.BUNDLE_ID then
-		whichBundleID = fcp.BUNDLE_ID
-	end
 	if type(stopOnError) ~= "boolean" then stopOnError = true end
 	if type(input) == "table" then
 		local appleScript = [[
