@@ -299,7 +299,7 @@ function mod.selectPanel(id)
 		--------------------------------------------------------------------------------
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
-		if v.id == id and v.height and mod.webview:hswindow() then
+		if v.id == id and v.height and type(v.height) == "number" and mod.webview:hswindow() and mod.webview:hswindow():isVisible() then
 			mod.webview:size({w = mod.defaultWidth, h = v.height })
 		end
 
