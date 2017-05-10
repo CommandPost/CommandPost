@@ -27,23 +27,40 @@ local mod = {}
 -- The number of pixels of buffer space to allow the selection zoom to fit.
 mod.SELECTION_BUFFER = 70
 
-mod.FULL_ZOOM = 5.34
+mod.DEFAULT_SHIFT = 1.0
+mod.MIN_SHIFT = 0.05
+
+function mod._selectedWidth(minClip, maxClip)
+	return maxClip:position().x + maxClip:size().w - minClip:frame().x + mod.SELECTION_BUFFER*2
+end
 
 function mod._zoomToFit(minClip, maxClip, shift)
 	local zoomAmount = mod.zoomAmount
-	-- zoom in until it fits
-	repeat
-		-- The current width of the selected clips
-		local selectedWidth = maxClip:position().x + maxClip:size().w - minClip:frame().x + mod.SELECTION_BUFFER*2
-		-- The dimensions of the view frame
-		local viewFrame = mod.contents:viewFrame()
-
-		if selectedWidth < viewFrame.w then
-			zoomAmount:value(zoomAmount:value() + shift)
-		end
-	until (selectedWidth >= viewFrame.w)
+	local selectedWidth = mod._selectedWidth(minClip, maxClip)
+	local viewFrame = mod.contents:viewFrame()
 	
-	zoomAmount:value(zoomAmount:value() - shift)
+	local dir = selectedWidth < viewFrame.w and 1 or -1
+
+	if shift < mod.MIN_SHIFT then
+		if dir == -1 then
+			-- we need to zoom back out
+			shift = mod.MIN_SHIFT
+		else
+			 -- too small - bail.
+			return
+		end
+	end
+
+	-- zoom in until it fits
+	while dir == 1 and selectedWidth < viewFrame.w or dir == -1 and selectedWidth > viewFrame.w do
+		zoomAmount:value(zoomAmount:value() + shift * dir)
+
+		selectedWidth = mod._selectedWidth(minClip, maxClip)
+		viewFrame = mod.contents:viewFrame()
+	end
+	
+	-- Keep zooming, with better precision
+	mod._zoomToFit(minClip, maxClip, shift/2)
 end
 
 --- plugins.finalcutpro.timeline.zoomtoselection.zoomToSelection() -> boolean
@@ -81,13 +98,9 @@ function mod.zoomToSelection()
 
 	-- set to 'full project'
 	appearance:show()
-	zoomAmount:value(mod.FULL_ZOOM)
 	
 	-- zoom in until it fits, getting more precise as we go
-	mod._zoomToFit(minClip, maxClip, 1.0)
-	mod._zoomToFit(minClip, maxClip, 0.5)
-	mod._zoomToFit(minClip, maxClip, 0.1)
-	mod._zoomToFit(minClip, maxClip, 0.05)
+	mod._zoomToFit(minClip, maxClip, mod.DEFAULT_SHIFT)
 	
 	-- move to the first clip position
 	mod.contents:scrollHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
