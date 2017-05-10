@@ -6,6 +6,25 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.8</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added Zoom to Selection Shortcut (issue #592)</li>
+				<li>Add Notification when Compressor Watch Folder Render is Complete (issue #600)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed bug in tools.executeWithAdministratorPrivileges which prevented users from activating any feature which requires an Administrator password</li></ul>
+			]]>
+			</description>
+			<pubDate>Thu, 11 May 2017 09:22:42 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.8/CommandPost_1.0.0-beta.8.dmg"
+				sparkle:version="1.0.0-beta.8"
+				sparkle:dsaSignature="MC0CFC0N3W0M1XP2rTluVqomRxYQ+uFyAhUAxCa+QsP04UeiqB2I6DxR2HZXwp8="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.7</title>
 			<description><![CDATA[
 				<h2>Bug Fixes:</h2>
