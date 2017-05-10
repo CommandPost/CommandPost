@@ -203,7 +203,7 @@ function TimelineContents:scrollHorizontalToX(x)
 	local timelineFrame = self:timelineFrame()
 	local scrollWidth = timelineFrame.w - self:viewFrame().w
 	local scrollPoint = timelineFrame.x*-1 + x
-	
+
 	local scrollTarget = scrollPoint/scrollWidth
 
 	self:scrollHorizontalTo(scrollTarget)
@@ -313,7 +313,7 @@ function TimelineContents:rangeSelectionUI()
 	local ui = self:UI()
 	if ui then
 		local clips = fnutils.filter(ui:children(), function(child)
-			return child:attributeValue("AXRole") and child:attributeValue("AXDescription") == id "RangeSelectionDescription"
+			return child:attributeValue("AXRole") and fnutils.contains(id "RangeSelectionDescription", child:attributeValue("AXDescription"))
 		end)
 		return #clips > 0 and clips[1] or nil
 	end
