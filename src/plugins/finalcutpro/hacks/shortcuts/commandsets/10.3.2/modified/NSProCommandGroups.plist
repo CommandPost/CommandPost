@@ -205,6 +205,7 @@
 			<string>cpSaveKeywordPresetSeven</string>
 			<string>cpSaveKeywordPresetEight</string>
 			<string>cpSaveKeywordPresetNine</string>
+			<string>cpZoomToSelection</string>
 		</array>
 	</dict>
 	<key>Application</key>

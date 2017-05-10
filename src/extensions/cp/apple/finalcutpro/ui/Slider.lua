@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils						= require("cp.apple.finalcutpro.axutils")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -32,9 +33,7 @@ end
 --- Creates a new Slider
 function Slider:new(parent, finderFn)
 	local o = {_parent = parent, _finder = finderFn}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return prop.extend(o, Slider)
 end
 
 -- TODO: Add documentation
@@ -54,31 +53,48 @@ function Slider:UI()
 	Slider.matches)
 end
 
+Slider.value = prop.new(
+	function(self)
+		local ui = self:UI()
+		return ui and ui:attributeValue("AXValue")
+	end,
+	function(value, self)
+		local ui = self:UI()
+		if ui then
+			ui:setAttributeValue("AXValue", value)
+		end
+	end	
+):bind(Slider)
+
 -- TODO: Add documentation
 function Slider:getValue()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXValue")
+	return self:value()
 end
 
 -- TODO: Add documentation
 function Slider:setValue(value)
-	local ui = self:UI()
-	if ui then
-		ui:setAttributeValue("AXValue", value)
-	end
+	self.value:set(value)
 	return self
 end
 
--- TODO: Add documentation
-function Slider:getMinValue()
+Slider.minValue = prop.new(function(self)
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXMinValue")
+end)
+
+-- TODO: Add documentation
+function Slider:getMinValue()
+	return self:minValue()
 end
+
+Slider.maxValue = prop.new(function(self)
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXMaxValue")
+end)
 
 -- TODO: Add documentation
 function Slider:getMaxValue()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXMaxValue")
+	return self:maxValue()
 end
 
 -- TODO: Add documentation
