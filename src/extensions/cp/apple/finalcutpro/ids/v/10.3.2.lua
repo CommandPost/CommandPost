@@ -88,6 +88,7 @@ return {
 	TimelineContents = {
 		Contents				= "_NS:16",
 		ScrollArea				= "_NS:9",
+		RangeSelectionDescription = "Range Selection",
 	},
 	TimelineToolbar = {
 		ID						= "_NS:237",

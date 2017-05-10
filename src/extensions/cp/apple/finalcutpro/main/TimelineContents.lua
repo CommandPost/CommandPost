@@ -300,6 +300,26 @@ function TimelineContents:clipsUI(expandGroups, filterFn)
 	return nil
 end
 
+--- cp.apple.finalcutpro.main.TimelineContents:rangeSelectionUI() -> axuielements
+--- Method
+--- Returns the UI for the current 'Range Selection', if present.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The 'Range Selection' UI or `nil`
+function TimelineContents:rangeSelectionUI()
+	local ui = self:UI()
+	if ui then
+		local clips = fnutils.filter(ui:children(), function(child)
+			return child:attributeValue("AXRole") and child:attributeValue("AXDescription") == id "RangeSelectionDescription"
+		end)
+		return #clips > 0 and clips[1] or nil
+	end
+	return nil
+end
+
 --- cp.apple.finalcutpro.main.TimelineContents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the

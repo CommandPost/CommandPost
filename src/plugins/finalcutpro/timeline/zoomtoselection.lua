@@ -28,7 +28,7 @@ local mod = {}
 mod.SELECTION_BUFFER = 70
 
 mod.DEFAULT_SHIFT = 1.0
-mod.MIN_SHIFT = 0.05
+mod.MIN_SHIFT = 0.025
 
 function mod._selectedWidth(minClip, maxClip)
 	return maxClip:position().x + maxClip:size().w - minClip:frame().x + mod.SELECTION_BUFFER*2
@@ -47,9 +47,15 @@ function mod._zoomToFit(minClip, maxClip, shift)
 			shift = mod.MIN_SHIFT
 		else
 			 -- too small - bail.
+		 	-- move to the first clip position
+		 	mod.contents:scrollHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
+			mod.appearance:hide()
 			return
 		end
 	end
+	
+	-- show the appearance popup
+	mod.appearance:show()
 
 	-- zoom in until it fits
 	while dir == 1 and selectedWidth < viewFrame.w or dir == -1 and selectedWidth > viewFrame.w do
@@ -78,35 +84,30 @@ function mod.zoomToSelection()
 		return false
 	end
 	
-	-- Find the min/max clip and 'x' value for selected clips.
-	local minClip, maxClip, minX, maxX
-	for _,clip in ipairs(selectedClips) do
-		local frame = clip:frame()
-		if minX == nil or minX > frame.x then
-			minX = frame.x
-			minClip = clip
-		end
-		if maxX == nil or maxX < (frame.x + frame.w) then
-			maxX = frame.x + frame.w
-			maxClip = clip
+	local minClip, maxClip
+	
+	local rangeSelection = mod.contents:rangeSelectionUI()
+	if rangeSelection then
+		minClip = rangeSelection
+		maxClip = rangeSelection
+	else
+		-- Find the min/max clip and 'x' value for selected clips.
+		local minX, maxX
+		for _,clip in ipairs(selectedClips) do
+			local frame = clip:frame()
+			if minX == nil or minX > frame.x then
+				minX = frame.x
+				minClip = clip
+			end
+			if maxX == nil or maxX < (frame.x + frame.w) then
+				maxX = frame.x + frame.w
+				maxClip = clip
+			end
 		end
 	end
 	
-	-- find the right zoom amount
-	local appearance = mod.appearance
-	local zoomAmount = mod.zoomAmount
-
-	-- set to 'full project'
-	appearance:show()
-	
 	-- zoom in until it fits, getting more precise as we go
 	mod._zoomToFit(minClip, maxClip, mod.DEFAULT_SHIFT)
-	
-	-- move to the first clip position
-	mod.contents:scrollHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
-	
-	-- hide the appearance popup again
-	appearance:hide()
 	
 	return true
 end
