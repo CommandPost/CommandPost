@@ -49,6 +49,7 @@ return {
 	},
 	TimelineAppearance = {
 		ClipHeight				= "_NS:85",
+		ZoomAmount				= "_NS:35",
 	},
 	Viewer = {
 		Title					= "_NS:223",

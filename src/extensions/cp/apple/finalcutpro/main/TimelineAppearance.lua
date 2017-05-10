@@ -120,4 +120,13 @@ function TimelineAppearance:clipHeight()
 	return self._clipHeight
 end
 
+function TimelineAppearance:zoomAmount()
+	if not self._zoomAmount then
+		self._zoomAmount = Slider:new(self, function()
+			return axutils.childWithID(self:UI(), id "ZoomAmount")
+		end)
+	end
+	return self._zoomAmount
+end
+
 return TimelineAppearance

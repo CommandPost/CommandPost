@@ -130,6 +130,13 @@ function TimelineContents:skimmingPlayhead()
 	return self._skimmingPlayhead
 end
 
+
+-----------------------------------------------------------------------
+--
+-- VIEWING AREA:
+--
+-----------------------------------------------------------------------
+
 -- TODO: Add documentation
 function TimelineContents:horizontalScrollBarUI()
 	local ui = self:scrollAreaUI()
@@ -191,6 +198,17 @@ function TimelineContents:scrollHorizontalTo(value)
 	end
 end
 
+function TimelineContents:scrollHorizontalToX(x)
+	-- update the scrollbar position
+	local timelineFrame = self:timelineFrame()
+	local scrollWidth = timelineFrame.w - self:viewFrame().w
+	local scrollPoint = timelineFrame.x*-1 + x
+	
+	local scrollTarget = scrollPoint/scrollWidth
+
+	self:scrollHorizontalTo(scrollTarget)
+end
+
 -- TODO: Add documentation
 function TimelineContents:getScrollHorizontal()
 	local ui = self:horizontalScrollBarUI()
@@ -232,7 +250,7 @@ end
 -----------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
---- Function
+--- Method
 --- Returns a table containing the list of selected clips.
 ---
 --- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
