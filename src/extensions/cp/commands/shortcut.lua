@@ -121,7 +121,7 @@ shortcut.isEnabled = prop(
 			if enabled then
 				self._hotkey:enable()
 			else
-				self._hotkey:disabled()
+				self._hotkey:disable()
 			end
 		end
 	end
@@ -218,6 +218,11 @@ function shortcut:trigger()
 	local keyCode = shortcut.textToKeyCode(self:getKeyCode())
 	eventtap.keyStroke(self._modifiers, keyCode)
 	return self
+end
+
+function shortcut:__tostring()
+	local modifiers = table.concat(self._modifiers, "+")
+	return string.format("shortcut: %s %s", modifiers, self:getKeyCode())
 end
 
 --- === cp.commands.shortcut.builder ===

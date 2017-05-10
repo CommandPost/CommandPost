@@ -96,7 +96,7 @@ end
 function commands:add(commandId)
 	local cmd = command:new(commandId, self)
 	self._commands[commandId] = cmd
-	if self:isEnabled() then cmd:enable() end
+	-- if self:isEnabled() then cmd:enable() end
 	self:_notify("add", cmd)
 	return cmd
 end
@@ -126,6 +126,23 @@ function commands:deleteShortcuts()
 	return self
 end
 
+--- cp.commands.enabled <cp.prop: boolean>
+--- Field
+--- If enabled, the commands in the group will be active as well.
+commands.isEnabled = prop.TRUE():bind(commands):watch(function(enabled, self)
+	log.df("%s.isEnabled: %s", self:id(), enabled)
+	if enabled then
+		self:_notify('enable')
+	else
+		self:_notify('disable')
+	end
+end)
+
+--- cp.commands.isEditable <cp.prop: boolean>
+--- Field
+--- If set to `false`, the command group is not user-editable.
+commands.isEditable = prop.TRUE():bind(commands)
+
 -- TODO: Add documentation
 function commands:enable()
 	self:isEnabled(true)
@@ -137,21 +154,6 @@ function commands:disable()
 	self:isEnabled(false)
 	return self
 end
-
---- cp.commands.enabled <cp.prop: boolean>
---- Field
---- If enabled, the commands in the group will be active as well.
-commands.isEnabled = prop.TRUE():bind(commands):watch(function(enabled, self)
-	if enabled then
-		self:_notify('enable')
-	else
-		self:_notify('disable')
-end)
-
---- cp.commands.isEditable <cp.prop: boolean>
---- Field
---- If set to `false`, the command group is not user-editable.
-commands.isEditable = prop.TRUE():bind(commands)
 
 -- TODO: Add documentation
 function commands:watch(events)

@@ -162,6 +162,7 @@
 	
 local log				= require("hs.logger").new("prop")
 local inspect			= require("hs.inspect")
+local fnutils			= require("hs.fnutils")
 
 -- The module
 local prop = {}
@@ -279,7 +280,7 @@ end
 
 --- cp.prop:bind(owner) -> cp.prop
 --- Method
---- Creates a new instance of the is which is bound to the specified owner.
+--- Creates a clone of this `cp.prop` which is bound to the specified owner.
 ---
 --- Parameters:
 --- * `owner`	- The owner to attach to.
@@ -288,11 +289,12 @@ end
 --- * the `cp.prop`
 ---
 --- Notes:
---- * Throws an `error` if this is already attached to an owner.
+--- * Throws an `error` if the new owner is `nil`.
 function prop.mt:bind(owner)
 	assert(owner ~= nil, "The owner must not be nil.")
-	local o = {_owner = owner}
-	return setmetatable(o, {__index = self, __call = self.__call, __tostring = self.__tostring})
+	local o = self:clone()
+	o._owner = owner
+	return o
 end
 
 --- cp.prop:owner() -> table
@@ -372,6 +374,7 @@ end
 --- Parameters:
 --- * `watchFn`		- The watch function, with the signature `function(newValue, owner)`.
 --- * `notifyNow`	- The function will be triggered immediately with the current state.  Defaults to `false`.
+--- * `uncloned`	- If `true`, the watch function will not be attached to any clones of this prop.
 ---
 --- Returns:
 --- * `cp.prop`		- The same `cp.prop` instance
@@ -379,15 +382,36 @@ end
 ---
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
-function prop.mt:watch(watchFn, notifyNow)
-	if not self._watchers then
-		self._watchers = {}
+function prop.mt:watch(watchFn, notifyNow, uncloned)
+	local watchers = nil
+	if uncloned then
+		if not self._watchersUncloned then
+			self._watchersUncloned = {}
+		end
+		watchers = self._watchersUncloned
+	else
+		if not self._watchers then
+			self._watchers = {}
+		end
+		watchers = self._watchers
 	end
 	if notifyNow then
 		watchFn(self:get(), self:owner())
 	end
-	self._watchers[#self._watchers + 1] = watchFn
+	watchers[#watchers + 1] = watchFn
 	return self, watchFn
+end
+
+local function _unwatch(watchers, watchFn)
+	if watchers then
+		for i,watcher in ipairs(watchers) do
+			if watcher == watchFn then
+				table.remove(watchers, i)
+				return true
+			end
+		end
+	end
+	return false
 end
 
 --- cp.prop:unwatch(watchFn) -> boolean
@@ -410,13 +434,7 @@ end
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:unwatch(watchFn)
-	for i,watcher in ipairs(self._watchers) do
-		if watcher == watchFn then
-			table.remove(self._watchers, i)
-			return true
-		end
-	end
-	return false
+	return _unwatch(self._watchers, watchFn) or _unwatch(self._watchersUncloned)
 end
 
 --- cp.prop:update() -> value
@@ -432,6 +450,42 @@ function prop.mt:update()
 	local value = self:get()
 	self:_notify(value)
 	return value
+end
+
+-- cp.prop:_clone() -> cp.prop
+-- Method
+-- The default function performing a clone operation. This can be overridden by providing a `cloneFn` to `cp.prop.new(...)`.
+function prop.mt:_clone()
+	-- create a new instance
+	local clone = prop.new(self._get, self._set, self._clone)
+
+	-- copy the owner, if present
+	clone._owner = self:owner()
+	
+	-- copy the watchers, if present
+	if self._watchers then
+		clone._watchers = fnutils.copy(self._watchers)
+	end
+	
+	return clone
+end
+
+--- cp.prop:clone() -> cp.prop
+--- Method
+--- Returns a new copy of the property.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * New `cp.prop`.
+function prop.mt:clone()
+	local clone = nil
+	if self._clone then
+		return self:_clone()
+	else
+		error "No `_clone` method is available."
+	end
 end
 
 -- cp.prop:_notify(value) -> nil
@@ -450,11 +504,18 @@ function prop.mt:_notify(value)
 		return
 	end
 	
-	if self._watchers then
+	if self._watchers or self._watchersUncloned then
 		if self._lastValue ~= value then
 			self._notifying = true
-			for _,watcher in ipairs(self._watchers) do
-				watcher(value, self:owner())
+			if self._watchersUncloned then
+				for _,watcher in ipairs(self._watchersUncloned) do
+					watcher(value, self:owner())
+				end
+			end
+			if self._watchers then
+				for _,watcher in ipairs(self._watchers) do
+					watcher(value, self:owner())
+				end
 			end
 			self._lastValue = value
 			self._notifying = nil
@@ -493,25 +554,29 @@ end
 ---
 --- Parameters:
 --- * `getFn`		- The function that will get called to retrieve the current value.
---- * `setFn`		- The function that will get called to set the new value.
+--- * `setFn`		- (optional) The function that will get called to set the new value.
+--- * `cloneFn`		- (optional) The function that will get called when cloning the property. 
 ---
 --- Returns:
 --- * The new `cp.prop` instance.
 ---
 --- Notes:
---- * `getFn` signature: `function([owner])`
+--- * `getFn` signature: `function([owner]) -> anything`
 --- ** `owner`		- If this is attached as a method, the owner table is passed in.
 --- * `setFn` signature: `function(newValue[, owner])`
 --- ** `newValue`	- The new value to store.
 --- ** `owner`		- If this is attached as a method, the owner table is passed in.
+--- * `cloneFn` signature: `function(prop) -> new cp.prop`
 --- * This can also be executed by calling the module directly. E.g. `require('cp.prop')(myGetFunction)`
-function prop.new(getFn, setFn)
-	assert(getFn ~= nil and type(getFn) == "function")
-	assert(setFn == nil or type(setFn) == "function")
+function prop.new(getFn, setFn, cloneFn)
+	assert(getFn ~= nil and type(getFn) == "function", "The 'getFn' must be a function.")
+	assert(setFn == nil or type(setFn) == "function", "The 'setFn' must be a function if provided.")
+	assert(cloneFn == nil or type(cloneFn) == "function", "The 'cloneFn' must be a function if provided.")
 	local o = {
 		_id			= nextId(),
 		_get		= getFn,
 		_set		= setFn,
+		_clone		= cloneFn,
 	}
 	return setmetatable(o, prop.mt)
 end
@@ -529,7 +594,12 @@ function prop.THIS(initialValue)
 	local value = initialValue
 	local get = function() return value end
 	local set = function(newValue) value = newValue end
-	return prop.new(get, set)
+	local clone = function(self)
+		local result = prop.THIS(value)
+		result._owner = self:owner()
+		return result
+	end
+	return prop.new(get, set, clone)
 end
 
 --- cp.prop.IMMUTABLE(propValue) -- cp.prop
@@ -636,6 +706,25 @@ end
 --- * If this property is mutable, you can set the `NOT` property value and this property will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
 prop.mt.NOT = prop.NOT
 
+-- cp.prop._watchAndOr(andOrProp, props) -> cp.prop
+-- Private Function
+-- Private function which will watch all props in `...` and update the `andOrProp` when they change.
+--
+-- Parameters:
+-- * `andOrProp`	- The property that will get updated
+-- * `props`		- The list of properties being watched.
+--
+-- Returns:
+-- * The `andOrProp`.
+local function _watchAndOr(andOrProp, props)
+	local watcher = function(value) andOrProp:update() end
+	for i,p in ipairs(props) do
+		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
+		p:watch(watcher, false, true)
+	end
+	return andOrProp
+end
+
 --- cp.prop.AND(...) -> cp.prop
 --- Function
 --- Returns a new `cp.prop` which will be `true` if all `cp.prop` instances passed into the function return a `truthy` value.
@@ -665,13 +754,14 @@ function prop.AND(...)
 				end
 			end
 			return value
+		end,
+		nil, -- no 'set' function
+		function(self)
+			local clone = prop.mt._clone(self)
+			return _watchAndOr(clone, props)
 		end
 	)
-	local watcher = function(value) andProp:update() end
-	for i,p in ipairs(props) do
-		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
-		p:watch(watcher)
-	end
+	_watchAndOr(andProp, props)
 	andProp.OR = function() error("Unable to 'OR' an 'AND'.") end
 	return andProp
 end
@@ -719,6 +809,11 @@ function prop.OR(...)
 				end
 			end
 			return value
+		end,
+		nil, -- no 'set' function
+		function(self)
+			local clone = prop.mt._clone(self)
+			return _watchAndOr(clone, props)
 		end
 	)
 	local watcher = function(value) orProp:update() end

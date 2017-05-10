@@ -1,5 +1,5 @@
 local test		= require("cp.test")
-local log		= require("hs.logger").new("testis")
+local log		= require("hs.logger").new("testprop")
 
 local prop		= require("cp.prop")
 
@@ -207,6 +207,16 @@ function run()
 		ok(eq(count, 2))
 		ok(eq(watchValue, false))
 		
+		-- Toggle isLeft
+		isLeft(true)
+		ok(eq(count, 3))
+		ok(eq(watchValue, true))
+
+		-- Toggle isRight
+		isRight(false)
+		ok(eq(count, 4))
+		ok(eq(watchValue, false))
+		
 		-- Test non-boolean properties.
 		ok(prop.THIS("Hello"):AND(prop.THIS("world")):value() == "world")
 		ok(prop.THIS("Hello"):AND(prop.THIS(nil)):value() == nil)
@@ -402,6 +412,55 @@ function run()
 		
 		ok(cProp() == true)
 		ok(eq(log, {{one = false}, {two = false}, {one = true}, {two = true}}))
+	end)
+	
+	test("Prop Clone", function()
+		local owner = {}
+		
+		local aProp = prop.TRUE()
+		local bProp = aProp:bind(owner)
+		
+		local aClone = aProp:clone()
+		local bClone = bProp:clone()
+
+		ok(eq(bClone:owner(), bProp:owner()))
+		
+		ok(aProp() == true)
+		ok(bProp() == true)
+		ok(aClone() == true)
+		ok(bClone() == true)
+		
+		aProp(false)
+		ok(aProp() == false)
+		ok(bProp() == true)
+		ok(aClone() == true)
+		ok(bClone() == true)
+	end)
+	
+	test("Prop Bind AND Watch", function()
+		local owner = {}
+		
+		local aProp = prop.TRUE()
+		local bProp = prop.TRUE()
+		
+		-- the base AND
+		local andProp = aProp:AND(bProp)
+		-- watch is
+		local propCount, propValue = 0, nil
+		local propWatch = function(value) propCount = propCount + 1; propValue = value end
+		andProp:watch(propWatch, false, true)
+		
+		-- the bound AND
+		local andBound = andProp:bind(owner)
+		local boundCount, boundValue = 0, nil
+		local boundWatch = function(value) boundCount = boundCount + 1; boundValue = value end
+		andBound:watch(boundWatch)
+		
+		ok(#andProp._watchersUncloned == 1)
+		ok(andProp._watchersUncloned[1] == propWatch)
+		
+		ok(#andBound._watchers == 1)
+		ok(andBound._watchers[1] == boundWatch)
 	end)
 end
 

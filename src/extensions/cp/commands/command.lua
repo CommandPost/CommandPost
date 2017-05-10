@@ -49,14 +49,19 @@ function command:new(id, parent)
 	}
 	prop.extend(o, command)
 	
-	--- cp.commands.command.isActive <cp.prop: boolean; read-only>
-	--- Field
-	--- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
-	o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active, self)
-		for _,shortcut in ipairs(self._shortcuts) do
+--- cp.commands.command.isEnabled <cp.prop: boolean>
+--- Field
+--- If set to `true`, the command is enabled.
+	o.isEnabled = prop.TRUE():bind(o)
+	
+--- cp.commands.command.isActive <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
+	o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active)
+		for _,shortcut in ipairs(o._shortcuts) do
 			shortcut:isEnabled(active)
 		end
-	end)
+	end, true)
 	
 	return o
 end
@@ -207,6 +212,7 @@ function command:addShortcut(newShortcut)
 	-- mark it as a 'command' hotkey
 	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
+	newShortcut:isEnabled(self:isEnabled())
 	return self
 end
 
@@ -369,9 +375,8 @@ function command:disable()
 	return self
 end
 
---- cp.commands.command.isEnabled <cp.prop: boolean>
---- Field
---- If set to `true`, the command is enabled.
-command.isEnabled = prop.FALSE():bind(command)
+function command:__tostring()
+	local result = string.format("command: %s (enabled: %s)", self:id(), self:isEnabled())
+end
 
 return command

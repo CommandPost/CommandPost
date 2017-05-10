@@ -79,7 +79,7 @@ function _inspect(e, options)
             end
             return result
         else
-            return inspect(e)
+            return inspect(e, options)
         end
     else
         return "\n==============================================" ..
