@@ -361,17 +361,66 @@ function mod.styleSheet()
 	return result
 end
 
--- wrapInQuotes(value) -> none
--- Function
--- Wraps a string in quotes
---
--- Parameters:
---  * value - Incoming string
---
--- Returns:
---  * A string in quotes
-local function wrapInQuotes(value)
-	return [["]] .. value .. [["]]
+--- plugins.compressor.watchfolders.panels.media.watchCompressorStatus(jobID) -> none
+--- Function
+--- Checks the Status of a Job in Compressor
+---
+--- Parameters:
+---  * jobID - Job ID as string
+---  * file - File Path as string
+---  * destinationPath - Destination Path as string
+---
+--- Returns:
+---  * None
+mod.statusTimer = {}
+function mod.watchCompressorStatus(jobID, file, destinationPath)
+	--log.df("Lets track the status of: %s", jobID)
+	mod.statusTimer[jobID] = timer.doEvery(5, function()
+		local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
+		local compressorStatusTask = hs.task.new(compressorPath, nil, function(task, stdOut, stdErr)
+			--log.df("task: %s", task)
+			--log.df("stdOut: %s", stdOut)
+			--log.df("stdErr: %s", stdErr)
+			if stdOut and string.match(stdOut, [[status="([^%s]+)"]]) then
+				local status = string.match(stdOut, [[status="([^%s]+)"]])
+				--log.df("Status: %s", status)
+				if status and status == "Cancelled" then
+					-------------------------------------------------------------------------------
+					-- Cancelled:
+					--------------------------------------------------------------------------------
+					log.df("Render Cancelled: %s", jobID)
+					mod.statusTimer[jobID]:stop()
+					mod.statusTimer[jobID] = nil
+				elseif status and status == "Successful" then
+					-------------------------------------------------------------------------------
+					-- Show Notification:
+					--------------------------------------------------------------------------------
+					if mod.notifications[file] then
+						mod.notifications[file]:withdraw()
+						mod.notifications[file] = nil
+					end
+					mod.notifications[file] = notify.new(function()
+						os.execute([[open "]] .. destinationPath .. [["]])
+					end)
+						:title(i18n("renderComplete"))
+						:subTitle(tools.getFilenameFromPath(file))
+						:hasActionButton(true)
+						:actionButtonTitle(i18n("show"))
+						:send()
+					mod.statusTimer[jobID]:stop()
+					mod.statusTimer[jobID] = nil
+				elseif status and status == "Processing" then
+					-- Do nothing
+				else
+					log.df("Unknown Status from Compressor: %s", status)
+					mod.statusTimer[jobID]:stop()
+					mod.statusTimer[jobID] = nil
+				end
+			end
+			return true
+		end, { "-monitor", "-jobid", jobID })
+		compressorStatusTask:start()
+	end)
 end
 
 --- plugins.compressor.watchfolders.panels.media.addFilesToCompressor(files) -> none
@@ -481,36 +530,37 @@ function mod.addFilesToCompressor(files)
 			end
 		end
 
-		local compressorPath = compressor:getPath()
+		local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
 
 		local filename = tools.getFilenameFromPath(file, true)
 
-		local uniqueUUID = string.gsub(uuid(), "-", "")
+		local compressorTask = task.new(compressorPath, function(exitCode, stdOut, stdErr)
+			--log.df("exitCode: %s", exitCode)
+			--log.df("stdOut: %s", stdOut)
+			--log.df("stdErr: %s", stdErr)
+		end, function(task, stdOut, stdErr)
+			--log.df("task: %s", task)
+			--log.df("stdOut: %s", stdOut)
+			--log.df("stdErr: %s", stdErr)
 
-		local compressorCommand = compressorPath .. [[/Contents/MacOS/Compressor -batchname "CommandPost Watch Folder" -jobid "]] .. uniqueUUID .. [[" -jobpath "]] .. file .. [[" -settingpath "]] .. selectedFile.settingFile .. [[" -locationpath "]] .. selectedFile.destinationPath .. filename .. [[" &]]
-		local output, status, endType = hs.execute(compressorCommand)
-		if status then
-			--------------------------------------------------------------------------------
-			-- Command Triggered Successfully:
-			--------------------------------------------------------------------------------
-			--[[
-			if not mod.compressorTask then
-				mod.compressorTask = {}
+			local jobID = nil
+			local jobIDPattern = "jobID ([^%s]+)"
+			if stdErr and string.find(stdErr, jobIDPattern) then
+				jobID = string.match(stdErr, jobIDPattern)
 			end
-			mod.compressorTask[uniqueUUID] =  task.new(compressorPath .. "/Contents/MacOS/Compressor", function(exitCode, stdOut, stdErr)
-				log.df("exitCode: %s", exitCode)
-				log.df("stdOut: %s", stdOut)
-				log.df("stdErr: %s", stdErr)
-			end, function(task, stdOut, stdErr)
-				log.df("task: %s", task)
-				log.df("stdOut: %s", stdOut)
-				log.df("stdErr: %s", stdErr)
-			end, { "-monitor", "-jobid", wrapInQuotes(uniqueUUID) } )
-			:start()
-			--]]
-		else
-			log.df("compressorCommand: %s", compressorCommand)
-			log.df("RESULT:\nOutput: %s\nStatus: %s\nendType: %s", output, status, endType)
+
+			if jobID then
+				mod.watchCompressorStatus(jobID, file, selectedFile.destinationPath)
+			end
+
+			return true
+		end, { "-batchname", "CommandPost Watch Folder", "-jobpath", file, "-settingpath", selectedFile.settingFile, "-locationpath", selectedFile.destinationPath .. filename } ):start()
+
+		if not compressorTask then
+			if mod.notifications[file] then
+				mod.notifications[file]:withdraw()
+				mod.notifications[file] = nil
+			end
 			dialog.displayErrorMessage(i18n("compressorError"))
 		end
 

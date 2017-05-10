@@ -638,6 +638,7 @@ return {
 	compressorError						=			"Something went wrong when sending to Compressor.",
 	addedToCompressor					=			"Added to Compressor:",
 	monitor								=			"Monitor",
+	renderComplete						=			"Render Complete!",
 
 	--------------------------------------------------------------------------------
 	-- TEXT TO SPEECH PLUGIN:
