@@ -97,7 +97,7 @@ function mod.press(label, value, names)
 		value.___benched = true
 		local mt = getmetatable(value)
 		if mt then
-			mod.press(label, mt)
+			mod.press(label, mt, names)
 		end
 	end
 	return value
