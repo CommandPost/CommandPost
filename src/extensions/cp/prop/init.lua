@@ -678,7 +678,7 @@ end
 --- Notes:
 --- * If the `propValue` is mutable, you can set the `NOT` property value and the underlying value will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
 function prop.NOT(propValue)
-	assert(prop.is(propValue), string.format("Expected a `cp.prop` at argument #1 but got `%s`", inspect(propValue)))
+	if not prop.is(propValue) then error "Expected a `cp.prop` at argument #1" end
 	local notProp = prop.new(
 		function() return negate(propValue:get()) end,
 		function(newValue) propValue:set(negate(newValue)) end
@@ -719,7 +719,7 @@ prop.mt.NOT = prop.NOT
 local function _watchAndOr(andOrProp, props)
 	local watcher = function(value) andOrProp:update() end
 	for i,p in ipairs(props) do
-		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
+		if not prop.is(p) then error(string.format("Expected a `cp.prop` at argument #%d", i)) end
 		p:watch(watcher, false, true)
 	end
 	return andOrProp
@@ -816,11 +816,7 @@ function prop.OR(...)
 			return _watchAndOr(clone, props)
 		end
 	)
-	local watcher = function(value) orProp:update() end
-	for i,p in ipairs(props) do
-		assert(prop.is(p), string.format("Expected a `cp.prop` at argument #%d but got `%s`", i, inspect(p)))
-		p:watch(watcher)
-	end
+	_watchAndOr(orProp, props)
 	orProp.AND = function() error("Unable to 'AND' an 'OR'.") end
 	return orProp
 end
