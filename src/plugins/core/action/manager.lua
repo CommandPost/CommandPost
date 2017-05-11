@@ -13,11 +13,14 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local urlevent					= require("hs.urlevent")
-local fnutils					= require("hs.fnutils")
 local log						= require("hs.logger").new("actnmngr")
-local config					= require("cp.config")
+
+local fnutils					= require("hs.fnutils")
 local timer						= require("hs.timer")
+local urlevent					= require("hs.urlevent")
+
+local config					= require("cp.config")
+local dialog					= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
