@@ -264,7 +264,7 @@ function mod.apply(shortcut)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
 	end)
-	
+
 	-- Success!
 	return true
 end
@@ -391,12 +391,6 @@ function mod.updateEffectsList()
 	fcp:launch()
 
 	--------------------------------------------------------------------------------
-	-- Save the layout of the Transitions panel in case we switch away...
-	--------------------------------------------------------------------------------
-	local transitions = fcp:transitions()
-	local transitionsLayout = transitions:saveLayout()
-
-	--------------------------------------------------------------------------------
 	-- Make sure Effects panel is open:
 	--------------------------------------------------------------------------------
 	local effects = fcp:effects()
@@ -468,10 +462,9 @@ function mod.updateEffectsList()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Restore Effects and Transitions Panels:
+	-- Restore Effects:
 	--------------------------------------------------------------------------------
 	effects:loadLayout(effectsLayout)
-	transitions:loadLayout(transitionsLayout)
 	if not effectsShowing then effects:hide() end
 
 	--------------------------------------------------------------------------------

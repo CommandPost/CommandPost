@@ -44,55 +44,15 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.os.touchbar.lastLocation <cp.prop: point table>
+--- Field
+--- The last known Virtual Touch Bar Location
 mod.lastLocation = config.prop("lastTouchBarLocation")
 
+--- plugins.finalcutpro.os.touchbar.location <cp.prop: string>
+--- Field
+--- The Virtual Touch Bar Location Setting
 mod.location = config.prop("displayTouchBarLocation", DEFAULT_VALUE):watch(function() mod.update() end)
-
---------------------------------------------------------------------------------
--- SET TOUCH BAR LOCATION:
---------------------------------------------------------------------------------
-function mod.updateLocation()
-
-	--------------------------------------------------------------------------------
-	-- Get Settings:
-	--------------------------------------------------------------------------------
-	local displayTouchBarLocation = mod.location()
-
-	--------------------------------------------------------------------------------
-	-- Put it back to last known position:
-	--------------------------------------------------------------------------------
-	local lastLocation = mod.lastLocation()
-	if lastLocation then
-		mod.touchBarWindow:topLeft(lastLocation)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Show Touch Bar at Top Centre of Timeline:
-	--------------------------------------------------------------------------------
-	local timeline = fcp:timeline()
-	if displayTouchBarLocation == LOCATION_TIMELINE and timeline:isShowing() then
-		--------------------------------------------------------------------------------
-		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
-		--------------------------------------------------------------------------------
-		local viewFrame = timeline:contents():viewFrame()
-		if viewFrame then
-			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBarWindow:getFrame().w/2, y = viewFrame.y + 20}
-			mod.touchBarWindow:topLeft(topLeft)
-		end
-	elseif displayTouchBarLocation == LOCATION_MOUSE then
-
-		--------------------------------------------------------------------------------
-		-- Position Touch Bar to Mouse Pointer Location:
-		--------------------------------------------------------------------------------
-		mod.touchBarWindow:atMousePosition()
-
-	end
-
-	--------------------------------------------------------------------------------
-	-- Save last Touch Bar Location to Settings:
-	--------------------------------------------------------------------------------
-	mod.lastLocation(mod.touchBarWindow:topLeft())
-end
 
 --- plugins.finalcutpro.os.touchbar.supported <cp.prop: boolean; read-only>
 --- Field
@@ -110,6 +70,9 @@ mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
 		dialog.displayMessage(i18n("touchBarError"))
 		mod.enabled(false)
 	end
+	if not enabled then
+		mod.stop()
+	end
 end)
 
 --- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
@@ -123,35 +86,118 @@ mod.isActive = mod.enabled:AND(mod.supported):watch(function(active)
 	end
 end)
 
+--- plugins.finalcutpro.os.touchbar.updateLocation() -> none
+--- Function
+--- Updates the Location of the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updateLocation()
+
+	--------------------------------------------------------------------------------
+	-- Get Settings:
+	--------------------------------------------------------------------------------
+	local displayTouchBarLocation = mod.location()
+
+	--------------------------------------------------------------------------------
+	-- Put it back to last known position:
+	--------------------------------------------------------------------------------
+	local lastLocation = mod.lastLocation()
+	if lastLocation then
+		mod.touchBar:topLeft(lastLocation)
+	end
+
+	--------------------------------------------------------------------------------
+	-- Show Touch Bar at Top Centre of Timeline:
+	--------------------------------------------------------------------------------
+	local timeline = fcp:timeline()
+	if displayTouchBarLocation == LOCATION_TIMELINE and timeline:isShowing() then
+		--------------------------------------------------------------------------------
+		-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
+		--------------------------------------------------------------------------------
+		local viewFrame = timeline:contents():viewFrame()
+		if viewFrame then
+			local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.touchBar:getFrame().w/2, y = viewFrame.y + 20}
+			mod.touchBar:topLeft(topLeft)
+		end
+	elseif displayTouchBarLocation == LOCATION_MOUSE then
+
+		--------------------------------------------------------------------------------
+		-- Position Touch Bar to Mouse Pointer Location:
+		--------------------------------------------------------------------------------
+		mod.touchBar:atMousePosition()
+
+	end
+
+	--------------------------------------------------------------------------------
+	-- Save last Touch Bar Location to Settings:
+	--------------------------------------------------------------------------------
+	mod.lastLocation(mod.touchBar:topLeft())
+end
+
+--- plugins.finalcutpro.os.touchbar.update() -> none
+--- Function
+--- Updates the visibility and location of the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.update()
 	-- Check if it's active.
 	mod.isActive:update()
 end
 
---------------------------------------------------------------------------------
--- SHOW TOUCH BAR:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.os.touchbar.show() -> none
+--- Function
+--- Show the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if we need to show the Touch Bar:
 	--------------------------------------------------------------------------------
 	if fcp:isFrontmost() and mod.supported() and mod.enabled() then
+		mod.start()
 		mod.updateLocation()
-		mod.touchBarWindow:show()
+		mod.touchBar:show()
 	end
 end
 
---------------------------------------------------------------------------------
--- HIDE TOUCH BAR:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.os.touchbar.hide() -> none
+--- Function
+--- Hide the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.hide()
-	if mod.supported() then mod.touchBarWindow:hide() end
+	if mod.supported() and mod.enabled() then
+		mod.touchBar:hide()
+	end
 end
 
---------------------------------------------------------------------------------
--- TOUCH BAR WATCHER:
---------------------------------------------------------------------------------
-local function touchbarWatcher(obj, message)
+--- plugins.finalcutpro.os.touchbar.callback() -> none
+--- Function
+--- Callback Function for the Virtual Touch Bar
+---
+--- Parameters:
+---  * obj - the touchbarObject the callback is for
+---  * message - the message to the callback, either "didEnter" or "didExit"
+---
+--- Returns:
+---  * None
+function mod.callback(obj, message)
 	if message == "didEnter" then
 		mod.mouseInsideTouchbar = true
 	elseif message == "didExit" then
@@ -160,52 +206,81 @@ local function touchbarWatcher(obj, message)
 		--------------------------------------------------------------------------------
 		-- Just in case we got here before the eventtap returned the Touch Bar to normal:
 		--------------------------------------------------------------------------------
-		mod.touchBarWindow:movable(false)
-		mod.touchBarWindow:acceptsMouseEvents(true)
-		mod.lastLocation(mod.touchBarWindow:topLeft())
+		mod.touchBar:movable(false)
+		mod.touchBar:acceptsMouseEvents(true)
+		mod.lastLocation(mod.touchBar:topLeft())
 	end
 end
 
-function mod.init()
-	if mod.supported() then
+--- plugins.finalcutpro.os.touchbar.start() -> none
+--- Function
+--- Initialises the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.start()
+	if mod.supported() and not mod.touchBar then
 		--------------------------------------------------------------------------------
 		-- New Touch Bar:
 		--------------------------------------------------------------------------------
-		mod.touchBarWindow = touchbar.new()
+		mod.touchBar = touchbar.new()
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Watcher:
 		--------------------------------------------------------------------------------
-		mod.touchBarWindow:setCallback(touchbarWatcher)
+		mod.touchBar:setCallback(mod.callback)
 
 		--------------------------------------------------------------------------------
 		-- Get last Touch Bar Location from Settings:
 		--------------------------------------------------------------------------------
 		local lastTouchBarLocation = mod.lastLocation()
-		if lastTouchBarLocation ~= nil then	mod.touchBarWindow:topLeft(lastTouchBarLocation) end
+		if lastTouchBarLocation ~= nil then	mod.touchBar:topLeft(lastTouchBarLocation) end
 
 		--------------------------------------------------------------------------------
 		-- Draggable Touch Bar:
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
-		touchbarKeyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
+		mod.keyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
 			if mod.mouseInsideTouchbar and mod.location() == LOCATION_DRAGGABLE then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-					mod.touchBarWindow:backgroundColor{ red = 1 }
+					mod.touchBar:backgroundColor{ red = 1 }
 									:movable(true)
 									:acceptsMouseEvents(false)
 				elseif ev:getType() ~= events.leftMouseDown then
-					mod.touchBarWindow:backgroundColor{ white = 0 }
+					mod.touchBar:backgroundColor{ white = 0 }
 								  :movable(false)
 								  :acceptsMouseEvents(true)
-					mod.lastLocation(mod.touchBarWindow:topLeft())
+					mod.lastLocation(mod.touchBar:topLeft())
 				end
 			end
 			return false
 		end):start()
 
 		mod.update()
+
 	end
+end
+
+--- plugins.finalcutpro.os.touchbar.stop() -> none
+--- Function
+--- Stops the Virtual Touch Bar
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stop()
+	--
+	-- TO-DO: This needs better garbage collection (see: https://github.com/asmagill/hammerspoon_asm/issues/10)
+	--
+	mod.touchBar:hide()
+	mod.touchBar = nil
+	mod.keyboardWatcher:stop()
+	mod.keyboardWatcher = nil
 end
 
 --------------------------------------------------------------------------------
@@ -218,7 +293,7 @@ local plugin = {
 	group = "finalcutpro",
 	dependencies = {
 		["finalcutpro.menu.tools"]		= "prefs",
-		["finalcutpro.commands"]	= "fcpxCmds",
+		["finalcutpro.commands"]		= "fcpxCmds",
 	}
 }
 
@@ -226,7 +301,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	mod.init()
 
 	--------------------------------------------------------------------------------
 	-- Disable/Enable the Touchbar when the Command Editor/etc is open:

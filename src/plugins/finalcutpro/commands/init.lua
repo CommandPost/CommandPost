@@ -41,7 +41,7 @@ function plugin.init()
 	--------------------------------------------------------------------------------
 	cmds:watch({
 		activate	= function()
-			log.df("Final Cut Pro Activated by Commands Plugin")
+			--log.df("Final Cut Pro Activated by Commands Plugin")
 			fcp:launch()
 		end,
 	})

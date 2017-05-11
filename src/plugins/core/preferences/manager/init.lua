@@ -45,6 +45,16 @@ local mod = {}
 mod._panels				= {}
 mod._handlers			= {}
 
+--- plugins.core.preferences.manager.position
+--- Constant
+--- Returns the last frame saved in settings.
+mod.position = config.prop("preferencesPosition", {})
+
+--- plugins.core.preferences.manager.lastTab
+--- Constant
+--- Returns the last tab saved in settings.
+mod.lastTab = config.prop("preferencesLastTab", nil)
+
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
@@ -72,14 +82,34 @@ function mod.setPanelRenderer(renderer)
 	mod._panelRenderer = renderer
 end
 
+-- isPanelIDValid() -> boolean
+-- Function
+-- Is Panel ID Valid?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Boolean
+local function isPanelIDValid(whichID)
+	for i, v in ipairs(mod._panels) do
+		if v.id == whichID then
+			return true
+		end
+	end
+	return false
+end
+
 --------------------------------------------------------------------------------
 -- HIGHEST PRIORITY ID:
 --------------------------------------------------------------------------------
 local function highestPriorityID()
-
-	local sortedPanels = mod._panels
-	return #mod._panels > 0 and mod._panels[1].id or nil
-
+	if mod.lastTab() and isPanelIDValid(mod.lastTab()) then
+		return mod.lastTab()
+	else
+		local sortedPanels = mod._panels
+		return #mod._panels > 0 and mod._panels[1].id or nil
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -102,6 +132,22 @@ local function generateHTML()
 	end
 end
 
+--------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			mod.webview = nil
+		end
+	elseif action == "focusChange" then
+	elseif action == "frameChange" then
+		if frame then
+			mod.position(frame)
+		end
+	end
+end
+
 --- plugins.core.preferences.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
@@ -114,10 +160,13 @@ end
 function mod.init()
 
 	--------------------------------------------------------------------------------
-	-- Centre on Screen:
+	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+	if mod.position() then
+		defaultRect = mod.position()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
@@ -138,12 +187,14 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Setup Tool Bar:
 	--------------------------------------------------------------------------------
-	mod.toolbar = toolbar.new(WEBVIEW_LABEL)
-		:canCustomize(true)
-		:autosaves(true)
-		:setCallback(function(toolbar, webview, id)
-			mod.selectPanel(id)
-		end)
+	if not mod.toolbar then
+		mod.toolbar = toolbar.new(WEBVIEW_LABEL)
+			:canCustomize(true)
+			:autosaves(true)
+			:setCallback(function(toolbar, webview, id)
+				mod.selectPanel(id)
+			end)
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
@@ -157,6 +208,8 @@ function mod.init()
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:attachedToolbar(mod.toolbar)
+		:deleteOnClose(true)
+		:windowCallback(windowCallback)
 
 	return mod
 end
@@ -217,13 +270,6 @@ end
 --------------------------------------------------------------------------------
 function mod.selectPanel(id)
 
-	--[[
-	log.df("Selecting Panel with ID: %s", id)
-	if mod.webview and mod.webview:hswindow() then
-		log.df("Size: %s", hs.inspect(mod.webview:hswindow():size()))
-	end
-	--]]
-
 	if not mod.webview then
 		return
 	end
@@ -247,6 +293,11 @@ function mod.selectPanel(id)
 
 	mod.webview:evaluateJavaScript(js)
 	mod.toolbar:selectedItem(id)
+
+	--------------------------------------------------------------------------------
+	-- Save Last Tab in Settings:
+	--------------------------------------------------------------------------------
+	mod.lastTab(id)
 
 end
 

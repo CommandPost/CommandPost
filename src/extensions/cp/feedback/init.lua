@@ -4,16 +4,21 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+--- === cp.feedback ===
+---
+--- Feedback Form.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("welcome")
+local log										= require("hs.logger").new("feedback")
 
 local application								= require("hs.application")
-local console									= require("hs.console")
 local base64									= require("hs.base64")
+local console									= require("hs.console")
+local mouse										= require("hs.mouse")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
@@ -39,33 +44,40 @@ mod.defaultHeight 		= 438
 mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
 mod.quitOnComplete		= false
 
---------------------------------------------------------------------------------
--- GET SCREENSHOTS:
---------------------------------------------------------------------------------
+-- getScreenshotsAsBase64() -> table
+-- Function
+-- Captures all available screens and saves them as base64 encodes in a table.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * table containing base64 images of all available screens.
 local function getScreenshotsAsBase64()
-
 	local screenshots = {}
 	local allScreens = screen.allScreens()
 	for i, v in ipairs(allScreens) do
 		local temporaryFileName = os.tmpname()
 		v:shotAsJPG(temporaryFileName)
+		hs.execute("sips -Z 1920 " .. temporaryFileName)
 		local screenshotFile = io.open(temporaryFileName, "r")
 		local screenshotFileContents = screenshotFile:read("*all")
 		screenshotFile:close()
 		os.remove(temporaryFileName)
 		screenshots[#screenshots + 1] = base64.encode(screenshotFileContents)
 	end
-
 	return screenshots
-
 end
 
--- The reusable template rendering function.
-local renderTemplate = template.compile(config.scriptPath .. "/cp/feedback/html/feedback.htm")
-
---------------------------------------------------------------------------------
--- GENERATE HTML:
---------------------------------------------------------------------------------
+-- generateHTML() -> string
+-- Function
+-- Generates the HTML for the Feedback Plugin
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * HTML as string or "" on error
 local function generateHTML()
 
 	local env = {}
@@ -88,6 +100,8 @@ local function generateHTML()
 	--------------------------------------------------------------------------------
 	env.screenshots = getScreenshotsAsBase64()
 
+	local renderTemplate = template.compile(config.scriptPath .. "/cp/feedback/html/feedback.htm")
+
 	local result, err = renderTemplate(env)
 	if err then
 		log.ef("Error while rendering the 'feedback.htm' form")
@@ -95,27 +109,33 @@ local function generateHTML()
 	else
 		return result
 	end
+
 end
 
+-- urlQueryStringDecode() -> string
+-- Function
+-- Decodes a URL Query String
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Decoded URL Query String as string
 local function urlQueryStringDecode(s)
 	s = s:gsub('+', ' ')
 	s = s:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
 	return string.sub(s, 2, -2)
 end
 
---------------------------------------------------------------------------------
--- NAVIGATION CALLBACK:
---------------------------------------------------------------------------------
-local function feedbackWebViewNavigationWatcher(action, webView, navID, errorTable)
-	print("Action: " .. hs.inspect(action))
-	print("webView: " .. hs.inspect(webView))
-	print("navID: " .. hs.inspect(navID))
-	print("errorTable: " .. hs.inspect(errorTable))
-end
-
---------------------------------------------------------------------------------
--- CREATE THE FEEDBACK SCREEN:
---------------------------------------------------------------------------------
+--- cp.feedback.showFeedback(quitOnComplete) -> nil
+--- Function
+--- Displays the Feedback Screen.
+---
+--- Parameters:
+---  * quitOnComplete - `true` if you want CommandPost to quit after the Feedback is complete otherwise `false`
+---
+--- Returns:
+---  * None
 function mod.showFeedback(quitOnComplete)
 
 	--------------------------------------------------------------------------------
@@ -138,9 +158,20 @@ function mod.showFeedback(quitOnComplete)
 	--------------------------------------------------------------------------------
 	mod.feedbackWebViewController = webview.usercontent.new("feedback")
 		:setCallback(function(message)
-			if type(message["body"]) == "table" then
+			if message["body"] == "cancel" then
+				if mod.quitOnComplete then
+					application.applicationForPID(hs.processInfo["processID"]):kill()
+				else
+					mod.feedbackWebView:delete()
+					mod.feedbackWebView = nil
+				end
+			elseif message["body"] == "hide" then
+				mod.feedbackWebView:hide()
+			elseif type(message["body"]) == "table" then
 				config.set("userFullName", message["body"][1])
 				config.set("userEmail", message["body"][2])
+			else
+				log.df("Message: %s", hs.inspect(message))
 			end
 		end)
 
@@ -150,43 +181,53 @@ function mod.showFeedback(quitOnComplete)
 	local prefs = {}
 	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
 	mod.feedbackWebView = webview.new(defaultRect, prefs, mod.feedbackWebViewController)
-		--:navigationCallback(feedbackWebViewNavigationWatcher)
 		:windowStyle({"titled"})
 		:shadow(true)
 		:allowNewWindows(false)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:html(generateHTML())
+		:policyCallback(function(action, wv, details1, details2)
+			if action == "navigationResponse" then
+				local statusCode = details1.response.statusCode
+				if statusCode == 403 or statusCode == 404 then
+					mod.feedbackWebView:delete()
+					mod.feedbackWebView = nil
+					dialog.displayMessage(i18n("feedbackError"))
+					return false
+				end
+			end
+			return true
+		end)
 
 	--------------------------------------------------------------------------------
 	-- Setup URL Events:
 	--------------------------------------------------------------------------------
 	mod.urlEvent = urlevent.bind("feedback", function(eventName, params)
-
-		if params["action"] == "cancel" then
+		--------------------------------------------------------------------------------
+		-- PHP Executed Successfully:
+		--------------------------------------------------------------------------------
+		if params["action"] == "done" then
 			mod.feedbackWebView:delete()
 			mod.feedbackWebView = nil
+			dialog.displayMessage(i18n("feedbackSuccess"))
+			if mod.quitOnComplete then
+				application.applicationForPID(hs.processInfo["processID"]):kill()
+			end
+		--------------------------------------------------------------------------------
+		-- Server Side Error:
+		--------------------------------------------------------------------------------
 		elseif params["action"] == "error" then
+			mod.feedbackWebView:delete()
+			mod.feedbackWebView = nil
 
 			local errorMessage = "Unknown"
 			if params["message"] then errorMessage = params["message"] end
 
-			print("Feedback Error Message:")
-			print(urlQueryStringDecode(errorMessage))
+			log.df("Server Side Error Message: %s", urlQueryStringDecode(errorMessage))
 
-			dialog.displayMessage("The following error occurred when trying to process the form:\n\n" .. urlQueryStringDecode(errorMessage))
-
-			mod.feedbackWebView:delete()
-			mod.feedbackWebView = nil
-		elseif params["action"] == "done" then
-			if mod.quitOnComplete then
-				application.applicationForPID(hs.processInfo["processID"]):kill()
-			else
-				mod.feedbackWebView:delete()
-				mod.feedbackWebView = nil
-			end
+			dialog.displayMessage(i18n("feedbackError"))
 		end
-
 	end)
 
 	--------------------------------------------------------------------------------

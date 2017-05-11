@@ -1391,6 +1391,13 @@
 		<key>downSelector</key>
 		<string>cpSaveKeywordPresetNine:</string>
 	</dict>
+	<key>cpZoomToSelection</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>1</integer>
+		<key>downSelector</key>
+		<string>cpZoomToSelection:</string>
+	</dict>
 	<key>AddMarker</key>
 	<dict>
 		<key>downRepeats</key>

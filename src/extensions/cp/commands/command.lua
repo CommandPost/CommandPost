@@ -15,9 +15,6 @@
 --------------------------------------------------------------------------------
 local log					= require("hs.logger").new("command")
 
-local keycodes				= require("hs.keycodes")
-local hotkey				= require("hs.hotkey")
-
 local shortcut				= require("cp.commands.shortcut")
 local prop					= require("cp.prop")
 
@@ -27,9 +24,6 @@ local prop					= require("cp.prop")
 --
 --------------------------------------------------------------------------------
 local command = {}
-
--- Only show Hotkey Errors:
-hotkey.setLogLevel("error")
 
 --- cp.commands.command:new() -> command
 --- Method
@@ -129,7 +123,7 @@ end
 --- * If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
 --- * If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
 ---
---- E.g:
+--- For example:
 ---
 --- ```
 --- local global    	= commands.collection("global")
@@ -146,7 +140,6 @@ end
 ---
 --- Returns:
 ---  * `command` if a `keyCode` was provided, or `modifier` if not.
----
 function command:activatedBy(modifiers, keyCode)
 	if keyCode and not modifiers then
 		modifiers = {}
@@ -172,7 +165,7 @@ end
 --- Sets the function that will be called when the command key combo is pressed.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * command - The current command
@@ -221,7 +214,7 @@ end
 --- Returns the set of shortcuts assigned to this command.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * The associated shortcuts.
@@ -295,7 +288,7 @@ end
 --- Executes the 'pressed' function, if present.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.
@@ -310,7 +303,7 @@ end
 --- Executes the 'released' function, if present.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.

@@ -16,6 +16,7 @@
 local log										= require("hs.logger").new("compressor")
 
 local application								= require("hs.application")
+local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 
@@ -36,7 +37,27 @@ local App = {}
 --- cp.apple.compressor.BUNDLE_ID
 --- Constant
 --- Compressor's Bundle ID
-App.BUNDLE_ID 									= "com.apple.Compressor"
+App.BUNDLE_ID = "com.apple.Compressor"
+
+--- cp.apple.compressor.ALLOWED_IMPORT_VIDEO_EXTENSIONS
+--- Constant
+--- Table of video file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_VIDEO_EXTENSIONS = {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
+
+--- cp.apple.compressor.ALLOWED_IMPORT_AUDIO_EXTENSIONS
+--- Constant
+--- Table of audio file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+
+--- cp.apple.compressor.ALLOWED_IMPORT_IMAGE_EXTENSIONS
+--- Constant
+--- Table of image file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_IMAGE_EXTENSIONS = {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
+
+--- cp.apple.compressor.ALLOWED_IMPORT_ALL_EXTENSIONS
+--- Constant
+--- Table of all file extensions Final Cut Pro can import.
+App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(App.ALLOWED_IMPORT_AUDIO_EXTENSIONS, App.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
 
 --- cp.apple.compressor:application() -> hs.application
 --- Method
@@ -194,7 +215,6 @@ end
 function App:getPath()
 	return application.pathForBundleID(App.BUNDLE_ID)
 end
-
 
 --- cp.apple.compressor.isRunning <cp.prop: boolean; read-only>
 --- Field

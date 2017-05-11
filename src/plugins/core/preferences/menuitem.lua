@@ -23,10 +23,17 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	deps.bottom:addItem(PRIORITY, function()
+	deps.bottom:addItem(10, function()
 		return { title = i18n("preferences") .. "...", fn = deps.prefs.show }
 	end)
-	
+
+	--------------------------------------------------------------------------------
+	-- Add separator:
+	--------------------------------------------------------------------------------
+	deps.bottom:addItem(11, function()
+		return { title = "-" }
+	end)
+
 end
 
 return plugin

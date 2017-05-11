@@ -7,16 +7,27 @@
 --- === cp.developer ===
 ---
 --- Developer Tools
+---
+
+--[[
+
+hs.hotkey.bind({"cmd", "alt", "ctrl", "shift"}, "q", function()
+  require("cp.developer")
+  print(_inspectAtMouse())
+end)
+
+--]]
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local mouse			= require("hs.mouse")
-local inspect		= require("hs.inspect")
-local geometry		= require("hs.geometry")
+local ax 			= require("hs._asm.axuielement")
 local drawing		= require("hs.drawing")
+local geometry		= require("hs.geometry")
+local inspect		= require("hs.inspect")
+local mouse			= require("hs.mouse")
 local timer			= require("hs.timer")
 
 --------------------------------------------------------------------------------

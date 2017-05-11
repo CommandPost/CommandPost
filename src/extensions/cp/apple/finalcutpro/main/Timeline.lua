@@ -332,8 +332,6 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 			-- The timeline is visible. Let's track it!
 			-- Reset the original offset if the viewFrame gets too narrow
 			if originalOffset >= viewFrame.w then originalOffset = math.floor(viewFrame.w/2) end
-			-- Calculate the target offset
-			local targetPosition = viewFrame.x + originalOffset
 
 			if playheadPosition == lastPosition then
 				-- it hasn't moved since the last check
@@ -350,7 +348,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 				-- it's moving
 				local timelineFrame = content:timelineFrame()
 				local scrollWidth = timelineFrame.w - viewFrame.w
-				local scrollPoint = timelineFrame.x*-1 + viewFrame.x + playheadPosition - targetPosition
+				local scrollPoint = timelineFrame.x*-1 + playheadPosition - originalOffset
 				local scrollTarget = scrollPoint/scrollWidth
 				local scrollValue = content:getScrollHorizontal()
 

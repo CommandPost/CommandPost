@@ -20,14 +20,16 @@ local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
 local geometry					= require("hs.geometry")
+local host						= require("hs.host")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
+local notify					= require("hs.notify")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
 local config					= require("cp.config")
-local tools                     = require("cp.tools")
 local plugins					= require("cp.plugins")
+local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- SETUP I18N LANGUAGES:
@@ -41,7 +43,7 @@ for file in fs.dir(languagePath) do
 end
 local userLocale = nil
 if config.get("language") == nil then
-	userLocale = tools.userLocale()
+	userLocale = host.locale.current()
 else
 	userLocale = config.get("language")
 end
@@ -52,6 +54,7 @@ i18n.setLocale(userLocale)
 --------------------------------------------------------------------------------
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
+local feedback					= require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
@@ -92,9 +95,8 @@ function mod.init()
 			return image.imageFromName("NSStatusUnavailable")
 		end
 	end
-	local toolbar = require("hs.webview.toolbar")
 	errorLogToolbar = toolbar.new("myConsole", {
-			{ id = i18n("reload"), image = image.imageFromName("NSPreferencesGeneral"),
+			{ id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
 				fn = function()
 					console.clearConsole()
 					print("Reloading CommandPost...")
@@ -112,10 +114,26 @@ function mod.init()
 					errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
 				end
 			},
+			{ id = "NSToolbarFlexibleSpaceItem" },
+			{ id = i18n("preferences"), image = image.imageFromName("NSPreferencesGeneral"),
+				fn = function()
+					plugins("core.preferences.manager").show()
+				end
+			},
+			{ id = i18n("feedback"), image = image.imageFromName("NSInfo"),
+				fn = function()
+					feedback.showFeedback()
+				end
+			},
 		})
 		:canCustomize(true)
 		:autosaves(true)
 	console.toolbar(errorLogToolbar)
+
+	--------------------------------------------------------------------------------
+	-- Kill any existing Notifications:
+	--------------------------------------------------------------------------------
+	notify.withdrawAll()
 
 	--------------------------------------------------------------------------------
 	-- Open Error Log:

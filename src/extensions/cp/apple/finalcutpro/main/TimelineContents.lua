@@ -130,6 +130,13 @@ function TimelineContents:skimmingPlayhead()
 	return self._skimmingPlayhead
 end
 
+
+-----------------------------------------------------------------------
+--
+-- VIEWING AREA:
+--
+-----------------------------------------------------------------------
+
 -- TODO: Add documentation
 function TimelineContents:horizontalScrollBarUI()
 	local ui = self:scrollAreaUI()
@@ -191,6 +198,17 @@ function TimelineContents:scrollHorizontalTo(value)
 	end
 end
 
+function TimelineContents:scrollHorizontalToX(x)
+	-- update the scrollbar position
+	local timelineFrame = self:timelineFrame()
+	local scrollWidth = timelineFrame.w - self:viewFrame().w
+	local scrollPoint = timelineFrame.x*-1 + x
+
+	local scrollTarget = scrollPoint/scrollWidth
+
+	self:scrollHorizontalTo(scrollTarget)
+end
+
 -- TODO: Add documentation
 function TimelineContents:getScrollHorizontal()
 	local ui = self:horizontalScrollBarUI()
@@ -232,7 +250,7 @@ end
 -----------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
---- Function
+--- Method
 --- Returns a table containing the list of selected clips.
 ---
 --- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
@@ -278,6 +296,26 @@ function TimelineContents:clipsUI(expandGroups, filterFn)
 			return role == "AXLayoutItem" or role == "AXGroup"
 		end)
 		return self:_filterClips(clips, expandGroups, filterFn)
+	end
+	return nil
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:rangeSelectionUI() -> axuielements
+--- Method
+--- Returns the UI for the current 'Range Selection', if present.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The 'Range Selection' UI or `nil`
+function TimelineContents:rangeSelectionUI()
+	local ui = self:UI()
+	if ui then
+		local clips = fnutils.filter(ui:children(), function(child)
+			return child:attributeValue("AXRole") and fnutils.contains(id "RangeSelectionDescription", child:attributeValue("AXDescription"))
+		end)
+		return #clips > 0 and clips[1] or nil
 	end
 	return nil
 end

@@ -12,6 +12,11 @@ return {
 		--------------------------------------------------------------------------------
 
 			--------------------------------------------------------------------------------
+			-- Apps:
+			--------------------------------------------------------------------------------
+			finalCutPro							=			"Final Cut Pro",
+
+			--------------------------------------------------------------------------------
 			-- Numbers:
 			--------------------------------------------------------------------------------
 			one									=			"1",
@@ -94,7 +99,7 @@ return {
 			finalCutProMissingText				=			"Unfortunately we couldn't detect a supported installation of Final Cut Pro installed.<br /><br />Please download the latest version from the App Store to enable Final Cut Pro functionality.",
 			completeHeading						=			"CommandPost is now setup and ready to go!",
 			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
-			commandSetText						=			"CommandPost has the ability to add handy new functions to Final Cut Pro’s Command Editor.<br /><br />This allows you to customise the shortcuts for CommandPost directly within Final Cut Pro.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.",
+			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
 			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
 			enableAccessibility					=			"Enable Accessibility",
 
@@ -115,6 +120,8 @@ return {
 			attachScreenshot					=			"Attach Screenshot",
 			fullName							=			"Full Name",
 			emailAddress						=			"Email Address",
+			feedbackSuccess						=			"Your feedback was submitted successfully.\n\nThank you!",
+			feedbackError						=			"An error occurred trying to communicate with the CommandPost servers.\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
 
 			--------------------------------------------------------------------------------
 			-- Notifications:
@@ -222,8 +229,8 @@ return {
 
 			hacksEnabling						=			"Enabling",
 			hacksDisabling						=			"Disabling",
-			hacksShortcutsRestart				=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
-			hacksShortcutAdminPassword			=			"Hacks Shortcuts in Final Cut Pro requires your Administrator password.",
+			hacksShortcutsRestart				=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
+			hacksShortcutAdminPassword			=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
 			togglingMovingMarkersRestart		=			"Toggling Moving Markers requires Final Cut Pro to restart.",
 			togglingBackgroundTasksRestart 		=			"Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.",
@@ -438,6 +445,7 @@ return {
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
 			commandLineToolDescription			=			"When the Command Line Tool is installed, you can use <strong>cmdpost</strong> in Terminal to trigger Lua code. Please refer to the User Guide for more information.",
+			trashPreferencesDescription			=			"You can also trash the CommandPost Preferences by holding down OPTION+COMMAND when you launch CommandPost from the dock.",
 
 			--------------------------------------------------------------------------------
 			-- General:
@@ -457,7 +465,8 @@ return {
 			touchBar							=			"Virtual Touch Bar",
 			touchBarLocation					=			"Location",
 			language							=			"Language",
-			provideFeedback						=			"Provide Feedback...",
+			provideFeedback						=			"Provide Feedback",
+			feedback							=			"Feedback",
 			createdBy							=			"Created by",
 			appVersion							=			"Version",
 
@@ -561,6 +570,7 @@ return {
 
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
+			shortcutsControl					=			"Shortcuts are currently being controlled by",
 
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
@@ -585,6 +595,67 @@ return {
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
 			checkForUpdates						=			"Check for Updates",
+
+	--------------------------------------------------------------------------------
+	-- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
+	--------------------------------------------------------------------------------
+	addWatchFolder						=			"Add Watch Folder",
+	watchFolders						=			"Watch Folders",
+	setupWatchFolders					=			"Setup Watch Folders",
+	selectFolderToWatch					=			"Please select a folder to watch:",
+	alreadyWatched						=			"This folder is already being watched.",
+	watchFolderFCPMediaHelp				=			"This feature allows you to recieve macOS notfications whenever supported files are added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
+	description							=			"Description",
+	automaticallyImport					=			"Automatically Import without Notification",
+	importToTimeline					=			"Import directly into Timeline",
+	newFileForFinalCutPro				=			"New Media for Final Cut Pro",
+	import								=			"Import",
+	skip								=			"Skip",
+	finalCutProNotRunning				=			"Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
+	deleteAfterImport					=			"Delete file from Watch Folder (5 seconds after Import)",
+	deleteNote							=			"Make sure <strong>Copy to library storage location</strong> is selected in Final Cut Pro's Preferences.",
+	addFinderTagsOnImport				=			"Add Finder Tags on Import",
+	enterVideoTag						=			"Enter a Video Tag Here",
+	enterAudioTag						=			"Enter a Audio Tag Here",
+	enterImageTag						=			"Enter a Image Tag Here",
+	watchFolderFCPMediaTooltip			=			"Final Cut Pro Media Watch Folder Preferences",
+	incomingFile						=			"Incoming File...",
+
+	--------------------------------------------------------------------------------
+	-- FCPXML WATCH FOLDER PLUGIN:
+	--------------------------------------------------------------------------------
+	xml									=			"XML",
+	newFCPXMLForFinalCutPro				=			"New Media for Final Cut Pro",
+	watchFolderFCPXMLTooltip			=			"Final Cut Pro XML Watch Folder Preferences",
+	watchFolderXMLHelp					=			"This feature allows you to recieve macOS notfications whenever a FCPXML file is added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
+
+	--------------------------------------------------------------------------------
+	-- COMPRESSOR WATCH FOLDER PLUGIN:
+	--------------------------------------------------------------------------------
+	compressor							=			"Compressor",
+	watchFolderCompressorTooltip		=			"Compressor Watch Folder Preferences",
+	watchFolderCompressorHelp			=			"This feature allows you to automatically transcode files with Compressor when they're added to any of the below Watch Folders.",
+	selectCompressorSettingsFile		=			"Select a Compressor Settings File:",
+	selectCompressorDestination			=			"Select a Destination Folder:",
+	compressorError						=			"Something went wrong when sending to Compressor.",
+	addedToCompressor					=			"Added to Compressor:",
+	monitor								=			"Monitor",
+	renderComplete						=			"Render Complete!",
+
+	--------------------------------------------------------------------------------
+	-- TEXT TO SPEECH PLUGIN:
+	--------------------------------------------------------------------------------
+	clearHistory						=			"Clear History",
+	changeDestinationFolder				=			"Change Destination Folder",
+	selectVoice							=			"Select Voice",
+	textToSpeechDestination				=			"Please select where you want to save your audio files:",
+	customiseFinderTag					=			"Customise Finder Tag",
+	enterFinderTag						=			"Please enter the Finder Tag you want to use:",
+	enterFinderTagError					=			"This Finder Tag looks invalid.\n\nPlease try again.",
+	insertIntoTimeline					=			"Insert into Timeline",
+	openEmbeddedSpeechCommandsHelp 		=			"Speech Commands Help",
+	openVoiceOverUtility				=			"Open Voice Over Utility",
+	createRoleForVoice					=			"Assign Voice Role",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
@@ -720,28 +791,30 @@ return {
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
 	core_helpandsupport_credits_label						=	"Help & Support: Credits",
+	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
 	core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
 	core_helpandsupport_userguide_label						=	"Help & Support: User Guide",
-	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
 	core_label												=	"Core",
 	core_language_label										=	"Language Module",
 	core_menu_bottom_label									=	"Menubar: Bottom Section",
 	core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
 	core_menu_manager_label									=	"Menubar: Manager",
 	core_menu_top_label										=	"Menubar: Top Section",
+	core_preferences_advanced_label							=	"Preferences: Advanced",
 	core_preferences_general_label							=	"Preferences: General",
 	core_preferences_generate_label							=	"Preferences: Generate",
 	core_preferences_manager_label							=	"Preferences: Manager",
+	core_preferences_menuitem_label							=   "Preferences Menu Item",
+	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
 	core_preferences_panels_general_label					=	"Preferences Panel: General",
 	core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
 	core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 	core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
 	core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 	core_preferences_updates_label							=	"Preferences: Updates",
-	core_preferences_advanced_label							=	"Preferences: Advanced",
-	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
-	core_preferences_menuitem_label							=   "Preferences Menu Item",
 	core_quit_label											=	"Quit Command",
+	core_watchfolders_manager_label							= 	"Watch Folder Manager",
+	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 	core_webapp_label										=	"WebApp",
 	core_welcome_manager_label								= 	"Welcome Manager",
 	core_welcome_panels_accessibility_label					=	"Welcome: Accessibility",
@@ -788,6 +861,7 @@ return {
 	finalcutpro_preferences_panels_finalcutpro_label		=	"Final Cut Pro Preferences Panel",
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Scan Final Cut Pro",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
+	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
 	finalcutpro_timeline_effects_label						=	"Timeline: Effects",
 	finalcutpro_timeline_generators_label					=	"Timeline: Generators",
@@ -804,14 +878,14 @@ return {
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
-	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
+	finalcutpro_watchfolders_panels_finalcutpro_label		=	"Final Cut Pro Watch Folder",
 	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
+	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
 	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
-
 	fcpx_command_group										=	"FCPX",
 	global_command_group									=	"Global",
 
@@ -823,6 +897,8 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
+		cpText2Speech_title										=	"Activate Text to Speech Tool",
+
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",
 
@@ -882,6 +958,8 @@ return {
 
 		cpChangeTimelineClipHeightUp_title						=	"Timeline Clip Height Increase",
 		cpChangeTimelineClipHeightDown_title					=	"Timeline Clip Height Decrease",
+		
+		cpZoomToSelection_title									=	"Zoom to Selection",
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
