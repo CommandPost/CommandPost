@@ -764,9 +764,6 @@ return {
 	plugin_action_enable				=			"Enable",
 	plugin_action_errorLog				=			"Error Log",
 
-	plugin_group_core					=			"Core",
-	plugin_group_finalcutpro			=			"Final Cut Pro",
-
 	--------------------------------------------------------------------------------
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
@@ -783,8 +780,17 @@ return {
 	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
 
 	--------------------------------------------------------------------------------
+	-- PLUGIN GROUPS:
+	--------------------------------------------------------------------------------
+	plugin_group_compressor				=			"Compressor",
+	plugin_group_core					=			"Core",
+	plugin_group_finalcutpro			=			"Final Cut Pro",
+	plugin_group_plugin					=			"Plugin",
+
+	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
+	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
 	core_action_manager_label								=	"Action Manager",
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
@@ -792,7 +798,6 @@ return {
 	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
 	core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
 	core_helpandsupport_userguide_label						=	"Help & Support: User Guide",
-	core_label												=	"Core",
 	core_language_label										=	"Language Module",
 	core_menu_bottom_label									=	"Menubar: Bottom Section",
 	core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
@@ -802,7 +807,7 @@ return {
 	core_preferences_general_label							=	"Preferences: General",
 	core_preferences_generate_label							=	"Preferences: Generate",
 	core_preferences_manager_label							=	"Preferences: Manager",
-	core_preferences_menuitem_label							=   "Preferences Menu Item",
+	core_preferences_menuitem_label							=   "Preferences: Menu Item",
 	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
 	core_preferences_panels_general_label					=	"Preferences Panel: General",
 	core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
@@ -837,7 +842,6 @@ return {
 	finalcutpro_hud_label									=	"HUD",
 	finalcutpro_import_ignorecard_label						=	"Ignore Cards",
 	finalcutpro_import_preferences_label					=	"Import Preferences",
-	finalcutpro_label										=	"Final Cut Pro",
 	finalcutpro_language_label								=	"Final Cut Pro Languages",
 	finalcutpro_menu_administrator_advancedfeatures_label	=	"Menubar: Advanced Features",
 	finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
@@ -856,8 +860,8 @@ return {
 	finalcutpro_open_label									=	"Open Final Cut Pro",
 	finalcutpro_os_touchbar_label							=	"Virtual Touch Bar",
 	finalcutpro_os_voice_label								=	"Voice Commands",
-	finalcutpro_preferences_panels_finalcutpro_label		=	"Final Cut Pro Preferences Panel",
-	finalcutpro_preferences_scanfinalcutpro_label			=	"Scan Final Cut Pro",
+	finalcutpro_preferences_panels_finalcutpro_label		=	"Preferences: Panel",
+	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
@@ -874,9 +878,11 @@ return {
 	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
+	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
-	finalcutpro_watchfolders_panels_finalcutpro_label		=	"Final Cut Pro Watch Folder",
+	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
+	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
 	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
 	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
 	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
@@ -956,7 +962,7 @@ return {
 
 		cpChangeTimelineClipHeightUp_title						=	"Timeline Clip Height Increase",
 		cpChangeTimelineClipHeightDown_title					=	"Timeline Clip Height Decrease",
-		
+
 		cpZoomToSelection_title									=	"Zoom to Selection",
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
