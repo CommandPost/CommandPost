@@ -285,8 +285,9 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Load Plugins:
 	--------------------------------------------------------------------------------
-	log.df("Loading Plugins:")
+	log.df("Loading Plugins...")
 	plugins.init(config.pluginPaths)
+	log.df("Plugins Loaded.")
 
 	return mod
 

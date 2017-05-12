@@ -42,7 +42,7 @@ local function controllerCallback(message)
 		mod.manager.nextPanel(mod._priority)
 	elseif result == "commandsetContinue" then
 
-		local result = mod.shortcuts.installHacksShortcuts()
+		local result = mod.shortcuts.install()
 
 		--log.df("installHacksShortcuts result: %s", result)
 
@@ -103,7 +103,7 @@ function mod.init(deps, env)
 	mod.manager = deps.manager
 	mod.shortcuts = deps.shortcuts
 
-	mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
+	-- mod.manager.addPanel(mod._id, mod._priority, mod._contentFn, mod._callbackFn, mod._enabledFn)
 
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")
