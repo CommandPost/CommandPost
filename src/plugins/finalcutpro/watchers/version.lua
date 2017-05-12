@@ -26,7 +26,7 @@ local prop						= require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod._watchers = watcher:new("change")
+mod._watchers = watcher.new("change")
 
 function mod.watch(events)
 	return mod._watchers:watch(events)
