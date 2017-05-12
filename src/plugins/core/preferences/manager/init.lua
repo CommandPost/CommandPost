@@ -119,7 +119,7 @@ local function generateHTML()
 	-- log.df("generateHTML: called")
 	local env = {}
 
-	env.debugMode = config.get("debugMode", false)
+	env.debugMode = config.developerMode()
 	env.panels = mod._panels
 	env.highestPriorityID = highestPriorityID()
 
@@ -200,7 +200,7 @@ function mod.init()
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	local prefs = {}
-	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	if config.developerMode() then prefs = {developerExtrasEnabled = true} end
 	mod.webview = webview.new(defaultRect, prefs, mod.controller)
 		:windowStyle(mod.defaultWindowStyle)
 		:shadow(true)

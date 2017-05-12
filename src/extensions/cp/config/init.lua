@@ -17,6 +17,7 @@ local application		= require("hs.application")
 local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
+local console			= require("hs.console")
 local sourcewatcher		= require("cp.sourcewatcher")
 local prop				= require("cp.prop")
 local v					= require("semver")
@@ -248,6 +249,8 @@ function mod.reset()
 		settings.set(v, nil)
 	end
 	mod.watcher:notify("reset")
+	console.clearConsole()
+	hs.reload()
 end
 
 mod.watcher = watcher.new("reset")
@@ -281,6 +284,14 @@ end
 function mod.unwatch(id)
 	return mod.watcher:unwatch(id)
 end
+
+--- cp.config.developerMode <cp.prop: boolean>
+--- Constant
+--- When `true`, the app is in developer mode.
+mod.developerMode = mod.prop("debugMode", false):watch(function()
+	console.clearConsole()
+	hs.reload()
+end)
 
 --------------------------------------------------------------------------------
 --

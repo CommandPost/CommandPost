@@ -77,7 +77,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	local debugMode = config.get("debugMode")
+	local debugMode = config.developerMode()
 	if debugMode then
 		logger.defaultLogLevel = 'debug'
 		require("cp.developer")
@@ -238,7 +238,6 @@ function mod.init()
 	local fcpPath				= fcp:getPath() or "Unknown"
 	local osVersion    			= tools.macOSVersion() or "Unknown"
 	local fcpLanguage   		= fcp:getCurrentLanguage() or "Unknown"
-	local debugModeStatus		= debugMode or false
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -274,7 +273,7 @@ function mod.init()
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugModeStatus))
+												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
 	console.printStyledtext("")
 
 	--------------------------------------------------------------------------------

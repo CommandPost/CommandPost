@@ -168,9 +168,9 @@ function hud.new()
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	if not hud.webview then
-		local developerExtrasEnabled = {}
-		if config.get("debugMode") then developerExtrasEnabled = {developerExtrasEnabled = true} end
-		hud.webview = webview.new(getHUDRect(), developerExtrasEnabled, hud.webviewController)
+		local options = {}
+		if config.developerMode() then options.developerExtrasEnabled = true end
+		hud.webview = webview.new(getHUDRect(), options, hud.webviewController)
 			:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
 			:shadow(true)
 			:closeOnEscape(true)
@@ -209,7 +209,7 @@ local function getEnv()
 	env.hud			= hud
 	env.displayDiv	= displayDiv
 
-	env.debugMode	= config.get("debugMode", false)
+	env.debugMode	= config.developerMode()
 
 	local playerQuality = fcp:getPreference("FFPlayerQuality", ORIGINAL_PERFORMANCE)
 

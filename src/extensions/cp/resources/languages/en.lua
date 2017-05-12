@@ -237,9 +237,7 @@ return {
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
 
 
-			trashPreferences					=			"Are you sure you want to trash the CommandPost Preferences?",
-			adminPasswordRequiredAndRestart		=			"This will require your Administrator password and require Final Cut Pro to restart.",
-			adminPasswordRequired				=			"This will require your Administrator password.",
+			trashPreferencesConfirmation		=			"Are you sure you want to trash the CommandPost Preferences?",
 
 			--------------------------------------------------------------------------------
 			-- Textbox Dialog Boxes:

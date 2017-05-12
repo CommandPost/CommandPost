@@ -41,18 +41,9 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.trashPreferences()
-
-	local finalCutProRunning = fcp:isRunning()
-
-	local resetMessage = i18n("trashPreferences")
-	if finalCutProRunning then
-		resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequiredAndRestart")
-	else
-		resetMessage = resetMessage .. "\n\n" .. i18n("adminPasswordRequired")
-	end
-
-	if not dialog.displayYesNoQuestion(resetMessage) then
-		return
+	
+	if not dialog.displayYesNoQuestion(i18n("trashPreferencesConfirmation")) then
+		return false
 	end
 
 	--------------------------------------------------------------------------------
@@ -60,33 +51,14 @@ function mod.trashPreferences()
 	--------------------------------------------------------------------------------
 	config.reset()
 
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro if running:
-	--------------------------------------------------------------------------------
-	if finalCutProRunning then
-		if not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayMessage(i18n("restartFinalCutProFailed"))
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Reload Hammerspoon:
-	--------------------------------------------------------------------------------
-	console.clearConsole()
-	hs.reload()
-
+	return true
 end
 
 --- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
 --- Field
 --- Enables or disables developer mode.
-mod.developerMode = config.prop("debugMode"):watch(function()
+mod.developerMode = config.developerMode:watch(function()
 	mod.manager.hide()
-	console.clearConsole()
-	hs.reload()
 end)
 
 --- plugins.core.preferences.advanced.toggleDeveloperMode() -> none

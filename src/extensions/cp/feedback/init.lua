@@ -179,7 +179,7 @@ function mod.showFeedback(quitOnComplete)
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	local prefs = {}
-	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	if config.developerMode() then prefs = {developerExtrasEnabled = true} end
 	mod.feedbackWebView = webview.new(defaultRect, prefs, mod.feedbackWebViewController)
 		:windowStyle({"titled"})
 		:shadow(true)
