@@ -56,11 +56,6 @@ function mod.trashPreferences()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Remove Hacks Shortcut in Final Cut Pro:
-	--------------------------------------------------------------------------------
-	mod.hacksShortcuts.uninstall()
-
-	--------------------------------------------------------------------------------
 	-- Trash all Script Settings:
 	--------------------------------------------------------------------------------
 	config.reset()
@@ -183,7 +178,6 @@ local plugin = {
 	dependencies	= {
 		["core.preferences.panels.advanced"]	= "advanced",
 		["core.preferences.manager"]			= "manager",
-		["finalcutpro.hacks.shortcuts"]			= "hacksShortcuts",
 	}
 }
 --------------------------------------------------------------------------------
@@ -191,7 +185,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	mod.hacksShortcuts = deps.hacksShortcuts
 	mod.manager = deps.manager
 
 	--------------------------------------------------------------------------------

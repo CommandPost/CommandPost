@@ -474,6 +474,11 @@ function mod.init(deps, env)
 
 	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
 	
+	-- Unstall hacks if the app config is reset.
+	config.watch({
+		reset = function() mod.uninstall() end,
+	})
+	
 	--------------------------------------------------------------------------------
 	-- Check if we need to update the Final Cut Pro Shortcut Files:
 	--------------------------------------------------------------------------------
@@ -483,6 +488,9 @@ function mod.init(deps, env)
 	--- A property that returns `true` if the FCPX shortcuts are active.
 	mod.active = prop.NOT(mod.fcpxCmds.isEditable)
 
+	--- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
+	--- Constant
+	--- A property that returns `true` if the custom shortcuts are installed in FCPX but not active.
 	mod.requiresActivation = mod.installed:AND(prop.NOT(mod.active)):watch(
 		function(activate)
 			if activate then
@@ -491,6 +499,9 @@ function mod.init(deps, env)
 		end
 	)
 	
+	--- plugins.finalcutpro.hacks.shortcuts.requiresDeactivation <cp.prop: boolean; read-only>
+	--- Constant
+	--- A property that returns `true` if the FCPX shortcuts are active but shortcuts are not installed.
 	mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
 		function(deactivate)
 			if deactivate then

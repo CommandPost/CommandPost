@@ -20,6 +20,7 @@ local window			= require("hs.window")
 local sourcewatcher		= require("cp.sourcewatcher")
 local prop				= require("cp.prop")
 local v					= require("semver")
+local watcher			= require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -246,6 +247,39 @@ function mod.reset()
 	for i, v in ipairs(settings.getKeys()) do
 		settings.set(v, nil)
 	end
+	mod.watcher:notify("reset")
+end
+
+mod.watcher = watcher.new("reset")
+
+--- cp.config.watch(events) -> id
+--- Function
+--- Watches for config events.
+---
+--- Parameters:
+---  * `events`	- a table containing functions for each event to watch for.
+---
+--- Returns:
+---  * a unique ID that can be used to `unwatch`.
+---
+--- Notes:
+---  * Supported events:
+---  ** `reset()`	- occurs after CommandPost's settings are reset.
+function mod.watch(events)
+	return mod.watcher:watch(events)
+end
+
+--- cp.config.unwatch(id)
+--- Function
+--- Unregisters the watcher with the specified ID.
+---
+--- Parameters:
+---  * `id`		- The ID, originally returned from the `watch` function.
+---
+--- Returns:
+---  * `true` if a watcher with the ID existed and was successfully removed.
+function mod.unwatch(id)
+	return mod.watcher:unwatch(id)
 end
 
 --------------------------------------------------------------------------------
