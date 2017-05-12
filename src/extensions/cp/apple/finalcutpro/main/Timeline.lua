@@ -14,20 +14,22 @@
 --
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timeline")
+
+local eventtap							= require("hs.eventtap")
 local inspect							= require("hs.inspect")
 local timer								= require("hs.timer")
 
+local axutils							= require("cp.apple.finalcutpro.axutils")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
-
-local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
-local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
 
 local id								= require("cp.apple.finalcutpro.ids") "Timeline"
+
+local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
+local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
+local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
+local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
+local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
 --------------------------------------------------------------------------------
 --
@@ -364,7 +366,14 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 						status = Timeline.TRACKING
 						log.df("Tracking the playhead.")
 					end
-					content:scrollHorizontalTo(scrollTarget)
+
+					-----------------------------------------------------------------------
+					-- Don't change timeline position if SHIFT key is pressed:
+					-----------------------------------------------------------------------
+					local modifiers = eventtap.checkKeyboardModifiers()
+					if modifiers and not modifiers["shift"] then
+						content:scrollHorizontalTo(scrollTarget)
+					end
 				end
 			end
 		end
