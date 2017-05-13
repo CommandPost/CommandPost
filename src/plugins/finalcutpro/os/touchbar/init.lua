@@ -328,12 +328,12 @@ function plugin.init(deps)
 		:addItems(1000, function()
 			local location = mod.location()
 			return {
-				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),					disabled = not mod.supported() },
+				{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 				checked = mod.enabled(),							disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = string.upper(i18n("touchBarLocation") .. ":"),		disabled = true },
-				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.setLocation(LOCATION_TIMELINE) end,		checked = location == LOCATION_TIMELINE,	disabled = not mod.supported() },
-				{ title = i18n("mouseLocation"), 		fn = function() mod.setLocation(LOCATION_MOUSE) end,		checked = location == LOCATION_MOUSE, 		disabled = not mod.supported() },
-				{ title = i18n("draggable"), 			fn = function() mod.setLocation(LOCATION_DRAGGABLE) end,	checked = location == LOCATION_DRAGGABLE, 	disabled = not mod.supported() },
+				{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.location(LOCATION_TIMELINE) end,	checked = mod.location() == LOCATION_TIMELINE,		disabled = not mod.supported() },
+				{ title = i18n("mouseLocation"), 		fn = function() mod.location(LOCATION_MOUSE) end,		checked = mod.location() == LOCATION_MOUSE, 		disabled = not mod.supported() },
+				{ title = i18n("draggable"), 			fn = function() mod.location(LOCATION_DRAGGABLE) end,	checked = mod.location() == LOCATION_DRAGGABLE, 	disabled = not mod.supported() },
 				{ title = "-" },
 				{ title = i18n("touchBarTipOne"), 		disabled = true },
 				{ title = i18n("touchBarTipTwo"), 		disabled = true },
