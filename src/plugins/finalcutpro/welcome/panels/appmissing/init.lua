@@ -37,7 +37,7 @@ local function controllerCallback(message)
 	if result == "fcpxQuit" then
 		config.application():kill()
 	elseif result == "fcpxMissingContinue" then
-		mod.manager.nextPanel(mod._priority)
+		mod.manager.nextPanel(mod._id)
 	end
 
 end
@@ -104,7 +104,7 @@ local plugin = {
 	id				= "finalcutpro.welcome.panels.app.missing",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.welcome.manager"]					= "manager",
+		["core.welcome.manager"]					= "welcome",
 	}
 }
 
@@ -112,7 +112,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	return mod.init(deps, env)
+	-- return mod.init(deps, env)
 end
 
 return plugin

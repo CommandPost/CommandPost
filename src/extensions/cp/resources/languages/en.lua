@@ -100,6 +100,8 @@ return {
 			completeHeading						=			"CommandPost is now setup and ready to go!",
 			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
 			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
+			commandSetUseFCPX					=			"Use Final Cut Pro",
+			commandSetUseCP						=			"Use CommandPost",
 			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
 			enableAccessibility					=			"Enable Accessibility",
 

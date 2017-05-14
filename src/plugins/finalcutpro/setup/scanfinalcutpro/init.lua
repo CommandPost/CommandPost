@@ -104,12 +104,14 @@ function mod.init(effects, generators, titles, transitions)
 	--------------------------------------------------------------------------------
 	-- HAS FINAL CUT PRO BEEN SCANNED?
 	--------------------------------------------------------------------------------
-	mod.scaned = prop.AND(
+	mod.scanned = prop.AND(
 		mod.effects.listUpdated,
 		mod.generators.listUpdated,
 		mod.titles.listUpdated,
 		mod.transitions.listUpdated
 	)
+	
+	
 
 end
 
@@ -127,13 +129,15 @@ local plugin = {
 		["finalcutpro.timeline.titles"]						= "titles",
 		["finalcutpro.timeline.transitions"]				= "transitions",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
+		["core.welcome.manager"]							= "welcome",
+		["core.setup"]										= "setup",
 	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init(deps, env)
 
 	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
 
@@ -147,6 +151,32 @@ function plugin.init(deps)
 			}
 		)
 	end
+	
+	-- Add a setup panel if the initial setup is not complete and a scan is required.
+	deps.setup.incomplete:AND(mod.scanned:NOT()):watch(function(setupRequired)
+		if setupRequired then
+			local welcome = deps.welcome
+			welcome.addPanel(
+				welcome.panel.new("scanfinalcutpro", 60)
+					:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
+					:addParagraph(20, i18n("scanFinalCutProText"), true)
+					:addButton(1, {
+						label		= i18n("scanFinalCutPro"),
+						onclick		= function()
+							if mod.scanFinalCutPro() then
+								welcome.nextPanel()
+							else
+								welcome.focus()
+							end
+						end
+					})
+					:addButton(2, {
+						label		= i18n("skip"),
+						onclick		= welcome.nextPanel
+					})
+			).show()
+		end
+	end, true)
 
 	return mod
 end

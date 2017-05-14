@@ -240,6 +240,8 @@ function private.updateHacksShortcuts(install)
 		dialog.displayMessage("No supported versions of Final Cut Pro were detected.")
 		return false
 	end
+	
+	mod.working(true)
 
 	local batch = {}
 
@@ -261,6 +263,10 @@ function private.updateHacksShortcuts(install)
 	-- Execute the instructions.
 	--------------------------------------------------------------------------------
 	local result = tools.executeWithAdministratorPrivileges(batch, false)
+	
+	mod.working(false)
+
+	mod.update()
 
 	if result == false then
 		-- Cancel button pressed:
@@ -327,21 +333,20 @@ function private.updateFCPXCommands(enable, silently)
 	return true
 end
 
+function private.applyShortcut(cmd)
+	local shortcuts = fcp:getCommandShortcuts(id)
+	if shortcuts ~= nil then
+		cmd:setShortcuts(shortcuts)
+	end
+end
+
 --------------------------------------------------------------------------------
 -- APPLY SHORTCUTS:
 --------------------------------------------------------------------------------
-function private.applyShortcuts(commands, commandSet)
+function private.applyShortcuts(commands)
 	commands:deleteShortcuts()
-	if commandSet ~= nil then
-		for id, cmd in pairs(commands:getAll()) do
-			local shortcuts = fcp:getCommandShortcuts(id)
-			if shortcuts ~= nil then
-				cmd:setShortcuts(shortcuts)
-			end
-		end
-		return true
-	else
-		return false
+	for id, cmd in pairs(commands:getAll()) do
+		private.applyShortcut(cmd)
 	end
 end
 
@@ -351,51 +356,15 @@ end
 function private.applyCommandSetShortcuts()
 	local commandSet = fcp:getActiveCommandSet(true)
 
-	-- log.df("Applying FCPX Shortcuts to global commands...")
-	-- private.applyShortcuts(mod.globalCmds, commandSet)
 	log.df("Applying FCPX Shortcuts to FCPX commands...")
 	private.applyShortcuts(mod.fcpxCmds, commandSet)
 
-	-- mod.globalCmds:watch({
-	-- 	add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
-	-- })
 	mod.fcpxCmds:watch({
-		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
+		add		= function(cmd)	private.applyShortcut(cmd) end,
 	})
 	
 	mod.fcpxCmds:isEditable(false)
 end
-
---- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
---- Constant
---- A property that returns `true` if the a supported version of FCPX is installed.
-mod.supported = prop(function()
-	return private.hacksModifiedPath("") ~= nil
-end)
-
---- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
---- Constant
---- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
-mod.installed = prop(function()
-	return private.directoriesMatch(private.hacksModifiedPath(""), private.resourcePath(""))
-end)
-
---- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
---- Constant
---- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
-mod.uninstalled = prop(function()
-	return private.directoriesMatch(private.hacksOriginalPath(""), private.resourcePath(""))
-end)
-
---- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
---- Constant
---- A property that returns `true` if the shortcuts are neither original or installed correctly.
-mod.outdated = mod.supported:AND(mod.installed:NOT()):AND(mod.uninstalled:NOT()):watch(function(outdated)
-	if outdated then
-		-- TODO: Prompt the user to chose to either update or reset the shortcuts.
-		log.wf("The Hacks Shortcuts are outdated.")
-	end
-end)
 
 --- plugins.finalcutpro.hacks.shortcuts.uninstall(silently) -> none
 --- Function
@@ -450,10 +419,9 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	if mod.installed:update() then
-		log.df("Applying FCPX Command Editor Shortcuts")
-		private.applyCommandSetShortcuts()
-	end
+	mod.installed:update()
+	mod.uninstalled:update()
+	mod.setupComplete:update()
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.init() -> none
@@ -466,11 +434,7 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps, env)
-	log.df("Initialising shortcuts...")
-	
-	mod.globalCmds 	= deps.globalCmds
 	mod.fcpxCmds	= deps.fcpxCmds
-	mod.shortcuts	= deps.shortcuts
 
 	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
 	
@@ -479,18 +443,46 @@ function mod.init(deps, env)
 		reset = function() mod.uninstall() end,
 	})
 	
-	--------------------------------------------------------------------------------
-	-- Check if we need to update the Final Cut Pro Shortcut Files:
-	--------------------------------------------------------------------------------
+
+--- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the a supported version of FCPX is installed.
+	mod.supported = prop(function()
+		return private.hacksModifiedPath("") ~= nil
+	end)
+
+--- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
+	mod.installed = prop(function()
+		return private.directoriesMatch(private.hacksModifiedPath(""), private.resourcePath(""))
+	end)
+
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
+	mod.uninstalled = prop(function()
+		return private.directoriesMatch(private.hacksOriginalPath(""), private.resourcePath(""))
+	end)
 	
-	--- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
-	--- Constant
-	--- A property that returns `true` if the FCPX shortcuts are active.
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if shortcuts is working on something.
+	mod.working	= prop.FALSE()
+
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the shortcuts are neither original or installed correctly.
+	mod.outdated = mod.supported:AND(mod.working:NOT()):AND(mod.installed:NOT()):AND(mod.uninstalled:NOT())
+	
+--- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX shortcuts are active.
 	mod.active = prop.NOT(mod.fcpxCmds.isEditable)
 
-	--- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
-	--- Constant
-	--- A property that returns `true` if the custom shortcuts are installed in FCPX but not active.
+--- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the custom shortcuts are installed in FCPX but not active.
 	mod.requiresActivation = mod.installed:AND(prop.NOT(mod.active)):watch(
 		function(activate)
 			if activate then
@@ -499,9 +491,9 @@ function mod.init(deps, env)
 		end
 	)
 	
-	--- plugins.finalcutpro.hacks.shortcuts.requiresDeactivation <cp.prop: boolean; read-only>
-	--- Constant
-	--- A property that returns `true` if the FCPX shortcuts are active but shortcuts are not installed.
+--- plugins.finalcutpro.hacks.shortcuts.requiresDeactivation <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX shortcuts are active but shortcuts are not installed.
 	mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
 		function(deactivate)
 			if deactivate then
@@ -510,8 +502,46 @@ function mod.init(deps, env)
 			end
 		end
 	)
+	
+	-- Create the Welcome Panel
+	local welcome = deps.welcome
+	local setupPanel = welcome.panel.new("hacksShortcuts", 50)
+		:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
+		:addParagraph(20, i18n("commandSetText"), true)
+		:addButton(1, {
+			label		= i18n("commandSetUseFCPX"),
+			onclick		= function()
+				mod.install()
+				mod.setupComplete(true)
+				welcome.nextPanel()
+			end,
+		})
+		:addButton(2, {
+			label		= i18n("commandSetUseCP"),
+			onclick		= function()
+				mod.uninstall()
+				mod.setupComplete(true)
+				welcome.nextPanel()
+			end,
+		})
+	
+--- plugins.finalcutpro.hacks.shortcuts.setupComplete <cp.prop: boolean>
+--- Constant
+--- If `true`, the initial setup has been completed.
+	mod.setupComplete	= config.prop("hacksShortcutsSetupComplete", false)
+	
+--- plugins.finalcutpro.hacks.shortcuts.setupRequired <cp.prop: boolean; read-only>
+--- Constant
+--- If `true`, the user needs to configure Hacks Shortcuts.
+	mod.setupRequired	= mod.supported:AND(prop.NOT(mod.setupComplete):OR(mod.outdated)):watch(function(required)
+		if required then
+			welcome.addPanel(setupPanel).show()
+		end
+	end, true)
 
 	mod.update()
+	
+	return mod
 end
 
 --------------------------------------------------------------------------------
@@ -524,10 +554,7 @@ local plugin = {
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.menu.top"] 									= "top",
-		["core.menu.helpandsupport"] 						= "helpandsupport",
-		["core.commands.global"]							= "globalCmds",
 		["finalcutpro.commands"]							= "fcpxCmds",
-		["core.preferences.panels.shortcuts"]				= "shortcuts",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
 		["core.welcome.manager"] 							= "welcome",
 	}
@@ -537,53 +564,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-	local welcome = deps.welcome
-
-	--------------------------------------------------------------------------------
-	-- ENABLE INTERFACE:
-	--------------------------------------------------------------------------------
-	welcome.enableInterfaceCallback:new("hacksshortcuts", function()
-
-		--------------------------------------------------------------------------------
-		-- Initialise Hacks Shortcuts:
-		--------------------------------------------------------------------------------
-		mod.init(deps, env)
-
-		--------------------------------------------------------------------------------
-		-- Enable Commands:
-		--------------------------------------------------------------------------------
-		local allGroups = commands.groupIds()
-		for i, v in ipairs(allGroups) do
-			commands.group(v):enable()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check to see if Final Cut Pro is running:
-		--------------------------------------------------------------------------------
-		if fcp:isFrontmost() then
-			mod.fcpxCmds:enable()
-		else
-			mod.fcpxCmds:disable()
-		end
-
-	end)
-
-	--------------------------------------------------------------------------------
-	-- DISABLE INTERFACE:
-	--------------------------------------------------------------------------------
-	welcome.disableInterfaceCallback:new("hacksshortcuts", function()
-
-		--------------------------------------------------------------------------------
-		-- Disable Commands:
-		--------------------------------------------------------------------------------
-		--log.df("Disable Commands")
-		local allGroups = commands.groupIds()
-		for i, v in ipairs(allGroups) do
-			commands.group(v):disable()
-		end
-
-	end)
 
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:
@@ -621,9 +601,8 @@ function plugin.init(deps, env)
 			}
 		)
 	end
-
-	return mod
-
+	
+	return mod.init(deps, env)
 end
 
 return plugin

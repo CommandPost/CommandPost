@@ -190,7 +190,7 @@ end
 ---
 --- Notes:
 ---  * The `params` can contain the following fields:
----  ** `value`		- The value of th button.
+---  ** `value`		- The value of the button.
 ---  ** `label`		- The text label for the button. Defaults to the `value` if not provided.
 ---  ** `width`		- The width of the button in pixels.
 function ui.button(params)
@@ -300,6 +300,7 @@ end
 ---  ** `height`	- The height of the image.
 function ui.img(params)
 	-- if the src is a local file path, load it as BASE64:
+	assert(params.src ~= nil, "`ui.image` requires `params.src` to have a value.")
 	local srcFile = fs.pathToAbsolute(params.src)
 	if srcFile then
 		params.src = imageToBase64(srcFile)

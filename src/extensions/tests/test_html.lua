@@ -39,6 +39,11 @@ function run()
 		local p = html.p {attr = "value"} ("<b>bold</b>", true)
 		ok(eq(tostring(p), "<p attr=\"value\"><b>bold</b></p>"))
 	end)
+	
+	test("Empty HTML", function()
+		local empty = html()
+		ok(eq(tostring(empty), ""))
+	end)
 end
 
 return run
