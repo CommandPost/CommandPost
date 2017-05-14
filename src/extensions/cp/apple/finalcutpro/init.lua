@@ -1319,7 +1319,11 @@ end
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
-	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move, preferences = events.preferences}
+	self._watchers[#self._watchers+1] = {
+		active = events.active, inactive = events.inactive, 
+		launched = events.launched, terminated = events.terminated,
+		move = events.move, preferences = events.preferences
+	}
 	local id = { id=#self._watchers }
 	return id
 end
