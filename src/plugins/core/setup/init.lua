@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.welcome.manager ===
+--- === plugins.core.setup ===
 ---
---- Manager for the CommandPost Welcome Screen.
+--- Manager for the CommandPost Setup Screen.
 
 --------------------------------------------------------------------------------
 --
@@ -60,12 +60,12 @@ mod.LAST_PRIORITY	= 1000
 
 mod.onboardingRequired = config.prop("setupOnboardingRequired", true)
 
---- plugins.core.welcome.manager.visible <cp.prop: boolean; read-only>
+--- plugins.core.setup.visible <cp.prop: boolean; read-only>
 --- Constant
 --- A property indicating if the welcome window is visible on screen.
 mod.visible		= prop.new(function() return mod.webview and mod.webview:hswindow() and mod.webview:hswindow():isVisible() or false end)
 
---- plugins.core.welcome.manager.enabled <cp.prop: boolean>
+--- plugins.core.setup.enabled <cp.prop: boolean>
 --- Constant
 --- Set to `true` if the manager is enabled. Defaults to `false`.
 --- Panels can be added while disabled. Once enabled, the window will appear and display the panels.
@@ -102,14 +102,14 @@ local function generateHTML()
 
 	local result, err = mod.renderPanel(env)
 	if err then
-		log.ef("Error while rendering Welcome Panel: %s", err)
+		log.ef("Error while rendering Setup Panel: %s", err)
 		return err
 	else
 		return result
 	end
 end
 
---- plugins.core.welcome.manager.panelCount() -> number
+--- plugins.core.setup.panelCount() -> number
 --- Function
 --- The number of panels currently being processed in this session.
 --- This includes panels already processed, the current panel, and remaining panels.
@@ -123,7 +123,7 @@ function mod.panelCount()
 	return mod._processedPanels + #mod._panelQueue
 end
 
---- plugins.core.welcome.manager.panelNumber() -> number
+--- plugins.core.setup.panelNumber() -> number
 --- Function
 --- The number of the panel currently being viewed.
 ---
@@ -136,7 +136,7 @@ function mod.panelNumber()
 	return mod._processedPanels
 end
 
---- plugins.core.welcome.manager.panelQueue() -> table of panels
+--- plugins.core.setup.panelQueue() -> table of panels
 --- Function
 --- The table of panels remaining to be processed. Panels are removed from the queue
 --- one at a time and idisplayed in the window via the `nextPanel()` function.
@@ -213,7 +213,7 @@ function mod.new()
 			:html(generateHTML())
 
 		--------------------------------------------------------------------------------
-		-- Show Welcome Screen:
+		-- Show Setup Screen:
 		--------------------------------------------------------------------------------
 		mod.webview:show()
 		mod.visible:update()
@@ -268,7 +268,7 @@ function mod.focus()
 	return false
 end
 
---- plugins.core.welcome.manager.nextPanel() -> boolean
+--- plugins.core.setup.nextPanel() -> boolean
 --- Function
 --- Moves to the next panel. If the window is visible, the panel will be updated.
 --- If no panels are left in the queue, the window will be closed.
@@ -292,12 +292,12 @@ function mod.nextPanel()
 	end
 end
 
---- plugins.core.welcome.manager.addPanel(newPanel) -> panel
+--- plugins.core.setup.addPanel(newPanel) -> panel
 --- Function
 --- Adds the new panel to the manager. Panels are created via the
---- `plugins.core.welcome.manager.panel.new(...)` function.
+--- `plugins.core.setup.panel.new(...)` function.
 ---
---- If the Welcome Manager is `enabled`, the window will be displayed
+--- If the Setup Manager is `enabled`, the window will be displayed
 --- immediately when a panel is added.
 ---
 --- Parameters:
@@ -306,7 +306,7 @@ end
 --- Returns:
 ---  * The manager.
 function mod.addPanel(newPanel)
-	--log.df("Adding Welcome Panel with ID: %s", id)
+	--log.df("Adding Setup Panel with ID: %s", id)
 	mod._panelQueue[#mod._panelQueue + 1] = newPanel
 	
 	-- sort by priority
@@ -321,7 +321,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.welcome.manager",
+	id				= "core.setup",
 	group			= "core",
 	required		= true,
 }

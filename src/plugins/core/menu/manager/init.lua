@@ -206,7 +206,7 @@ local plugin = {
 	group		= "core",
 	required	= true,
 	dependencies	= {
-		["core.welcome.manager"] 			= "welcome",
+		["core.setup"] 			= "setup",
 	}
 }
 
@@ -215,8 +215,8 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	-- disable the menu when the Welcome Panel is open.
-	deps.welcome.visible:watch(function(visible)
+	-- disable the menu when the Setup Panel is open.
+	deps.setup.visible:watch(function(visible)
 		if visible then
 			manager.disable()
 		else

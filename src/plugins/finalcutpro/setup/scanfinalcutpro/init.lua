@@ -129,7 +129,7 @@ local plugin = {
 		["finalcutpro.timeline.titles"]						= "titles",
 		["finalcutpro.timeline.transitions"]				= "transitions",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
-		["core.welcome.manager"]							= "welcome",
+		["core.setup"]										= "setup",
 	}
 }
 
@@ -152,26 +152,26 @@ function plugin.init(deps, env)
 	end
 	
 	-- Add a setup panel if the initial onboarding is not complete and a scan is required.
-	deps.welcome.onboardingRequired:AND(mod.scanned:NOT()):watch(function(setupRequired)
+	deps.setup.onboardingRequired:AND(mod.scanned:NOT()):watch(function(setupRequired)
 		if setupRequired then
-			local welcome = deps.welcome
-			welcome.addPanel(
-				welcome.panel.new("scanfinalcutpro", 60)
+			local setup = deps.setup
+			setup.addPanel(
+				setup.panel.new("scanfinalcutpro", 60)
 					:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
 					:addParagraph(20, i18n("scanFinalCutProText"), true)
 					:addButton(1, {
 						label		= i18n("scanFinalCutPro"),
 						onclick		= function()
 							if mod.scanFinalCutPro() then
-								welcome.nextPanel()
+								setup.nextPanel()
 							else
-								welcome.focus()
+								setup.focus()
 							end
 						end
 					})
 					:addButton(2, {
 						label		= i18n("skip"),
-						onclick		= welcome.nextPanel
+						onclick		= setup.nextPanel
 					})
 			).show()
 		end

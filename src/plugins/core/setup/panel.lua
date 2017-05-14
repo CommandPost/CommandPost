@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.welcome.manager.panel ===
+--- === plugins.core.setup.panel ===
 ---
---- CommandPost Welcome Window Panel.
+--- CommandPost Setup Window Panel.
 
 --------------------------------------------------------------------------------
 --
@@ -26,12 +26,12 @@ local ui										= require("cp.web.ui")
 --
 --------------------------------------------------------------------------------
 
---- plugins.core.welcome.manager.panel.DEFAULT_PRIORITY
+--- plugins.core.setup.panel.DEFAULT_PRIORITY
 --- Constant
 --- The default priority for panels.
 local DEFAULT_PRIORITY 							= 0
 
---- plugins.core.welcome.manager.panel.HANDLER_PRIORITY
+--- plugins.core.setup.panel.HANDLER_PRIORITY
 --- Constant
 --- The default priority for handler scripts.
 local HANDLER_PRIORITY							= 1000000
@@ -44,9 +44,9 @@ local HANDLER_PRIORITY							= 1000000
 local panel = {}
 
 -- The ID for the webview
-panel.WEBVIEW_LABEL								= "welcome"
+panel.WEBVIEW_LABEL								= "setup"
 
---- plugins.core.welcome.manager.panel.new(id, priority) -> plugins.core.welcome.manager.panel
+--- plugins.core.setup.panel.new(id, priority) -> plugins.core.setup.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
@@ -135,7 +135,7 @@ local function addItem(items, priority, content, unescaped)
 	table.sort(items, function(a, b) return a.priority < b.priority end)
 end
 
---- plugins.core.welcome.manager.panel:addContent(priority, content) -> panel
+--- plugins.core.setup.panel:addContent(priority, content) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
@@ -196,7 +196,7 @@ function panel:addParagraph(priority, content, unescaped, class)
 	return self:addContent(priority, html.p { class=getClass({class=class}) } (content, unescaped))
 end
 
---- plugins.core.welcome.manager.panel:addCheckbox(priority, params) -> panel
+--- plugins.core.setup.panel:addCheckbox(priority, params) -> panel
 --- Method
 --- Adds a checkbox to the panel with the specified `priority` and `params`.
 ---
@@ -311,7 +311,7 @@ function panel:addIcon(priority, params)
 
 end
 
---- plugins.core.welcome.manager.panel:addButton(priority, params) -> panel
+--- plugins.core.setup.panel:addButton(priority, params) -> panel
 --- Method
 --- Adds a button with the specified priority and parameters.
 ---

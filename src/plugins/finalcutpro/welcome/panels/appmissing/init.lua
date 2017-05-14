@@ -104,7 +104,7 @@ local plugin = {
 	id				= "finalcutpro.welcome.panels.app.missing",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.welcome.manager"]					= "welcome",
+		["core.setup"]	= "setup",
 	}
 }
 

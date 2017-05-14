@@ -793,6 +793,7 @@ return {
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
 	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
+	core_accessability_label								=	"Accessibility Permissions",
 	core_action_manager_label								=	"Action Manager",
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
@@ -818,13 +819,10 @@ return {
 	core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 	core_preferences_updates_label							=	"Preferences: Updates",
 	core_quit_label											=	"Quit Command",
+	core_setup_label										= 	"Setup Manager",
 	core_watchfolders_manager_label							= 	"Watch Folder Manager",
 	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 	core_webapp_label										=	"WebApp",
-	core_welcome_manager_label								= 	"Welcome Manager",
-	core_welcome_panels_accessibility_label					=	"Welcome: Accessibility",
-	core_welcome_panels_complete_label						=	"Welcome: Complete",
-	core_welcome_panels_intro_label							=	"Welcome: Intro",
 	finalcutpro_browser_addnote_label						=	"Browser: Add Note",
 	finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
 	finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
@@ -885,9 +883,6 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
-	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
-	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:

@@ -503,9 +503,9 @@ function mod.init(deps, env)
 		end
 	)
 	
-	-- Create the Welcome Panel
-	local welcome = deps.welcome
-	local setupPanel = welcome.panel.new("hacksShortcuts", 50)
+	-- Create the Setup Panel
+	local setup = deps.setup
+	local setupPanel = setup.panel.new("hacksShortcuts", 50)
 		:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
 		:addParagraph(20, i18n("commandSetText"), true)
 		:addButton(1, {
@@ -513,7 +513,7 @@ function mod.init(deps, env)
 			onclick		= function()
 				mod.install()
 				mod.setupComplete(true)
-				welcome.nextPanel()
+				setup.nextPanel()
 			end,
 		})
 		:addButton(2, {
@@ -521,7 +521,7 @@ function mod.init(deps, env)
 			onclick		= function()
 				mod.uninstall()
 				mod.setupComplete(true)
-				welcome.nextPanel()
+				setup.nextPanel()
 			end,
 		})
 	
@@ -535,7 +535,7 @@ function mod.init(deps, env)
 --- If `true`, the user needs to configure Hacks Shortcuts.
 	mod.setupRequired	= mod.supported:AND(prop.NOT(mod.setupComplete):OR(mod.outdated)):watch(function(required)
 		if required then
-			welcome.addPanel(setupPanel).show()
+			setup.addPanel(setupPanel).show()
 		end
 	end, true)
 
@@ -556,7 +556,7 @@ local plugin = {
 		["core.menu.top"] 									= "top",
 		["finalcutpro.commands"]							= "fcpxCmds",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
-		["core.welcome.manager"] 							= "welcome",
+		["core.setup"] 										= "setup",
 	}
 }
 
