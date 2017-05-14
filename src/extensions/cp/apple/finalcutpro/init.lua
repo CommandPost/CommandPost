@@ -845,7 +845,7 @@ App._preferencesAlreadyUpdating = false
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
+		-- log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
 		-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
 		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
 
