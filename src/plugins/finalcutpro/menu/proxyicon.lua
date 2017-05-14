@@ -109,6 +109,15 @@ function plugin.init(deps)
 		)
 	end
 
+	--------------------------------------------------------------------------------
+	-- Update Menubar Icon on Final Cut Pro Preferences Update:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		preferences = function()
+			mod.menuManager:updateMenubarIcon()
+		end,
+	})
+
 	return mod
 
 end

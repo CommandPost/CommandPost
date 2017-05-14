@@ -13,16 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp			= require("cp.apple.finalcutpro")
-local prop			= require("cp.prop")
+local fcp					= require("cp.apple.finalcutpro")
+local prop					= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 2000
-local BACKGROUN_RENDER	= "FFAutoStartBGRender"
+local PRIORITY 				= 2000
+local BACKGROUND_RENDER		= "FFAutoStartBGRender"
 
 --------------------------------------------------------------------------------
 --
