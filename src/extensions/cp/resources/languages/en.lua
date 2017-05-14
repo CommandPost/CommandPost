@@ -860,7 +860,7 @@ return {
 	finalcutpro_open_label									=	"Open Final Cut Pro",
 	finalcutpro_os_touchbar_label							=	"Virtual Touch Bar",
 	finalcutpro_os_voice_label								=	"Voice Commands",
-	finalcutpro_preferences_panels_finalcutpro_label		=	"Preferences: Panel",
+	finalcutpro_preferences_app_label						=	"Preferences: Panel",
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",

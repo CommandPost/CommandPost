@@ -128,7 +128,7 @@ local plugin = {
 		["finalcutpro.timeline.generators"]					= "generators",
 		["finalcutpro.timeline.titles"]						= "titles",
 		["finalcutpro.timeline.transitions"]				= "transitions",
-		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
+		["finalcutpro.preferences.app"]		= "prefs",
 		["core.setup"]										= "setup",
 	}
 }

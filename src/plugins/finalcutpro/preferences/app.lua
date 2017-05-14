@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.preferences.panels.finalcutpro ===
+--- === plugins.finalcutpro.preferences.app ===
 ---
 --- Final Cut Pro Preferences Panel
 
@@ -24,7 +24,7 @@ local fcp										= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.preferences.panels.finalcutpro",
+	id				= "finalcutpro.preferences.app",
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.preferences.manager"]	= "manager",
