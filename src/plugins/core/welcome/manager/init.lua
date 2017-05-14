@@ -40,6 +40,7 @@ local panel										= require("panel")
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- The `panel` class
 mod.panel									= panel
 
 --------------------------------------------------------------------------------
@@ -52,6 +53,12 @@ mod.defaultTitle 							= i18n("welcomeTitle")
 mod._processedPanels						= 0
 mod._currentPanel							= nil
 mod._panelQueue								= {}
+
+
+mod.FIRST_PRIORITY	= 0
+mod.LAST_PRIORITY	= 1000
+
+mod.onboardingRequired = config.prop("setupOnboardingRequired", true)
 
 --- plugins.core.welcome.manager.visible <cp.prop: boolean; read-only>
 --- Constant
@@ -317,8 +324,6 @@ local plugin = {
 	id				= "core.welcome.manager",
 	group			= "core",
 	required		= true,
-	dependencies	= {
-	}
 }
 
 --------------------------------------------------------------------------------
@@ -331,7 +336,46 @@ end
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps)
+function plugin.postInit(deps, env)
+	mod.onboardingRequired:watch(function(required)
+		if required then
+			local iconPath = env:pathToAbsolute("images/commandpost_icon.png")
+			
+			-- The intro panel
+			mod.addPanel(
+				panel.new("intro", mod.FIRST_PRIORITY)
+					:addIcon(10, {src = iconPath})
+					:addHeading(20, config.appName)
+					:addSubHeading(30, i18n("welcomeTagLine"))
+					:addParagraph(40, i18n("welcomeIntro"), true)
+					:addButton(1, {
+						value	= i18n("continue"),
+						onclick = function() mod.nextPanel() end,
+					})
+					:addButton(2, {
+						value	= i18n("quit"),
+						onclick	= function() config.application():kill() end,
+					})
+			)
+			
+			-- The outro panel
+			mod.addPanel(
+				panel.new("outro", mod.LAST_PRIORITY)
+					:addIcon(10, {src = iconPath})
+					:addSubHeading(30, i18n("completeHeading"))
+					:addParagraph(40, i18n("completeText"), true)
+					:addButton(1, {
+						value	= i18n("close"),
+						onclick	= function()
+							mod.onboardingRequired(false)
+							mod.nextPanel()
+						end,
+					})
+			)
+			mod.show()
+		end
+	end, true)
+	
 	return mod.enabled(true)
 end
 

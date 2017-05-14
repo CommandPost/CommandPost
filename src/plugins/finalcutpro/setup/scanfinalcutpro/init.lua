@@ -130,7 +130,6 @@ local plugin = {
 		["finalcutpro.timeline.transitions"]				= "transitions",
 		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
 		["core.welcome.manager"]							= "welcome",
-		["core.setup"]										= "setup",
 	}
 }
 
@@ -152,8 +151,8 @@ function plugin.init(deps, env)
 		)
 	end
 	
-	-- Add a setup panel if the initial setup is not complete and a scan is required.
-	deps.setup.incomplete:AND(mod.scanned:NOT()):watch(function(setupRequired)
+	-- Add a setup panel if the initial onboarding is not complete and a scan is required.
+	deps.welcome.onboardingRequired:AND(mod.scanned:NOT()):watch(function(setupRequired)
 		if setupRequired then
 			local welcome = deps.welcome
 			welcome.addPanel(
