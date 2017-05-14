@@ -14,6 +14,9 @@
 --- 	html.b "Bold" .. " and " .. html.i "italic" .. "."
 --- )
 --- -- "<p class='custom'><b>Bold</b> and <i>italic</i>.</p>"
+--- print html("1 < 2")										-- "1 &lt; 2" (escaped)
+--- print html("1 < 2", true)								-- "1 < 2" (unescaped)
+--- print html.p ("<b>bold</b>", true)						-- "<p><b>bold</b></p>"
 --- ```
 ---
 --- Be aware that concatonating with ".." can behave unexpectedly in some cases. For example:
@@ -31,10 +34,9 @@
 --- ```
 ---
 --- Any tag name can be generated, along with any attribute. The results are correctly escaped.
---- There are three 'special' tag names:
----  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content
----  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment
----  * `_`		- (single underscore) will generate a plain text block.
+--- There are two 'special' tag names:
+---  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content contained.
+---  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment block.
 
 local log			= require "hs.logger" .new "html"
 local template 		= require "resty.template"
@@ -231,7 +233,7 @@ local html = {}
 html.__index = function(_, name)
     return function(param, ...)
 		local pType = type(param)
-        if pType ~= "table" or isBlock(param) then
+        if param ~= nil and (pType ~= "table" or isBlock(param)) then
 			-- it's content, not attributes
 			return block.new(name)(param, ...)
 		else
