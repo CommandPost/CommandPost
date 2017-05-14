@@ -60,6 +60,7 @@ end
 local plugin = {
 	id				= "core.accessibility",
 	group			= "core",
+	required		= true,
 	dependencies	= {
 		["core.welcome.manager"]	= "welcome",
 	}
