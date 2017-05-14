@@ -488,6 +488,151 @@ function prop.mt:clone()
 	end
 end
 
+local function evaluate(something)
+	if type(something) == "function" or prop.is(something) then
+		return something()
+	else
+		return something
+	end
+end
+
+local function watchProps(watcher, ...)
+	local watcherFn = function() watcher:update() end
+	-- loop through the other props
+	for _, p in ipairs(table.pack(...)) do
+		if prop.is(p) then
+			p:watch(watcherFn)
+		end
+	end
+end
+
+--- cp.prop:EQUALS() -> cp.prop <boolean; read-only>
+--- Method
+--- Returns a new property comparing this property to `something`.
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is equal to `something`.
+function prop.mt:EQUALS(something)
+	local left = self
+	
+	-- create the property
+	local result = prop.new(function()
+		return evaluate(left) == evaluate(something)
+	end)
+	
+	-- add watchers
+	watchProps(result, left, something)
+
+	return result
+end
+
+--- cp.prop:EQ() -> cp.prop <boolean; read-only>
+--- Method
+--- Synonym for [EQUALS](#equals).
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is equal to `something`.
+prop.mt.EQ = prop.mt.EQUALS
+
+--- cp.prop:BELOW() -> cp.prop <boolean; read-only>
+--- Method
+--- Returns a new property comparing this property to `something`.
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is less than `something`.
+function prop.mt:BELOW(something)
+	local left = self
+	
+	-- create the property
+	local result = prop.new(function()
+		return evaluate(left) < evaluate(something)
+	end)
+	
+	-- add watchers
+	watchProps(result, left, something)
+	
+	return result
+end
+
+--- cp.prop:ABOVE() -> cp.prop <boolean; read-only>
+--- Method
+--- Returns a new property comparing this property to `something`.
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is greater than `something`.
+function prop.mt:ABOVE(something)
+	local left = self
+
+	-- create the property
+	local result = prop.new(function()
+		return evaluate(left) > evaluate(something)
+	end)
+
+	-- add watchers
+	watchProps(result, left, something)
+
+	return result
+end
+	
+--- cp.prop:ATMOST() -> cp.prop <boolean; read-only>
+--- Method
+--- Returns a new property comparing this property to `something`.
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is less than or equal to `something`.
+function prop.mt:ATMOST(something)
+	local left = self
+
+	-- create the property
+	local result = prop.new(function()
+		return evaluate(left) <= evaluate(something)
+	end)
+
+	-- add watchers
+	watchProps(result, left, something)
+
+	return result
+end
+
+--- cp.prop:ATLEAST() -> cp.prop <boolean; read-only>
+--- Method
+--- Returns a new property comparing this property to `something`.
+---
+--- Parameters:
+--- * `something`	- A value, a function or a `cp.prop` to compare to.
+---
+--- Returns:
+--- * New, read-only `cp.prop` which will be `true` if this property is less than or equal to `something`.
+function prop.mt:ATLEAST(something)
+	local left = self
+
+	-- create the property
+	local result = prop.new(function()
+		return evaluate(left) >= evaluate(something)
+	end)
+
+	-- add watchers
+	watchProps(result, left, something)
+
+	return result
+end
+
+
 -- cp.prop:_notify(value) -> nil
 -- Method
 -- Notifies all watchers of the current value if it has changed since the last notification.

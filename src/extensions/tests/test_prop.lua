@@ -462,6 +462,33 @@ function run()
 		ok(#andBound._watchers == 1)
 		ok(andBound._watchers[1] == boundWatch)
 	end)
+	
+	test("Prop Binary Functions", function()
+		local one, two, three = prop.THIS(1), prop.THIS(2), prop.THIS(3)
+		
+		ok(one:EQUALS(1):value() == true)
+		ok(one:EQUALS(one):value() == true)
+		ok(one:EQUALS(two):value() == false)
+		
+		ok(two:BELOW(one):value() == false)
+		ok(two:ABOVE(one):value() == true)
+		ok(two:BELOW(three):value() == true)
+		ok(two:ABOVE(three):value() == false)
+		
+		ok(two:ATLEAST(3):value() == false)
+		ok(two:ATMOST(3):value() == true)
+		ok(two:ATLEAST(1):value() == true)
+		ok(two:ATMOST(1):value() == false)
+		ok(two:ATLEAST(2):value() == true)
+		ok(two:ATMOST(2):value() == true)
+		
+		local something = prop.THIS(1)
+		local comp = one:EQUALS(something)
+		
+		ok(comp:value() == true)
+		something(0)
+		ok(comp:value() == false)
+	end)
 end
 
 return run
