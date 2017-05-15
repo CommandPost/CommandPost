@@ -29,7 +29,7 @@ function plugin.init(deps, env)
 				setup.panel.new("fcpunsupported", 20)
 					:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
 					:addHeading(20, i18n("finalcutproUnsupportedVersionTitle"))
-					:addParagraph(30, i18n("finalcutproUnsupportedVersionText", {
+					:addParagraph(i18n("finalcutproUnsupportedVersionText", {
 						thisVersion = fcp:getVersion(), minVersion = minVersion
 					}), true)
 					:addButton(1, {

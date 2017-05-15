@@ -507,7 +507,7 @@ function mod.init(deps, env)
 	local setup = deps.setup
 	local setupPanel = setup.panel.new("hacksShortcuts", 50)
 		:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
-		:addParagraph(20, i18n("commandSetText"), true)
+		:addParagraph(i18n("commandSetText"), true)
 		:addButton(1, {
 			label		= i18n("commandSetUseFCPX"),
 			onclick		= function()

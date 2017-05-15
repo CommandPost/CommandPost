@@ -349,7 +349,7 @@ function plugin.postInit(deps, env)
 					:addIcon(10, {src = iconPath})
 					:addHeading(20, config.appName)
 					:addSubHeading(30, i18n("introTagLine"))
-					:addParagraph(40, i18n("introText"), true)
+					:addParagraph(i18n("introText"), true)
 					:addButton(1, {
 						value	= i18n("continue"),
 						onclick = function() mod.nextPanel() end,
@@ -365,7 +365,7 @@ function plugin.postInit(deps, env)
 				panel.new("outro", mod.LAST_PRIORITY)
 					:addIcon(10, {src = iconPath})
 					:addSubHeading(30, i18n("outroTitle"))
-					:addParagraph(40, i18n("outroText"), true)
+					:addParagraph(i18n("outroText"), true)
 					:addButton(1, {
 						value	= i18n("close"),
 						onclick	= function()

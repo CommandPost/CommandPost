@@ -22,22 +22,6 @@ local ui										= require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
---- plugins.core.setup.panel.DEFAULT_PRIORITY
---- Constant
---- The default priority for panels.
-local DEFAULT_PRIORITY 							= 0
-
---- plugins.core.setup.panel.HANDLER_PRIORITY
---- Constant
---- The default priority for handler scripts.
-local HANDLER_PRIORITY							= 1000000
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -58,64 +42,17 @@ function panel.new(id, priority)
 		id			=	id,
 		priority	=	priority,
 		_handlers	=	{},
-		_content	=	{},
-		_buttons	=	{},
-		_footer		=	{},
+		_content	=	html.div {class = "content"},
+		_buttons	=	html.div {class = "buttons"},
+		_footer		=	html.div {class = "footer"},
 	}
+	o._panel = html.div {class = "panel"} (o._content .. o._buttons .. o._footer)
 	return setmetatable(o, {__index = panel, __tostring = panel.__tostring})
 end
 
 -- outputs the panel as HTML.
 function panel:__tostring()
-	return tostring(self:generatePanel())
-end
-
-function panel:getToolbarItem()
-	return {
-		id			= self.id,
-		priority	= self.priority,
-		image		= self.image,
-		label		= self.label,
-		selectable	= true,
-		tooltip		= self.tooltip,
-	}
-end
-
-local function generateItems(items, class)
-	local result = html.div {class = class}
-
-	for i,item in ipairs(items) do
-		-- log.df("generating item %d:\n%s", i, item.html)
-		if item.html then
-			result:append ("\n" .. item.html)
-		end
-	end
-
-	return result
-end
-
-function panel:generatePanel()
-	return html.div {class = "panel"} (
-		self:generateContent() .. self:generateButtons() .. self:generateFooter()
-	)
-end
-
---------------------------------------------------------------------------------
--- GENERATE CONTENT:
---------------------------------------------------------------------------------
-function panel:generateContent()
-	return generateItems(self._content, "content")
-end
-
---------------------------------------------------------------------------------
--- GENERATE CONTENT:
---------------------------------------------------------------------------------
-function panel:generateButtons()
-	return generateItems(self._buttons, "buttons")
-end
-
-function panel:generateFooter()
-	return generateItems(self._footer, "footer")
+	return tostring(self._panel)
 end
 
 local function getClass(params)
@@ -126,16 +63,7 @@ local function getClass(params)
 	return class
 end
 
-local function addItem(items, priority, content, unescaped)
-	priority = priority or DEFAULT_PRIORITY
-	items[#items+1] = {
-		priority = priority,
-		html = html(content, unescaped),
-	}
-	table.sort(items, function(a, b) return a.priority < b.priority end)
-end
-
---- plugins.core.setup.panel:addContent(priority, content) -> panel
+--- plugins.core.setup.panel:addContent(content) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
@@ -146,13 +74,13 @@ end
 ---
 --- Returns:
 --- * The panel.
-function panel:addContent(priority, content, unescaped)
-	addItem(self._content, priority, content, unescaped)
+function panel:addContent(content, unescaped)
+	self._content(content, unescaped)
 	return self
 end
 
-function panel:addFooter(priority, content, unescaped)
-	addItem(self._footer, priority, content, unescaped)
+function panel:addFooter(content, unescaped)
+	self._footer(content, unescaped)
 	return self
 end
 
@@ -186,17 +114,17 @@ function panel:addHandler(event, id, handlerFn, keys)
 	]], { event=event, id=id, keys=keys, name=panel.WEBVIEW_LABEL })
 
 	-- add the script to the panel.
-	self:addFooter(HANDLER_PRIORITY, script)
+	self:addFooter(script)
 
 	-- register the handler function
 	self._handlers[id] = handlerFn
 end
 
-function panel:addParagraph(priority, content, unescaped, class)
-	return self:addContent(priority, html.p { class=getClass({class=class}) } (content, unescaped))
+function panel:addParagraph(content, unescaped, class)
+	return self:addContent(html.p { class=getClass({class=class}) } (content, unescaped))
 end
 
---- plugins.core.setup.panel:addCheckbox(priority, params) -> panel
+--- plugins.core.setup.panel:addCheckbox(params) -> panel
 --- Method
 --- Adds a checkbox to the panel with the specified `priority` and `params`.
 ---
@@ -213,7 +141,7 @@ end
 --- ** `label`		- (optional) The text label to display after the checkbox.
 --- ** `onchange`	- (optional) a function that will get called when the checkbox value changes. It will be passed two parameters, `id` and `params`, the latter of which is a table containing the `value` and `checked` values of the checkbox.
 --- ** `class`		- (optional) the CSS class list to apply to the checkbox.
-function panel:addCheckbox(priority, params)
+function panel:addCheckbox(params)
 
 	params.id = params.id or uuid()
 
@@ -230,7 +158,7 @@ function panel:addCheckbox(priority, params)
 		self:addHandler("onchange", params.id, params.onchange, { "value", "checked" })
 	end
 
-	return self:addContent(priority, content)
+	return self:addContent(content)
 
 end
 
@@ -238,11 +166,11 @@ end
 -- ADD HEADING:
 --------------------------------------------------------------------------------
 function panel:addHeading(priority, text)
-	return self:addContent(priority, ui.heading({text=text, level=1}))
+	return self:addContent(ui.heading({text=text, level=1}))
 end
 
 function panel:addSubHeading(priority, text)
-	return self:addContent(priority, ui.heading({text=text, level=2}))
+	return self:addContent(ui.heading({text=text, level=2}))
 end
 
 
@@ -261,7 +189,7 @@ function panel:addTextbox(priority, params)
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
 
-	return self:addContent(priority, content)
+	return self:addContent(content)
 end
 
 function panel:addPassword(priority, params)
@@ -279,7 +207,7 @@ function panel:addPassword(priority, params)
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
 
-	return self:addContent(priority, content)
+	return self:addContent(content)
 end
 
 function panel:addSelect(priority, params)
@@ -296,7 +224,7 @@ function panel:addSelect(priority, params)
 		self:addHandler("onchange", params.id, params.onchange, { "value" })
 	end
 
-	return self:addContent(priority, select)
+	return self:addContent(select)
 
 end
 
@@ -307,7 +235,7 @@ function panel:addIcon(priority, params)
 	params.class = params.class or "icon"
 	params.class = getClass(params)
 
-	return self:addContent(priority, ui.img(params))
+	return self:addContent(ui.img(params))
 
 end
 
@@ -336,11 +264,7 @@ function panel:addButton(priority, params)
 		self:addHandler("onclick", params.id, function(id, fnParams) return params.onclick(id, params.value) end, { "value" })
 	end
 
-	local content = ui.button(params)
-
-	priority = priority or DEFAULT_PRIORITY
-
-	addItem(self._buttons, priority, content, unescaped)
+	self._buttons(ui.button(params))
 
 	return self
 	

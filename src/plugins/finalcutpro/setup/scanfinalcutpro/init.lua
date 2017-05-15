@@ -158,7 +158,7 @@ function plugin.init(deps, env)
 			setup.addPanel(
 				setup.panel.new("scanfinalcutpro", 60)
 					:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
-					:addParagraph(20, i18n("scanFinalCutProText"), true)
+					:addParagraph(i18n("scanFinalCutProText"), true)
 					:addButton(1, {
 						label		= i18n("scanFinalCutPro"),
 						onclick		= function()

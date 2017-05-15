@@ -34,7 +34,7 @@ function mod.init(setup, iconPath)
 	mod.setup = setup
 	mod.panel = setup.panel.new("accessibility", 10)
 		:addIcon(10, {src = iconPath})
-		:addParagraph(20, i18n("accessibilityNote"), true)
+		:addParagraph(i18n("accessibilityNote"), true)
 		:addButton(1, {
 			label		= i18n("enableAccessibility"),
 			onclick		= function()
