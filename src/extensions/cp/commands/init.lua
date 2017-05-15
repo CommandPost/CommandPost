@@ -63,6 +63,19 @@ function commands.group(id)
 	return commands._groups[id]
 end
 
+--- cp.commands.groups() -> table of cp.commands
+--- Function
+--- Returns a table with the set of commands.
+---
+--- Parameters:
+--- * `id`		- The ID to retrieve
+---
+--- Returns:
+---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
+function commands.groups()
+	return _.clone(commands._groups, true)
+end
+
 --- cp.commands:new(id) -> cp.commands
 --- Method
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.

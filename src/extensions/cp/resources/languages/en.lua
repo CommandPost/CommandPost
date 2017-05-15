@@ -770,7 +770,7 @@ return {
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
 	shortcut_group_global				=			"Global",
-	shortcut_group_fcpx					=			"FCPX",
+	shortcut_group_fcpx					=			"Final Cut Pro X",
 
 	customiseShortcuts					=			"Customise Shortcuts",
 	shortcutsGroup						=			"Group",

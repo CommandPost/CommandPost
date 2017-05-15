@@ -3,10 +3,9 @@
 }
 
 .shortcuts {
-	float: left;
-	margin-left: 20px;
+	margin-top: 10px;
 	table-layout: fixed;
-	width: 92%;
+	width: 100%;
 	white-space: nowrap;
 	border: 1px solid #cccccc;
 	padding: 8px;
@@ -15,22 +14,17 @@
 }
 
 .shortcuts td {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rowGroup {
-	width:10%;
-	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .rowLabel {
-	width: 45%;
+	width: 50%;
 }
 
 .rowModifier {
-	width: 18%;
+	width: 20%;
 }
 
 .rowModifier select {
@@ -38,17 +32,27 @@
 }
 
 .rowKeyCode {
-	width: 27%;
+	width: 30%;
 }
 
 .rowKeyCode select {
 	width: 100%;
 }
 
-.shortcuts thead, .shortcuts tbody tr {
+.shortcuts thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.shortcuts thead tr, .shortcuts tbody tr {
 	display: table;
 	table-layout: fixed;
-	width: calc( 100% - 1.5em );
+	width: 100%;
+}
+
+.shortcuts thead tr {
+	width: calc( 100% - 15px);
 }
 
 .shortcuts tbody {
@@ -56,25 +60,10 @@
 	height: 250px;
 	font-weight: normal;
 	font-size: 10px;
+	width: 100%;
 
 	overflow-x: hidden;
-	overflow-y: auto;
-}
-
-.shortcuts tbody tr {
-	display: table;
-	width:100%;
-	table-layout:fixed;
-}
-
-.shortcuts thead {
-	font-weight: bold;
-	font-size: 12px;
-}
-
-.shortcuts tbody {
-	font-weight: normal;
-	font-size: 10px;
+	overflow-y: scroll;
 }
 
 .shortcuts tbody tr:nth-child(even) {
@@ -87,7 +76,7 @@
 }
 
 .resetShortcuts {
-	margin: 10px 10px !important;
+	margin: 10px 0px;
 	text-align: right;
 }
 
@@ -108,4 +97,19 @@
 }
 #shortcutController {
 	font-weight: bold;
+}
+
+#shortcutsGroupControls {
+}
+
+#shortcutsGroupControls .shortcutsGroup {
+	display: none;
+}
+
+#shortcutsGroupControls .shortcutsGroup.selected {
+	display: block;
+}
+
+.groupSelect {
+	float: right;
 }

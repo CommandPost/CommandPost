@@ -1,20 +1,3 @@
-<style>
-	{["css/shortcuts.css"]}
-</style>
-<h3 class="uiItem">{{ i18n "customiseShortcuts" }}</h3>
-<p class="shortcutsControl">{{ i18n "shortcutsControl" }} <span id="shortcutController">{% if shortcutsEnabled then %}{{ i18n "appName" }}{% else %}{{ i18n("finalCutPro")}}{% end %}</span>.</p>
-<div id="customiseShortcuts" class="{{ shortcutsEnabled and '' or 'disabled' }}">
-	<table class="shortcuts">
-		<thead>
-			<tr>
-				<th class="rowGroup">{{ i18n "shortcutsGroup" }}</th>
-				<th class="rowLabel">{{ i18n "shortcutsLabel" }}</th>
-				<th class="rowModifier">{{ i18n "shortcutsModifier" }}</th>
-				<th class="rowKeyCode">{{ i18n "shortcutsKey" }}</th>
-			</tr>
-		</thead>
-		<tbody>
-		{(html/rows.html, context)}
-		</tbody>
-	</table>
-</div>
+<style>{(css/shortcuts.css)}</style>
+<h3 class="uiItem"><span class="groupSelect">{* groupSelect *}</span>{{ i18n "customiseShortcuts" }}</h3>
+{(html/controls.html, context)}

@@ -222,6 +222,19 @@ function command:getShortcuts()
 	return self._shortcuts
 end
 
+--- cp.commands.command:getFirstShortcut() -> command
+--- Method
+--- Returns the first shortcut, or `nil` if none have been registered.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The first shortcut, or `nil`.
+function command:getFirstShortcut()
+	return self._shortcuts and #self._shortcuts > 0 and self._shortcuts[1] or nil
+end
+
 --- cp.commands.command:whenActivated(function) -> command
 --- Method
 --- Sets the function that will be called when the command is activated.
