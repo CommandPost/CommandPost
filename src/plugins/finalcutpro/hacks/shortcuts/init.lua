@@ -421,7 +421,7 @@ end
 function mod.update()
 	mod.installed:update()
 	mod.uninstalled:update()
-	mod.setupComplete:update()
+	mod.onboardingRequired:update()
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.init() -> none
@@ -512,7 +512,7 @@ function mod.init(deps, env)
 			label		= i18n("commandSetUseFCPX"),
 			onclick		= function()
 				mod.install()
-				mod.setupComplete(true)
+				mod.onboardingRequired(false)
 				setup.nextPanel()
 			end,
 		})
@@ -520,20 +520,20 @@ function mod.init(deps, env)
 			label		= i18n("commandSetUseCP"),
 			onclick		= function()
 				mod.uninstall()
-				mod.setupComplete(true)
+				mod.onboardingRequired(false)
 				setup.nextPanel()
 			end,
 		})
 	
---- plugins.finalcutpro.hacks.shortcuts.setupComplete <cp.prop: boolean>
+--- plugins.finalcutpro.hacks.shortcuts.onboardingRequired <cp.prop: boolean>
 --- Constant
 --- If `true`, the initial setup has been completed.
-	mod.setupComplete	= config.prop("hacksShortcutsSetupComplete", false)
+	mod.onboardingRequired	= config.prop("hacksShortcutsOnboardingRequired", true)
 	
 --- plugins.finalcutpro.hacks.shortcuts.setupRequired <cp.prop: boolean; read-only>
 --- Constant
 --- If `true`, the user needs to configure Hacks Shortcuts.
-	mod.setupRequired	= mod.supported:AND(prop.NOT(mod.setupComplete):OR(mod.outdated)):watch(function(required)
+	mod.setupRequired	= mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
 		if required then
 			setup.addPanel(setupPanel).show()
 		end
