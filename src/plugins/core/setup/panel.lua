@@ -165,16 +165,16 @@ end
 --------------------------------------------------------------------------------
 -- ADD HEADING:
 --------------------------------------------------------------------------------
-function panel:addHeading(priority, text)
+function panel:addHeading(text)
 	return self:addContent(ui.heading({text=text, level=1}))
 end
 
-function panel:addSubHeading(priority, text)
+function panel:addSubHeading(text)
 	return self:addContent(ui.heading({text=text, level=2}))
 end
 
 
-function panel:addTextbox(priority, params)
+function panel:addTextbox(params)
 	params.id = params.id or uuid()
 
 	local textbox = ui.textbox(params)
@@ -192,7 +192,7 @@ function panel:addTextbox(priority, params)
 	return self:addContent(content)
 end
 
-function panel:addPassword(priority, params)
+function panel:addPassword(params)
 	params.id = params.id or uuid()
 
 	local textbox = ui.password(params)
@@ -210,7 +210,7 @@ function panel:addPassword(priority, params)
 	return self:addContent(content)
 end
 
-function panel:addSelect(priority, params)
+function panel:addSelect(params)
 
 	-- set up default values
 	params.id = params.id or uuid()
@@ -228,18 +228,19 @@ function panel:addSelect(priority, params)
 
 end
 
-function panel:addIcon(priority, params)
-
+function panel:addIcon(src)
+	local params = {}
 	-- set up default values
-	params.id = params.id or uuid()
-	params.class = params.class or "icon"
+	params.id = uuid()
+	params.class = "icon"
 	params.class = getClass(params)
+	params.src = src
 
 	return self:addContent(ui.img(params))
 
 end
 
---- plugins.core.setup.panel:addButton(priority, params) -> panel
+--- plugins.core.setup.panel:addButton(params) -> panel
 --- Method
 --- Adds a button with the specified priority and parameters.
 ---
@@ -257,11 +258,11 @@ end
 ---  ** `label`		- The text label for the button. Defaults to the `value` if not provided.
 ---  ** `width`		- The width of the button in pixels.
 ---  ** `onclick`	- the function to execute when the button is clicked. The function should have the signature of `function(id, value)`, where `id` is the id of the button that was clicked, and `value` is the value of the button.
-function panel:addButton(priority, params)
+function panel:addButton(params)
 	params.id = params.id or uuid()
 
 	if params.onclick then
-		self:addHandler("onclick", params.id, function(id, fnParams) return params.onclick(id, params.value) end, { "value" })
+		self:addHandler("onclick", params.id, function(id, fnParams) return params.onclick(id, fnParams.value) end, { "value" })
 	end
 
 	self._buttons(ui.button(params))

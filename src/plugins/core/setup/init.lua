@@ -346,15 +346,15 @@ function plugin.postInit(deps, env)
 			-- The intro panel
 			mod.addPanel(
 				panel.new("intro", mod.FIRST_PRIORITY)
-					:addIcon(10, {src = iconPath})
-					:addHeading(20, config.appName)
-					:addSubHeading(30, i18n("introTagLine"))
+					:addIcon(iconPath)
+					:addHeading(config.appName)
+					:addSubHeading(i18n("introTagLine"))
 					:addParagraph(i18n("introText"), true)
-					:addButton(1, {
+					:addButton({
 						value	= i18n("continue"),
 						onclick = function() mod.nextPanel() end,
 					})
-					:addButton(2, {
+					:addButton({
 						value	= i18n("quit"),
 						onclick	= function() config.application():kill() end,
 					})
@@ -363,10 +363,10 @@ function plugin.postInit(deps, env)
 			-- The outro panel
 			mod.addPanel(
 				panel.new("outro", mod.LAST_PRIORITY)
-					:addIcon(10, {src = iconPath})
-					:addSubHeading(30, i18n("outroTitle"))
+					:addIcon(iconPath)
+					:addSubHeading(i18n("outroTitle"))
 					:addParagraph(i18n("outroText"), true)
-					:addButton(1, {
+					:addButton({
 						value	= i18n("close"),
 						onclick	= function()
 							mod.onboardingRequired(false)

@@ -506,9 +506,9 @@ function mod.init(deps, env)
 	-- Create the Setup Panel
 	local setup = deps.setup
 	local setupPanel = setup.panel.new("hacksShortcuts", 50)
-		:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
+		:addIcon(env:pathToAbsolute("images/fcp_icon.png"))
 		:addParagraph(i18n("commandSetText"), true)
-		:addButton(1, {
+		:addButton({
 			label		= i18n("commandSetUseFCPX"),
 			onclick		= function()
 				mod.install()
@@ -516,7 +516,7 @@ function mod.init(deps, env)
 				setup.nextPanel()
 			end,
 		})
-		:addButton(2, {
+		:addButton({
 			label		= i18n("commandSetUseCP"),
 			onclick		= function()
 				mod.uninstall()

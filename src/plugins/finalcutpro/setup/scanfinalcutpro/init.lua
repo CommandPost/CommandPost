@@ -157,9 +157,9 @@ function plugin.init(deps, env)
 			local setup = deps.setup
 			setup.addPanel(
 				setup.panel.new("scanfinalcutpro", 60)
-					:addIcon(10, {src = env:pathToAbsolute("images/fcp_icon.png")})
+					:addIcon(env:pathToAbsolute("images/fcp_icon.png"))
 					:addParagraph(i18n("scanFinalCutProText"), true)
-					:addButton(1, {
+					:addButton({
 						label		= i18n("scanFinalCutPro"),
 						onclick		= function()
 							if mod.scanFinalCutPro() then
@@ -169,7 +169,7 @@ function plugin.init(deps, env)
 							end
 						end
 					})
-					:addButton(2, {
+					:addButton({
 						label		= i18n("skip"),
 						onclick		= setup.nextPanel
 					})

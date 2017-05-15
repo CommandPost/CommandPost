@@ -33,15 +33,15 @@ end
 function mod.init(setup, iconPath)
 	mod.setup = setup
 	mod.panel = setup.panel.new("accessibility", 10)
-		:addIcon(10, {src = iconPath})
+		:addIcon(iconPath)
 		:addParagraph(i18n("accessibilityNote"), true)
-		:addButton(1, {
+		:addButton({
 			label		= i18n("enableAccessibility"),
 			onclick		= function()
 				hs:accessibilityState(true)
 			end,
 		})
-		:addButton(2, {
+		:addButton({
 			label		= i18n("quit"),
 			onclick		= function() config.application():kill() end,
 		})
