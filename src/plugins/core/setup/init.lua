@@ -217,7 +217,7 @@ function mod.new()
 		--------------------------------------------------------------------------------
 		mod.webview:show()
 		mod.visible:update()
-		timer.doAfter(0.1, function() mod.focus() end)
+		mod.focus()
 	end
 end
 
@@ -230,6 +230,7 @@ function mod.show()
 end
 
 function mod.update()
+	mod.visible:update()
 	if mod.webview then
 		mod.webview:html(generateHTML())
 	end
@@ -259,6 +260,7 @@ function mod.injectScript(script)
 end
 
 function mod.focus()
+	mod.visible:update()
 	if mod.webview then
 		timer.doAfter(0.1, function()
 			mod.webview:hswindow():focus()
