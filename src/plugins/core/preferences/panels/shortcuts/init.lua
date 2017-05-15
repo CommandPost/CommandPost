@@ -358,6 +358,7 @@ local function generateContent()
 		groups					= commands.groups(),
 		defaultGroup			= defaultGroup,
 		
+		groupEditor				= mod.getGroupEditor,
 		modifierOptions 		= modifierOptions,
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
@@ -377,7 +378,6 @@ function mod.init(deps, env)
 	mod.allKeyCodes		= getAllKeyCodes()
 
 	mod._manager		= deps.manager
-	mod._hacksShortcuts	= deps.hacksShortcuts
 
 	mod._webviewLabel	= deps.manager.getLabel()
 
@@ -409,6 +409,17 @@ function mod.init(deps, env)
 
 	return mod
 
+end
+
+function mod.setGroupEditor(groupId, editorFn)
+	if not mod._groupEditors then
+		mod._groupEditors = {}
+	end
+	mod._groupEditors[groupId] = editorFn
+end
+
+function mod.getGroupEditor(groupId)
+	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
 --------------------------------------------------------------------------------

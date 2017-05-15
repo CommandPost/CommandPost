@@ -478,7 +478,10 @@ function mod.init(deps, env)
 --- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX shortcuts are active.
-	mod.active = prop.NOT(mod.fcpxCmds.isEditable)
+	mod.active = prop.FALSE()
+
+	-- Renders the Shortcut Editor Panel.
+	local editorRenderer = env:compileTemplate("html/editor.html")
 
 --- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
 --- Constant
@@ -487,6 +490,8 @@ function mod.init(deps, env)
 		function(activate)
 			if activate then
 				private.applyCommandSetShortcuts()
+				deps.shortcuts.setGroupEditor(mod.fcpxCmds:id(), editorRenderer)
+				mod.active(true)
 			end
 		end
 	)
@@ -498,6 +503,7 @@ function mod.init(deps, env)
 		function(deactivate)
 			if deactivate then
 				-- got to restart to reset shortcuts.
+				mod.active(false)
 				hs.reload()
 			end
 		end
@@ -555,8 +561,9 @@ local plugin = {
 	dependencies	= {
 		["core.menu.top"] 									= "top",
 		["finalcutpro.commands"]							= "fcpxCmds",
-		["finalcutpro.preferences.app"]		= "prefs",
+		["finalcutpro.preferences.app"]						= "prefs",
 		["core.setup"] 										= "setup",
+		["core.preferences.panels.shortcuts"]				= "shortcuts",
 	}
 }
 
@@ -597,7 +604,7 @@ function plugin.init(deps, env)
 						mod.uninstall()
 					end
 				end,
-				checked=mod.installed
+				checked=function() return mod.active() end
 			}
 		)
 	end

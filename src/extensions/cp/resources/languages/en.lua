@@ -231,6 +231,7 @@ return {
 
 			hacksEnabling						=			"Enabling",
 			hacksDisabling						=			"Disabling",
+			hacksShortcutsEditorText			=			"Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.",
 			hacksShortcutsRestart				=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
 			hacksShortcutAdminPassword			=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
