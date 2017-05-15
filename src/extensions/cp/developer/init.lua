@@ -30,6 +30,12 @@ local inspect		= require("hs.inspect")
 local mouse			= require("hs.mouse")
 local timer			= require("hs.timer")
 
+
+--------------------------------------------------------------------------------
+-- PLUGINS AVAILABLE AT _plugins
+--------------------------------------------------------------------------------
+_plugins			= require("cp.plugins")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
