@@ -48,7 +48,7 @@ mod.panel									= panel
 --------------------------------------------------------------------------------
 mod.defaultWidth 							= 900
 mod.defaultHeight 							= 470
-mod.defaultTitle 							= i18n("welcomeTitle")
+mod.defaultTitle 							= i18n("setupTitle")
 
 mod._processedPanels						= 0
 mod._currentPanel							= nil
@@ -346,8 +346,8 @@ function plugin.postInit(deps, env)
 				panel.new("intro", mod.FIRST_PRIORITY)
 					:addIcon(10, {src = iconPath})
 					:addHeading(20, config.appName)
-					:addSubHeading(30, i18n("welcomeTagLine"))
-					:addParagraph(40, i18n("welcomeIntro"), true)
+					:addSubHeading(30, i18n("introTagLine"))
+					:addParagraph(40, i18n("introText"), true)
 					:addButton(1, {
 						value	= i18n("continue"),
 						onclick = function() mod.nextPanel() end,
@@ -362,8 +362,8 @@ function plugin.postInit(deps, env)
 			mod.addPanel(
 				panel.new("outro", mod.LAST_PRIORITY)
 					:addIcon(10, {src = iconPath})
-					:addSubHeading(30, i18n("completeHeading"))
-					:addParagraph(40, i18n("completeText"), true)
+					:addSubHeading(30, i18n("outroTitle"))
+					:addParagraph(40, i18n("outroText"), true)
 					:addButton(1, {
 						value	= i18n("close"),
 						onclick	= function()

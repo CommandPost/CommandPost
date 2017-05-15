@@ -90,15 +90,15 @@ return {
 			--------------------------------------------------------------------------------
 			-- Welcome Screen:
 			--------------------------------------------------------------------------------
-			welcomeTitle						=			"Welcome to CommandPost",
-			welcomeTagLine						=			"Workflow Toolkit for Professional Editors",
-			welcomeIntro						=			"Thank you for installing CommandPost. This guide will help you set things up.",
+			setupTitle							=			"CommandPost Setup",
+			introTagLine						=			"Workflow Toolkit for Professional Editors",
+			introText							=			"Thank you for installing CommandPost. This guide will help you set things up.",
 			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> button in the Preferences.",
 			scanFinalCutPro						=			"Scan Final Cut Pro",
 			finalcutproUnsupportedVersionTitle	=			"Unsupported Version",
 			finalcutproUnsupportedVersionText	=			"CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
-			completeHeading						=			"CommandPost is now setup and ready to go!",
-			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
+			outroTitle							=			"CommandPost is now setup and ready to go!",
+			outroText							=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
 			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
 			commandSetUseFCPX					=			"Use Final Cut Pro",
 			commandSetUseCP						=			"Use CommandPost",
