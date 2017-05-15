@@ -1,5 +1,6 @@
 local test		= require("cp.test")
 local log		= require("hs.logger").new("testprop")
+local inspect	= require("hs.inspect")
 
 local prop		= require("cp.prop")
 
@@ -457,10 +458,10 @@ function run()
 		andBound:watch(boundWatch)
 		
 		ok(#andProp._watchersUncloned == 1)
-		ok(andProp._watchersUncloned[1] == propWatch)
+		ok(andProp._watchersUncloned[1].fn == propWatch)
 		
 		ok(#andBound._watchers == 1)
-		ok(andBound._watchers[1] == boundWatch)
+		ok(andBound._watchers[1].fn == boundWatch)
 	end)
 	
 	test("Prop Binary Functions", function()
@@ -488,6 +489,16 @@ function run()
 		ok(comp:value() == true)
 		something(0)
 		ok(comp:value() == false)
+	end)
+	
+	test("Prop Notify/Update Same Value", function()
+		local report = {}
+		-- do a 'notifyNow' watch
+		local value = prop.TRUE():watch(function(value) report[#report+1] = value end, true)
+		-- force an update without changing the value
+		value:update()
+		-- should only be one log entry since the value didn't change.
+		ok(eq(report, {true}))
 	end)
 end
 

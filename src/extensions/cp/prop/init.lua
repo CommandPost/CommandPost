@@ -200,6 +200,25 @@ function prop.is(value)
 	return false
 end
 
+--- cp.prop:id(newId) -> string or cp.prop
+--- Method
+--- If `newId` is provided it is given a new ID and the `cp.prop` is returned.
+--- Otherwise, it returns the current ID.
+---
+--- Parameters:
+--- * `newId`	- (optional) The new ID to set.
+---
+--- Returns:
+--- * The `cp.prop` if setting a new ID, or the current ID value if not.
+function prop.mt:id(newId)
+	if newId then
+		self._id = newId
+		return self
+	else
+		return self._id
+	end
+end
+
 --- cp.prop:value([newValue]) -> value
 --- Method
 --- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
@@ -395,17 +414,17 @@ function prop.mt:watch(watchFn, notifyNow, uncloned)
 		end
 		watchers = self._watchers
 	end
+	watchers[#watchers + 1] = {fn = watchFn}
 	if notifyNow then
-		watchFn(self:get(), self:owner())
+		self:update()
 	end
-	watchers[#watchers + 1] = watchFn
 	return self, watchFn
 end
 
 local function _unwatch(watchers, watchFn)
 	if watchers then
 		for i,watcher in ipairs(watchers) do
-			if watcher == watchFn then
+			if watcher.fn == watchFn then
 				table.remove(watchers, i)
 				return true
 			end
@@ -632,6 +651,17 @@ function prop.mt:ATLEAST(something)
 	return result
 end
 
+-- Notifies registered watchers in the array if the value has changed since last notification.
+local function _notifyWatchers(watchers, value, owner)
+	if watchers then
+		for _,watcher in ipairs(watchers) do
+			if watcher.lastValue ~= value then
+				watcher.lastValue = value
+				watcher.fn(value, owner)
+			end
+		end
+	end
+end
 
 -- cp.prop:_notify(value) -> nil
 -- Method
@@ -650,30 +680,20 @@ function prop.mt:_notify(value)
 	end
 	
 	if self._watchers or self._watchersUncloned then
-		if self._lastValue ~= value then
-			self._notifying = true
-			if self._watchersUncloned then
-				for _,watcher in ipairs(self._watchersUncloned) do
-					watcher(value, self:owner())
-				end
-			end
-			if self._watchers then
-				for _,watcher in ipairs(self._watchers) do
-					watcher(value, self:owner())
-				end
-			end
-			self._lastValue = value
-			self._notifying = nil
-			-- check if a 'set' happened during the notification cycle.
-			if self._doSet then
-				self._doSet = nil
-				self._doUpdate = nil
-				self:set(self._newValue)
-				self._newValue = nil
-			elseif self._doUpdate then
-				self._doUpdate = nil
-				self:update()
-			end
+		self._notifying = true
+		local owner = self:owner()
+		_notifyWatchers(self._watchersUncloned, value, owner)
+		_notifyWatchers(self._watchers, value, owner)
+		self._notifying = nil
+		-- check if a 'set' happened during the notification cycle.
+		if self._doSet then
+			self._doSet = nil
+			self._doUpdate = nil
+			self:set(self._newValue)
+			self._newValue = nil
+		elseif self._doUpdate then
+			self._doUpdate = nil
+			self:update()
 		end
 	end
 end
