@@ -10,13 +10,13 @@
 %}
 			<tr>
 				<td class="rowLabel">{{ cmd:getTitle() }}</td>
-				<td class="rowModifier" style="text-align: center;">
+				<td class="rowModifier">
 					<select id="modifiers_{{ cmd:id() }}">
 						<option value="none">{{ i18n("none", {default = "None"}) }}</option>
 						{* modifierOptions(shortcut) *}
 					</select>
 				</td>
-				<td class="rowShortcut" style="text-align: center;">
+				<td class="rowKeyCode">
 					<select id="keyCode_{{ cmd:id() }}">
 						<option></option>
 						{* keyCodeOptions(shortcut) *}

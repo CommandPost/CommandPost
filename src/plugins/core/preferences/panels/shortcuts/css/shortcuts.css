@@ -20,19 +20,19 @@
 }
 
 .rowLabel {
-	width: 50%;
+	width: 57%;
 }
 
 .rowModifier {
-	width: 20%;
+	width: 18%;
+}
+
+.rowKeyCode {
+	width: 25%;
 }
 
 .rowModifier select {
 	width: 100%;
-}
-
-.rowKeyCode {
-	width: 30%;
 }
 
 .rowKeyCode select {
@@ -52,7 +52,7 @@
 }
 
 .shortcuts thead tr {
-	width: calc( 100% - 15px);
+	width: calc( 100% - 8px);
 }
 
 .shortcuts tbody {
@@ -113,3 +113,7 @@
 .groupSelect {
 	float: right;
 }
+
+/*.shortcuts td, .shortcuts th {
+	border: 1px solid red;
+}*/
