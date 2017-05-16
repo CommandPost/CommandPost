@@ -72,6 +72,7 @@ function panel:getToolbarItem()
 	return {
 		id			= self.id,
 		priority	= self.priority,
+		default		= true,
 		image		= self.image,
 		label		= self.label,
 		selectable	= true,

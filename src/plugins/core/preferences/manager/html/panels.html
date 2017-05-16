@@ -13,7 +13,7 @@
 	</head>
 	<body>
 {%	for i, panel in ipairs(panels) do %}
-		<div id="{{ panel.id }}" style="display: {{ panel.id == highestPriorityID and "block" or "none" }};">
+		<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
 			{* panel:generateContent() *}
 		</div>
 {%	end %}
