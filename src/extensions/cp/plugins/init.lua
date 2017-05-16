@@ -163,7 +163,7 @@ local console						= require("hs.console")
 local fs							= require("hs.fs")
 local inspect						= require("hs.inspect")
 local fnutils						= require("hs.fnutils")
-
+local timer							= require("hs.timer")
 
 local config						= require("cp.config")
 local tools							= require("cp.tools")
@@ -432,17 +432,25 @@ end
 ---  * `id` - The plugin package ID.
 ---
 --- Returns:
----  * nothing
----
+---  * `true` if the plugin was disabled, or `false` if it could not be disabled.
 function mod.disable(id)
 	local plugin = mod.getPlugin(id)
 	if plugin and not plugin.required then
+		-- first check with the plugin, if relevant
+		if type(plugin.disable) == "function" then
+			if not plugin.disable(plugin:getDependencies(), env.new(plugin:getRootPath())) then
+				return false
+			end
+		end
 		local disabled = config.get(mod.SETTINGS_DISABLED, {})
 		disabled[id] = true
 		config.set(mod.SETTINGS_DISABLED, disabled)
 		console.clearConsole()
-		hs.reload()
+		-- reload CP after returning `true`
+		timer.doAfter(0.001, hs.reload)
+		return true
 	end
+	return false
 end
 
 --- cp.plugins.enable(id) -> nothing
@@ -453,14 +461,17 @@ end
 ---  * `id` - The plugin package ID.
 ---
 --- Returns:
----  * nothing
----
+---  * `true` if the plugin had been disabled and is now enabled.
 function mod.enable(id)
 	local disabled = config.get(mod.SETTINGS_DISABLED, {})
-	disabled[id] = false
-	config.set(mod.SETTINGS_DISABLED, disabled)
-	console.clearConsole()
-	hs.reload()
+	if disabled[id] then
+		disabled[id] = false
+		config.set(mod.SETTINGS_DISABLED, disabled)
+		console.clearConsole()
+		timer.doAfter(0.001, hs.reload())
+		return true
+	end
+	return false
 end
 
 --- cp.plugins.isDisabled(id) -> boolean

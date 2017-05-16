@@ -612,4 +612,8 @@ function plugin.init(deps, env)
 	return mod.init(deps, env)
 end
 
+function plugin.disable()
+	return mod.uninstall()
+end
+
 return plugin
