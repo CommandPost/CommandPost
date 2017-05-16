@@ -600,7 +600,6 @@
 	cpGeneratorsTwo = "Add Generator to timeline. Which Generator used can be selected from the CommandPost menubar.";
 	cpHUD = "Toggles the Hacks HUD";
 	cpHighlightBrowserPlayhead = "Highlight Browser Playhead";
-	cpLaunchFinalCutPro = "Launches Final Cut Pro or brings to front if already open";
 	cpLeaveInPlaceOff = "Leave Files In Place On Import Off";
 	cpLeaveInPlaceOn = "Leave Files In Place On Import On";
 	cpLockPlayhead = "Locks or Unlocks the Timeline Playhead Position.";

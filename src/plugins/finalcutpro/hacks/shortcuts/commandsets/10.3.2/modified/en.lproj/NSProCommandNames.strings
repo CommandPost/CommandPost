@@ -612,7 +612,6 @@
 	cpGeneratorsTwo = "Apply Generator 2";
 	cpHUD = "Toggle Hacks HUD";
 	cpHighlightBrowserPlayhead = "Highlight Browser Playhead";
-	cpLaunchFinalCutPro = "Launch Final Cut Pro (System Wide)";
 	cpLeaveInPlaceOff = "Leave Files In Place On Import Off";
 	cpLeaveInPlaceOn = "Leave Files In Place On Import On";
 	cpLockPlayhead = "Toggle Timeline Playhead Lock";

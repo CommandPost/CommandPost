@@ -1153,13 +1153,6 @@
 		<key>downSelector</key>
 		<string>cpEffectsFive:</string>
 	</dict>
-	<key>cpLaunchFinalCutPro</key>
-	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpLaunchFinalCutPro:</string>
-	</dict>
 	<key>cpShowListOfShortcutKeys</key>
 	<dict>
 		<key>downRepeats</key>
