@@ -292,9 +292,9 @@ end
 --- * None
 ---
 --- Returns:
---- * Nothing
+--- * nil
 function prop.mt:clear()
-	self:set(nil)
+	return self:set(nil)
 end
 
 --- cp.prop:bind(owner) -> cp.prop
