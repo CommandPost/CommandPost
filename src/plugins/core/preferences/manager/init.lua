@@ -160,16 +160,6 @@ end
 function mod.init(env)
 	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 
-	--------------------------------------------------------------------------------
-	-- Setup Tool Bar:
-	--------------------------------------------------------------------------------
-	mod.toolbar = toolbar.new(WEBVIEW_LABEL)
-		:canCustomize(true)
-		:autosaves(true)
-		:setCallback(function(toolbar, webview, id)
-			mod.selectPanel(id)
-		end)
-
 	return mod
 end
 
@@ -234,6 +224,30 @@ function mod.new()
 				return handler(id, params)
 			end
 		end)
+		
+
+	--------------------------------------------------------------------------------
+	-- Setup Tool Bar:
+	--------------------------------------------------------------------------------
+	if not mod.toolbar then
+		mod.toolbar = toolbar.new(WEBVIEW_LABEL)
+			:canCustomize(true)
+			:autosaves(true)
+			:setCallback(function(toolbar, webview, id)
+				mod.selectPanel(id)
+			end)
+
+		local toolbar = mod.toolbar
+		for _,panel in ipairs(mod._panels) do
+			local item = panel:getToolbarItem()
+
+			toolbar:addItems(item)
+			-- toolbar:insertItem(item.id, index)
+			if not toolbar:selectedItem() then
+				toolbar:selectedItem(item.id)
+			end
+		end
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
@@ -369,8 +383,7 @@ function mod.addPanel(params)
 	table.insert(mod._panels, index, newPanel)
 
 	if mod.toolbar then
-		local toolbar = mod.toolbar
-		local item = newPanel:getToolbarItem()
+		local item = panel:getToolbarItem()
 
 		toolbar:addItems(item)
 		toolbar:insertItem(item.id, index)
