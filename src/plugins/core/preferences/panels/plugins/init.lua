@@ -133,22 +133,15 @@ local function generateContent()
 
 	local listOfPlugins = plugins.getPlugins()
 
-	table.sort(listOfPlugins, function(a, b) return a.id < b.id end)
-
-	local pluginRows = ""
 	local pluginInfo = {}
 
-	local lastCategory = ""
-	
 	for _,plugin in ipairs(listOfPlugins) do
 
 		local info = {}
 
-		local currentCategory = pluginCategory(plugin)
-		local cachedCurrentCategory = currentCategory
-		if currentCategory == lastCategory then currentCategory = "" end
-
 		info.id = plugin.id
+		info.group = plugin.group
+		info.category = pluginCategory(plugin)
 		info.currentCategory = currentCategory
 		info.status = pluginStatus(plugin)
 		info.shortName = pluginShortName(plugin)
@@ -173,6 +166,17 @@ local function generateContent()
 		pluginInfo[#pluginInfo+1] = info
 		mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
 
+	end
+	
+	table.sort(pluginInfo, function(a, b)
+		return a.category < b.category or a.category == b.category and a.shortName < b.shortName
+	end)
+	
+	-- Add a 'currentCategory' field that only list the category when it's different from the previous one.
+	local lastCategory = ""
+	for _,info in ipairs(pluginInfo) do
+		info.currentCategory = info.category == lastCategory and "" or info.category
+		lastCategory = info.category
 	end
 
 	-- handle 'open plugin folder' buttons

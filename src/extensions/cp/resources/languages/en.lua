@@ -794,7 +794,7 @@ return {
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
 	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
-	core_accessability_label								=	"Accessibility Permissions",
+	core_accessibility_label								=	"Accessibility Permissions",
 	core_action_manager_label								=	"Action Manager",
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
@@ -863,6 +863,7 @@ return {
 	finalcutpro_os_voice_label								=	"Voice Commands",
 	finalcutpro_preferences_app_label						=	"Preferences: Panel",
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
+	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
