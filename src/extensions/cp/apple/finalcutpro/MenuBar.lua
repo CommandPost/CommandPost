@@ -14,7 +14,6 @@
 --
 --------------------------------------------------------------------------------
 local log											= require("hs.logger").new("menubar")
-local bench											= require("cp.bench")
 
 local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
@@ -251,16 +250,14 @@ end
 
 -- TODO: Add documentation
 function MenuBar:_visitMenuItems(visitFn, path, menu)
-	local title = bench("title", function() return menu:attributeValue("AXTitle") end)
+	local title = menu:attributeValue("AXTitle")
 	-- log.df("_visitMenuItems: title = '%s'", title)
 	if #menu > 0 then
 		-- add the title
 		table.insert(path, title)
-bench("menu children", function()
 		for _,item in ipairs(menu) do
 			self:_visitMenuItems(visitFn, path, item)
 		end
-end)--bench
 		-- drop the extra title
 		table.remove(path)
 	elseif title ~= nil and title ~= "" then

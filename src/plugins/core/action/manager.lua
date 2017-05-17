@@ -14,7 +14,6 @@
 --
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("actnmngr")
-local bench						= require("cp.bench")
 
 local fnutils					= require("hs.fnutils")
 local timer						= require("hs.timer")
@@ -122,8 +121,6 @@ end
 -- TODO: Add documentation
 function mod.addAction(action)
 	-- log.df("adding action: %s", hs.inspect(action))
-	-- TODO: Remove benchmarking
-	bench.press("action:"..action.id(), action)
 	
 	local id = action.id()
 	mod._actions[id] = action
