@@ -55,8 +55,8 @@ local function ninjaPasteboardCopy()
 	-- Trigger 'copy' from Menubar:
 	--------------------------------------------------------------------------------
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Edit", "Copy") then
-		menuBar:selectMenu("Edit", "Copy")
+	if menuBar:isEnabled({"Edit", "Copy"}) then
+		menuBar:selectMenu({"Edit", "Copy"})
 	else
 		log.d("ERROR: Failed to select Copy from Menubar." .. errorFunction)
 		clipboard.startWatching()
@@ -159,8 +159,8 @@ function mod.multicamMatchFrame(goBackToTimeline)
 	-- Open in Angle Editor:
 	--------------------------------------------------------------------------------
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Clip", "Open in Angle Editor") then
-		menuBar:selectMenu("Clip", "Open in Angle Editor")
+	if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
+		menuBar:selectMenu({"Clip", "Open in Angle Editor"})
 	else
 		dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
 		return false
@@ -169,8 +169,8 @@ function mod.multicamMatchFrame(goBackToTimeline)
 	--------------------------------------------------------------------------------
 	-- Put focus back on the timeline:
 	--------------------------------------------------------------------------------
-	if menuBar:isEnabled("Window", "Go To", "Timeline") then
-		menuBar:selectMenu("Window", "Go To", "Timeline")
+	if menuBar:isEnabled({"Window", "Go To", "Timeline"}) then
+		menuBar:selectMenu({"Window", "Go To", "Timeline"})
 	else
 		dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
 		return false
@@ -186,16 +186,16 @@ function mod.multicamMatchFrame(goBackToTimeline)
 	--------------------------------------------------------------------------------
 	-- Reveal In Browser:
 	--------------------------------------------------------------------------------
-	if menuBar:isEnabled("File", "Reveal in Browser") then
-		menuBar:selectMenu("File", "Reveal in Browser")
+	if menuBar:isEnabled({"File", "Reveal in Browser"}) then
+		menuBar:selectMenu({"File", "Reveal in Browser"})
 	end
 
 	--------------------------------------------------------------------------------
 	-- Go back to original timeline if appropriate:
 	--------------------------------------------------------------------------------
 	if goBackToTimeline then
-		if menuBar:isEnabled("View", "Timeline History Back") then
-			menuBar:selectMenu("View", "Timeline History Back")
+		if menuBar:isEnabled({"View", "Timeline History Back"}) then
+			menuBar:selectMenu({"View", "Timeline History Back"})
 		else
 			dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
 			return false
@@ -308,7 +308,7 @@ function mod.matchFrame(focus)
 	--------------------------------------------------------------------------------
 	-- Check the option is available in the current context
 	--------------------------------------------------------------------------------
-	if not fcp:menuBar():isEnabled("File", "Reveal in Browser") then
+	if not fcp:menuBar():isEnabled({"File", "Reveal in Browser"}) then
 		return nil
 	end
 
@@ -327,7 +327,7 @@ function mod.matchFrame(focus)
 	--------------------------------------------------------------------------------
 	-- Trigger the menu item to reveal the clip
 	--------------------------------------------------------------------------------
-	fcp:menuBar():selectMenu("File", "Reveal in Browser")
+	fcp:menuBar():selectMenu({"File", "Reveal in Browser"})
 
 	if focus then
 		--------------------------------------------------------------------------------

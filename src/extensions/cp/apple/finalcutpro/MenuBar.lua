@@ -14,6 +14,8 @@
 --
 --------------------------------------------------------------------------------
 local log											= require("hs.logger").new("menubar")
+local bench											= require("cp.bench")
+
 local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
 local axutils										= require("cp.apple.finalcutpro.axutils")
@@ -72,18 +74,18 @@ function MenuBar:getMainMenu()
 	return MenuBar._mainMenu
 end
 
---- cp.apple.finalcutpro.MenuBar:selectMenu(...) -> boolean
+--- cp.apple.finalcutpro.MenuBar:selectMenu(path) -> boolean
 --- Function
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
----  * ... - The list of menu items you'd like to activate, for example:
+---  * path - The list of menu items you'd like to activate, for example:
 ---            select("View", "Browser", "as List")
 ---
 --- Returns:
 ---  * `true` if the press was successful.
-function MenuBar:selectMenu(...)
-	local menuItemUI = self:findMenuUI(...)
+function MenuBar:selectMenu(path)
+	local menuItemUI = self:findMenuUI(path)
 
 	if menuItemUI then
 		return menuItemUI:doPress()
@@ -92,14 +94,14 @@ function MenuBar:selectMenu(...)
 end
 
 -- TODO: Add documentation
-function MenuBar:isChecked(...)
-	local menuItemUI = self:findMenuUI(...)
+function MenuBar:isChecked(path)
+	local menuItemUI = self:findMenuUI(path)
 	return menuItemUI and self:_isMenuChecked(menuItemUI)
 end
 
 -- TODO: Add documentation
-function MenuBar:isEnabled(...)
-	local menuItemUI = self:findMenuUI(...)
+function MenuBar:isEnabled(path)
+	local menuItemUI = self:findMenuUI(path)
 	return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
 
@@ -109,8 +111,8 @@ function MenuBar:_isMenuChecked(menu)
 end
 
 -- TODO: Add documentation
-function MenuBar:checkMenu(...)
-	local menuItemUI = self:findMenuUI(...)
+function MenuBar:checkMenu(path)
+	local menuItemUI = self:findMenuUI(path)
 	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
 		if menuItemUI:doPress() then
 			return just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
@@ -120,8 +122,8 @@ function MenuBar:checkMenu(...)
 end
 
 -- TODO: Add documentation
-function MenuBar:uncheckMenu(...)
-	local menuItemUI = self:findMenuUI(...)
+function MenuBar:uncheckMenu(path)
+	local menuItemUI = self:findMenuUI(path)
 	if menuItemUI and self:_isMenuChecked(menuItemUI) then
 		if menuItemUI:doPress() then
 			return just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
@@ -130,10 +132,22 @@ function MenuBar:uncheckMenu(...)
 	return false
 end
 
--- TODO: Add documentation
--- Finds a specific Menu UI element for the provided path.
--- Eg `findMenuUI("Edit", "Copy")` returns the 'Copy' menu item in the 'Edit' menu.
-function MenuBar:findMenuUI(...)
+--- cp.apple.finalcutpro.MenuBar:findMenuUI(path) -> Menu UI
+--- Method
+--- Finds a specific Menu UI element for the provided path.
+--- E.g. `findMenuUI({"Edit", "Copy"})` returns the 'Copy' menu item in the 'Edit' menu.
+---
+--- Each step on the path can be either one of:
+---  * a string		- The exact name of the menu item.
+---  * a number		- The menu item number, starting from 1.
+---  * a function 	- Passed one argument - the Menu UI to check - returning `true` if it matches.
+---
+--- Parameters:
+---  * `path`	- The path list to search for.
+---  
+--- Returns:
+---  * The Menu UI, or `nil` if it could not be found.
+function MenuBar:findMenuUI(path)
 	-- Start at the top of the menu bar list
 	local menuMap = self:getMainMenu()
 	local menuUI = self:UI()
@@ -145,9 +159,8 @@ function MenuBar:findMenuUI(...)
 
 	local menuItemUI = nil
 
-	for i=1,select('#', ...) do
+	for i,step in ipairs(path) do
 		menuItemUI = nil
-		step = select(i, ...)
 		if type(step) == "number" then
 			menuItemUI = menuUI[step]
 		elseif type(step) == "function" then
@@ -193,8 +206,8 @@ end
 -- TODO: Add documentation
 -- Returns the set of menu items in the provided path. If the path contains a menu, the
 -- actual children of that menu are returned, otherwise the menu item itself is returned.
-function MenuBar:findMenuItemsUI(...)
-	local menu = self:findMenuUI(...)
+function MenuBar:findMenuItemsUI(path)
+	local menu = self:findMenuUI(path)
 	if menu and #menu == 1 then
 		return menu[1]:children()
 	end
@@ -218,15 +231,16 @@ end
 ---
 --- Parameters:
 ---  * `visitFn`	- The function called for each menu item.
+---  * `startPath`	- The path to the menu item to start at.
 ---
 --- Returns:
----  * True is successful otherwise Nil
-function MenuBar:visitMenuItems(visitFn, ...)
+---  * Nothing
+function MenuBar:visitMenuItems(visitFn, startPath)
 	local menu = nil
-	local path = table.pack(...) or {}
-	path.n = nil
+	local path = startPath or {}
 	if #path > 0 then
-		menu = self:findMenuUI(...)
+		menu = self:findMenuUI(path)
+		table.remove(path)
 	else
 		menu = self:UI()
 	end
@@ -237,65 +251,20 @@ end
 
 -- TODO: Add documentation
 function MenuBar:_visitMenuItems(visitFn, path, menu)
-	local title = menu:attributeValue("AXTitle")
+	local title = bench("title", function() return menu:attributeValue("AXTitle") end)
+	-- log.df("_visitMenuItems: title = '%s'", title)
 	if #menu > 0 then
-		local menuPath = fnutils.concat(fnutils.copy(path), { title })
+		-- add the title
+		table.insert(path, title)
+bench("menu children", function()
 		for _,item in ipairs(menu) do
-			self:_visitMenuItems(visitFn, menuPath, item)
+			self:_visitMenuItems(visitFn, path, item)
 		end
+end)--bench
+		-- drop the extra title
+		table.remove(path)
 	elseif title ~= nil and title ~= "" then
 		visitFn(path, menu)
-	end
-end
-
---- cp.apple.finalcutpro.MenuBar:generateMenuMap() -> boolean
---- Function
---- Generates a map of the menu bar and saves it in the location specified
---- in MenuBar.MENU_MAP_FILE.
----
---- Parameters:
----  * None
----
---- Returns:
----  * True is successful otherwise Nil
-function MenuBar:generateMenuMap()
-	local menuMap = self:_processMenuItems(self:UI()) or {}
-
-	-- Opens a file in append mode
-	file = io.open(MenuBar.MENU_MAP_FILE, "w")
-
-	if file then
-		file:write(json.encode(menuMap))
-		file:close()
-		return true
-	end
-
-	return nil
-end
-
--- TODO: Add documentation
-function MenuBar:_processMenuItems(menu)
-	local count = #menu
-	if count then
-		local items = {}
-		for i,child in ipairs(menu) do
-			local title = child:attributeValue("AXTitle")
-			-- log.d("Title: "..inspect(title))
-			if title and title ~= "" then
-				local item = {id = i}
-				local submenu = child[1]
-				if submenu and submenu:role() == "AXMenu" then
-					local children = self:_processMenuItems(submenu)
-					if children then
-						item.items = children
-					end
-				end
-				items[title] = item
-			end
-		end
-		return items
-	else
-		return nil
 	end
 end
 

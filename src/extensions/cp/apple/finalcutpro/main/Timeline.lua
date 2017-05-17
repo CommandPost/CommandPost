@@ -115,9 +115,9 @@ function Timeline:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
 	-- if the timeline is on the secondary, we need to turn it off before enabling in primary
-	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
+	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Timeline"})
 	-- Then enable it in the primary
-	menuBar:checkMenu("Window", "Show in Workspace", "Timeline")
+	menuBar:checkMenu({"Window", "Show in Workspace", "Timeline"})
 
 	return self
 end
@@ -127,7 +127,7 @@ function Timeline:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
 	-- if the timeline is on the secondary, we need to turn it off before enabling in primary
-	menuBar:checkMenu("Window", "Show in Secondary Display", "Timeline")
+	menuBar:checkMenu({"Window", "Show in Secondary Display", "Timeline"})
 
 	return self
 end
@@ -136,8 +136,8 @@ end
 function Timeline:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the primary workspace
-	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Timeline")
-	menuBar:uncheckMenu("Window", "Show in Workspace", "Timeline")
+	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Timeline"})
+	menuBar:uncheckMenu({"Window", "Show in Workspace", "Timeline"})
 	return self
 end
 

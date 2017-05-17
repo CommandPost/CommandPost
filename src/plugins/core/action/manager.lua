@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("actnmngr")
+local bench						= require("cp.bench")
 
 local fnutils					= require("hs.fnutils")
 local timer						= require("hs.timer")
@@ -121,6 +122,9 @@ end
 -- TODO: Add documentation
 function mod.addAction(action)
 	-- log.df("adding action: %s", hs.inspect(action))
+	-- TODO: Remove benchmarking
+	bench.press("action:"..action.id(), action)
+	
 	local id = action.id()
 	mod._actions[id] = action
 	mod._actionIds[#mod._actionIds + 1] = id
@@ -144,16 +148,16 @@ end
 -- TODO: Add documentation
 function mod.toggleActionEnabled(id)
 	local action = mod.getAction(id)
-	if action and action.isEnabled then
-		action.isEnabled:toggle()
+	if action and action.enabled then
+		action.enabled:toggle()
 	end
 end
 
 -- TODO: Add documentation
 function mod.enableAllActions()
 	for _,action in pairs(mod._actions) do
-		if action.isEnabled then
-			action.isEnabled(true)
+		if action.enabled then
+			action.enabled(true)
 		end
 	end
 end
@@ -161,8 +165,8 @@ end
 -- TODO: Add documentation
 function mod.disableAllActions()
 	for _,action in pairs(mod._actions) do
-		if action.isEnabled then
-			action.isEnabled(false)
+		if action.enabled then
+			action.enabled(false)
 		end
 	end
 end
@@ -389,7 +393,7 @@ end
 function mod._findChoices()
 	local result = {}
 	for type,action in pairs(mod._actions) do
-		if not action.isEnabled or action.isEnabled() then
+		if not action.enabled or action.enabled() then
 			fnutils.concat(result, action.choices():getChoices())
 		end
 	end

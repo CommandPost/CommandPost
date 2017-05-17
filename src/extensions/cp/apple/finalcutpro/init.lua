@@ -520,18 +520,18 @@ function App:menuBar()
 	return self._menuBar
 end
 
---- cp.apple.finalcutpro:selectMenu(...) -> boolean
+--- cp.apple.finalcutpro:selectMenu(path) -> boolean
 --- Method
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
----  * ... - The list of menu items you'd like to activate, for example:
+---  * `path`	- The list of menu items you'd like to activate, for example:
 ---            select("View", "Browser", "as List")
 ---
 --- Returns:
 ---  * `true` if the press was successful.
-function App:selectMenu(...)
-	return self:menuBar():selectMenu(...)
+function App:selectMenu(path)
+	return self:menuBar():selectMenu(path)
 end
 
 ----------------------------------------------------------------------------------------
@@ -1439,19 +1439,6 @@ end
 --                   D E V E L O P M E N T      T O O L S                     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
--- cp.apple.finalcutpro:_generateMenuMap() -> Table
--- Method
--- Generates a map of the menu bar and saves it in '/hs/finalcutpro/menumap.json'.
---
--- Parameters:
---  * N/A
---
--- Returns:
---  * `true` if successful otherwise `nil`
-function App:_generateMenuMap()
-	return self:menuBar():generateMenuMap()
-end
 
 function App:_listWindows()
 	log.d("Listing FCPX windows:")

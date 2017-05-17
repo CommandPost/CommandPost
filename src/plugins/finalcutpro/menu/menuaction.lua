@@ -110,7 +110,7 @@ function mod.execute(params)
 	if params and params.path then
 		fcp:launch()
 
-		fcp:menuBar():selectMenu(table.unpack(params.path))
+		fcp:menuBar():selectMenu(params.path)
 		return true
 	end
 	return false
