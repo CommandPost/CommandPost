@@ -1,0 +1,7 @@
+# Matches multiple files with brace expansion notation
+# Set default charset
+[*.{js,htm,html,sass,css,lua,lp}]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
