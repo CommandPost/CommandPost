@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.action.manager ===
+--- === plugins.finalcutpro.action.manager ===
 ---
 --- Action Manager Module.
 
@@ -135,6 +135,8 @@ function mod.addAction(action)
 		params = thawParams(params)
 		action.execute(params)
 	end)
+	
+	
 end
 
 -- TODO: Add documentation
@@ -391,7 +393,10 @@ function mod._findChoices()
 	local result = {}
 	for type,action in pairs(mod._actions) do
 		if not action.enabled or action.enabled() then
-			fnutils.concat(result, action.choices():getChoices())
+			local choices = action.choices()
+			if choices then
+				fnutils.concat(result, choices:getChoices())
+			end
 		end
 	end
 	local hidden = mod.getHidden()
@@ -426,7 +431,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.action.manager",
+	id				= "finalcutpro.action.manager",
 	group			= "core",
 }
 

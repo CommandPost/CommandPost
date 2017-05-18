@@ -88,6 +88,7 @@ local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
 
 local v											= require("semver")
+local _											= require("moses")
 
 local just										= require("cp.just")
 local plist										= require("cp.plist")
@@ -109,6 +110,7 @@ local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
+local destinations								= require("cp.apple.finalcutpro.export.destinations")
 
 --------------------------------------------------------------------------------
 --
@@ -512,10 +514,23 @@ end):bind(App)
 ---  * None
 ---
 --- Returns:
----  * A menuBar object
+---  * A MenuBar object
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
+		
+		-- Add a finder for Share Destinations
+		self._menuBar:addMenuFinder(function(parentItem, path, childName, language)
+			if _.isEqual(path, {"File", "Share"}) then
+				childName = childName:match("(.*)…$") or childName
+				local index = destinations.indexOf(childName)
+				if index then
+					local children = parentItem:attributeValue("AXChildren")
+					return children[index]
+				end
+			end
+			return nil
+		end)
 	end
 	return self._menuBar
 end

@@ -81,7 +81,8 @@ function TimelineContents:scrollAreaUI()
 	if main then
 		return axutils.childMatching(main, function(child)
 			if child:attributeValue("AXIdentifier") == id "ScrollArea" and child:attributeValue("AXRole") == "AXScrollArea" then
-				return axutils.childMatching(child:attributeValue("AXContents"), TimelineContents.matches) ~= nil
+				local contents = child:attributeValue("AXContents")
+				return axutils.childMatching(contents, TimelineContents.matches) ~= nil
 			end
 			return false
 		end)

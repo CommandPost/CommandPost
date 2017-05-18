@@ -66,7 +66,8 @@ end
 ---  * The first matching child, or nil if none was found
 function axutils.childMatching(element, matcherFn)
 	if element then
-		for i,child in ipairs(element) do
+		local children = element:attributeValue("AXChildren")
+		for i,child in ipairs(children) do
 			if matcherFn(child) then
 				return child
 			end

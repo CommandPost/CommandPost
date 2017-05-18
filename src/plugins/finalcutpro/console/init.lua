@@ -302,7 +302,7 @@ local plugin = {
 	group			= "finalcutpro",
 	dependencies	= {
 		["finalcutpro.commands"]		= "fcpxCmds",
-		["core.action.manager"]			= "actionmanager",
+		["finalcutpro.action.manager"]			= "actionmanager",
 		["finalcutpro.menu.tools"]		= "tools",
 	}
 }

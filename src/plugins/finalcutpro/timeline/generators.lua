@@ -393,7 +393,7 @@ local plugin = {
 		["finalcutpro.menu.timeline.assignshortcuts"]	= "automation",
 		["finalcutpro.commands"]						= "fcpxCmds",
 		["finalcutpro.os.touchbar"]						= "touchbar",
-		["core.action.manager"]							= "actionmanager",
+		["finalcutpro.action.manager"]							= "actionmanager",
 	}
 }
 
