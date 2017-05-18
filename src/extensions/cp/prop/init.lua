@@ -386,7 +386,7 @@ function prop.mt:toggle()
 	return self:set(negate(self:get()))
 end
 
---- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
+--- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop, function
 --- Method
 --- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter. If property is bound to an owner, the owner is the second parameter.
 ---
@@ -456,6 +456,21 @@ function prop.mt:unwatch(watchFn)
 	return _unwatch(self._watchers, watchFn) or _unwatch(self._watchersUncloned)
 end
 
+--- cp.prop:monitor(otherProp) -> cp.prop, function
+--- Method
+--- Adds an uncloned watch to the `otherProp` which will trigger an [update](#update) check in this property.
+---
+--- Parameters:
+---  * `otherProp`	- the property to monitor
+---
+--- Returns:
+---  * `cp.prop`	- This prop value.
+---  * `function`	- The watch function. Can be used to [unwatch](#unwatch) the `otherProp` if needed.
+function prop.mt:monitor(otherProp)
+	local _, watch = otherProp:watch(function() self:update() end, false, true)
+	return self, watch
+end
+
 --- cp.prop:update() -> value
 --- Method
 --- Forces an update of the property and notifies any watchers if it has changed.
@@ -523,6 +538,53 @@ local function watchProps(watcher, ...)
 			p:watch(watcherFn)
 		end
 	end
+end
+
+--- cp.prop:mutate(mutateFn) -> cp.prop <anything; read-only>
+--- Method
+--- Returns a new property that is a mutation of the current one.
+--- The `mutateFn` is a function with the following signature:
+---
+--- ```lua
+--- function(value, owner) --> mutated value
+--- ```
+---
+--- * `value`			- The current value of the original property being mutated.
+--- * `owner`			- The owner of the mutator property, if it has been bound.
+--- * `mutated value`	- The new value based off the original.
+---
+--- For example:
+---
+--- ```lua
+--- anyNumber	= prop.THIS(1)
+--- isEven		= anyNumber:mutate(function(value) return value % 2 == 0 end)
+--- 	:watch(function(even)
+--- 		if even then
+--- 			print "even"
+--- 		else
+---				print "odd"
+---			end
+--- 	end)
+---
+--- isEven:update()		-- prints "odd"
+--- anyNumber(10)		-- prints "even"
+--- isEven() == true	-- no printing
+--- ```
+---
+--- Parameters:
+---  * `mutateFn`	- The function which will mutate the value of the current property.
+---
+--- Returns:
+---  * A new `cp.prop` which will return a mutation of the property value.
+function prop.mt:mutate(mutateFn)
+	local original = self
+	-- create the mutant, which will pull from the original.
+	local mutant = prop.new(function(owner)
+		return mutateFn(original:get(), owner)
+	end)
+	-- watch for changes and notify with the mutation
+	original:watch(function(value) mutant:_notify(mutateFn(value, mutant:owner())) end, false, true)
+	return mutant
 end
 
 --- cp.prop:EQUALS() -> cp.prop <boolean; read-only>
@@ -780,8 +842,7 @@ end
 --- Note:
 --- * The original `propValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 function prop.IMMUTABLE(propValue)
-	local immutable = prop.new(function() return propValue:get() end)
-	propValue:watch(function() immutable:update() end)
+	local immutable = prop.new(function() return propValue:get() end):monitor(propValue)
 	return immutable
 end
 
@@ -849,7 +910,7 @@ function prop.NOT(propValue)
 		function(newValue) propValue:set(negate(newValue)) end
 	)
 	-- notify the 'not' watchers if the original value changes.
-	propValue:watch(function(value) notProp:update() end)
+	:monitor(propValue)
 	return notProp
 end
 

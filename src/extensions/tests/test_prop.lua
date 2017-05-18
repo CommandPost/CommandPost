@@ -500,6 +500,49 @@ function run()
 		-- should only be one log entry since the value didn't change.
 		ok(eq(report, {true}))
 	end)
+	
+	test("Prop Monitoring", function()
+		local report = {}
+		
+		local a = prop.TRUE()
+		
+		local b = prop.new(function() return a() and "true" or "false" end)
+			:monitor(a)
+			:watch(function(value) report[#report+1] = value end)
+		
+		ok(eq(report, {}))
+		
+		a(false)
+		
+		ok(eq(report, {"false"}))
+		
+	end)
+	
+	test("Prop Mutation", function()
+		local report = {}
+		
+		-- take any number
+		local anyNumber = prop.THIS(1)
+		
+		-- mutate to check if it's odd or even
+		local isEven	= anyNumber:mutate(function(value) return value % 2 == 0 end)
+			:watch(function(value) report[#report+1] = value end)
+		
+		ok(isEven() == false)
+		ok(eq(report, {}))
+		
+		anyNumber(10)
+		ok(isEven() == true)
+		ok(eq(report, {true}))
+		
+		anyNumber(4)
+		ok(isEven() == true)
+		ok(eq(report, {true}))
+		
+		anyNumber(7)
+		ok(isEven() == false)
+		ok(eq(report, {true, false}))
+	end)
 end
 
 return run
