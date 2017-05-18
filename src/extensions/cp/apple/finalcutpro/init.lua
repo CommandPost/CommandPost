@@ -95,6 +95,7 @@ local plist										= require("cp.plist")
 local prop										= require("cp.prop")
 local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
+local watcher									= require("cp.watcher")
 
 local axutils									= require("cp.apple.finalcutpro.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
@@ -139,10 +140,14 @@ App.BUNDLE_ID = "com.apple.FinalCut"
 --- Final Cut Pro's Pasteboard UTI
 App.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
 
+App.PREFS_PATH = "~/Library/Preferences/"
+
+App.PREFS_PLIST_FILE = "com.apple.FinalCut.plist"
+
 --- cp.apple.finalcutpro.PREFS_PLIST_PATH
 --- Constant
 --- Final Cut Pro's Preferences Path
-App.PREFS_PLIST_PATH = "~/Library/Preferences/com.apple.FinalCut.plist"
+App.PREFS_PLIST_PATH = App.PREFS_PATH .. App.PREFS_PLIST_FILE
 
 --- cp.apple.finalcutpro.SUPPORTED_LANGUAGES
 --- Constant
@@ -865,7 +870,6 @@ end
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
-App._preferencesAlreadyUpdating = false
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
@@ -1334,13 +1338,7 @@ end
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
-	self._watchers[#self._watchers+1] = {
-		active = events.active, inactive = events.inactive, 
-		launched = events.launched, terminated = events.terminated,
-		move = events.move, preferences = events.preferences
-	}
-	local id = { id=#self._watchers }
-	return id
+	return self._watchers:watch(events)
 end
 
 --- cp.apple.finalcutpro:unwatch() -> boolean
@@ -1353,12 +1351,7 @@ end
 --- Returns:
 ---  * `true` if the ID was watching and has been removed.
 function App:unwatch(id)
-	local watchers = self._watchers
-	if id and id.id and watchers and watchers[id.id] then
-		table.remove(watchers, id.id)
-		return true
-	end
-	return false
+	return self._watchers:unwatch(id)
 end
 
 -- cp.apple.finalcutpro:_initWatchers() -> none
@@ -1374,7 +1367,7 @@ function App:_initWatchers()
 
 	if not self._watchers then
 		--log.df("Setting up Final Cut Pro Watchers...")
-		self._watchers = {}
+		self._watchers = watcher.new("active", "inactive", "launched", "terminated", "move", "preferences")
 	end
 
 	--------------------------------------------------------------------------------
@@ -1385,16 +1378,16 @@ function App:_initWatchers()
 		function(appName, eventType, application)
 			if (application:bundleID() == App.BUNDLE_ID) then
 				if eventType == applicationwatcher.activated then
-					self:_notifyWatchers("active")
+					self._watchers:notify("active")
 					return
 				elseif eventType == applicationwatcher.deactivated then
-					self:_notifyWatchers("inactive")
+					self._watchers:notify("inactive")
 					return
 				elseif eventType == applicationwatcher.launched then
-					self:_notifyWatchers("launched")
+					self._watchers:notify("launched")
 					return
 				elseif eventType == applicationwatcher.terminated then
-					self:_notifyWatchers("terminated")
+					self._watchers:notify("terminated")
 					return
 				end
 			end
@@ -1405,17 +1398,17 @@ function App:_initWatchers()
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
 	windowfilter:subscribe("windowMoved", function()
-		self:_notifyWatchers("move")
+		self._watchers:notify("move")
 	end, false)
 
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Watcher:
 	--------------------------------------------------------------------------------
 	--log.df("Setting up Preferences Watcher...")
-	self._preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files)
+	self._preferencesWatcher = pathwatcher.new(App.PREFS_PATH, function(files)
 		for _,file in pairs(files) do
-			if file:sub(-24) == "com.apple.FinalCut.plist" then
-				self:_notifyWatchers("preferences")
+			if file:sub(string.len(App.PREFS_PLIST_FILE)*-1) == App.PREFS_PLIST_FILE then
+				self._watchers:notify("preferences")
 				return
 			end
 		end
@@ -1427,26 +1420,6 @@ function App:_initWatchers()
 		terminated	= function() self.getVersion:update() end,
 	})
 
-end
-
--- cp.apple.finalcutpro:_notifyWatchers(event) -> none
--- Method
--- Notifies all the registered watchers.
---
--- Parameters:
--- * event - which event to notify.
---
--- Returns:
--- * None
-function App:_notifyWatchers(event)
-	--log.df("FCPX WATCHER EVENT: %s", event)
-	if self._watchers then
-		for i,watcher in ipairs(self._watchers) do
-			if type(watcher[event]) == "function" then
-				watcher[event]()
-			end
-		end
-	end
 end
 
 --------------------------------------------------------------------------------
