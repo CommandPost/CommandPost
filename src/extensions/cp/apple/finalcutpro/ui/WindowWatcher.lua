@@ -17,6 +17,7 @@ local log							= require("hs.logger").new("windowWatcher")
 
 local windowfilter					= require("cp.apple.finalcutpro.windowfilter")
 local axuielement					= require("hs._asm.axuielement")
+local watcher						= require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -49,52 +50,73 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
+---    * `show(window)` - Triggered when the window is shown.
 ---    * `hide(window)` - Triggered when the window is hidden.
+---    * `open(window)` - Triggered when the window is opened.
+---    * `close(window)` - Triggered when the window is closed.
+---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function WindowWatcher:watch(events)
 
 	if not self._watchers then
-		self._watchers = {}
+		self._watchers = watcher.new("show", "hide", "move", "open", "close")
 	end
 
-	self._watchers[#(self._watchers)+1] = {show = events.show, hide = events.hide}
-	local id = {id=#(self._watchers)}
+	local id = self._watchers:watch(events)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Made Visible:
+	--------------------------------------------------------------------------------
+	windowfilter:subscribe("windowVisible", function(window)
+		local windowUI = axuielement.windowElement(window)
+		if self._window:UI() == windowUI then
+			self._watchers:notify("show", self._window)
+		end
+	end,
+	true)
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Not Visisble:
+	--------------------------------------------------------------------------------
+	windowfilter:subscribe("windowNotVisible", function(window)
+		local windowUI = axuielement.windowElement(window)
+		if self._window:UI() == windowUI then
+			self._watchers:notify("hide", self._window)
+		end
+	end, true)
 
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Created:
 	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowVisible", function(window)
-			local windowUI = axuielement.windowElement(window)
-			if self._window:UI() == windowUI and self._window:isShowing() then
-				self._windowID = window:id()
-				for i,watcher in ipairs(self._watchers) do
-					if watcher.show then
-						watcher.show(self)
-					end
-				end
-			end
-		end,
-		true
-	)
-
+	windowfilter:subscribe("windowCreated", function(window)
+		local windowUI = axuielement.windowElement(window)
+		if self._window:UI() == windowUI then
+			self._watchers:notify("open", self._window)
+		end
+	end, true)
+	
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Destroyed:
 	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowNotVisible", function(window)
-			if window:id() == self._windowID then
-				self._windowID = nil
-				for i,watcher in ipairs(self._watchers) do
-					if watcher.hide then
-						watcher.hide(self)
-					end
-				end
-			end
-		end,
-		true
-	)
+	windowfilter:subscribe("windowDestroyed", function(window)
+		local windowUI = axuielement.windowElement(window)
+		if self._window:UI() == windowUI then
+			self._watchers:notify("close", self._window)
+		end
+	end,
+	true)
+	
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Window Destroyed:
+	--------------------------------------------------------------------------------
+	windowfilter:subscribe("windowMoved", function(window)
+		local windowUI = axuielement.windowElement(window)
+		if self._window:UI() == windowUI then
+			self._watchers:notify("move", self._window)
+		end
+	end, true)
 
 	return id
 end

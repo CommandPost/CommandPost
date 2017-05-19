@@ -26,7 +26,7 @@ local prop				= require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local ID	= "command"
+local ID	= "fcpx"
 
 -- TODO: Add documentation
 function mod.init(actionmanager, cmds)
@@ -75,7 +75,7 @@ end)
 
 -- TODO: Add documentation
 function mod.getId(params)
-	return ID .. ":" .. string.format("%s:%s", params.group, params.id)
+	return ID .. ":" .. string.format("%s", params.id)
 end
 
 --- plugins.finalcutpro.commands.action.execute(params) -> boolean
@@ -117,6 +117,7 @@ end
 -- TODO: Add documentation
 function mod.reset()
 	mod._choices = nil
+	mod.choices:update()
 end
 
 --------------------------------------------------------------------------------

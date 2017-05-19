@@ -86,6 +86,7 @@ local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher								= require("hs.pathwatcher")
+local timer										= require("hs.timer")
 
 local v											= require("semver")
 local _											= require("moses")
@@ -195,20 +196,22 @@ end
 
 --- cp.apple.finalcutpro:application() -> hs.application
 --- Method
---- Returns the hs.application for Final Cut Pro.
+--- Returns the running `hs.application` for Final Cut Pro.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The hs.application, or nil if the application is not running.
-function App:application()
-	local result = application.applicationsForBundleID(App.BUNDLE_ID)
-	if result and #result > 0 then
-		return result[1] -- If there is at least one copy running, return the first one
+---  * The hs.application, or `nil` if the application is not running.
+App.application = prop.new(function()
+	if not App._application or not App._application:isRunning() then
+		local result = application.applicationsForBundleID(App.BUNDLE_ID)
+		if result and #result > 0 then
+			App._application = result[1] -- If there is at least one copy running, return the first one
+		end
 	end
-	return nil
-end
+	return App._application
+end):bind(App)
 
 --- cp.apple.finalcutpro:getBundleID() -> string
 --- Method
@@ -255,9 +258,8 @@ end
 --- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Running?
-App.isRunning = prop.new(function(self)
-	local fcpx = self:application()
-	return fcpx and fcpx:isRunning()
+App.isRunning = App.application:mutate(function(application)
+	return application and application:isRunning()
 end):bind(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
@@ -345,10 +347,7 @@ end
 --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut visible on screen?
-App.isShowing = prop.new(function(self)
-	local app = self:application()
-	return app ~= nil and app:isRunning() and not app:isHidden()
-end):bind(App)
+App.isShowing = App.application:mutate(function(app) return app and not app:isHidden() end):bind(App)
 
 --- cp.apple.finalcutpro:hide() -> cp.apple.finalcutpro
 --- Method
@@ -417,42 +416,8 @@ function App:getPath()
 	return nil
 end
 
---- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only>
---- Field
---- Is a supported version of Final Cut Pro installed?
----
---- Note:
----  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-App.isSupported = prop.new(function(self)
-	local version = self:getVersion()
-	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
-end):bind(App)
-
---- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
---- Field
---- Is any version of Final Cut Pro Installed?
-App.isInstalled = prop.new(function(self)
-	return self:getVersion() ~= nil
-end):bind(App)
-
---- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
---- Field
---- Is an unsupported version of Final Cut Pro installed?
----
---- Note:
----  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
-
---- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut Pro Frontmost?
-App.isFrontmost = prop.new(function(self)
-	local fcpx = self:application()
-	return fcpx and fcpx:isFrontmost()
-end):bind(App)
-
---- cp.apple.finalcutpro:getVersion() -> string or nil
---- Method
+--- cp.apple.finalcutpro.getVersion <cp.prop: string; read-only>
+--- Constant
 --- Version of Final Cut Pro
 ---
 --- Parameters:
@@ -463,12 +428,7 @@ end):bind(App)
 ---
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-App.getVersion = prop.new(function(self)
-	----------------------------------------------------------------------------------------
-	-- GET RUNNING COPY OF FINAL CUT PRO:
-	----------------------------------------------------------------------------------------
-	local app = self:application()
-
+App.getVersion = App.application:mutate(function(app)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
@@ -489,9 +449,9 @@ App.getVersion = prop.new(function(self)
 	----------------------------------------------------------------------------------------
 	-- NO VERSION OF FINAL CUT PRO CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
-	local app = application.infoForBundleID(App.BUNDLE_ID)
-	if app then
-		return app["CFBundleShortVersionString"]
+	local info = application.infoForBundleID(App.BUNDLE_ID)
+	if info then
+		return info["CFBundleShortVersionString"]
 	else
 		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
 	end
@@ -503,6 +463,47 @@ App.getVersion = prop.new(function(self)
 
 end):bind(App)
 
+--- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only>
+--- Field
+--- Is a supported version of Final Cut Pro installed?
+---
+--- Note:
+---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
+App.isSupported = App.getVersion:mutate(function(version)
+	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
+end):bind(App)
+
+--- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
+--- Field
+--- Is any version of Final Cut Pro Installed?
+App.isInstalled = App.getVersion:mutate(function(version) return version ~= nil end):bind(App)
+
+--- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
+--- Field
+--- Is an unsupported version of Final Cut Pro installed?
+---
+--- Note:
+---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
+App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
+
+--- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
+--- Field
+--- Is Final Cut Pro Frontmost?
+App.isFrontmost = App.application:mutate(function(app) return app and app:isFrontmost() end):bind(App)
+
+--- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
+--- Field
+--- Is a modal dialog currently open?
+App.isModalDialogOpen = prop.new(function(self)
+	local ui = self:UI()
+	if ui then
+		local window = ui:focusedWindow()
+		if window then
+			return window:attributeValue("AXModal") == true
+		end
+	end
+	return false
+end):bind(App)
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
@@ -1165,25 +1166,12 @@ App.fileMenuTitle = {
 ---
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
-function App:getCurrentLanguage(forceReload, forceLanguage)
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Supported Languages:
-	--------------------------------------------------------------------------------
-	local finalCutProLanguages = App.SUPPORTED_LANGUAGES
-
-	--------------------------------------------------------------------------------
-	-- Force a Language:
-	--------------------------------------------------------------------------------
-	if forceReload and forceLanguage ~= nil then
-		self._currentLanguage = forceLanguage
-		return self._currentLanguage
-	end
+function App:getCurrentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Caching:
 	--------------------------------------------------------------------------------
-	if self._currentLanguage ~= nil and not forceReload then
+	if self._currentLanguage ~= nil then
 		--log.df("Using Final Cut Pro Language from Cache")
 		return self._currentLanguage
 	end
@@ -1192,15 +1180,14 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	-- If FCPX is already running, we determine the language off the menu:
 	--------------------------------------------------------------------------------
 	if self:isRunning() then
-		local menuBar = self:menuBar()
-		local menuMap = menuBar:getMainMenu()
-		local menuUI = menuBar:UI()
+		local menuMap = self:menuBar():getMainMenu()
+		local menuUI = self:menuBar():UI()
 		if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
 			local fileMap = menuMap[2]
 			local fileUI = menuUI[2]
-			local title = fileUI:attributeValue("AXTitle") or nil
-			for _,lang in ipairs(self:getSupportedLanguages()) do
-				if fileMap[lang] == title then
+			local title = fileUI:attributeValue("AXTitle")
+			for lang,name in pairs(fileMap) do
+				if name == title then
 					self._currentLanguage = lang
 					return lang
 				end
@@ -1212,37 +1199,22 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 	-- If FCPX is not running, we next try to determine the language using
 	-- the Final Cut Pro Plist File:
 	--------------------------------------------------------------------------------
-	local finalCutProLanguage = self:getPreference("AppleLanguages", nil)
-	if finalCutProLanguage ~= nil and next(finalCutProLanguage) ~= nil then
-		if finalCutProLanguage[1] ~= nil then
-			self._currentLanguage = finalCutProLanguage[1]
-			return finalCutProLanguage[1]
+	local appLanguages = self:getPreference("AppleLanguages", nil)
+	if appLanguages and #appLanguages > 0 then
+		local lang = appLanguages[1]
+		if self:isSupportedLanguage(lang) then
+			self._currentLanguage = lang
+			return lang
 		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- If that fails, we try and use the user locale:
 	--------------------------------------------------------------------------------
-	local a, userLocale = osascript.applescript("return user locale of (get system info)")
-	if userLocale ~= nil then
-		--------------------------------------------------------------------------------
-		-- Only return languages Final Cut Pro actually supports:
-		--------------------------------------------------------------------------------
-		for i=1, #finalCutProLanguages do
-			if userLocale == finalCutProLanguages[i] then
-				self._currentLanguage = userLocale
-				return userLocale
-			else
-				local subLang = string.find(userLocale, "_")
-				if subLang ~= nil then
-					local lang = string.sub(userLocale, 1, subLang - 1)
-					if lang == finalCutProLanguages[i] then
-						self._currentLanguage = lang
-						return lang
-					end
-				end
-			end
-		end
+	local success, userLocale = osascript.applescript("return user locale of (get system info)")
+	if success and userLocale and self:isSupportedLanguage(userLocale) then
+		self._currentLanguage = userLocale
+		return userLocale
 	end
 
 	--------------------------------------------------------------------------------
@@ -1254,28 +1226,15 @@ function App:getCurrentLanguage(forceReload, forceLanguage)
 		if next(appleLanguages) ~= nil then
 			if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
 				for i=2, #appleLanguages - 1 do
-					local firstCharacter = string.sub(appleLanguages[i], 1, 1)
-					local lastCharacter = string.sub(appleLanguages[i], -1)
-					if firstCharacter == '"' and lastCharacter == '"' and string.len(appleLanguages[i]) > 2 then
-						--------------------------------------------------------------------------------
-						-- Only return languages Final Cut Pro actually supports:
-						--------------------------------------------------------------------------------
-						local currentLanguage = string.sub(appleLanguages[i], 2, -2)
-						for x=1, #finalCutProLanguages do
-							if currentLanguage == finalCutProLanguages[x] then
-								self._currentLanguage = currentLanguage
-								return currentLanguage
-							else
-								local subLang = string.find(currentLanguage, "-")
-								if subLang ~= nil then
-									local lang = string.sub(currentLanguage, 1, subLang - 1)
-									if lang == finalCutProLanguages[x] then
-										self._currentLanguage = lang
-										return lang
-									end
-								end
-							end
-						end
+					local line = appleLanguages[i]
+					-- match the main country code
+					local lang = line:match("^%s*\"?([%w%-]+)")
+					-- switch "-" to "_"
+					lang = lang:gsub("-", "_")
+					
+					if self:isSupportedLanguage(lang) then
+						self.currentLanguage = lang
+						return lang
 					end
 				end
 			end
@@ -1300,6 +1259,25 @@ end
 ---  * A table of languages Final Cut Pro supports
 function App:getSupportedLanguages()
 	return App.SUPPORTED_LANGUAGES
+end
+
+--- cp.apple.finalcutpro:isSupportedLanguage(language) -> boolean
+--- Method
+--- Checks if the provided `language` is supported by the app.
+---
+--- Parameters:
+---  * `language`	- The language code to check. E.g. "en" or "zh_CN"
+---
+--- Returns:
+---  * `true` if the language is supported.
+function App:isSupportedLanguage(language)
+	local primary = language:match("(%w+)")
+	for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
+		if supported == language or supported == primary then
+			return true
+		end
+	end
+	return false
 end
 
 --- cp.apple.finalcutpro:getFlexoLanguages() -> table
@@ -1332,7 +1310,6 @@ end
 --- 	* `inactive`	- Triggered when the application is no longer the active application.
 ---     * `launched		- Triggered when the application is launched.
 ---     * `terminated	- Triggered when the application has been closed.
----     * `move` 	 	- Triggered when the application window is moved.
 --- 	* `preferences`	- Triggered when the application preferences are updated.
 ---
 --- Returns:
@@ -1367,7 +1344,7 @@ function App:_initWatchers()
 
 	if not self._watchers then
 		--log.df("Setting up Final Cut Pro Watchers...")
-		self._watchers = watcher.new("active", "inactive", "launched", "terminated", "move", "preferences")
+		self._watchers = watcher.new("active", "inactive", "launched", "terminated", "preferences")
 	end
 
 	--------------------------------------------------------------------------------
@@ -1378,15 +1355,29 @@ function App:_initWatchers()
 		function(appName, eventType, application)
 			if (application:bundleID() == App.BUNDLE_ID) then
 				if eventType == applicationwatcher.activated then
+					timer.doAfter(0.01, function()
+						self.isShowing:update()
+						self.isFrontmost:update()
+					end)
 					self._watchers:notify("active")
 					return
 				elseif eventType == applicationwatcher.deactivated then
+					timer.doAfter(0.01, function()
+						self.isShowing:update()
+						self.isFrontmost:update()
+					end)
 					self._watchers:notify("inactive")
 					return
 				elseif eventType == applicationwatcher.launched then
+					timer.doAfter(0.01, function()
+						self.application:update()
+					end)
 					self._watchers:notify("launched")
 					return
 				elseif eventType == applicationwatcher.terminated then
+					timer.doAfter(0.01, function()
+						self.application:update()
+					end)
 					self._watchers:notify("terminated")
 					return
 				end
@@ -1395,11 +1386,11 @@ function App:_initWatchers()
 	):start()
 
 	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Moved:
+	-- Final Cut Pro Window becomes visible:
 	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowMoved", function()
-		self._watchers:notify("move")
-	end, false)
+	windowfilter:subscribe("windowVisible", function()
+		App.isModalDialogOpen:update()
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Watcher:
@@ -1413,13 +1404,6 @@ function App:_initWatchers()
 			end
 		end
 	end):start()
-	
-	-- add local watchers
-	self:watch({
-		launched	= function() self.getVersion:update() end,
-		terminated	= function() self.getVersion:update() end,
-	})
-
 end
 
 --------------------------------------------------------------------------------

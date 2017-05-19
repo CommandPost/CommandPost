@@ -21,6 +21,7 @@ local just							= require("cp.just")
 local prop							= require("cp.prop")
 
 local Button						= require("cp.apple.finalcutpro.ui.Button")
+local Window						= require("cp.apple.finalcutpro.ui.Window")
 local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.main.Inspector")
@@ -35,7 +36,8 @@ local PrimaryWindow = {}
 
 -- TODO: Add documentation
 function PrimaryWindow.matches(w)
-	return w and w:attributeValue("AXSubrole") == "AXStandardWindow"
+	local subrole = w:attributeValue("AXSubrole")
+	return w and w:attributeValue("AXTitle") == "Final Cut Pro" and (subrole == "AXStandardWindow" or subrole == "AXDialog")
 end
 
 -- TODO: Add documentation
@@ -43,68 +45,68 @@ function PrimaryWindow:new(app)
 	local o = {
 		_app = app
 	}
-	return prop.extend(o, PrimaryWindow)
+	prop.extend(o, PrimaryWindow)
+	
+	local window = Window:new(function()
+		return axutils.cache(self, "_ui", function()
+			return axutils.childMatching(app:windowsUI(), PrimaryWindow.matches)
+		end,
+		PrimaryWindow.matches)
+	end)
+	o._window = window
+	
+--- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: axuielement; read-only>
+--- Field
+--- The `axuielement` for the window.
+	o.UI = window.UI:wrap(o)
+	
+--- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is visible.
+	o.isShowing = window.visible:wrap(o)
+	
+--- cp.apple.finalcutpro.main.PrimaryWindow.isFullScreen <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is full-screen.
+	o.isFullScreen = window.fullScreen:wrap(o)
+	
+--- cp.apple.finalcutpro.main.PrimaryWindow.frame <cp.prop: frame>
+--- Field
+--- The current position (x, y, width, height) of the window.
+	o.frame = window.frame:wrap(o)
+	
+	return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryWindow:app() -> hs.application
+--- Method
+--- Returns the application the display belongs to.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The app instance.
 function PrimaryWindow:app()
 	return self._app
 end
 
--- TODO: Add documentation
-PrimaryWindow.isShowing = prop(function(self)
-	return self:UI() ~= nil
-end):bind(PrimaryWindow)
+--- cp.apple.finalcutpro.main.PrimaryWindow:window() -> cp.apple.finalcutpro.ui.Window
+--- Method
+--- Returns the `Window` instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Window` instance.
+function PrimaryWindow:window()
+	return self._window
+end
 
 -- TODO: Add documentation
 function PrimaryWindow:show()
-	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
-	return true
-end
-
--- TODO: Add documentation
-function PrimaryWindow:UI()
-	return axutils.cache(self, "_ui", function()
-		local ui = self:app():UI()
-		if ui then
-			if PrimaryWindow.matches(ui:mainWindow()) then
-				return ui:mainWindow()
-			else
-				local windowsUI = self:app():windowsUI()
-				return windowsUI and self:_findWindowUI(windowsUI)
-			end
-		end
-		return nil
-	end,
-	PrimaryWindow.matches)
-end
-
--- TODO: Add documentation
-function PrimaryWindow:_findWindowUI(windows)
-	for i,w in ipairs(windows) do
-		if PrimaryWindow.matches(w) then return w end
-	end
-	return nil
-end
-
--- TODO: Add documentation
-PrimaryWindow.isFullScreen = prop(function(self)
-	local ui = self:UI()
-	return ui and ui:fullScreen()
-end):bind(PrimaryWindow)
-
--- TODO: Add documentation
-function PrimaryWindow:setFullScreen(isFullScreen)
-	local ui = self:UI()
-	if ui then ui:setFullScreen(isFullScreen) end
-	return self
-end
-
--- TODO: Add documentation
-function PrimaryWindow:toggleFullScreen()
-	local ui = self:UI()
-	if ui then ui:setFullScreen(not self:isFullScreen()) end
-	return self
+	self:isVisible(true)
 end
 
 -----------------------------------------------------------------------
@@ -280,8 +282,9 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
+---    * `show(window)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
+---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.

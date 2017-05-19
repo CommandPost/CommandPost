@@ -44,7 +44,17 @@ function SecondaryWindow:new(app)
 	local o = {
 		_app = app
 	}
-	return prop.extend(o, SecondaryWindow)
+	prop.extend(o, SecondaryWindow)
+	
+	o:watch({
+		show	= function() o.isShowing:update() end,
+		hide	= function() o.isShowing:update() end,
+		open	= function() o.isShowing:update() end,
+		close	= function() o.isShowing:update() end,
+		move	= function() o.frame:update() end,
+	})
+	
+	return o
 end
 
 -- TODO: Add documentation
@@ -54,7 +64,8 @@ end
 
 -- TODO: Add documentation
 SecondaryWindow.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
+	local ui = self:UI()
+	return ui ~= nil and ui:asHSWindow():isVisible()
 end):bind(SecondaryWindow)
 
 -- TODO: Add documentation
@@ -99,6 +110,11 @@ function SecondaryWindow:UI()
 	SecondaryWindow.matches)
 end
 
+function SecondaryWindow:window()
+	local ui = self:UI()
+	return ui and ui:asHSWindow()
+end
+
 -- TODO: Add documentation
 function SecondaryWindow:_findWindowUI(windows)
 	for i,w in ipairs(windows) do
@@ -120,6 +136,20 @@ function SecondaryWindow:toggleFullScreen()
 	if ui then ui:setFullScreen(not self:isFullScreen()) end
 	return self
 end
+
+--- cp.apple.finalcutpro.main.SecondaryWindow.frame <cp.prop: frame>
+--- Field
+--- The current position (x, y, width, height) of the window.
+SecondaryWindow.frame = prop(
+	function(self)
+		local ui = self:UI()
+		return ui and ui:frame()
+	end,
+	function(frame, self)
+		local ui = self:UI()
+		if ui then ui:setAttributeValue("AXFrame", frame) end
+	end	
+):bind(SecondaryWindow)
 
 -----------------------------------------------------------------------
 --
@@ -189,8 +219,9 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
+---    * `show(window)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
+---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.

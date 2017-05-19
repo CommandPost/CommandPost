@@ -49,50 +49,9 @@ function plugin.init()
 	--------------------------------------------------------------------------------
 	-- Enable/Disable as Final Cut Pro becomes Active/Inactive:
 	--------------------------------------------------------------------------------
-	fcp:watch({
-		active 		= function()
-			if not fcp:commandEditor():isShowing() and not fcp:mediaImport():isShowing() then
-				log.df("Final Cut Pro Commands Enabled")
-				cmds:isEnabled(true)
-			end
-		end,
-		inactive	= function()
-			log.df("Final Cut Pro Commands Disabled")
-			cmds:isEnabled(false)
-		end,
-	})
-
-	--------------------------------------------------------------------------------
-	-- Disable when the Command Editor window is open:
-	--------------------------------------------------------------------------------
-	fcp:commandEditor():watch({
-		show		= function()
-			--log.df("Final Cut Pro Commands Disabled due to Command Editor")
-			cmds:isEnabled(false)
-		end,
-		hide		= function()
-			if fcp:isShowing() then
-				--log.df("Final Cut Pro Commands Enabled due to Command Editor")
-				cmds:isEnabled(true)
-			end
-		end,
-	})
-
-	--------------------------------------------------------------------------------
-	-- Disable when the Media Import window is open:
-	--------------------------------------------------------------------------------
-	fcp:mediaImport():watch({
-		show		= function()
-			--log.df("Final Cut Pro Commands Dsiabled due to Media Import")
-			cmds:isEnabled(false)
-		end,
-		hide		= function()
-			if fcp:isShowing() then
-				--log.df("Final Cut Pro Commands Enabled due to Media Import")
-				cmds:isEnabled(true)
-			end
-		end,
-	})
+	fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(enabled)
+		cmds:isEnabled(enabled)
+	end)
 
 	return cmds
 end

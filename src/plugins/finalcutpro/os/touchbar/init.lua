@@ -305,19 +305,19 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Disable/Enable the Touchbar when the Command Editor/etc is open:
 	--------------------------------------------------------------------------------
-	fcp:commandEditor():watch({
-		show		= function() mod.hide() end,
-		hide		= function() mod.show() end,
-	})
-	fcp:mediaImport():watch({
-		show		= function() mod.hide() end,
-		hide		= function() mod.show() end,
-	})
-	fcp:watch({
-		active		= function() mod.show() end,
-		inactive	= function() mod.hide() end,
-		move		= function() mod.update() end,
-	})
+	fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(active)
+		if active then
+			mod.show()
+		else
+			mod.hide()
+		end
+	end)
+	
+	--------------------------------------------------------------------------------
+	-- Update our position if either of the main windows move.
+	--------------------------------------------------------------------------------
+	fcp:primaryWindow().frame:watch(mod.update)
+	fcp:secondaryWindow().frame:watch(mod.update)
 
 	--------------------------------------------------------------------------------
 	-- Menu items:

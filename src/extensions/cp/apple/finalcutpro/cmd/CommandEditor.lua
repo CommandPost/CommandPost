@@ -135,8 +135,9 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
+---    * `show(window)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
+---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
