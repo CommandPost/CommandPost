@@ -216,6 +216,14 @@ function mod.init()
 	end)
 
 	--------------------------------------------------------------------------------
+	-- Enable "Launch at Startup" by default:
+	--------------------------------------------------------------------------------
+	if not config.get("hasRunOnce", false) then
+		hs.autoLaunch(true)
+		config.set("hasRunOnce", true)
+	end
+
+	--------------------------------------------------------------------------------
 	-- Check Versions & Language:
 	--------------------------------------------------------------------------------
 	local fcpVersion    		= fcp:getVersion() or "Unknown"
