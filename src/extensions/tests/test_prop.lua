@@ -543,6 +543,45 @@ function run()
 		ok(isEven() == false)
 		ok(eq(report, {true, false}))
 	end)
+	
+	test("Prop Wrapping", function()
+		local a = prop.TRUE()
+		local b = a:wrap(b)
+		local c = b:clone()
+		
+		local aReport = {}
+		local bReport = {}
+		local cReport = {}
+		
+		a:watch(function(value) aReport[#aReport+1] = value end)
+		b:watch(function(value) bReport[#bReport+1] = value end)
+		c:watch(function(value) cReport[#cReport+1] = value end)
+		
+		ok(a() == true)
+		ok(b() == true)
+		ok(c() == true)
+		ok(eq(aReport, {}))
+		ok(eq(bReport, {}))
+		ok(eq(cReport, {}))
+		
+		-- change a
+		a(false)
+		ok(a() == false)
+		ok(b() == false)
+		ok(c() == false)
+		ok(eq(aReport, {false}))
+		ok(eq(bReport, {false}))
+		ok(eq(cReport, {false}))
+		
+		-- change b
+		b(true)
+		ok(a() == true)
+		ok(b() == true)
+		ok(c() == true)
+		ok(eq(aReport, {false, true}))
+		ok(eq(bReport, {false, true}))
+		ok(eq(cReport, {false, true}))
+	end)
 end
 
 return run
