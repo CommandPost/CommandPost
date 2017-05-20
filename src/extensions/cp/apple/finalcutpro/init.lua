@@ -120,7 +120,7 @@ local App = {}
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-App.EARLIEST_SUPPORTED_VERSION					= "10.3.2"
+App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
 
 --------------------------------------------------------------------------------
 -- TODO: The below five constants should probably just be determined from the
@@ -1320,7 +1320,7 @@ end
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
 	self._watchers[#self._watchers+1] = {
-		active = events.active, inactive = events.inactive, 
+		active = events.active, inactive = events.inactive,
 		launched = events.launched, terminated = events.terminated,
 		move = events.move, preferences = events.preferences
 	}
@@ -1405,7 +1405,7 @@ function App:_initWatchers()
 			end
 		end
 	end):start()
-	
+
 	-- add local watchers
 	self:watch({
 		launched	= function() self.getVersion:update() end,
