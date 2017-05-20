@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local application			= require("hs.application")
+
 local config				= require("cp.config")
 local prop					= require("cp.prop")
 
@@ -23,6 +25,11 @@ local prop					= require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugin.core.accessibility.systemPreferencesAlreadyOpen
+--- Variable
+--- Was System Preferences already open?
+mod.systemPreferencesAlreadyOpen = false
+
 --- plugin.core.accessibility.enabled <cp.prop: boolean; read-only>
 --- Constant
 --- Is `true` if Accessibility permissions have been enabled for CommandPost.
@@ -30,6 +37,15 @@ local mod = {}
 --- `watch` this property.
 mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
 	if enabled then
+		--------------------------------------------------------------------------------
+		-- Close System Preferences, unless it was already open:
+		--------------------------------------------------------------------------------
+		if not mod.systemPreferencesAlreadyOpen then
+			local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
+			if systemPrefs and next(systemPrefs) ~= nil then
+				systemPrefs[1]:kill()
+			end
+		end
 		mod.completeSetupPanel()
 	else
 		mod.showSetupPanel()
@@ -89,6 +105,10 @@ function mod.init(setup, iconPath)
 		:addButton({
 			label		= i18n("enableAccessibility"),
 			onclick		= function()
+				local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
+				if systemPrefs and next(systemPrefs) ~= nil then
+					mod.systemPreferencesAlreadyOpen = true
+				end
 				hs:accessibilityState(true)
 			end,
 		})
