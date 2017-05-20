@@ -160,7 +160,7 @@ end
 function mod.init(env)
 	mod.setPanelRenderer(env:compileTemplate("html/template.html"))
 	mod.visible:update()
-	
+
 	return mod
 end
 
@@ -203,7 +203,7 @@ function mod.new()
 		local options = {
 			developerExtrasEnabled = config.developerMode(),
 		}
-	
+
 		mod.webview = webview.new(defaultRect, options, mod.controller)
 			:windowStyle({"titled", "closable", "nonactivating"})
 			:shadow(true)
@@ -310,7 +310,7 @@ end
 function mod.addPanel(newPanel)
 	--log.df("Adding Setup Panel with ID: %s", id)
 	mod._panelQueue[#mod._panelQueue + 1] = newPanel
-	
+
 	-- sort by priority
 	table.sort(mod._panelQueue, function(a, b) return a.priority < b.priority end)
 
@@ -341,8 +341,9 @@ end
 function plugin.postInit(deps, env)
 	mod.onboardingRequired:watch(function(required)
 		if required then
-			local iconPath = env:pathToAbsolute("images/commandpost_icon.png")
-			
+
+			local iconPath = config.application():path() .. "/Contents/Resources/AppIcon.icns"
+
 			-- The intro panel
 			mod.addPanel(
 				panel.new("intro", mod.FIRST_PRIORITY)
@@ -359,7 +360,7 @@ function plugin.postInit(deps, env)
 						onclick	= function() config.application():kill() end,
 					})
 			)
-			
+
 			-- The outro panel
 			mod.addPanel(
 				panel.new("outro", mod.LAST_PRIORITY)
@@ -377,7 +378,7 @@ function plugin.postInit(deps, env)
 			mod.show()
 		end
 	end, true)
-	
+
 	return mod.enabled(true)
 end
 
