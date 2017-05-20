@@ -83,24 +83,19 @@ function mod.showSetupPanel()
 	mod.setup.show()
 end
 
---- plugin.core.accessibility.init(setup, iconPath) -> table
+--- plugin.core.accessibility.init(setup) -> table
 --- Function
 --- Initialises the module.
 ---
 --- Parameters:
 ---  * setup - Dependancies setup
----  * iconPath - Path to the panel icon
 ---
 --- Returns:
 ---  * The module as a table
-function mod.init(setup, iconPath)
-
-	-- TODO: Use this instead:
-	-- /System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns
-
+function mod.init(setup)
 	mod.setup = setup
 	mod.panel = setup.panel.new("accessibility", 10)
-		:addIcon(iconPath)
+		:addIcon("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns")
 		:addParagraph(i18n("accessibilityNote"), true)
 		:addButton({
 			label		= i18n("enableAccessibility"),
@@ -143,7 +138,7 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-	return mod.init(deps.setup, env:pathToAbsolute("images/accessibility_icon.png"))
+	return mod.init(deps.setup)
 end
 
 return plugin
