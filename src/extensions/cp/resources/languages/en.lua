@@ -90,16 +90,18 @@ return {
 			--------------------------------------------------------------------------------
 			-- Welcome Screen:
 			--------------------------------------------------------------------------------
-			welcomeTitle						=			"Welcome to CommandPost",
-			welcomeTagLine						=			"Workflow Toolkit for Professional Editors",
-			welcomeIntro						=			"Thank you for installing CommandPost. This guide will help you set things up.",
+			setupTitle							=			"CommandPost Setup",
+			introTagLine						=			"Workflow Toolkit for Professional Editors",
+			introText							=			"Thank you for installing CommandPost. This guide will help you set things up.",
 			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> button in the Preferences.",
 			scanFinalCutPro						=			"Scan Final Cut Pro",
-			finalCutProMissingHeading			=			"CommandPost requires Final Cut Pro %{version} or later.",
-			finalCutProMissingText				=			"Unfortunately we couldn't detect a supported installation of Final Cut Pro installed.<br /><br />Please download the latest version from the App Store to enable Final Cut Pro functionality.",
-			completeHeading						=			"CommandPost is now setup and ready to go!",
-			completeText						=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
+			finalcutproUnsupportedVersionTitle	=			"Unsupported Version",
+			finalcutproUnsupportedVersionText	=			"CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
+			outroTitle							=			"CommandPost is now setup and ready to go!",
+			outroText							=			"You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
 			commandSetText						=			"CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
+			commandSetUseFCPX					=			"Use Final Cut Pro",
+			commandSetUseCP						=			"Use CommandPost",
 			accessibilityNote 					=			"CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
 			enableAccessibility					=			"Enable Accessibility",
 
@@ -227,6 +229,9 @@ return {
 			changeBackupIntervalMessage			=			"Changing the Backup Interval requires Final Cut Pro to restart.",
 			changeSmartCollectionsLabel			=			"Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
+			hacksEnabling						=			"Enabling",
+			hacksDisabling						=			"Disabling",
+			hacksShortcutsEditorText			=			"Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.",
 			hacksShortcutsRestart				=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
 			hacksShortcutAdminPassword			=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
@@ -235,9 +240,7 @@ return {
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
 
 
-			trashPreferences					=			"Are you sure you want to trash the CommandPost Preferences?",
-			adminPasswordRequiredAndRestart		=			"This will require your Administrator password and require Final Cut Pro to restart.",
-			adminPasswordRequired				=			"This will require your Administrator password.",
+			trashPreferencesConfirmation		=			"Are you sure you want to trash the CommandPost Preferences?",
 
 			--------------------------------------------------------------------------------
 			-- Textbox Dialog Boxes:
@@ -559,6 +562,12 @@ return {
 
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
+			
+			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
+			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
+			
+			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
+			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
@@ -769,7 +778,7 @@ return {
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
 	shortcut_group_global				=			"Global",
-	shortcut_group_fcpx					=			"FCPX",
+	shortcut_group_fcpx					=			"Final Cut Pro X",
 
 	customiseShortcuts					=			"Customise Shortcuts",
 	shortcutsGroup						=			"Group",
@@ -792,6 +801,7 @@ return {
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
 	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
+	core_accessibility_label								=	"Accessibility Permissions",
 	core_action_manager_label								=	"Action Manager",
 	core_commands_commandaction_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
@@ -817,13 +827,10 @@ return {
 	core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 	core_preferences_updates_label							=	"Preferences: Updates",
 	core_quit_label											=	"Quit Command",
+	core_setup_label										= 	"Setup Manager",
 	core_watchfolders_manager_label							= 	"Watch Folder Manager",
 	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 	core_webapp_label										=	"WebApp",
-	core_welcome_manager_label								= 	"Welcome Manager",
-	core_welcome_panels_accessibility_label					=	"Welcome: Accessibility",
-	core_welcome_panels_complete_label						=	"Welcome: Complete",
-	core_welcome_panels_intro_label							=	"Welcome: Intro",
 	finalcutpro_browser_addnote_label						=	"Browser: Add Note",
 	finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
 	finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
@@ -861,8 +868,9 @@ return {
 	finalcutpro_open_label									=	"Open Final Cut Pro",
 	finalcutpro_os_touchbar_label							=	"Virtual Touch Bar",
 	finalcutpro_os_voice_label								=	"Voice Commands",
-	finalcutpro_preferences_panels_finalcutpro_label		=	"Preferences: Panel",
+	finalcutpro_preferences_app_label						=	"Preferences: Panel",
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
+	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
@@ -884,9 +892,6 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-	finalcutpro_welcome_panels_app_missing_label			=	"Welcome: Final Cut Pro Missing",
-	finalcutpro_welcome_panels_commandset_label				=	"Welcome: Command Editor Modification",
-	finalcutpro_welcome_panels_scanfinalcutpro_label		=	"Welcome: Scan Final Cut Pro",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:

@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsMgr")
 
+local geometry									= require("hs.geometry")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
@@ -48,7 +49,7 @@ mod._handlers			= {}
 --- plugins.core.preferences.manager.position
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("preferencesPosition", {})
+mod.position = config.prop("preferencesPosition", nil)
 
 --- plugins.core.preferences.manager.lastTab
 --- Constant
@@ -103,11 +104,11 @@ end
 --------------------------------------------------------------------------------
 -- HIGHEST PRIORITY ID:
 --------------------------------------------------------------------------------
-local function highestPriorityID()
-	if mod.lastTab() and isPanelIDValid(mod.lastTab()) then
-		return mod.lastTab()
+local function currentPanelID()
+	local id = mod.lastTab()
+	if id and isPanelIDValid(id) then
+		return id
 	else
-		local sortedPanels = mod._panels
 		return #mod._panels > 0 and mod._panels[1].id or nil
 	end
 end
@@ -116,12 +117,11 @@ end
 -- GENERATE HTML:
 --------------------------------------------------------------------------------
 local function generateHTML()
-	-- log.df("generateHTML: called")
 	local env = {}
 
-	env.debugMode = config.get("debugMode", false)
+	env.debugMode = config.developerMode()
 	env.panels = mod._panels
-	env.highestPriorityID = highestPriorityID()
+	env.currentPanelID = currentPanelID()
 
 	local result, err = mod._panelRenderer(env)
 	if err then
@@ -157,15 +157,57 @@ end
 ---
 --- Returns:
 --- * Nothing
-function mod.init()
+function mod.init(env)
+	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
+
+	return mod
+end
+
+--- plugins.core.preferences.manager.maxPanelHeight() -> number
+--- Function
+--- Returns the maximum size defined by a panel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The maximum panel height.
+function mod.maxPanelHeight()
+	local max = mod.defaultHeight
+	for _,panel in ipairs(mod._panels) do
+		max = panel.height ~= nil and panel.height < max and max or panel.height
+	end
+	return max
+end
+
+local function centredPosition()
+	local sf = screen.mainScreen():frame()
+	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
+
+local function isOffScreen(rect)
+	if rect then
+		-- check all the screens
+		rect = geometry.new(rect)
+		for _,screen in ipairs(screen.allScreens()) do
+			if rect:inside(screen:frame()) then
+				return false
+			end
+		end
+		return true
+	else
+		return true
+	end
+end
+	
+function mod.new()
 
 	--------------------------------------------------------------------------------
 	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
-	local screenFrame = screen.mainScreen():frame()
-	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
-	if mod.position() then
-		defaultRect = mod.position()
+	local defaultRect = mod.position()
+	if isOffScreen(defaultRect) then
+		defaultRect = centredPosition()
 	end
 
 	--------------------------------------------------------------------------------
@@ -173,7 +215,6 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
 		:setCallback(function(message)
-			-- log.df("webview callback called: %s", hs.inspect(message))
 			local body = message.body
 			local id = body.id
 			local params = body.params
@@ -183,6 +224,7 @@ function mod.init()
 				return handler(id, params)
 			end
 		end)
+		
 
 	--------------------------------------------------------------------------------
 	-- Setup Tool Bar:
@@ -194,13 +236,24 @@ function mod.init()
 			:setCallback(function(toolbar, webview, id)
 				mod.selectPanel(id)
 			end)
+
+		local toolbar = mod.toolbar
+		for _,panel in ipairs(mod._panels) do
+			local item = panel:getToolbarItem()
+
+			toolbar:addItems(item)
+			-- toolbar:insertItem(item.id, index)
+			if not toolbar:selectedItem() then
+				toolbar:selectedItem(item.id)
+			end
+		end
 	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View:
 	--------------------------------------------------------------------------------
 	local prefs = {}
-	if config.get("debugMode") then prefs = {developerExtrasEnabled = true} end
+	prefs.developerExtrasEnabled = config.developerMode()
 	mod.webview = webview.new(defaultRect, prefs, mod.controller)
 		:windowStyle(mod.defaultWindowStyle)
 		:shadow(true)
@@ -214,7 +267,7 @@ function mod.init()
 	return mod
 end
 
---- plugins.core.preferences.manager.showPreferences() -> boolean
+--- plugins.core.preferences.manager.show() -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
@@ -226,27 +279,28 @@ end
 function mod.show()
 
 	if mod.webview == nil then
-		mod.init()
+		mod.new()
 	end
 
 	if next(mod._panels) == nil then
 		dialog.displayMessage("There are no Preferences Panels to display.")
 		return nil
 	else
+		mod.selectPanel(currentPanelID())
 		mod.webview:html(generateHTML())
 		mod.webview:show()
-		timer.doAfter(0.1, function()
-			--log.df("Attempting to bring Preferences Panel to focus.")
-			mod.webview:hswindow():raise():focus()
-		end)
+		mod.focus()
 	end
 
 	--------------------------------------------------------------------------------
 	-- Select Panel:
 	--------------------------------------------------------------------------------
-	mod.selectPanel(highestPriorityID())
 
 	return true
+end
+
+function mod.focus()
+	return mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus()
 end
 
 function mod.hide()
@@ -276,18 +330,17 @@ function mod.selectPanel(id)
 
 	local js = ""
 
-	for i, v in ipairs(mod._panels) do
-
+	for i, panel in ipairs(mod._panels) do
 		--------------------------------------------------------------------------------
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
-		if v.id == id and v.height and mod.webview:hswindow() then
-			mod.webview:size({w = mod.defaultWidth, h = v.height })
+		if panel.id == id and panel.height then
+			mod.webview:size({w = mod.defaultWidth, h = panel.height })
 		end
 
-		local style = v.id == id and "block" or "none"
+		local style = panel.id == id and "block" or "none"
 		js = js .. [[
-			document.getElementById(']] .. v.id .. [[').style.display = ']] .. style .. [[';
+			document.getElementById(']] .. panel.id .. [[').style.display = ']] .. style .. [[';
 		]]
 	end
 
@@ -324,15 +377,13 @@ end
 ---  ** `tooltip`		- The human-readable details for the toolbar icon when the mouse is hovering over it.
 function mod.addPanel(params)
 
-	--log.df("Adding Preferences Panel with ID: %s", id)
 	local newPanel = panel.new(params, mod)
 
 	local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
 	table.insert(mod._panels, index, newPanel)
 
 	if mod.toolbar then
-		local toolbar = mod.toolbar
-		local item = newPanel:getToolbarItem()
+		local item = panel:getToolbarItem()
 
 		toolbar:addItems(item)
 		toolbar:insertItem(item.id, index)
@@ -359,10 +410,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
-
-	return mod.init()
+	return mod.init(env)
 end
 
 return plugin

@@ -206,7 +206,7 @@ local plugin = {
 	group		= "core",
 	required	= true,
 	dependencies	= {
-		["core.welcome.manager"] 			= "welcome",
+		["core.setup"] 			= "setup",
 	}
 }
 
@@ -215,19 +215,18 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	local welcome = deps.welcome
-
-	welcome.enableInterfaceCallback:new("menumanager", function()
-		if manager.menubar then
-			manager.enable()
+	-- disable the menu when the Setup Panel is open.
+	deps.setup.visible:watch(function(visible)
+		if visible then
+			manager.disable()
 		else
-			manager.init()
+			if manager.menubar then
+				manager.enable()
+			else
+				manager.init()
+			end
 		end
-	end)
-
-	welcome.disableInterfaceCallback:new("menumanager", function()
-		manager.disable()
-	end)
+	end, true)
 
 	return manager
 end

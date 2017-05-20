@@ -1,0 +1,27 @@
+<div id="shortcutsGroupControls" class="uiItem">
+{%	for id,group in pairs(groups) do %}
+	<div id="shortcutsGroup_{{ id }}" class="shortcutsGroup{{ id == defaultGroup and ' selected' or '' }}">
+	{%
+		local editor = groupEditor(id)
+		if editor then
+	%}
+			{* editor(group) *}
+	{%	else %}
+		<table class="shortcuts">
+			<thead>
+				<tr>
+					<th class="rowLabel">{{ i18n "shortcutsLabel" }}</th>
+					<th class="rowModifier">{{ i18n "shortcutsModifier" }}</th>
+					<th class="rowKeyCode">{{ i18n "shortcutsKey" }}</th>
+				</tr>
+			</thead>
+			<tbody>
+			{(html/rows.html, _.extend({group = group}, context))}
+			</tbody>
+		</table>
+	{%
+		end --if
+	%}
+	</div>
+{% end %}
+</div>

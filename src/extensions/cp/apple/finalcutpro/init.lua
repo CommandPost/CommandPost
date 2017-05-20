@@ -120,7 +120,7 @@ local App = {}
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-App.EARLIEST_SUPPORTED_VERSION					= "10.3.2"
+App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
 
 --------------------------------------------------------------------------------
 -- TODO: The below five constants should probably just be determined from the
@@ -410,21 +410,31 @@ function App:getPath()
 	return nil
 end
 
---- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only>
 --- Field
---- Is a supported version of Final Cut Pro Installed?
+--- Is a supported version of Final Cut Pro installed?
 ---
 --- Note:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-App.isInstalled = prop.new(function(self)
+App.isSupported = prop.new(function(self)
 	local version = self:getVersion()
-	if version then
-		if v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION)) then
-			return true
-		end
-	end
-	return false
+	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
 end):bind(App)
+
+--- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
+--- Field
+--- Is any version of Final Cut Pro Installed?
+App.isInstalled = prop.new(function(self)
+	return self:getVersion() ~= nil
+end):bind(App)
+
+--- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
+--- Field
+--- Is an unsupported version of Final Cut Pro installed?
+---
+--- Note:
+---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
+App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
 
 --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
 --- Field
@@ -446,8 +456,7 @@ end):bind(App)
 ---
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-function App:getVersion()
-
+App.getVersion = prop.new(function(self)
 	----------------------------------------------------------------------------------------
 	-- GET RUNNING COPY OF FINAL CUT PRO:
 	----------------------------------------------------------------------------------------
@@ -485,7 +494,7 @@ function App:getVersion()
 	----------------------------------------------------------------------------------------
 	return nil
 
-end
+end):bind(App)
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -845,7 +854,7 @@ App._preferencesAlreadyUpdating = false
 function App:getPreferences(forceReload)
 	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
 	if forceReload or modified ~= self._preferencesModified then
-		log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
+		-- log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
 		-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
 		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
 
@@ -1300,15 +1309,21 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
---- 	* `active()`		- Triggered when the application is the active application.
---- 	* `inactive()`		- Triggered when the application is no longer the active application.
----     * `move()` 	 		- Triggered when the application window is moved.
---- 	* `preferences()`	- Triggered when the application preferences are updated.
+--- 	* `active`		- Triggered when the application is the active application.
+--- 	* `inactive`	- Triggered when the application is no longer the active application.
+---     * `launched		- Triggered when the application is launched.
+---     * `terminated	- Triggered when the application has been closed.
+---     * `move` 	 	- Triggered when the application window is moved.
+--- 	* `preferences`	- Triggered when the application preferences are updated.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function App:watch(events)
-	self._watchers[#self._watchers+1] = {active = events.active, inactive = events.inactive, move = events.move, preferences = events.preferences}
+	self._watchers[#self._watchers+1] = {
+		active = events.active, inactive = events.inactive,
+		launched = events.launched, terminated = events.terminated,
+		move = events.move, preferences = events.preferences
+	}
 	local id = { id=#self._watchers }
 	return id
 end
@@ -1360,6 +1375,12 @@ function App:_initWatchers()
 				elseif eventType == applicationwatcher.deactivated then
 					self:_notifyWatchers("inactive")
 					return
+				elseif eventType == applicationwatcher.launched then
+					self:_notifyWatchers("launched")
+					return
+				elseif eventType == applicationwatcher.terminated then
+					self:_notifyWatchers("terminated")
+					return
 				end
 			end
 		end
@@ -1384,6 +1405,12 @@ function App:_initWatchers()
 			end
 		end
 	end):start()
+
+	-- add local watchers
+	self:watch({
+		launched	= function() self.getVersion:update() end,
+		terminated	= function() self.getVersion:update() end,
+	})
 
 end
 

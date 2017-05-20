@@ -34,6 +34,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init()
 	local cmds = commands:new("fcpx")
+	cmds.isEnabled(fcp:isFrontmost())
 
 	--------------------------------------------------------------------------------
 	-- Switch to Final Cut Pro to activate:
@@ -51,13 +52,13 @@ function plugin.init()
 	fcp:watch({
 		active 		= function()
 			if not fcp:commandEditor():isShowing() and not fcp:mediaImport():isShowing() then
-				--log.df("Final Cut Pro Commands Enabled")
-				cmds:enable()
+				log.df("Final Cut Pro Commands Enabled")
+				cmds:isEnabled(true)
 			end
 		end,
 		inactive	= function()
-			--log.df("Final Cut Pro Commands Disabled")
-			cmds:disable()
+			log.df("Final Cut Pro Commands Disabled")
+			cmds:isEnabled(false)
 		end,
 	})
 
@@ -67,12 +68,12 @@ function plugin.init()
 	fcp:commandEditor():watch({
 		show		= function()
 			--log.df("Final Cut Pro Commands Disabled due to Command Editor")
-			cmds:disable()
+			cmds:isEnabled(false)
 		end,
 		hide		= function()
 			if fcp:isShowing() then
 				--log.df("Final Cut Pro Commands Enabled due to Command Editor")
-				cmds:enable()
+				cmds:isEnabled(true)
 			end
 		end,
 	})
@@ -83,12 +84,12 @@ function plugin.init()
 	fcp:mediaImport():watch({
 		show		= function()
 			--log.df("Final Cut Pro Commands Dsiabled due to Media Import")
-			cmds:disable()
+			cmds:isEnabled(false)
 		end,
 		hide		= function()
 			if fcp:isShowing() then
 				--log.df("Final Cut Pro Commands Enabled due to Media Import")
-				cmds:enable()
+				cmds:isEnabled(true)
 			end
 		end,
 	})

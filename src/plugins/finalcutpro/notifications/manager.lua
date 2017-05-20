@@ -120,7 +120,7 @@ local function checkWatching()
 	end
 end
 
-mod.watchers = watcher:new(table.unpack(mod.eventTypes))
+mod.watchers = watcher.new(table.unpack(mod.eventTypes))
 
 function mod.watch(events)
 	local id = mod.watchers:watch(events)

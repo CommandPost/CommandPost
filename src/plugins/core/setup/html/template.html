@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>CommandPost</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			{["css/normalize.7.0.0.css"]}
+			{["css/setup.css"]}
+		</style>
+		{% if not debugMode then %}
+		<script>
+			// Disable Right Clicking:
+			document.addEventListener("contextmenu", function(e){
+			    e.preventDefault();
+			}, false);
+		</script>
+		{% end %}
+	</head>
+	<body>
+		{* panel *}
+		{%	if panelCount > 1 then	%}
+			<div class="progress">
+			{%	for i = 1, panelCount do %}
+				<span class="{{ i == panelNumber and 'selected-dot' or '' }}">●</span>
+			{%	end %}
+			</div>
+		{%	end	%}
+	</body>
+</html>

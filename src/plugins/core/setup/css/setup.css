@@ -1,0 +1,87 @@
+/* Setup Window Styles */
+
+/* Ensure the height scales correctly */
+body,
+html,
+main {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+	font-family: -apple-system;
+	font-size: 16px;
+	line-height: 1.5;
+	color: #606c71;
+	background-color: #159957;
+	background-image: linear-gradient(120deg, #ba1d22, #7164e0);
+	overflow:hidden;
+}
+
+a { color: #1e6bb8; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.buttons {
+	position: absolute;
+	bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    z-index: 1001;
+}
+
+.button {
+	text-transform: uppercase; 
+	display: inline-block; 
+	margin-bottom: 1rem; 
+	color: rgba(255, 255, 255, 0.7);
+	background-color: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.2); 
+	border-style: solid; border-width: 1px; 
+	border-radius: 0.3rem; 
+	transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.button:hover { 
+	color: rgba(255, 255, 255, 0.8); 
+	text-decoration: none; 
+	background-color: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.3);
+}
+.button + .button { margin-left: 1rem; }
+.button { padding: 0.6rem 0.9rem; font-size: 0.9rem; }
+
+body {
+	color: #fff;
+	text-align: center;
+	padding: 2rem 6rem;
+}
+
+.panel .content h1 { margin-top: 0; margin-bottom: 0rem; font-size: 2.25rem; }
+.panel .content h2 { margin: 0; font-weight: normal; opacity: 0.7; font-size: 1.15rem; }
+
+.panel .content img.icon {
+	width: 150px;
+	height: 150px;
+}
+
+.progress {
+	color: rgba(255, 255, 255, 0.2);
+	font-size: 1em;
+	padding: 0;
+	letter-spacing: 5px;
+	position: absolute;
+	bottom: 0;
+    left: 50%;
+	height: 20px;
+    max-width: 200px;
+    transform: translateX(-50%) translateY(-50%);
+    z-index: 1000;
+}
+
+.selected-dot {
+	color: rgba(255, 255, 255, 0.8);
+}

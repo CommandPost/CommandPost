@@ -1268,13 +1268,6 @@
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpLaunchFinalCutPro</key>
-	<dict>
-		<key>characterString</key>
-		<string>l</string>
-		<key>modifiers</key>
-		<string>control option command</string>
-	</dict>
 	<key>cpShowListOfShortcutKeys</key>
 	<dict>
 		<key>characterString</key>

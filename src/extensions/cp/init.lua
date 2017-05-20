@@ -77,7 +77,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
 	--------------------------------------------------------------------------------
-	local debugMode = config.get("debugMode")
+	local debugMode = config.developerMode()
 	if debugMode then
 		logger.defaultLogLevel = 'debug'
 		require("cp.developer")
@@ -202,22 +202,6 @@ function mod.init()
 	end
 
 	--------------------------------------------------------------------------------
-	-- Setup Global Accessibility State Callback:
-	--------------------------------------------------------------------------------
-	hs.accessibilityStateCallback = function()
-		--log.df("Accessibility State Changed.")
-		local accessibilityStateCallbacks = config.accessibilityStateCallback:getAll()
-		if accessibilityStateCallbacks and type(accessibilityStateCallbacks) == "table" then
-			for i, v in pairs(accessibilityStateCallbacks) do
-				local fn = v:callbackFn()
-				if fn and type(fn) == "function" then
-					fn(value)
-				end
-		    end
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- Create CommandPost Shutdown Callback:
 	--------------------------------------------------------------------------------
 	hs.shuttingDown = false
@@ -232,13 +216,20 @@ function mod.init()
 	end)
 
 	--------------------------------------------------------------------------------
+	-- Enable "Launch at Startup" by default:
+	--------------------------------------------------------------------------------
+	if not config.get("hasRunOnce", false) then
+		hs.autoLaunch(true)
+		config.set("hasRunOnce", true)
+	end
+
+	--------------------------------------------------------------------------------
 	-- Check Versions & Language:
 	--------------------------------------------------------------------------------
 	local fcpVersion    		= fcp:getVersion() or "Unknown"
 	local fcpPath				= fcp:getPath() or "Unknown"
 	local osVersion    			= tools.macOSVersion() or "Unknown"
 	local fcpLanguage   		= fcp:getCurrentLanguage() or "Unknown"
-	local debugModeStatus		= debugMode or false
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -274,7 +265,7 @@ function mod.init()
 	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
-												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugModeStatus))
+												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
 	console.printStyledtext("")
 
 	--------------------------------------------------------------------------------
@@ -285,8 +276,14 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Load Plugins:
 	--------------------------------------------------------------------------------
-	log.df("Loading Plugins:")
+	log.df("Loading Plugins...")
 	plugins.init(config.pluginPaths)
+	log.df("Plugins Loaded.")
+
+	--------------------------------------------------------------------------------
+	-- Loaded notification:
+	--------------------------------------------------------------------------------
+	dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
 
 	return mod
 

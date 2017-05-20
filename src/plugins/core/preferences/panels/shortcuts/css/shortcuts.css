@@ -1,0 +1,120 @@
+#customiseShortcuts.disabled {
+	pointer-events: none; opacity: 0.4;
+}
+
+.shortcuts {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #ffffff;
+	text-align: left;
+}
+
+.shortcuts td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.rowLabel {
+	width: 57%;
+}
+
+.rowModifier {
+	width: 18%;
+}
+
+.rowKeyCode {
+	width: 25%;
+}
+
+.rowModifier select {
+	width: 100%;
+}
+
+.rowKeyCode select {
+	width: 100%;
+}
+
+.shortcuts thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.shortcuts thead tr, .shortcuts tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.shortcuts thead tr {
+	width: calc( 100% - 8px);
+}
+
+.shortcuts tbody {
+	display:block;
+	height: 250px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.shortcuts tbody tr:nth-child(even) {
+	background-color: #f5f5f5
+}
+
+.shortcuts tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+
+.resetShortcuts {
+	margin: 10px 0px;
+	text-align: right;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.shortcutsControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+#shortcutController {
+	font-weight: bold;
+}
+
+#shortcutsGroupControls {
+	min-height: 295px;
+}
+
+#shortcutsGroupControls .shortcutsGroup {
+	display: none;
+}
+
+#shortcutsGroupControls .shortcutsGroup.selected {
+	display: block;
+}
+
+.groupSelect {
+	float: right;
+}
+
+/*.shortcuts td, .shortcuts th {
+	border: 1px solid red;
+}*/

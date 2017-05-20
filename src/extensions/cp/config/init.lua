@@ -17,9 +17,11 @@ local application		= require("hs.application")
 local fs				= require("hs.fs")
 local settings			= require("hs.settings")
 local window			= require("hs.window")
+local console			= require("hs.console")
 local sourcewatcher		= require("cp.sourcewatcher")
 local prop				= require("cp.prop")
 local v					= require("semver")
+local watcher			= require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -246,7 +248,50 @@ function mod.reset()
 	for i, v in ipairs(settings.getKeys()) do
 		settings.set(v, nil)
 	end
+	mod.watcher:notify("reset")
+	console.clearConsole()
+	hs.reload()
 end
+
+mod.watcher = watcher.new("reset")
+
+--- cp.config.watch(events) -> id
+--- Function
+--- Watches for config events.
+---
+--- Parameters:
+---  * `events`	- a table containing functions for each event to watch for.
+---
+--- Returns:
+---  * a unique ID that can be used to `unwatch`.
+---
+--- Notes:
+---  * Supported events:
+---  ** `reset()`	- occurs after CommandPost's settings are reset.
+function mod.watch(events)
+	return mod.watcher:watch(events)
+end
+
+--- cp.config.unwatch(id)
+--- Function
+--- Unregisters the watcher with the specified ID.
+---
+--- Parameters:
+---  * `id`		- The ID, originally returned from the `watch` function.
+---
+--- Returns:
+---  * `true` if a watcher with the ID existed and was successfully removed.
+function mod.unwatch(id)
+	return mod.watcher:unwatch(id)
+end
+
+--- cp.config.developerMode <cp.prop: boolean>
+--- Constant
+--- When `true`, the app is in developer mode.
+mod.developerMode = mod.prop("debugMode", false):watch(function()
+	console.clearConsole()
+	hs.reload()
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -619,99 +664,5 @@ end
 function dockIconClickCallback:callbackFn()
 	return self._callbackFn
 end
-
---------------------------------------------------------------------------------
---
--- ACCESSIBILITY STATE CALLBACK:
---
---------------------------------------------------------------------------------
-
---- === cp.config.accessibilityStateCallback ===
----
---- Callback which triggers when the Accessibility State is changed
-
-local accessibilityStateCallback = {}
-accessibilityStateCallback._items = {}
-
-mod.accessibilityStateCallback = accessibilityStateCallback
-
---- cp.config.accessibilityStateCallback:new(id, callbackFn) -> table
---- Method
---- Creates a new Accessibility State Callback.
----
---- Parameters:
---- * `id`		- The unique ID for this callback.
----
---- Returns:
----  * table that has been created
-function accessibilityStateCallback:new(id, callbackFn)
-
-	if accessibilityStateCallback._items[id] ~= nil then
-		error("Duplicate Dock Icon Click Callback: " .. id)
-	end
-	local o = {
-		_id = id,
-		_callbackFn = callbackFn,
-	}
-	setmetatable(o, self)
-	self.__index = self
-
-	accessibilityStateCallback._items[id] = o
-	return o
-
-end
-
---- cp.config.accessibilityStateCallback:get(id) -> table
---- Method
---- Gets a Accessibility State Callback
----
---- Parameters:
---- * `id`		- The unique ID for the callback you want to return.
----
---- Returns:
----  * table containing the callback
-function accessibilityStateCallback:get(id)
-	return self._items[id]
-end
-
---- cp.config.accessibilityStateCallback:getAll() -> table
---- Method
---- Returns all of the created Accessibility State Callbacks
----
---- Parameters:
---- * None
----
---- Returns:
----  * table containing all of the created callbacks
-function accessibilityStateCallback:getAll()
-	return self._items
-end
-
---- cp.config.accessibilityStateCallback:id() -> string
---- Method
---- Returns the ID of the current Accessibility State Callback
----
---- Parameters:
---- * None
----
---- Returns:
----  * The ID of the current Accessibility State Callback as a `string`
-function accessibilityStateCallback:id()
-	return self._id
-end
-
---- cp.config.accessibilityStateCallback:callbackFn() -> function
---- Method
---- Returns the callbackFn of the current Accessibility State Callback
----
---- Parameters:
---- * None
----
---- Returns:
----  * The callbackFn of the current Accessibility State Callback
-function accessibilityStateCallback:callbackFn()
-	return self._callbackFn
-end
-
 
 return mod

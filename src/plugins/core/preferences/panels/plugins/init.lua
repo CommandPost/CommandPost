@@ -36,13 +36,42 @@ local mod = {}
 mod.SETTINGS_DISABLED = "plugins.disabled"
 
 --------------------------------------------------------------------------------
+-- PLUGIN STATUS:
+--------------------------------------------------------------------------------
+local function pluginStatus(plugin)
+	local status = plugin:getStatus()
+	return string.format("<span class='status-%s'>%s</span>", status, i18n("plugin_status_" .. status))
+end
+
+--------------------------------------------------------------------------------
+-- PLUGIN CATEGORY:
+--------------------------------------------------------------------------------
+local function pluginCategory(plugin)
+	local group = plugin:getGroup()
+	return i18n("plugin_group_" .. group, {default = group})
+end
+
+--------------------------------------------------------------------------------
+-- PLUGIN SHORT NAME:
+--------------------------------------------------------------------------------
+local function pluginShortName(id, plain)
+
+	local result = i18n(string.gsub(id, "%.", "_") .. "_label") or id
+	if not plain and result ~= id then
+		result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', result, id)
+	end
+	return result
+end
+
+--------------------------------------------------------------------------------
 -- DISABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function disablePlugin(id)
-	local result = dialog.displayMessage("Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
-	if result == "Yes" then
-		plugins.disable(id)
-		hs.reload()
+	local result = dialog.displayMessage(i18n("pluginsDisableCheck"), {i18n "yes", i18n "no"})
+	if result == i18n "yes" then
+		if not plugins.disable(id) then
+			dialog.displayMessage(i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))
+		end
 	end
 end
 
@@ -50,10 +79,11 @@ end
 -- ENABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function enablePlugin(id)
-	local result = dialog.displayMessage("Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.", {"Yes", "No"})
-	if result == "Yes" then
-		plugins.enable(id)
-		hs.reload()
+	local result = dialog.displayMessage(i18n("pluginsEnableCheck"), {i18n "yes", i18n "no"})
+	if result == i18n "yes" then
+		if not plugins.enable(id) then
+			dialog.displayMessage(i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))
+		end
 	end
 end
 
@@ -98,60 +128,24 @@ local function openPluginsFolder()
 end
 
 --------------------------------------------------------------------------------
--- PLUGIN STATUS:
---------------------------------------------------------------------------------
-local function pluginStatus(plugin)
-	local status = plugin:getStatus()
-	return string.format("<span class='status-%s'>%s</span>", status, i18n("plugin_status_" .. status))
-end
-
---------------------------------------------------------------------------------
--- PLUGIN CATEGORY:
---------------------------------------------------------------------------------
-local function pluginCategory(plugin)
-	local group = plugin:getGroup()
-	return i18n("plugin_group_" .. group, {default = group})
-end
-
---------------------------------------------------------------------------------
--- PLUGIN SHORT NAME:
---------------------------------------------------------------------------------
-local function pluginShortName(plugin)
-
-	local id = plugin.id
-	local result = i18n(string.gsub(id, "%.", "_") .. "_label") or id
-	if result ~= path then
-		result = string.format('<div class="tooltip">%s<span class="tooltiptext">%s</span></div>', result, id)
-	end
-	return result
-end
-
---------------------------------------------------------------------------------
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 local function generateContent()
 
 	local listOfPlugins = plugins.getPlugins()
 
-	table.sort(listOfPlugins, function(a, b) return a.id < b.id end)
-
-	local pluginRows = ""
 	local pluginInfo = {}
 
-	local lastCategory = ""
-	
 	for _,plugin in ipairs(listOfPlugins) do
 
 		local info = {}
 
-		local currentCategory = pluginCategory(plugin)
-		local cachedCurrentCategory = currentCategory
-		if currentCategory == lastCategory then currentCategory = "" end
-
 		info.id = plugin.id
+		info.group = plugin.group
+		info.category = pluginCategory(plugin)
 		info.currentCategory = currentCategory
 		info.status = pluginStatus(plugin)
-		info.shortName = pluginShortName(plugin)
+		info.shortName = pluginShortName(plugin.id)
 		
 		local action = nil
 		
@@ -173,6 +167,17 @@ local function generateContent()
 		pluginInfo[#pluginInfo+1] = info
 		mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
 
+	end
+	
+	table.sort(pluginInfo, function(a, b)
+		return a.category < b.category or a.category == b.category and a.shortName < b.shortName
+	end)
+	
+	-- Add a 'currentCategory' field that only list the category when it's different from the previous one.
+	local lastCategory = ""
+	for _,info in ipairs(pluginInfo) do
+		info.currentCategory = info.category == lastCategory and "" or info.category
+		lastCategory = info.category
 	end
 
 	-- handle 'open plugin folder' buttons

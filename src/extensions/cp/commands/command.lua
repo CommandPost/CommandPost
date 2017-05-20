@@ -16,6 +16,7 @@
 local log					= require("hs.logger").new("command")
 
 local shortcut				= require("cp.commands.shortcut")
+local prop					= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -26,10 +27,10 @@ local command = {}
 
 --- cp.commands.command:new() -> command
 --- Method
---- Creates a new menu command, which can have items and sub-menus added to it.
+--- Creates a new command, which can have keyboard shortcuts assigned to it.
 ---
 --- Parameters:
----  * `id`	= the unique identifier for the command. E.g. 'FCPXHacksCustomCommand'
+---  * `id`	= the unique identifier for the command. E.g. 'cpCustomCommand'
 ---
 --- Returns:
 ---  * command - The command that was created.
@@ -39,10 +40,23 @@ function command:new(id, parent)
 		_id = id,
 		_parent = parent,
 		_shortcuts = {},
-		_enabled = false,
 	}
-	setmetatable(o, self)
-	self.__index = self
+	prop.extend(o, command)
+	
+--- cp.commands.command.isEnabled <cp.prop: boolean>
+--- Field
+--- If set to `true`, the command is enabled.
+	o.isEnabled = prop.TRUE():bind(o)
+	
+--- cp.commands.command.isActive <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
+	o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active)
+		for _,shortcut in ipairs(o._shortcuts) do
+			shortcut:isEnabled(active)
+		end
+	end, true)
+	
 	return o
 end
 
@@ -191,9 +205,7 @@ function command:addShortcut(newShortcut)
 	-- mark it as a 'command' hotkey
 	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
-
-	-- enable it if appropriate
-	if self:isEnabled() then newShortcut:enable() end
+	newShortcut:isEnabled(self:isEnabled())
 	return self
 end
 
@@ -208,6 +220,19 @@ end
 ---  * The associated shortcuts.
 function command:getShortcuts()
 	return self._shortcuts
+end
+
+--- cp.commands.command:getFirstShortcut() -> command
+--- Method
+--- Returns the first shortcut, or `nil` if none have been registered.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The first shortcut, or `nil`.
+function command:getFirstShortcut()
+	return self._shortcuts and #self._shortcuts > 0 and self._shortcuts[1] or nil
 end
 
 --- cp.commands.command:whenActivated(function) -> command
@@ -347,23 +372,17 @@ function command:activated(repeats)
 end
 
 function command:enable()
-	self._enabled = true
-	for _,shortcut in ipairs(self._shortcuts) do
-		shortcut:enable()
-	end
+	self:isEnabled(true)
 	return self
 end
 
 function command:disable()
-	self._enabled = false
-	for _,shortcut in ipairs(self._shortcuts) do
-		shortcut:disable()
-	end
+	self:isEnabled(false)
 	return self
 end
 
-function command:isEnabled()
-	return self._enabled
+function command:__tostring()
+	local result = string.format("command: %s (enabled: %s)", self:id(), self:isEnabled())
 end
 
 return command

@@ -78,7 +78,7 @@ local plugin = {
 	id				= "finalcutpro.menu.proxyicon",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.preferences.panels.finalcutpro"]	= "prefs",
+		["finalcutpro.preferences.app"]	= "prefs",
 		["core.menu.manager"]							= "menuManager",
 	}
 }

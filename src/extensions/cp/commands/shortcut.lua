@@ -24,6 +24,8 @@ local englishKeyCodes							= require("cp.commands.englishKeyCodes")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
+local prop										= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -59,7 +61,7 @@ function shortcut.textToKeyCode(input)
 	return result
 end
 
---- cp.commands.shortcut:new(command) -> shortcut
+--- cp.commands.shortcut:new(modifiers, keyCode) -> shortcut
 --- Method
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
@@ -71,12 +73,10 @@ end
 ---  * shortcut - The shortcut that was created.
 function shortcut:new(modifiers, keyCode)
 	local o = {
-		_modifiers = modifiers or {},
-		_keyCode = keyCode,
+		_modifiers	= modifiers or {},
+		_keyCode	= keyCode,
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return prop.extend(o, shortcut)
 end
 
 --- cp.commands.shortcut:build(receiverFn) -> cp.commands.shortcut.builder
@@ -134,18 +134,22 @@ function shortcut:getKeyCode()
 	return self._keyCode
 end
 
---- cp.commands.shortcut:isEnabled() -> boolean
---- Method
---- Is the shortcut enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns `true` if the shortcut is enabled otherwise `false`
-function shortcut:isEnabled()
-	return self._enabled
-end
+--- cp.commands.shortcut:isEnabled <cp.prop: boolean>
+--- Field
+--- If `true`, the shortcut is enabled.
+shortcut.isEnabled = prop(
+	function(self) return self._enabled end,
+	function(enabled, self)
+		self._enabled = enabled
+		if self._hotkey then
+			if enabled then
+				self._hotkey:enable()
+			else
+				self._hotkey:disable()
+			end
+		end
+	end
+):bind(shortcut)
 
 --- cp.commands.shortcut:enable() -> shortcut
 --- Method
@@ -157,10 +161,7 @@ end
 --- Returns:
 ---  * `self`
 function shortcut:enable()
-	self._enabled = true
-	if self._hotkey then
-		self._hotkey:enable()
-	end
+	self:isEnabled(true)
 	return self
 end
 
@@ -174,10 +175,7 @@ end
 --- Returns:
 ---  * `self`
 function shortcut:disable()
-	self._enabled = false
-	if self._hotkey then
-		self._hotkey:disable()
-	end
+	self:ifEnabled(false)
 	return self
 end
 
@@ -308,6 +306,11 @@ function shortcut:trigger()
 	local keyCode = shortcut.textToKeyCode(self:getKeyCode())
 	eventtap.keyStroke(self._modifiers, keyCode)
 	return self
+end
+
+function shortcut:__tostring()
+	local modifiers = table.concat(self._modifiers, "+")
+	return string.format("shortcut: %s %s", modifiers, self:getKeyCode())
 end
 
 --- === cp.commands.shortcut.builder ===

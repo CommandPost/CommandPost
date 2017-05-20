@@ -15,6 +15,7 @@
 --
 --------------------------------------------------------------------------------
 local log			= require("hs.logger").new("shortcuts")
+local inspect		= require("hs.inspect")
 
 local fs			= require("hs.fs")
 
@@ -23,6 +24,7 @@ local config		= require("cp.config")
 local dialog		= require("cp.dialog")
 local fcp			= require("cp.apple.finalcutpro")
 local tools			= require("cp.tools")
+local prop			= require("cp.prop")
 
 local v				= require("semver")
 
@@ -32,6 +34,12 @@ local v				= require("semver")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 		= 5
+local CP_SHORTCUT   = "cpOpenCommandEditor"
+
+local COMMANDS_FILE			= "NSProCommands.plist"
+local COMMAND_GROUPS_FILE	= "NSProCommandGroups.plist"
+
+local FCP_RESOURCES_PATH		= "/Contents/Resources/"
 
 --------------------------------------------------------------------------------
 --
@@ -40,75 +48,225 @@ local PRIORITY 		= 5
 --------------------------------------------------------------------------------
 local mod = {}
 
+local private = {}
+
+-- Returns the path to the specified resource inside FCPX, or `nil` if it cannot be found.
+function private.resourcePath(resourceName)
+	local fcpPath = fcp:getPath()
+	if fcpPath then
+		return fs.pathToAbsolute(fcpPath .. FCP_RESOURCES_PATH .. tostring(resourceName))
+	else
+		return nil
+	end
+end
+
+-- Returns the path to the most recent version of the specified file inside the plugin, or `nil` if it can't be found.
+function private.hacksPath(resourceName)
+	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
+	if mod.commandSetsPath and fcp:isInstalled() then
+		local ver = v(fcp:getVersion())
+		local path = nil
+		local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)
+		return fs.pathToAbsolute(target)
+	else
+		return nil
+	end
+end
+
+function private.hacksOriginalPath(resourceName)
+	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
+	return private.hacksPath("original/"..resourceName)
+end
+
+function private.hacksModifiedPath(resourceName)
+	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
+	return private.hacksPath("modified/"..resourceName)
+end
+
+function private.fileContentsMatch(path1, path2)
+	
+	-- Open the first path
+	local file1 = io.open(path1, "rb")
+	if err then log.wf("Unable to read file: %s", path1); return false; end
+
+	-- Open the second path
+	local file2, err = io.open(path2,"rb")
+	if err then log.wf("Unable to read file: %s", path2); return false; end
+	-- compare line by line
+
+	local block = 100
+	local matches = true
+	
+	while true do
+		local bytes1 = file1:read(block)
+		local bytes2 = file2:read(block)
+		
+		if not bytes1 then
+			-- make sure file finished as well
+			matches = not bytes2
+			break
+		elseif not bytes2 then
+			-- file1 finished before file2
+			matches = false
+			break
+		end
+		
+		if bytes1 ~= bytes2 then
+			matches = false
+			break
+		end
+	end
+
+	file1:close()
+	file2:close()
+	
+	return matches
+end
+
+-- Returns `true` if the files at the specified paths are the same.
+function private.filesMatch(path1, path2)
+	if path1 and path2 then
+		local attr1, attr2 = fs.attributes(path1), fs.attributes(path2)
+		if attr1 and attr2 and attr1.mode == attr2.mode then
+			-- They are the same type and size. Now, we compare contents.
+			if attr1.mode == "directory" then
+				return private.directoriesMatch(path1, path2)
+			elseif attr1.mode == "file" and attr1.size == attr2.size then
+				return private.fileContentsMatch(path1, path2)
+			end
+		end
+	end
+	return false
+end
+
+-- Checks if all files contained in the source path match 
+function private.directoriesMatch(sourcePath, targetPath)
+	local sourceFiles = tools.dirFiles(sourcePath)
+
+	for i,file in ipairs(sourceFiles) do
+		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
+			local sourceFile = fs.pathToAbsolute(sourcePath .. "/" .. file)
+			local targetFile = fs.pathToAbsolute(targetPath .. "/" .. file)
+			
+			if not sourceFile or not targetFile then -- A file is missing
+				-- log.df("Missing file:\n\t%s", sourceFile or targetFile)
+				return false
+			end
+
+			if not private.filesMatch(sourceFile, targetFile) then
+				-- log.df("Mismatched file:\n\t%s", sourceFile)
+				return false
+			end
+		end
+	end
+	
+	return true
+end
+
+-- private.copyFiles(batch, sourcePath, targetPath) -> nil
+-- Function
+-- Adds commands to copy Hacks Shortcuts files into FCPX.
+--
+-- Parameters:
+-- * `batch`		- The table of batch commands to be executed.
+-- * `sourcePath`	- The source file.
+-- * `targetPath`	- The target path.
+function private.copyFiles(batch, sourcePath, targetPath)
+	local copy = "cp -f '%s' '%s'"
+	local mkdir = "mkdir '%s'"
+	
+	local sourceFiles = tools.dirFiles(sourcePath)
+
+	for i,file in ipairs(sourceFiles) do
+		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
+			local sourceFile = sourcePath .. "/" .. file
+			local targetFile = targetPath .. "/" .. file
+			
+			local sourceAttr = fs.attributes(sourceFile)
+			local targetAttr = fs.attributes(targetFile)
+			
+			if sourceAttr.mode == "directory" then
+				if not targetAttr then
+					-- The directory doesn't exist. Make it first.
+					table.insert(batch, mkdir:format(targetFile))
+				end
+				private.copyFiles(batch, sourceFile, targetFile)
+			elseif sourceAttr.mode == "file" then
+				table.insert(batch, copy:format(sourceFile, targetFile))
+			end
+		end
+	end
+	
+end
+
+-- private.copyHacksFiles(batch, sourcePath) -> ni(""), private.resourcePath("")l
+-- Function
+-- Adds commands to copy Hacks Shortcuts files into FCPX.
+--
+-- Parameters:
+-- * `batch`		- The table of batch commands to be executed.
+-- * `sourcePath`	- A function that will return the absolute source path to copy from.
+function private.copyHacksFiles(batch, sourcePath)
+	
+	local copy = "cp -f '%s' '%s'"
+	local mkdir = "mkdir '%s'"
+
+	table.insert(batch, copy:format( sourcePath(COMMAND_GROUPS_FILE), private.resourcePath(COMMAND_GROUPS_FILE) ) )
+	table.insert(batch, copy:format( sourcePath(COMMANDS_FILE), private.resourcePath(COMMANDS_FILE) ) )
+
+	local finalCutProLanguages = fcp:getSupportedLanguages()
+
+	for _, whichLanguage in ipairs(finalCutProLanguages) do
+		local langPath = whichLanguage .. ".lproj/"
+		local whichDirectory = private.resourcePath(langPath)
+		if not tools.doesDirectoryExist(whichDirectory) then
+			table.insert(batch, mkdir:format(whichDirectory))
+		end
+
+		table.insert(batch, copy:format(sourcePath(langPath .. "Default.commandset"), private.resourcePath(langPath .. "Default.commandset")))
+		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandDescriptions.strings"), private.resourcePath(langPath .. "NSProCommandDescriptions.strings")))
+		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandNames.strings"), private.resourcePath(langPath .. "NSProCommandNames.strings")))
+	end	
+end
+
 --------------------------------------------------------------------------------
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
-local function enableHacksShortcuts()
+function private.updateHacksShortcuts(install)
 
-	log.df("Enabling Hacks Shortcuts...")
+	log.df("Updating Hacks Shortcuts...")
 
-	local finalCutProVersion = fcp:getVersion()
-
-	if not finalCutProVersion then
-		dialog.displayMessage("The Final Cut Pro version could not be detected.\n\nThis shouldn't happen, so something has broken.")
-		log.ef("No Final Cut Pro Version was detected. This shouldn't happen.")
-		return nil
+	if not mod.supported() then
+		dialog.displayMessage("No supported versions of Final Cut Pro were detected.")
+		return false
 	end
+	
+	mod.working(true)
 
-	local whichVersion = "10.3.2"
-	if v(finalCutProVersion) <= v("10.3.3") then
-		whichVersion = "10.3.3"
-	end
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-
-	local executeStrings = {}
+	local batch = {}
 
 	--------------------------------------------------------------------------------
-	-- First we copy the original Final Cut Pro files, just in case the user has
+	-- Always copy the originals back into FCPX, just in case the user has
 	-- previously removed them or used an old version of CommandPost or FCPX Hacks:
 	--------------------------------------------------------------------------------
-
-	local executeCommand = "cp -f '" .. mod.commandSetsPath .. "/" .. whichVersion .. "/original/"
-
-	table.insert(executeStrings, executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'")
-	table.insert(executeStrings, executeCommand .. "NSProCommands.plist' '" .. finalCutProPath .. "NSProCommands.plist'")
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-
-		local whichDirectory = finalCutProPath .. whichLanguage .. ".lproj"
-		if not tools.doesDirectoryExist(whichDirectory) then
-			table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
-		end
-
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset' '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
+	
+	private.copyFiles(batch, private.hacksOriginalPath(""), private.resourcePath(""))
 
 	--------------------------------------------------------------------------------
 	-- Only then do we copy the 'modified' files...
 	--------------------------------------------------------------------------------
-
-	local executeCommand = "cp -f '" .. mod.commandSetsPath .. "/" .. whichVersion .. "/modified/"
-
-	table.insert(executeStrings, executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'")
-	table.insert(executeStrings, executeCommand .. "NSProCommands.plist' '" .. finalCutProPath .. "NSProCommands.plist'")
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-
-		local whichDirectory = finalCutProPath .. whichLanguage .. ".lproj"
-		if not tools.doesDirectoryExist(whichDirectory) then
-			table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
-		end
-
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset' '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
+	if install then
+		private.copyFiles(batch, private.hacksModifiedPath(""), private.resourcePath(""))
 	end
+	
+	--------------------------------------------------------------------------------
+	-- Execute the instructions.
+	--------------------------------------------------------------------------------
+	local result = tools.executeWithAdministratorPrivileges(batch, false)
+	
+	mod.working(false)
 
-	local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
+	mod.update()
 
 	if result == false then
 		-- Cancel button pressed:
@@ -117,69 +275,10 @@ local function enableHacksShortcuts()
 
 	if type(result) == "string" then
 		log.ef("The following error(s) occurred: %s", result)
-		config.set("enableHacksShortcutsInFinalCutPro", false)
 		return false
 	end
 
 	-- Success!
-	config.set("enableHacksShortcutsInFinalCutPro", true)
-	return true
-
-end
-
---------------------------------------------------------------------------------
--- DISABLE HACKS SHORTCUTS:
---------------------------------------------------------------------------------
-local function disableHacksShortcuts()
-
-	log.df("Disabling Hacks Shortcuts...")
-
-	local finalCutProVersion = fcp:getVersion()
-
-	local whichVersion = "10.3.2"
-	if v(finalCutProVersion) <= v("10.3.3") then
-		whichVersion = "10.3.3"
-	end
-
-	log.df("Final Cut Pro Version: %s", whichVersion)
-
-	local finalCutProPath = fcp:getPath() .. "/Contents/Resources/"
-	local finalCutProLanguages = fcp:getSupportedLanguages()
-
-	local executeCommand = "cp -f '" .. mod.commandSetsPath .. "/" .. whichVersion .. "/original/"
-
-	local executeStrings = {}
-
-	table.insert(executeStrings, executeCommand .. "NSProCommandGroups.plist' '" .. finalCutProPath .. "NSProCommandGroups.plist'")
-	table.insert(executeStrings, executeCommand .. "NSProCommands.plist' '" .. finalCutProPath .. "NSProCommands.plist'")
-
-	for _, whichLanguage in ipairs(finalCutProLanguages) do
-
-		local whichDirectory = finalCutProPath .. whichLanguage .. ".lproj"
-		if not tools.doesDirectoryExist(whichDirectory) then
-			table.insert(executeStrings, "mkdir '" .. whichDirectory .. "'")
-		end
-
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/Default.commandset' '" .. finalCutProPath .. whichLanguage .. ".lproj/Default.commandset'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandDescriptions.strings'")
-		table.insert(executeStrings, executeCommand .. whichLanguage .. ".lproj/NSProCommandNames.strings' '" .. finalCutProPath .. whichLanguage .. ".lproj/NSProCommandNames.strings'")
-	end
-
-	local result = tools.executeWithAdministratorPrivileges(executeStrings, false)
-
-	if result == false then
-		-- Cancel button pressed:
-		return false
-	end
-
-	if type(result) == "string" then
-		log.ef("The following error(s) occurred: %s", result)
-		config.set("enableHacksShortcutsInFinalCutPro", true)
-		return false
-	end
-
-	-- Success!
-	config.set("enableHacksShortcutsInFinalCutPro", false)
 	return true
 
 end
@@ -188,29 +287,28 @@ end
 -- UPDATE FINAL CUT PRO COMMANDS:
 -- Switches to or from having CommandPost commands editible inside FCPX.
 --------------------------------------------------------------------------------
-local function updateFCPXCommands(editable)
-	--------------------------------------------------------------------------------
-	-- Are we enabling or disabling?
-	--------------------------------------------------------------------------------
-	local enableOrDisableText = nil
-	if not editable then
-		enableOrDisableText = "Disabling"
-	else
-		enableOrDisableText = "Enabling"
+function private.updateFCPXCommands(enable, silently)
+	
+	if enable == mod.installed() then
+		return true
 	end
+	
+	local running = fcp:isRunning()
+	if not silently then
+		--------------------------------------------------------------------------------
+		-- Check if the user really wants to do this
+		--------------------------------------------------------------------------------
+		local prompt = enable and i18n("hacksEnabling") or i18n("hacksDisabling")
 
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartStatus = false
-	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(enableOrDisableText .. " " .. i18n("hacksShortcutsRestart") .. " " .. i18n("doYouWantToContinue")) then
-			restartStatus = true
+		if running then
+			prompt = prompt .. " " .. i18n("hacksShortcutsRestart")
 		else
-			return false
+			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
-	else
-		if not dialog.displayYesNoQuestion(enableOrDisableText .. " " .. i18n("hacksShortcutAdminPassword") .. " " .. i18n("doYouWantToContinue")) then
+	
+		prompt = prompt .. " " .. i18n("doYouWantToContinue")
+	
+		if not dialog.displayYesNoQuestion(prompt) then
 			return false
 		end
 	end
@@ -218,28 +316,14 @@ local function updateFCPXCommands(editable)
 	--------------------------------------------------------------------------------
 	-- Let's do it!
 	--------------------------------------------------------------------------------
-	local saveSettings = false
-	local result = nil
-	if not editable then
-		--------------------------------------------------------------------------------
-		-- Disable Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		result = disableHacksShortcuts()
-	else
-		--------------------------------------------------------------------------------
-		-- Enable Hacks Shortcut in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		result = enableHacksShortcuts()
-	end
-
-	if not result then
-		return result
+	if not private.updateHacksShortcuts(enable) then
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Restart Final Cut Pro:
 	--------------------------------------------------------------------------------
-	if restartStatus and not fcp:restart() then
+	if running and not fcp:restart() then
 		--------------------------------------------------------------------------------
 		-- Failed to restart Final Cut Pro:
 		--------------------------------------------------------------------------------
@@ -249,115 +333,66 @@ local function updateFCPXCommands(editable)
 	return true
 end
 
+function private.applyShortcut(cmd)
+	local shortcuts = fcp:getCommandShortcuts(id)
+	if shortcuts ~= nil then
+		cmd:setShortcuts(shortcuts)
+	end
+end
+
 --------------------------------------------------------------------------------
 -- APPLY SHORTCUTS:
 --------------------------------------------------------------------------------
-local function applyShortcuts(commands, commandSet)
+function private.applyShortcuts(commands)
 	commands:deleteShortcuts()
-	if commandSet ~= nil then
-		for id, cmd in pairs(commands:getAll()) do
-			local shortcuts = fcp:getCommandShortcuts(id)
-			if shortcuts ~= nil then
-				cmd:setShortcuts(shortcuts)
-			end
-		end
-		return true
-	else
-		return false
+	for id, cmd in pairs(commands:getAll()) do
+		private.applyShortcut(cmd)
 	end
 end
 
 --------------------------------------------------------------------------------
 -- APPLY COMMAND SET SHORTCUTS:
 --------------------------------------------------------------------------------
-local function applyCommandSetShortcuts()
+function private.applyCommandSetShortcuts()
 	local commandSet = fcp:getActiveCommandSet(true)
 
-	log.df("Applying FCPX Shortcuts to global commands...")
-	applyShortcuts(mod.globalCmds, commandSet)
 	log.df("Applying FCPX Shortcuts to FCPX commands...")
-	applyShortcuts(mod.fcpxCmds, commandSet)
+	private.applyShortcuts(mod.fcpxCmds, commandSet)
 
-	mod.globalCmds:watch({
-		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
-	})
 	mod.fcpxCmds:watch({
-		add		= function(cmd) applyCommandShortcut(cmd, fcp:getActiveCommandSet()) end,
+		add		= function(cmd)	private.applyShortcut(cmd) end,
 	})
+	
+	mod.fcpxCmds:isEditable(false)
 end
 
---- plugins.finalcutpro.hacks.shortcuts.enabled() -> none
+--- plugins.finalcutpro.hacks.shortcuts.uninstall(silently) -> none
 --- Function
---- Are Hacks Shortcuts Enabled?
+--- Uninstalls the Hacks Shortcuts, if they have been installed
 ---
 --- Parameters:
----  * None
+---  * `silently`	- (optional) If `true`, the user will not be prompted first.
 ---
 --- Returns:
----  * `true` if Hacks Shortcuts are enabled otherwise `false`
-function mod.enabled()
-	return mod.shortcuts.hacksShortcutsEnabled()
-end
-
---- plugins.finalcutpro.hacks.shortcuts.setEditable() -> none
---- Function
---- Enable Hacks Shortcuts
----
---- Parameters:
----  * enabled - True if you want to enable Hacks Shortcuts otherwise false
----  * skipFCPXupdate - Whether or not you want to skip reloading Final Cut Pro
----
---- Returns:
----  * None
-function mod.setEnabled(enabled, skipFCPXupdate)
-	local editable = mod.enabled()
-	if editable ~= enabled then
-		if not skipFCPXUpdate then
-			updateFCPXCommands(enabled)
-		end
-	end
-end
-
---- plugins.finalcutpro.hacks.shortcuts.disableHacksShortcuts() -> none
---- Function
---- Disable Hacks Shortcuts
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
+---  * `true` if successful.
 ---
 --- Notes:
 ---  * Used by Trash Preferences menubar command.
-function mod.disableHacksShortcuts()
-	disableHacksShortcuts()
+function mod.uninstall(silently)
+	return private.updateFCPXCommands(false, silently)
 end
 
---- plugins.finalcutpro.hacks.shortcuts.enableHacksShortcuts() -> none
+--- plugins.finalcutpro.hacks.shortcuts.install(silently) -> none
 --- Function
---- Enable Hacks Shortcuts
+--- Installs the Hacks Shortcuts.
 ---
 --- Parameters:
----  * None
+---  * `silently`	- (optional) If `true`, the user will not be prompted first.
 ---
 --- Returns:
----  * None
-function mod.enableHacksShortcuts()
-	return enableHacksShortcuts()
-end
-
---- plugins.finalcutpro.hacks.shortcuts.toggleEditable() -> none
---- Function
---- Toggle Editable
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.toggleEditable()
-	mod.setEnabled(not mod.enabled())
+---  * `true` if successful.
+function mod.install(silently)
+	return private.updateFCPXCommands(true, silently)
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.editCommands() -> none
@@ -384,10 +419,9 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	if mod.enabled() then
-		log.df("Applying FCPX Command Editor Shortcuts")
-		applyCommandSetShortcuts()
-	end
+	mod.installed:update()
+	mod.uninstalled:update()
+	mod.onboardingRequired:update()
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.init() -> none
@@ -399,27 +433,121 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init()
-	log.df("Initialising shortcuts...")
-	--------------------------------------------------------------------------------
-	-- Check if we need to update the Final Cut Pro Shortcut Files:
-	--------------------------------------------------------------------------------
+function mod.init(deps, env)
+	mod.fcpxCmds	= deps.fcpxCmds
 
-	-- TODO: Temporarily disabled this, as it gets annoying if you're jumping between FCPX 10.3.2 and 10.3.3. Not sure of the best solution to fix?
+	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
+	
+	-- Unstall hacks if the app config is reset.
+	config.watch({
+		reset = function() mod.uninstall() end,
+	})
+	
 
-	--[[
-	local lastVersion = config.get("lastAppVersion")
-	if lastVersion == nil or v(lastVersion) < v(config.appVersion) then
-		if mod.enabled() then
-			dialog.displayMessage(i18n("newKeyboardShortcuts"))
-			updateFCPXCommands(true)
+--- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the a supported version of FCPX is installed.
+	mod.supported = prop(function()
+		return private.hacksModifiedPath("") ~= nil
+	end)
+
+--- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
+	mod.installed = prop(function()
+		return private.directoriesMatch(private.hacksModifiedPath(""), private.resourcePath(""))
+	end)
+
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
+	mod.uninstalled = prop(function()
+		return private.directoriesMatch(private.hacksOriginalPath(""), private.resourcePath(""))
+	end)
+	
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if shortcuts is working on something.
+	mod.working	= prop.FALSE()
+
+--- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the shortcuts are neither original or installed correctly.
+	mod.outdated = mod.supported:AND(mod.working:NOT()):AND(mod.installed:NOT()):AND(mod.uninstalled:NOT())
+	
+--- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX shortcuts are active.
+	mod.active = prop.FALSE()
+
+	-- Renders the Shortcut Editor Panel.
+	local editorRenderer = env:compileTemplate("html/editor.html")
+
+--- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the custom shortcuts are installed in FCPX but not active.
+	mod.requiresActivation = mod.installed:AND(prop.NOT(mod.active)):watch(
+		function(activate)
+			if activate then
+				private.applyCommandSetShortcuts()
+				deps.shortcuts.setGroupEditor(mod.fcpxCmds:id(), editorRenderer)
+				mod.active(true)
+			end
 		end
-	end
-
-	config.set("lastAppVersion", config.appVersion)
-	--]]
+	)
+	
+--- plugins.finalcutpro.hacks.shortcuts.requiresDeactivation <cp.prop: boolean; read-only>
+--- Constant
+--- A property that returns `true` if the FCPX shortcuts are active but shortcuts are not installed.
+	mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
+		function(deactivate)
+			if deactivate then
+				-- got to restart to reset shortcuts.
+				mod.active(false)
+				hs.reload()
+			end
+		end
+	)
+	
+	-- Create the Setup Panel
+	local setup = deps.setup
+	local setupPanel = setup.panel.new("hacksShortcuts", 50)
+		:addIcon(env:pathToAbsolute("images/fcp_icon.png"))
+		:addParagraph(i18n("commandSetText"), true)
+		:addButton({
+			label		= i18n("commandSetUseFCPX"),
+			onclick		= function()
+				mod.install()
+				mod.onboardingRequired(false)
+				setup.nextPanel()
+			end,
+		})
+		:addButton({
+			label		= i18n("commandSetUseCP"),
+			onclick		= function()
+				mod.uninstall()
+				mod.onboardingRequired(false)
+				setup.nextPanel()
+			end,
+		})
+	
+--- plugins.finalcutpro.hacks.shortcuts.onboardingRequired <cp.prop: boolean>
+--- Constant
+--- If `true`, the initial setup has been completed.
+	mod.onboardingRequired	= config.prop("hacksShortcutsOnboardingRequired", true)
+	
+--- plugins.finalcutpro.hacks.shortcuts.setupRequired <cp.prop: boolean; read-only>
+--- Constant
+--- If `true`, the user needs to configure Hacks Shortcuts.
+	mod.setupRequired	= mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
+		if required then
+			setup.addPanel(setupPanel).show()
+		end
+	end, true)
 
 	mod.update()
+	
+	return mod
 end
 
 --------------------------------------------------------------------------------
@@ -432,12 +560,10 @@ local plugin = {
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.menu.top"] 									= "top",
-		["core.menu.helpandsupport"] 						= "helpandsupport",
-		["core.commands.global"]							= "globalCmds",
 		["finalcutpro.commands"]							= "fcpxCmds",
+		["finalcutpro.preferences.app"]						= "prefs",
+		["core.setup"] 										= "setup",
 		["core.preferences.panels.shortcuts"]				= "shortcuts",
-		["finalcutpro.preferences.panels.finalcutpro"]		= "prefs",
-		["core.welcome.manager"] 							= "welcome",
 	}
 }
 
@@ -445,59 +571,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-	mod.globalCmds 	= deps.globalCmds
-	mod.fcpxCmds	= deps.fcpxCmds
-	mod.shortcuts	= deps.shortcuts
-
-	mod.commandSetsPath = env:pathToAbsolute("/") .. "/commandsets/"
-
-	local welcome = deps.welcome
-
-	--------------------------------------------------------------------------------
-	-- ENABLE INTERFACE:
-	--------------------------------------------------------------------------------
-	welcome.enableInterfaceCallback:new("hacksshortcuts", function()
-
-		--------------------------------------------------------------------------------
-		-- Initialise Hacks Shortcuts:
-		--------------------------------------------------------------------------------
-		mod.init()
-
-		--------------------------------------------------------------------------------
-		-- Enable Commands:
-		--------------------------------------------------------------------------------
-		local allGroups = commands.groupIds()
-		for i, v in ipairs(allGroups) do
-			commands.group(v):enable()
-		end
-
-		--------------------------------------------------------------------------------
-		-- Check to see if Final Cut Pro is running:
-		--------------------------------------------------------------------------------
-		if fcp:isFrontmost() then
-			mod.fcpxCmds:enable()
-		else
-			mod.fcpxCmds:disable()
-		end
-
-	end)
-
-	--------------------------------------------------------------------------------
-	-- DISABLE INTERFACE:
-	--------------------------------------------------------------------------------
-	welcome.disableInterfaceCallback:new("hacksshortcuts", function()
-
-		--------------------------------------------------------------------------------
-		-- Disable Commands:
-		--------------------------------------------------------------------------------
-		--log.df("Disable Commands")
-		local allGroups = commands.groupIds()
-		for i, v in ipairs(allGroups) do
-			commands.group(v):disable()
-		end
-
-	end)
 
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:
@@ -524,17 +597,23 @@ function plugin.init(deps, env)
 		:addCheckbox(51,
 			{
 				label		= i18n("enableHacksShortcuts"),
-				onchange	= function()
-					mod.toggleEditable()
-					mod.shortcuts.updateCustomShortcutsVisibility()
+				onchange	= function(_,params)
+					if params.checked then
+						mod.install()
+					else
+						mod.uninstall()
+					end
 				end,
-				checked=mod.enabled
+				checked=function() return mod.active() end
 			}
 		)
 	end
+	
+	return mod.init(deps, env)
+end
 
-	return mod
-
+function plugin.disable()
+	return mod.uninstall()
 end
 
 return plugin

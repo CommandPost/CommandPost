@@ -194,6 +194,7 @@ extensions['snd'] = 'audio/basic'
 extensions['wav'] = 'audio/x-wav'
 
 -- image/
+extensions['icns'] = 'image/icns'
 extensions['bmp'] = 'image/x-ms-bmp'
 extensions['djv'] = 'image/vnd.djvu'
 extensions['djvu'] = 'image/vnd.djvu'

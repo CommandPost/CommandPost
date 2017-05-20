@@ -16,6 +16,7 @@
 local log			= require("hs.logger").new("plist")
 local plistParse 	= require("cp.plist.plistParse")
 local fs			= require("hs.fs")
+local base64		= require("hs.base64")
 
 --------------------------------------------------------------------------------
 --
@@ -34,39 +35,19 @@ plist.log = log
 ---  * base64Data - Binary data encoded in base64
 ---
 --- Returns:
----  * A table of the plist data
+---  * A table of the plist data, or `nil` if it couldn't be converted.
 ---
 --- Notes:
 ---  * None
 function plist.base64ToTable(base64Data)
 
-	-- Define Temporary Files:
-	local base64FileName = os.tmpname()
-	local plistFileName	= os.tmpname()
-
-	local plistTable = nil
-
-	local file = io.open(base64FileName, "w")
-	file:write(base64Data)
-	file:close()
-
-	-- Convert the base64 file to a binary plist:
-	executeCommand = 'openssl base64 -in "' .. tostring(base64FileName) .. '" -out "' .. tostring(plistFileName) .. '" -d'
-	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
-	if not executeStatus then
-		log.d("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
-	else
+	local binaryData = base64.decode(base64Data)
+	if binaryData then
 		-- Convert the Binary plist file to a LUA table:
-		plistTable = plist.binaryFileToTable(plistFileName)
+		return plist.binaryToTable(binaryData)
+	else
+		return nil
 	end
-
-	-- Clean up the Temporary Files:
-	os.remove(base64FileName)
-	os.remove(plistFileName)
-
-	-- Return the result:
-	return plistTable
-
 end
 
 --- cp.plist.binaryToTable(binaryData) -> table or nil
@@ -90,13 +71,12 @@ function plist.binaryToTable(binaryData)
 	local plistFileName	= os.tmpname()
 
 	-- Write Clipboard Data to Temporary File:
-	local plistFile = io.open(plistFileName, "w")
+	local plistFile = io.open(plistFileName, "wb")
 	plistFile:write(binaryData)
 	plistFile:close()
 
 	-- Read the Binary plist File:
 	local plistTable = plist.binaryFileToTable(plistFileName)
-
 
 	-- Delete the Temporary File:
 	os.remove(plistFileName)
@@ -222,7 +202,7 @@ end
 --- cp.plist.fileToTable(plistFileName) -> table or nil
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
---- It will check the file prior to loading to determine which type it prop.
+--- It will check the file prior to loading to determine which type it is.
 --- If you know which type of file you're dealing with in advance, you can use
 --- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
 --- (small) file read

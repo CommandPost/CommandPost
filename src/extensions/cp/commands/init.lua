@@ -17,6 +17,7 @@ local log						= require("hs.logger").new("commands")
 
 local command					= require("cp.commands.command")
 local config					= require("cp.config")
+local prop						= require("cp.prop")
 local timer						= require("hs.timer")
 local json						= require("hs.json")
 local _							= require("moses")
@@ -62,6 +63,19 @@ function commands.group(id)
 	return commands._groups[id]
 end
 
+--- cp.commands.groups() -> table of cp.commands
+--- Function
+--- Returns a table with the set of commands.
+---
+--- Parameters:
+--- * `id`		- The ID to retrieve
+---
+--- Returns:
+---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
+function commands.groups()
+	return _.clone(commands._groups, true)
+end
+
 --- cp.commands:new(id) -> cp.commands
 --- Method
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
@@ -80,8 +94,7 @@ function commands:new(id)
 		_commands = {},
 		_enabled = false,
 	}
-	setmetatable(o, self)
-	self.__index = self
+	prop.extend(o, commands)
 
 	commands._groups[id] = o
 	return o
@@ -96,7 +109,7 @@ end
 function commands:add(commandId)
 	local cmd = command:new(commandId, self)
 	self._commands[commandId] = cmd
-	if self:isEnabled() then cmd:enable() end
+	-- if self:isEnabled() then cmd:enable() end
 	self:_notify("add", cmd)
 	return cmd
 end
@@ -126,29 +139,33 @@ function commands:deleteShortcuts()
 	return self
 end
 
+--- cp.commands.enabled <cp.prop: boolean>
+--- Field
+--- If enabled, the commands in the group will be active as well.
+commands.isEnabled = prop.TRUE():bind(commands):watch(function(enabled, self)
+	log.df("%s.isEnabled: %s", self:id(), enabled)
+	if enabled then
+		self:_notify('enable')
+	else
+		self:_notify('disable')
+	end
+end)
+
+--- cp.commands.isEditable <cp.prop: boolean>
+--- Field
+--- If set to `false`, the command group is not user-editable.
+commands.isEditable = prop.TRUE():bind(commands)
+
 -- TODO: Add documentation
 function commands:enable()
-	self._enabled = true
-	for _,command in pairs(self._commands) do
-		command:enable()
-	end
-	self:_notify('enable')
+	self:isEnabled(true)
 	return self
 end
 
 -- TODO: Add documentation
 function commands:disable()
-	for _,command in pairs(self._commands) do
-		command:disable()
-	end
-	self._enabled = false
-	self:_notify('disable')
+	self:isEnabled(false)
 	return self
-end
-
--- TODO: Add documentation
-function commands:isEnabled()
-	return self._enabled
 end
 
 -- TODO: Add documentation

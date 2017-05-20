@@ -1,5 +1,6 @@
 local test		= require("cp.test")
-local log		= require("hs.logger").new("testis")
+local log		= require("hs.logger").new("testprop")
+local inspect	= require("hs.inspect")
 
 local prop		= require("cp.prop")
 
@@ -75,7 +76,7 @@ function run()
 		ok(hello:toggle() == true)
 	end)
 	
-	test("Watcher", function()
+	test("Prop Watch", function()
 		local state = true
 		local count = 0
 		local watchValue = nil
@@ -99,6 +100,29 @@ function run()
 		ok(isState:toggle() == true)
 		ok(eq(count, 3))
 		ok(watchValue == true)
+	end)
+	
+	test("Prop Unwatch", function()
+		local log = {}
+		-- watch the property, keep the watcher instance
+		local prop, watcher = prop.TRUE():watch(function(value) log[#log+1] = value end)
+		ok(eq(log, {}))
+		
+		prop:update()
+		ok(eq(log, {true}))
+		
+		ok(prop(false) == false)
+		ok(eq(log, {true, false}))
+		
+		prop:unwatch(watcher)
+		ok(prop(true) == true)
+		ok(eq(log, {true, false}))
+	end)
+	
+	test("Prop Watch Bound", function()
+		local owner = {}
+		owner.prop = prop.TRUE():watch(function(value, self) ok(eq(self, owner)) end):bind(owner)
+		owner.prop:update()
 	end)
 	
 	test("Prop NOT", function()
@@ -182,6 +206,16 @@ function run()
 		-- Toggle isLeft
 		isLeft(false)
 		ok(eq(count, 2))
+		ok(eq(watchValue, false))
+		
+		-- Toggle isLeft
+		isLeft(true)
+		ok(eq(count, 3))
+		ok(eq(watchValue, true))
+
+		-- Toggle isRight
+		isRight(false)
+		ok(eq(count, 4))
 		ok(eq(watchValue, false))
 		
 		-- Test non-boolean properties.
@@ -306,6 +340,165 @@ function run()
 		ok(target.isFunction:owner() == nil)
 		ok(target.isFunction == source.isFunction)
 		ok(target.isRealFunction == source.isRealFunction)
+	end)
+	
+	test("Prop Notify Loop", function()
+		local aProp = prop.TRUE()
+		local log = {}
+		
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 1 end)
+		
+		-- modifies then logs
+		aProp:watch(function(value)
+			aProp:set(false)
+			log[#log+1] = 2
+		end)
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 3 end)
+		
+		aProp:update()
+		
+		-- should be two sets of logs, one after the other.
+		ok(aProp() == false)
+		ok(eq(log, {1, 2, 3, 1, 2, 3}))
+	end)
+	
+	test("Prop Notify On/Off", function()
+		local aProp = prop.TRUE()
+		local log = {}
+		
+		-- logs
+		aProp:watch(function(value) log[#log+1] = 1 end)
+		
+		-- modifies to false then logs
+		aProp:watch(function(value)
+			aProp:set(false)
+			log[#log+1] = 2
+		end)
+		-- modifes back to true then logs
+		aProp:watch(function(value)
+			aProp:set(true)
+			log[#log+1] = 3
+		end)
+		
+		aProp:update()
+		
+		-- The value was reset before the notification loop finished, so no change occurs.
+		ok(aProp() == true)
+		ok(eq(log, {1, 2, 3}))
+	end)
+	
+	test("Prop Parent Notify Loop", function()
+		local aProp = prop.TRUE()
+		local bProp = prop.FALSE()
+		local cProp = aProp:AND(bProp)
+		
+		local log = {}
+
+		ok(cProp() == false)
+		
+		cProp:watch(function(value)
+			log[#log+1] = {one = value}
+			if not value then
+				bProp(true)
+			end
+		end)
+		
+		cProp:watch(function(value)
+			log[#log+1] = {two = value}
+		end)
+		
+		cProp:update()
+		
+		ok(cProp() == true)
+		ok(eq(log, {{one = false}, {two = false}, {one = true}, {two = true}}))
+	end)
+	
+	test("Prop Clone", function()
+		local owner = {}
+		
+		local aProp = prop.TRUE()
+		local bProp = aProp:bind(owner)
+		
+		local aClone = aProp:clone()
+		local bClone = bProp:clone()
+
+		ok(eq(bClone:owner(), bProp:owner()))
+		
+		ok(aProp() == true)
+		ok(bProp() == true)
+		ok(aClone() == true)
+		ok(bClone() == true)
+		
+		aProp(false)
+		ok(aProp() == false)
+		ok(bProp() == true)
+		ok(aClone() == true)
+		ok(bClone() == true)
+	end)
+	
+	test("Prop Bind AND Watch", function()
+		local owner = {}
+		
+		local aProp = prop.TRUE()
+		local bProp = prop.TRUE()
+		
+		-- the base AND
+		local andProp = aProp:AND(bProp)
+		-- watch is
+		local propCount, propValue = 0, nil
+		local propWatch = function(value) propCount = propCount + 1; propValue = value end
+		andProp:watch(propWatch, false, true)
+		
+		-- the bound AND
+		local andBound = andProp:bind(owner)
+		local boundCount, boundValue = 0, nil
+		local boundWatch = function(value) boundCount = boundCount + 1; boundValue = value end
+		andBound:watch(boundWatch)
+		
+		ok(#andProp._watchersUncloned == 1)
+		ok(andProp._watchersUncloned[1].fn == propWatch)
+		
+		ok(#andBound._watchers == 1)
+		ok(andBound._watchers[1].fn == boundWatch)
+	end)
+	
+	test("Prop Binary Functions", function()
+		local one, two, three = prop.THIS(1), prop.THIS(2), prop.THIS(3)
+		
+		ok(one:EQUALS(1):value() == true)
+		ok(one:EQUALS(one):value() == true)
+		ok(one:EQUALS(two):value() == false)
+		
+		ok(two:BELOW(one):value() == false)
+		ok(two:ABOVE(one):value() == true)
+		ok(two:BELOW(three):value() == true)
+		ok(two:ABOVE(three):value() == false)
+		
+		ok(two:ATLEAST(3):value() == false)
+		ok(two:ATMOST(3):value() == true)
+		ok(two:ATLEAST(1):value() == true)
+		ok(two:ATMOST(1):value() == false)
+		ok(two:ATLEAST(2):value() == true)
+		ok(two:ATMOST(2):value() == true)
+		
+		local something = prop.THIS(1)
+		local comp = one:EQUALS(something)
+		
+		ok(comp:value() == true)
+		something(0)
+		ok(comp:value() == false)
+	end)
+	
+	test("Prop Notify/Update Same Value", function()
+		local report = {}
+		-- do a 'notifyNow' watch
+		local value = prop.TRUE():watch(function(value) report[#report+1] = value end, true)
+		-- force an update without changing the value
+		value:update()
+		-- should only be one log entry since the value didn't change.
+		ok(eq(report, {true}))
 	end)
 end
 

@@ -28,6 +28,7 @@ local config									= require("cp.config")
 local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
+local ui										= require("cp.web.ui")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
@@ -314,69 +315,58 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
-function mod.hacksShortcutsEnabled()
-	local searchString = "<key>cpToggleMovingMarkers</key>"
-	local filePathNSProCommands = fcp:getPath() .. "/Contents/Resources/NSProCommands.plist"
-	if tools.doesFileExist(filePathNSProCommands) then
-		local file = io.open(filePathNSProCommands, "r")
-		if file then
-			io.input(file)
-			local fileContents = io.read("*a")
-			if fileContents then
-				io.close(file)
-				local result = string.find(fileContents, searchString) ~= nil
-				config.set("enableHacksShortcutsInFinalCutPro", result)
-				return result
-			end
-		end
-	end
-	log.ef("Could not find NSProCommands.plist. This shouldn't ever happen.")
-	config.set("enableHacksShortcutsInFinalCutPro", false)
-	return false
-end
-
 --------------------------------------------------------------------------------
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 local function generateContent()
+	
+	-- the group select
+	local groupOptions = {}
+	local defaultGroup = nil
+	for _,id in ipairs(commands.groupIds()) do
+		defaultGroup = defaultGroup or id
+		groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
+	end
+	table.sort(groupOptions, function(a, b) return a.label < b.label end)
+	
+	local groupSelect = ui.select({
+		id			= "shortcutsGroupSelect",
+		value		= defaultGroup,
+		options		= groupOptions,
+		required	= true,
+	}) .. ui.javascript([[
+		var groupSelect = document.getElementById("shortcutsGroupSelect")
+		groupSelect.onchange = function() {
+			console.log("shortcutsGroupSelect changed");
+			var groupControls = document.getElementById("shortcutsGroupControls");
+			var value = groupSelect.options[groupSelect.selectedIndex].value;
+			var children = groupControls.children;
+			for (var i = 0; i < children.length; i++) {
+			  var child = children[i];
+			  if (child.id == "shortcutsGroup_" + value) {
+				  child.classList.add("selected");
+			  } else {
+				  child.classList.remove("selected");
+			  }
+			}
+		}
+	]])
 
 	local context = {
-		shortcuts 				= getShortcutList(),
+		_						= _,
+		groupSelect				= groupSelect,
+		groups					= commands.groups(),
+		defaultGroup			= defaultGroup,
+		
+		groupEditor				= mod.getGroupEditor,
 		modifierOptions 		= modifierOptions,
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
+		
 		webviewLabel 			= mod._manager.getLabel(),
-		shortcutsEnabled		= not mod.hacksShortcutsEnabled(),
 	}
 
 	return renderPanel(context)
-
-end
-
---------------------------------------------------------------------------------
--- UPDATE CUSTOM SHORTCUTS SECTION:
---------------------------------------------------------------------------------
-function mod.updateCustomShortcutsVisibility()
-
-	local enableHacksShortcutsInFinalCutPro = mod.hacksShortcutsEnabled()
-
-	if enableHacksShortcutsInFinalCutPro then
-		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").className = "disabled";
-			document.getElementById("enableCustomShortcuts").checked = true;
-			document.getElementById("resetShortcuts").className = "button resetShortcuts buttonDisabled";
-			document.getElementById("shortcutController").innerHTML = "]] .. i18n("finalCutPro") .. [["
-		]])
-	else
-		mod._manager.injectScript([[
-			document.getElementById("customiseShortcuts").className = "";
-			document.getElementById("enableCustomShortcuts").checked = false;
-			document.getElementById("resetShortcuts").className = "button resetShortcuts";
-			document.getElementById("shortcutController").innerHTML = "]] .. i18n("appName") .. [["
-		]])
-	end
-
-	mod._manager.show()
 
 end
 
@@ -388,7 +378,6 @@ function mod.init(deps, env)
 	mod.allKeyCodes		= getAllKeyCodes()
 
 	mod._manager		= deps.manager
-	mod._hacksShortcuts	= deps.hacksShortcuts
 
 	mod._webviewLabel	= deps.manager.getLabel()
 
@@ -420,6 +409,17 @@ function mod.init(deps, env)
 
 	return mod
 
+end
+
+function mod.setGroupEditor(groupId, editorFn)
+	if not mod._groupEditors then
+		mod._groupEditors = {}
+	end
+	mod._groupEditors[groupId] = editorFn
+end
+
+function mod.getGroupEditor(groupId)
+	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
 --------------------------------------------------------------------------------

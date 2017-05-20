@@ -1,7 +1,18 @@
-local log				= require("hs.logger").new("webui")
+--- === cp.web.ui ===
+---
+--- This extension contains functions which simplify the creation of standard UI events
+--- using `cp.web.html` as the basis. Most functions return a `html` element which is
+--- potentially dynamically updatable. Most values can be set using a value or a function,
+--- and if functions are provided, they are re-evaluated every time the element is generated.
 
-local html				= require("cp.web.html")
-local _					= require("moses")
+local log										= require("hs.logger").new("webui")
+
+local mimetypes									= require("mimetypes")
+local base64									= require("hs.base64")
+local fs										= require("hs.fs")
+
+local html										= require("cp.web.html")
+local _											= require("moses")
 
 local template									= require("resty.template")
 local compile									= template.compile
@@ -18,7 +29,7 @@ function evaluate(value)
 	end
 end
 
---- cp.web.ui.javascript(script, context) -> cp.web.ui
+--- cp.web.ui.javascript(script, context) -> cp.web.html
 --- Function
 --- Generates an HTML script element which will execute the provided
 --- JavaScript immediately. The script is self-contained and only has
@@ -132,9 +143,9 @@ function ui.password(params)
 	return html.input { type = "password", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
 end
 
---- cp.web.ui.checkbox(title, value[, id]) -> cp.web.ui
+--- cp.web.ui.checkbox(params) -> cp.web.html
 --- Constructor
---- Generates a HTML Checkbox element. The `data` should be a table or a function returning a table
+--- Generates a HTML Checkbox element.
 ---
 --- Parameters:
 ---  * data			- A table or function returning a table with the checkbox data.
@@ -157,7 +168,8 @@ function ui.checkbox(params)
 			type = "checkbox",
 			name = params.name,
 			id = params.id,
-			value = params.value, checked,
+			value = params.value,
+			checked,
 			class = params.class,
 		}
 	else
@@ -166,7 +178,7 @@ function ui.checkbox(params)
 
 end
 
---- cp.web.ui.button(params) -> cp.web.ui
+--- cp.web.ui.button(params) -> cp.web.html
 --- Constructor
 --- Generates a HTML Button
 ---
@@ -178,7 +190,7 @@ end
 ---
 --- Notes:
 ---  * The `params` can contain the following fields:
----  ** `value`		- The value of th button.
+---  ** `value`		- The value of the button.
 ---  ** `label`		- The text label for the button. Defaults to the `value` if not provided.
 ---  ** `width`		- The width of the button in pixels.
 function ui.button(params)
@@ -210,7 +222,7 @@ end
 --- that matches the details in the notes below.
 ---
 --- Parameters:
----  * data			- A table or function returning a table with the checkbox data.
+---  * `params`		- A table or function returning a table with the checkbox data.
 ---
 --- Returns:
 ---  * A `cp.web.html` with the select defined.
@@ -249,9 +261,52 @@ function ui.select(params)
 	-- create the
 	return html.select {
 		id 		= params.id,
-		name	= params.id,
+		name	= params.name or params.id,
 		class	= params.class,
 	} (optionGenerator, true)
+end
+
+-- Reads the file at the specified path as binary and returns it as a BASE64 stream of text.
+local function imageToBase64(pathToImage)
+	local type = mimetypes.guess(pathToImage)
+	if type and type:sub(1,6) == "image/" then
+		local f, err = io.open(fs.pathToAbsolute(pathToImage), "rb")
+		if not f then
+		    return nil, err
+		end
+		local data = f:read("*all")
+		f:close()
+
+		return "data:"..type..";base64, "..base64.encode(data)
+	end
+	return ""
+end
+
+--- cp.web.ui.img(params) -> cp.web.html
+--- Function
+--- Generates a `cp.web.html` `img` element.
+---
+--- Parameters:
+---  * `params`		- A table or function returning a table with the checkbox data.
+---
+--- Returns:
+---  * A `cp.web.html` with the select defined.
+---
+--- Notes:
+---  * The `params` table has the following supported fields:
+---  ** `src`		- The source of the image. If this points to a local file, it will be encoded as Base64.
+---  ** `class`		- A string, (or function returning a string) with the CSS class for the element.
+---  ** `width`		- The width of the image.
+---  ** `height`	- The height of the image.
+function ui.img(params)
+	-- if the src is a local file path, load it as BASE64:
+	assert(params.src ~= nil, "`ui.image` requires `params.src` to have a value.")
+	local srcFile = fs.pathToAbsolute(params.src)
+	if srcFile then
+		params.src = imageToBase64(srcFile)
+	end
+	
+	return html.img(params)
 end
 
 return ui
