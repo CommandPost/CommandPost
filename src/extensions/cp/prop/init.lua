@@ -409,23 +409,57 @@ end
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:watch(watchFn, notifyNow, uncloned)
-	local watchers = nil
-	if uncloned then
-		if not self._watchersUncloned then
-			self._watchersUncloned = {}
-		end
-		watchers = self._watchersUncloned
-	else
-		if not self._watchers then
-			self._watchers = {}
-		end
-		watchers = self._watchers
+	if not self._watchers then
+		self._watchers = {}
 	end
-	watchers[#watchers + 1] = {fn = watchFn}
-	if notifyNow then
+	local watchers = self._watchers
+	
+	watchers[#watchers + 1] = {fn = watchFn, uncloned = uncloned}
+	
+	-- run any prewatch functions
+	self:_preWatch()
+	
+	if notifyNow then -- do an immediate update.
 		self:update()
 	end
 	return self, watchFn
+end
+
+--- cp.prop:hasWatchers() -> boolean
+--- Method
+--- Returns `true` if the property has any watchers.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if any watchers have been registered.
+function prop.mt:hasWatchers()
+	return self._watchers and #self._watchers > 0
+end
+
+--- cp.prop:preWatch(preWatchFn) -> nil
+--- Method
+--- Adds a function which will be called once if any watchers are added to this prop.
+--- This allows configuration, typically for watching other events, but only if
+--- anything is actually watching this property value.
+---
+--- If the prop already has watchers, this function will be called imediately.
+--- 
+--- Parameters:
+---  * `preWatchFn`		- The function to call once when the prop is watched. Has the signature `function(owner, prop)`.
+--- 
+--- Returns:
+---  * Nothing
+function prop.mt:preWatch(preWatchFn)
+	if self:hasWatchers() then -- already watchers - just run it
+		preWatchFn(self:owner())
+	else -- cache them for later.
+		if not self._preWatchers then
+			self._preWatchers = {}
+		end
+		self._preWatchers[#self._preWatchers+1] = preWatchFn
+	end
 end
 
 local function _unwatch(watchers, watchFn)
@@ -460,7 +494,7 @@ end
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:unwatch(watchFn)
-	return _unwatch(self._watchers, watchFn) or _unwatch(self._watchersUncloned)
+	return _unwatch(self._watchers, watchFn)
 end
 
 --- cp.prop:monitor(otherProp) -> cp.prop, function
@@ -507,7 +541,11 @@ function prop.mt:_clone()
 	
 	-- copy the watchers, if present
 	if self._watchers then
-		clone._watchers = fnutils.copy(self._watchers)
+		clone._watchers = fnutils.ifilter(self._watchers, function(watcher) return not watcher.uncloned end)
+	end
+	-- copy the pre-watchers, if present
+	if self._preWatchers then
+		clone._preWatchers = fnutils.copy(self._preWatchers)
 	end
 	
 	return clone
@@ -785,6 +823,21 @@ local function _notifyWatchers(watchers, value, owner, prop)
 	end
 end
 
+-- cp.prop:_preWatch() -> nil
+-- Method
+-- This will run any functions added as `pre-watchers` one time, then
+-- the list gets cleared. This allows some setup functions to happen
+-- if/when someone is actually watching the property.
+function prop.mt:_preWatch()
+	if self._preWatchers then
+		local owner = self:owner()
+		for _,preWatcher in ipairs(self._preWatchers) do
+			preWatcher(owner, self)
+		end
+		self._preWatchers = nil
+	end
+end
+
 -- cp.prop:_notify(value) -> nil
 -- Method
 -- Notifies all watchers of the current value if it has changed since the last notification.
@@ -801,10 +854,9 @@ function prop.mt:_notify(value)
 		return
 	end
 	
-	if self._watchers or self._watchersUncloned then
+	if self._watchers then
 		self._notifying = true
 		local owner = self:owner()
-		_notifyWatchers(self._watchersUncloned, value, owner, self)
 		_notifyWatchers(self._watchers, value, owner, self)
 		self._notifying = nil
 		-- check if a 'set' happened during the notification cycle.

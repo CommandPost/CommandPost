@@ -457,8 +457,8 @@ function run()
 		local boundWatch = function(value) boundCount = boundCount + 1; boundValue = value end
 		andBound:watch(boundWatch)
 		
-		ok(#andProp._watchersUncloned == 1)
-		ok(andProp._watchersUncloned[1].fn == propWatch)
+		ok(#andProp._watchers == 1)
+		ok(andProp._watchers[1].fn == propWatch)
 		
 		ok(#andBound._watchers == 1)
 		ok(andBound._watchers[1].fn == boundWatch)
@@ -581,6 +581,38 @@ function run()
 		ok(eq(aReport, {false, true}))
 		ok(eq(bReport, {false, true}))
 		ok(eq(cReport, {false, true}))
+	end)
+	
+	test("Prop Pre-Watch", function()
+		local preWatched = 0
+
+		local a = prop.TRUE()
+		a:preWatch(function(self) preWatched = preWatched + 1 end)
+		
+		ok(preWatched == 0)
+		
+		a:toggle()
+		ok(a() == false)
+		ok(preWatched == 0)
+		
+		local watched = 0
+		a:watch(function(value, self) watched = watched + 1 end)
+		
+		a:toggle()
+		ok(a() == true)
+		ok(preWatched == 1)
+		ok(watched == 1)
+		
+		-- happens after a watcher has been added. Better late than never!
+		local instantPreWatch = 0
+		a:preWatch(function(self) instantPreWatch = instantPreWatch + 1 end)
+		ok(instantPreWatch == 1)
+		
+		a:toggle()
+		ok(a() == false)
+		ok(preWatched == 1)
+		ok(instantPreWatch == 1)
+		ok(watched == 2)		
 	end)
 end
 
