@@ -720,6 +720,7 @@ return {
 	showGenerators						=			"Show Generators",
 	showMenuItems						=			"Show Menu Items",
 	rememberLastQuery					=			"Remember Last Query",
+	searchSubtext						=			"Search Subtext",
 	update								=			"Update",
 	effectsShortcuts					=			"Effects Shortcuts",
 	transitionsShortcuts				=			"Transitions Shortcuts",
