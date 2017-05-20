@@ -1,5 +1,26 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.core.accessibility ===
+---
+--- Accessibility Plugin.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local config				= require("cp.config")
 local prop					= require("cp.prop")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 --- plugin.core.accessibility.enabled <cp.prop: boolean; read-only>
@@ -15,7 +36,15 @@ mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
 	end
 end)
 
--- Called when the setup panel for accessibility was shown and is ready to complete.
+--- plugin.core.accessibility.completeSetupPanel() -> none
+--- Function
+--- Called when the setup panel for accessibility was shown and is ready to complete.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.completeSetupPanel()
 	if mod.showing then
 		mod.showing = false
@@ -23,14 +52,36 @@ function mod.completeSetupPanel()
 	end
 end
 
--- Called when the Setup Panel should be shown to prompt the user about enabling Accessbility.
+--- plugin.core.accessibility.showSetupPanel() -> none
+--- Function
+--- Called when the Setup Panel should be shown to prompt the user about enabling Accessbility.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.showSetupPanel()
 	mod.showing = true
 	mod.setup.addPanel(mod.panel)
 	mod.setup.show()
 end
 
+--- plugin.core.accessibility.init(setup, iconPath) -> table
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * setup - Dependancies setup
+---  * iconPath - Path to the panel icon
+---
+--- Returns:
+---  * The module as a table
 function mod.init(setup, iconPath)
+
+	-- TODO: Use this instead:
+	-- /System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns
+
 	mod.setup = setup
 	mod.panel = setup.panel.new("accessibility", 10)
 		:addIcon(iconPath)
@@ -45,18 +96,23 @@ function mod.init(setup, iconPath)
 			label		= i18n("quit"),
 			onclick		= function() config.application():kill() end,
 		})
-	
+
 	-- Get updated when the accessibility state changes
 	hs.accessibilityStateCallback = function()
 		mod.enabled:update()
 	end
-	
+
 	-- Update to the current state
 	mod.enabled:update()
-	
+
 	return mod
 end
 
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.accessibility",
 	group			= "core",
@@ -69,6 +125,5 @@ local plugin = {
 function plugin.init(deps, env)
 	return mod.init(deps.setup, env:pathToAbsolute("images/accessibility_icon.png"))
 end
-
 
 return plugin
