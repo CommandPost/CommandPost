@@ -830,11 +830,12 @@ end
 -- if/when someone is actually watching the property.
 function prop.mt:_preWatch()
 	if self._preWatchers then
+		local preWatchers = self._preWatchers
+		self._preWatchers = nil
 		local owner = self:owner()
-		for _,preWatcher in ipairs(self._preWatchers) do
+		for _,preWatcher in ipairs(preWatchers) do
 			preWatcher(owner, self)
 		end
-		self._preWatchers = nil
 	end
 end
 
@@ -930,15 +931,16 @@ end
 --- Returns:
 --- * a new `cp.prop` instance.
 function prop.THIS(initialValue)
-	local value = initialValue
-	local get = function() return value end
-	local set = function(newValue) value = newValue end
+	local get = function(owner, prop) return prop._value end
+	local set = function(newValue, owner, prop) prop._value = newValue end
 	local clone = function(self)
-		local result = prop.THIS(value)
-		result._owner = self:owner()
-		return result
+		local clone = prop.mt._clone(self)
+		clone._value = self._value
+		return clone
 	end
-	return prop.new(get, set, clone)
+	local result = prop.new(get, set, clone)
+	result._value = initialValue
+	return result
 end
 
 --- cp.prop.IMMUTABLE(propValue) -- cp.prop
