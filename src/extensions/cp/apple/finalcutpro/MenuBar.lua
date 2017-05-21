@@ -308,19 +308,28 @@ end
 
 -- TODO: Add documentation
 function MenuBar:_visitMenuItems(visitFn, path, menu)
-	local title = menu:attributeValue("AXTitle")
-	-- log.df("_visitMenuItems: title = '%s'", title)
+	local role = menu:attributeValue("AXRole")
 	local children = menu:attributeValue("AXChildren")
-	if children and #children > 0 then
-		-- add the title
-		table.insert(path, title)
+	if role == "AXMenuBar" or role == "AXMenu" then
 		for _,item in ipairs(children) do
 			self:_visitMenuItems(visitFn, path, item)
 		end
-		-- drop the extra title
-		table.remove(path)
-	elseif title ~= nil and title ~= "" then
-		visitFn(path, menu)
+	elseif role == "AXMenuBarItem" or role == "AXMenuItem" then
+		local title = menu:attributeValue("AXTitle")
+		if #children == 1 then
+			-- add the title
+			table.insert(path, title)
+			-- log.df("_visitMenuItems: post insert: path = %s", hs.inspect(path))
+			self:_visitMenuItems(visitFn, path, children[1])
+			-- drop the extra title
+			-- log.df("_visitMenuItems: pre remove: path = %s", hs.inspect(path))
+			table.remove(path)
+			-- log.df("_visitMenuItems: post remove: path = %s", hs.inspect(path))
+		else
+			if title ~= nil and title ~= "" then
+				visitFn(path, menu)
+			end
+		end
 	end
 end
 

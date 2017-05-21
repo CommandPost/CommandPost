@@ -51,10 +51,15 @@ function mod.init(actionmanager)
 	mod._manager.addAction(mod)
 	
 	-- watch for restarts
-	fcp:watch({
-		launched	= function() timer.doAfter(0.1, mod.update) end,
-		terminated	= function() timer.doAfter(0.1, mod.clear) end,
-	})
+	fcp.isRunning:watch(function(running)
+		if running then
+			log.df("FCPX is running")
+			timer.doAfter(0.1, mod.update)
+		else
+			log.df("FCPX is not running")
+			timer.doAfter(0.1, mod.clear)
+		end
+	end, true)
 end
 
 --- plugins.finalcutpro.menu.menuaction.id() -> none
@@ -78,12 +83,9 @@ mod.enabled = config.prop("menuActionEnabled", true)
 --- plugins.finalcutpro.menu.menuaction.choices <cp.prop: cp.choices; read-only>
 --- Field
 --- Returns an array of available choices
-mod.choices = prop.new(function() return mod._choices end):watch(function(choices) log.df("choices updated: #%s choices", choices and #choices or 0) end)
+mod.choices = prop.new(function() return mod._choices end):watch(function(choices) log.df("choices updated: #%s choices", choices and #choices:getChoices() or 0) end)
 
 function mod.update()
-	--------------------------------------------------------------------------------
-	-- Cache the choices, since commands don't change while the app is running.
-	--------------------------------------------------------------------------------
 	local result = choices.new(ID)
 
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
