@@ -199,7 +199,7 @@ local function isOffScreen(rect)
 		return true
 	end
 end
-	
+
 function mod.new()
 
 	--------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ function mod.new()
 				return handler(id, params)
 			end
 		end)
-		
+
 
 	--------------------------------------------------------------------------------
 	-- Setup Tool Bar:
@@ -404,12 +404,23 @@ local plugin = {
 	id				= "core.preferences.manager",
 	group			= "core",
 	required		= true,
+	dependencies 	= {
+		["core.commands.global"] = "global",
+	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpPreferences")
+		:whenActivated(mod.show)
+
 	return mod.init(env)
 end
 

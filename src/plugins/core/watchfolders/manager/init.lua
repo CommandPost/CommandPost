@@ -377,12 +377,22 @@ local plugin = {
 	id				= "core.watchfolders.manager",
 	group			= "core",
 	required		= true,
+	dependencies 	= {
+		["core.commands.global"] = "global",
+	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpSetupWatchFolders")
+		:whenActivated(mod.show)
 
 	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 
