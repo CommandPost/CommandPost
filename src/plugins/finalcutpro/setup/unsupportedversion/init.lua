@@ -18,16 +18,18 @@ function plugin.init(deps, env)
 	-- The last version we notified about
 	local notified = mod.notifiedVersion
 	local notNotified = notified:EQUALS(fcp.getVersion):NOT()
-	
+
 	-- Require setup if FCP is unsupported and we have not notified about this version.
 	fcp.isUnsupported:AND(notNotified):watch(function(unsupported)
 		if unsupported then
 			local setup = deps.setup
 			local minVersion = fcp.EARLIEST_SUPPORTED_VERSION
-			
+
+			local iconPath = config.application():path() .. "/Contents/Resources/AppIcon.icns"
+
 			setup.addPanel(
 				setup.panel.new("fcpunsupported", 20)
-					:addIcon(env:pathToAbsolute("images/fcp_icon.png"))
+					:addIcon(iconPath)
 					:addHeading(i18n("finalcutproUnsupportedVersionTitle"))
 					:addParagraph(i18n("finalcutproUnsupportedVersionText", {
 						thisVersion = fcp:getVersion(), minVersion = minVersion
@@ -40,11 +42,11 @@ function plugin.init(deps, env)
 						end
 					})
 			)
-			
+
 			setup.show()
 		end
 	end, true)
-	
+
 	return mod
 end
 

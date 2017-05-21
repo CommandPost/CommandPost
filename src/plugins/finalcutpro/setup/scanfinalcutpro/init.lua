@@ -110,8 +110,8 @@ function mod.init(effects, generators, titles, transitions)
 		mod.titles.listUpdated,
 		mod.transitions.listUpdated
 	)
-	
-	
+
+
 
 end
 
@@ -150,14 +150,14 @@ function plugin.init(deps, env)
 			}
 		)
 	end
-	
+
 	-- Add a setup panel if the initial onboarding is not complete and a scan is required.
 	deps.setup.onboardingRequired:AND(mod.scanned:NOT()):watch(function(setupRequired)
 		if setupRequired then
 			local setup = deps.setup
 			setup.addPanel(
 				setup.panel.new("scanfinalcutpro", 60)
-					:addIcon(env:pathToAbsolute("images/fcp_icon.png"))
+					:addIcon(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")
 					:addParagraph(i18n("scanFinalCutProText"), true)
 					:addButton({
 						label		= i18n("scanFinalCutPro"),

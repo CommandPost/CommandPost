@@ -124,7 +124,7 @@ local App = {}
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-App.EARLIEST_SUPPORTED_VERSION					= "10.3.2"
+App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
 
 --------------------------------------------------------------------------------
 -- TODO: The below five constants should probably just be determined from the

@@ -55,6 +55,8 @@ mod.reducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
+mod.searchSubtext = config.prop("searchSubtext", true)
+
 mod.lastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
 
 mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
@@ -74,6 +76,7 @@ function mod.new()
 	mod.mainChooser = chooser.new(mod.completionAction):bgDark(true)
 											           	:rightClickCallback(mod.rightClickAction)
 											        	:choices(mod.choices)
+											        	:searchSubText(mod.searchSubtext())
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -186,6 +189,7 @@ function mod.showChooser(chooser)
 	--------------------------------------------------------------------------------
 	-- Show Console:
 	--------------------------------------------------------------------------------
+	chooser:searchSubText(mod.searchSubtext())
 	chooser:show()
 
 	return true
@@ -329,6 +333,7 @@ function plugin.init(deps)
 	menu:addItems(3000, function()
 		return {
 			{ title = i18n("rememberLastQuery"),	fn=function() mod.lastQueryRemembered:toggle() end, checked = mod.lastQueryRemembered(),  },
+			{ title = i18n("searchSubtext"),		fn=function() mod.searchSubtext:toggle() end, checked = mod.searchSubtext(),  },
 			{ title = "-" },
 			{ title = i18n("consoleHideUnhide"),	fn=mod.showHider, },
 		}
