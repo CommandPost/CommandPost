@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>cpZoomToSelection</key>
+	<dict>
+		<key>characterString</key>
+		<string>z</string>
+		<key>modifiers</key>
+		<string>option shift</string>
+	</dict>
 	<key>cpCopyWithCustomLabel</key>
 	<dict>
 		<key>characterString</key>
@@ -1268,12 +1275,12 @@
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpShowListOfShortcutKeys</key>
+	<key>cpText2Speech</key>
 	<dict>
 		<key>characterString</key>
-		<string>NSF1FunctionKey</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control option command</string>
+		<string></string>
 	</dict>
 	<key>cpHighlightBrowserPlayhead</key>
 	<dict>
@@ -1498,13 +1505,6 @@
 		<string>9</string>
 		<key>modifiers</key>
 		<string>control option command shift</string>
-	</dict>
-	<key>cpZoomToSelection</key>
-	<dict>
-		<key>characterString</key>
-		<string>z</string>
-		<key>modifiers</key>
-		<string>option shift</string>
 	</dict>
 	<key>AddAndEditMarker</key>
 	<dict>

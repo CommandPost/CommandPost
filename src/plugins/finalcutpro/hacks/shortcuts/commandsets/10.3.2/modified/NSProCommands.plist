@@ -2,6 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>cpZoomToSelection</key>
+	<dict>
+		<key>characterString</key>
+		<string>z</string>
+		<key>modifiers</key>
+		<string>option shift</string>
+	</dict>
+	<key>cpText2Speech</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>cpText2Speech:</string>
+	</dict>
 	<key>cpCopyWithCustomLabel</key>
 	<dict>
 		<key>downRepeats</key>
@@ -1153,13 +1167,6 @@
 		<key>downSelector</key>
 		<string>cpEffectsFive:</string>
 	</dict>
-	<key>cpShowListOfShortcutKeys</key>
-	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpShowListOfShortcutKeys:</string>
-	</dict>
 	<key>cpHighlightBrowserPlayhead</key>
 	<dict>
 		<key>downRepeats</key>
@@ -1383,13 +1390,6 @@
 		<integer>1</integer>
 		<key>downSelector</key>
 		<string>cpSaveKeywordPresetNine:</string>
-	</dict>
-	<key>cpZoomToSelection</key>
-	<dict>
-		<key>downRepeats</key>
-		<integer>1</integer>
-		<key>downSelector</key>
-		<string>cpZoomToSelection:</string>
 	</dict>
 	<key>AddMarker</key>
 	<dict>
