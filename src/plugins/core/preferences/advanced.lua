@@ -41,7 +41,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.trashPreferences()
-	
+
 	if not dialog.displayYesNoQuestion(i18n("trashPreferencesConfirmation")) then
 		return false
 	end
@@ -150,6 +150,7 @@ local plugin = {
 	dependencies	= {
 		["core.preferences.panels.advanced"]	= "advanced",
 		["core.preferences.manager"]			= "manager",
+		["core.commands.global"] 				= "global",
 	}
 }
 --------------------------------------------------------------------------------
@@ -158,6 +159,16 @@ local plugin = {
 function plugin.init(deps)
 
 	mod.manager = deps.manager
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpOpenErrorLog")
+		:whenActivated(mod.openErrorLog)
+
+	global:add("cpTrashPreferences")
+		:whenActivated(mod.trashPreferences)
 
 	--------------------------------------------------------------------------------
 	-- Create Dock Icon Click Callback:

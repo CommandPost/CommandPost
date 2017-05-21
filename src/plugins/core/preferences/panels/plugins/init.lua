@@ -146,9 +146,9 @@ local function generateContent()
 		info.currentCategory = currentCategory
 		info.status = pluginStatus(plugin)
 		info.shortName = pluginShortName(plugin.id)
-		
+
 		local action = nil
-		
+
 		local status = plugin:getStatus()
 		if status == plugins.status.error then
 			action = "errorLog"
@@ -168,11 +168,11 @@ local function generateContent()
 		mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
 
 	end
-	
+
 	table.sort(pluginInfo, function(a, b)
 		return a.category < b.category or a.category == b.category and a.shortName < b.shortName
 	end)
-	
+
 	-- Add a 'currentCategory' field that only list the category when it's different from the previous one.
 	local lastCategory = ""
 	for _,info in ipairs(pluginInfo) do
@@ -230,6 +230,7 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.preferences.manager"]			= "manager",
+		["core.commands.global"] 				= "global",
 	}
 }
 
@@ -237,6 +238,14 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpOpenPluginsFolder")
+		:whenActivated(openPluginsFolder)
+
 	return mod.init(deps, env)
 end
 

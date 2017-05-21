@@ -52,6 +52,7 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.menu.helpandsupport"]	= "helpandsupport",
+		["core.commands.global"] 		= "global",
 	}
 }
 
@@ -59,9 +60,21 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpUserGuide")
+		:whenActivated(mod.show)
+
+	--------------------------------------------------------------------------------
+	-- Menubar:
+	--------------------------------------------------------------------------------
 	deps.helpandsupport:addItem(PRIORITY, function()
 		return { title = i18n("userGuide"),	fn = mod.show }
 	end)
+
 	return mod
 end
 

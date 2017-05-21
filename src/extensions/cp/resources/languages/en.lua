@@ -562,10 +562,10 @@ return {
 
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
-			
+
 			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
 			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
-			
+
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
 			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
 
@@ -903,6 +903,13 @@ return {
 		-- Global:
 		--------------------------------------------------------------------------------
 		cpLaunchFinalCutPro_title								=	"Open Final Cut Pro",
+		cpSetupWatchFolders_title								= 	"Setup Watch Folders",
+		cpPreferences_title										=	"Preferences",
+		cpOpenErrorLog_title									=	"Open Error Log",
+		cpTrashPreferences_title								=	"Trash Preferences",
+		cpOpenPluginsFolder_title								= 	"Open Plugins Folder",
+		cpUserGuide_title										=	"User Guide",
+		cpDeveloperGuide_title									=	"Developer Guide",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
