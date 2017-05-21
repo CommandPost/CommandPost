@@ -21,6 +21,13 @@ local fcp						= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+--------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -33,13 +40,16 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init()
-	local cmds = commands:new("fcpx")
-	cmds.isEnabled(fcp:isFrontmost())
+
+	--------------------------------------------------------------------------------
+	-- New Final Cut Pro Command Collection:
+	--------------------------------------------------------------------------------
+	mod.cmds = commands:new("fcpx")
 
 	--------------------------------------------------------------------------------
 	-- Switch to Final Cut Pro to activate:
 	--------------------------------------------------------------------------------
-	cmds:watch({
+	mod.cmds:watch({
 		activate	= function()
 			--log.df("Final Cut Pro Activated by Commands Plugin")
 			fcp:launch()
@@ -50,10 +60,18 @@ function plugin.init()
 	-- Enable/Disable as Final Cut Pro becomes Active/Inactive:
 	--------------------------------------------------------------------------------
 	fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(enabled)
-		cmds:isEnabled(enabled)
+		log.df("Result: %s", enabled)
+		mod.cmds:isEnabled(enabled)
 	end)
 
-	return cmds
+	return mod.cmds
+end
+
+--------------------------------------------------------------------------------
+-- POST INITIALISATION:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+	mod.cmds:isEnabled(fcp.isFrontmost())
 end
 
 return plugin
