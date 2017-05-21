@@ -36,7 +36,7 @@ local function defrostClass(data, defrostFn)
 	if data["$class"] then
 		local classname = data["$class"]["$classname"]
 		-- check if a defrost function was provided
-		if defrostFn then
+		if type(defrostFn) == "function" then
 			local result = defrostFn(data, classname)
 			if result then
 				return result
@@ -131,8 +131,43 @@ function mod.unarchive(archive, defrostFn)
 		if top then
 			return get(top, objects, cache, defrostFn)
 		end
+	else
+		return nil, string.format("The archive was not archived by %s", mod.ARCHIVER_VALUE)
 	end
-	return nil
+end
+
+
+--- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table
+--- Function
+--- Unarchives a plist file which was archived into a plist using the NSKeyedArchiver.
+---
+--- Parameters:
+---  * `base64data`	- the file containing the archive plist
+---  * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
+---
+--- Returns:
+---  * The unarchived plist.
+---
+--- Notes:
+---  * A 'defrost' function can be provided, which will be called whenever a table with a '$class'
+---    structure is present. It will receive the table and the classname and should either return a modified value
+---    if the class was handled, or `nil` if it was unable to handle the class. Eg:
+---
+---    ```
+---    local result = archiver.unarchiveFile(filename, function(frozen, classname)
+--- 	   if classname == "XXMyClass" then
+--- 		   return MyClass:new(frozen.foo, frozen.bar)
+--- 	   end
+---		   return nil
+---    end)
+---    ```
+function mod.unarchiveBase64(base64data, defrostFn)
+	local archive, err = plist.base64ToTable(base64data)
+	if archive then
+		return mod.unarchive(archive, defrostFn)
+	else
+		return nil, err
+	end
 end
 
 --- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table
@@ -160,11 +195,11 @@ end
 ---    end)
 ---    ```
 function mod.unarchiveFile(filename, defrostFn)
-	local archive = plist.fileToTable(filename)
+	local archive, err = plist.fileToTable(filename)
 	if archive then
 		return mod.unarchive(archive, defrostFn)
 	else
-		return nil
+		return nil, err
 	end
 end
 

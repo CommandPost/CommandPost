@@ -7,7 +7,7 @@ local just		= require("cp.just")
 
 local function reset()
 	fcp:launch()
-	fcp:selectMenu("Window", "Workspaces", "Default")
+	fcp:selectMenu({"Window", "Workspaces", "Default"})
 end
 
 local function run()

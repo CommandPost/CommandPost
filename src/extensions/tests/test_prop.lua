@@ -457,8 +457,8 @@ function run()
 		local boundWatch = function(value) boundCount = boundCount + 1; boundValue = value end
 		andBound:watch(boundWatch)
 		
-		ok(#andProp._watchersUncloned == 1)
-		ok(andProp._watchersUncloned[1].fn == propWatch)
+		ok(#andProp._watchers == 1)
+		ok(andProp._watchers[1].fn == propWatch)
 		
 		ok(#andBound._watchers == 1)
 		ok(andBound._watchers[1].fn == boundWatch)
@@ -499,6 +499,120 @@ function run()
 		value:update()
 		-- should only be one log entry since the value didn't change.
 		ok(eq(report, {true}))
+	end)
+	
+	test("Prop Monitoring", function()
+		local report = {}
+		
+		local a = prop.TRUE()
+		
+		local b = prop.new(function() return a() and "true" or "false" end)
+			:monitor(a)
+			:watch(function(value) report[#report+1] = value end)
+		
+		ok(eq(report, {}))
+		
+		a(false)
+		
+		ok(eq(report, {"false"}))
+		
+	end)
+	
+	test("Prop Mutation", function()
+		local report = {}
+		
+		-- take any number
+		local anyNumber = prop.THIS(1)
+		
+		-- mutate to check if it's odd or even
+		local isEven	= anyNumber:mutate(function(value) return value % 2 == 0 end)
+			:watch(function(value) report[#report+1] = value end)
+		
+		ok(isEven() == false)
+		ok(eq(report, {}))
+		
+		anyNumber(10)
+		ok(isEven() == true)
+		ok(eq(report, {true}))
+		
+		anyNumber(4)
+		ok(isEven() == true)
+		ok(eq(report, {true}))
+		
+		anyNumber(7)
+		ok(isEven() == false)
+		ok(eq(report, {true, false}))
+	end)
+	
+	test("Prop Wrapping", function()
+		local a = prop.TRUE()
+		local b = a:wrap(b)
+		local c = b:clone()
+		
+		local aReport = {}
+		local bReport = {}
+		local cReport = {}
+		
+		a:watch(function(value) aReport[#aReport+1] = value end)
+		b:watch(function(value) bReport[#bReport+1] = value end)
+		c:watch(function(value) cReport[#cReport+1] = value end)
+		
+		ok(a() == true)
+		ok(b() == true)
+		ok(c() == true)
+		ok(eq(aReport, {}))
+		ok(eq(bReport, {}))
+		ok(eq(cReport, {}))
+		
+		-- change a
+		a(false)
+		ok(a() == false)
+		ok(b() == false)
+		ok(c() == false)
+		ok(eq(aReport, {false}))
+		ok(eq(bReport, {false}))
+		ok(eq(cReport, {false}))
+		
+		-- change b
+		b(true)
+		ok(a() == true)
+		ok(b() == true)
+		ok(c() == true)
+		ok(eq(aReport, {false, true}))
+		ok(eq(bReport, {false, true}))
+		ok(eq(cReport, {false, true}))
+	end)
+	
+	test("Prop Pre-Watch", function()
+		local preWatched = 0
+
+		local a = prop.TRUE()
+		a:preWatch(function(self) preWatched = preWatched + 1 end)
+		
+		ok(preWatched == 0)
+		
+		a:toggle()
+		ok(a() == false)
+		ok(preWatched == 0)
+		
+		local watched = 0
+		a:watch(function(value, self) watched = watched + 1 end)
+		
+		a:toggle()
+		ok(a() == true)
+		ok(preWatched == 1)
+		ok(watched == 1)
+		
+		-- happens after a watcher has been added. Better late than never!
+		local instantPreWatch = 0
+		a:preWatch(function(self) instantPreWatch = instantPreWatch + 1 end)
+		ok(instantPreWatch == 1)
+		
+		a:toggle()
+		ok(a() == false)
+		ok(preWatched == 1)
+		ok(instantPreWatch == 1)
+		ok(watched == 2)		
 	end)
 end
 

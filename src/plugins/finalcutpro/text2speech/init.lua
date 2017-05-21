@@ -272,9 +272,9 @@ function completeProcess()
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled("Window", "Go To", "Timeline")
+	local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
 	if result then
-		local result = fcp:selectMenu("Window", "Go To", "Timeline")
+		local result = fcp:selectMenu({"Window", "Go To", "Timeline"})
 	else
 		dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
 		return nil
@@ -283,9 +283,9 @@ function completeProcess()
 	--------------------------------------------------------------------------------
 	-- Perform Paste:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled("Edit", "Paste as Connected Clip")
+	local result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
 	if result then
-		local result = fcp:selectMenu("Edit", "Paste as Connected Clip")
+		local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
 	else
 		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
 		return nil
@@ -296,12 +296,12 @@ function completeProcess()
 	--------------------------------------------------------------------------------
 	if not mod.insertIntoTimeline() then
 		local result = just.doUntil(function()
-			return fcp:menuBar():isEnabled("Edit", "Undo Paste")
+			return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
 		end, 3)
 		if result then
-			local result = fcp:menuBar():isEnabled("Edit", "Undo Paste")
+			local result = fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
 			if result then
-				local result = fcp:selectMenu("Edit", "Undo Paste")
+				local result = fcp:selectMenu({"Edit", "Undo Paste"})
 			else
 				log.wf("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
 				return nil
@@ -465,7 +465,7 @@ function mod.show()
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled("Window", "Go To", "Timeline")
+	local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
 	if not result then
 		log.wf("Failed to activate timeline in Text to Speech Plugin.")
 	end

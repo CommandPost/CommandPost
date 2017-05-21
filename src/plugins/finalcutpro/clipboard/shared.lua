@@ -185,11 +185,11 @@ end
 --------------------------------------------------------------------------------
 function mod.copyWithCustomClipName()
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Edit", "Copy") then
+	if menuBar:isEnabled({"Edit", "Copy"}) then
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextClipName(result)
-		menuBar:selectMenu("Edit", "Copy")
+		menuBar:selectMenu({"Edit", "Copy"})
 	end
 end
 
@@ -248,7 +248,7 @@ end
 --------------------------------------------------------------------------------
 function mod.copyWithCustomClipNameAndFolder()
 	local menuBar = fcp:menuBar()
-	if menuBar:isEnabled("Edit", "Copy") then
+	if menuBar:isEnabled({"Edit", "Copy"}) then
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod._manager.overrideNextClipName(result)
@@ -257,7 +257,7 @@ function mod.copyWithCustomClipNameAndFolder()
 		if result == false then return end
 		mod.overrideNextFolderName(result)
 
-		menuBar:selectMenu("Edit", "Copy")
+		menuBar:selectMenu({"Edit", "Copy"})
 	end
 end
 

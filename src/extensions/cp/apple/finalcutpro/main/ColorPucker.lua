@@ -50,8 +50,8 @@ function Pucker:start()
 
 	-- disable skimming while the pucker is running
 	self.menuBar = self.colorBoard:app():menuBar()
-	self.skimming = self.menuBar:isChecked("View", "Skimming")
-	self.menuBar:uncheckMenu("View", "Skimming")
+	self.skimming = self.menuBar:isChecked({"View", "Skimming"})
+	self.menuBar:uncheckMenu({"View", "Skimming"})
 
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
@@ -171,7 +171,7 @@ function Pucker:cleanup()
 	self.angleUI = nil
 	self.origin = nil
 	if self.skimming and self.menuBar then
-		self.menuBar:checkMenu("View", "Skimming")
+		self.menuBar:checkMenu({"View", "Skimming"})
 	end
 	self.menuBar = nil
 	self.colorBoard.pucker = nil

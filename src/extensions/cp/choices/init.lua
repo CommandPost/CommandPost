@@ -152,36 +152,6 @@ function mod:add(text)
 	return bldr
 end
 
---- cp.choices:setStatic(value) -> choices
---- Method
---- By default, choices are considered to be dynamic, and should be
---- reloaded each time the list is required. If the options are not
---- going to change, this can be indicated by calling this method
---- and the results can be cached for future calls.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `choices` instance.
-function mod:makeStatic()
-	self._static = true
-	return self
-end
-
---- cp.choices:isStatic() -> boolean
---- Method
---- Returns `true` if the choices set is static.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the choices set is static.
-function mod:isStatic()
-	return self._static == true
-end
-
 --- cp.choices:getChoices() -> array of choices
 --- Method
 --- Returns the array of choices that have been added to this instance.

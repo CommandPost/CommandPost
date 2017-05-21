@@ -82,8 +82,8 @@ end):bind(CommandEditor)
 function CommandEditor:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled("Final Cut Pro", "Commands", "Customize…") then
-			self:app():menuBar():selectMenu("Final Cut Pro", "Commands", "Customize…")
+		if self:app():menuBar():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
+			self:app():menuBar():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end
@@ -135,8 +135,9 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
+---    * `show(window)` - Triggered when the window is shown.
+---    * `hide(window)` - Triggered when the window is hidden.
+---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
 ---  * An ID which can be passed to `unwatch` to stop watching.

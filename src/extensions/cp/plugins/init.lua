@@ -329,12 +329,14 @@ function mod.initPlugin(id)
 	local module = nil
 
 	if plugin.init then
-		local status, err = pcall(function()
-			module = plugin.init(dependencies, env.new(plugin:getRootPath()))
-		end)
+		local ok, result = xpcall(function()
+			return plugin.init(dependencies, env.new(plugin:getRootPath()))
+		end, debug.traceback)
 
-		if not status then
-			log.ef("Error while initialising plugin '%s': %s", id, inspect(err))
+		if ok then
+			module = result
+		else
+			log.ef("Error while initialising plugin '%s':\n%s", id, result)
 			return nil
 		end
 	else
@@ -684,7 +686,7 @@ end
 ---
 function mod.loadSimplePlugin(path)
 	-- load the plugin file, catching any errors
-	local ok, result = pcall(dofile, path)
+	local ok, result = xpcall(function() return dofile(path) end, debug.traceback)
 	if ok then
 		local plugin = result
 		if plugin == nil or type(plugin) ~= "table" then

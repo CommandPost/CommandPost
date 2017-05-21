@@ -113,8 +113,8 @@ end):bind(PreferencesWindow)
 function PreferencesWindow:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled("Final Cut Pro", "Preferences…") then
-			self:app():menuBar():selectMenu("Final Cut Pro", "Preferences…")
+		if self:app():menuBar():isEnabled({"Final Cut Pro", "Preferences…"}) then
+			self:app():menuBar():selectMenu({"Final Cut Pro", "Preferences…"})
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end
