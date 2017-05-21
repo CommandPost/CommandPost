@@ -80,8 +80,8 @@ end):bind(MediaImport)
 function MediaImport:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled("File", "Import", "Media…") then
-			self:app():menuBar():selectMenu("File", "Import", "Media…")
+		if self:app():menuBar():isEnabled({"File", "Import", "Media…"}) then
+			self:app():menuBar():selectMenu({"File", "Import", "Media…"})
 			local ui = just.doUntil(function() return self:isShowing() end)
 		end
 	end

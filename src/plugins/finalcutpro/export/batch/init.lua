@@ -48,14 +48,14 @@ local mod = {}
 -- Returns:
 --  * `true` if successful otherwise `false`
 local function selectShare(destinationPreset)
-	return fcp:menuBar():selectMenu("File", "Share", function(menuItem)
+	return fcp:menuBar():selectMenu({"File", "Share", function(menuItem)
 		if destinationPreset == nil then
 			return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
 		else
 			local title = menuItem:attributeValue("AXTitle")
 			return title and string.find(title, destinationPreset) ~= nil
 		end
-	end)
+	end})
 
 end
 
@@ -110,7 +110,7 @@ local function sendClipsToCompressor(libraries, clips, exportPath, destinationPr
 		--------------------------------------------------------------------------------
 		-- Make sure the Library is selected:
 		--------------------------------------------------------------------------------
-		if not fcp:menuBar():selectMenu("Window", "Go To", "Libraries") then
+		if not fcp:menuBar():selectMenu({"Window", "Go To", "Libraries"}) then
 			dialog.displayErrorMessage("Could not trigger 'Go To Libraries'.")
 			return false
 		end
@@ -118,7 +118,7 @@ local function sendClipsToCompressor(libraries, clips, exportPath, destinationPr
 		--------------------------------------------------------------------------------
 		-- Trigger Export:
 		--------------------------------------------------------------------------------
-		if not fcp:menuBar():selectMenu("File", "Send to Compressor") then
+		if not fcp:menuBar():selectMenu({"File", "Send to Compressor"}) then
 			dialog.displayErrorMessage("Could not trigger 'Send to Compressor'.")
 			return false
 		end
@@ -238,7 +238,7 @@ function mod.changeExportDestinationPreset()
 		return false
 	end
 
-	local shareMenuItems = fcp:menuBar():findMenuItemsUI("File", "Share")
+	local shareMenuItems = fcp:menuBar():findMenuItemsUI({"File", "Share"})
 	if not shareMenuItems then
 		dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
 		return false
@@ -337,20 +337,16 @@ function mod.batchExport()
 
 	if destinationPreset == nil then
 
-		destinationPreset = fcp:menuBar():findMenuUI("File", "Share", function(menuItem)
+		local defaultItem = fcp:menuBar():findMenuUI({"File", "Share", function(menuItem)
 			return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-		end):attributeValue("AXTitle")
+		end})
 
-		if destinationPreset == nil then
+		if defaultItem == nil then
 			displayErrorMessage(i18n("batchExportNoDestination"))
 			return false
 		else
-			-- Remove (default) text:
-			local firstBracket = string.find(destinationPreset, " %(", 1)
-			if firstBracket == nil then
-				firstBracket = string.find(destinationPreset, "（", 1)
-			end
-			destinationPreset = string.sub(destinationPreset, 1, firstBracket - 1)
+			-- Trim the trailing '(default)…'
+			destinationPreset = defaultItem:attributeValue("AXTitle"):match("(.*) %([^()]+%)…$")
 		end
 
 	end

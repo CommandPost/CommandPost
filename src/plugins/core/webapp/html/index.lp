@@ -114,11 +114,11 @@ if next(queryString) ~= nil then
 
 			log.df("Adding Marker: %s", markerString)
 
-			fcp:selectMenu("Mark", "Markers", "Add Marker")
-			fcp:selectMenu("Mark", "Markers", "Add Marker")
+			fcp:selectMenu({"Mark", "Markers", "Add Marker"})
+			fcp:selectMenu({"Mark", "Markers", "Add Marker"})
 			local originalPasteboard = pasteboard.getContents()
 			pasteboard.setContents(markerString)
-			fcp:selectMenu("Edit", "Paste")
+			fcp:selectMenu({"Edit", "Paste"})
 			eventtap.keyStroke({}, "return")
 			pasteboard.setContents(originalPasteboard)
 
@@ -129,7 +129,7 @@ if next(queryString) ~= nil then
 		local menupath = queryString["menupath"]
 		if fcp:isShowing() then
 			log.df("Triggering Menu Item: %s", menupath)
-			fcp:selectMenu(table.unpack(thawParams({menupath})[1]))
+			fcp:selectMenu(thawParams({menupath})[1])
 		else
 			log.df("Final Cut Pro is not active.")
 		end
@@ -137,15 +137,15 @@ if next(queryString) ~= nil then
 		local keyword = queryString["keyword"]
 		log.df("Adding Keyword: %s", keyword)
 
-		local keywordEditorOpen = fcp:menuBar():isEnabled("Mark", "Hide Keyword Editor")
+		local keywordEditorOpen = fcp:menuBar():isEnabled({"Mark", "Hide Keyword Editor"})
 
 		if not keywordEditorOpen then
-			fcp:selectMenu("Mark", "Show Keyword Editor")
+			fcp:selectMenu({"Mark", "Show Keyword Editor"})
 		end
 
 		local originalPasteboard = pasteboard.getContents()
 		pasteboard.setContents(keyword)
-		fcp:selectMenu("Edit", "Paste")
+		fcp:selectMenu({"Edit", "Paste"})
 		eventtap.keyStroke({}, "return")
 		pasteboard.setContents(originalPasteboard)
 

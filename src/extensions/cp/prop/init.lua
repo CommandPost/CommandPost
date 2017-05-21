@@ -256,7 +256,7 @@ end
 --- Returns
 --- * The current value.
 function prop.mt:get()
-	return self._get(self._owner)
+	return self._get(self._owner, self)
 end
 
 --- cp.prop:set(newValue) -> value
@@ -278,7 +278,7 @@ function prop.mt:set(newValue)
 		self._newValue = newValue
 		return newValue
 	else
-		self._set(newValue, self._owner)
+		self._set(newValue, self._owner, self)
 		self:_notify(newValue)
 		return newValue
 	end
@@ -386,9 +386,16 @@ function prop.mt:toggle()
 	return self:set(negate(self:get()))
 end
 
---- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop
+--- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop, function
 --- Method
---- Adds the watch function to the value. When the value changes, watchers are notified by calling the function, passing in the current value as the first parameter. If property is bound to an owner, the owner is the second parameter.
+--- Adds the watch function to the value. When the value changes, watchers are notified by calling the function. The function should have the following signature:
+---
+--- ```lua
+--- function(value, owner, prop)
+--- ```
+--- * `value`	- The new value of the property
+--- * `owner`	- The property owner. May be `nil`.
+--- * `prop`	- The property itself.
 ---
 --- Parameters:
 --- * `watchFn`		- The watch function, with the signature `function(newValue, owner)`.
@@ -402,23 +409,57 @@ end
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:watch(watchFn, notifyNow, uncloned)
-	local watchers = nil
-	if uncloned then
-		if not self._watchersUncloned then
-			self._watchersUncloned = {}
-		end
-		watchers = self._watchersUncloned
-	else
-		if not self._watchers then
-			self._watchers = {}
-		end
-		watchers = self._watchers
+	if not self._watchers then
+		self._watchers = {}
 	end
-	watchers[#watchers + 1] = {fn = watchFn}
-	if notifyNow then
+	local watchers = self._watchers
+	
+	watchers[#watchers + 1] = {fn = watchFn, uncloned = uncloned}
+	
+	-- run any prewatch functions
+	self:_preWatch()
+	
+	if notifyNow then -- do an immediate update.
 		self:update()
 	end
 	return self, watchFn
+end
+
+--- cp.prop:hasWatchers() -> boolean
+--- Method
+--- Returns `true` if the property has any watchers.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if any watchers have been registered.
+function prop.mt:hasWatchers()
+	return self._watchers and #self._watchers > 0
+end
+
+--- cp.prop:preWatch(preWatchFn) -> nil
+--- Method
+--- Adds a function which will be called once if any watchers are added to this prop.
+--- This allows configuration, typically for watching other events, but only if
+--- anything is actually watching this property value.
+---
+--- If the prop already has watchers, this function will be called imediately.
+--- 
+--- Parameters:
+---  * `preWatchFn`		- The function to call once when the prop is watched. Has the signature `function(owner, prop)`.
+--- 
+--- Returns:
+---  * Nothing
+function prop.mt:preWatch(preWatchFn)
+	if self:hasWatchers() then -- already watchers - just run it
+		preWatchFn(self:owner())
+	else -- cache them for later.
+		if not self._preWatchers then
+			self._preWatchers = {}
+		end
+		self._preWatchers[#self._preWatchers+1] = preWatchFn
+	end
 end
 
 local function _unwatch(watchers, watchFn)
@@ -453,7 +494,22 @@ end
 --- Notes:
 --- * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:unwatch(watchFn)
-	return _unwatch(self._watchers, watchFn) or _unwatch(self._watchersUncloned)
+	return _unwatch(self._watchers, watchFn)
+end
+
+--- cp.prop:monitor(otherProp) -> cp.prop, function
+--- Method
+--- Adds an uncloned watch to the `otherProp` which will trigger an [update](#update) check in this property.
+---
+--- Parameters:
+---  * `otherProp`	- the property to monitor
+---
+--- Returns:
+---  * `cp.prop`	- This prop value.
+---  * `function`	- The watch function. Can be used to [unwatch](#unwatch) the `otherProp` if needed.
+function prop.mt:monitor(otherProp)
+	local _, watch = otherProp:watch(function() self:update() end, false, true)
+	return self, watch
 end
 
 --- cp.prop:update() -> value
@@ -480,10 +536,16 @@ function prop.mt:_clone()
 
 	-- copy the owner, if present
 	clone._owner = self:owner()
+	clone._mutated = self._mutated
+	clone._original = self._original
 	
 	-- copy the watchers, if present
 	if self._watchers then
-		clone._watchers = fnutils.copy(self._watchers)
+		clone._watchers = fnutils.ifilter(self._watchers, function(watcher) return not watcher.uncloned end)
+	end
+	-- copy the pre-watchers, if present
+	if self._preWatchers then
+		clone._preWatchers = fnutils.copy(self._preWatchers)
 	end
 	
 	return clone
@@ -523,6 +585,104 @@ local function watchProps(watcher, ...)
 			p:watch(watcherFn)
 		end
 	end
+end
+
+--- cp.prop:mutate(getFn[, setFn]) -> cp.prop <anything; read-only>
+--- Method
+--- Returns a new property that is a mutation of the current one.
+---
+--- The `getFn` is a function with the following signature:
+---
+--- ```lua
+--- function(sourceValue, owner) --> mutantValue
+--- ```
+---
+--- * `sourceValue`		- The current value of the original property being mutated.
+--- * `owner`			- The owner of the mutator property, if it has been bound.
+--- * `mutantValue`		- The new value based off the original.
+---
+--- The `setFn` is optional, and is a function with the following signature:
+---
+--- ```lua
+--- function(sourceValue, mutantValue, owner) --> result
+--- ```
+---
+--- * `sourceValue`		- The current value of the original property being mutated.
+--- * `mutantValue`		- The new value being set.
+--- * `owner`			- The owner of the mutator property, if it has been bound.
+---
+--- For example:
+---
+--- ```lua
+--- anyNumber	= prop.THIS(1)
+--- isEven		= anyNumber:mutate(function(value) return value % 2 == 0 end)
+--- 	:watch(function(even)
+--- 		if even then
+--- 			print "even"
+--- 		else
+---				print "odd"
+---			end
+--- 	end)
+---
+--- isEven:update()		-- prints "odd"
+--- anyNumber(10)		-- prints "even"
+--- isEven() == true	-- no printing
+--- ```
+---
+--- Parameters:
+---  * `mutateFn`	- The function which will mutate the value of the current property.
+---
+--- Returns:
+---  * A new `cp.prop` which will return a mutation of the property value.
+function prop.mt:mutate(getFn, setFn)
+	-- create the mutant, which will pull from the original.
+	local mutantGetFn = function(owner, prop) return getFn(prop._original:get(), owner)	end
+	local mutantSetFn = nil
+	if setFn then
+		mutantSetFn = function(newValue, owner, prop) setFn(prop._original:get(), newValue, owner) end
+	end
+	
+	local mutant = prop.new(mutantGetFn, mutantSetFn)
+	mutant._original = self
+	self._mutated = true
+	-- watch for changes and notify with the mutation
+	self:watch(function(value, owner) mutant:_notify(getFn(value, owner)) end, false, true)
+	return mutant
+end
+
+--- cp.prop:mutate([owner]) -> cp.prop <anything>
+--- Method
+--- Returns a new property that wraps this one. It will be able to get and set the same as this, and changes
+--- to this property will trigger updates in the wrapper.
+---
+--- Parameters:
+---  * `owner`	-	 (optional) If provided, the wrapper will be bound to the specified owner.
+---
+--- Returns:
+---  * A new `cp.prop` which wraps this property.
+function prop.mt:wrap(owner)
+	local wrapGetFn = function(owner, prop) return prop._wrapped:get() end
+	local wrapSetFn = self._set and function(newValue, owner, prop) prop._wrapped:set(newValue) end or nil
+	local wrapCloneFn = function(self)
+		local clone = prop.mt._clone(self)
+		clone._wrapped = self._wrapped
+		clone._wrapped:watch(function(value) clone:_notify(value) end, false, true)
+		return clone
+	end
+	
+	-- Create the wrapper property
+	local wrapper = prop.new(wrapGetFn, wrapSetFn, wrapCloneFn)
+	wrapper._wrapped = self
+	
+	-- bind, if appropriate
+	if owner then
+		wrapper = wrapper:bind(owner)
+	end
+	
+	-- watch the original
+	self:watch(function(value) wrapper:_notify(value) end, false, true)
+	
+	return wrapper
 end
 
 --- cp.prop:EQUALS() -> cp.prop <boolean; read-only>
@@ -652,13 +812,29 @@ function prop.mt:ATLEAST(something)
 end
 
 -- Notifies registered watchers in the array if the value has changed since last notification.
-local function _notifyWatchers(watchers, value, owner)
+local function _notifyWatchers(watchers, value, owner, prop)
 	if watchers then
 		for _,watcher in ipairs(watchers) do
 			if watcher.lastValue ~= value then
 				watcher.lastValue = value
-				watcher.fn(value, owner)
+				watcher.fn(value, owner, prop)
 			end
+		end
+	end
+end
+
+-- cp.prop:_preWatch() -> nil
+-- Method
+-- This will run any functions added as `pre-watchers` one time, then
+-- the list gets cleared. This allows some setup functions to happen
+-- if/when someone is actually watching the property.
+function prop.mt:_preWatch()
+	if self._preWatchers then
+		local preWatchers = self._preWatchers
+		self._preWatchers = nil
+		local owner = self:owner()
+		for _,preWatcher in ipairs(preWatchers) do
+			preWatcher(owner, self)
 		end
 	end
 end
@@ -679,11 +855,10 @@ function prop.mt:_notify(value)
 		return
 	end
 	
-	if self._watchers or self._watchersUncloned then
+	if self._watchers then
 		self._notifying = true
 		local owner = self:owner()
-		_notifyWatchers(self._watchersUncloned, value, owner)
-		_notifyWatchers(self._watchers, value, owner)
+		_notifyWatchers(self._watchers, value, owner, self)
 		self._notifying = nil
 		-- check if a 'set' happened during the notification cycle.
 		if self._doSet then
@@ -713,7 +888,7 @@ prop.mt.__call = function(target, owner, newValue, quiet)
 	return target:value(newValue, quiet)
 end
 
---- cp.prop.new(getFn, setFn) --> cp.prop
+--- cp.prop.new(getFn, setFn, cloneFn) --> cp.prop
 --- Constructor
 --- Creates a new `prop` value, with the provided `get` and `set` functions.
 ---
@@ -756,15 +931,16 @@ end
 --- Returns:
 --- * a new `cp.prop` instance.
 function prop.THIS(initialValue)
-	local value = initialValue
-	local get = function() return value end
-	local set = function(newValue) value = newValue end
+	local get = function(owner, prop) return prop._value end
+	local set = function(newValue, owner, prop) prop._value = newValue end
 	local clone = function(self)
-		local result = prop.THIS(value)
-		result._owner = self:owner()
-		return result
+		local clone = prop.mt._clone(self)
+		clone._value = self._value
+		return clone
 	end
-	return prop.new(get, set, clone)
+	local result = prop.new(get, set, clone)
+	result._value = initialValue
+	return result
 end
 
 --- cp.prop.IMMUTABLE(propValue) -- cp.prop
@@ -780,8 +956,7 @@ end
 --- Note:
 --- * The original `propValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 function prop.IMMUTABLE(propValue)
-	local immutable = prop.new(function() return propValue:get() end)
-	propValue:watch(function() immutable:update() end)
+	local immutable = prop.new(function() return propValue:get() end):monitor(propValue)
 	return immutable
 end
 
@@ -849,7 +1024,7 @@ function prop.NOT(propValue)
 		function(newValue) propValue:set(negate(newValue)) end
 	)
 	-- notify the 'not' watchers if the original value changes.
-	propValue:watch(function(value) notProp:update() end)
+	:monitor(propValue)
 	return notProp
 end
 
@@ -1013,26 +1188,43 @@ prop.mt.OR = prop.OR
 -- target.isFunction() -- error. The function was not copied.
 -- ```
 --
--- The original `prop` methods on the source 
+-- The original `prop` methods on the source will be rebound to the target.
 -- 
 -- Parameters:
 -- * `target`	- The target table to copy the methods into.
--- * `...`		- The list of source tables to copy and bind methods from
+-- * `source`	- The list of source tables to copy and bind methods from
 --
 -- Returns:
 -- * The target
-local function rebind(target, ...)
-	local sources = table.pack(...)
-	for i,source in ipairs(sources) do
-		for k,v in pairs(source) do
-			if target[k] == nil and prop.is(v) then
-				if v:owner() == source then
-					-- it's a bound method. rebind.
-					target[k] = v:bind(target)
+local function rebind(target, source)
+	local mutated = {}
+	local mutants = {}
+	-- rebind bound properties
+	for k,v in pairs(source) do
+		if target[k] == nil and prop.is(v) then
+			if v:owner() == source then
+				-- it's a bound method. rebind.
+				local rebound = v:bind(target)
+				target[k] = rebound
+				if v._mutated then -- it will need to be reconnected
+					mutated[v._id] = rebound
+				end
+				if v._original then -- it's a mutant
+					rebound._original = v._original
+					mutants[#mutants+1] = rebound
 				end
 			end
 		end
 	end
+	-- reconnect mutants
+	for _,mutant in ipairs(mutants) do
+		local original = mutant._original
+		if not original then
+			error("Unable to find original of mutated property: %s", mutant)
+		end
+		mutant._original = mutated[original._id] or original
+	end
+	return target
 end
 
 --- cp.prop.extend(target, source) -> table
@@ -1047,7 +1239,8 @@ end
 --- * The `target`, now extending the `source`.
 function prop.extend(target, source)
 	rebind(target, source)
-	return setmetatable(target, {__index = source})
+	source.__index = source
+	return setmetatable(target, source)
 end
 
 return setmetatable(prop, { __call = function(_, ...) return prop.new(...) end })

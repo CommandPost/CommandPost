@@ -226,7 +226,7 @@ function mod.copyWithCustomClipName()
 		local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
 		if result == false then return end
 		mod.overrideNextClipName(result)
-		menuBar:selectMenu("Edit", "Copy")
+		menuBar:selectMenu({"Edit", "Copy"})
 	end
 end
 

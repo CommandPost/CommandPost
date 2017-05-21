@@ -141,7 +141,7 @@ end):bind(ColorBoard)
 -- TODO: Add documentation
 function ColorBoard:show()
 	if not self:isShowing() then
-		self:app():menuBar():selectMenu("Window", "Go To", "Color Board")
+		self:app():menuBar():selectMenu({"Window", "Go To", "Color Board"})
 	end
 	return self
 end
