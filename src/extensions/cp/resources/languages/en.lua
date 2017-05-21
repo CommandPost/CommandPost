@@ -703,7 +703,7 @@ return {
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	command_action						=			"Commands",
+	fcpx_action							=			"Commands",
 	menu_action							=			"Menu Items",
 	video_action						=			"Video Effects",
 	audio_action						=			"Audio Effects",
