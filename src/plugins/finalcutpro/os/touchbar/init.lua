@@ -274,11 +274,9 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-	--
-	-- TO-DO: This needs better garbage collection (see: https://github.com/asmagill/hammerspoon_asm/issues/10)
-	--
 	mod.touchBar:hide()
 	mod.touchBar = nil
+	collectgarbage() -- See: https://github.com/asmagill/hammerspoon_asm/issues/10#issuecomment-303290853
 	mod.keyboardWatcher:stop()
 	mod.keyboardWatcher = nil
 end
@@ -312,7 +310,7 @@ function plugin.init(deps)
 			mod.hide()
 		end
 	end)
-	
+
 	--------------------------------------------------------------------------------
 	-- Update our position if either of the main windows move.
 	--------------------------------------------------------------------------------
