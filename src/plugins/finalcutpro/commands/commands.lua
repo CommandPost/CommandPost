@@ -60,7 +60,7 @@ function plugin.init()
 	-- Enable/Disable as Final Cut Pro becomes Active/Inactive:
 	--------------------------------------------------------------------------------
 	fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(enabled)
-		log.df("Result: %s", enabled)
+		--log.df("Result: %s", enabled)
 		mod.cmds:isEnabled(enabled)
 	end)
 
