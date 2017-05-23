@@ -48,14 +48,14 @@ end
 ---
 --- Parameters:
 ---  * `finderFn`	- a function which will provide the `axuielement` for the window to work with.
---- 
+---
 --- Returns:
 ---  * A new `Window` instance.
 function Window:new(finderFn)
 	assert(finderFn, "Please provide a finder function.")
 	local o = {_finder = finderFn}
 	prop.extend(o, Window)
-	
+
 	-- Window Visible:
 	_watch(hswindowfilter.windowVisible, o, o.visible)
 
@@ -64,19 +64,19 @@ function Window:new(finderFn)
 
 	-- Window Created:
 	_watch(hswindowfilter.windowCreated, o, o.UI)
-	
+
 	-- Window Destroyed:
 	_watch(hswindowfilter.windowDestroyed, o, o.UI)
-	
+
 	-- Window Moved:
 	_watch(hswindowfilter.windowMoved, o, o.frame)
 
 	-- Window Focused:
 	_watch(hswindowfilter.windowFocused, o, o.focused)
-	
+
 	-- Window Full-Screened:
 	_watch(hswindowfilter.windowFullscreened, o, o.fullScreen)
-	
+
 	return o
 end
 
@@ -106,7 +106,7 @@ Window.hsWindow = Window.UI:mutate(
 --- The unique ID for the window.
 Window.id = Window.hsWindow:mutate(
 	function(window)
-		return window:id()
+		return window ~= nil and window:id()
 	end
 ):bind(Window)
 
@@ -158,7 +158,7 @@ Window.minimized = Window.hsWindow:mutate(
 				window:unminimize()
 			end
 		end
-	end	
+	end
 ):bind(Window)
 
 --- cp.apple.finalcutpro.ui.Window.frame <cp.prop: hs.geometry rect>
