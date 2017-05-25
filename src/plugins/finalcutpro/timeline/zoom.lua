@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.timeline.zoom ===
 ---
---- Allows you to zoom a timeline using your mouse scroll wheel (whilst holding down the FN key).
+--- Allows you to zoom a timeline using your mouse scroll wheel (whilst holding down the OPTION key).
 
 --------------------------------------------------------------------------------
 --
@@ -26,10 +26,20 @@ local fcp								= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.zoom.init() -> none
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.init()
 	mod.mousetap = eventtap.new({eventtap.event.types.scrollWheel}, function(e)
 		local mods = eventtap.checkKeyboardModifiers()
-		if fcp.isFrontmost() and mods['fn'] then
+		local mouseButtons = eventtap.checkMouseButtons()
+		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
 			local direction = e:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
 			if direction >= 1 then
 				--log.df("Zoom In")
