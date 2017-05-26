@@ -25,12 +25,12 @@ local prop					= require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugin.core.accessibility.systemPreferencesAlreadyOpen
+--- plugins.core.accessibility.systemPreferencesAlreadyOpen
 --- Variable
 --- Was System Preferences already open?
 mod.systemPreferencesAlreadyOpen = false
 
---- plugin.core.accessibility.enabled <cp.prop: boolean; read-only>
+--- plugins.core.accessibility.enabled <cp.prop: boolean; read-only>
 --- Constant
 --- Is `true` if Accessibility permissions have been enabled for CommandPost.
 --- Plugins interested in being notfied about accessibility status should
@@ -52,7 +52,7 @@ mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
 	end
 end)
 
---- plugin.core.accessibility.completeSetupPanel() -> none
+--- plugins.core.accessibility.completeSetupPanel() -> none
 --- Function
 --- Called when the setup panel for accessibility was shown and is ready to complete.
 ---
@@ -68,7 +68,7 @@ function mod.completeSetupPanel()
 	end
 end
 
---- plugin.core.accessibility.showSetupPanel() -> none
+--- plugins.core.accessibility.showSetupPanel() -> none
 --- Function
 --- Called when the Setup Panel should be shown to prompt the user about enabling Accessbility.
 ---
@@ -83,7 +83,7 @@ function mod.showSetupPanel()
 	mod.setup.show()
 end
 
---- plugin.core.accessibility.init(setup) -> table
+--- plugins.core.accessibility.init(setup) -> table
 --- Function
 --- Initialises the module.
 ---
