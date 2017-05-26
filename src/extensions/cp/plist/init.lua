@@ -16,7 +16,6 @@
 local log			= require("hs.logger").new("plist")
 local plistParse 	= require("cp.plist.plistParse")
 local fs			= require("hs.fs")
-local base64		= require("hs.base64")
 
 --------------------------------------------------------------------------------
 --
@@ -27,7 +26,7 @@ local plist = {}
 
 plist.log = log
 
---- cp.plist.base64ToTable(base64Data) -> table or nil
+--- cp.plist.base64ToTable(base64Data) -> table | nil
 --- Function
 --- Converts base64 Data into a LUA Table.
 ---
@@ -35,33 +34,48 @@ plist.log = log
 ---  * base64Data - Binary data encoded in base64
 ---
 --- Returns:
----  * A table of the plist data, or `nil` if it couldn't be converted.
----
---- Notes:
----  * None
+---  * A table of the plist data
 function plist.base64ToTable(base64Data)
 
-	local binaryData = base64.decode(base64Data)
-	if binaryData then
-		-- Convert the Binary plist file to a LUA table:
-		return plist.binaryToTable(binaryData)
+	-- Define Temporary Files:
+	local base64FileName = os.tmpname()
+	local plistFileName	= os.tmpname()
+
+	local plistTable, err
+
+	local file = io.open(base64FileName, "w")
+	file:write(base64Data)
+	file:close()
+
+	-- Convert the base64 file to a binary plist:
+	executeCommand = 'openssl base64 -in "' .. tostring(base64FileName) .. '" -out "' .. tostring(plistFileName) .. '" -d'
+	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
+	if not executeStatus then
+		log.d("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
 	else
-		return nil
+		-- Convert the Binary plist file to a LUA table:
+		plistTable, err = plist.binaryFileToTable(plistFileName)
 	end
+
+	-- Clean up the Temporary Files:
+	os.remove(base64FileName)
+	os.remove(plistFileName)
+
+	-- Return the result:
+	return plistTable, err
+
 end
 
---- cp.plist.binaryToTable(binaryData) -> table or nil
+--- cp.plist.binaryToTable(binaryData) -> table | nil
 --- Function
 --- Converts Binary Data into a LUA Table.
 ---
 --- Parameters:
----  * binaryData - Binary data
+---  * binaryData		- Binary data
 ---
 --- Returns:
----  * A table of the plist data
----
---- Notes:
----  * None
+---  * data				- A string of XML data
+---  * err				- The error message, or `nil` if there were no problems.
 function plist.binaryToTable(binaryData)
 	if not binaryData then
 		return nil
@@ -76,17 +90,16 @@ function plist.binaryToTable(binaryData)
 	plistFile:close()
 
 	-- Read the Binary plist File:
-	local plistTable = plist.binaryFileToTable(plistFileName)
+	local plistTable, err = plist.binaryFileToTable(plistFileName)
 
 	-- Delete the Temporary File:
 	os.remove(plistFileName)
 
 	-- Return the result:
-	return plistTable
-
+	return plistTable, err
 end
 
---- cp.plist.binaryFileToTable(plistFileName) -> table or nil
+--- cp.plist.binaryFileToTable(plistFileName) -> table | nil
 --- Function
 --- Converts the data from a Binary File into a LUA Table.
 ---
@@ -94,10 +107,8 @@ end
 ---  * plistFileName - Path & Filename of the Binary File
 ---
 --- Returns:
----  * A table of the plist data
----
---- Notes:
----  * None
+---  * data				- A table of plist data, or `nil` if there was a problem.
+---  * err				- The error message, or `nil` if there were no problems.
 function plist.binaryFileToTable(plistFileName)
 
 	local executeOutput 			= nil
@@ -105,10 +116,12 @@ function plist.binaryFileToTable(plistFileName)
 	local plistTable 				= nil
 
 	if not plistFileName then
-		log.d("No plist filename was provided.")
-		return nil
+		return nil, "No plist filename was provided."
 	else
 		plistFileName = fs.pathToAbsolute(plistFileName)
+		if not plistFileName then
+			return nil, string.format("The file could not be found: %s", plistFileName)
+		end
 	end
 
 	local executeOutput, executeStatus, _, _ = hs.execute([[
@@ -116,15 +129,11 @@ function plist.binaryFileToTable(plistFileName)
 	]])
 
 	if not executeStatus then
-		log.d("Failed to convert binary plist to XML: "..tostring(executeOutput))
+		return nil, string.format("Failed to convert binary plist to XML: %s", executeOutput)
 	else
 		-- Convert the XML to a LUA table:
-		plistTable = plistParse(executeOutput)
+		return plistParse(executeOutput)
 	end
-
-	-- Return the result:
-	return plistTable
-
 end
 
 --- cp.plist.binaryFileToXML(plistFileName) -> string | nil
@@ -135,58 +144,48 @@ end
 ---  * plistFileName - Path & Filename of the Binary File
 ---
 --- Returns:
----  * A string of XML data
----
---- Notes:
----  * None
+---  * data				- A string of XML data
+---  * err				- The error message, or `nil` if there were no problems.
 function plist.binaryFileToXML(plistFileName)
 
 	local executeOutput 			= nil
 	local executeStatus 			= nil
-	local plistTable 				= nil
 
-	local executeOutput, executeStatus, _, _ = hs.execute([[
+	local executeOutput, executeStatus = hs.execute([[
 		plutil -convert xml1 "]] .. plistFileName .. [[" -o -
 	]])
 
 	if not executeStatus then
-		log.d("Failed to convert binary plist to XML: "..tostring(executeOutput))
-	else
-		plistTable = executeOutput
+		return nil, string.format("Failed to convert binary plist to XML: %s", executeOutput)
 	end
 
 	-- Return the result:
-	return plistTable
+	return executeOutput, nil
 
 end
 
---- cp.plist.xmlFileToTable(plistFileName) -> table or nil
+--- cp.plist.xmlFileToTable(plistFileName) -> table | nil
 --- Function
 --- Converts XML data from a file into a LUA Table.
 ---
 --- Parameters:
----  * plistFileName - Path & Filename of the XML File
+---  * plistFileName	- Path & Filename of the XML File
 ---
 --- Returns:
----  * A table of plist data
----
---- Notes:
----  * None
+---  * data				- A table of plist data, or `nil` if there was a problem.
+---  * err				- The error message, or `nil` if there were no problems.
 function plist.xmlFileToTable(plistFileName)
 	if not plistFileName then
-		log.d("No plistFileName was provided")
-		return nil
+		return nil, "No plistFileName was provided"
 	end
 
 	local absoluteFilename = fs.pathToAbsolute(plistFileName)
 	if not absoluteFilename then
-		log.df("The provided path was not found: %s", plistFileName)
-		return nil
+		return nil, string.format("The provided path was not found: %s", plistFileName)
 	end
 	local file = io.open(absoluteFilename, "r") 		-- r read mode
     if not file then
-		log.d("Unable to open '".. plistFileName .."'")
-		return nil
+		return nil, string.format("Unable to open '%s'", plistFileName)
 	end
     local content = file:read "*a" 					-- *a or *all reads the whole file
     file:close()
@@ -195,37 +194,38 @@ function plist.xmlFileToTable(plistFileName)
 	plistTable = plistParse(content)
 
 	-- Return the result:
-	return plistTable
+	return plistTable, nil
 
 end
 
---- cp.plist.fileToTable(plistFileName) -> table or nil
+--- cp.plist.fileToTable(plistFileName) -> table | nil
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
 --- It will check the file prior to loading to determine which type it is.
 --- If you know which type of file you're dealing with in advance, you can use
---- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead to save an extra
---- (small) file read
+--- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead.
 ---
 --- Parameters:
----  * plistFileName - Path & Filename of the XML File
+---  * plistFileName	- Path & Filename of the XML File
 ---
 --- Returns:
----  * A table of plist data
----
---- Notes:
----  * None
+---  * data				- A table of plist data, or `nil` if there was a problem.
+---  * err				- The error message, or `nil` if there were no problems.
 function plist.fileToTable(plistFileName)
 	if not plistFileName then
-		log.d("No plistFileName was provided")
-		return nil
+		return nil, "No plistFileName provided."
 	end
 
+	-- find it
 	local absoluteFilename = fs.pathToAbsolute(plistFileName)
+	if not absoluteFilename then
+		return nil, string.format("Unable to find '%s'", plistFileName)
+	end
+	
+	-- open it
 	local file = io.open(absoluteFilename, "r")
 	if not file then
-		log.d("Unable to open '".. plistFileName .."'")
-		return nil
+		return nil, string.format("Unable to open '%s'", plistFileName)
 	end
 
 	-- Check for the marker

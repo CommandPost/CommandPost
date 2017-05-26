@@ -422,9 +422,9 @@ function mod.insertFilesIntoFinalCutPro(files)
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled("Window", "Go To", "Timeline")
+	local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
 	if result then
-		local result = fcp:selectMenu("Window", "Go To", "Timeline")
+		local result = fcp:selectMenu({"Window", "Go To", "Timeline"})
 	else
 		dialog.displayErrorMessage("Failed to activate timeline. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil
@@ -433,9 +433,9 @@ function mod.insertFilesIntoFinalCutPro(files)
 	--------------------------------------------------------------------------------
 	-- Perform Paste:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled("Edit", "Paste as Connected Clip")
+	local result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
 	if result then
-		local result = fcp:selectMenu("Edit", "Paste as Connected Clip")
+		local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
 	else
 		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil

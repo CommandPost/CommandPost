@@ -84,7 +84,7 @@ end):bind(GeneratorsBrowser)
 function GeneratorsBrowser:show()
 	local menuBar = self:app():menuBar()
 	-- Go there direct
-	menuBar:selectMenu("Window", "Go To", GeneratorsBrowser.TITLE)
+	menuBar:selectMenu({"Window", "Go To", GeneratorsBrowser.TITLE})
 	just.doUntil(function() return self:isShowing() end)
 	return self
 end
@@ -156,7 +156,7 @@ end
 
 -- TODO: Add documentation
 function GeneratorsBrowser:showSidebar()
-	self:app():menuBar():checkMenu("Window", "Show in Workspace", "Sidebar")
+	self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Sidebar"})
 end
 
 -- TODO: Add documentation

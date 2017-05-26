@@ -42,7 +42,7 @@ local function spy(f)
 		table.insert(s.called, {...})
 		if f then
 			local r
-			r = args(pcall(f, (unpack or table.unpack)(a, 1, a.n)))
+			r = args(xpcall(function() f((unpack or table.unpack)(a, 1, a.n)) end, debug.traceback))
 			if not r[1] then
 				s.errors = s.errors or {}
 				s.errors[#s.called] = r[2]
@@ -102,7 +102,7 @@ return function(name, f, async)
 		end
 
 		handler('begin', name);
-		local ok, err = pcall(f, restore)
+		local ok, err = xpcall(function() f(restore) end, debug.traceback)
 		if not ok then
 			handler('except', name, err)
 		end

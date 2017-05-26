@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.action.manager ===
+--- === plugins.finalcutpro.action.manager ===
 ---
 --- Action Manager Module.
 
@@ -121,6 +121,7 @@ end
 -- TODO: Add documentation
 function mod.addAction(action)
 	-- log.df("adding action: %s", hs.inspect(action))
+	
 	local id = action.id()
 	mod._actions[id] = action
 	mod._actionIds[#mod._actionIds + 1] = id
@@ -134,6 +135,8 @@ function mod.addAction(action)
 		params = thawParams(params)
 		action.execute(params)
 	end)
+	
+	
 end
 
 -- TODO: Add documentation
@@ -144,16 +147,16 @@ end
 -- TODO: Add documentation
 function mod.toggleActionEnabled(id)
 	local action = mod.getAction(id)
-	if action and action.isEnabled then
-		action.isEnabled:toggle()
+	if action and action.enabled then
+		action.enabled:toggle()
 	end
 end
 
 -- TODO: Add documentation
 function mod.enableAllActions()
 	for _,action in pairs(mod._actions) do
-		if action.isEnabled then
-			action.isEnabled(true)
+		if action.enabled then
+			action.enabled(true)
 		end
 	end
 end
@@ -161,8 +164,8 @@ end
 -- TODO: Add documentation
 function mod.disableAllActions()
 	for _,action in pairs(mod._actions) do
-		if action.isEnabled then
-			action.isEnabled(false)
+		if action.enabled then
+			action.enabled(false)
 		end
 	end
 end
@@ -389,8 +392,11 @@ end
 function mod._findChoices()
 	local result = {}
 	for type,action in pairs(mod._actions) do
-		if not action.isEnabled or action.isEnabled() then
-			fnutils.concat(result, action.choices():getChoices())
+		if not action.enabled or action.enabled() then
+			local choices = action.choices()
+			if choices then
+				fnutils.concat(result, choices:getChoices())
+			end
 		end
 	end
 	local hidden = mod.getHidden()
@@ -425,7 +431,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.action.manager",
+	id				= "finalcutpro.action.manager",
 	group			= "core",
 }
 

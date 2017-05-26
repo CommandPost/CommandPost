@@ -172,11 +172,11 @@ function Viewer:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
 	-- if the browser is on the secondary, we need to turn it off before enabling in primary
-	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Viewers")
+	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Viewers"})
 
 	if self:isEventViewer() then
 		-- Enable the Event Viewer
-		menuBar:checkMenu("Window", "Show in Workspace", "Event Viewer")
+		menuBar:checkMenu({"Window", "Show in Workspace", "Event Viewer"})
 	end
 
 	return self
@@ -186,11 +186,11 @@ end
 function Viewer:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
-	menuBar:checkMenu("Window", "Show in Secondary Display", "Viewers")
+	menuBar:checkMenu({"Window", "Show in Secondary Display", "Viewers"})
 
 	if self:isEventViewer() then
 		-- Enable the Event Viewer
-		menuBar:checkMenu("Window", "Show in Workspace", "Event Viewer")
+		menuBar:checkMenu({"Window", "Show in Workspace", "Event Viewer"})
 	end
 
 	return self
@@ -202,10 +202,10 @@ function Viewer:hide()
 
 	if self:isEventViewer() then
 		-- Uncheck it from the primary workspace
-		menuBar:uncheckMenu("Window", "Show in Workspace", "Event Viewer")
+		menuBar:uncheckMenu({"Window", "Show in Workspace", "Event Viewer"})
 	elseif self:isOnSecondary() then
 		-- The Viewer can only be hidden from the Secondary Display
-		menuBar:uncheckMenu("Window", "Show in Secondary Display", "Viewers")
+		menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Viewers"})
 	end
 	return self
 end

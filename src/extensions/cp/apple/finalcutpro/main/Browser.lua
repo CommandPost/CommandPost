@@ -110,9 +110,9 @@ function Browser:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
 	-- if the browser is on the secondary, we need to turn it off before enabling in primary
-	menuBar:uncheckMenu("Window", "Show in Secondary Display", "Browser")
+	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Browser"})
 	-- Then enable it in the primary
-	menuBar:checkMenu("Window", "Show in Workspace", "Browser")
+	menuBar:checkMenu({"Window", "Show in Workspace", "Browser"})
 	return self
 end
 
@@ -121,7 +121,7 @@ function Browser:showOnSecondary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
 
-	menuBar:checkMenu("Window", "Show in Secondary Display", "Browser")
+	menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
 	return self
 end
 
@@ -129,7 +129,7 @@ end
 function Browser:hide()
 	local menuBar = self:app():menuBar()
 	-- Uncheck it from the workspace
-	menuBar:uncheckMenu("Window", "Show in Workspace", "Browser")
+	menuBar:uncheckMenu({"Window", "Show in Workspace", "Browser"})
 	return self
 end
 

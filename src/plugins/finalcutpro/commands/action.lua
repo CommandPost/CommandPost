@@ -4,10 +4,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.commands.commandaction ===
+--- === plugins.finalcutpro.commands.action ===
 ---
 --- An `action` which will execute a command with matching group/id values.
---- Registers itself with the `core.action.manager`.
+--- Registers itself with the `finalcutpro.action.manager`.
 
 --------------------------------------------------------------------------------
 --
@@ -15,9 +15,9 @@
 --
 --------------------------------------------------------------------------------
 local choices			= require("cp.choices")
-local commands			= require("cp.commands")
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -26,10 +26,12 @@ local dialog			= require("cp.dialog")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local ID	= "command"
+local ID	= "fcpx"
 
 -- TODO: Add documentation
-function mod.init(actionmanager)
+function mod.init(actionmanager, cmds)
+	mod._cmds = cmds
+	
 	mod._manager = actionmanager
 	mod._manager.addAction(mod)
 end
@@ -39,48 +41,44 @@ function mod.id()
 	return ID
 end
 
---- plugins.core.commands.commandaction.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.commands.action.enabled <cp.prop: boolean>
 --- Field
 --- This will be `true` when the command actions are enabled.
 mod.enabled = config.prop("commandActionEnabled", true)
 
---- plugins.core.commands.commandaction.choices() -> table
---- Function
+--- plugins.finalcutpro.commands.action.choices <cp.prop: cp.choices; read-only>
+--- Field
 --- Returns an array of available choices
-function mod.choices()
+mod.choices = prop.new(function()
 	-- Cache the choices, since commands don't change while the app is running.
 	if not mod._choices then
 		mod._choices = choices.new(ID)
-		for _,id in pairs(commands.groupIds()) do
-			local group = commands.group(id)
-			for _,cmd in pairs(group:getAll()) do
-				local title = cmd:getTitle()
-				if title then
-					local subText = cmd:getSubtitle()
-					if not subText and cmd:getGroup() then
-						subText = i18n(cmd:getGroup() .. "_group")
-					end
-					local params = {
-						group	= group:id(),
-						id		= cmd:id(),
-					}
-					mod._choices:add(title)
-						:subText(subText)
-						:params(params)
-						:id(mod.getId(params))
+		for _,cmd in pairs(mod._cmds:getAll()) do
+			local title = cmd:getTitle()
+			if title then
+				local subText = cmd:getSubtitle()
+				if not subText and cmd:getGroup() then
+					subText = i18n(cmd:getGroup() .. "_group")
 				end
+				local params = {
+					id		= cmd:id(),
+				}
+				mod._choices:add(title)
+					:subText(subText)
+					:params(params)
+					:id(mod.getId(params))
 			end
 		end
 	end
 	return mod._choices
-end
+end)
 
 -- TODO: Add documentation
 function mod.getId(params)
-	return ID .. ":" .. string.format("%s:%s", params.group, params.id)
+	return ID .. ":" .. string.format("%s", params.id)
 end
 
---- plugins.core.commands.commandaction.execute(params) -> boolean
+--- plugins.finalcutpro.commands.action.execute(params) -> boolean
 --- Function
 --- Executes the action with the provided parameters.
 ---
@@ -91,7 +89,7 @@ end
 ---
 --- * `true` if the action was executed successfully.
 function mod.execute(params)
-	local group = commands.group(params.group)
+	local group = mod._cmds
 	if group then
 		local cmdId = params.id
 		if cmdId == nil or cmdId == "" then
@@ -119,6 +117,7 @@ end
 -- TODO: Add documentation
 function mod.reset()
 	mod._choices = nil
+	mod.choices:update()
 end
 
 --------------------------------------------------------------------------------
@@ -127,15 +126,16 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.commands.commandaction",
-	group			= "core",
+	id				= "finalcutpro.commands.action",
+	group			= "finalcutpro",
 	dependencies	= {
-		["core.action.manager"] = "actionmanager",
+		["finalcutpro.action.manager"]		= "actionmanager",
+		["finalcutpro.commands"]	= "cmds",
 	}
 }
 
 function plugin.init(deps)
-	mod.init(deps.actionmanager)
+	mod.init(deps.actionmanager, deps.cmds)
 	return mod
 end
 
