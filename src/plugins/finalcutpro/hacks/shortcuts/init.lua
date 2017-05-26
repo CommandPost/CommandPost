@@ -84,7 +84,7 @@ function private.hacksModifiedPath(resourceName)
 end
 
 function private.fileContentsMatch(path1, path2)
-	
+
 	-- Open the first path
 	local file1 = io.open(path1, "rb")
 	if err then log.wf("Unable to read file: %s", path1); return false; end
@@ -96,11 +96,11 @@ function private.fileContentsMatch(path1, path2)
 
 	local block = 100
 	local matches = true
-	
+
 	while true do
 		local bytes1 = file1:read(block)
 		local bytes2 = file2:read(block)
-		
+
 		if not bytes1 then
 			-- make sure file finished as well
 			matches = not bytes2
@@ -110,7 +110,7 @@ function private.fileContentsMatch(path1, path2)
 			matches = false
 			break
 		end
-		
+
 		if bytes1 ~= bytes2 then
 			matches = false
 			break
@@ -119,7 +119,7 @@ function private.fileContentsMatch(path1, path2)
 
 	file1:close()
 	file2:close()
-	
+
 	return matches
 end
 
@@ -139,15 +139,17 @@ function private.filesMatch(path1, path2)
 	return false
 end
 
--- Checks if all files contained in the source path match 
+-- Checks if all files contained in the source path match
 function private.directoriesMatch(sourcePath, targetPath)
 	local sourceFiles = tools.dirFiles(sourcePath)
-
+	if not sourceFiles then
+		return false
+	end
 	for i,file in ipairs(sourceFiles) do
 		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
 			local sourceFile = fs.pathToAbsolute(sourcePath .. "/" .. file)
 			local targetFile = fs.pathToAbsolute(targetPath .. "/" .. file)
-			
+
 			if not sourceFile or not targetFile then -- A file is missing
 				-- log.df("Missing file:\n\t%s", sourceFile or targetFile)
 				return false
@@ -159,7 +161,7 @@ function private.directoriesMatch(sourcePath, targetPath)
 			end
 		end
 	end
-	
+
 	return true
 end
 
@@ -174,17 +176,17 @@ end
 function private.copyFiles(batch, sourcePath, targetPath)
 	local copy = "cp -f '%s' '%s'"
 	local mkdir = "mkdir '%s'"
-	
+
 	local sourceFiles = tools.dirFiles(sourcePath)
 
 	for i,file in ipairs(sourceFiles) do
 		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
 			local sourceFile = sourcePath .. "/" .. file
 			local targetFile = targetPath .. "/" .. file
-			
+
 			local sourceAttr = fs.attributes(sourceFile)
 			local targetAttr = fs.attributes(targetFile)
-			
+
 			if sourceAttr.mode == "directory" then
 				if not targetAttr then
 					-- The directory doesn't exist. Make it first.
@@ -196,7 +198,7 @@ function private.copyFiles(batch, sourcePath, targetPath)
 			end
 		end
 	end
-	
+
 end
 
 -- private.copyHacksFiles(batch, sourcePath) -> ni(""), private.resourcePath("")l
@@ -207,7 +209,7 @@ end
 -- * `batch`		- The table of batch commands to be executed.
 -- * `sourcePath`	- A function that will return the absolute source path to copy from.
 function private.copyHacksFiles(batch, sourcePath)
-	
+
 	local copy = "cp -f '%s' '%s'"
 	local mkdir = "mkdir '%s'"
 
@@ -226,7 +228,7 @@ function private.copyHacksFiles(batch, sourcePath)
 		table.insert(batch, copy:format(sourcePath(langPath .. "Default.commandset"), private.resourcePath(langPath .. "Default.commandset")))
 		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandDescriptions.strings"), private.resourcePath(langPath .. "NSProCommandDescriptions.strings")))
 		table.insert(batch, copy:format(sourcePath(langPath .. "NSProCommandNames.strings"), private.resourcePath(langPath .. "NSProCommandNames.strings")))
-	end	
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -240,7 +242,7 @@ function private.updateHacksShortcuts(install)
 		dialog.displayMessage("No supported versions of Final Cut Pro were detected.")
 		return false
 	end
-	
+
 	mod.working(true)
 
 	local batch = {}
@@ -249,7 +251,7 @@ function private.updateHacksShortcuts(install)
 	-- Always copy the originals back into FCPX, just in case the user has
 	-- previously removed them or used an old version of CommandPost or FCPX Hacks:
 	--------------------------------------------------------------------------------
-	
+
 	private.copyFiles(batch, private.hacksOriginalPath(""), private.resourcePath(""))
 
 	--------------------------------------------------------------------------------
@@ -258,12 +260,12 @@ function private.updateHacksShortcuts(install)
 	if install then
 		private.copyFiles(batch, private.hacksModifiedPath(""), private.resourcePath(""))
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Execute the instructions.
 	--------------------------------------------------------------------------------
 	local result = tools.executeWithAdministratorPrivileges(batch, false)
-	
+
 	mod.working(false)
 
 	mod.update()
@@ -288,11 +290,11 @@ end
 -- Switches to or from having CommandPost commands editible inside FCPX.
 --------------------------------------------------------------------------------
 function private.updateFCPXCommands(enable, silently)
-	
+
 	if enable == mod.installed() then
 		return true
 	end
-	
+
 	local running = fcp:isRunning()
 	if not silently then
 		--------------------------------------------------------------------------------
@@ -305,9 +307,9 @@ function private.updateFCPXCommands(enable, silently)
 		else
 			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
-	
+
 		prompt = prompt .. " " .. i18n("doYouWantToContinue")
-	
+
 		if not dialog.displayYesNoQuestion(prompt) then
 			return false
 		end
@@ -362,7 +364,7 @@ function private.applyCommandSetShortcuts()
 	mod.fcpxCmds:watch({
 		add		= function(cmd)	private.applyShortcut(cmd) end,
 	})
-	
+
 	mod.fcpxCmds:isEditable(false)
 end
 
@@ -437,12 +439,12 @@ function mod.init(deps, env)
 	mod.fcpxCmds	= deps.fcpxCmds
 
 	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
-	
+
 	-- Unstall hacks if the app config is reset.
 	config.watch({
 		reset = function() mod.uninstall() end,
 	})
-	
+
 
 --- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
 --- Constant
@@ -464,7 +466,7 @@ function mod.init(deps, env)
 	mod.uninstalled = prop(function()
 		return private.directoriesMatch(private.hacksOriginalPath(""), private.resourcePath(""))
 	end)
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if shortcuts is working on something.
@@ -474,7 +476,7 @@ function mod.init(deps, env)
 --- Constant
 --- A property that returns `true` if the shortcuts are neither original or installed correctly.
 	mod.outdated = mod.supported:AND(mod.working:NOT()):AND(mod.installed:NOT()):AND(mod.uninstalled:NOT())
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX shortcuts are active.
@@ -495,7 +497,7 @@ function mod.init(deps, env)
 			end
 		end
 	)
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.requiresDeactivation <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX shortcuts are active but shortcuts are not installed.
@@ -508,7 +510,7 @@ function mod.init(deps, env)
 			end
 		end
 	)
-	
+
 	-- Create the Setup Panel
 	local setup = deps.setup
 	local setupPanel = setup.panel.new("hacksShortcuts", 50)
@@ -530,12 +532,12 @@ function mod.init(deps, env)
 				setup.nextPanel()
 			end,
 		})
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.onboardingRequired <cp.prop: boolean>
 --- Constant
 --- If `true`, the initial setup has been completed.
 	mod.onboardingRequired	= config.prop("hacksShortcutsOnboardingRequired", true)
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.setupRequired <cp.prop: boolean; read-only>
 --- Constant
 --- If `true`, the user needs to configure Hacks Shortcuts.
@@ -546,7 +548,7 @@ function mod.init(deps, env)
 	end, true)
 
 	mod.update()
-	
+
 	return mod
 end
 
@@ -608,7 +610,7 @@ function plugin.init(deps, env)
 			}
 		)
 	end
-	
+
 	return mod.init(deps, env)
 end
 
