@@ -15,11 +15,15 @@
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("commands")
 
+local fs						= require("hs.fs")
+local json						= require("hs.json")
+local timer						= require("hs.timer")
+
 local command					= require("cp.commands.command")
 local config					= require("cp.config")
 local prop						= require("cp.prop")
-local timer						= require("hs.timer")
-local json						= require("hs.json")
+local tools						= require("cp.tools")
+
 local _							= require("moses")
 
 --------------------------------------------------------------------------------
@@ -143,7 +147,7 @@ end
 --- Field
 --- If enabled, the commands in the group will be active as well.
 commands.isEnabled = prop.TRUE():bind(commands):watch(function(enabled, self)
-	log.df("%s.isEnabled: %s", self:id(), enabled)
+	--log.df("%s.isEnabled: %s", self:id(), enabled)
 	if enabled then
 		self:_notify('enable')
 	else
@@ -245,6 +249,17 @@ end
 -- TODO: Add documentation
 function commands.getShortcutsPath(name)
 	shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
+
+	--------------------------------------------------------------------------------
+	-- Create Shortcuts Directory if it doesn't already exist:
+	--------------------------------------------------------------------------------
+	if not tools.doesDirectoryExist(shortcutsPath) then
+		local result = fs.mkdir(shortcutsPath)
+		if not result then
+			return nil
+		end
+	end
+
 	return shortcutsPath .. name .. commands.defaultExtension
 end
 

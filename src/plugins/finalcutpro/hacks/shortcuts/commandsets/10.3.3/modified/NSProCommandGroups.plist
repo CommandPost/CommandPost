@@ -8,6 +8,8 @@
 		<integer>2</integer>
 		<key>commands</key>
 		<array>
+			<string>cpZoomToSelection</string>
+			<string>cpText2Speech</string>
 			<string>cpCopyWithCustomLabel</string>
 			<string>cpCopyWithCustomLabelAndFolder</string>
 			<string>cpAddNoteToSelectedClip</string>
@@ -171,7 +173,6 @@
 			<string>cpEffectsThree</string>
 			<string>cpEffectsFour</string>
 			<string>cpEffectsFive</string>
-			<string>cpShowListOfShortcutKeys</string>
 			<string>cpHighlightBrowserPlayhead</string>
 			<string>cpRevealInBrowserAndHighlight</string>
 			<string>cpSingleMatchFrameAndHighlight</string>
@@ -204,7 +205,6 @@
 			<string>cpSaveKeywordPresetSeven</string>
 			<string>cpSaveKeywordPresetEight</string>
 			<string>cpSaveKeywordPresetNine</string>
-			<string>cpZoomToSelection</string>
 		</array>
 	</dict>
 	<key>Application</key>

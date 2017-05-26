@@ -342,7 +342,7 @@ function mod.batchExport()
 		end})
 
 		if defaultItem == nil then
-			displayErrorMessage(i18n("batchExportNoDestination"))
+			dialog.displayErrorMessage(i18n("batchExportNoDestination"))
 			return false
 		else
 			-- Trim the trailing '(default)…'

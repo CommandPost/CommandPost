@@ -562,10 +562,10 @@ return {
 
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
-			
+
 			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
 			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
-			
+
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
 			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
 
@@ -802,8 +802,6 @@ return {
 	--------------------------------------------------------------------------------
 	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
 	core_accessibility_label								=	"Accessibility Permissions",
-	finalcutpro_action_manager_label								=	"Action Manager",
-	finalcutpro_commands_action_label						=	"Command Action",
 	core_commands_global_label								=	"Global Commands",
 	core_helpandsupport_credits_label						=	"Help & Support: Credits",
 	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
@@ -831,12 +829,14 @@ return {
 	core_watchfolders_manager_label							= 	"Watch Folder Manager",
 	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 	core_webapp_label										=	"WebApp",
+	finalcutpro_action_manager_label						=	"Action Manager",
 	finalcutpro_browser_addnote_label						=	"Browser: Add Note",
 	finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
 	finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
 	finalcutpro_clipboard_history_label						=	"Clipboard History",
 	finalcutpro_clipboard_manager_label						=	"Clipboard History Manager",
 	finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
+	finalcutpro_commands_action_label						=	"Command Action",
 	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
 	finalcutpro_console_label								=	"Console",
 	finalcutpro_export_batch_label							=	"Batch Export",
@@ -887,6 +887,7 @@ return {
 	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
+	finalcutpro_timeline_zoom_label							=	"Timeline Zoom",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
@@ -903,6 +904,13 @@ return {
 		-- Global:
 		--------------------------------------------------------------------------------
 		cpLaunchFinalCutPro_title								=	"Open Final Cut Pro",
+		cpSetupWatchFolders_title								= 	"Setup Watch Folders",
+		cpPreferences_title										=	"Preferences",
+		cpOpenErrorLog_title									=	"Open Error Log",
+		cpTrashPreferences_title								=	"Trash Preferences",
+		cpOpenPluginsFolder_title								= 	"Open Plugins Folder",
+		cpUserGuide_title										=	"User Guide",
+		cpDeveloperGuide_title									=	"Developer Guide",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:

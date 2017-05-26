@@ -60,15 +60,21 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	local top 		= deps.top
-	local global	= deps.global
 
+	--------------------------------------------------------------------------------
+	-- Menubar:
+	--------------------------------------------------------------------------------
+	local top = deps.top
 	top:addItem(PRIORITY + 1, function()
 		if fcp:isInstalled() then
 			return { title = i18n("open") .. " Final Cut Pro",	fn = mod.openFinalCutPro }
 		end
 	end)
 
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
 	global:add("cpLaunchFinalCutPro")
 		:activatedBy():ctrl():alt():cmd("l")
 		:whenPressed(mod.openFinalCutPro)
