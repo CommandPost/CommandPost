@@ -15,6 +15,16 @@ local plist				= require("cp.plist")
 local fs				= require("hs.fs")
 local timer				= require("hs.timer")
 
+local aliases = {
+	de	= "German",
+	en	= "English",
+	es	= "Spanish",
+	fr	= "French",
+	it	= "Italian",
+	ja	= "Japanese",
+}
+
+
 local mod = {}
 mod.mt = {}
 
@@ -48,6 +58,11 @@ end
 ---  * The table for the specified language, or `nil` if the file doesn't exist.
 function mod.mt:loadFile(language)
 	local langFile = self:pathToAbsolute(language)
+	if not langFile and aliases[language] then
+		-- try an alias
+		langFile = self:pathToAbsolute(aliases[language])
+	end
+	
 	if langFile then
 		return plist.fileToTable(langFile)
 	end

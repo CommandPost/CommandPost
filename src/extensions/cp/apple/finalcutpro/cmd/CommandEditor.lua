@@ -37,7 +37,8 @@ function CommandEditor.matches(element)
 	if element then
 		return element:attributeValue("AXSubrole") == "AXDialog"
 		   and element:attributeValue("AXModal")
-		   and axutils.childWith(element, "AXIdentifier", id "KeyDetailPanel") ~= nil
+		   and axutils.childWithRole(element, "AXPopUpButton") ~= nil
+		   and #axutils.childrenWithRole(element, "AXGroup") == 4
 	end
 	return false
 end

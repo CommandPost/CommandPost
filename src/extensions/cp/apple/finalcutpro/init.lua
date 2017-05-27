@@ -207,6 +207,7 @@ function App:_resetStrings()
 	if appPath then
 		self._strings:fromPlist(appPath .. "/Contents/Resources/${language}.lproj/PELocalizable.strings")
 		self._strings:fromPlist(appPath .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFLocalizable.strings")
+		self._strings:fromPlist(appPath .. "/Contents/Frameworks/LunaKit.framework/Resources/${language}.lproj/Commands.strings")
 	end
 end
 
@@ -553,10 +554,10 @@ end):bind(App)
 ---  * A MenuBar object
 function App:menuBar()
 	if not self._menuBar then
-		self._menuBar = MenuBar:new(self)
+		local menuBar = MenuBar:new(self)
 		
 		-- Add a finder for Share Destinations
-		self._menuBar:addMenuFinder(function(parentItem, path, childName, language)
+		menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
 				childName = childName:match("(.*)…$") or childName
 				local index = destinations.indexOf(childName)
@@ -567,6 +568,22 @@ function App:menuBar()
 			end
 			return nil
 		end)
+		-- Add a finder for 'Commands'
+		menuBar:addMenuFinder(function(parentItem, path, childName, language)
+			if _.isEqual(path, {"Final Cut Pro"}) then
+				if childName == "Commands" then
+					-- look for Commands with the local name via `CommandsSubmenu`.
+					return axutils.childWith(parentItem, "AXTitle", self:string("CommandSubmenu"))
+				end
+			elseif _.isEqual(path, {"Final Cut Pro", "Commands"}) then
+				if childName == "Customize…" then
+					return axutils.childWith(parentItem, "AXTitle", self:string("Customize"))
+				end
+			end
+			return nil
+		end)
+		
+		self._menuBar = menuBar
 	end
 	return self._menuBar
 end

@@ -82,8 +82,8 @@ end):bind(ExportDialog)
 function ExportDialog:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled({"File", "Share", "Master File…"}) then
-			self:app():menuBar():selectMenu({"File", "Share", "Master File…"})
+		if self:app():menuBar():isEnabled({"File", "Share", 1}) then
+			self:app():menuBar():selectMenu({"File", "Share", 1})
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end

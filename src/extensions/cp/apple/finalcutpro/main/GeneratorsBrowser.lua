@@ -156,7 +156,9 @@ end
 
 -- TODO: Add documentation
 function GeneratorsBrowser:showSidebar()
-	self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Sidebar"})
+	if not self:sidebar():isShowing() then
+		self:app():menuBar():checkMenu({"Window", "Show in Workspace", 1})
+	end
 end
 
 -- TODO: Add documentation

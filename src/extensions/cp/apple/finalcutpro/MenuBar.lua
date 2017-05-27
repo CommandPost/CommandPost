@@ -111,10 +111,9 @@ end
 -- TODO: Add documentation
 function MenuBar:checkMenu(path)
 	local menuItemUI = self:findMenuUI(path)
-	if menuItemUI and not self:_isMenuChecked(menuItemUI) then
-		if menuItemUI:doPress() then
-			return just.doUntil(function() return self:_isMenuChecked(menuItemUI) end)
-		end
+	if menuItemUI then
+		menuItemUI:doPress()
+		return true
 	end
 	return false
 end
@@ -122,10 +121,9 @@ end
 -- TODO: Add documentation
 function MenuBar:uncheckMenu(path)
 	local menuItemUI = self:findMenuUI(path)
-	if menuItemUI and self:_isMenuChecked(menuItemUI) then
-		if menuItemUI:doPress() then
-			return just.doWhile(function() return self:_isMenuChecked(menuItemUI) end)
-		end
+	if menuItemUI then
+		menuItemUI:doPress()
+		return true
 	end
 	return false
 end

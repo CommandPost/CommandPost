@@ -106,7 +106,7 @@ end
 
 -- TODO: Add documentation
 function PrimaryWindow:show()
-	self:isVisible(true)
+	self:isShowing(true)
 end
 
 -----------------------------------------------------------------------
