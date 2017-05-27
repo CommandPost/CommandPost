@@ -505,7 +505,7 @@ function mod:scan(fcp)
 	-- Setup Final Cut Pro Variables:
 	--------------------------------------------------------------------------------
 	local fcpPath = fcp:getPath()
-	local supportedLanguages = {"en"} -- fcp.SUPPORTED_LANGUAGES
+	local supportedLanguages = fcp.SUPPORTED_LANGUAGES
 
 	--------------------------------------------------------------------------------
 	-- Define Search Paths:
