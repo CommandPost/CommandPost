@@ -241,7 +241,7 @@ function MenuBar:findMenuUI(path, language)
 			
 			if not menuItemUI then
 				-- We don't have it in our list, so look it up manually. Hopefully they are in English!
-				log.wf("Searching manually for '%s' in '%s'.", step, table.concat(path, ", "))
+				log.wf("Searching manually for '%s' in '%s'.", step, table.concat(currentPath, ", "))
 				menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
 			end
 		end
@@ -251,7 +251,7 @@ function MenuBar:findMenuUI(path, language)
 				-- Assign the contained AXMenu to the menuUI - it contains the next set of AXMenuItems
 				menuUI = menuItemUI[1]
 			end
-			table.insert(currentPath, step)
+			table.insert(currentPath, menuItemName)
 		else
 			log.wf("Unable to find a menu called '%s'", step)
 			return nil
