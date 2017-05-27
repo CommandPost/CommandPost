@@ -598,6 +598,9 @@ end
 --- Returns:
 ---  * A table containing filenames as strings.
 function tools.dirFiles(path)
+	if not path then
+		return nil
+	end
 	path = fs.pathToAbsolute(path)
 	if not path then
 		return nil
