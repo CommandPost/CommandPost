@@ -101,6 +101,7 @@ local watcher									= require("cp.watcher")
 local axutils									= require("cp.apple.finalcutpro.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local destinations								= require("cp.apple.finalcutpro.export.destinations")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
 local kc										= require("cp.apple.finalcutpro.keycodes")
@@ -108,11 +109,11 @@ local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
+local scanPlugins								= require("cp.apple.finalcutpro.scanplugins")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
-local destinations								= require("cp.apple.finalcutpro.export.destinations")
 
 --------------------------------------------------------------------------------
 --
@@ -504,6 +505,28 @@ App.isModalDialogOpen = prop.new(function(self)
 	end
 	return false
 end):bind(App)
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- SCAN PLUGINS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:scanPlugins() -> table
+--- Method
+--- Scan Final Cut Pro Plugins
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A MenuBar object
+function App:scanPlugins()
+	return scanPlugins:scan(self)
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
@@ -524,7 +547,7 @@ end):bind(App)
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
-		
+
 		-- Add a finder for Share Destinations
 		self._menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
@@ -1231,7 +1254,7 @@ function App:getCurrentLanguage()
 					local lang = line:match("^%s*\"?([%w%-]+)")
 					-- switch "-" to "_"
 					lang = lang:gsub("-", "_")
-					
+
 					if self:isSupportedLanguage(lang) then
 						self.currentLanguage = lang
 						return lang
