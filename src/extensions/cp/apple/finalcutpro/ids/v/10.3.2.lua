@@ -71,7 +71,6 @@ return {
 	},
 	LibrariesList = {
 		Player								= "_NS:590",
-		ContentsTable						= "_NS:9",
 		RowIcon								= "_NS:11",
 	},
 	MediaBrowser = {

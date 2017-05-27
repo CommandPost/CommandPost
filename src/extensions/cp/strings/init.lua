@@ -29,6 +29,7 @@ local UNFOUND = {}
 ---  * The current `cp.strings` instance.
 function mod.mt:from(source)
 	table.insert(self._sources, source)
+	self._cache = {}
 	return self
 end
 

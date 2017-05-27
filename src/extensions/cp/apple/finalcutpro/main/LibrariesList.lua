@@ -133,7 +133,7 @@ end
 function List:contents()
 	if not self._content then
 		self._content = Table:new(self, function()
-			return axutils.childWithID(self:UI(), id "ContentsTable")
+			return axutils.childWithRole(self:UI(), "AXScrollArea")
 		end)
 	end
 	return self._content

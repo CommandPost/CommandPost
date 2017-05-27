@@ -95,6 +95,7 @@ local just										= require("cp.just")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
 local shortcut									= require("cp.commands.shortcut")
+local strings									= require("cp.strings")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
@@ -191,7 +192,36 @@ App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTE
 ---  * The app.
 function App:init()
 	self:_initWatchers()
+	self:_initStrings()
 	return self
+end
+
+function App:_initStrings()
+	self.isRunning:watch(function() self:_resetStrings() end, true)
+end
+
+function App:_resetStrings()
+	self._strings = strings.new()
+	
+	local appPath = self:getPath()
+	if appPath then
+		self._strings:fromPlist(appPath .. "/Contents/Resources/${language}.lproj/PELocalizable.strings")
+		self._strings:fromPlist(appPath .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFLocalizable.strings")
+	end
+end
+
+--- cp.apple.finalcutpro:string(key) -> string
+--- Method
+--- Looks up an application string with the specified `key`. It will take into account current language the app is running in.
+---
+--- Parameters:
+---  * `key`	- The key to look up.
+---
+--- Returns:
+---  * The requested string or `nil` if the application is not running.
+function App:string(key)
+	local lang = self:getCurrentLanguage()
+	return self._strings and self._strings:find(lang, key)
 end
 
 --- cp.apple.finalcutpro:application() -> hs.application

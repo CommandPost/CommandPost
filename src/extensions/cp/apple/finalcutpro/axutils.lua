@@ -72,6 +72,20 @@ function axutils.childWithRole(element, value)
 	return axutils.childWith(element, "AXRole", value)
 end
 
+--- cp.apple.finalcutpro.axutils.childWithDescription(element, value) -> axuielement
+--- Function
+--- This searches for the first child of the specified element which has `AXDescription` with the specified value.
+---
+--- Parameters:
+---  * element	- the axuielement
+---  * value	- the value
+---
+--- Returns:
+---  * The first matching child, or `nil` if none was found
+function axutils.childWithDescription(element, value)
+	return axutils.childWith(element, "AXDescription", value)
+end
+
 --- cp.apple.finalcutpro.axutils.childMatching(element, matcherFn) -> axuielement
 --- Function
 --- This searches for the first child of the specified element for which the provided function returns `true`.

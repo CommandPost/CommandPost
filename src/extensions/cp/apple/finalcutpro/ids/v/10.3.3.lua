@@ -45,7 +45,6 @@ return {
 	},
 	LibrariesList = {
 		Player								= "_NS:119",
-		ContentsTable						= "_NS:520",
 	},
 	TimelineAppearance = {
 		ClipHeight							= "_NS:85",
