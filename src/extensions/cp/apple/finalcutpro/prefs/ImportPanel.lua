@@ -109,7 +109,8 @@ end
 function ImportPanel:copyToMediaFolder()
 	if not self._copyToMediaFolder then
 		self._copyToMediaFolder = RadioButton:new(self, function()
-			return self:mediaLocationGroupUI()[id "CopyToMediaFolder"]
+			local groupUI = self:mediaLocationGroupUI()
+			return groupUI and groupUI[id "CopyToMediaFolder"]
 		end)
 	end
 	return self._copyToMediaFolder
@@ -118,7 +119,8 @@ end
 function ImportPanel:leaveInPlace()
 	if not self._leaveInPlace then
 		self._leaveInPlace = RadioButton:new(self, function()
-			return self:mediaLocationGroupUI()[id "LeaveInPlace"]
+			local groupUI = self:mediaLocationGroupUI()
+			return groupUI and groupUI[id "LeaveInPlace"]
 		end)
 	end
 	return self._leaveInPlace
