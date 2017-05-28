@@ -84,11 +84,6 @@ return {
 		ClipHeight							= "_NS:104",
 		ZoomAmount							= "_NS:56",
 	},
-	TimelineContents = {
-		Contents							= "_NS:16",
-		ScrollArea							= "_NS:9",
-		RangeSelectionDescription 			= {"Range Selection", "Bereichauswahl", "Selección de intervalo", "Plage de sélection", "範囲選択", "范围选择"}
-	},
 	TimelineToolbar = {
 		ID									= "_NS:237",
 		SkimmingGroup						= "_NS:178",

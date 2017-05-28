@@ -104,9 +104,21 @@ function PrimaryWindow:window()
 	return self._window
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryWindow:show() -> PrimaryWindow
+--- Method
+--- Attempts to focus the specified window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the window exists and 
 function PrimaryWindow:show()
-	self:isShowing(true)
+	if self:isShowing() then
+		return true
+	else
+		return self:window():focus()
+	end
 end
 
 -----------------------------------------------------------------------

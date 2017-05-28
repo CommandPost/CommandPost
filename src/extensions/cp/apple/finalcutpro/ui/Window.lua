@@ -199,4 +199,32 @@ Window.fullScreen = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
+--- cp.apple.finalcutpro.ui.Window.close() -> boolean
+--- Method
+--- Attempts to close the window.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the window was successfully closed.
+function Window:close()
+	local hsWindow = self:hsWindow()
+	return hsWindow ~= nil and hsWindow:close()
+end
+
+--- cp.apple.finalcutpro.ui.Window.focus() -> boolean
+--- Method
+--- Attempts to focus the window.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the window was successfully focused.
+function Window:focus()
+	local hsWindow = self:hsWindow()
+	return hsWindow ~= nil and hsWindow:focus()
+end
+
 return Window
