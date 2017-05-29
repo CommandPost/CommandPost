@@ -46,9 +46,4 @@ return {
 		ClipHeight							= "_NS:85",
 		ZoomAmount							= "_NS:35",
 	},
-	Viewer = {
-		Title								= "_NS:223",
-		Timecode							= "_NS:56",
-		Format								= "_NS:254",
-	},
 }

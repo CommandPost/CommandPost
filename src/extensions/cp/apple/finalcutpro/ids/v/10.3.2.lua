@@ -90,9 +90,8 @@ return {
 		EffectsGroup						= "_NS:165",
 	},
 	Viewer = {
-		Title								= "_NS:16",
-		Timecode							= "_NS:31",
-		Format								= "_NS:274",
+		Title								= 3,
+		Format								= 1,
 	},
 	ImportPanel = {
 		ID									= 4,

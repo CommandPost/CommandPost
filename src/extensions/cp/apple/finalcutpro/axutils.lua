@@ -25,7 +25,7 @@ local fnutils					= require("hs.fnutils")
 local axutils = {}
 
 -- TODO: Add documentation
-function axutils.hasAttribute(element, name, value)
+function axutils.hasAttributeValue(element, name, value)
 	return element and element:attributeValue(name) == value
 end
 
@@ -41,7 +41,7 @@ end
 --- Returns:
 ---  * The first matching child, or nil if none was found
 function axutils.childWith(element, name, value)
-	return axutils.childMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
+	return axutils.childMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
 --- cp.apple.finalcutpro.axutils.childWithID(element, value) -> axuielement
@@ -116,6 +116,89 @@ function axutils.childMatching(element, matcherFn)
 	return nil
 end
 
+--- cp.apple.finalcutpro.axutils.childAtIndex(element, index, compareFn) -> axuielement
+--- Function
+--- Searches for the child element which is at number `index` when sorted using the `compareFn`.
+---
+--- Parameters:
+---  * element		- the axuielement or array of axuielements
+---  * index		- the index number of the child to find.
+---  * compareFn	- a function to compare the elements.
+---
+--- Returns:
+---  * The child, or `nil` if the index is larger than the number of children.
+function axutils.childAtIndex(element, index, compareFn)
+	if element and index > 0 then
+		local children = element
+		-- Try to get the children array directly, if present, to optimise the loop.
+		-- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
+		if element.attributeValue then -- it's an AXUIElement
+			children = element:attributeValue("AXChildren") or element
+		end
+		if #children >= index then
+			table.sort(children, compareFn)
+			return children[index]
+		end
+	end
+	return nil
+end
+
+--- cp.apple.finalcutpro.axutils.childFromLeft(element, index) -> axuielement
+--- Function
+--- Searches for the child element which is at number `index` when sorted left-to-right.
+---
+--- Parameters:
+---  * element		- the axuielement or array of axuielements
+---  * index		- the index number of the child to find.
+---
+--- Returns:
+---  * The child, or `nil` if the index is larger than the number of children.
+function axutils.childFromLeft(element, index)
+	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x < b:frame().x end)
+end
+
+--- cp.apple.finalcutpro.axutils.childFromRight(element, index) -> axuielement
+--- Function
+--- Searches for the child element which is at number `index` when sorted right-to-left.
+---
+--- Parameters:
+---  * element		- the axuielement or array of axuielements
+---  * index		- the index number of the child to find.
+---
+--- Returns:
+---  * The child, or `nil` if the index is larger than the number of children.
+function axutils.childFromRight(element, index)
+	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x > b:frame().x end)
+end
+
+--- cp.apple.finalcutpro.axutils.childFromTop(element, index) -> axuielement
+--- Function
+--- Searches for the child element which is at number `index` when sorted top-to-botom.
+---
+--- Parameters:
+---  * element		- the axuielement or array of axuielements
+---  * index		- the index number of the child to find.
+---
+--- Returns:
+---  * The child, or `nil` if the index is larger than the number of children.
+function axutils.childFromTop(element, index)
+	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y < b:frame().y end)
+end
+
+--- cp.apple.finalcutpro.axutils.childFromTop(element, index) -> axuielement
+--- Function
+--- Searches for the child element which is at number `index` when sorted top-to-botom.
+---
+--- Parameters:
+---  * element		- the axuielement or array of axuielements
+---  * index		- the index number of the child to find.
+---
+--- Returns:
+---  * The child, or `nil` if the index is larger than the number of children.
+function axutils.childFromBottom(element, index)
+	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y > b:frame().y end)
+end
+
 --- cp.apple.finalcutpro.axutils.childrenWith(element, name, value) -> axuielement
 --- Function
 --- This searches for all children of the specified element which has an attribute with the matching name and value.
@@ -128,7 +211,7 @@ end
 --- Returns:
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenWith(element, name, value)
-	return axutils.childrenMatching(element, function(child) return axutils.hasAttribute(child, name, value) end)
+	return axutils.childrenMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
 --- cp.apple.finalcutpro.axutils.childrenWithRole(element, value) -> axuielement

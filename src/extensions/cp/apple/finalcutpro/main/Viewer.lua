@@ -214,14 +214,7 @@ end
 function Viewer:topToolbarUI()
 	return axutils.cache(self, "_topToolbar", function()
 		local ui = self:UI()
-		if ui then
-			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", id "Title") then
-					return child
-				end
-			end
-		end
-		return nil
+		return ui and axutils.childFromTop(ui, 1)
 	end)
 end
 
@@ -229,14 +222,7 @@ end
 function Viewer:bottomToolbarUI()
 	return axutils.cache(self, "_bottomToolbar", function()
 		local ui = self:UI()
-		if ui then
-			for i,child in ipairs(ui) do
-				if axutils.childWith(child, "AXIdentifier", id "Timecode") then
-					return child
-				end
-			end
-		end
-		return nil
+		return ui and axutils.childFromBottom(ui, 1)
 	end)
 end
 
@@ -249,7 +235,7 @@ end
 function Viewer:formatUI()
 	return axutils.cache(self, "_format", function()
 		local ui = self:topToolbarUI()
-		return ui and axutils.childWith(ui, "AXIdentifier", id "Format")
+		return ui and axutils.childFromLeft(ui, id "Format")
 	end)
 end
 
@@ -268,7 +254,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:getTitle()
-	local titleText = axutils.childWithID(self:topToolbarUI(), id "Title")
+	local titleText = axutils.childFromLeft(self:topToolbarUI(), id "Title")
 	return titleText and titleText:value()
 end
 
